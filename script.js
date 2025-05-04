@@ -1,8 +1,8 @@
-// MIGS Website JavaScript
+// Professional CV Website JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
     // Smooth scrolling for navigation links
-    const navLinks = document.querySelectorAll('nav a');
+    const navLinks = document.querySelectorAll('.cv-nav a');
     
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Highlight active nav section on scroll
+    // Active navigation highlighting on scroll
     window.addEventListener('scroll', function() {
-        const sections = document.querySelectorAll('section');
+        const sections = document.querySelectorAll('.cv-section');
         let currentSection = '';
         
         sections.forEach(section => {
@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Simple form validation
-    const contactForm = document.querySelector('.contact-form form');
+    // Form validation
+    const contactForm = document.getElementById('contact-form');
     
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
+            const subjectInput = document.getElementById('subject');
             const messageInput = document.getElementById('message');
             
             let isValid = true;
@@ -70,6 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeError(emailInput);
             }
             
+            if (!subjectInput.value.trim()) {
+                showError(subjectInput, 'Subject is required');
+                isValid = false;
+            } else {
+                removeError(subjectInput);
+            }
+            
             if (!messageInput.value.trim()) {
                 showError(messageInput, 'Message is required');
                 isValid = false;
@@ -78,17 +86,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (isValid) {
-                // In a real application, you would send data to a server here
-                alert('Thank you for your message! We will get back to you soon.');
+                // In a real implementation, you would send the form data to a server
+                showFormSuccess();
                 contactForm.reset();
             }
         });
     }
     
-    // Helper functions for form validation
+    // Error handling functions
     function showError(input, message) {
         const formGroup = input.parentElement;
-        
         let errorElement = formGroup.querySelector('.error-message');
         
         if (!errorElement) {
@@ -117,33 +124,61 @@ document.addEventListener('DOMContentLoaded', function() {
         return re.test(String(email).toLowerCase());
     }
     
-    // Add animation to cards
-    const cards = document.querySelectorAll('.card');
-    
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-10px)';
-        });
+    function showFormSuccess() {
+        // Create success message element
+        const successElement = document.createElement('div');
+        successElement.className = 'success-message';
+        successElement.textContent = 'Thank you for your message! I will get back to you soon.';
+        successElement.style.backgroundColor = '#d4edda';
+        successElement.style.color = '#155724';
+        successElement.style.padding = '1rem';
+        successElement.style.borderRadius = '4px';
+        successElement.style.marginBottom = '1rem';
+        successElement.style.textAlign = 'center';
         
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
+        // Add success message to the form
+        contactForm.prepend(successElement);
+        
+        // Remove success message after 5 seconds
+        setTimeout(() => {
+            successElement.remove();
+        }, 5000);
+    }
+    
+    // Timeline animation
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    const animateOnScroll = function() {
+        timelineItems.forEach(item => {
+            const itemPosition = item.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (itemPosition < windowHeight - 50) {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }
         });
+    };
+    
+    // Add initial style to timeline items
+    timelineItems.forEach(item => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     });
     
-    // Add CSS for active nav links and form validation
+    // Run animation on page load and scroll
+    window.addEventListener('load', animateOnScroll);
+    window.addEventListener('scroll', animateOnScroll);
+    
+    // Add CSS for form validation
     const style = document.createElement('style');
     style.innerHTML = `
-        nav ul li a.active {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
         .error-input {
-            border-color: var(--accent-color) !important;
+            border-color: #dc3545 !important;
         }
         
         .error-message {
-            color: var(--accent-color);
+            color: #dc3545;
             font-size: 0.85rem;
             margin-top: 0.25rem;
         }

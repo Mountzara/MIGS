@@ -3,117 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIGS - Minimally Invasive Gynecologic Surgery</title>
+    <title>Dr. Jane Doe - MIGS Specialist</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="description" content="Professional CV for Dr. Jane Doe, MIGS Specialist">
 </head>
 <body>
-    <header>
+    <header class="cv-header">
         <div class="container">
-            <h1><i class="fas fa-heartbeat"></i> MIGS</h1>
-            <p>Minimally Invasive Gynecologic Surgery</p>
+            <div class="profile-container">
+                <div class="profile-image">
+                    <!-- Placeholder for profile image -->
+                    <div class="profile-placeholder">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <h1>Dr. Jane Doe, MD, FACOG</h1>
+                    <h2>MIGS Specialist &amp; Gynecologic Surgeon</h2>
+                    <div class="contact-info">
+                        <p><i class="fas fa-envelope"></i> doctor@hospital.org</p>
+                        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                        <p><i class="fas fa-hospital"></i> University Medical Center</p>
+                        <p><i class="fas fa-map-marker-alt"></i> New York, NY</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <nav>
+    <nav class="cv-nav">
         <div class="container">
             <ul>
                 <li><a href="#about">About</a></li>
-                <li><a href="#procedures">Procedures</a></li>
-                <li><a href="#resources">Resources</a></li>
+                <li><a href="#education">Education</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#publications">Publications</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#awards">Awards</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
     </nav>
 
     <main>
-        <section id="hero">
-            <div class="container">
-                <h2>Advancing Minimally Invasive Techniques in Gynecologic Surgery</h2>
-                <p>Improving patient outcomes through innovative approaches and continuous education</p>
+        <section id="about" class="container cv-section">
+            <h2><i class="fas fa-user"></i> About Me</h2>
+            <div class="section-content">
+                <p>Board-certified gynecologist specializing in Minimally Invasive Gynecologic Surgery (MIGS) with over 10 years of experience in advanced laparoscopy, hysteroscopy, and robotic surgical techniques. Dedicated to providing patient-centered care and advancing the field through research, education, and innovation.</p>
+                <p>As a MIGS specialist, I focus on treating complex gynecologic conditions using minimally invasive approaches that reduce recovery time, minimize complications, and improve patient outcomes. My clinical interests include endometriosis, fibroids, pelvic pain, and complex benign gynecologic pathology.</p>
             </div>
         </section>
 
-        <section id="about" class="container">
-            <h2>About MIGS</h2>
-            <div class="content-wrapper">
-                <div class="text-content">
-                    <p>Minimally Invasive Gynecologic Surgery (MIGS) refers to surgical techniques that allow gynecologic surgeons to perform procedures through small incisions or natural orifices, reducing recovery time and improving patient outcomes.</p>
-                    <p>MIGS encompasses a range of techniques including laparoscopy, hysteroscopy, robotic-assisted surgery, and vaginal approaches that minimize tissue trauma while maintaining or improving surgical outcomes.</p>
-                </div>
-                <div class="image-content">
-                    <img src="https://via.placeholder.com/400x300" alt="MIGS Procedure" class="rounded-image">
+        <section id="education" class="container cv-section">
+            <h2><i class="fas fa-graduation-cap"></i> Education &amp; Training</h2>
+            <div class="section-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020-2022</div>
+                        <div class="timeline-content">
+                            <h3>Fellowship in Minimally Invasive Gynecologic Surgery (MIGS)</h3>
+                            <p>University Hospital, Boston, MA</p>
+                            <ul>
+                                <li>AAGL-accredited fellowship with advanced training in complex laparoscopy, robotics, and hysteroscopy</li>
+                                <li>Research focus on optimizing surgical techniques for endometriosis excision</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2016-2020</div>
+                        <div class="timeline-content">
+                            <h3>Residency in Obstetrics &amp; Gynecology</h3>
+                            <p>Memorial Hospital, Chicago, IL</p>
+                            <ul>
+                                <li>Chief Resident (2019-2020)</li>
+                                <li>Excellence in Minimally Invasive Surgery Award</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2012-2016</div>
+                        <div class="timeline-content">
+                            <h3>Doctor of Medicine (MD)</h3>
+                            <p>University Medical School, New York, NY</p>
+                            <ul>
+                                <li>Alpha Omega Alpha Honor Society</li>
+                                <li>Research Thesis: "Innovations in Laparoscopic Suturing Techniques"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2008-2012</div>
+                        <div class="timeline-content">
+                            <h3>Bachelor of Science (BS) in Biology</h3>
+                            <p>State University, Los Angeles, CA</p>
+                            <ul>
+                                <li>Summa Cum Laude</li>
+                                <li>Pre-Medical Society President</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="procedures" class="container">
-            <h2>Common Procedures</h2>
-            <div class="card-container">
-                <div class="card">
-                    <i class="fas fa-microscope icon"></i>
-                    <h3>Laparoscopic Hysterectomy</h3>
-                    <p>Removal of the uterus through small abdominal incisions using a camera and specialized instruments.</p>
-                </div>
-                <div class="card">
-                    <i class="fas fa-robot icon"></i>
-                    <h3>Robotic Myomectomy</h3>
-                    <p>Robot-assisted removal of uterine fibroids while preserving the uterus.</p>
-                </div>
-                <div class="card">
-                    <i class="fas fa-search icon"></i>
-                    <h3>Hysteroscopic Procedures</h3>
-                    <p>Treatment of intrauterine pathology through the natural cervical opening.</p>
-                </div>
-                <div class="card">
-                    <i class="fas fa-user-md icon"></i>
-                    <h3>Endometriosis Excision</h3>
-                    <p>Removal of endometriotic lesions using minimally invasive techniques.</p>
+        <section id="experience" class="container cv-section">
+            <h2><i class="fas fa-briefcase"></i> Professional Experience</h2>
+            <div class="section-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">2022-Present</div>
+                        <div class="timeline-content">
+                            <h3>Attending Physician, Division of Minimally Invasive Gynecologic Surgery</h3>
+                            <p>University Medical Center, New York, NY</p>
+                            <ul>
+                                <li>Perform over 200 minimally invasive procedures annually, including advanced laparoscopic and robotic gynecologic surgeries</li>
+                                <li>Established a specialized Endometriosis Center focusing on multidisciplinary care</li>
+                                <li>Director of Surgical Simulation Program for residents and fellows</li>
+                                <li>Principal Investigator on two clinical trials exploring novel surgical techniques</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020-2022</div>
+                        <div class="timeline-content">
+                            <h3>MIGS Fellow and Clinical Instructor</h3>
+                            <p>University Hospital, Boston, MA</p>
+                            <ul>
+                                <li>Performed over 500 minimally invasive gynecologic procedures</li>
+                                <li>Developed innovative surgical protocol for treating deep infiltrating endometriosis</li>
+                                <li>Taught medical students and residents laparoscopic skills</li>
+                                <li>Conducted research on surgical outcomes in robotic vs. conventional laparoscopy</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="resources" class="container">
-            <h2>Educational Resources</h2>
-            <ul class="resource-list">
-                <li><i class="fas fa-book"></i> <a href="#">MIGS Fellowship Programs</a></li>
-                <li><i class="fas fa-graduation-cap"></i> <a href="#">Surgical Training Opportunities</a></li>
-                <li><i class="fas fa-notes-medical"></i> <a href="#">Clinical Practice Guidelines</a></li>
-                <li><i class="fas fa-video"></i> <a href="#">Procedure Videos</a></li>
-                <li><i class="fas fa-flask"></i> <a href="#">Research Publications</a></li>
-            </ul>
+        <section id="publications" class="container cv-section">
+            <h2><i class="fas fa-book"></i> Selected Publications</h2>
+            <div class="section-content">
+                <div class="publication-list">
+                    <div class="publication-item">
+                        <h3>Peer-Reviewed Articles</h3>
+                        <ul>
+                            <li>Doe J, Smith A, Johnson B. "Comparing Outcomes Between Robotically-Assisted and Conventional Laparoscopic Hysterectomy: A Prospective Randomized Trial." <em>Journal of Minimally Invasive Gynecology</em>. 2023;30(2):45-53.</li>
+                            <li>Doe J, Williams C. "Surgical Management of Deep Infiltrating Endometriosis: A Systematic Review and Meta-Analysis." <em>Obstetrics & Gynecology</em>. 2022;140(1):112-125.</li>
+                            <li>Smith A, Doe J, Miller D. "Enhanced Recovery After Surgery (ERAS) Protocols in Gynecologic Surgery: Implementation and Outcomes." <em>American Journal of Obstetrics and Gynecology</em>. 2021;224(4):376-385.</li>
+                            <li>Doe J, Johnson B. "Improving Surgical Efficiency in Laparoscopic Myomectomy: A Randomized Comparison of Techniques." <em>Fertility and Sterility</em>. 2020;114(3):591-598.</li>
+                        </ul>
+                    </div>
+                    <div class="publication-item">
+                        <h3>Book Chapters</h3>
+                        <ul>
+                            <li>Doe J. "Laparoscopic Management of Adnexal Masses" in <em>Principles of Minimally Invasive Gynecologic Surgery</em>, 3rd Edition. Eds. Smith A, Johnson B. Elsevier, 2023.</li>
+                            <li>Doe J, Williams C. "Robotic-Assisted Techniques in Complex Hysterectomy" in <em>Advances in Gynecologic Surgery</em>. Eds. Miller D, Brown E. Springer, 2021.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section id="contact" class="container">
-            <h2>Contact Information</h2>
-            <div class="contact-form">
-                <form>
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" placeholder="Your Name">
+        <section id="skills" class="container cv-section">
+            <h2><i class="fas fa-tools"></i> Clinical Skills &amp; Expertise</h2>
+            <div class="section-content">
+                <div class="skills-container">
+                    <div class="skill-category">
+                        <h3>Surgical Procedures</h3>
+                        <ul class="skill-list">
+                            <li><i class="fas fa-check-circle"></i> Laparoscopic Hysterectomy (TLH, LAVH)</li>
+                            <li><i class="fas fa-check-circle"></i> Robotic-Assisted Gynecologic Surgery</li>
+                            <li><i class="fas fa-check-circle"></i> Laparoscopic Myomectomy</li>
+                            <li><i class="fas fa-check-circle"></i> Excision of Endometriosis</li>
+                            <li><i class="fas fa-check-circle"></i> Hysteroscopic Procedures</li>
+                            <li><i class="fas fa-check-circle"></i> Laparoscopic Pelvic Reconstruction</li>
+                            <li><i class="fas fa-check-circle"></i> Operative Management of Ectopic Pregnancy</li>
+                            <li><i class="fas fa-check-circle"></i> Fertility-Preserving Surgery</li>
+                        </ul>
                     </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="Your Email">
+                    <div class="skill-category">
+                        <h3>Technical Skills</h3>
+                        <ul class="skill-list">
+                            <li><i class="fas fa-check-circle"></i> da Vinci Robotic Surgical System</li>
+                            <li><i class="fas fa-check-circle"></i> Advanced Laparoscopic Suturing</li>
+                            <li><i class="fas fa-check-circle"></i> Ultrasound-Guided Procedures</li>
+                            <li><i class="fas fa-check-circle"></i> Office Hysteroscopy</li>
+                            <li><i class="fas fa-check-circle"></i> Surgical Simulation Training</li>
+                            <li><i class="fas fa-check-circle"></i> Surgical Energy Modalities</li>
+                        </ul>
                     </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" placeholder="Your Message"></textarea>
+                    <div class="skill-category">
+                        <h3>Research &amp; Education</h3>
+                        <ul class="skill-list">
+                            <li><i class="fas fa-check-circle"></i> Clinical Trial Design</li>
+                            <li><i class="fas fa-check-circle"></i> Statistical Analysis</li>
+                            <li><i class="fas fa-check-circle"></i> Medical Education</li>
+                            <li><i class="fas fa-check-circle"></i> Surgical Curriculum Development</li>
+                            <li><i class="fas fa-check-circle"></i> Scientific Writing and Publication</li>
+                        </ul>
                     </div>
-                    <button type="submit" class="btn">Send Message</button>
-                </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="awards" class="container cv-section">
+            <h2><i class="fas fa-award"></i> Awards &amp; Honors</h2>
+            <div class="section-content">
+                <div class="awards-container">
+                    <div class="award-item">
+                        <div class="award-year">2023</div>
+                        <div class="award-content">
+                            <h3>Excellence in Surgical Innovation Award</h3>
+                            <p>American Association of Gynecologic Laparoscopists (AAGL)</p>
+                        </div>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-year">2022</div>
+                        <div class="award-content">
+                            <h3>Best Scientific Paper Award</h3>
+                            <p>Society of Reproductive Surgeons</p>
+                        </div>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-year">2021</div>
+                        <div class="award-content">
+                            <h3>Outstanding MIGS Fellow Award</h3>
+                            <p>University Hospital MIGS Fellowship Program</p>
+                        </div>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-year">2019</div>
+                        <div class="award-content">
+                            <h3>Resident Research Award</h3>
+                            <p>American College of Obstetricians and Gynecologists (ACOG)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="container cv-section">
+            <h2><i class="fas fa-envelope"></i> Contact Information</h2>
+            <div class="section-content">
+                <div class="contact-container">
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <p>Email: <a href="mailto:doctor@hospital.org">doctor@hospital.org</a></p>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <p>Phone: (555) 123-4567</p>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-hospital"></i>
+                            <p>University Medical Center<br>123 Medicine Avenue<br>New York, NY 10001</p>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-globe"></i>
+                            <p>Website: <a href="#">www.drjanedoe.com</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form">
+                        <h3>Send a Message</h3>
+                        <form id="contact-form">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" id="subject" name="subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 MIGS. All rights reserved.</p>
+            <p>&copy; 2025 Dr. Jane Doe. All rights reserved.</p>
             <div class="social-links">
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-linkedin"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" title="ResearchGate"><i class="fab fa-researchgate"></i></a>
+                <a href="#" title="Google Scholar"><i class="fas fa-graduation-cap"></i></a>
             </div>
         </div>
     </footer>
