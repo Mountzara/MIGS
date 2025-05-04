@@ -5,262 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
-        /* Reset and base styles */
-        * {
+        /* Make iframe responsive and full-screen */
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #fff;
-        }
-        
-        /* Layout */
-        .container {
+            height: 100%;
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            overflow: hidden;
         }
         
-        /* Header */
-        header {
-            background-color: #000;
-            color: #fff;
-            padding: 80px 0;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header-background {
-            background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            position: absolute;
+        .canva-embed {
+            position: fixed;
             top: 0;
             left: 0;
+            bottom: 0;
+            right: 0;
             width: 100%;
             height: 100%;
-            opacity: 0.7;
-        }
-        
-        .header-content {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .logo {
-            max-width: 300px;
-            margin-bottom: 30px;
-        }
-        
-        .tagline {
-            font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 20px;
-        }
-        
-        /* Services Section */
-        .services {
-            padding: 80px 0;
-            background-color: #6F7569;
-            color: #fff;
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 50px;
-            font-weight: 700;
-        }
-        
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-        }
-        
-        .service-item {
-            padding: 30px;
-        }
-        
-        .service-item h3 {
-            margin-bottom: 15px;
-            font-size: 24px;
-        }
-        
-        .service-item ul {
-            list-style-type: none;
-            margin-top: 20px;
-        }
-        
-        .service-item ul li {
-            margin-bottom: 10px;
-        }
-        
-        /* About Section */
-        .about {
-            padding: 80px 0;
-            background-color: #f8f9fa;
-        }
-        
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            align-items: center;
-        }
-        
-        .about-text {
-            padding-right: 20px;
-        }
-        
-        .about-text h2 {
-            margin-bottom: 30px;
-            font-size: 36px;
-        }
-        
-        .about-text p {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        
-        .about-image {
-            border-radius: 10px;
+            border: none;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .about-image img {
-            width: 100%;
-            display: block;
-        }
-        
-        /* Contact */
-        .contact {
-            padding: 80px 0;
-            text-align: center;
-        }
-        
-        .contact-email {
-            font-size: 24px;
-            margin-top: 20px;
-            color: #333;
-        }
-        
-        /* Footer */
-        footer {
-            background-color: #000;
-            color: #fff;
-            padding: 20px 0;
-            text-align: center;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .about-text {
-                padding-right: 0;
-                order: 2;
-            }
-            
-            .about-image {
-                order: 1;
-                margin-bottom: 30px;
-            }
+            z-index: 999999;
         }
     </style>
 </head>
 <body>
-    <!-- Header Section -->
-    <header>
-        <div class="header-background"></div>
-        <div class="header-content">
-            <div class="container">
-                <img src="https://ik.imagekit.io/mountzara/logo.png" alt="Mount Zara Logo" class="logo">
-                <div class="tagline">Learn More</div>
-            </div>
-        </div>
-    </header>
-    
-    <!-- Services Section -->
-    <section class="services">
-        <div class="container">
-            <h2 class="section-title">Services</h2>
-            <div class="services-grid">
-                <div class="service-item">
-                    <h3>Advanced Surgical Care</h3>
-                    <p>Minimally invasive surgical procedures with faster recovery times and excellent outcomes.</p>
-                    <ul>
-                        <li>Hysterectomy</li>
-                        <li>Myomectomy</li>
-                        <li>Endometriosis Excision</li>
-                        <li>Pelvic Reconstruction</li>
-                    </ul>
-                </div>
-                <div class="service-item">
-                    <h3>Women's Health</h3>
-                    <p>Comprehensive care for women at all stages of life, addressing a wide range of gynecological concerns.</p>
-                    <ul>
-                        <li>Annual Exams</li>
-                        <li>Contraception Management</li>
-                        <li>Menopause Care</li>
-                        <li>Pelvic Pain Treatment</li>
-                    </ul>
-                </div>
-                <div class="service-item">
-                    <h3>Specialty Conditions</h3>
-                    <p>Expert management of complex gynecological conditions using the latest evidence-based approaches.</p>
-                    <ul>
-                        <li>Fibroids</li>
-                        <li>Endometriosis</li>
-                        <li>Adenomyosis</li>
-                        <li>Chronic Pelvic Pain</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- About Section -->
-    <section class="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>About Dr. Zara</h2>
-                    <p>Dr. Zara is a board-certified OB/GYN specializing in Minimally Invasive Gynecologic Surgery (MIGS). With expertise in advanced laparoscopic and robotic techniques, she provides compassionate care focused on minimizing recovery time and maximizing patient outcomes.</p>
-                    <p>Trained at leading institutions and staying current with the latest surgical innovations, Dr. Zara is committed to finding the right treatment approach for each individual patient.</p>
-                    <p>Dr. Zara is dedicated to patient education, ensuring that every woman understands her condition and treatment options to make informed decisions about her health.</p>
-                </div>
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1571772996211-2f02c9727629?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Doctor's Office">
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Contact Section -->
-    <section class="contact">
-        <div class="container">
-            <h2 class="section-title">Contact Us</h2>
-            <p>For appointments and inquiries, please email:</p>
-            <div class="contact-email">mountzarallc@gmail.com</div>
-        </div>
-    </section>
-    
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Mount Zara, LLC. All rights reserved.</p>
-        </div>
-    </footer>
+    <iframe class="canva-embed" src="https://mountzara.my.canva.site/mount-zara" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
 </body>
 </html>
