@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mount Zara LLC - Canva Design</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+        .canva-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        .canva-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #006699;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #4dabf7;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">Back to Main Site</a>
+    <div class="canva-container">
+        <!-- The embed code would normally be a Canva published design URL -->
+        <!-- For now, we'll use an image tag that will display your SVG -->
+        <img src="canva-design.svg" alt="Mount Zara Canva Design" style="width:100%;height:100%;object-fit:contain;">
+    </div>
+</body>
+</html>
