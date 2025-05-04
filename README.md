@@ -3,6 +3,11 @@ MIGS Related Repository
 
 This repository contains materials related to MIGS (Minimally Invasive Gynecologic Surgery).
 
+This repository demonstrates how to:
+- Create a local Git repository
+- Connect it to GitHub
+- Push changes to GitHub
+
 ## Getting Started
 
 To clone this repository, use:
