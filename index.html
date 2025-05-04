@@ -16,49 +16,280 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            width: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
         
-        /* Canva embed container */
-        .canva-embed-container {
+        /* Header */
+        header {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 6rem 2rem;
             position: relative;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
+            background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            position: relative;
         }
         
-        .canva-iframe {
+        header::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: 0;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            max-width: 300px;
+            margin-bottom: 2rem;
+        }
+        
+        .header-title {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .header-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        /* Services Section */
+        .services {
+            padding: 6rem 2rem;
+            background-color: #6F7569;
+            color: white;
+        }
+        
+        .services-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .service-card {
+            padding: 2rem;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .service-card ul {
+            list-style-type: none;
+            margin-top: 1rem;
+        }
+        
+        .service-card ul li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .service-card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #fff;
+        }
+        
+        /* About Section */
+        .about {
+            padding: 6rem 2rem;
+            background-color: #f8f9fa;
+        }
+        
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .about-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .about-text p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .about-image {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* Contact */
+        .contact {
+            padding: 6rem 2rem;
+            text-align: center;
+            background-color: #fff;
+        }
+        
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .contact-email {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            color: #333;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #000;
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 2.5rem;
+            }
+            
+            .about-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .about-text {
+                order: 2;
+            }
+            
+            .about-image {
+                order: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="canva-embed-container">
-        <iframe 
-            class="canva-iframe"
-            loading="lazy"
-            src="https://www.canva.com/design/DAFn5IcV-oo/view?embed" 
-            allowfullscreen="allowfullscreen"
-            allow="fullscreen">
-        </iframe>
-    </div>
+    <!-- Header Section -->
+    <header>
+        <div class="header-content">
+            <img src="https://ik.imagekit.io/mountzara/logo.png" alt="Mount Zara Logo" class="logo">
+            <h2 class="header-subtitle">Advanced Gynecologic Surgery</h2>
+        </div>
+    </header>
     
-    <script>
-        // Add a small script to resize the iframe if needed
-        window.addEventListener('resize', function() {
-            const container = document.querySelector('.canva-embed-container');
-            const iframe = document.querySelector('.canva-iframe');
-            if (container && iframe) {
-                iframe.style.height = container.offsetHeight + 'px';
-                iframe.style.width = container.offsetWidth + 'px';
-            }
-        });
-    </script>
+    <!-- Services Section -->
+    <section class="services">
+        <div class="services-container">
+            <h2 class="section-title">Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>Advanced Surgical Care</h3>
+                    <p>Minimally invasive surgical procedures with faster recovery times and excellent outcomes.</p>
+                    <ul>
+                        <li>Hysterectomy</li>
+                        <li>Myomectomy</li>
+                        <li>Endometriosis Excision</li>
+                        <li>Pelvic Reconstruction</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <h3>Women's Health</h3>
+                    <p>Comprehensive care for women at all stages of life, addressing a wide range of gynecological concerns.</p>
+                    <ul>
+                        <li>Annual Exams</li>
+                        <li>Contraception Management</li>
+                        <li>Menopause Care</li>
+                        <li>Pelvic Pain Treatment</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <h3>Specialty Conditions</h3>
+                    <p>Expert management of complex gynecological conditions using the latest evidence-based approaches.</p>
+                    <ul>
+                        <li>Fibroids</li>
+                        <li>Endometriosis</li>
+                        <li>Adenomyosis</li>
+                        <li>Chronic Pelvic Pain</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section class="about">
+        <div class="about-container">
+            <div class="about-text">
+                <h2>About Dr. Zara</h2>
+                <p>Dr. Zara is a board-certified OB/GYN specializing in Minimally Invasive Gynecologic Surgery (MIGS). With expertise in advanced laparoscopic and robotic techniques, she provides compassionate care focused on minimizing recovery time and maximizing patient outcomes.</p>
+                <p>Trained at leading institutions and staying current with the latest surgical innovations, Dr. Zara is committed to finding the right treatment approach for each individual patient.</p>
+                <p>Dr. Zara is dedicated to patient education, ensuring that every woman understands her condition and treatment options to make informed decisions about her health.</p>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1571772996211-2f02c9727629?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Doctor's Office">
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section class="contact">
+        <div class="contact-container">
+            <h2 class="section-title">Contact Us</h2>
+            <p>For appointments and inquiries, please email:</p>
+            <div class="contact-email">mountzarallc@gmail.com</div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2025 Mount Zara, LLC. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
