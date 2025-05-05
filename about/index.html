@@ -25,7 +25,7 @@
             background-color: #000;
             color: #fff;
             text-align: center;
-            padding: 6rem 2rem;
+            padding: 8rem 2rem 6rem;
             position: relative;
             background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
@@ -54,8 +54,11 @@
         }
         
         .logo {
-            max-width: 300px;
-            margin-bottom: 2rem;
+            max-width: 450px;
+            margin-bottom: 3rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .header-title {
@@ -68,6 +71,22 @@
             font-size: 1.5rem;
             margin-bottom: 2rem;
             font-weight: 300;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            border: 2px solid white;
+            padding: 0.7rem 2rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .nav-link:hover {
+            background-color: white;
+            color: black;
         }
         
         /* Content Section */
@@ -153,7 +172,6 @@
     <header>
         <div class="header-content">
             <img src="../assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara Logo" class="logo">
-            <h1 class="header-title">MOUNT ZARA</h1>
             <a href="../" class="nav-link">Back to Home</a>
         </div>
     </header>
