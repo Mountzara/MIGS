@@ -1,0 +1,2 @@
+# Cloudflare Pages redirect rules
+/about /about/index.html 200
