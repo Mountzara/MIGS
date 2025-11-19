@@ -1,0 +1,7 @@
+name = "mountzara"
+compatibility_date = "2025-01-15"
+
+[site]
+bucket = "."
+
+pages_build_output_dir = "."

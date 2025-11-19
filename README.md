@@ -2,47 +2,64 @@
 
 Professional landing page for Mount Zara - Excellence in Minimally Invasive Gynecologic Surgery.
 
-## Deployment Instructions for Cloudflare Pages
+## 🚀 Quick Deploy to Cloudflare Pages
 
-### Method 1: Deploy via Git (Recommended)
+### ⚡ EASIEST: One-Click GitHub Deploy (RECOMMENDED)
 
-1. **Push to GitHub** (if not already done):
-   ```bash
-   git push origin main
-   ```
+**This is the simplest method - just click through a web interface:**
 
-2. **Connect to Cloudflare Pages**:
-   - Go to https://dash.cloudflare.com/
-   - Navigate to "Workers & Pages"
-   - Click "Create application" > "Pages" > "Connect to Git"
-   - Select your repository
-   - Configure build settings:
-     - Framework preset: None
-     - Build command: (leave empty)
-     - Build output directory: `/`
+1. **Go to Cloudflare Pages**:
+   - Visit: https://dash.cloudflare.com/ → Click "Workers & Pages"
+
+2. **Create New Project**:
+   - Click "Create application" → "Pages" → "Connect to Git"
+   - Authorize GitHub and select your `MIGS` repository
+
+3. **Configure & Deploy**:
+   - **Project name**: `mountzara`
+   - **Production branch**: `main` (or your current branch)
+   - **Framework preset**: None
+   - **Build command**: (leave empty)
+   - **Build output directory**: `/`
    - Click "Save and Deploy"
 
-3. **Configure Custom Domain**:
-   - After deployment, go to "Custom domains"
-   - Click "Set up a custom domain"
+4. **Add Your Domain**:
+   - Once deployed, go to "Custom domains" → "Set up a custom domain"
    - Enter `mountzara.com`
-   - Follow the DNS configuration instructions
+   - Cloudflare will auto-configure DNS (since you bought the domain there!)
+   - Also add `www.mountzara.com`
 
-### Method 2: Direct Upload (Quick Start)
+**Done! Your site will be live in ~2 minutes** ✅
 
-1. **Go to Cloudflare Dashboard**:
-   - Navigate to https://dash.cloudflare.com/
-   - Click "Workers & Pages" > "Create application" > "Pages" > "Upload assets"
+---
 
-2. **Upload your site**:
-   - Drag and drop the entire project folder (or zip it first)
-   - Click "Deploy site"
+### 🔧 ALTERNATIVE: Automated Script Deploy
 
-3. **Configure Custom Domain**:
-   - Go to the deployed site settings
-   - Click "Custom domains" > "Set up a custom domain"
-   - Enter `mountzara.com`
-   - Update your DNS settings as instructed
+If you prefer command line, use the included deployment script:
+
+```bash
+# First, get your Cloudflare credentials:
+# Account ID: https://dash.cloudflare.com/ (shown in sidebar)
+# API Token: https://dash.cloudflare.com/profile/api-tokens (Create Token)
+
+export CLOUDFLARE_ACCOUNT_ID="your-account-id-here"
+export CLOUDFLARE_API_TOKEN="your-api-token-here"
+
+# Then run the deploy script:
+./deploy.sh
+```
+
+The script will automatically deploy and configure everything!
+
+---
+
+### 📤 FALLBACK: Manual Upload
+
+If the above methods don't work:
+
+1. Go to https://dash.cloudflare.com/ → "Workers & Pages" → "Create application" → "Pages" → "Upload assets"
+2. Drag and drop this entire folder
+3. Add custom domain `mountzara.com` in settings
 
 ### DNS Configuration
 
