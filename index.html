@@ -161,6 +161,29 @@
             font-weight: 600;
         }
 
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 980px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gray-4);
+            letter-spacing: 0.01em;
+            margin-bottom: 32px;
+            backdrop-filter: blur(20px);
+        }
+
+        .hero-pill .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
         .logo {
             max-width: 240px;
             width: 60%;
@@ -410,8 +433,180 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         }
 
+        /* Sub-section header within a section */
+        .sub-section {
+            margin-top: 120px;
+        }
+
+        .sub-eyebrow {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .sub-headline {
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 18px;
+            color: var(--white);
+        }
+
+        .sub-sub {
+            font-size: 17px;
+            font-weight: 400;
+            color: var(--gray-3);
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+            max-width: 680px;
+            margin-bottom: 48px;
+        }
+
+        /* Techniques grid - compact 4-up */
+        .techniques-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            overflow: hidden;
+        }
+
+        @media (min-width: 700px) {
+            .techniques-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .techniques-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .technique-cell {
+            background: var(--bg-soft);
+            padding: 36px 28px;
+            transition: background 0.3s ease;
+        }
+
+        .technique-cell:hover {
+            background: #2a2a2c;
+        }
+
+        .technique-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .technique-cell h4 {
+            font-size: 19px;
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.014em;
+            margin-bottom: 10px;
+            color: var(--white);
+        }
+
+        .technique-cell p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--gray-3);
+            letter-spacing: -0.003em;
+        }
+
+        /* Patient populations - large cards */
+        .populations-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 800px) {
+            .populations-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .population-card {
+            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
+            border-radius: 22px;
+            padding: 44px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .population-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(41, 151, 255, 0.3);
+        }
+
+        .pop-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .pop-tag::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--accent);
+            display: inline-block;
+        }
+
+        .population-card h4 {
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.018em;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            color: var(--white);
+        }
+
+        .population-card p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--gray-3);
+            letter-spacing: -0.005em;
+            margin-bottom: 20px;
+        }
+
+        .pop-modalities {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pop-mod {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--gray-4);
+            letter-spacing: 0.02em;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 11px;
+            border-radius: 980px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
         .omm-quote-block {
-            margin-top: 96px;
+            margin-top: 120px;
             padding: 64px 0;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
@@ -1148,6 +1343,7 @@
         <div class="hero-inner">
             <div class="hero-eyebrow">Christopher Z. Mabini, <span>DO · MSAEd</span></div>
             <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="logo">
+            <div class="hero-pill"><span class="dot"></span>DO · Osteopathic Manipulation Therapy (OMT) Preclinical Fellowship Trained</div>
             <h1 class="hero-title">A passion for women's health.<br>Powered by AI.</h1>
             <p class="hero-sub">Complex benign and minimally invasive gynecology, osteopathic care, and AI-driven innovation. <strong>Built by a surgeon, for the future of medicine.</strong></p>
             <div class="cta-row">
@@ -1249,6 +1445,90 @@
                         <div class="num">04 — Continued Mastery</div>
                         <h3>Advanced Modalities</h3>
                         <p>Continued training in Fascial Distortion Model (FDM), Osteopathic Cranial techniques, and the SAAO Convocation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Techniques Sub-Section -->
+            <div class="sub-section">
+                <span class="sub-eyebrow">The Techniques</span>
+                <h3 class="sub-headline">Hands-on, evidence-aligned modalities.</h3>
+                <p class="sub-sub">Trained across the four core osteopathic manipulative techniques — each chosen and combined for the patient in front of me, not by protocol.</p>
+
+                <div class="techniques-grid">
+                    <div class="technique-cell">
+                        <span class="technique-num">FDM</span>
+                        <h4>Fascial Distortion Model</h4>
+                        <p>A precise diagnostic and treatment framework targeting six specific fascial distortion patterns — particularly powerful for acute pain, restricted range of motion, and post-surgical adhesions.</p>
+                    </div>
+                    <div class="technique-cell">
+                        <span class="technique-num">ME</span>
+                        <h4>Muscle Energy</h4>
+                        <p>A direct, active technique using the patient's own muscle contractions against precise counterforce — restoring sacral mechanics, pelvic alignment, and lumbar function safely in pregnancy.</p>
+                    </div>
+                    <div class="technique-cell">
+                        <span class="technique-num">CS</span>
+                        <h4>Counterstrain</h4>
+                        <p>An indirect, gentle positional release method ideal for tender points, post-operative bodies, and patients in too much pain for direct techniques — calming the nervous system as it works.</p>
+                    </div>
+                    <div class="technique-cell">
+                        <span class="technique-num">MFR</span>
+                        <h4>Myofascial Release</h4>
+                        <p>Sustained pressure into restrictive fascial patterns — addressing scar tissue, chronic pelvic floor tension, abdominal wall restrictions, and the visceral-somatic dysfunctions central to pelvic pain.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Populations Sub-Section -->
+            <div class="sub-section">
+                <span class="sub-eyebrow">Tailored Care</span>
+                <h3 class="sub-headline">Designed around the patient.</h3>
+                <p class="sub-sub">OMT applied with intent — adapted to the unique physiology, needs, and constraints of the women I treat.</p>
+
+                <div class="populations-grid">
+                    <div class="population-card">
+                        <div class="pop-tag">Foundational Care</div>
+                        <h4>Women's Health</h4>
+                        <p>For dysmenorrhea, sacral imbalance, low back pain, and visceral-somatic patterns rooted in the pelvis. Manual therapy as a complement to gynecologic management — not a replacement for it.</p>
+                        <div class="pop-modalities">
+                            <span class="pop-mod">Muscle Energy</span>
+                            <span class="pop-mod">Myofascial Release</span>
+                            <span class="pop-mod">Counterstrain</span>
+                        </div>
+                    </div>
+
+                    <div class="population-card">
+                        <div class="pop-tag">Antepartum &amp; Postpartum</div>
+                        <h4>Pregnant Patients</h4>
+                        <p>Safe, gentle techniques for round ligament pain, sacroiliac dysfunction, sciatica, and pubic symphysis discomfort. Indirect approaches preferred during pregnancy; targeted release postpartum to support recovery.</p>
+                        <div class="pop-modalities">
+                            <span class="pop-mod">Counterstrain</span>
+                            <span class="pop-mod">Muscle Energy (modified)</span>
+                            <span class="pop-mod">Myofascial Release</span>
+                        </div>
+                    </div>
+
+                    <div class="population-card">
+                        <div class="pop-tag">Recovery</div>
+                        <h4>Post-Operative Patients</h4>
+                        <p>Reducing the burden of post-cesarean and post-laparoscopic adhesions, restoring abdominal-wall fascial mobility, and easing the diaphragmatic and visceral patterns that linger after surgery.</p>
+                        <div class="pop-modalities">
+                            <span class="pop-mod">Myofascial Release</span>
+                            <span class="pop-mod">FDM</span>
+                            <span class="pop-mod">Counterstrain</span>
+                        </div>
+                    </div>
+
+                    <div class="population-card">
+                        <div class="pop-tag">Chronic Pain</div>
+                        <h4>Pelvic Pain</h4>
+                        <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain — addressing the layered fascial, somatic, and viscerosomatic contributors that imaging alone can't see.</p>
+                        <div class="pop-modalities">
+                            <span class="pop-mod">FDM</span>
+                            <span class="pop-mod">Myofascial Release</span>
+                            <span class="pop-mod">Muscle Energy</span>
+                            <span class="pop-mod">Counterstrain</span>
+                        </div>
                     </div>
                 </div>
             </div>
