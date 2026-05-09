@@ -3,13 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mount Zara - Advancing healthcare through surgical mastery and educational innovation">
+    <meta name="description" content="Mount Zara - Dr. Christopher Mabini, DO, MSAEd | Minimally Invasive Gynecologic Surgery, AI Innovation, and Surgical Research">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Mount Zara - Excellence in Minimally Invasive Gynecologic Surgery</title>
+    <title>Mount Zara | Dr. Christopher Mabini, DO — MIGS, AI & Surgical Innovation</title>
     <style>
-        /* Reset and base styles */
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-medium: #1a1a1a;
+            --accent: #6F7569;
+            --accent-light: #8b9282;
+            --gold: #c9a96e;
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -19,15 +30,73 @@
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
             overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             scroll-behavior: smooth;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        /* Navigation */
+        nav.main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--text-light);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)),
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.85)),
                         url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
@@ -37,178 +106,769 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: white;
-            padding: 2rem;
+            padding: 6rem 2rem 2rem;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--bg-dark));
+            pointer-events: none;
         }
 
         .hero-content {
-            max-width: 900px;
+            max-width: 1000px;
             animation: fadeInUp 1s ease-out;
-        }
-
-        .logo-container {
-            margin-bottom: 3rem;
-            animation: fadeIn 1.5s ease-out;
+            position: relative;
+            z-index: 2;
         }
 
         .logo {
-            max-width: 500px;
-            width: 90%;
+            max-width: 380px;
+            width: 80%;
             height: auto;
-            margin: 0 auto;
             display: block;
+            margin: 0 auto 2rem;
             filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
         }
 
-        .tagline {
-            font-size: 1.8rem;
+        .hero-title {
+            font-size: 3rem;
             font-weight: 300;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+        }
+
+        .hero-title strong {
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .hero-credentials {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .hero-tagline {
+            font-size: 1.3rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
             line-height: 1.6;
             color: rgba(255, 255, 255, 0.95);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .badge-group {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge {
+            background: rgba(201, 169, 110, 0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            font-weight: 500;
         }
 
         .cta-buttons {
             display: flex;
-            gap: 1.5rem;
+            gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 3rem;
         }
 
         .btn {
             display: inline-block;
-            padding: 1rem 2.5rem;
+            padding: 0.9rem 2rem;
             text-decoration: none;
             border-radius: 50px;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 2px solid transparent;
+            letter-spacing: 0.02em;
         }
 
         .btn-primary {
-            background-color: white;
+            background-color: var(--gold);
             color: #000;
-            border: 2px solid white;
+            border-color: var(--gold);
         }
 
         .btn-primary:hover {
             background-color: transparent;
-            color: white;
+            color: var(--gold);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary {
             background-color: transparent;
             color: white;
-            border: 2px solid white;
+            border-color: white;
         }
 
         .btn-secondary:hover {
             background-color: white;
             color: #000;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
         }
 
-        /* Services Section */
-        .services {
+        /* Sections */
+        section {
             padding: 6rem 2rem;
-            background-color: #6F7569;
-            color: white;
         }
 
-        .services-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
+        .section-header {
+            max-width: 1400px;
+            margin: 0 auto 4rem;
             text-align: center;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
         }
 
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.3rem;
-            margin-bottom: 4rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 300;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-
-        .service-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2.5rem;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .service-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .service-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .service-title {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .section-eyebrow {
+            color: var(--gold);
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
             font-weight: 600;
         }
 
-        .service-description {
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.9);
+        .section-title {
+            font-size: 2.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
         }
 
-        /* About Preview Section */
-        .about-preview {
-            padding: 6rem 2rem;
-            background-color: #f5f5f5;
-        }
-
-        .about-container {
-            max-width: 900px;
+        .section-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 700px;
             margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* About Section */
+        .about-section {
+            background: var(--bg-dark);
+        }
+
+        .about-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .about-text p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+        }
+
+        /* AI Skills Section */
+        .ai-section {
+            background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(201, 169, 110, 0.05), transparent 50%);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .ai-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold);
+            box-shadow: 0 20px 60px rgba(201, 169, 110, 0.15);
+        }
+
+        .ai-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-card h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .ai-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Apps Section */
+        .apps-section {
+            background: var(--bg-dark);
+        }
+
+        .apps-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s;
+            cursor: pointer;
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-screenshot {
+            aspect-ratio: 16 / 10;
+            background: linear-gradient(135deg, var(--bg-medium), var(--accent));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .app-screenshot-placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .app-screenshot-placeholder .icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .app-card:hover .app-screenshot::after {
+            opacity: 1;
+        }
+
+        .app-screenshot::after {
+            content: 'Demo Coming Soon';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(201, 169, 110, 0.9);
+            color: black;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .app-content {
+            padding: 1.75rem;
+        }
+
+        .app-tag {
+            display: inline-block;
+            background: rgba(201, 169, 110, 0.15);
+            color: var(--gold);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .app-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .app-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .app-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .app-features li {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            position: relative;
+            padding-left: 1.25rem;
+        }
+
+        .app-features li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        /* Research Section */
+        .research-section {
+            background: linear-gradient(180deg, var(--bg-dark), var(--bg-medium));
+        }
+
+        .research-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .research-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .research-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gold);
+            transform: translateX(-4px);
+            transition: transform 0.3s;
+        }
+
+        .research-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .research-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+        }
+
+        .research-meta {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .research-tag {
+            background: rgba(201, 169, 110, 0.15);
+            color: var(--gold);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .research-tag.award {
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+
+        .research-year {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .research-card h3 {
+            font-size: 1.2rem;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .research-journal {
+            color: var(--gold);
+            font-style: italic;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .ai-summary {
+            background: rgba(201, 169, 110, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .ai-summary.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        .ai-summary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gold);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-summary p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .ai-toggle {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .ai-toggle:hover {
+            background: var(--gold);
+            color: black;
+        }
+
+        .ai-toggle .pulse-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .research-link {
+            color: var(--accent-light);
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 0.75rem;
+            margin-right: 0.75rem;
+        }
+
+        .research-link:hover {
+            color: var(--gold);
+        }
+
+        /* Awards Section */
+        .awards-section {
+            background: var(--bg-medium);
+        }
+
+        .awards-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .award-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .award-card:hover {
+            border-color: #ffd700;
+            transform: translateY(-4px);
+        }
+
+        .award-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .award-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .award-card .year {
+            color: var(--gold);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .award-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* Education Section */
+        .education-section {
+            background: var(--bg-dark);
+        }
+
+        .timeline {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--card-border);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2.5rem;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 0.4rem;
+            width: 12px;
+            height: 12px;
+            background: var(--gold);
+            border-radius: 50%;
+            border: 3px solid var(--bg-dark);
+            box-shadow: 0 0 0 2px var(--gold);
+        }
+
+        .timeline-year {
+            color: var(--gold);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.05em;
+        }
+
+        .timeline-item h4 {
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .timeline-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, var(--accent), var(--bg-medium));
             text-align: center;
         }
 
-        .about-container h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            color: #333;
+        .contact-content {
+            max-width: 700px;
+            margin: 0 auto;
         }
 
-        .about-container p {
-            font-size: 1.2rem;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 2rem;
+        .contact-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-content p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-item .label {
+            color: var(--gold);
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .contact-item .value {
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .contact-item a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            color: var(--gold);
         }
 
         /* Footer */
         footer {
-            background-color: #000;
-            color: #fff;
-            padding: 3rem 2rem;
+            background-color: var(--bg-dark);
+            color: var(--text-muted);
+            padding: 3rem 2rem 2rem;
             text-align: center;
+            border-top: 1px solid var(--card-border);
         }
 
         .footer-content {
@@ -220,151 +880,626 @@
             display: flex;
             justify-content: center;
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
 
         .footer-link {
-            color: white;
+            color: var(--text-muted);
             text-decoration: none;
-            transition: color 0.3s ease;
+            font-size: 0.9rem;
+            transition: color 0.3s;
         }
 
         .footer-link:hover {
-            color: #ccc;
+            color: var(--gold);
         }
 
         .copyright {
-            margin-top: 2rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            opacity: 0.6;
         }
 
         /* Animations */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero {
-                min-height: 100vh;
-                padding: 1.5rem;
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(10, 10, 10, 0.98);
+                flex-direction: column;
+                padding: 1rem 2rem;
+                gap: 1rem;
+                border-bottom: 1px solid var(--card-border);
             }
 
-            .logo {
-                max-width: 350px;
+            .nav-links.open {
+                display: flex;
             }
 
-            .tagline {
-                font-size: 1.3rem;
+            .mobile-toggle {
+                display: block;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
             }
 
             .section-title {
                 font-size: 2rem;
             }
 
-            .section-subtitle {
-                font-size: 1.1rem;
+            .logo {
+                max-width: 280px;
+            }
+
+            section {
+                padding: 4rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-tagline {
+                font-size: 1.05rem;
             }
 
             .cta-buttons {
                 flex-direction: column;
-                gap: 1rem;
+                align-items: center;
             }
 
             .btn {
                 width: 100%;
-                max-width: 300px;
+                max-width: 280px;
+                text-align: center;
             }
 
-            .services-grid {
+            .about-stats {
                 grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 1rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">MOUNT ZARA</a>
+            <button class="mobile-toggle" onclick="toggleMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">About</a></li>
+                <li><a href="#ai-skills">AI Skills</a></li>
+                <li><a href="#apps">App Suite</a></li>
+                <li><a href="#research">Research</a></li>
+                <li><a href="#awards">Awards</a></li>
+                <li><a href="/about/">Full Bio</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <div class="logo-container">
-                <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara Logo" class="logo">
+            <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="logo">
+            <p class="hero-credentials">Christopher Z. Mabini, DO · MSAEd</p>
+            <h1 class="hero-title">Where <strong>Surgical Mastery</strong><br>Meets <strong>AI Innovation</strong></h1>
+            <p class="hero-tagline">Board-eligible Minimally Invasive Gynecologic Surgeon, Award-Winning Researcher, Educator, and AI/LLM Developer advancing the future of healthcare.</p>
+            <div class="badge-group">
+                <span class="badge">Complex Benign Gyn Fellow</span>
+                <span class="badge">AAGL Award Winner</span>
+                <span class="badge">AI/LLM Developer</span>
+                <span class="badge">7+ Publications</span>
             </div>
-            <h1 class="tagline">Excellence in Minimally Invasive Gynecologic Surgery</h1>
-            <p class="tagline" style="font-size: 1.2rem; font-weight: 400;">Advancing healthcare through surgical mastery and educational innovation</p>
             <div class="cta-buttons">
-                <a href="/about/" class="btn btn-primary">Learn More</a>
-                <a href="#services" class="btn btn-secondary">Our Services</a>
+                <a href="#research" class="btn btn-primary">Explore Research</a>
+                <a href="#apps" class="btn btn-secondary">View AI App Suite</a>
             </div>
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section id="services" class="services">
-        <div class="services-container">
-            <h2 class="section-title">Services</h2>
-            <p class="section-subtitle">Advancing surgical care through evidence-based minimally invasive procedures</p>
-
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">🔬</div>
-                    <h3 class="service-title">Advanced Surgical Care</h3>
-                    <p class="service-description">
-                        Evidence-based minimally invasive procedures combining technical excellence with compassionate patient care.
-                    </p>
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="section-header">
+            <div class="section-eyebrow">About Dr. Mabini</div>
+            <h2 class="section-title">A Surgeon-Innovator at the Intersection of Medicine and AI</h2>
+            <p class="section-subtitle">Combining surgical excellence, educational leadership, and cutting-edge artificial intelligence to redefine modern healthcare.</p>
+        </div>
+        <div class="about-grid">
+            <div class="about-text">
+                <h3>Multidisciplinary Expertise</h3>
+                <p>Dr. Christopher Mabini is a board-eligible minimally invasive gynecologic surgeon completing his Complex Benign Gynecology Fellowship at PRIME St. Francis Hospital in Evanston, IL. His work spans surgical innovation, medical education, peer-reviewed research, and the development of AI-powered tools for clinical practice.</p>
+                <p>With a Master's in Adult Education specialized in curriculum development and a passion for technology, Dr. Mabini bridges the gap between surgical practice and emerging AI capabilities — creating tools that enhance both patient care and surgical training.</p>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">7+</span>
+                        <span class="stat-label">Peer-Reviewed Publications</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">4</span>
+                        <span class="stat-label">Active IRB Studies</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">2</span>
+                        <span class="stat-label">National AAGL Awards</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">4</span>
+                        <span class="stat-label">Hospital Affiliations</span>
+                    </div>
                 </div>
+            </div>
+            <div class="about-text">
+                <h3>Areas of Focus</h3>
+                <p><strong style="color: var(--gold);">Surgical Innovation:</strong> Indocyanine Green (ICG) imaging, Narrow-Band Imaging (NBI), advanced hysteroscopy, robotic myomectomy, and complex laparoscopy.</p>
+                <p><strong style="color: var(--gold);">Research Leadership:</strong> Multiple IRB-approved studies on endometriosis detection, adenomyosis imaging, isthmocele repair, and ERAS protocols.</p>
+                <p><strong style="color: var(--gold);">AI & Technology:</strong> Building LLM-powered applications for surgical education, patient engagement, and clinical decision support — with medical 3D printing and video production as complementary skills.</p>
+                <p><strong style="color: var(--gold);">Education:</strong> Designed FMIGS institutional curriculum integrating AI and advanced technologies; mentored residents as Surgical Skills Chief.</p>
+            </div>
+        </div>
+    </section>
 
-                <div class="service-card">
-                    <div class="service-icon">📚</div>
-                    <h3 class="service-title">Educational Leadership</h3>
-                    <p class="service-description">
-                        Comprehensive curriculum development and mentorship programs training the next generation of surgeons.
-                    </p>
+    <!-- AI Skills Section -->
+    <section id="ai-skills" class="ai-section">
+        <div class="section-header">
+            <div class="section-eyebrow">AI & Technology</div>
+            <h2 class="section-title">Building the Future of Surgical Practice</h2>
+            <p class="section-subtitle">Hands-on AI/LLM development, applied to real clinical workflows. From patient education to surgical training, technology is the bridge to better outcomes.</p>
+        </div>
+        <div class="ai-grid">
+            <div class="ai-card">
+                <div class="ai-icon">🧠</div>
+                <h4>LLM Development</h4>
+                <p>Designing and deploying large language model applications for clinical decision support, surgical reference, and patient communication.</p>
+            </div>
+            <div class="ai-card">
+                <div class="ai-icon">⚕️</div>
+                <h4>Medical AI Integration</h4>
+                <p>Embedding AI tools into MIGS workflows — from pre-op planning to post-op follow-up — designed and tested by an active surgeon.</p>
+            </div>
+            <div class="ai-card">
+                <div class="ai-icon">🎓</div>
+                <h4>AI-Enhanced Education</h4>
+                <p>FMIGS curriculum integrating AI/advanced tech, training the next generation of surgeons to leverage modern tools confidently.</p>
+            </div>
+            <div class="ai-card">
+                <div class="ai-icon">🖨️</div>
+                <h4>Medical 3D Printing</h4>
+                <p>Patient-specific anatomical models and surgical planning tools, bridging digital innovation with tangible clinical impact.</p>
+            </div>
+            <div class="ai-card">
+                <div class="ai-icon">🎬</div>
+                <h4>Surgical Video Production</h4>
+                <p>Award-winning surgical video editing — including the AAGL Golden Hysteroscope-winning video — combining clinical precision with cinematic storytelling.</p>
+            </div>
+            <div class="ai-card">
+                <div class="ai-icon">🔬</div>
+                <h4>Research Automation</h4>
+                <p>Using AI to accelerate literature review, data analysis, and IRB documentation across multiple active studies.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apps Section -->
+    <section id="apps" class="apps-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Mount Zara App Suite</div>
+            <h2 class="section-title">AI-Powered Tools for Modern Healthcare</h2>
+            <p class="section-subtitle">A growing portfolio of AI applications — designed by a surgeon, for surgeons, residents, and patients. Each app blends real clinical insight with modern AI capability.</p>
+        </div>
+        <div class="apps-grid">
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">🔍</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
                 </div>
+                <div class="app-content">
+                    <span class="app-tag">Clinical AI</span>
+                    <h3>Surgical Decision Companion</h3>
+                    <p>An AI-powered reference assistant for minimally invasive gynecologic procedures. Trained on current literature and clinical guidelines.</p>
+                    <ul class="app-features">
+                        <li>Procedure-specific guidance</li>
+                        <li>Evidence-based recommendations</li>
+                        <li>Real-time clinical reference</li>
+                    </ul>
+                </div>
+            </div>
 
-                <div class="service-card">
-                    <div class="service-icon">🔍</div>
-                    <h3 class="service-title">Clinical Research</h3>
-                    <p class="service-description">
-                        Pioneering research initiatives advancing surgical techniques and improving patient outcomes.
-                    </p>
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">📚</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <span class="app-tag">Education AI</span>
+                    <h3>MIGS Resident Mentor</h3>
+                    <p>An AI tutor built around the FMIGS curriculum — designed for residents and fellows learning advanced minimally invasive techniques.</p>
+                    <ul class="app-features">
+                        <li>Curriculum-aligned learning paths</li>
+                        <li>Interactive case simulations</li>
+                        <li>Surgical skill assessment</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">💬</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <span class="app-tag">Patient AI</span>
+                    <h3>Patient Education Assistant</h3>
+                    <p>A friendly AI guide that helps patients understand their condition, prepare for surgery, and navigate post-op recovery.</p>
+                    <ul class="app-features">
+                        <li>Plain-language explanations</li>
+                        <li>Personalized recovery guides</li>
+                        <li>Pre/post-op question answering</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">📊</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <span class="app-tag">Research AI</span>
+                    <h3>Research Workflow Tool</h3>
+                    <p>Streamlining IRB documentation, literature review, and abstract drafting for active clinical research projects.</p>
+                    <ul class="app-features">
+                        <li>Literature synthesis</li>
+                        <li>IRB-compliant writing assist</li>
+                        <li>Citation management</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">🎥</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <span class="app-tag">Video AI</span>
+                    <h3>Surgical Video Annotator</h3>
+                    <p>AI-assisted annotation and editing tool for surgical video — built from the same workflow that produced AAGL award-winning content.</p>
+                    <ul class="app-features">
+                        <li>Auto step segmentation</li>
+                        <li>Anatomy labeling</li>
+                        <li>Teaching-ready exports</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="app-card">
+                <div class="app-screenshot">
+                    <div class="app-screenshot-placeholder">
+                        <span class="icon">🖨️</span>
+                        Screenshot / Demo Video<br><small>Coming Soon</small>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <span class="app-tag">3D Print AI</span>
+                    <h3>Anatomical Model Studio</h3>
+                    <p>Converting imaging data into patient-specific 3D-printable surgical planning models, augmented with AI-driven analysis.</p>
+                    <ul class="app-features">
+                        <li>DICOM-to-print pipeline</li>
+                        <li>Surgical planning overlays</li>
+                        <li>Resident training models</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- About Preview Section -->
-    <section class="about-preview">
-        <div class="about-container">
-            <h2>About Dr. Christopher Mabini</h2>
-            <p>
-                At the intersection of surgical mastery and educational innovation stands Dr. Christopher Mabini,
-                a board-eligible minimally invasive gynecologic surgeon whose journey reflects a profound commitment
-                to advancing healthcare through both technical excellence and compassionate practice.
-            </p>
-            <a href="/about/" class="btn btn-primary" style="color: #000;">Read Full Biography</a>
+    <!-- Research Section -->
+    <section id="research" class="research-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Research & Publications</div>
+            <h2 class="section-title">Peer-Reviewed Research</h2>
+            <p class="section-subtitle">Click any publication to reveal an AI-generated snapshot summary. Active IRB studies, multi-journal publications, and award-winning presentations.</p>
+        </div>
+        <div class="research-grid">
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag award">★ Award Winner</span>
+                    <span class="research-tag">Hysteroscopy</span>
+                    <span class="research-year">2024</span>
+                </div>
+                <h3>To See or Not to See? A Visually Directed Approach to the Hysteroscopic Removal of RPOC from an Angular Pregnancy in an Arcuate Uterus</h3>
+                <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S14</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+                    Recipient of the <strong style="color:#ffd700;">AAGL Golden Hysteroscope Award</strong> for Best Video Abstract in Hysteroscopy at the AAGL Global Congress, New Orleans, 2024.
+                </p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>This award-winning case study demonstrates a precision hysteroscopic technique for removing retained products of conception (RPOC) from an angular pregnancy site within an arcuate uterus — anatomy that classically defies blind dilation and curettage. By using direct visualization, the team avoided traumatic blind instrumentation, preserved endometrial integrity, and maximized fertility-sparing potential. The video set a new teaching standard, recognized by AAGL with the Golden Hysteroscope Award.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">ICG Imaging</span>
+                    <span class="research-tag">Case Report</span>
+                    <span class="research-year">2025</span>
+                </div>
+                <h3>Indocyanine Green (ICG) Imaging: Innovative Isthmocele Diagnosis and Repair in a Post-Ablation Patient</h3>
+                <em class="research-journal">Archives of Gynecology and Obstetrics · 2025</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">DOI: 10.1007/s00404-025-08071-x</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>A 43-year-old patient with severe abnormal uterine bleeding and chronic pelvic pain after endometrial ablation presented a diagnostic puzzle: a uterine isthmocele complicated by altered tissue architecture. The team used Indocyanine Green (ICG) fluorescence imaging to precisely localize the defect and guide minimally invasive repair. The case — paired with a comprehensive literature review — illustrates how ICG enhances surgical precision, shortens operative time, and reduces complications, marking a meaningful advancement in isthmocele care.</p>
+                </div>
+                <a href="https://link.springer.com/article/10.1007/s00404-025-08071-x" target="_blank" rel="noopener" class="research-link">View Publication →</a>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">Anatomy</span>
+                    <span class="research-tag">Surgical Safety</span>
+                    <span class="research-year">2025</span>
+                </div>
+                <h3>Mapping of the Deep Epigastric Vessels Stratified by Body Mass Index (BMI)</h3>
+                <em class="research-journal">J. Minimally Invasive Gynecology · 2025</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">DOI: 10.1016/j.jmig.2024.12.011</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>Using CT imaging from 194 patients stratified by WHO BMI categories, this study reveals that the deep epigastric vessels shift laterally with rising BMI — meaning classic "safe zone" landmarks for laparoscopic port placement become unreliable in obese patients. The recommendation: position trocars more than 10 cm from the midline when BMI exceeds 35. The findings directly impact surgical safety in a growing patient population, redefining a foundational laparoscopic teaching point.</p>
+                </div>
+                <a href="https://www.jmig.org/article/S1553-4650(24)01558-9/abstract" target="_blank" rel="noopener" class="research-link">View Publication →</a>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag award">★ Award Winner</span>
+                    <span class="research-tag">ICG · Endometriosis</span>
+                    <span class="research-year">2023</span>
+                </div>
+                <h3>Use of Indocyanine Green (ICG) in Detecting Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
+                <em class="research-journal">CAOG Annual Regional Conference · Indianapolis, 2022</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+                    Recipient of the <strong style="color:#ffd700;">George M. Morley Award</strong> for Best Gynecological Research at CAOG 2023.
+                </p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>Endometriosis-related fibrosis can be visually subtle, easily missed under standard white-light visualization. This award-winning research applies ICG fluorescence — typically used for vascular mapping — to highlight inflammatory and fibrotic tissue changes intraoperatively. The result is a more sensitive, real-time identification of disease, with implications for more complete excision and improved long-term symptom relief. The work earned the George M. Morley Award for Best Gynecological Research at CAOG 2023.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">NBI · Adenomyosis</span>
+                    <span class="research-tag">Active IRB</span>
+                    <span class="research-year">2025</span>
+                </div>
+                <h3>Role of Narrow Band Imaging (NBI) in the Detection of Adenomyosis during Hysteroscopy: A Retrospective Cohort Analysis</h3>
+                <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 32, Issue 11, S105</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Presented at AAGL Global Congress, 2025 · IRB: RIL20240017</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>Adenomyosis remains a clinical chameleon — easy to suspect, harder to confirm. This retrospective cohort study evaluates Narrow Band Imaging (NBI) hysteroscopy as a real-time, in-office diagnostic enhancement. By emphasizing surface vascular patterns invisible to standard white light, NBI helps distinguish adenomyotic features (irregular endometrial surface, hypervascularization, strawberry pattern) from healthy tissue. The work supports a future where adenomyosis diagnosis is faster, less invasive, and more accurate.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">Robotic Surgery</span>
+                    <span class="research-tag">Workflow</span>
+                    <span class="research-year">2024</span>
+                </div>
+                <h3>Fibroids à La Carte: Decreasing Total Operative Time During Robotic Myomectomy Using a Gel-Based Port and Bag Containment System</h3>
+                <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S58</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Presented at AAGL Global Congress, New Orleans, 2024</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>Robotic myomectomy frequently bottlenecks at fibroid extraction. This work presents a streamlined "à la carte" technique using a gel-based port and bag containment system — reducing total operative time, simplifying multi-fibroid removal, and maintaining contained morcellation safety. A practical workflow innovation that translates directly to OR efficiency and patient outcomes.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">ICG · Case</span>
+                    <span class="research-tag">Asherman's</span>
+                    <span class="research-year">2024</span>
+                </div>
+                <h3>When in Doubt, Green It Out: ICG in Hysteroscopic-Assisted Robotic Excision of an Isthmocele in a Patient with Asherman's Syndrome</h3>
+                <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Presented at AAGL Global Congress, New Orleans, 2024</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. This case integrates ICG fluorescence into a combined hysteroscopic-robotic approach — using fluorescent guidance to identify the defect's true margins despite scarred terrain. The result: a precise, fertility-sparing repair that wouldn't be achievable through traditional means alone.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">Active IRB</span>
+                    <span class="research-tag">ERAS · TAP Block</span>
+                    <span class="research-year">Active</span>
+                </div>
+                <h3>Post-Op Pain after TAP Block in MIGS: Randomized Control Trial in an ERAS Protocol</h3>
+                <em class="research-journal">PRIME Illinois St. Francis · IRB: RIL20240009</em>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Active randomized controlled trial</p>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>An ongoing RCT investigating whether transversus abdominis plane (TAP) blocks meaningfully reduce post-operative pain in minimally invasive gynecologic surgery within an Enhanced Recovery After Surgery (ERAS) protocol. The study aims to add high-quality evidence to a pain management modality often used but unevenly studied in MIGS — directly informing future ERAS guidelines.</p>
+                </div>
+            </div>
+
+            <div class="research-card">
+                <div class="research-meta">
+                    <span class="research-tag">Endometriosis</span>
+                    <span class="research-tag">Multi-author</span>
+                    <span class="research-year">2026</span>
+                </div>
+                <h3>Multifocal Endometriosis with Atypical Papillary Fragments: Appendiceal and Tubal Involvement in an Infertility Patient</h3>
+                <em class="research-journal">Gynecology and Minimally Invasive Therapy · 2026 (Accepted)</em>
+                <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
+                <div class="ai-summary">
+                    <div class="ai-summary-label">⚡ AI Summary</div>
+                    <p>An infertility workup uncovered an unusually complex multifocal endometriosis — with atypical papillary fragments involving both the appendix and fallopian tube. This accepted manuscript documents the diagnostic pathway, surgical findings, and pathology, expanding the clinical understanding of how aggressively endometriosis can manifest beyond classical pelvic sites. Particularly relevant for fertility-focused MIGS workups.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Awards Section -->
+    <section id="awards" class="awards-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Recognition</div>
+            <h2 class="section-title">Awards & Honors</h2>
+            <p class="section-subtitle">National recognition for surgical excellence, research innovation, and educational leadership.</p>
+        </div>
+        <div class="awards-grid">
+            <div class="award-card">
+                <div class="award-icon">🏆</div>
+                <h4>AAGL Golden Hysteroscope Award</h4>
+                <div class="year">2024 · National</div>
+                <p>Best Video Abstract in Hysteroscopy, AAGL Global Congress, New Orleans</p>
+            </div>
+            <div class="award-card">
+                <div class="award-icon">🥇</div>
+                <h4>George M. Morley Award</h4>
+                <div class="year">2023 · Regional</div>
+                <p>Best Gynecological Research, CAOG Annual Meeting, Indianapolis</p>
+            </div>
+            <div class="award-card">
+                <div class="award-icon">⭐</div>
+                <h4>Excellence in MIGS</h4>
+                <div class="year">2023</div>
+                <p>American Association of Gynecologic Laparoscopists, PGY4 recognition</p>
+            </div>
+            <div class="award-card">
+                <div class="award-icon">🎯</div>
+                <h4>Surgical Skills Chief</h4>
+                <div class="year">2022 – 2023</div>
+                <p>Ascension Illinois St. Alexius OBGYN Residency, PGY4 leadership</p>
+            </div>
+            <div class="award-card">
+                <div class="award-icon">📚</div>
+                <h4>Best Grand Rounds Presentation</h4>
+                <div class="year">2019</div>
+                <p>Ascension Illinois St. Alexius OBGYN Residency, PGY1</p>
+            </div>
+            <div class="award-card">
+                <div class="award-icon">🎓</div>
+                <h4>Best Overall Resident Lecture</h4>
+                <div class="year">2019</div>
+                <p>Chiari Malformations in Pregnancy — Ascension OBGYN Didactics</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Timeline -->
+    <section class="education-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Training & Education</div>
+            <h2 class="section-title">Academic & Clinical Journey</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-year">2023 – 2026</div>
+                <h4>Complex Benign Gynecology Fellowship</h4>
+                <p>PRIME Illinois St. Francis Hospital, Evanston, IL — formerly Minimally Invasive Gynecologic Surgery (MIGS)</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2019 – 2023</div>
+                <h4>OBGYN Residency</h4>
+                <p>Ascension Illinois St. Alexius OBGYN Residency, Hoffman Estates, IL · ACGME 2201621094</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2014 – 2019</div>
+                <h4>Doctor of Osteopathic Medicine (DO)</h4>
+                <p>Alabama College of Osteopathic Medicine, Dothan, AL</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2016 – 2017</div>
+                <h4>Master of Science in Adult Education (MSAEd)</h4>
+                <p>Concentration in Curriculum Development & Instructional Design · Troy University, Montgomery, AL</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2009 – 2010</div>
+                <h4>Postgraduate Certificate in Public Health</h4>
+                <p>University of Liverpool, U.K.</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2002 – 2007</div>
+                <h4>B.S. Biological Sciences</h4>
+                <p>University of California, Irvine</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="contact-content">
+            <div class="section-eyebrow">Connect</div>
+            <h2>Let's Build Something Remarkable</h2>
+            <p>Open to research collaborations, AI consulting, locum opportunities, and speaking engagements. Reach out for surgical excellence, educational design, or AI-powered healthcare innovation.</p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="label">Email</div>
+                    <div class="value"><a href="mailto:mountzarallc@gmail.com">mountzarallc@gmail.com</a></div>
+                </div>
+                <div class="contact-item">
+                    <div class="label">Practice Locations</div>
+                    <div class="value">Chicago · Evanston, IL</div>
+                </div>
+                <div class="contact-item">
+                    <div class="label">Specialty</div>
+                    <div class="value">MIGS · OBGYN · AI Innovation</div>
+                </div>
+            </div>
+            <a href="mailto:mountzarallc@gmail.com" class="btn btn-primary">Get in Touch</a>
         </div>
     </section>
 
@@ -372,14 +1507,52 @@
     <footer>
         <div class="footer-content">
             <div class="footer-links">
-                <a href="/" class="footer-link">Home</a>
-                <a href="/about/" class="footer-link">About</a>
-                <a href="#services" class="footer-link">Services</a>
+                <a href="#about" class="footer-link">About</a>
+                <a href="#ai-skills" class="footer-link">AI Skills</a>
+                <a href="#apps" class="footer-link">App Suite</a>
+                <a href="#research" class="footer-link">Research</a>
+                <a href="#awards" class="footer-link">Awards</a>
+                <a href="/about/" class="footer-link">Full Bio</a>
             </div>
             <div class="copyright">
-                <p>&copy; 2025 Mount Zara, LLC. All rights reserved.</p>
+                <p>&copy; 2026 Mount Zara, LLC. All rights reserved. · Christopher Z. Mabini, DO, MSAEd</p>
             </div>
         </div>
     </footer>
+
+    <script>
+        function toggleSummary(button) {
+            const summary = button.nextElementSibling;
+            summary.classList.toggle('active');
+            button.innerHTML = summary.classList.contains('active')
+                ? '<span class="pulse-dot"></span>Hide Summary'
+                : '<span class="pulse-dot"></span>AI Snapshot';
+        }
+
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('open');
+        }
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+
+        // Reveal on scroll
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section').forEach(s => {
+            s.classList.add('reveal');
+            observer.observe(s);
+        });
+    </script>
 </body>
 </html>
