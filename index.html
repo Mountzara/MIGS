@@ -332,6 +332,153 @@
             font-size: 1.05rem;
         }
 
+        /* Osteopathic / OMM Section */
+        .omm-section {
+            background:
+                radial-gradient(ellipse at top right, rgba(201, 169, 110, 0.06), transparent 50%),
+                linear-gradient(180deg, var(--bg-medium), var(--bg-dark));
+            position: relative;
+        }
+
+        .omm-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .omm-intro {
+            max-width: 900px;
+            margin: 0 auto 4rem;
+            text-align: center;
+        }
+
+        .omm-lead {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        .omm-lead strong {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .omm-intro p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .omm-intro p strong {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .omm-pillars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .omm-pillar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .omm-pillar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .omm-pillar:hover {
+            transform: translateY(-6px);
+            border-color: var(--gold);
+            background: rgba(201, 169, 110, 0.05);
+        }
+
+        .omm-pillar:hover::before {
+            transform: scaleX(1);
+        }
+
+        .omm-pillar-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .omm-pillar h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .omm-pillar p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .omm-pillar p strong {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .omm-quote {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2.5rem 2rem;
+            background: rgba(201, 169, 110, 0.04);
+            border: 1px solid rgba(201, 169, 110, 0.15);
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .omm-quote::before,
+        .omm-quote::after {
+            content: '"';
+            position: absolute;
+            color: var(--gold);
+            opacity: 0.2;
+            font-size: 5rem;
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
+        .omm-quote::before {
+            top: 0.5rem;
+            left: 1.5rem;
+        }
+
+        .omm-quote::after {
+            bottom: -1.5rem;
+            right: 1.5rem;
+        }
+
+        .omm-quote blockquote {
+            font-size: 1.15rem;
+            font-style: italic;
+            line-height: 1.7;
+            color: var(--text-light);
+            font-weight: 300;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
         /* AI Skills Section */
         .ai-section {
             background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
@@ -1047,6 +1194,7 @@
             <button class="mobile-toggle" onclick="toggleMenu()">☰</button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#about">About</a></li>
+                <li><a href="#osteopathic">OMM</a></li>
                 <li><a href="#ai-skills">AI Skills</a></li>
                 <li><a href="#apps">App Suite</a></li>
                 <li><a href="#research">Research</a></li>
@@ -1066,6 +1214,7 @@
             <p class="hero-tagline">Board-eligible Minimally Invasive Gynecologic Surgeon, Award-Winning Researcher, Educator, and AI/LLM Developer advancing the future of healthcare.</p>
             <div class="badge-group">
                 <span class="badge">Complex Benign Gyn Fellow</span>
+                <span class="badge">DO · OMM Trained</span>
                 <span class="badge">AAGL Award Winner</span>
                 <span class="badge">AI/LLM Developer</span>
                 <span class="badge">7+ Publications</span>
@@ -1087,8 +1236,8 @@
         <div class="about-grid">
             <div class="about-text">
                 <h3>Multidisciplinary Expertise</h3>
-                <p>Dr. Christopher Mabini is a board-eligible minimally invasive gynecologic surgeon completing his Complex Benign Gynecology Fellowship at PRIME St. Francis Hospital in Evanston, IL. His work spans surgical innovation, medical education, peer-reviewed research, and the development of AI-powered tools for clinical practice.</p>
-                <p>With a Master's in Adult Education specialized in curriculum development and a passion for technology, Dr. Mabini bridges the gap between surgical practice and emerging AI capabilities — creating tools that enhance both patient care and surgical training.</p>
+                <p>Dr. Christopher Mabini is a board-eligible minimally invasive gynecologic surgeon completing his Complex Benign Gynecology Fellowship at PRIME St. Francis Hospital in Evanston, IL. Trained as a Doctor of Osteopathic Medicine with an additional Anatomy & Osteopathic Principles fellowship, his practice integrates whole-person care with cutting-edge surgical and digital tools.</p>
+                <p>With a Master's in Adult Education specialized in curriculum development and a passion for technology, Dr. Mabini bridges traditional osteopathic philosophy with modern surgical practice and emerging AI capabilities — creating tools and care models that enhance both patient outcomes and surgical training.</p>
                 <div class="about-stats">
                     <div class="stat-card">
                         <span class="stat-number">7+</span>
@@ -1114,6 +1263,50 @@
                 <p><strong style="color: var(--gold);">Research Leadership:</strong> Multiple IRB-approved studies on endometriosis detection, adenomyosis imaging, isthmocele repair, and ERAS protocols.</p>
                 <p><strong style="color: var(--gold);">AI & Technology:</strong> Building LLM-powered applications for surgical education, patient engagement, and clinical decision support — with medical 3D printing and video production as complementary skills.</p>
                 <p><strong style="color: var(--gold);">Education:</strong> Designed FMIGS institutional curriculum integrating AI and advanced technologies; mentored residents as Surgical Skills Chief.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Osteopathic Foundation Section -->
+    <section id="osteopathic" class="omm-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Osteopathic Foundation</div>
+            <h2 class="section-title">Treating the Whole Person, Not Just the Diagnosis</h2>
+            <p class="section-subtitle">A foundation built on osteopathic principles — where structure, function, and the body's innate capacity to heal inform every facet of women's health care.</p>
+        </div>
+        <div class="omm-content">
+            <div class="omm-intro">
+                <p class="omm-lead">Trained as a <strong>Doctor of Osteopathic Medicine (DO)</strong> with a competitive Anatomy & Osteopathic Principles and Practice Fellowship at ACOM, Dr. Mabini brings a uniquely integrative perspective to gynecologic surgery — one that views the patient as more than a single organ system.</p>
+                <p>Osteopathic Manipulative Medicine (<strong>OMM</strong>) and Osteopathic Manipulative Treatment (<strong>OMT</strong>) provide hands-on tools that complement surgical and medical management — addressing the musculoskeletal, fascial, and visceral connections that classical medicine often overlooks. In women's health, this means pelvic pain, dysmenorrhea, pregnancy-related discomfort, and post-surgical recovery can be approached not just with prescriptions or procedures, but with a deeper understanding of how the body's structures interact.</p>
+            </div>
+
+            <div class="omm-pillars">
+                <div class="omm-pillar">
+                    <div class="omm-pillar-icon">🧬</div>
+                    <h3>Whole-Person Philosophy</h3>
+                    <p>The osteopathic tenet — body, mind, and spirit work as a unit, with structure and function inseparably linked — shapes every consultation. Each patient is more than her symptoms.</p>
+                </div>
+                <div class="omm-pillar">
+                    <div class="omm-pillar-icon">🤲</div>
+                    <h3>OMT in Women's Health</h3>
+                    <p>Manual therapy techniques for pelvic floor dysfunction, dysmenorrhea, sacral imbalance, post-cesarean adhesion patterns, pregnancy-related musculoskeletal pain, and post-operative recovery.</p>
+                </div>
+                <div class="omm-pillar">
+                    <div class="omm-pillar-icon">🩻</div>
+                    <h3>Structural Integration</h3>
+                    <p>An anatomy-fellowship-trained surgeon understands how scar, fascia, and visceral mobility shape outcomes — informing surgical planning and post-operative rehabilitation alike.</p>
+                </div>
+                <div class="omm-pillar">
+                    <div class="omm-pillar-icon">🌀</div>
+                    <h3>Advanced Modalities</h3>
+                    <p>Continued training in the <strong>Fascial Distortion Model (FDM)</strong>, <strong>Osteopathic Cranial</strong> techniques, and the <strong>SAAO Convocation</strong> — bringing nuanced manual approaches into modern OBGYN practice.</p>
+                </div>
+            </div>
+
+            <div class="omm-quote">
+                <blockquote>
+                    "The DO philosophy isn't an alternative to surgery — it's the lens that makes surgical care truly holistic. The best outcomes happen when we understand why the body presents the way it does, not just how to fix the immediate problem."
+                </blockquote>
             </div>
         </div>
     </section>
@@ -1543,6 +1736,11 @@
                 <p>Concentration in Curriculum Development & Instructional Design · Troy University, Montgomery, AL</p>
             </div>
             <div class="timeline-item">
+                <div class="timeline-year">2015 – 2016</div>
+                <h4>Anatomy & Osteopathic Principles and Practice Preclinical Fellowship</h4>
+                <p>Alabama College of Osteopathic Medicine, Dothan, AL — competitive fellowship in human anatomy instruction and osteopathic manipulative medicine</p>
+            </div>
+            <div class="timeline-item">
                 <div class="timeline-year">2009 – 2010</div>
                 <h4>Postgraduate Certificate in Public Health</h4>
                 <p>University of Liverpool, U.K.</p>
@@ -1584,6 +1782,7 @@
         <div class="footer-content">
             <div class="footer-links">
                 <a href="#about" class="footer-link">About</a>
+                <a href="#osteopathic" class="footer-link">OMM</a>
                 <a href="#ai-skills" class="footer-link">AI Skills</a>
                 <a href="#apps" class="footer-link">App Suite</a>
                 <a href="#research" class="footer-link">Research</a>
