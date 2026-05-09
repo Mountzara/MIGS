@@ -420,6 +420,258 @@
             line-height: 1.3;
         }
 
+        /* ========== Surgical Excellence Section ========== */
+        .excellence-section {
+            background: var(--black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .excellence-section::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .excellence-section::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1000px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(41, 151, 255, 0.05) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .excellence-section .container-wide,
+        .excellence-section .container { position: relative; z-index: 1; }
+
+        /* Featured pull-quote */
+        .excellence-quote {
+            margin: 80px auto 0;
+            max-width: 920px;
+            padding: 64px 56px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: center;
+            position: relative;
+        }
+
+        .excellence-quote::before {
+            content: '"';
+            position: absolute;
+            top: 12px;
+            left: 32px;
+            font-size: 96px;
+            color: var(--accent);
+            opacity: 0.35;
+            line-height: 1;
+            font-family: Georgia, serif;
+        }
+
+        .excellence-quote blockquote {
+            font-size: clamp(22px, 2.8vw, 34px);
+            font-weight: 300;
+            line-height: 1.36;
+            color: var(--white);
+            letter-spacing: -0.018em;
+            margin-bottom: 24px;
+        }
+
+        .excellence-quote cite {
+            font-size: 13px;
+            font-style: normal;
+            color: var(--gray-3);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        @media (max-width: 700px) {
+            .excellence-quote { padding: 48px 28px; }
+        }
+
+        /* Zero stats grid */
+        .zero-eyebrow {
+            margin-top: 96px;
+            margin-bottom: 32px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .zero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 700px) {
+            .zero-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .zero-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .zero-card {
+            background: var(--bg-soft);
+            border-radius: 24px;
+            padding: 44px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .zero-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(41, 151, 255, 0.3);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .zero-num {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -0.035em;
+            line-height: 1;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .zero-card h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.014em;
+            line-height: 1.25;
+            margin-bottom: 12px;
+        }
+
+        .zero-card p {
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--gray-3);
+            letter-spacing: -0.005em;
+            margin-top: auto;
+        }
+
+        /* Domain grid */
+        .domain-eyebrow {
+            margin-top: 120px;
+            margin-bottom: 32px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .domain-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 700px) {
+            .domain-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .domain-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .domain-card {
+            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
+            border-radius: 24px;
+            padding: 40px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(41, 151, 255, 0.3);
+        }
+
+        .domain-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            align-self: flex-start;
+        }
+
+        .domain-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .domain-card h4 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.018em;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            color: var(--white);
+        }
+
+        .domain-card p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--gray-3);
+            letter-spacing: -0.005em;
+        }
+
+        /* Closing summary */
+        .excellence-summary {
+            margin-top: 80px;
+            text-align: center;
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .excellence-summary p {
+            font-size: clamp(18px, 2vw, 22px);
+            font-weight: 300;
+            color: var(--gray-3);
+            line-height: 1.5;
+            letter-spacing: -0.012em;
+        }
+
+        .excellence-summary p strong {
+            color: var(--white);
+            font-weight: 500;
+        }
+
         /* ========== OMM Section ========== */
         .omm-section {
             background: var(--black);
@@ -1333,6 +1585,7 @@
             </button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#about">About</a></li>
+                <li><a href="#excellence">Surgery</a></li>
                 <li><a href="#osteopathic">Osteopathic</a></li>
                 <li><a href="#ai">AI</a></li>
                 <li><a href="#apps">Apps</a></li>
@@ -1398,6 +1651,82 @@
                     <div class="stat-num">5</div>
                     <div class="stat-label">macOS apps shipped</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Surgical Excellence Section -->
+    <section id="excellence" class="excellence-section">
+        <div class="container-wide">
+            <span class="section-eyebrow center">Surgical Excellence</span>
+            <h2 class="section-headline gradient center">Trained for the most complex cases.<br>Reviewed without reservation.</h2>
+            <p class="section-sub center">A two-year FMIGS Fellowship at PRIME St. Francis Hospital — across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
+
+            <div class="excellence-quote">
+                <blockquote>"I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology — without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level."</blockquote>
+                <cite>Teresa Tam, MD &nbsp;·&nbsp; Program Director, FMIGS Fellowship</cite>
+            </div>
+
+            <div class="zero-eyebrow">Safety record across the fellowship</div>
+            <div class="zero-grid">
+                <div class="zero-card">
+                    <div class="zero-num">Zero</div>
+                    <h4>Conversions to laparotomy</h4>
+                    <p>Across the entire fellowship — every advanced minimally invasive case completed minimally invasively.</p>
+                </div>
+                <div class="zero-card">
+                    <div class="zero-num">Zero</div>
+                    <h4>Major bowel injuries</h4>
+                    <p>Despite extensive adhesiolysis and complex pelvic dissection — exceptional tissue handling and injury recognition.</p>
+                </div>
+                <div class="zero-card">
+                    <div class="zero-num">Zero</div>
+                    <h4>Ureteral or vascular injuries</h4>
+                    <p>Through extensive retroperitoneal dissection — anatomical awareness practiced as a discipline.</p>
+                </div>
+                <div class="zero-card">
+                    <div class="zero-num">100%</div>
+                    <h4>Complete recovery</h4>
+                    <p>Every recognized event achieved full resolution — no permanent sequelae, no major reoperations.</p>
+                </div>
+            </div>
+
+            <div class="domain-eyebrow">Areas of expert competency</div>
+            <div class="domain-grid">
+                <div class="domain-card">
+                    <div class="domain-tag">Expert · Level 5</div>
+                    <h4>Robotic Surgery</h4>
+                    <p>Hysterectomy, myomectomy, endometriosis excision, sacrocolpopexy, retroperitoneal dissection. The fellowship's highest competency volume — consistent expert-level performance with efficiency and precision.</p>
+                </div>
+                <div class="domain-card">
+                    <div class="domain-tag">Expert · Level 5</div>
+                    <h4>Advanced Hysteroscopy</h4>
+                    <p>Operative resection, isthmocele repair, RPOC management, septum resection, in-office and OR-based hysteroscopy. Recipient of the AAGL Golden Hysteroscope Award.</p>
+                </div>
+                <div class="domain-card">
+                    <div class="domain-tag">Expert · Level 5</div>
+                    <h4>vNOTES</h4>
+                    <p>Vaginal natural orifice transluminal endoscopic surgery. Early adoption and expert-level mastery of one of the field's fastest-emerging minimally invasive techniques.</p>
+                </div>
+                <div class="domain-card">
+                    <div class="domain-tag">Advanced · Level 4</div>
+                    <h4>Complex Laparoscopy</h4>
+                    <p>Stage III/IV endometriosis excision, retroperitoneal dissection, advanced adhesiolysis, multi-quadrant pelvic surgery, ureterolysis.</p>
+                </div>
+                <div class="domain-card">
+                    <div class="domain-tag">Advanced · Level 4</div>
+                    <h4>Pelvic Reconstruction</h4>
+                    <p>Anterior and posterior colporrhaphy, uterosacral ligament suspension, native-tissue repair, vaginal hysterectomy, ovarian preservation.</p>
+                </div>
+                <div class="domain-card">
+                    <div class="domain-tag">Multidisciplinary</div>
+                    <h4>Cross-Specialty Skills</h4>
+                    <p>Cystoscopy, ureteral stent placement, small bowel repair, appendectomy. Interdisciplinary competence for the cases that demand it.</p>
+                </div>
+            </div>
+
+            <div class="excellence-summary">
+                <p>Across nearly every procedure category — <strong>near-total operative autonomy</strong>. Recognized at the level of an independent attending. Recommended without reservation for advanced practice.</p>
             </div>
         </div>
     </section>
@@ -2068,6 +2397,7 @@
             <div class="copyright">© 2026 Mount Zara, LLC. Christopher Z. Mabini, DO, MSAEd.</div>
             <div class="footer-links">
                 <a href="#about">About</a>
+                <a href="#excellence">Surgery</a>
                 <a href="#osteopathic">Osteopathic</a>
                 <a href="#ai">AI</a>
                 <a href="#apps">Apps</a>
