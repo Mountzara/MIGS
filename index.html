@@ -80,11 +80,21 @@
         }
 
         .nav-brand {
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            color: var(--text-on-dark);
+            display: inline-flex;
+            align-items: center;
+            height: 100%;
         }
+
+        .nav-brand img {
+            height: 28px;
+            width: auto;
+            display: block;
+            filter: brightness(0) invert(1);
+            opacity: 0.95;
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-brand:hover img { opacity: 1; }
 
         .nav-links {
             display: flex;
@@ -122,7 +132,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 140px 28px 80px;
+            padding: 110px 28px 60px;
             position: relative;
             overflow: hidden;
         }
@@ -185,10 +195,10 @@
         }
 
         .logo {
-            max-width: 420px;
-            width: 85%;
+            max-width: 600px;
+            width: 92%;
             height: auto;
-            margin: 0 auto 56px;
+            margin: 0 auto 40px;
             display: block;
             filter: brightness(0) invert(1);
             opacity: 0.95;
@@ -280,7 +290,7 @@
 
         /* ========== Section Base ========== */
         section {
-            padding: clamp(100px, 14vw, 180px) 28px;
+            padding: clamp(72px, 9vw, 120px) 28px;
             position: relative;
         }
 
@@ -354,14 +364,14 @@
         .about-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 72px;
-            margin-top: 80px;
+            gap: 56px;
+            margin-top: 56px;
         }
 
         @media (min-width: 900px) {
             .about-grid {
                 grid-template-columns: 1.05fr 1fr;
-                gap: 96px;
+                gap: 72px;
             }
         }
 
@@ -455,9 +465,9 @@
 
         /* Featured pull-quote */
         .excellence-quote {
-            margin: 80px auto 0;
+            margin: 56px auto 0;
             max-width: 920px;
-            padding: 64px 56px;
+            padding: 56px 48px;
             background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
             border-radius: 28px;
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -501,8 +511,8 @@
 
         /* Zero stats grid */
         .zero-eyebrow {
-            margin-top: 96px;
-            margin-bottom: 32px;
+            margin-top: 64px;
+            margin-bottom: 24px;
             text-align: center;
             font-size: 13px;
             font-weight: 600;
@@ -573,8 +583,8 @@
 
         /* Domain grid */
         .domain-eyebrow {
-            margin-top: 120px;
-            margin-bottom: 32px;
+            margin-top: 80px;
+            margin-bottom: 24px;
             text-align: center;
             font-size: 13px;
             font-weight: 600;
@@ -652,7 +662,7 @@
 
         /* Closing summary */
         .excellence-summary {
-            margin-top: 80px;
+            margin-top: 56px;
             text-align: center;
             max-width: 760px;
             margin-left: auto;
@@ -690,7 +700,7 @@
 
         /* Sub-section header within a section */
         .sub-section {
-            margin-top: 120px;
+            margin-top: 80px;
         }
 
         .sub-eyebrow {
@@ -862,8 +872,8 @@
         }
 
         .omm-quote-block {
-            margin-top: 120px;
-            padding: 64px 0;
+            margin-top: 80px;
+            padding: 56px 0;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
         }
@@ -892,7 +902,7 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
-            margin-top: 64px;
+            margin-top: 48px;
         }
 
         @media (min-width: 700px) {
@@ -978,7 +988,7 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
-            margin-top: 64px;
+            margin-top: 48px;
         }
 
         @media (min-width: 700px) {
@@ -1132,7 +1142,7 @@
         }
 
         .research-list {
-            margin-top: 64px;
+            margin-top: 48px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -1579,7 +1589,7 @@
     <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
-            <a href="#" class="nav-brand">MOUNT ZARA</a>
+            <a href="#" class="nav-brand"><img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" /></a>
             <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menu">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
             </button>
@@ -1602,7 +1612,6 @@
         <div class="hero-inner">
             <div class="hero-eyebrow">Christopher Z. Mabini, <span>DO · MSAEd</span></div>
             <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="logo">
-            <div class="hero-pill"><span class="dot"></span>DO · Osteopathic Manipulation Therapy (OMT) Preclinical Fellowship Trained</div>
             <h1 class="hero-title">A passion for women's health.<br>Powered by AI.</h1>
             <p class="hero-sub">Complex benign and minimally invasive gynecology, osteopathic care, and AI-driven innovation. <strong>Built by a surgeon, for the future of women's health.</strong></p>
             <div class="cta-row">
