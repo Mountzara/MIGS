@@ -52,6 +52,35 @@
         a { color: inherit; text-decoration: none; }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
+        /* Prevent grid/flex items from overflowing tracks (common cause of text spillover) */
+        .bento-grid > *,
+        .apps-bento > *,
+        .domain-grid > *,
+        .zero-grid > *,
+        .techniques-grid > *,
+        .populations-grid > *,
+        .awards-grid > *,
+        .about-grid > * {
+            min-width: 0;
+        }
+        .bento-card p,
+        .app-card-v2 p,
+        .domain-card p,
+        .zero-cell p,
+        .technique-cell p,
+        .population-card p,
+        .award-tile p,
+        .bento-card h3,
+        .app-card-v2 h3,
+        .domain-card h4,
+        .technique-cell h4,
+        .population-card h4,
+        .award-tile h4 {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
         /* ========== Navigation ========== */
         nav.main-nav {
             position: fixed;
@@ -1057,6 +1086,17 @@
             }
         }
 
+        /* 4-card variant: 2x2 layout to avoid 3+1 spillover */
+        .bento-grid.quad {
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 700px) {
+            .bento-grid.quad {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .bento-card {
             background: var(--bg-soft);
             border-radius: 24px;
@@ -1065,9 +1105,12 @@
             position: relative;
             overflow: hidden;
             min-height: 300px;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .bento-card:hover {
@@ -2157,7 +2200,7 @@
             <h2 class="section-headline gradient">Treating the whole person.<br>Not just the diagnosis.</h2>
             <p class="section-sub">A foundation built on osteopathic principles — where structure, function, and the body's innate capacity to heal inform every facet of women's health care.</p>
 
-            <div class="bento-grid">
+            <div class="bento-grid quad">
                 <div class="bento-card">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
