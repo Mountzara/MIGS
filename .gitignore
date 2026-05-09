@@ -6,3 +6,7 @@
 # Wrangler
 .wrangler/
 node_modules/
+
+# Large video files - upload to R2 instead
+assets/videos/*.mp4
+assets/videos/*.mov

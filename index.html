@@ -606,6 +606,52 @@
             display: block;
         }
 
+        .research-video {
+            margin: 1.25rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .research-video video {
+            width: 100%;
+            display: block;
+            max-height: 400px;
+        }
+
+        .video-label {
+            background: rgba(201, 169, 110, 0.1);
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 26, 0.9));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .video-placeholder-icon {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
         .ai-summary {
             background: rgba(201, 169, 110, 0.05);
             border-left: 3px solid var(--gold);
@@ -1233,6 +1279,21 @@
                 <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
                     Recipient of the <strong style="color:#ffd700;">AAGL Golden Hysteroscope Award</strong> for Best Video Abstract in Hysteroscopy at the AAGL Global Congress, New Orleans, 2024.
                 </p>
+                <div class="research-video">
+                    <div class="video-label">🎥 Award-Winning Surgical Video</div>
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">▶</div>
+                        <div>Video Upload Pending</div>
+                        <small style="opacity: 0.6;">Run ./upload-videos.sh to embed rpoc-golden-hysteroscope.mp4</small>
+                    </div>
+                    <!-- Uncomment when video is uploaded:
+                    <video controls preload="metadata">
+                        <source src="assets/videos/rpoc-golden-hysteroscope.mp4" type="video/mp4">
+                        <source src="https://videos.mountzara.com/rpoc-golden-hysteroscope.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    -->
+                </div>
                 <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
                 <div class="ai-summary">
                     <div class="ai-summary-label">⚡ AI Summary</div>
@@ -1317,6 +1378,21 @@
                 <h3>Fibroids à La Carte: Decreasing Total Operative Time During Robotic Myomectomy Using a Gel-Based Port and Bag Containment System</h3>
                 <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S58</em>
                 <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Presented at AAGL Global Congress, New Orleans, 2024</p>
+                <div class="research-video">
+                    <div class="video-label">🎥 Surgical Technique Video</div>
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">▶</div>
+                        <div>Video Upload Pending</div>
+                        <small style="opacity: 0.6;">Run ./upload-videos.sh to embed myomectomy-gel-port.mp4</small>
+                    </div>
+                    <!-- Uncomment when video is uploaded:
+                    <video controls preload="metadata">
+                        <source src="assets/videos/myomectomy-gel-port.mp4" type="video/mp4">
+                        <source src="https://videos.mountzara.com/myomectomy-gel-port.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    -->
+                </div>
                 <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
                 <div class="ai-summary">
                     <div class="ai-summary-label">⚡ AI Summary</div>
@@ -1333,6 +1409,21 @@
                 <h3>When in Doubt, Green It Out: ICG in Hysteroscopic-Assisted Robotic Excision of an Isthmocele in a Patient with Asherman's Syndrome</h3>
                 <em class="research-journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11</em>
                 <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Presented at AAGL Global Congress, New Orleans, 2024</p>
+                <div class="research-video">
+                    <div class="video-label">🎥 ICG-Guided Surgical Video</div>
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">▶</div>
+                        <div>Video Upload Pending</div>
+                        <small style="opacity: 0.6;">Run ./upload-videos.sh to embed isthmocele-ashermans.mp4</small>
+                    </div>
+                    <!-- Uncomment when video is uploaded:
+                    <video controls preload="metadata">
+                        <source src="assets/videos/isthmocele-ashermans.mp4" type="video/mp4">
+                        <source src="https://videos.mountzara.com/isthmocele-ashermans.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    -->
+                </div>
                 <button class="ai-toggle" onclick="toggleSummary(this)"><span class="pulse-dot"></span>AI Snapshot</button>
                 <div class="ai-summary">
                     <div class="ai-summary-label">⚡ AI Summary</div>
