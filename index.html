@@ -653,50 +653,111 @@
             margin-top: 0;
         }
 
-        /* Featured pull-quote */
+        /* Editorial pull-quote */
         .excellence-quote {
-            margin: 56px auto 0;
-            max-width: 920px;
-            padding: 56px 48px;
-            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
-            border-radius: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            text-align: center;
+            margin: 64px auto 0;
+            max-width: 880px;
+            padding: clamp(48px, 6vw, 72px) clamp(32px, 5vw, 72px);
+            background:
+                radial-gradient(ellipse at top, rgba(41, 151, 255, 0.06) 0%, transparent 60%),
+                linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow:
+                0 30px 80px -30px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
         .excellence-quote::before {
-            content: '"';
+            content: '';
             position: absolute;
-            top: 12px;
-            left: 32px;
-            font-size: 96px;
-            color: var(--accent);
-            opacity: 0.35;
-            line-height: 1;
-            font-family: Georgia, serif;
+            top: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.7;
         }
 
         .excellence-quote blockquote {
-            font-size: clamp(22px, 2.8vw, 34px);
+            font-size: clamp(20px, 2.4vw, 28px);
             font-weight: 300;
-            line-height: 1.36;
+            line-height: 1.5;
             color: var(--white);
-            letter-spacing: -0.018em;
-            margin-bottom: 24px;
+            letter-spacing: -0.012em;
+            margin: 0 0 32px;
+            text-align: center;
+            font-style: italic;
+            position: relative;
+            quotes: '\201C' '\201D';
+        }
+
+        .excellence-quote blockquote::before {
+            content: open-quote;
+            color: var(--accent);
+            opacity: 0.6;
+            margin-right: 2px;
+            font-style: normal;
+            font-weight: 400;
+        }
+
+        .excellence-quote blockquote::after {
+            content: close-quote;
+            color: var(--accent);
+            opacity: 0.6;
+            margin-left: 2px;
+            font-style: normal;
+            font-weight: 400;
+        }
+
+        .excellence-cite-divider {
+            width: 40px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+            margin: 0 auto 20px;
         }
 
         .excellence-quote cite {
-            font-size: 13px;
+            font-size: 12px;
             font-style: normal;
             color: var(--gray-3);
-            letter-spacing: 0.04em;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
+            font-weight: 600;
+            display: block;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .excellence-quote cite .cite-name {
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .excellence-quote cite .cite-sep {
+            display: inline-block;
+            margin: 0 10px;
+            color: var(--gray-2);
+        }
+
+        .excellence-quote cite .cite-role {
+            color: var(--gray-3);
             font-weight: 500;
         }
 
         @media (max-width: 700px) {
-            .excellence-quote { padding: 48px 28px; }
+            .excellence-quote cite .cite-sep {
+                display: block;
+                margin: 6px 0;
+                height: 1px;
+                width: 24px;
+                background: rgba(255,255,255,0.15);
+            }
+            .excellence-quote cite .cite-sep::before { content: ''; }
         }
 
         /* Zero stats grid */
@@ -2140,8 +2201,11 @@
             <p class="section-sub center">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital — across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
 
             <div class="excellence-quote">
-                <blockquote>"I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology — without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level."</blockquote>
-                <cite>Teresa Tam, MD &nbsp;·&nbsp; Program Director, CBG/MIGS Fellowship</cite>
+                <blockquote>I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology — without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level.</blockquote>
+                <div class="excellence-cite-divider"></div>
+                <cite>
+                    <span class="cite-name">Teresa Tam, MD</span><span class="cite-sep">·</span><span class="cite-role">Program Director, CBG/MIGS Fellowship</span>
+                </cite>
             </div>
 
             <div class="zero-eyebrow">Safety record across the fellowship</div>
@@ -2158,7 +2222,7 @@
                 </div>
                 <div class="zero-card">
                     <div class="zero-num">Zero</div>
-                    <h4>Ureteral or vascular injuries</h4>
+                    <h4>Ureteral, bladder, and vascular injuries</h4>
                     <p>Through extensive retroperitoneal dissection — anatomical awareness practiced as a discipline.</p>
                 </div>
                 <div class="zero-card">
