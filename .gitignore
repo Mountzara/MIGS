@@ -2,3 +2,7 @@
 *~
 *.bak
 *.swp
+
+# Wrangler
+.wrangler/
+node_modules/

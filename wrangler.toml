@@ -1,7 +1,5 @@
 name = "mountzara"
+account_id = "8fbe127f640681ddd813aaf33b95507f"
 compatibility_date = "2025-01-15"
-
-[site]
-bucket = "."
 
 pages_build_output_dir = "."
