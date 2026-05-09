@@ -3,235 +3,613 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Mount Zara</title>
-    <!-- Force page reload in case of caching issues -->
-    <script>
-        window.onload = function() {
-            if (!window.location.hash) {
-                window.location = window.location + '#loaded';
-                window.location.reload();
-            }
-        }
-    </script>
+    <meta name="description" content="The story of Christopher Z. Mabini, DO — surgeon, educator, AI builder, and Filipino American leader in women's health.">
+    <title>The Story — Mount Zara</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Reset and base styles */
+        :root {
+            --black: #000000;
+            --near-black: #0b0b0b;
+            --dark: #1d1d1f;
+            --gray-1: #424245;
+            --gray-2: #6e6e73;
+            --gray-3: #86868b;
+            --gray-4: #a1a1a6;
+            --gray-5: #d2d2d7;
+            --gray-6: #f5f5f7;
+            --white: #ffffff;
+            --accent: #2997ff;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            background: var(--black);
+            color: var(--gray-6);
+            line-height: 1.6;
             overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        
-        /* Header */
-        header {
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            padding: 4.5rem 1rem;
-            position: relative;
-            background-image: url('https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            height: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: visible;
-        }
-        
-        header::before {
-            content: '';
-            position: absolute;
+
+        a { color: inherit; text-decoration: none; }
+
+        /* Navigation */
+        nav.main-nav {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            right: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            height: 48px;
+            display: flex;
+            align-items: center;
         }
-        
-        .header-content {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
-            width: 100%;
+
+        .nav-container {
+            max-width: 1024px;
             margin: 0 auto;
+            width: 100%;
+            padding: 0 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--white);
+        }
+
+        .nav-back {
+            font-size: 12px;
+            color: rgba(245, 245, 247, 0.8);
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-back:hover { color: var(--white); }
+
+        .nav-back .arrow-left {
+            width: 6px;
+            height: 6px;
+            border-top: 1.5px solid currentColor;
+            border-left: 1.5px solid currentColor;
+            transform: rotate(-45deg);
+        }
+
+        /* Article Hero */
+        .article-hero {
+            min-height: 90vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-        
-        .logo {
-            max-width: 470px;
-            width: 85%;
-            margin: 0 auto 1rem;
-            display: block;
+            text-align: center;
+            padding: 120px 22px 80px;
             position: relative;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(41, 151, 255, 0.08), transparent 60%),
+                var(--black);
         }
-        
-        .header-title {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
+
+        .article-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--black));
         }
-        
-        .header-subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            font-weight: 300;
-        }
-        
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            font-size: 1.1rem;
-            border: 2px solid white;
-            padding: 0.5rem 2rem;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-            position: relative;
+
+        .hero-eyebrow {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
             display: inline-block;
         }
-        
-        .nav-link:hover {
-            background-color: white;
-            color: black;
+
+        .article-hero .monogram {
+            max-width: 140px;
+            width: 30%;
+            height: auto;
+            display: block;
+            margin: 0 auto 48px;
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
         }
-        
-        /* Content Section */
-        .content-section {
-            padding: 6rem 2rem;
-            background-color: #6F7569;
-            color: white;
+
+        .article-hero h1 {
+            font-size: clamp(40px, 7vw, 88px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.05;
+            max-width: 920px;
+            margin: 0 auto 32px;
+            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .content-container {
-            max-width: 800px;
+
+        .article-hero .lede {
+            font-size: clamp(18px, 2.2vw, 24px);
+            font-weight: 300;
+            color: var(--gray-3);
+            max-width: 720px;
             margin: 0 auto;
-            line-height: 1.6;
+            letter-spacing: -0.01em;
+            line-height: 1.5;
         }
-        
-        .section-title {
+
+        .article-hero .meta {
+            margin-top: 56px;
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--gray-3);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .article-hero .meta strong {
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        /* Article body */
+        article.story {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 80px 22px 120px;
+        }
+
+        .chapter {
+            padding: 80px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .chapter:first-of-type {
+            border-top: none;
+            padding-top: 40px;
+        }
+
+        .chapter-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .chapter h2 {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+            margin-bottom: 32px;
+            color: var(--white);
+        }
+
+        .chapter p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: var(--gray-4);
+            margin-bottom: 24px;
+            letter-spacing: -0.005em;
+        }
+
+        .chapter p strong {
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .chapter p em {
+            color: var(--gray-5);
+            font-style: italic;
+        }
+
+        /* Pull-quote */
+        .pull-quote {
+            margin: 60px -22px;
+            padding: 56px 32px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
+            border-radius: 24px;
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
+            position: relative;
         }
-        
-        .content-container h2 {
-            font-size: 2rem;
-            margin-top: 2.5rem;
-            margin-bottom: 1.5rem;
-            color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            padding-bottom: 0.5rem;
+
+        .pull-quote::before {
+            content: '"';
+            position: absolute;
+            top: 8px;
+            left: 24px;
+            font-size: 80px;
+            color: var(--accent);
+            opacity: 0.35;
+            line-height: 1;
+            font-family: Georgia, serif;
         }
-        
-        .content-container p {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
+
+        .pull-quote blockquote {
+            font-size: clamp(22px, 3vw, 32px);
+            font-weight: 300;
+            line-height: 1.4;
+            color: var(--white);
+            letter-spacing: -0.018em;
+            font-style: normal;
         }
-        
+
+        @media (min-width: 700px) {
+            .pull-quote {
+                margin: 80px -100px;
+                padding: 72px 80px;
+            }
+        }
+
+        /* Stats interlude */
+        .interlude {
+            margin: 80px -22px;
+            padding: 80px 22px;
+            background: var(--gray-6);
+            color: var(--dark);
+            border-radius: 24px;
+            text-align: center;
+        }
+
+        .interlude .interlude-eyebrow {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .interlude h3 {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 700;
+            letter-spacing: -0.022em;
+            line-height: 1.15;
+            margin-bottom: 36px;
+            color: var(--dark);
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .interlude-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 600px) {
+            .interlude-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .interlude-stat .num {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--dark);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .interlude-stat .lbl {
+            font-size: 12px;
+            color: var(--gray-2);
+            letter-spacing: 0.02em;
+        }
+
+        @media (min-width: 700px) {
+            .interlude {
+                margin: 80px -100px;
+                padding: 96px 60px;
+            }
+        }
+
+        /* Closing CTA */
+        .closing {
+            text-align: center;
+            padding: 96px 22px 120px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 40px;
+        }
+
+        .closing h3 {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            color: var(--white);
+        }
+
+        .closing p {
+            font-size: 18px;
+            color: var(--gray-3);
+            margin-bottom: 32px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 980px;
+            font-size: 15px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .btn-primary:hover { background: #0080ff; }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid rgba(41, 151, 255, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(41, 151, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .btn .arrow {
+            width: 6px;
+            height: 6px;
+            border-top: 1.5px solid currentColor;
+            border-right: 1.5px solid currentColor;
+            transform: rotate(45deg);
+            transition: transform 0.2s ease;
+            margin-top: 1px;
+        }
+
+        .btn:hover .arrow {
+            transform: rotate(45deg) translate(2px, -2px);
+        }
+
+        .closing-buttons {
+            display: inline-flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
         /* Footer */
         footer {
-            background-color: #000;
-            color: #fff;
-            padding: 2rem;
-            text-align: center;
+            background: var(--black);
+            color: var(--gray-3);
+            padding: 48px 22px 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
         }
-        
-        .footer-container {
-            max-width: 1200px;
+
+        .footer-content {
+            max-width: 1024px;
             margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        
-        /* Navigation */
-        .nav-link {
-            display: inline-block;
-            margin-top: 2rem;
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
+
+        .footer-links {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
         }
-        
-        .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+
+        .footer-links a:hover { color: var(--white); }
+
+        /* Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-title {
-                font-size: 2.5rem;
-            }
-            
-            .content-container h2 {
-                font-size: 1.75rem;
-            }
-            
-            .content-section {
-                padding: 4rem 1.5rem;
-            }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <!-- Header Section -->
-    <header>
-        <div class="header-content">
-            <div style="text-align: center; width: 100%; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara Logo" class="logo" style="object-fit: contain; height: auto; width: 85%; max-width: 470px; display: block; margin: auto;">
-            </div>
-            <a href="/" class="nav-link">Back to Home</a>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">MOUNT ZARA</a>
+            <a href="/" class="nav-back"><span class="arrow-left"></span> Home</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="article-hero">
+        <span class="hero-eyebrow">The Story</span>
+        <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="monogram">
+        <h1>From a hospice in California to the operating rooms of Chicago — a journey shaped by purpose.</h1>
+        <p class="lede">The story of Christopher Z. Mabini, DO — son, surgeon, educator, builder.</p>
+        <div class="meta">
+            <span><strong>Christopher Z. Mabini</strong> · DO, MSAEd</span>
+            <span>Reading time · <strong>6 min</strong></span>
         </div>
     </header>
-    
-    <!-- Content Section -->
-    <section class="content-section">
-        <div class="content-container">
-            <p>At the intersection of surgical mastery and educational innovation stands Dr. Christopher Mabini, a board-eligible minimally invasive gynecologic surgeon whose journey reflects a profound commitment to advancing healthcare through both technical excellence and compassionate practice.</p>
 
-            <h2>A Journey Shaped by Purpose</h2>
-            <p>Dr. Mabini's path to becoming a surgical specialist began with a deeply personal challenge when his mother passed away from pancreatic cancer in 2005. Finding himself unexpectedly at the helm of the hospice organization she had founded, he drew upon his premed background, sports experience, and performing arts discipline to navigate this unfamiliar territory. Through diligent leadership and a dedication to teamwork, he successfully guided the organization to achieve Joint Commission accreditation, an accomplishment that taught him invaluable lessons about purpose-driven work and the power of perseverance.</p>
-            <p>This formative experience instilled in Dr. Mabini a philosophy that good work ethic combined with meaningful purpose creates a foundation for success—a philosophy that continues to guide his approach to medicine today. His Filipino heritage, which he honors through cooking traditional dishes, also provides him with a space for creative problem-solving and reflection that parallels his surgical practice.</p>
+    <!-- Article -->
+    <article class="story">
 
-            <h2>Surgical Excellence Through Innovation</h2>
-            <p>Now completing his Fellowship in Minimally Invasive Gynecologic Surgery at PRIME Illinois St. Francis Hospital, Dr. Mabini has distinguished himself as a rising leader in the field. His pioneering research on applying indocyanine green (ICG) imaging to detect endometriosis-related fibrosis earned him the prestigious George M. Morley Award for Best Gynecological Research at the CAOG Annual Meeting in 2023.</p>
-            <p>His expertise in complex hysteroscopic techniques was further recognized with the Golden Hysteroscope Award for Best Video Abstract at the 2024 AAGL Global Congress, demonstrating his talent for developing innovative approaches to challenging surgical scenarios. This accomplishment reflects his commitment to not merely achieving competence but striving for mastery that advances the entire field.</p>
+        <section class="chapter">
+            <span class="chapter-num">Chapter One — Origins</span>
+            <h2>A purpose found in loss.</h2>
+            <p>In 2005, Christopher Mabini's mother passed away from pancreatic cancer. He was a premed student in California, working through his bachelor's at UC Irvine, when he found himself unexpectedly at the helm of <strong>Nurses Plus Hospice</strong> — the organization she had founded.</p>
+            <p>He was twenty-something, with no formal management training, leading an end-of-life care company through a deeply personal grief. He drew on what he had: an athlete's discipline from rugby, a performer's poise from years of competitive hip-hop dance, and an academic's instinct for systems and structure.</p>
+            <p>Within a few years, the company had earned <strong>Joint Commission accreditation</strong> — the gold standard of healthcare quality.</p>
+            <p>It was the first time Christopher learned that purpose, when paired with relentless work ethic, could turn impossible into inevitable. It would become the foundation of everything that followed.</p>
+        </section>
 
-            <h2>Educational Leadership</h2>
-            <p>With a Master's in Adult Education specialized in curriculum development from Troy University, Dr. Mabini brings a unique perspective to medical training. As Surgical Skills Chief during his residency at Ascension Illinois St. Alexius OBGYN Residency Program, he developed comprehensive educational frameworks that integrate theory with hands-on practice.</p>
-            <p>His curriculum development work extends to establishing the FMIGS institutional curriculum at PRIME Illinois Saint Francis Hospital, where he applies experiential learning principles to train the next generation of surgeons. For Dr. Mabini, the operating room and classroom are complementary spaces where innovation thrives through constant questioning and refinement of techniques.</p>
+        <div class="pull-quote">
+            <blockquote>"Good work ethic combined with meaningful purpose creates a foundation for success. I learned that lesson at the helm of my mother's hospice — and it has guided every decision since."</blockquote>
+        </div>
 
-            <h2>Research as the Pulse of Progress</h2>
-            <p>Dr. Mabini's research portfolio includes groundbreaking work published in respected journals such as the Journal of Minimally Invasive Gynecology. His studies on mapping deep epigastric vessels stratified by BMI have contributed valuable knowledge to enhancing surgical safety protocols. His investigations into novel techniques for hysteroscopic removal of retained products of conception and robotic myomectomy using gel-based port systems demonstrate his commitment to finding new solutions to persistent surgical challenges.</p>
-            <p>Currently, he leads multiple IRB-approved research initiatives, including studies on the use of narrow-band imaging (NBI) in detecting adenomyosis during hysteroscopy and evaluating post-operative pain management following trans-abdominal plane blocks in minimally invasive procedures.</p>
+        <section class="chapter">
+            <span class="chapter-num">Chapter Two — Heritage</span>
+            <h2>Filipino roots. A maker's hands.</h2>
+            <p>Christopher's Filipino heritage isn't a footnote — it's a discipline. He cooks traditional dishes the way some surgeons review anatomy: with reverence, repetition, and an eye for what the small details reveal about the larger system.</p>
+            <p>Cooking, music production, and dance — earlier in his life — gave him something most surgeons don't bring to the OR: a creative instinct for problem-solving. The same hands that learned <strong>Best Hip Hop Dance Team</strong> choreography at UC Irvine became the hands that now navigate complex laparoscopic anatomy.</p>
+            <p>He competed for UC Irvine's <strong>Divisional Rugby Conference Champion</strong> team. He spent a year at the <strong>University of Liverpool</strong> studying public health. Each chapter widened the lens.</p>
+        </section>
 
-            <h2>A Vision for Healthcare's Future</h2>
-            <p>For Dr. Mabini, the field of minimally invasive gynecologic surgery represents the perfect confluence of his diverse talents and interests—a space where intellectual curiosity, technical skill, educational passion, and innovative thinking combine to create something greater than the sum of its parts.</p>
-            <p>His approach to medicine embraces both technological advancement and human connection, recognizing that while innovation improves techniques, compassion transforms the patient experience. This philosophy guides his practice at PRIME St. Francis Hospital in Evanston, where he continues to push boundaries in surgical care while maintaining a deep commitment to mentorship and education.</p>
-            <p>As Dr. Mabini looks to the future, he remains dedicated to advancing the field of MIGS through continuous learning and creative problem-solving—always remembering that the most important innovations are those that ultimately enhance patient care and outcomes.</p>
+        <section class="chapter">
+            <span class="chapter-num">Chapter Three — The Path to Surgery</span>
+            <h2>A doctor of the whole person.</h2>
+            <p>Christopher chose osteopathic medicine deliberately — drawn to a tradition that treats the body as an integrated system, not a collection of organ silos. At the <strong>Alabama College of Osteopathic Medicine</strong>, he earned a competitive <strong>Anatomy and Osteopathic Principles &amp; Practice Preclinical Fellowship</strong>, immersing himself in dissection-based teaching and the four core osteopathic manipulative techniques: Fascial Distortion Model, Muscle Energy, Counterstrain, and Myofascial Release.</p>
+            <p>Simultaneously, he completed a <strong>Master's in Adult Education</strong> at Troy University — concentration in curriculum development. Most medical students don't moonlight as instructional designers. Christopher saw the connection clearly: <em>great surgeons don't just operate. They teach.</em></p>
+            <p>Residency at <strong>Ascension Illinois St. Alexius</strong> followed. He emerged as <strong>Surgical Skills Chief</strong> — designing how the next generation would learn — and earned the <strong>Excellence in Minimally Invasive Gynecology</strong> recognition from AAGL.</p>
+        </section>
+
+        <div class="interlude">
+            <span class="interlude-eyebrow">By the numbers</span>
+            <h3>A practice measured in surgeries, papers, and people taught.</h3>
+            <div class="interlude-grid">
+                <div class="interlude-stat">
+                    <span class="num">7+</span>
+                    <span class="lbl">Publications</span>
+                </div>
+                <div class="interlude-stat">
+                    <span class="num">4</span>
+                    <span class="lbl">Active IRB Studies</span>
+                </div>
+                <div class="interlude-stat">
+                    <span class="num">2</span>
+                    <span class="lbl">National Awards</span>
+                </div>
+                <div class="interlude-stat">
+                    <span class="num">5</span>
+                    <span class="lbl">macOS Apps</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="chapter">
+            <span class="chapter-num">Chapter Four — Innovation</span>
+            <h2>Lighting up what others can't see.</h2>
+            <p>At <strong>PRIME St. Francis Hospital</strong> in Evanston, Illinois, Christopher entered the Complex Benign Gynecology Fellowship determined to push the field, not just inhabit it.</p>
+            <p>His pioneering research with <strong>Indocyanine Green (ICG)</strong> imaging — using fluorescent dye in ways the field hadn't traditionally explored — earned the <strong>George M. Morley Award</strong> for Best Gynecological Research at the 2023 CAOG meeting. The work showed that ICG could illuminate endometriosis-related fibrosis and inflammatory changes invisible under standard white light. It had implications for how aggressively, and how completely, the disease could be excised.</p>
+            <p>One year later, his hysteroscopic technique for removing retained products of conception from an angular pregnancy in an arcuate uterus — a case that classically defies blind dilation and curettage — won the <strong>AAGL Golden Hysteroscope Award</strong> at the 2024 Global Congress in New Orleans. Best Video Abstract in Hysteroscopy. National recognition. A teaching standard.</p>
+            <p>Behind both awards: the same instinct from his mother's hospice. <em>See clearly. Then do the work.</em></p>
+        </section>
+
+        <section class="chapter">
+            <span class="chapter-num">Chapter Five — Education</span>
+            <h2>Building the curriculum he wished he'd had.</h2>
+            <p>The Master's in Adult Education has never sat idle. Christopher designed the <strong>FMIGS institutional curriculum</strong> at PRIME St. Francis — integrating AI and advanced technologies into how fellows learn surgery.</p>
+            <p>The premise is simple, and rare: experiential learning principles applied to surgical training. The next generation of MIGS surgeons should not have to assemble their education from disconnected lectures, textbooks, and YouTube. The curriculum he built is structured, evidence-based, and unapologetically modern.</p>
+            <p>For Christopher, the operating room and classroom aren't separate places. They are the same place at different scales.</p>
+        </section>
+
+        <section class="chapter">
+            <span class="chapter-num">Chapter Six — The Pulse of Progress</span>
+            <h2>Research, every day.</h2>
+            <p>Currently, Christopher leads multiple <strong>IRB-approved research initiatives</strong>: studies on Narrow-Band Imaging in adenomyosis detection during hysteroscopy, post-operative pain management following transversus abdominis plane (TAP) blocks in MIGS within ERAS protocols, and the detection of appendiceal endometriosis using ICG.</p>
+            <p>His publications appear in the <em>Journal of Minimally Invasive Gynecology</em>, <em>Archives of Gynecology and Obstetrics</em>, and <em>Gynecology and Minimally Invasive Therapy</em>. Topics range from mapping deep epigastric vessels by BMI to redefine laparoscopic safe zones, to the use of gel-based port systems in robotic myomectomy, to ICG-guided isthmocele repair in patients with Asherman's syndrome.</p>
+            <p>Research, for him, is never academic exercise. It is the pulse of progress in a field that, without curious surgeons, will never advance.</p>
+        </section>
+
+        <section class="chapter">
+            <span class="chapter-num">Chapter Seven — Vision</span>
+            <h2>Where this is going.</h2>
+            <p>Christopher is also a builder of software. The <strong>Mount Zara suite</strong> — five native macOS applications spanning clinical AI, board prep, transcription, research workflow, and surgical video archival — is a working surgeon's answer to the question: <em>what would the tools look like if we built them ourselves?</em></p>
+            <p>His skills are unusual on paper: surgeon, educator, AI/LLM developer, medical 3D printer, video producer. In practice, they form a single coherent stance — that modern medicine deserves modern tools, designed by the people who use them.</p>
+            <p>He continues to push boundaries at PRIME St. Francis, while serving locum positions across Chicago and the country, while running Mount Zara LLC, while writing, while teaching, while bouldering on his off days with Marty, his dog. The list is long. The thread is consistent.</p>
+        </section>
+
+        <div class="pull-quote">
+            <blockquote>"The most important innovations are those that ultimately enhance patient care and outcomes. Everything else — the awards, the publications, the apps — is just the byproduct of doing the work right."</blockquote>
+        </div>
+
+    </article>
+
+    <!-- Closing CTA -->
+    <section class="closing">
+        <h3>Want to work together?</h3>
+        <p>Open to research collaborations, AI consulting, locum opportunities, and speaking engagements.</p>
+        <div class="closing-buttons">
+            <a href="mailto:cmabini@mountzara.com" class="btn btn-primary">cmabini@mountzara.com <span class="arrow"></span></a>
+            <a href="/" class="btn btn-secondary">Back to home <span class="arrow"></span></a>
         </div>
     </section>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="footer-container">
-            <p>&copy; 2025 Mount Zara, LLC. All rights reserved.</p>
+        <div class="footer-content">
+            <div>© 2026 Mount Zara, LLC. Christopher Z. Mabini, DO, MSAEd.</div>
+            <div class="footer-links">
+                <a href="/#about">About</a>
+                <a href="/#osteopathic">Osteopathic</a>
+                <a href="/#ai">AI</a>
+                <a href="/#apps">Apps</a>
+                <a href="/#research">Research</a>
+            </div>
         </div>
     </footer>
+
+    <script>
+        // Reveal on scroll
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.08 });
+
+        document.querySelectorAll('.chapter, .pull-quote, .interlude, .closing').forEach(el => {
+            el.classList.add('reveal');
+            observer.observe(el);
+        });
+    </script>
 </body>
 </html>
