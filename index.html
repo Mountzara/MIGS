@@ -464,12 +464,12 @@
         }
 
         .container {
-            max-width: 980px;
+            max-width: 1140px;
             margin: 0 auto;
         }
 
         .container-wide {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -488,6 +488,7 @@
             letter-spacing: -0.028em;
             line-height: 1.04;
             margin-bottom: 28px;
+            max-width: 1200px;
         }
 
         .section-headline.gradient {
@@ -1094,6 +1095,12 @@
         @media (min-width: 700px) {
             .bento-grid.quad {
                 grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .bento-grid.quad {
+                grid-template-columns: repeat(4, 1fr);
             }
         }
 
