@@ -3629,7 +3629,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Clinical AI · Flagship</span>
                         <h3>Mount Zara Clinical AI</h3>
-                        <p>The flagship clinical companion — an AI assistant for the working OBGYN and CBG/MIGS surgeon, integrating evidence-based guidance with day-to-day decision support.</p>
+                        <p>A private FMIGS evidence engine — index your PDFs, synthesize meta-analyses with I² and confidence intervals, and detect conflicts across ACOG, AAGL, and ASRM. Fully on-device via Phi-2 LoRA + Llama.</p>
                     </div>
                 </div>
 
@@ -3643,9 +3643,9 @@
                         <span class="app-visual-label">Demo Coming Soon</span>
                     </div>
                     <div class="app-meta">
-                        <span class="app-tag">Board Prep</span>
+                        <span class="app-tag">Board Prep · 101 Categories</span>
                         <h3>ABOG Case List Manager</h3>
-                        <p>Built for board-eligible OBGYNs — track and prepare your ABOG case list with the structure required for the oral exam.</p>
+                        <p>All 101 ABOG categories pre-loaded. Import a hospital chart PDF → AI extracts, categorizes, and maps the case. Oral exam simulator uses on-device Whisper to transcribe your voice answers and evaluate them against ACOG guidelines.</p>
                     </div>
                 </div>
 
@@ -3659,9 +3659,9 @@
                         <span class="app-visual-label">Demo Coming Soon</span>
                     </div>
                     <div class="app-meta">
-                        <span class="app-tag">Workflow AI</span>
+                        <span class="app-tag">Mac · iPhone · Apple Watch</span>
                         <h3>Medical Transcription</h3>
-                        <p>AI-powered medical dictation — capture clinic notes, op notes, and patient encounters with speed and clinical accuracy.</p>
+                        <p>Record encounters on Mac, iPhone, or Watch. On-device Whisper transcribes and structures into SOAP notes automatically. BI-RADS workup, ASCCP cervical screening, COC switching, and OB calculators built in — no internet required.</p>
                     </div>
                 </div>
 
@@ -3676,9 +3676,9 @@
                         <span class="app-visual-label">Demo Coming Soon</span>
                     </div>
                     <div class="app-meta">
-                        <span class="app-tag">Research AI</span>
+                        <span class="app-tag">Study Management · Manuscript</span>
                         <h3>MZ Research Suite</h3>
-                        <p>End-to-end research companion — IRB study management, AI-assisted literature review, and abstract drafting.</p>
+                        <p>PICO study design wizard, custom case report form builder, participant tracking with full audit trail, statistical engine (t-test, ANOVA, chi-square), and a manuscript editor that auto-validates every citation against your library.</p>
                     </div>
                 </div>
 
@@ -3692,9 +3692,9 @@
                         <span class="app-visual-label">Demo Coming Soon</span>
                     </div>
                     <div class="app-meta">
-                        <span class="app-tag">Video AI</span>
+                        <span class="app-tag">AAGL Archive · AI Analysis</span>
                         <h3>Surgical Video Archive</h3>
-                        <p>The same video workflow behind AAGL award-winning content — organize, tag, and learn from surgical footage.</p>
+                        <p>Bulk-extract from SurgeryU (AAGL's portal), then run AI analysis on any clip — Whisper transcription + OCR + Claude Code generates a clinical summary, procedure tags, and confidence score. Smart search understands natural language MIGS queries.</p>
                     </div>
                 </div>
             </div>
@@ -4496,118 +4496,118 @@
         const APPS = {
             clinical: {
                 tone: 'accent',
-                tag: 'Flagship · Clinical AI',
+                tag: 'Flagship · FMIGS Knowledge Engine',
                 title: 'MountZara Clinical AI',
-                tagline: 'The clinical companion built by an active surgeon — evidence-based decision support for the working OBGYN and CBG/MIGS practitioner.',
-                platforms: ['Native macOS', 'Apple Silicon optimized', 'On-device privacy'],
+                tagline: 'A private FMIGS evidence engine — indexes your surgical literature, synthesizes meta-analyses, and detects conflicts across ACOG, AAGL, ASRM, and ESHRE guidelines. All on-device.',
+                platforms: ['Native macOS', 'On-device Phi-2 LoRA + Llama', 'No PHI leaves the machine'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
-                description: 'A deeply integrated AI clinical decision-support system designed around the modern OBGYN workflow. From pre-op planning through post-op follow-up, MountZara Clinical AI brings the latest evidence, surgical reasoning, and day-to-day support directly into your operating cadence — without forcing you to leave your workflow.',
+                description: 'Drop in a PDF — a journal article, a society guideline, your fellowship notes — and MountZara Clinical AI indexes every citation down to the page, paragraph, and sentence. Then ask it anything. It runs a hybrid full-text and semantic search across up to 30 citations, synthesizes a meta-analysis with pooled outcomes, I² heterogeneity, and confidence intervals, then surfaces any evidence conflicts with AI-generated resolutions. The entire pipeline runs locally via a fine-tuned Phi-2 LoRA and Llama inference — no API call, no cloud upload, no PHI risk.',
                 features: [
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', title: 'Evidence-based reasoning', desc: 'Cross-referenced against ACOG, AAGL, ASRM, and SGS guidelines with citation-aware responses.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l4-7h10l4 7-9 10z"/></svg>', title: 'Pre-op case planning', desc: 'Structured workflows for laparoscopy, hysteroscopy, and robotic cases. Differential surgical approaches.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', title: 'Intra-op reference', desc: 'Quick anatomic, instrumentation, and decision references designed for fast, glanceable access.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14l4-4h7"/><path d="M16 19h6M19 16v6"/></svg>', title: 'Note & letter drafting', desc: 'Op note skeletons, consult letters, and patient-friendly explanations from your case context.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>', title: 'Post-op follow-up', desc: 'Protocol-based reminders for ERAS, complication windows, and patient outreach.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'On-device privacy', desc: 'Sensitive workflows process locally on Apple Silicon. No PHI ever leaves your machine.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', title: 'Deep PDF indexing', desc: 'Every citation stored with its exact document, page, paragraph, and sentence. Hover any citation for an instant AI synthesis — 1–2 seconds.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'Meta-analysis engine', desc: 'Pools statistics across indexed studies: sample size, outcomes, confidence intervals, I² heterogeneity, and study-design quality breakdown — publication-ready.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'Evidence conflict detection', desc: 'Knowledge graph builder flags contradictions across your indexed literature and generates AI resolutions citing both sources.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>', title: 'Surgical video analysis', desc: 'Upload operative footage — the app processes frames with on-device vision models and synthesizes clinical findings into indexed evidence.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6l3-9 3 18 3-9h3"/></svg>', title: 'PubMed landmark search', desc: 'Query PubMed E-utilities directly for RCTs, guidelines, and society recommendations across ACOG, AAGL, SGO, ASRM, ESGE, ESHRE, FIGO, and WHO.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'Fully private, fully local', desc: 'Phi-2 LoRA and Llama inference runs on-device via Ollama. No external API. No cloud. No PHI ever transmitted.' },
                 ],
                 useCases: [
-                    { title: 'Working OBGYN', desc: 'Faster, evidence-aligned decisions during clinic — without a second screen, second login, or context switch.' },
-                    { title: 'CBG/MIGS surgeon', desc: 'Complex case planning with structured surgical reasoning, indication review, and approach comparison.' },
-                    { title: 'OBGYN resident', desc: 'A study companion grounded in current literature — not a textbook from five years ago.' },
+                    { title: 'Pre-op literature review', desc: 'Drop in 5 papers on isthmocele repair approaches, ask "what does the evidence say about robotic vs. laparoscopic outcomes?" — get a synthesized meta-analysis with citations in seconds.' },
+                    { title: 'Fellowship curriculum prep', desc: 'Index your entire reading list, then query by topic, procedure, or complication to build evidence-grounded teaching materials.' },
+                    { title: 'Manuscript background writing', desc: 'Ask "what are the contradictions in the ICG endometriosis literature?" — the conflict detector surfaces opposing findings with direct citation links for your introduction section.' },
                 ],
-                tech: ['Native Swift / SwiftUI', 'Apple Intelligence', 'On-device LLM inference', 'CoreML', 'Encrypted local storage', 'PubMed + guideline indexing'],
+                tech: ['Native Swift / SwiftUI', 'Phi-2 LoRA (on-device)', 'Llama / NativeLlamaService', 'Ollama vision inference', 'PubMed E-utilities API', 'Hybrid full-text + semantic search', 'Meta-analysis engine (I², CI, pooled outcomes)', 'Knowledge graph + conflict detection'],
             },
             abog: {
                 tone: 'warm',
-                tag: 'Board Prep · Case Tracking',
+                tag: 'Board Prep · 101 ABOG Categories',
                 title: 'ABOG Case List Manager',
-                tagline: 'Built for the OBGYN board exam — by someone who has been there. Track, categorize, and prepare your case list with the structure ABOG actually requires.',
-                platforms: ['Native macOS', 'iCloud sync', 'Print-ready exports'],
+                tagline: 'All 101 ABOG categories pre-loaded. Import a hospital chart PDF, and AI extracts, categorizes, and maps the case — then simulates your oral boards with Whisper-transcribed voice answers.',
+                platforms: ['Native macOS', 'AI PDF extraction', 'Voice oral exam simulation'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
-                description: 'Preparing your ABOG case list shouldn\'t feel like a side job. ABOG Case List Manager is purpose-built around the categories, formats, and oral-exam expectations the American Board of OBGYN actually publishes — so you can spend your prep time studying, not wrangling spreadsheets.',
+                description: 'The ABOG Certifying Examination requires 101 case categories — 30 Obstetric, 32 Gynecology, 39 Office Practice — tracked to an exact format with required fields for each type. This app has every category pre-loaded with its required fields, keywords, and validation rules. Upload a scanned hospital chart, and AI extracts the clinical narrative, suggests the applicable categories with confidence scores, and populates the fields. When your list is built, the Oral Exam Simulator plays examiner, records your voice answer with Whisper, transcribes it, and evaluates it against model answers — with "Model Answer," "Answers to Avoid," and a deep ACOG guideline dive for each question.',
                 features: [
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'ABOG categories pre-loaded', desc: 'All required case categories for OBGYN oral boards, organized exactly as ABOG expects them.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'CPT-aware classification', desc: 'Enter a CPT and the case auto-routes to the correct ABOG category. No manual re-mapping.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>', title: 'Print-ready exports', desc: 'Generate ABOG-formatted PDFs and CSVs with every required field, ready for submission.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'Oral exam mode', desc: 'Mock ABOG oral structure: case selection, prompts, and a randomized board-style review flow.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>', title: 'AI case summaries', desc: 'One-click clinical narratives in the structure your reviewers expect, drafted from your inputs.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6"/></svg>', title: 'Encrypted iCloud sync', desc: 'Pick up where you left off across Mac, iPad, and iPhone. PHI-grade encryption end-to-end.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'All 101 ABOG categories', desc: '30 OB + 32 GYN + 39 Office Practice categories pre-loaded with required fields, keywords, and validation — exactly as ABOG publishes them.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>', title: 'AI PDF chart extraction', desc: 'Upload a scanned hospital chart — AI parses the clinical narrative, extracts diagnosis, procedure, pathology, and EBL, then suggests the applicable ABOG categories with per-category confidence scores.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'ACOG guideline comparison', desc: 'For any case, AI compares your clinical management against the relevant ACOG Practice Bulletin and generates detailed feedback on alignment and gaps.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>', title: 'Voice oral exam simulator', desc: 'The examiner presents your case and asks 3–4 board-style questions. You answer by voice — Whisper transcribes, AI evaluates, and you get a Model Answer, Answers to Avoid, and an ACOG Deep Dive.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M9 17v-6M13 17v-3M17 17V9"/></svg>', title: 'Category coverage dashboard', desc: 'Deadline tracker (July 1 – June 30 collection, July 31 submission, October exam) with readiness assessment, category gap analysis, and quality flags for incomplete or critical cases.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>', title: 'ABOG portal export', desc: 'Generate a submission-ready export formatted for the ABOG online portal. De-identified, validated, complete.' },
                 ],
                 useCases: [
-                    { title: 'Senior OBGYN resident', desc: 'Track your last six months of cases with the categorization the ABOG list actually requires — from day one.' },
-                    { title: 'Recently graduated OBGYN', desc: 'Submission-ready case logs without the week-before scramble of cleaning up a spreadsheet.' },
-                    { title: 'Fellowship trainee', desc: 'Aggregate cases across hospital systems and EMRs into a single ABOG-aligned record.' },
+                    { title: 'The resident building from day one', desc: 'Start logging cases from PGY-4 with the exact categorization ABOG requires — so submission day is a click, not a crisis.' },
+                    { title: 'The fellow with moonlighting cases', desc: 'Cases from fellowship, moonlighting, and residency each tagged to their source and mapped to the correct category — even when the same CPT code applies to two different ABOG buckets.' },
+                    { title: 'The candidate six weeks out', desc: 'Run the oral exam simulator on your actual submitted cases. Hear a board-style question, answer out loud, get instant AI feedback — and know which ACOG bullets your examiner will cite.' },
                 ],
-                tech: ['Native Swift / SwiftUI', 'CoreData + CloudKit', 'PDF rendering', 'Encrypted at rest', 'Offline-first', 'Universal binary'],
+                tech: ['Native Swift / SwiftUI', 'AI PDF extraction (Claude Code CLI)', 'Whisper on-device transcription', 'ACOG knowledge base (indexed)', '101 ABOG category engine', 'Category confidence scoring', 'Duplicate detection', 'De-identification service', 'ABOG portal export'],
             },
             transcription: {
                 tone: 'accent',
-                tag: 'Workflow AI · Dictation',
+                tag: 'Mac · iPhone · Apple Watch',
                 title: 'Medical Transcription',
-                tagline: 'AI dictation that actually understands medicine. Capture clinic notes, op notes, and patient encounters with specialty-tuned accuracy.',
-                platforms: ['Native macOS', 'On-device speech', 'EMR-friendly export'],
+                tagline: 'Record any encounter on Mac, iPhone, or Watch. Whisper transcribes on-device, structures the note into SOAP or Op Note format, and clinical decision tools — BI-RADS, ASCCP, COC switching — are built right in.',
+                platforms: ['macOS + iOS + watchOS', 'On-device Whisper', 'No cloud audio upload'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>',
-                description: 'Generic dictation tools mangle "salpingo-oophorectomy" and choke on "isthmocele." Medical Transcription is tuned on a specialty-aware vocabulary spanning OBGYN, surgical anatomy, pharmacology, and procedural terminology — so what you say is what you get.',
+                description: 'Start recording with ⌘⇧R on Mac, or tap Record on your iPhone or Apple Watch. Whisper — a custom fork with an iOS 18 BNNS fix — transcribes on-device in real time, then structures the transcript into SOAP note sections automatically. Operative note templates, OB calculators, breast workup decision trees (BI-RADS → ACOG workup path), ASCCP cervical screening risk stratification, COC switching with VTE assessment, and a LARC reference tool are all built in. Copy the structured note with ⌘⇧C and paste straight into Epic. Nothing leaves the device — ever.',
                 features: [
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>', title: 'Specialty-aware vocabulary', desc: 'Tuned on OBGYN, MIGS, anatomy, pharmacology, and procedural language. No re-training, no glossary upkeep.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>', title: 'Real-time transcription', desc: 'Sub-second latency on Apple Silicon. Words appear as you speak, not after you finish.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v2H9zM9 13h6v2H9z"/></svg>', title: 'Template-driven notes', desc: 'SOAP, op note, consult, and discharge templates. Choose your structure and dictate to it.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/><path d="M9 12l2 2 4-4"/></svg>', title: 'HIPAA-grade privacy', desc: 'Speech and text never leave your Mac. Audio is processed on-device and never transmitted.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"/></svg>', title: 'EMR-ready export', desc: 'Copy / paste into Epic, Cerner, Athena. Or export RTF, DOCX, plain text, FHIR-compatible JSON.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>', title: 'Smart auto-correction', desc: 'Catches medical homophones (ileum vs. ilium), drug spelling, and dosage formatting in context.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>', title: 'On-device Whisper transcription', desc: 'Custom Whisper fork (BNNS sampling fix for iOS 18) runs fully locally on Mac, iPhone, and Watch. Audio never leaves the device. Sub-second latency on Apple Silicon.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v2H9zM9 13h6v2H9z"/></svg>', title: 'SOAP & op note structuring', desc: 'Transcription auto-parses into Subjective, Objective, Assessment, and Plan. Op note template available for laparoscopic and hysteroscopic procedures. ICD-10/CPT code suggestions built in.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>', title: 'OB & GYN clinical calculators', desc: 'EDD by LMP or ultrasound, gestational age calculator, and a structured GYN encounter checklist — all accessible from a tab during or after the encounter.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'BI-RADS breast management', desc: 'Select presenting complaint (lump, discharge, pain, skin changes, abnormal screening) + age + BI-RADS → workup recommendations and ACOG counseling points for that specific finding.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M9 17v-6M13 17v-3M17 17V9"/></svg>', title: 'ASCCP cervical screening', desc: 'Enter HPV and cytology results → 2023 ASCCP risk stratification → recommended surveillance interval or colposcopy indication. Embedded logic, no internet required.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg>', title: 'COC switching & LARC reference', desc: 'Enter current OCP and switching reason → VTE risk assessment → alternative options with side effect profiles. Separate LARC decision reference built in.' },
                 ],
                 useCases: [
-                    { title: 'Clinic visit dictation', desc: 'A 12-minute visit captured in real time — turn around chart notes the same hour, not the same week.' },
-                    { title: 'Operative note capture', desc: 'Dictate op notes between cases on your iPhone or iPad mounted in the OR break room.' },
-                    { title: 'Patient encounter docs', desc: 'Letters, after-visit summaries, and education handouts drafted in your voice and your style.' },
+                    { title: 'Clinic day documentation', desc: 'Record 15-minute visits as you go — Whisper transcribes live, SOAP note auto-structures, and ⌘⇧C pastes it into Epic before the patient reaches the checkout desk.' },
+                    { title: 'Breast complaint workup at point of care', desc: 'Patient presents with a new breast lump — pull up the BI-RADS tool during the visit, enter her age and finding, and walk out with the ACOG-aligned workup plan already in the note.' },
+                    { title: 'Operative note dictation', desc: 'Open the app on your iPhone in the OR lounge, dictate the op note between cases — structured, signed off, and ready to paste before your next patient is prepped.' },
                 ],
-                tech: ['Native Swift', 'Whisper-class ASR', 'Apple Speech framework', 'CoreML acceleration', 'On-device processing', 'FHIR-compatible export'],
+                tech: ['Native Swift', 'Whisper (custom fork, BNNS fix)', 'macOS + iOS + watchOS', 'ASCCP 2023 guideline logic', 'BI-RADS / ACOG decision trees', 'COC + VTE risk engine', 'On-device only — no cloud audio', 'Live Activity recording widget'],
             },
             research: {
                 tone: 'violet',
-                tag: 'Research AI · Manuscript Workflow',
+                tag: 'Study Management · Manuscript Writing',
                 title: 'MZ Research Suite',
-                tagline: 'From IRB to abstract — the entire research workflow, accelerated. Built by an active investigator with multiple peer-reviewed studies in flight.',
-                platforms: ['Native macOS', 'PubMed integration', 'Citation-managed'],
+                tagline: 'From PICO question to published manuscript — participant tracking, custom case report forms, statistical analysis, surgical image archive, and a reference engine that auto-validates every citation.',
+                platforms: ['Native macOS', 'SwiftData persistence', 'Full audit trail'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 7v4l3 2"/></svg>',
-                description: 'Most clinician-investigators piece research workflow together from a dozen disjointed tools. MZ Research Suite collapses that stack: IRB protocol management, AI-assisted literature review with PubMed integration, citation handling, statistical reasoning, and abstract drafting — coordinated end-to-end.',
+                description: 'MZ Research Suite manages a clinical study from the first PICO question to the final manuscript. Create the study, upload your protocol, and AI generates the PICO-formatted hypothesis and identifies primary outcome columns. Build a custom case report form — drag in sections (demographics, surgical findings, pathology, biopsy) and define fields with validation rules. Enroll participants, enter data with a full audit trail on every edit, then run descriptive stats, t-tests, chi-square, ANOVA, and correlation analyses with publication-ready output tables. The manuscript editor pre-generates an abstract from your study design; the reference engine auto-detects every citation in your text and validates it against your library — flagging missing or unused references before submission.',
                 features: [
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>', title: 'IRB protocol templates', desc: 'Pre-built protocol skeletons for retrospective, prospective, and quality-improvement studies.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M8 11h6"/></svg>', title: 'AI literature review', desc: 'PubMed-aware semantic search with structured summaries, cited verbatim — no hallucinated citations.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 8h16M8 4v16"/></svg>', title: 'Citation manager', desc: 'BibTeX, EndNote, and Zotero-compatible. Drag in a PDF, the metadata fills itself in.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h4"/></svg>', title: 'Abstract drafting', desc: 'AAGL, ACOG, SGS, and journal-specific abstract structures with word-count-aware drafting.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M9 17v-6M13 17v-3M17 17V9"/></svg>', title: 'Statistical reasoning', desc: 'Test-selection guidance, sample-size estimation, and reporting language drafted to journal standards.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'Manuscript outlines', desc: 'IMRaD outlines pre-built for JMIG, Obstet Gynecol, AJOG, Fertility & Sterility, and more.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'AI study design wizard', desc: 'Upload your protocol or describe your clinical question — AI generates a PICO-formatted hypothesis, identifies primary and secondary outcome columns, and drafts the study design framework.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 8h16M8 4v16"/></svg>', title: 'Custom case report form builder', desc: 'Drag in sections (demographics, surgical findings, pathology, biopsy) and define field types, validation rules, and required status. AI auto-assigns icons and colors by field name pattern.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>', title: 'Participant tracking + audit trail', desc: 'Enroll participants (ICG-001 format), track status (screening/enrolled/active/completed/withdrawn), and log every data modification with timestamp and user — IRB-ready audit trail built in.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M9 17v-6M13 17v-3M17 17V9"/></svg>', title: 'Statistical engine', desc: 'Descriptive stats, t-tests, chi-square, ANOVA, correlation — computed with publication-ready output tables and figure generation. No export to SPSS required.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h4"/></svg>', title: 'Manuscript editor + reference validation', desc: 'AI pre-generates your abstract from your study design. As you write, the reference tracking engine detects every in-text citation and validates it against your library — flagging missing and unused references in real time.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>', title: 'Surgical image archive', desc: 'Store intraoperative and pathology images linked to specific participants. Add annotations, organ classification, and finding type. PubMed search pulls landmark references directly into your library.' },
                 ],
                 useCases: [
-                    { title: 'Resident\'s first abstract', desc: 'From a clinical question to a submission-ready AAGL abstract in hours, not weekends.' },
-                    { title: 'Fellow with multiple IRBs', desc: 'Manage protocol versions, amendments, and approvals for several active studies in parallel.' },
-                    { title: 'Faculty manuscript pipeline', desc: 'Track manuscripts from draft → peer review → revision → publication, with co-author workflows.' },
+                    { title: 'Designing a retrospective cohort study', desc: 'Upload your IRB protocol → AI maps PICO → build a custom CRF with demographic, surgical, and pathology sections → enroll participants from your case list → run descriptive stats → draft your Methods and Results with AI assistance.' },
+                    { title: 'Managing multiple active IRBs', desc: 'Each study is isolated with its own participants, forms, analyses, and manuscript. Audit trail on every edit. Switch between an active RCT and a retrospective cohort without crossing data.' },
+                    { title: 'Writing a JMIG submission', desc: 'Manuscript editor pre-fills the abstract from your study design. Write the introduction, methods, results, and discussion — reference engine catches every missing citation before you hit submit.' },
                 ],
-                tech: ['Native Swift', 'PubMed E-utilities API', 'Modern LLMs with citation grounding', 'BibTeX / EndNote / Zotero', 'Markdown + LaTeX export', 'CoreData'],
+                tech: ['Native Swift / SwiftUI', 'SwiftData (modern persistence)', 'Statistical engine (t-test, ANOVA, chi-square, correlation)', 'PubMed E-utilities API', 'Reference tracking engine', 'Vancouver / Harvard / Chicago citation styles', 'Encrypted data store', 'Full audit trail', 'Figure generation'],
             },
             video: {
                 tone: 'dark',
-                tag: 'Video AI · Surgical Media',
+                tag: 'AAGL Archive · AI Analysis',
                 title: 'Surgical Video Archive',
-                tagline: 'The video workflow behind award-winning surgical content. Organize, tag, and learn from your own footage — built by the surgeon who won the Golden Hysteroscope.',
-                platforms: ['Native macOS', 'ProRes / H.264', 'Encrypted local'],
+                tagline: 'Bulk-extract videos from SurgeryU (AAGL\'s portal), run AI analysis on any clip — transcript, OCR, clinical summary, and procedure tags — and sync the findings into your FMIGS knowledge base.',
+                platforms: ['Native macOS + iPad', 'SurgeryU integration', 'Claude Code AI backend'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>',
-                description: 'The same workflow behind multiple AAGL Global Congress acceptances and the Golden Hysteroscope Award. Surgical Video Archive is built around how surgeons actually learn from their operations: timeline annotations, procedure-aware tagging, side-by-side comparison, and clip exports ready for AAGL or ACOG submission.',
+                description: 'Surgical Video Archive has two modes: building a library from the AAGL SurgeryU portal, and analyzing personal operative recordings. For SurgeryU, enter your credentials and URL patterns — the app bulk-downloads and archives videos with metadata. For any video in the library, trigger an AI analysis: a Python-based pipeline transcribes the audio, runs OCR on screen overlays, and passes both to Claude Code, which generates a clinical description, detailed surgical analysis, procedure tags (anatomy, technique, complications), and a confidence score. Natural language smart search interprets your query ("hysterectomy with bladder injury") into medical terms and MIGS categories, then returns matching videos. Everything syncs with MountZara Clinical AI — your video evidence feeds the same knowledge base as your literature.',
                 features: [
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'Procedure-aware tagging', desc: 'Hysteroscopy, laparoscopy, robotic, hysterectomy, myomectomy — pre-loaded ontology with custom tags.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6l3-9 3 18 3-9h3"/></svg>', title: 'Timeline annotations', desc: 'Mark anatomic landmarks, decision points, and complications with frame-accurate precision.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>', title: 'Side-by-side comparison', desc: 'Review two cases of the same procedure synchronized — invaluable for technique refinement.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>', title: 'Submission-ready clips', desc: 'AAGL, ACOG, and IRB-compliant clip exports with built-in PHI scrub and compression presets.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', title: 'AI scene detection', desc: 'Automatically detect entry, dissection, hemostasis, and closure phases — no manual scrubbing.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'Encrypted local storage', desc: 'Surgical video stays on your machine. AES-256 at rest, no cloud upload required.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>', title: 'SurgeryU bulk extraction', desc: 'Enter your SurgeryU.org credentials and paste URL patterns — the app authenticates, downloads, and archives videos from the AAGL portal with full metadata.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'Natural language smart search', desc: 'Type "hysterectomy with bladder injury" — Claude Code interprets the query into MIGS procedure categories, anatomic terms, and related techniques, then returns ranked matches from your archive.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'AI video analysis pipeline', desc: 'Python runner transcribes audio + OCRs screen overlays → Claude Code synthesizes into a clinical description, detailed surgical analysis, anatomy/technique/complication tags, and a confidence score (0–1).' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>', title: 'Personal operative video library', desc: 'Upload your own OR recordings alongside the AAGL archive. Both collections searchable, analyzable, and taggable with the same AI pipeline.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', title: 'Feedback-loop re-analysis', desc: 'If an analysis misses the key finding, add a note ("focus on the uterine artery ligation technique") and re-run — Claude Code incorporates your feedback in the next synthesis.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>', title: 'FMIGS knowledge base sync', desc: 'AI Hub Sync tab pushes analyzed video evidence into MountZara Clinical AI — your operative footage and your literature index share the same queryable knowledge base.' },
                 ],
                 useCases: [
-                    { title: 'Building a board-prep library', desc: 'A searchable, tagged library of your own cases — the highest-yield prep material there is.' },
-                    { title: 'Teaching content', desc: 'Build polished teaching reels for residents, fellows, and grand rounds in minutes, not days.' },
-                    { title: 'AAGL / ACOG video competition', desc: 'The same export pipeline that produced the Golden Hysteroscope-winning entry.' },
+                    { title: 'Building a personal MIGS curriculum', desc: 'Download your AAGL SurgeryU library, run AI analysis on each video, and build a searchable archive of tagged techniques — your own private surgical education platform.' },
+                    { title: 'Prepping a conference video submission', desc: 'Upload your operative recording, trigger analysis to verify the clinical narrative and tags are accurate, then use the findings to write your video abstract — the same workflow behind the Golden Hysteroscope submission.' },
+                    { title: 'Technique comparison across cases', desc: 'Smart-search "robotic isthmocele repair ICG" → pull all matching videos → compare technique variations across your archived cases and the AAGL library side by side.' },
                 ],
-                tech: ['Native Swift / AVFoundation', 'Apple Video Toolbox', 'CoreML scene detection', 'ProRes 4444 + H.264 + H.265', 'Frame-accurate scrubbing', 'AES-256 encryption'],
+                tech: ['Native Swift / SwiftUI (macOS + iPad)', 'Claude Code CLI (AI backend)', 'Python video analysis pipeline (audio transcription + OCR)', 'SurgeryU portal integration', 'Smart search with query interpretation', 'Confidence scoring (0–1)', 'Encrypted credential storage', 'FMIGS knowledge base sync'],
             },
         };
 
