@@ -176,7 +176,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 100px 28px 60px;
+            padding: 100px 28px 120px;
             position: relative;
             overflow: hidden;
         }
@@ -379,29 +379,33 @@
         /* Scroll indicator */
         .scroll-indicator {
             position: absolute;
-            bottom: 32px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2;
             opacity: 0;
             animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both, float 3s ease-in-out 2.6s infinite;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.2em;
             color: var(--gray-3);
             text-transform: uppercase;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             pointer-events: none;
         }
 
         .scroll-indicator::after {
             content: '';
             width: 1px;
-            height: 24px;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.35), transparent);
+        }
+
+        @media (max-height: 720px) {
+            .scroll-indicator { display: none; }
         }
 
         @keyframes float {
