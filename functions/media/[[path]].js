@@ -1,11 +1,11 @@
-// Cloudflare Pages Function: serves videos from R2 bucket binding
-// Bound name: VIDEOS (configured in wrangler.toml / dashboard)
-// Routes: /videos/<filename> → R2 object <filename>
+// Cloudflare Pages Function: serves media from R2 bucket binding
+// Bound name: MEDIA (configured in dashboard)
+// Routes: /media/<filename> → R2 object <filename>
 
 export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
-    // Strip leading "/videos/" from the pathname
-    const key = decodeURIComponent(url.pathname.replace(/^\/videos\//, ""));
+    // Strip leading "/media/" from the pathname
+    const key = decodeURIComponent(url.pathname.replace(/^\/media\//, ""));
 
     if (!key) {
         return new Response("Not found", { status: 404 });
