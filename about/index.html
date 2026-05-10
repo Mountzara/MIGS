@@ -514,6 +514,144 @@
             justify-content: center;
         }
 
+        /* Comprehensive Credentials Section */
+        .credentials {
+            padding: 100px clamp(20px, 4vw, 28px) 120px;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(41, 151, 255, 0.04), transparent 60%),
+                var(--black);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+        }
+
+        .credentials-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .credentials-eyebrow {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+        }
+
+        .credentials-title {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.028em;
+            line-height: 1.05;
+            color: var(--white);
+            margin-bottom: 12px;
+            text-align: center;
+            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .credentials-sub {
+            font-size: clamp(16px, 1.6vw, 18px);
+            color: var(--gray-3);
+            text-align: center;
+            margin-bottom: 56px;
+            font-weight: 300;
+            letter-spacing: -0.005em;
+        }
+
+        .cred-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 720px) {
+            .cred-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1100px) {
+            .cred-grid { grid-template-columns: repeat(3, 1fr); }
+            .cred-card-wide { grid-column: span 2; }
+        }
+
+        .cred-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 28px clamp(20px, 2.5vw, 32px) 32px;
+            transition: border-color 0.32s ease, transform 0.32s ease;
+            min-width: 0;
+        }
+
+        .cred-card:hover {
+            border-color: rgba(41, 151, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .cred-card h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.012em;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .cred-card h3 .cred-meta {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .cred-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cred-list li {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--gray-4);
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            letter-spacing: -0.005em;
+        }
+
+        .cred-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .cred-list li strong {
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .cred-list li em {
+            color: var(--accent);
+            font-style: normal;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
         /* Footer */
         footer {
             background: var(--black);
@@ -782,6 +920,171 @@
         </div>
 
     </article>
+
+    <!-- Comprehensive Credentials -->
+    <section class="credentials">
+        <div class="credentials-inner">
+            <span class="credentials-eyebrow">Curriculum Vitae</span>
+            <h2 class="credentials-title">The full record.</h2>
+            <p class="credentials-sub">A surgeon's career, documented.</p>
+
+            <div class="cred-grid">
+                <!-- Awards -->
+                <div class="cred-card cred-card-wide">
+                    <h3>Awards &amp; Honors <span class="cred-meta">Peer-reviewed</span></h3>
+                    <ul class="cred-list">
+                        <li><strong>AAGL Golden Hysteroscope Award</strong> — Best Video Abstract in Hysteroscopy, AAGL Global Congress, New Orleans · 2024</li>
+                        <li><strong>George M. Morley Award for Best Gynecological Research</strong> — CAOG Annual Meeting, Indianapolis · 2023</li>
+                        <li><strong>Excellence in Minimally Invasive Gynecology</strong> — American Association of Gynecologic Laparoscopists (AAGL), PGY4 · 2023</li>
+                        <li><strong>Surgical Skills Chief</strong> — Ascension Illinois St. Alexius OBGYN Residency Program, PGY4 · 2022–2023</li>
+                        <li><strong>Best Overall Grand Rounds Presentation</strong> — Ascension Illinois St. Alexius OBGYN Residency, PGY1 · 2019</li>
+                        <li><strong>Best Overall Resident Lecture</strong> — Chiari malformations in pregnancy · 2019</li>
+                    </ul>
+                </div>
+
+                <!-- Journal Publications -->
+                <div class="cred-card">
+                    <h3>Journal Publications</h3>
+                    <ul class="cred-list">
+                        <li><strong>Multifocal Endometriosis with Atypical Papillary Fragments</strong> — Tam, Mabini, Fernandez et al. · GMIT 2026 (accepted)</li>
+                        <li><strong>ICG Imaging: Innovative Isthmocele Diagnosis &amp; Repair</strong> — Tam, Mabini, Fernandez et al. · Arch Gynecol Obstet · 2025</li>
+                        <li><strong>Mapping Deep Epigastric Vessels Stratified by BMI</strong> — Garza-Cavazos, Mabini et al. · JMIG · 2024</li>
+                        <li><strong>Self-Injury in Behavioral Organization</strong> — Sandman, Kemp, Mabini, Magnussun · J Intellect Disabil Res · 2012</li>
+                    </ul>
+                </div>
+
+                <!-- AAGL Abstracts -->
+                <div class="cred-card">
+                    <h3>AAGL Global Congress <span class="cred-meta">100% accepted · 2020–2025</span></h3>
+                    <ul class="cred-list">
+                        <li><strong>NBI in Adenomyosis</strong> — JMIG 32(11):S105 · 2025</li>
+                        <li><strong>To See or Not to See? RPOC in Arcuate Uterus</strong> — JMIG 31(11):S14 · 2024 · <em>Golden Hysteroscope Award</em></li>
+                        <li><strong>Fibroids à La Carte: Robotic Myomectomy</strong> — JMIG 31(11):S58 · 2024</li>
+                        <li><strong>When in Doubt, Green It Out: ICG &amp; Asherman's</strong> — JMIG 31(11):S10–S11 · 2024</li>
+                        <li><strong>RPOC and Infertility: Hysteroscopic Approach</strong> — 2022</li>
+                        <li><strong>The Role of ICG in Endometriosis-Related Fibrosis</strong> — 2022</li>
+                        <li><strong>Robotic Myomectomy: 101</strong> — JMIG 27(7):S98 · 2020</li>
+                    </ul>
+                </div>
+
+                <!-- ACOG / CAOG Presentations -->
+                <div class="cred-card">
+                    <h3>ACOG &amp; CAOG Presentations</h3>
+                    <ul class="cred-list">
+                        <li><strong>Fluorescent ICG for Intraoperative Detection of Endometriosis</strong> — ACOG Annual Conference · May 2024</li>
+                        <li><strong>ICG in Detecting Endometriosis-Related Fibrosis</strong> — CAOG Annual Regional Conference, Indianapolis · September 2022 <em>(Morley Award basis)</em></li>
+                        <li><strong>ICG in Detecting Clear Endometriosis Lesions</strong> — ACOG Annual District Conference, Chicago · September 2022</li>
+                    </ul>
+                </div>
+
+                <!-- Active Research -->
+                <div class="cred-card">
+                    <h3>Active IRB Research</h3>
+                    <ul class="cred-list">
+                        <li><strong>ICG &amp; Endometriosis-Related Fibrosis</strong> — PRIME Illinois St. Francis · IRB RIL20220137</li>
+                        <li><strong>NBI in Adenomyosis Detection during Hysteroscopy</strong> — IRB RIL20240017</li>
+                        <li><strong>TAP Block Post-Op Pain RCT in ERAS Protocol</strong> — IRB RIL20240009 · Lukish, Mabini, Tam, Ward, Siddique</li>
+                        <li><strong>ICG for Appendiceal Endometriosis Detection</strong> — IRB RIL20240078</li>
+                    </ul>
+                </div>
+
+                <!-- Curriculum Design -->
+                <div class="cred-card">
+                    <h3>Curriculum Design &amp; Development</h3>
+                    <ul class="cred-list">
+                        <li><strong>MIGS Fellowship AI &amp; Advanced Technologies Curriculum</strong> — PRIME Illinois Saint Francis · 2024</li>
+                        <li><strong>MIGS / Surgical Skills &amp; Didactics Curriculum</strong> — Ascension Illinois St. Alexius OBGYN Residency · 2022</li>
+                        <li><strong>Pilot Hospice Core Clerkship Curriculum</strong> — Alabama College of Osteopathic Medicine · 2018</li>
+                        <li><strong>Redefining Aging: Lifelong Purpose &amp; Passion</strong> — Troy University · 2016</li>
+                    </ul>
+                </div>
+
+                <!-- Grand Rounds -->
+                <div class="cred-card">
+                    <h3>Grand Rounds Presentations</h3>
+                    <ul class="cred-list">
+                        <li><strong>Basics of Total Laparoscopic Hysterectomy</strong> — Ascension &amp; Saint Joseph MIGS Didactics · 2023, 2024</li>
+                        <li><strong>Laparoscopic Anatomy</strong> — Ascension &amp; Saint Joseph MIGS Didactics · 2023, 2024</li>
+                        <li><strong>Hysteroscopy Fundamentals</strong> — Saint Joseph OBGYN Residency · 2024, 2025</li>
+                        <li><strong>Isthmocele</strong> — Lutheran General MIGS Program · 2022</li>
+                        <li><strong>Suspected Ectopic Pregnancy in a Didelphys Uterus</strong> — Ascension Illinois St. Alexius · 2022</li>
+                        <li><strong>Chronic Pelvic Pain</strong> · <strong>Breast Disorders</strong> · <strong>Non-obstetric Surgery in Pregnancy</strong> · <strong>Interstitial Lung Disease in Pregnancy</strong> · <strong>Stroke in Pregnancy</strong> · <strong>Chiari Malformations in Pregnancy</strong></li>
+                    </ul>
+                </div>
+
+                <!-- Health Systems QI -->
+                <div class="cred-card">
+                    <h3>Health Systems Quality Improvement</h3>
+                    <ul class="cred-list">
+                        <li><strong>MIGS ERAS Protocol Implementation</strong> for COEMIG Accreditation at Ascension Illinois St. Alexius — Jachtorowycz, Calonje, Mabini, Monahan · 2023</li>
+                    </ul>
+                </div>
+
+                <!-- Hospital Affiliations -->
+                <div class="cred-card">
+                    <h3>Hospital Affiliations <span class="cred-meta">Chicagoland</span></h3>
+                    <ul class="cred-list">
+                        <li><strong>PRIME St. Francis</strong> — 355 Ridge Ave, Evanston, IL</li>
+                        <li><strong>PRIME St. Mary</strong> — 2233 W. Division St, Chicago, IL</li>
+                        <li><strong>Ascension St. Joseph</strong> — 2900 N. Lakeshore Ave, Chicago, IL</li>
+                        <li><strong>Thorek Memorial Hospital</strong> — 850 W Irving Park Rd, Chicago, IL</li>
+                    </ul>
+                </div>
+
+                <!-- Memberships & Committees -->
+                <div class="cred-card">
+                    <h3>Memberships &amp; Committees</h3>
+                    <ul class="cred-list">
+                        <li><strong>American Association of Gynecologic Laparoscopists (AAGL)</strong> — Member · 2019–Present</li>
+                        <li><strong>American College of Obstetricians and Gynecologists (ACOG)</strong> — Member · 2018–Present</li>
+                        <li><strong>Central Association of OBGYN (CAOG)</strong> — Member · 2023–Present</li>
+                        <li><strong>Chicago Gynecological Society</strong> — Member · 2019–Present</li>
+                        <li><strong>PRIME St. Francis Robotic Steering Committee</strong> — 2023–Present</li>
+                        <li><strong>Ascension COEMIG Committee</strong> — 2022–Present</li>
+                        <li><strong>Ascension ERAS Committee</strong> — Former Resident Champion · 2022–2023</li>
+                    </ul>
+                </div>
+
+                <!-- Specialized Training -->
+                <div class="cred-card">
+                    <h3>Specialized Training &amp; CME</h3>
+                    <ul class="cred-list">
+                        <li><strong>Medtronic Advanced Hysteroscopy Course</strong> — Medtronic Campus, Glendale, AZ · 2024</li>
+                        <li><strong>vNotes Provider Workshop</strong> — Applied Medical, Rosemont, IL · 2024</li>
+                        <li><strong>USF CAMLS Hysteroscopy / MIGS / Cadaver Course</strong> — University of South Florida · 2023</li>
+                        <li><strong>SGS Advanced MIGS &amp; Cadaver Course</strong> — Society of Gynecologic Surgeons, New Orleans · 2023</li>
+                        <li><strong>SAAO Annual Convocation for Osteopathic Manipulative Treatment</strong> — Colorado Springs · 2024</li>
+                        <li><strong>Fascial Distortion Model (FDM)</strong> — Academy of Fascial Distortion · 2016</li>
+                        <li><strong>Osteopathic Cranial Course</strong> — Cranial Academy, Atlanta · 2016</li>
+                    </ul>
+                </div>
+
+                <!-- Education -->
+                <div class="cred-card">
+                    <h3>Education &amp; Training</h3>
+                    <ul class="cred-list">
+                        <li><strong>Complex Benign Gynecology Fellowship (formerly MIGS)</strong> — PRIME St. Francis Hospital, Evanston · 2023–2026</li>
+                        <li><strong>OBGYN Residency</strong> — Ascension Illinois St. Alexius, ACGME 2201621094 · 2019–2023</li>
+                        <li><strong>Doctor of Osteopathic Medicine (DO)</strong> — Alabama College of Osteopathic Medicine · 2014–2019</li>
+                        <li><strong>Anatomy &amp; OPP Preclinical Fellowship</strong> — Alabama College of Osteopathic Medicine · 2015–2016</li>
+                        <li><strong>Master's in Adult Education</strong> — Curriculum Development &amp; Instructional Design · Troy University · 2016–2017</li>
+                        <li><strong>Postgraduate Certificate in Public Health</strong> — University of Liverpool, UK · 2009–2010</li>
+                        <li><strong>BS Biological Sciences</strong> — University of California, Irvine · 2002–2007</li>
+                    </ul>
+                </div>
+
+                <!-- Board Certification -->
+                <div class="cred-card">
+                    <h3>Board Eligibility &amp; Licensure</h3>
+                    <ul class="cred-list">
+                        <li><strong>ABOG Oral Exam Eligible</strong> — Intended Year: Fall/Winter 2026</li>
+                        <li><strong>Passed ABOG Written Exam</strong> — July 24, 2023</li>
+                        <li><strong>Passed AAGL EMIGS Skills Exam</strong> — October 2023</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Closing CTA -->
     <section class="closing">
