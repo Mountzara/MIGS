@@ -540,14 +540,36 @@
             .cover-image {
                 object-position: 58% 0%;
             }
+            /* Mobile vignette — much stronger edge darkening so the portrait
+               reads like an iPhone editorial frame. Layers a tight radial
+               vignette + corner darkening + a subtle inner border. */
+            .cover-vignette {
+                background:
+                    radial-gradient(ellipse 78% 62% at 50% 48%,
+                        transparent 28%,
+                        rgba(0,0,0,0.30) 62%,
+                        rgba(0,0,0,0.78) 100%),
+                    radial-gradient(circle at 0% 0%, rgba(0,0,0,0.55), transparent 32%),
+                    radial-gradient(circle at 100% 0%, rgba(0,0,0,0.55), transparent 32%),
+                    radial-gradient(circle at 0% 100%, rgba(0,0,0,0.60), transparent 36%),
+                    radial-gradient(circle at 100% 100%, rgba(0,0,0,0.60), transparent 36%);
+                mix-blend-mode: multiply;
+            }
             .cover-gradient {
                 background:
                     linear-gradient(180deg,
-                        rgba(0,0,0,0.35) 0%,
-                        rgba(0,0,0,0.05) 14%,
-                        transparent 32%,
-                        rgba(0,0,0,0.55) 55%,
-                        rgba(0,0,0,0.92) 100%);
+                        rgba(0,0,0,0.45) 0%,
+                        rgba(0,0,0,0.10) 16%,
+                        transparent 34%,
+                        rgba(0,0,0,0.55) 60%,
+                        rgba(0,0,0,0.94) 100%),
+                    linear-gradient(90deg,
+                        rgba(0,0,0,0.45) 0%,
+                        rgba(0,0,0,0.15) 18%,
+                        transparent 35%,
+                        transparent 65%,
+                        rgba(0,0,0,0.15) 82%,
+                        rgba(0,0,0,0.45) 100%);
             }
             .cover-footer {
                 flex-direction: column;

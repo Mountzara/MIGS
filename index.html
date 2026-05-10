@@ -1751,6 +1751,346 @@
 
         .pub-link:hover { text-decoration: underline; }
 
+        /* ========== Research Feature — cinematic pinned video showcase ========== */
+        .research-features {
+            margin-top: 56px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            /* Allow children to break out to viewport edges */
+            overflow: visible;
+        }
+        .research-feature {
+            position: relative;
+            height: 320vh; /* desktop: longer scroll for 3 crossfading scenes */
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+        }
+        .research-feature-pin {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        .research-feature-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            z-index: 0;
+            filter: saturate(1.0) contrast(1.05);
+            transition: filter 600ms ease, transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(1.06);
+        }
+        .research-feature.scene-final .research-feature-video {
+            transform: scale(1.00);
+            filter: saturate(1.05) contrast(1.06);
+        }
+        /* Vignette: subtle while text overlays read, deeper as video takes over */
+        .research-feature-vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 92% 78% at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%),
+                radial-gradient(circle at 0% 100%, rgba(0,0,0,0.45), transparent 36%),
+                radial-gradient(circle at 100% 100%, rgba(0,0,0,0.45), transparent 36%);
+            transition: opacity 600ms ease;
+            opacity: 1;
+        }
+        /* Tint layer dims the video when scenes are reading; lifts at the final scene */
+        .research-feature-tint {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            background:
+                linear-gradient(180deg,
+                    rgba(0,0,0,0.55) 0%,
+                    rgba(0,0,0,0.35) 30%,
+                    rgba(0,0,0,0.20) 55%,
+                    rgba(0,0,0,0.55) 85%,
+                    rgba(0,0,0,0.85) 100%),
+                linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 35%, transparent 55%);
+            transition: opacity 700ms ease;
+            opacity: 1;
+        }
+        .research-feature.scene-final .research-feature-tint {
+            opacity: 0.18;
+        }
+        .research-feature.scene-final .research-feature-vignette {
+            opacity: 0.85;
+        }
+        .research-feature-grain {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.018), transparent 1px),
+                radial-gradient(circle at 70% 60%, rgba(255,255,255,0.014), transparent 1px),
+                radial-gradient(circle at 40% 80%, rgba(255,255,255,0.018), transparent 1px);
+            background-size: 3px 3px, 5px 5px, 7px 7px;
+            opacity: 0.45;
+            mix-blend-mode: overlay;
+        }
+        /* Static masthead corners */
+        .research-feature-corner {
+            position: absolute;
+            z-index: 5;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .research-feature-corner-tl {
+            top: clamp(80px, 8vh, 100px);
+            left: clamp(20px, 4vw, 48px);
+        }
+        .research-feature-corner-tr {
+            top: clamp(80px, 8vh, 100px);
+            right: clamp(20px, 4vw, 48px);
+            text-align: right;
+            align-items: flex-end;
+        }
+        .research-feature-corner .corner-meta {
+            color: rgba(255, 255, 255, 0.62);
+        }
+        /* Scenes: 3 crossfading text overlays */
+        .research-feature-scenes {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .feature-scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 14vw, 140px);
+            color: #fff;
+            opacity: 0;
+            transform: translate3d(0, 32px, 0);
+            transition:
+                opacity 780ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .feature-scene.active {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+        /* Scene 1: identity */
+        .feature-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .feature-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.92);
+            padding: 7px 13px;
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .feature-tag.award {
+            color: #fcd34d;
+            border-color: rgba(252, 211, 77, 0.32);
+            background: rgba(252, 211, 77, 0.08);
+        }
+        .feature-tag.award::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #fcd34d;
+        }
+        .feature-title {
+            font-size: clamp(36px, 5.4vw, 76px);
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.028em;
+            margin: 0 0 18px;
+            max-width: 1100px;
+            color: #fff;
+            text-shadow: 0 4px 36px rgba(0,0,0,0.55);
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.78) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .feature-journal {
+            font-size: clamp(14px, 1.2vw, 17px);
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.72);
+            letter-spacing: -0.005em;
+            max-width: 760px;
+        }
+        /* Scene 2: clinical narrative */
+        .feature-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.62);
+            margin-bottom: 16px;
+        }
+        .feature-narrative {
+            font-size: clamp(20px, 2.2vw, 30px);
+            font-weight: 400;
+            line-height: 1.42;
+            letter-spacing: -0.014em;
+            color: rgba(255, 255, 255, 0.94);
+            margin: 0 0 18px;
+            max-width: 880px;
+            text-shadow: 0 3px 24px rgba(0,0,0,0.5);
+        }
+        .feature-narrative strong {
+            color: #fff;
+            font-weight: 600;
+        }
+        .feature-byline {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        /* Scene 3: watch the case */
+        .feature-watch {
+            position: absolute;
+            inset: auto 0 clamp(48px, 8vh, 80px) 0;
+            padding: 0 clamp(20px, 5vw, 64px);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            color: #fff;
+            opacity: 0;
+            transform: translate3d(0, 20px, 0);
+            transition: opacity 700ms ease, transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .research-feature.scene-final .feature-watch {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+        .feature-watch-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.72);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .feature-watch-label::before {
+            content: '';
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 0 rgba(41,151,255,0.6);
+            animation: pulse 2s infinite;
+        }
+        .feature-watch-meta {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 0.06em;
+        }
+        /* Progress dots — show current scene */
+        .feature-progress {
+            position: absolute;
+            top: 50%;
+            right: clamp(16px, 2.4vw, 28px);
+            transform: translateY(-50%);
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            pointer-events: none;
+        }
+        .feature-progress-dot {
+            width: 6px;
+            height: 22px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.18);
+            transition: background 350ms ease, height 350ms ease;
+        }
+        .feature-progress-dot.active {
+            background: rgba(255, 255, 255, 0.85);
+            height: 32px;
+        }
+        /* Sound toggle */
+        .feature-sound {
+            position: absolute;
+            top: clamp(80px, 8vh, 100px);
+            right: clamp(20px, 4vw, 48px);
+            z-index: 7;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none; /* shown by JS when scene-final */
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            transition: background 200ms ease, transform 200ms ease;
+            opacity: 0;
+        }
+        .research-feature.scene-final .feature-sound {
+            display: flex;
+            opacity: 1;
+        }
+        .feature-sound:hover { background: rgba(0, 0, 0, 0.65); transform: scale(1.06); }
+        .feature-sound svg { width: 18px; height: 18px; stroke-width: 1.6; }
+        /* Hide the corners on mobile to keep the image clean */
+        @media (max-width: 720px) {
+            .research-feature { height: 260vh; }
+            .research-feature-corner { display: none; }
+            .feature-scene { padding: 0 22px 96px; }
+            .feature-title { font-size: clamp(28px, 8vw, 44px); }
+            .feature-narrative { font-size: clamp(17px, 4.5vw, 22px); line-height: 1.42; }
+            .feature-journal { font-size: 13px; }
+            .feature-watch { padding: 0 22px; bottom: 32px; }
+            .feature-watch-meta { display: none; }
+            .feature-progress { right: 12px; gap: 10px; }
+            .feature-progress-dot { width: 4px; height: 16px; }
+            .feature-progress-dot.active { height: 24px; }
+        }
+        /* prefers-reduced-motion: skip transitions, show final state immediately */
+        @media (prefers-reduced-motion: reduce) {
+            .feature-scene, .research-feature-tint, .research-feature-vignette,
+            .research-feature-video, .feature-watch {
+                transition: none !important;
+            }
+        }
+
         /* ========== Awards ========== */
         .awards-section {
             background: var(--bg-light);
@@ -2096,10 +2436,10 @@
             -webkit-text-fill-color: transparent;
         }
         .app-modal-tagline {
-            font-size: clamp(16px, 1.4vw, 20px);
-            font-weight: 300;
-            line-height: 1.5;
-            color: var(--gray-2);
+            font-size: clamp(17px, 1.5vw, 21px);
+            font-weight: 400;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.86);
             max-width: 720px;
             margin: 0 0 28px;
         }
@@ -2130,27 +2470,29 @@
         }
         .app-modal-section:last-child { margin-bottom: 0; }
         .app-modal-section-eyebrow {
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: var(--gray-3);
-            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 14px;
         }
         .app-modal-section-title {
-            font-size: clamp(22px, 2vw, 30px);
+            font-size: clamp(24px, 2.2vw, 32px);
             font-weight: 600;
             color: var(--white);
-            letter-spacing: -0.012em;
+            letter-spacing: -0.018em;
+            line-height: 1.15;
             margin: 0 0 24px;
         }
         .app-modal-section-lead {
-            font-size: 17px;
-            font-weight: 300;
-            line-height: 1.65;
-            color: var(--gray-1);
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.66;
+            color: rgba(255, 255, 255, 0.82);
             max-width: 760px;
             margin: 0 0 32px;
+            letter-spacing: -0.002em;
         }
 
         .feature-grid-modal {
@@ -2183,16 +2525,18 @@
         }
         .feature-tile-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
         .feature-tile h4 {
-            font-size: 15px;
+            font-size: 16.5px;
             font-weight: 600;
             color: var(--white);
-            margin: 0 0 6px;
+            margin: 0 0 8px;
             letter-spacing: -0.005em;
+            line-height: 1.3;
         }
         .feature-tile p {
-            font-size: 13.5px;
-            line-height: 1.55;
-            color: var(--gray-2);
+            font-size: 14.5px;
+            font-weight: 400;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.76);
             margin: 0;
         }
 
@@ -2222,12 +2566,15 @@
             color: var(--white);
             font-weight: 600;
             display: block;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            font-size: 15.5px;
+            letter-spacing: -0.005em;
         }
         .usecase-row p {
-            color: var(--gray-2);
-            font-size: 14px;
-            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.58;
             margin: 0;
         }
 
@@ -2237,12 +2584,14 @@
             gap: 10px;
         }
         .tech-pill {
-            font-size: 12.5px;
-            color: var(--gray-1);
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.82);
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 999px;
+            letter-spacing: 0.005em;
         }
 
         .app-modal-footer-cta {
@@ -2260,21 +2609,30 @@
         .app-modal-footer-cta strong {
             display: block;
             color: var(--white);
-            font-size: 16px;
+            font-size: 17px;
+            font-weight: 600;
             margin-bottom: 4px;
+            letter-spacing: -0.005em;
         }
         .app-modal-footer-cta p {
-            color: var(--gray-2);
-            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 14.5px;
+            font-weight: 400;
+            line-height: 1.5;
             margin: 0;
         }
 
         @media (max-width: 768px) {
             .app-modal-card { margin: 12px; max-height: calc(100vh - 24px); border-radius: 22px; }
-            .app-modal-hero { padding: 44px 28px 32px; }
-            .app-modal-body { padding: 36px 28px; }
+            .app-modal-hero { padding: 44px 24px 32px; }
+            .app-modal-body { padding: 36px 24px; }
             .app-modal-section { margin-bottom: 40px; }
-            .feature-grid-modal { grid-template-columns: 1fr; }
+            .feature-grid-modal { grid-template-columns: 1fr; gap: 14px; }
+            .feature-tile { padding: 22px 20px; }
+            .feature-tile p { font-size: 15px; line-height: 1.6; }
+            .app-modal-section-lead { font-size: 17px; line-height: 1.65; }
+            .usecase-row { padding: 18px 18px; }
+            .usecase-row p { font-size: 15px; line-height: 1.55; }
             .app-modal-footer-cta { flex-direction: column; align-items: flex-start; }
         }
 
@@ -3367,35 +3725,198 @@
                 </div>
             </div>
 
-            <div class="research-list">
-                <!-- Golden Hysteroscope -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag award">Golden Hysteroscope Award</span>
-                                <span class="tag">Hysteroscopy</span>
-                                <span class="tag year">2024</span>
-                            </div>
-                            <h3>To See or Not to See? A Visually Directed Approach to the Hysteroscopic Removal of RPOC from an Angular Pregnancy in an Arcuate Uterus</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S14</div>
+            <!-- Cinematic featured cases — pinned video showcases -->
+            <div class="research-features">
+
+                <!-- FEATURE 1: Golden Hysteroscope -->
+                <article class="research-feature" data-feature="rpoc">
+                    <div class="research-feature-pin">
+                        <video class="research-feature-video"
+                               muted playsinline loop preload="metadata"
+                               aria-label="Golden Hysteroscope Award — RPOC case video">
+                            <source src="/media/rpoc-golden-hysteroscope.mp4?v=1" type="video/mp4">
+                        </video>
+                        <div class="research-feature-tint"></div>
+                        <div class="research-feature-vignette"></div>
+                        <div class="research-feature-grain"></div>
+
+                        <!-- Masthead corners -->
+                        <div class="research-feature-corner research-feature-corner-tl">
+                            <span class="corner-meta">Featured Case · 01</span>
+                            <span class="corner-meta">AAGL Global Congress · 2024</span>
                         </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-inner">
-                            <span class="ai-badge">AI Snapshot</span>
-                            <p>This award-winning case study demonstrates a precision hysteroscopic technique for removing retained products of conception (RPOC) from an angular pregnancy site within an arcuate uterus — anatomy that classically defies blind dilation and curettage. By using direct visualization, the team avoided traumatic blind instrumentation, preserved endometrial integrity, and maximized fertility-sparing potential. The video set a new teaching standard, recognized by AAGL with the Golden Hysteroscope Award.</p>
-                            <div class="research-video-block">
-                                <video controls playsinline preload="metadata" poster="">
-                                    <source src="/media/rpoc-golden-hysteroscope.mp4?v=1" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
+                        <div class="research-feature-corner research-feature-corner-tr">
+                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
+                            <span class="corner-meta">Golden Hysteroscope Award</span>
+                        </div>
+
+                        <!-- Sound toggle (only visible in final scene) -->
+                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
+                                <path d="M11 5L6 9H2v6h4l5 4z"/>
+                                <line x1="22" y1="9" x2="16" y2="15"/>
+                                <line x1="16" y1="9" x2="22" y2="15"/>
+                            </svg>
+                        </button>
+
+                        <!-- Progress dots -->
+                        <div class="feature-progress" aria-hidden="true">
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                        </div>
+
+                        <!-- Scenes -->
+                        <div class="research-feature-scenes">
+                            <div class="feature-scene feature-scene--1">
+                                <div class="feature-tags">
+                                    <span class="feature-tag award">Golden Hysteroscope Award</span>
+                                    <span class="feature-tag">Hysteroscopy</span>
+                                    <span class="feature-tag">2024</span>
+                                </div>
+                                <h3 class="feature-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus.</h3>
+                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                             </div>
+                            <div class="feature-scene feature-scene--2">
+                                <span class="feature-eyebrow">Why this case mattered</span>
+                                <p class="feature-narrative">An <strong>angular pregnancy</strong> in an <strong>arcuate uterus</strong> classically defies blind dilation and curettage. By substituting <strong>direct hysteroscopic visualization</strong> for blind instrumentation, the team preserved endometrial integrity and protected future fertility — establishing a new teaching standard recognized by AAGL with the <strong>Golden Hysteroscope Award</strong>.</p>
+                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                            </div>
+                            <div class="feature-scene feature-scene--3">
+                                <!-- Intentionally empty: lets the video take over -->
+                            </div>
+                        </div>
+
+                        <!-- Final scene "watch the case" caption -->
+                        <div class="feature-watch">
+                            <span class="feature-watch-label">Watch the case</span>
+                            <span class="feature-watch-meta">Operative footage · 4K source</span>
                         </div>
                     </div>
-                </div>
+                </article>
 
+                <!-- FEATURE 2: Myomectomy à La Carte -->
+                <article class="research-feature" data-feature="myomectomy">
+                    <div class="research-feature-pin">
+                        <video class="research-feature-video"
+                               muted playsinline loop preload="metadata"
+                               aria-label="Fibroids à La Carte — robotic myomectomy workflow">
+                            <source src="/media/myomectomy-gel-port.mp4?v=1" type="video/mp4">
+                        </video>
+                        <div class="research-feature-tint"></div>
+                        <div class="research-feature-vignette"></div>
+                        <div class="research-feature-grain"></div>
+
+                        <div class="research-feature-corner research-feature-corner-tl">
+                            <span class="corner-meta">Featured Case · 02</span>
+                            <span class="corner-meta">AAGL Global Congress · 2024</span>
+                        </div>
+                        <div class="research-feature-corner research-feature-corner-tr">
+                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
+                            <span class="corner-meta">Robotic Workflow Refinement</span>
+                        </div>
+
+                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
+                                <path d="M11 5L6 9H2v6h4l5 4z"/>
+                                <line x1="22" y1="9" x2="16" y2="15"/>
+                                <line x1="16" y1="9" x2="22" y2="15"/>
+                            </svg>
+                        </button>
+
+                        <div class="feature-progress" aria-hidden="true">
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                        </div>
+
+                        <div class="research-feature-scenes">
+                            <div class="feature-scene feature-scene--1">
+                                <div class="feature-tags">
+                                    <span class="feature-tag">Robotic Surgery</span>
+                                    <span class="feature-tag">Workflow</span>
+                                    <span class="feature-tag">2024</span>
+                                </div>
+                                <h3 class="feature-title">Fibroids à La Carte: a robotic myomectomy workflow that cuts operative time.</h3>
+                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S58 · AAGL Global Congress 2024</p>
+                            </div>
+                            <div class="feature-scene feature-scene--2">
+                                <span class="feature-eyebrow">The bottleneck — and the fix</span>
+                                <p class="feature-narrative">Robotic myomectomy frequently <strong>bottlenecks at fibroid extraction</strong>. This work introduces a streamlined "à la carte" technique using a <strong>gel-based port and bag containment system</strong> — reducing total operative time, simplifying multi-fibroid removal, and preserving contained-morcellation safety.</p>
+                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                            </div>
+                            <div class="feature-scene feature-scene--3"></div>
+                        </div>
+
+                        <div class="feature-watch">
+                            <span class="feature-watch-label">Watch the technique</span>
+                            <span class="feature-watch-meta">Operative footage · Da Vinci Xi</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- FEATURE 3: Isthmocele + Asherman's -->
+                <article class="research-feature" data-feature="isthmocele">
+                    <div class="research-feature-pin">
+                        <video class="research-feature-video"
+                               muted playsinline loop preload="metadata"
+                               aria-label="Isthmocele in Asherman's — ICG-guided robotic excision">
+                            <source src="/media/isthmocele-ashermans.mp4?v=1" type="video/mp4">
+                        </video>
+                        <div class="research-feature-tint"></div>
+                        <div class="research-feature-vignette"></div>
+                        <div class="research-feature-grain"></div>
+
+                        <div class="research-feature-corner research-feature-corner-tl">
+                            <span class="corner-meta">Featured Case · 03</span>
+                            <span class="corner-meta">AAGL Global Congress · 2024</span>
+                        </div>
+                        <div class="research-feature-corner research-feature-corner-tr">
+                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
+                            <span class="corner-meta">ICG · Hysteroscopic-Robotic</span>
+                        </div>
+
+                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
+                                <path d="M11 5L6 9H2v6h4l5 4z"/>
+                                <line x1="22" y1="9" x2="16" y2="15"/>
+                                <line x1="16" y1="9" x2="22" y2="15"/>
+                            </svg>
+                        </button>
+
+                        <div class="feature-progress" aria-hidden="true">
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                            <span class="feature-progress-dot"></span>
+                        </div>
+
+                        <div class="research-feature-scenes">
+                            <div class="feature-scene feature-scene--1">
+                                <div class="feature-tags">
+                                    <span class="feature-tag">ICG · Asherman's</span>
+                                    <span class="feature-tag">Hysteroscopic-Robotic</span>
+                                    <span class="feature-tag">2024</span>
+                                </div>
+                                <h3 class="feature-title">When in Doubt, Green It Out: ICG-guided isthmocele excision in Asherman's syndrome.</h3>
+                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11 · AAGL Global Congress 2024</p>
+                            </div>
+                            <div class="feature-scene feature-scene--2">
+                                <span class="feature-eyebrow">Mapping a hidden defect</span>
+                                <p class="feature-narrative">Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. A combined <strong>hysteroscopic-robotic approach</strong> with <strong>indocyanine green (ICG) fluorescence</strong> identifies the defect's true margins despite scarred terrain — letting the surgeon excise precisely where blind landmarks fail.</p>
+                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                            </div>
+                            <div class="feature-scene feature-scene--3"></div>
+                        </div>
+
+                        <div class="feature-watch">
+                            <span class="feature-watch-label">Watch the technique</span>
+                            <span class="feature-watch-meta">Operative footage · ICG fluorescence</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="research-list">
                 <!-- ICG Isthmocele -->
                 <div class="research-item">
                     <button class="research-toggle" onclick="toggleResearch(this)">
@@ -3482,62 +4003,6 @@
                         <div class="research-detail-inner">
                             <span class="ai-badge">AI Snapshot</span>
                             <p>Adenomyosis remains a clinical chameleon — easy to suspect, harder to confirm. This retrospective cohort study evaluates Narrow Band Imaging (NBI) hysteroscopy as a real-time, in-office diagnostic enhancement. By emphasizing surface vascular patterns invisible to standard white light, NBI helps distinguish adenomyotic features from healthy tissue.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Myomectomy -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">Robotic Surgery</span>
-                                <span class="tag">Workflow</span>
-                                <span class="tag year">2024</span>
-                            </div>
-                            <h3>Fibroids à La Carte: Decreasing Total Operative Time During Robotic Myomectomy Using a Gel-Based Port and Bag Containment System</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S58</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-inner">
-                            <span class="ai-badge">AI Snapshot</span>
-                            <p>Robotic myomectomy frequently bottlenecks at fibroid extraction. This work presents a streamlined "à la carte" technique using a gel-based port and bag containment system — reducing total operative time, simplifying multi-fibroid removal, and maintaining contained morcellation safety.</p>
-                            <div class="research-video-block">
-                                <video controls playsinline preload="metadata" poster="">
-                                    <source src="/media/myomectomy-gel-port.mp4?v=1" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Asherman's -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">ICG · Asherman's</span>
-                                <span class="tag">Case</span>
-                                <span class="tag year">2024</span>
-                            </div>
-                            <h3>When in Doubt, Green It Out: ICG in Hysteroscopic-Assisted Robotic Excision of an Isthmocele in a Patient with Asherman's Syndrome</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-inner">
-                            <span class="ai-badge">AI Snapshot</span>
-                            <p>Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. This case integrates ICG fluorescence into a combined hysteroscopic-robotic approach — using fluorescent guidance to identify the defect's true margins despite scarred terrain.</p>
-                            <div class="research-video-block">
-                                <video controls playsinline preload="metadata" poster="">
-                                    <source src="/media/isthmocele-ashermans.mp4?v=1" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -4342,6 +4807,42 @@
         let videoPaused = false;
         let ticking = false;
 
+        // ----- Cinematic research features -----
+        // Each .research-feature contains a sticky pin with a backdrop video and
+        // three crossfading scenes. Scenes are driven by scroll progress through
+        // the feature's own bounding box; the video autoplays muted while the
+        // feature is in viewport and pauses otherwise.
+        const researchFeatures = Array.from(document.querySelectorAll('.research-feature')).map(el => ({
+            el,
+            video: el.querySelector('.research-feature-video'),
+            scenes: Array.from(el.querySelectorAll('.feature-scene')),
+            dots: Array.from(el.querySelectorAll('.feature-progress-dot')),
+            lastSceneIdx: -1,
+            inView: false,
+        }));
+
+        // Play / pause via IntersectionObserver so we never run >1 surgical video at a time.
+        if ('IntersectionObserver' in window) {
+            const playObs = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const f = researchFeatures.find(rf => rf.el === entry.target);
+                    if (!f || !f.video) return;
+                    f.inView = entry.isIntersecting;
+                    if (f.inView && !reduceMotion) {
+                        f.video.play().catch(() => {});
+                    } else {
+                        f.video.pause();
+                    }
+                });
+            }, { threshold: 0.15 });
+            researchFeatures.forEach(f => playObs.observe(f.el));
+        }
+
+        // Wrap the (currently-empty) feature title with split words for a richer entry
+        // on the first scene. We skip if reduce-motion or if already split.
+        // (kept inline — no extra animation classes; opacity transition handled by scene)
+
+
         function tick() {
             const y = window.scrollY;
             const winH = window.innerHeight;
@@ -4395,6 +4896,35 @@
                 ambient.style.setProperty('--ambient-y', (35 + p * 30) + '%');
             }
 
+            // -- Cinematic research features: scene crossfade based on scroll progress --
+            if (researchFeatures.length) {
+                for (const f of researchFeatures) {
+                    const rect = f.el.getBoundingClientRect();
+                    const total = f.el.offsetHeight - winH;
+                    if (total <= 0) continue;
+                    // 0 when pin first sticks (top of feature aligns with top of viewport)
+                    // 1 when pin releases (bottom of feature aligns with bottom of viewport)
+                    const passed = Math.max(0, Math.min(total, -rect.top));
+                    const p = passed / total;
+
+                    // Three scenes, mapped to progress bands with overlap:
+                    //   scene 0: 0.00 – 0.34   (title / journal)
+                    //   scene 1: 0.34 – 0.68   (narrative)
+                    //   scene 2: 0.68 – 1.00   (video reveal — text fades away)
+                    let idx;
+                    if (p < 0.34) idx = 0;
+                    else if (p < 0.68) idx = 1;
+                    else idx = 2;
+
+                    if (idx !== f.lastSceneIdx) {
+                        f.scenes.forEach((s, i) => s.classList.toggle('active', i === idx));
+                        f.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+                        f.el.classList.toggle('scene-final', idx === 2);
+                        f.lastSceneIdx = idx;
+                    }
+                }
+            }
+
             // -- Pinned showcase frame switcher --
             if (pinnedSection && pinnedFrames.length && !reduceMotion) {
                 const rect = pinnedSection.getBoundingClientRect();
@@ -4427,6 +4957,37 @@
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
         tick();
+
+        // Toggle sound on the research-feature video. Only one plays unmuted at a time —
+        // unmuting one mutes the others, so we never have overlapping audio.
+        function toggleFeatureSound(btn) {
+            const feature = btn.closest('.research-feature');
+            if (!feature) return;
+            const v = feature.querySelector('.research-feature-video');
+            if (!v) return;
+            const willUnmute = v.muted;
+            // Mute everyone else and reset their icons first
+            document.querySelectorAll('.research-feature-video').forEach(other => {
+                if (other !== v) {
+                    other.muted = true;
+                    const otherBtn = other.parentElement.querySelector('.feature-sound svg');
+                    if (otherBtn) otherBtn.setAttribute('data-icon', 'muted');
+                }
+            });
+            v.muted = !willUnmute ? true : false;
+            const icon = btn.querySelector('svg');
+            if (icon) icon.setAttribute('data-icon', v.muted ? 'muted' : 'unmuted');
+            // Swap the icon path
+            if (icon) {
+                if (v.muted) {
+                    icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>';
+                } else {
+                    icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>';
+                }
+            }
+            v.play().catch(() => {});
+        }
+        window.toggleFeatureSound = toggleFeatureSound;
     </script>
 </body>
 </html>
