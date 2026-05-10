@@ -1872,6 +1872,218 @@
             transform: translateY(0);
         }
 
+        /* ========== Apple Vision Pro–style scroll system ========== */
+        [data-reveal] {
+            opacity: 0;
+            transform: translate3d(0, 36px, 0);
+            transition:
+                opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        [data-reveal="scale"] {
+            transform: translate3d(0, 24px, 0) scale(0.96);
+        }
+        [data-reveal="blur"] {
+            filter: blur(14px);
+            transform: translate3d(0, 16px, 0);
+        }
+        [data-reveal="left"] {
+            transform: translate3d(-32px, 0, 0);
+        }
+        [data-reveal="right"] {
+            transform: translate3d(32px, 0, 0);
+        }
+        [data-reveal].in {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+            filter: none;
+        }
+        /* Stagger across siblings */
+        [data-reveal][data-stagger="1"].in { transition-delay: 0.08s; }
+        [data-reveal][data-stagger="2"].in { transition-delay: 0.16s; }
+        [data-reveal][data-stagger="3"].in { transition-delay: 0.24s; }
+        [data-reveal][data-stagger="4"].in { transition-delay: 0.32s; }
+        [data-reveal][data-stagger="5"].in { transition-delay: 0.40s; }
+        [data-reveal][data-stagger="6"].in { transition-delay: 0.48s; }
+
+        /* Word-level reveal for headlines (per-word mask) */
+        .word-reveal {
+            /* Disable text-fill on the host so child spans control color */
+            -webkit-text-fill-color: initial !important;
+            background: none !important;
+            color: var(--white);
+        }
+        .word-reveal .word-mask {
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+            line-height: 1.05;
+            padding-bottom: 0.06em;
+        }
+        .word-reveal .w {
+            display: inline-block;
+            transform: translate3d(0, 110%, 0);
+            opacity: 0;
+            transition: transform 1.1s cubic-bezier(0.2, 1, 0.3, 1), opacity 1.1s cubic-bezier(0.2, 1, 0.3, 1);
+            will-change: transform, opacity;
+            /* Re-apply gradient on each word so the title still has the silver fade */
+            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        .word-reveal.in .w {
+            transform: translate3d(0, 0, 0);
+            opacity: 1;
+        }
+        .word-reveal.in .word-mask:nth-child(1) .w { transition-delay: 0.05s; }
+        .word-reveal.in .word-mask:nth-child(2) .w { transition-delay: 0.10s; }
+        .word-reveal.in .word-mask:nth-child(3) .w { transition-delay: 0.15s; }
+        .word-reveal.in .word-mask:nth-child(4) .w { transition-delay: 0.20s; }
+        .word-reveal.in .word-mask:nth-child(5) .w { transition-delay: 0.25s; }
+        .word-reveal.in .word-mask:nth-child(6) .w { transition-delay: 0.30s; }
+        .word-reveal.in .word-mask:nth-child(7) .w { transition-delay: 0.35s; }
+        .word-reveal.in .word-mask:nth-child(8) .w { transition-delay: 0.40s; }
+
+        /* Scroll progress indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            z-index: 200;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .scroll-progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(180,180,200,0.45));
+            transform-origin: 0 0;
+            transition: width 0.08s linear;
+        }
+
+        /* Ambient scroll-driven glow that follows the viewport */
+        .ambient-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(
+                ellipse 70% 55% at 50% var(--ambient-y, 50%),
+                rgba(255,255,255,0.035) 0%,
+                rgba(255,255,255,0.012) 35%,
+                transparent 70%
+            );
+            mix-blend-mode: screen;
+            transition: opacity 0.6s ease;
+        }
+
+        /* Hero parallax / scroll fade */
+        .hero-inner {
+            transition: transform 0.05s linear, opacity 0.05s linear;
+            will-change: transform, opacity;
+        }
+        .monogram-stage {
+            transition: transform 0.05s linear;
+            will-change: transform;
+        }
+
+        /* Sticky pinned showcase */
+        .pinned-showcase {
+            position: relative;
+            min-height: 240vh;
+            background: var(--bg);
+        }
+        .pinned-stage {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .pinned-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.06), transparent 60%);
+            opacity: var(--pinned-bg-opacity, 0);
+            transition: opacity 0.1s linear;
+        }
+        .pinned-frames {
+            position: relative;
+            width: min(94%, 1100px);
+            text-align: center;
+            color: var(--white);
+        }
+        .pinned-frame {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translate3d(0, 24px, 0);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .pinned-frame.active {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            pointer-events: auto;
+        }
+        .pinned-frame .frame-eyebrow {
+            font-size: 12px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: var(--gray-3);
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .pinned-frame .frame-headline {
+            font-size: clamp(40px, 6vw, 84px);
+            font-weight: 600;
+            line-height: 1.02;
+            letter-spacing: -0.034em;
+            margin: 0 0 18px;
+            background: linear-gradient(180deg, #fff 0%, #b5b5be 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        .pinned-frame .frame-sub {
+            font-size: clamp(15px, 1.4vw, 19px);
+            font-weight: 300;
+            line-height: 1.55;
+            color: var(--gray-2);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        @media (max-width: 720px) {
+            .pinned-showcase { min-height: 220vh; }
+            .pinned-frame .frame-headline { font-size: clamp(32px, 8vw, 52px); }
+        }
+
+        /* Respect prefers-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+            [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+            .word-reveal > .w { opacity: 1; transform: none; }
+            .hero-inner, .monogram-stage { transform: none !important; opacity: 1 !important; }
+        }
+
         /* ========== Responsive ========== */
         @media (max-width: 768px) {
             .nav-links {
@@ -2171,6 +2383,11 @@
         </div>
     </nav>
 
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
+    <!-- Ambient scroll-driven glow -->
+    <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
+
     <!-- Hero -->
     <section class="hero">
         <div class="hero-mesh"></div>
@@ -2193,20 +2410,44 @@
             <div class="hero-meta">
                 <div class="meta-item">
                     <span class="meta-label">Practice</span>
-                    <span class="meta-value">PRIME St. Francis · Evanston, IL</span>
+                    <span class="meta-value">PRIME Saint Francis Hospital<br>Evanston, IL</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Fellowship</span>
-                    <span class="meta-value">Three-year CBG/MIGS</span>
+                    <span class="meta-value">Complex Benign Gynecology &amp;<br>Minimally Invasive Gynecologic Surgery</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Focus</span>
-                    <span class="meta-value">Osteopathic Manual Therapy</span>
+                    <span class="meta-value">Robotic &amp; Hysteroscopic Surgery · Osteopathic Manipulative Treatment · Clinical AI Engineering · Surgical Education &amp; Research</span>
                 </div>
             </div>
         </div>
 
         <div class="scroll-indicator">Scroll</div>
+    </section>
+
+    <!-- Pinned cinematic showcase -->
+    <section class="pinned-showcase" aria-label="Mission">
+        <div class="pinned-stage">
+            <div class="pinned-bg"></div>
+            <div class="pinned-frames">
+                <div class="pinned-frame active">
+                    <span class="frame-eyebrow">The Practice</span>
+                    <h2 class="frame-headline">A passion for women's health.</h2>
+                    <p class="frame-sub">Trained for the most complex benign gynecologic cases — from advanced hysteroscopy to robotic myomectomy — with osteopathic principles guiding every patient encounter.</p>
+                </div>
+                <div class="pinned-frame">
+                    <span class="frame-eyebrow">The Foundation</span>
+                    <h2 class="frame-headline">Whole-person care, not just a diagnosis.</h2>
+                    <p class="frame-sub">Osteopathic Manipulative Treatment, anatomy-first reasoning, and a fellowship in OMM — built on the belief that structure and function inform every operation.</p>
+                </div>
+                <div class="pinned-frame">
+                    <span class="frame-eyebrow">The Innovation</span>
+                    <h2 class="frame-headline">Engineered for the working surgeon.</h2>
+                    <p class="frame-sub">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- About Section -->
@@ -3291,19 +3532,143 @@
             });
         });
 
-        // Reveal on scroll
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+        // Apple Vision Pro–style scroll system
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // 1) Tag elements for reveal animations + stagger
+        const revealMap = [
+            { sel: '.section-eyebrow', kind: 'up' },
+            { sel: '.section-headline', kind: 'blur' },
+            { sel: '.section-sub', kind: 'up' },
+            { sel: '.about-text-block', kind: 'up' },
+            { sel: '.metric-card', kind: 'scale' },
+            { sel: '.app-card', kind: 'scale' },
+            { sel: '.research-pillar', kind: 'up' },
+            { sel: '.award-card', kind: 'scale' },
+            { sel: '.surgery-pillar', kind: 'up' },
+            { sel: '.feature-card', kind: 'scale' },
+            { sel: '.research-list .research-item', kind: 'up' },
+            { sel: '.cite', kind: 'up' },
+            { sel: '.contact-cta', kind: 'scale' },
+            { sel: '.research-video-block', kind: 'scale' },
+            { sel: '.omm-card', kind: 'up' },
+            { sel: '.education-item', kind: 'up' },
+            { sel: '.fellowship-card', kind: 'scale' },
+            { sel: '.pillar-card', kind: 'up' },
+        ];
+        revealMap.forEach(({ sel, kind }) => {
+            const els = document.querySelectorAll(sel);
+            els.forEach((el, i) => {
+                if (!el.hasAttribute('data-reveal')) {
+                    el.setAttribute('data-reveal', kind);
+                    // Stagger across siblings of same selector under a common parent
+                    const sibIdx = Array.prototype.indexOf.call(el.parentElement.children, el);
+                    el.setAttribute('data-stagger', String(Math.min(sibIdx % 6, 6)));
                 }
             });
-        }, { threshold: 0.08 });
-
-        document.querySelectorAll('section').forEach(s => {
-            s.classList.add('reveal');
-            observer.observe(s);
         });
+
+        // 2) Word-level reveal on the hero title only (skip if headline has <br> or child markup)
+        function splitWords(el) {
+            if (!el || el.dataset.split === '1') return;
+            // Skip if the element contains structural children (br, span, etc.)
+            if (el.children.length > 0) return;
+            const text = el.textContent;
+            const html = text.split(/(\s+)/).map(t =>
+                t.trim()
+                    ? `<span class="word-mask"><span class="w">${t}</span></span>`
+                    : ' '
+            ).join('');
+            el.innerHTML = html;
+            el.classList.add('word-reveal');
+            el.dataset.split = '1';
+        }
+        const heroTitle = document.querySelector('.hero-title');
+        if (heroTitle && !reduceMotion) splitWords(heroTitle);
+
+        // 3) IntersectionObserver to trigger reveals once
+        const reveals = document.querySelectorAll('[data-reveal], .word-reveal');
+        if (reduceMotion) {
+            reveals.forEach(el => el.classList.add('in'));
+        } else {
+            const revealObs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('in');
+                        revealObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+            reveals.forEach(el => revealObs.observe(el));
+            // Reveal hero title immediately on load
+            if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
+        }
+
+        // 4) Hero parallax + scroll-tied fade
+        const heroEl = document.querySelector('.hero');
+        const heroInner = document.querySelector('.hero-inner');
+        const monogramStage = document.querySelector('.monogram-stage');
+        const scrollBar = document.getElementById('scrollProgressBar');
+        const ambient = document.getElementById('ambientGlow');
+        let rafPending = false;
+
+        function onScrollFrame() {
+            const y = window.scrollY;
+            const winH = window.innerHeight;
+            // Parallax + fade hero
+            if (heroEl && heroInner && !reduceMotion) {
+                const heroH = heroEl.offsetHeight;
+                const p = Math.min(y / Math.max(heroH * 0.85, 1), 1);
+                heroInner.style.transform = `translate3d(0, ${y * 0.18}px, 0)`;
+                heroInner.style.opacity = String(Math.max(1 - p * 1.25, 0));
+                if (monogramStage) {
+                    monogramStage.style.transform = `translate3d(0, ${y * -0.04}px, 0) scale(${Math.max(1 - p * 0.06, 0.94)})`;
+                }
+            }
+            // Scroll progress
+            if (scrollBar) {
+                const total = document.documentElement.scrollHeight - winH;
+                const pct = total > 0 ? (y / total) * 100 : 0;
+                scrollBar.style.width = pct + '%';
+            }
+            // Ambient glow follows the middle of the viewport
+            if (ambient) {
+                const total = document.documentElement.scrollHeight - winH;
+                const pct = total > 0 ? Math.min(y / total, 1) : 0;
+                const yPct = 35 + pct * 30;
+                ambient.style.setProperty('--ambient-y', yPct + '%');
+            }
+            rafPending = false;
+        }
+        function onScroll() {
+            if (!rafPending) {
+                requestAnimationFrame(onScrollFrame);
+                rafPending = true;
+            }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        onScrollFrame();
+
+        // 5) Pinned showcase frame switcher (driven by scroll progress through the section)
+        const pinned = document.querySelector('.pinned-showcase');
+        if (pinned && !reduceMotion) {
+            const frames = pinned.querySelectorAll('.pinned-frame');
+            const bgEl = pinned.querySelector('.pinned-bg');
+            function updatePinned() {
+                const rect = pinned.getBoundingClientRect();
+                const winH = window.innerHeight;
+                const total = pinned.offsetHeight - winH;
+                const passed = Math.min(Math.max(-rect.top, 0), total);
+                const p = total > 0 ? passed / total : 0;
+                const idx = Math.min(Math.floor(p * frames.length), frames.length - 1);
+                frames.forEach((f, i) => f.classList.toggle('active', i === idx));
+                if (bgEl) bgEl.style.opacity = String(Math.max(0, Math.min(1, 0.2 + p * 0.6)));
+            }
+            window.addEventListener('scroll', updatePinned, { passive: true });
+            window.addEventListener('resize', updatePinned, { passive: true });
+            updatePinned();
+        }
     </script>
 </body>
 </html>

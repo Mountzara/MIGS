@@ -201,16 +201,13 @@
             left: clamp(20px, 3vw, 36px);
         }
 
-        .cover-corner-tl .corner-mark {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-style: italic;
-            font-weight: 400;
-            font-size: clamp(28px, 3vw, 40px);
-            letter-spacing: -0.02em;
-            line-height: 1;
-            color: var(--white);
-            text-transform: none;
-            margin-bottom: 6px;
+        .cover-corner-tl .corner-logo {
+            display: block;
+            width: clamp(48px, 5.6vw, 76px);
+            height: auto;
+            filter: brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0,0,0,0.45));
+            opacity: 0.95;
+            margin-bottom: 8px;
         }
 
         .cover-corner-tr {
@@ -359,8 +356,11 @@
                 -webkit-text-fill-color: rgba(255, 255, 255, 0.62);
             }
             .cover-stage {
-                bottom: clamp(170px, 32vw, 220px);
+                bottom: clamp(160px, 28vw, 200px);
                 max-width: 100%;
+            }
+            .cover-eyebrow {
+                display: none;
             }
             .cover-tagline {
                 font-size: 11px;
@@ -381,7 +381,7 @@
             .cover-subtitle { max-width: 100%; }
             .cover-corner-tr .corner-meta:nth-child(2) { display: none; }
             .cover-image {
-                object-position: 58% 8%;
+                object-position: 58% 0%;
             }
             .cover-gradient {
                 background:
@@ -945,7 +945,7 @@
             <div class="cover-gradient"></div>
 
             <div class="cover-corner cover-corner-tl">
-                <span class="corner-mark">MZ</span>
+                <img src="../assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="corner-logo">
                 <span class="corner-meta">Issue No. 01</span>
             </div>
             <div class="cover-corner cover-corner-tr">
