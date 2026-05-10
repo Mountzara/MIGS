@@ -1873,40 +1873,38 @@
         }
 
         /* ========== Apple Vision Pro–style scroll system ========== */
+        /* Snappier, more readable: 650ms / softer translate / no blur on body text */
         [data-reveal] {
             opacity: 0;
-            transform: translate3d(0, 36px, 0);
+            transform: translate3d(0, 22px, 0);
             transition:
-                opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+                opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
+                filter 650ms cubic-bezier(0.22, 1, 0.36, 1);
             will-change: opacity, transform;
         }
         [data-reveal="scale"] {
-            transform: translate3d(0, 24px, 0) scale(0.96);
+            transform: translate3d(0, 14px, 0) scale(0.975);
         }
         [data-reveal="blur"] {
-            filter: blur(14px);
-            transform: translate3d(0, 16px, 0);
+            filter: blur(8px);
+            transform: translate3d(0, 12px, 0);
         }
-        [data-reveal="left"] {
-            transform: translate3d(-32px, 0, 0);
-        }
-        [data-reveal="right"] {
-            transform: translate3d(32px, 0, 0);
+        [data-reveal="fade"] {
+            transform: none;
         }
         [data-reveal].in {
             opacity: 1;
             transform: translate3d(0, 0, 0) scale(1);
             filter: none;
         }
-        /* Stagger across siblings */
-        [data-reveal][data-stagger="1"].in { transition-delay: 0.08s; }
-        [data-reveal][data-stagger="2"].in { transition-delay: 0.16s; }
-        [data-reveal][data-stagger="3"].in { transition-delay: 0.24s; }
-        [data-reveal][data-stagger="4"].in { transition-delay: 0.32s; }
-        [data-reveal][data-stagger="5"].in { transition-delay: 0.40s; }
-        [data-reveal][data-stagger="6"].in { transition-delay: 0.48s; }
+        /* Tighter stagger so groups settle inside ~400ms total */
+        [data-reveal][data-stagger="1"].in { transition-delay: 60ms; }
+        [data-reveal][data-stagger="2"].in { transition-delay: 120ms; }
+        [data-reveal][data-stagger="3"].in { transition-delay: 180ms; }
+        [data-reveal][data-stagger="4"].in { transition-delay: 240ms; }
+        [data-reveal][data-stagger="5"].in { transition-delay: 300ms; }
+        [data-reveal][data-stagger="6"].in { transition-delay: 360ms; }
 
         /* Word-level reveal for headlines (per-word mask) */
         .word-reveal {
@@ -1983,20 +1981,18 @@
             transition: opacity 0.6s ease;
         }
 
-        /* Hero parallax / scroll fade */
+        /* Hero parallax / scroll fade — no CSS transition (rAF drives values directly) */
         .hero-inner {
-            transition: transform 0.05s linear, opacity 0.05s linear;
             will-change: transform, opacity;
         }
         .monogram-stage {
-            transition: transform 0.05s linear;
             will-change: transform;
         }
 
-        /* Sticky pinned showcase */
+        /* Sticky pinned showcase — three frames that swap on scroll */
         .pinned-showcase {
             position: relative;
-            min-height: 240vh;
+            min-height: 300vh;  /* generous so each frame gets a full viewport of dwell time */
             background: var(--bg);
         }
         .pinned-stage {
@@ -2011,9 +2007,10 @@
         .pinned-bg {
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.06), transparent 60%);
-            opacity: var(--pinned-bg-opacity, 0);
-            transition: opacity 0.1s linear;
+            background: radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.07), transparent 60%);
+            opacity: 0;
+            transition: opacity 250ms ease-out;
+            pointer-events: none;
         }
         .pinned-frames {
             position: relative;
@@ -2029,13 +2026,13 @@
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transform: translate3d(0, 24px, 0);
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translate3d(0, 12px, 0) scale(0.985);
+            transition: opacity 380ms cubic-bezier(0.22, 1, 0.36, 1), transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
             pointer-events: none;
         }
         .pinned-frame.active {
             opacity: 1;
-            transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0) scale(1);
             pointer-events: auto;
         }
         .pinned-frame .frame-eyebrow {
@@ -3532,61 +3529,103 @@
             });
         });
 
-        // Apple Vision Pro–style scroll system
+        // ==========================================================
+        // Apple Vision Pro–style scroll system (rewritten for polish)
+        // ==========================================================
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // 1) Tag elements for reveal animations + stagger
+        // -- 1) Reveal coverage: tag every meaningful content element --
+        // "blur" = section-defining headlines (rare, slower-feeling)
+        // "scale" = visual cards (subtle pop)
+        // "up"   = text blocks, list items (slide-up)
         const revealMap = [
             { sel: '.section-eyebrow', kind: 'up' },
             { sel: '.section-headline', kind: 'blur' },
             { sel: '.section-sub', kind: 'up' },
             { sel: '.about-text-block', kind: 'up' },
+            { sel: '.about-grid > *', kind: 'up' },
             { sel: '.metric-card', kind: 'scale' },
+            { sel: '.bento-card', kind: 'scale' },
+            { sel: '.bento-grid > *', kind: 'scale' },
+            { sel: '.domain-card', kind: 'scale' },
+            { sel: '.domain-grid > *', kind: 'scale' },
+            { sel: '.app-card-v2', kind: 'scale' },
             { sel: '.app-card', kind: 'scale' },
-            { sel: '.research-pillar', kind: 'up' },
+            { sel: '.apps-bento > *', kind: 'scale' },
+            { sel: '.award-tile', kind: 'scale' },
             { sel: '.award-card', kind: 'scale' },
+            { sel: '.awards-grid > *', kind: 'scale' },
             { sel: '.surgery-pillar', kind: 'up' },
+            { sel: '.research-pillar', kind: 'up' },
+            { sel: '.pillar-card', kind: 'up' },
             { sel: '.feature-card', kind: 'scale' },
-            { sel: '.research-list .research-item', kind: 'up' },
-            { sel: '.cite', kind: 'up' },
-            { sel: '.contact-cta', kind: 'scale' },
-            { sel: '.research-video-block', kind: 'scale' },
+            { sel: '.fellowship-card', kind: 'scale' },
             { sel: '.omm-card', kind: 'up' },
             { sel: '.education-item', kind: 'up' },
-            { sel: '.fellowship-card', kind: 'scale' },
-            { sel: '.pillar-card', kind: 'up' },
+            { sel: '.research-list > *', kind: 'up' },
+            { sel: '.research-item', kind: 'up' },
+            { sel: '.pub-item', kind: 'up' },
+            { sel: '.research-video-block', kind: 'scale' },
+            { sel: '.excellence-quote', kind: 'fade' },
+            { sel: '.aagl-accepted-banner', kind: 'scale' },
+            { sel: '.aagl-stat', kind: 'up' },
+            { sel: 'blockquote', kind: 'fade' },
+            { sel: '.cite', kind: 'up' },
+            { sel: '.contact-cta', kind: 'scale' },
+            { sel: '.email-row', kind: 'up' },
+            { sel: '.cta-row', kind: 'up' },
+            // Osteopathic section
+            { sel: '.population-card', kind: 'scale' },
+            { sel: '.populations-grid > *', kind: 'up' },
+            { sel: '.technique-cell', kind: 'up' },
+            { sel: '.techniques-grid > *', kind: 'up' },
+            { sel: '.pop-mod', kind: 'fade' },
+            { sel: '.omm-quote-block', kind: 'fade' },
+            { sel: '.sub-eyebrow', kind: 'up' },
+            { sel: '.sub-headline', kind: 'blur' },
+            { sel: '.sub-sub', kind: 'up' },
+            { sel: '.sub-section', kind: 'up' },
+            // Education timeline
+            { sel: '.timeline-row', kind: 'up' },
+            { sel: '.timeline > *', kind: 'up' },
+            // Excellence cite + research extras
+            { sel: '.excellence-cite-divider', kind: 'fade' },
+            { sel: '.aagl-divider', kind: 'fade' },
         ];
         revealMap.forEach(({ sel, kind }) => {
-            const els = document.querySelectorAll(sel);
-            els.forEach((el, i) => {
-                if (!el.hasAttribute('data-reveal')) {
-                    el.setAttribute('data-reveal', kind);
-                    // Stagger across siblings of same selector under a common parent
-                    const sibIdx = Array.prototype.indexOf.call(el.parentElement.children, el);
-                    el.setAttribute('data-stagger', String(Math.min(sibIdx % 6, 6)));
+            document.querySelectorAll(sel).forEach((el) => {
+                // Don't re-tag if already set by a previous (more specific) match
+                if (el.hasAttribute('data-reveal')) return;
+                // Skip elements inside the hero or pinned showcase (those have their own choreography)
+                if (el.closest('.hero, .pinned-showcase')) return;
+                el.setAttribute('data-reveal', kind);
+                // Stagger only across direct siblings inside grids/rows so cascading feels natural
+                const parent = el.parentElement;
+                if (parent && parent.children.length > 1 && parent.children.length <= 8) {
+                    const sibIdx = Array.prototype.indexOf.call(parent.children, el);
+                    if (sibIdx > 0) el.setAttribute('data-stagger', String(Math.min(sibIdx, 6)));
                 }
             });
         });
 
-        // 2) Word-level reveal on the hero title only (skip if headline has <br> or child markup)
+        // -- 2) Word-level reveal on hero title only --
         function splitWords(el) {
             if (!el || el.dataset.split === '1') return;
-            // Skip if the element contains structural children (br, span, etc.)
-            if (el.children.length > 0) return;
+            if (el.children.length > 0) return; // skip if has <br> or other markup
             const text = el.textContent;
-            const html = text.split(/(\s+)/).map(t =>
-                t.trim()
-                    ? `<span class="word-mask"><span class="w">${t}</span></span>`
-                    : ' '
+            el.innerHTML = text.split(/(\s+)/).map(t =>
+                t.trim() ? `<span class="word-mask"><span class="w">${t}</span></span>` : ' '
             ).join('');
-            el.innerHTML = html;
             el.classList.add('word-reveal');
             el.dataset.split = '1';
         }
         const heroTitle = document.querySelector('.hero-title');
         if (heroTitle && !reduceMotion) splitWords(heroTitle);
 
-        // 3) IntersectionObserver to trigger reveals once
+        // -- 3) IntersectionObserver: fire reveal when element top crosses 85% viewport --
+        // rootMargin -15% on the bottom means: trigger when element enters the top 85% of viewport
+        // = element is comfortably visible before the animation runs, so by the time user reads it,
+        //   it has already settled. Threshold 0 = "any pixel inside the trimmed root counts".
         const reveals = document.querySelectorAll('[data-reveal], .word-reveal');
         if (reduceMotion) {
             reveals.forEach(el => el.classList.add('in'));
@@ -3598,77 +3637,92 @@
                         revealObs.unobserve(e.target);
                     }
                 });
-            }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+            }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
             reveals.forEach(el => revealObs.observe(el));
-            // Reveal hero title immediately on load
+            // Reveal hero title immediately on load (it's already in view)
             if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
         }
 
-        // 4) Hero parallax + scroll-tied fade
+        // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
         const heroEl = document.querySelector('.hero');
         const heroInner = document.querySelector('.hero-inner');
         const monogramStage = document.querySelector('.monogram-stage');
         const scrollBar = document.getElementById('scrollProgressBar');
         const ambient = document.getElementById('ambientGlow');
-        let rafPending = false;
+        const pinnedSection = document.querySelector('.pinned-showcase');
+        const pinnedFrames = pinnedSection ? Array.from(pinnedSection.querySelectorAll('.pinned-frame')) : [];
+        const pinnedBg = pinnedSection ? pinnedSection.querySelector('.pinned-bg') : null;
+        let lastPinnedIdx = -1;
+        let ticking = false;
 
-        function onScrollFrame() {
+        function tick() {
             const y = window.scrollY;
             const winH = window.innerHeight;
-            // Parallax + fade hero
+            const docH = document.documentElement.scrollHeight;
+
+            // -- Hero: gentle parallax + fade only across the FIRST viewport --
+            // Stays fully visible until ~25% scroll, fully gone by 100% of one viewport.
+            // Predictable regardless of hero height.
             if (heroEl && heroInner && !reduceMotion) {
-                const heroH = heroEl.offsetHeight;
-                const p = Math.min(y / Math.max(heroH * 0.85, 1), 1);
-                heroInner.style.transform = `translate3d(0, ${y * 0.18}px, 0)`;
-                heroInner.style.opacity = String(Math.max(1 - p * 1.25, 0));
+                const fadeStart = winH * 0.25;
+                const fadeEnd = winH * 0.95;
+                const t = Math.max(0, Math.min(1, (y - fadeStart) / (fadeEnd - fadeStart)));
+                const opacity = 1 - t;
+                heroInner.style.opacity = opacity.toFixed(3);
+                // Subtle parallax: hero text drifts up slightly with scroll (slower than page)
+                const ty = -y * 0.08;
+                heroInner.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
                 if (monogramStage) {
-                    monogramStage.style.transform = `translate3d(0, ${y * -0.04}px, 0) scale(${Math.max(1 - p * 0.06, 0.94)})`;
+                    const mScale = 1 - t * 0.04;
+                    monogramStage.style.transform = `translate3d(0, ${(-y * 0.02).toFixed(1)}px, 0) scale(${mScale.toFixed(3)})`;
                 }
             }
-            // Scroll progress
+
+            // -- Scroll progress bar --
             if (scrollBar) {
-                const total = document.documentElement.scrollHeight - winH;
-                const pct = total > 0 ? (y / total) * 100 : 0;
-                scrollBar.style.width = pct + '%';
+                const total = docH - winH;
+                scrollBar.style.width = (total > 0 ? Math.min(y / total, 1) * 100 : 0) + '%';
             }
-            // Ambient glow follows the middle of the viewport
-            if (ambient) {
-                const total = document.documentElement.scrollHeight - winH;
-                const pct = total > 0 ? Math.min(y / total, 1) : 0;
-                const yPct = 35 + pct * 30;
-                ambient.style.setProperty('--ambient-y', yPct + '%');
+
+            // -- Ambient glow follows scroll position --
+            if (ambient && !reduceMotion) {
+                const total = docH - winH;
+                const p = total > 0 ? Math.min(y / total, 1) : 0;
+                ambient.style.setProperty('--ambient-y', (35 + p * 30) + '%');
             }
-            rafPending = false;
+
+            // -- Pinned showcase frame switcher --
+            if (pinnedSection && pinnedFrames.length && !reduceMotion) {
+                const rect = pinnedSection.getBoundingClientRect();
+                const total = pinnedSection.offsetHeight - winH;
+                if (total > 0) {
+                    const passed = Math.max(0, Math.min(total, -rect.top));
+                    const p = passed / total;
+                    // Map progress to frame index with small bias toward staying on a frame longer
+                    const idx = Math.min(Math.floor(p * pinnedFrames.length), pinnedFrames.length - 1);
+                    if (idx !== lastPinnedIdx) {
+                        pinnedFrames.forEach((f, i) => f.classList.toggle('active', i === idx));
+                        lastPinnedIdx = idx;
+                    }
+                    if (pinnedBg) {
+                        // Pulse the bg glow during the section so it feels alive
+                        const pinnedInView = rect.top < winH && rect.bottom > 0;
+                        pinnedBg.style.opacity = pinnedInView ? (0.35 + p * 0.5).toFixed(3) : '0';
+                    }
+                }
+            }
+
+            ticking = false;
         }
         function onScroll() {
-            if (!rafPending) {
-                requestAnimationFrame(onScrollFrame);
-                rafPending = true;
+            if (!ticking) {
+                requestAnimationFrame(tick);
+                ticking = true;
             }
         }
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
-        onScrollFrame();
-
-        // 5) Pinned showcase frame switcher (driven by scroll progress through the section)
-        const pinned = document.querySelector('.pinned-showcase');
-        if (pinned && !reduceMotion) {
-            const frames = pinned.querySelectorAll('.pinned-frame');
-            const bgEl = pinned.querySelector('.pinned-bg');
-            function updatePinned() {
-                const rect = pinned.getBoundingClientRect();
-                const winH = window.innerHeight;
-                const total = pinned.offsetHeight - winH;
-                const passed = Math.min(Math.max(-rect.top, 0), total);
-                const p = total > 0 ? passed / total : 0;
-                const idx = Math.min(Math.floor(p * frames.length), frames.length - 1);
-                frames.forEach((f, i) => f.classList.toggle('active', i === idx));
-                if (bgEl) bgEl.style.opacity = String(Math.max(0, Math.min(1, 0.2 + p * 0.6)));
-            }
-            window.addEventListener('scroll', updatePinned, { passive: true });
-            window.addEventListener('resize', updatePinned, { passive: true });
-            updatePinned();
-        }
+        tick();
     </script>
 </body>
 </html>
