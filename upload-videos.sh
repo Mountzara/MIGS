@@ -24,28 +24,27 @@ VIDEOS=(
 
 # Create R2 bucket if it doesn't exist
 echo "📦 Setting up Cloudflare R2 bucket..."
-npx wrangler r2 bucket create mountzara-videos 2>/dev/null || echo "Bucket may already exist, continuing..."
+npx wrangler r2 bucket create mountzara-media 2>/dev/null || echo "Bucket already exists, continuing..."
 
 # Upload each video
 for video_pair in "${VIDEOS[@]}"; do
     IFS=':' read -r source_path dest_name <<< "$video_pair"
-    
+
     if [ -f "$source_path" ]; then
         echo ""
-        echo "⬆️  Uploading: $dest_name"
-        npx wrangler r2 object put "mountzara-videos/$dest_name" --file="$source_path"
+        echo "⬆️  Uploading: $dest_name (this may take a while for large files...)"
+        npx wrangler r2 object put "mountzara-media/$dest_name" --file="$source_path"
         echo "✅ Uploaded: $dest_name"
     else
         echo "⚠️  File not found: $source_path"
+        echo "    Searched at: $source_path"
     fi
 done
 
 echo ""
 echo "✅ Upload complete!"
 echo ""
-echo "🌐 Videos will be available at:"
-echo "   https://videos.mountzara.com/<filename>"
+echo "🌐 Videos are now available in the mountzara-media R2 bucket"
+echo "   They will stream from: https://mountzara.com/media/<filename>"
 echo ""
-echo "Next steps:"
-echo "1. Configure custom domain for R2 bucket"
-echo "2. Videos are now ready to embed on the website"
+echo "Next: Merge the latest code to main and videos will work automatically."
