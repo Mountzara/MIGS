@@ -95,25 +95,37 @@
             transform: rotate(-45deg);
         }
 
-        /* ========== Editorial Cover Hero ========== */
+        /* ========== Editorial Cover Hero — Cinematic Pinned ========== */
+        /* Apple-style: image is still, multiple text overlays scroll over with
+           crossfade. Image fades in on load, fades out as user reaches the end. */
         .cover-hero {
-            min-height: 100vh;
-            padding: 88px clamp(16px, 3vw, 32px) clamp(24px, 4vw, 48px);
-            display: flex;
-            align-items: stretch;
+            position: relative;
+            min-height: 260vh;            /* desktop: ~160vh of pin scroll */
+            padding: 88px clamp(16px, 3vw, 32px) 0;
             background: var(--black);
         }
+        .cover-hero::after {
+            /* Bottom safety bg in case of scrollbar quirks */
+            content: '';
+            display: block;
+            height: clamp(24px, 4vw, 48px);
+        }
 
-        .cover-frame {
-            position: relative;
-            flex: 1;
-            min-height: calc(100vh - 136px);
+        .cover-pin {
+            position: sticky;
+            top: 88px;
+            height: calc(100vh - 88px - 24px);
             border-radius: clamp(20px, 2vw, 28px);
             overflow: hidden;
             isolation: isolate;
-            background: #1a1a1d;
-            cursor: default;
-            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #0c0c10;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .cover-frame {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
         }
 
         .cover-image {
@@ -125,13 +137,25 @@
             object-position: 70% 22%;
             z-index: 0;
             filter: saturate(0.95) contrast(1.05) brightness(0.98);
-            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
-            transform: scale(1.02);
+            opacity: 0;
+            transform: scale(1.06);
+            will-change: opacity, transform, filter;
+            animation: coverImageEnter 1500ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
         }
-
-        .cover-frame:hover .cover-image {
-            transform: scale(1.05);
-            filter: saturate(1) contrast(1.06) brightness(1);
+        @keyframes coverImageEnter {
+            from {
+                opacity: 0;
+                transform: scale(1.10);
+                filter: saturate(0.55) brightness(0.7) blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1.02);
+                filter: saturate(0.95) contrast(1.05) brightness(0.98) blur(0);
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cover-image { animation: none; opacity: 1; transform: scale(1.02); filter: saturate(0.95) contrast(1.05) brightness(0.98); }
         }
 
         /* Subtle film grain texture */
@@ -220,6 +244,116 @@
         .cover-corner .corner-meta {
             color: rgba(255,255,255,0.7);
             font-weight: 600;
+        }
+
+        /* Cinematic scene overlays — crossfade as user scrolls through pin */
+        .cover-scenes {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .cover-scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 clamp(20px, 4vw, 56px) clamp(160px, 22vw, 220px);
+            color: var(--white);
+            opacity: 0;
+            transform: translate3d(0, 28px, 0);
+            transition:
+                opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .cover-scene.active {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            pointer-events: auto;
+        }
+
+        /* Scene 2 — bold statement */
+        .cover-statement {
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 200;
+            line-height: 0.94;
+            letter-spacing: -0.038em;
+            color: var(--white);
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.55) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 clamp(18px, 2vw, 28px);
+            text-shadow: 0 4px 36px rgba(0, 0, 0, 0.45);
+            max-width: 720px;
+        }
+        .cover-statement em {
+            font-style: normal;
+            font-weight: 500;
+        }
+        .cover-statement-sub {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.78);
+            margin: 0;
+        }
+
+        /* Scene 3 — quote */
+        .cover-quote {
+            font-family: 'Avenir Next', Georgia, 'Times New Roman', serif;
+            font-style: italic;
+            font-weight: 300;
+            font-size: clamp(34px, 5.4vw, 72px);
+            line-height: 1.08;
+            letter-spacing: -0.02em;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0 0 clamp(20px, 2.4vw, 32px);
+            max-width: 760px;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .cover-quote-sub {
+            font-size: clamp(15px, 1.5vw, 19px);
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.78);
+            letter-spacing: -0.005em;
+            line-height: 1.55;
+            margin: 0;
+            max-width: 580px;
+        }
+
+        /* Scroll cue at the very bottom of the pin (fades out as user scrolls) */
+        .cover-scroll-cue {
+            position: absolute;
+            bottom: clamp(20px, 3vw, 32px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            pointer-events: none;
+            transition: opacity 400ms ease;
+        }
+        .cover-scroll-cue::after {
+            content: '';
+            width: 1px;
+            height: 28px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent);
+            animation: cueFlow 2.2s ease-in-out infinite;
+        }
+        @keyframes cueFlow {
+            0% { transform: translateY(-6px); opacity: 0; }
+            50% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(8px); opacity: 0; }
         }
 
         /* Typography stage - lower-left, doesn't cover face */
@@ -340,8 +474,31 @@
         }
 
         @media (max-width: 720px) {
-            .cover-frame {
-                min-height: calc(100svh - 120px);
+            .cover-hero {
+                min-height: 200vh;     /* tighter pin scroll on mobile */
+            }
+            .cover-pin {
+                top: 56px;
+                height: calc(100svh - 56px - 16px);
+            }
+            .cover-statement {
+                font-size: clamp(40px, 12vw, 64px);
+                line-height: 0.96;
+            }
+            .cover-quote {
+                font-size: clamp(24px, 7vw, 40px);
+            }
+            .cover-quote-sub,
+            .cover-statement-sub {
+                font-size: 12px;
+                letter-spacing: 0.18em;
+            }
+            .cover-scene {
+                padding: 0 clamp(20px, 5vw, 32px) clamp(150px, 26vw, 200px);
+            }
+            .cover-scroll-cue {
+                font-size: 9px;
+                letter-spacing: 0.28em;
             }
             .cover-name {
                 font-size: clamp(30px, 7.4vw, 44px);
@@ -936,43 +1093,69 @@
         </div>
     </nav>
 
-    <!-- Editorial Cover Hero -->
-    <header class="cover-hero">
-        <div class="cover-frame">
-            <img src="../assets/images/headshot.jpg" alt="Christopher Z. Mabini, DO" class="cover-image" loading="eager">
-            <div class="cover-grain"></div>
-            <div class="cover-vignette"></div>
-            <div class="cover-gradient"></div>
+    <!-- Editorial Cover Hero — Cinematic Pinned -->
+    <header class="cover-hero" id="coverHero">
+        <div class="cover-pin">
+            <div class="cover-frame">
+                <img src="../assets/images/headshot.jpg" alt="Christopher Z. Mabini, DO" class="cover-image" id="coverImage" loading="eager">
+                <div class="cover-grain"></div>
+                <div class="cover-vignette"></div>
+                <div class="cover-gradient"></div>
 
-            <div class="cover-corner cover-corner-tl">
-                <img src="../assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="corner-logo">
-                <span class="corner-meta">Issue No. 01</span>
-            </div>
-            <div class="cover-corner cover-corner-tr">
-                <span class="corner-meta">Vol. 2026</span>
-                <span class="corner-meta">Chicago, IL</span>
-            </div>
-
-            <div class="cover-stage">
-                <span class="cover-eyebrow">The Story</span>
-                <h1 class="cover-name">
-                    <span class="cover-name-line">Christopher</span>
-                    <span class="cover-name-line cover-name-line-2">Z.&nbsp;Mabini</span>
-                </h1>
-                <div class="cover-rule"></div>
-                <p class="cover-tagline">DO &nbsp;·&nbsp; MSAEd</p>
-                <p class="cover-subtitle">Surgeon. Educator. Builder.<br>From a hospice in California to the operating rooms of Chicago — a journey shaped by purpose.</p>
-            </div>
-
-            <div class="cover-footer">
-                <div class="cover-credit">
-                    <span class="credit-label">Featuring</span>
-                    <span class="credit-value">Complex Benign Gynecology · MIGS · OMT · AI Innovation</span>
+                <!-- Static masthead corners -->
+                <div class="cover-corner cover-corner-tl">
+                    <img src="../assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="corner-logo">
+                    <span class="corner-meta">Issue No. 01</span>
                 </div>
-                <div class="cover-runtime">
-                    <span class="credit-label">Read</span>
-                    <span class="credit-value">6 minutes</span>
+                <div class="cover-corner cover-corner-tr">
+                    <span class="corner-meta">Vol. 2026</span>
+                    <span class="corner-meta">Chicago, IL</span>
                 </div>
+
+                <!-- Three scrolling scenes that crossfade over the still image -->
+                <div class="cover-scenes">
+                    <!-- Scene 1: Magazine cover identity -->
+                    <div class="cover-scene cover-scene--1">
+                        <div class="cover-stage">
+                            <span class="cover-eyebrow">The Story</span>
+                            <h1 class="cover-name">
+                                <span class="cover-name-line">Christopher</span>
+                                <span class="cover-name-line cover-name-line-2">Z.&nbsp;Mabini</span>
+                            </h1>
+                            <div class="cover-rule"></div>
+                            <p class="cover-tagline">DO &nbsp;·&nbsp; MSAEd</p>
+                            <p class="cover-subtitle">Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery — practiced through an osteopathic lens, engineered for the future of women's health.</p>
+                        </div>
+                    </div>
+
+                    <!-- Scene 2: Identity statement -->
+                    <div class="cover-scene cover-scene--2">
+                        <p class="cover-statement-sub">Three roles · One practice</p>
+                        <h2 class="cover-statement">Surgeon.<br>Educator.<br><em>Builder.</em></h2>
+                    </div>
+
+                    <!-- Scene 3: The journey -->
+                    <div class="cover-scene cover-scene--3">
+                        <p class="cover-statement-sub">A journey shaped by purpose</p>
+                        <p class="cover-quote">"From a hospice in California to the operating rooms of Chicago."</p>
+                        <p class="cover-quote-sub">Built on osteopathic principles, surgical excellence, and applied AI — refined across four hospital sites and every required CBG/MIGS milestone.</p>
+                    </div>
+                </div>
+
+                <!-- Static footer (visible across all scenes) -->
+                <div class="cover-footer">
+                    <div class="cover-credit">
+                        <span class="credit-label">Featuring</span>
+                        <span class="credit-value">Complex Benign Gynecology · MIGS · OMT · AI Innovation</span>
+                    </div>
+                    <div class="cover-runtime">
+                        <span class="credit-label">Read</span>
+                        <span class="credit-value">6 minutes</span>
+                    </div>
+                </div>
+
+                <!-- Scroll-to-read cue -->
+                <div class="cover-scroll-cue" id="coverScrollCue">Scroll</div>
             </div>
         </div>
     </header>
@@ -1361,6 +1544,85 @@
             el.classList.add('reveal');
             observer.observe(el);
         });
+
+        // ==========================================================
+        // Cinematic bio cover — pinned image with crossfading scenes
+        // ==========================================================
+        (function bioCinematic() {
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const coverHero = document.getElementById('coverHero');
+            const coverImage = document.getElementById('coverImage');
+            const scenes = Array.from(document.querySelectorAll('.cover-scene'));
+            const scrollCue = document.getElementById('coverScrollCue');
+            if (!coverHero || !scenes.length) return;
+
+            let lastSceneIdx = -1;
+            let bioTicking = false;
+            let imageReady = reduceMotion;  // skip the entry animation in reduced-motion
+
+            // Once the image's CSS entry animation finishes, hand control to JS
+            if (coverImage && !reduceMotion) {
+                const onEnter = () => {
+                    imageReady = true;
+                    coverImage.style.animation = 'none';
+                    coverImage.style.opacity = '1';
+                    coverImage.style.transform = 'scale(1.02)';
+                    coverImage.style.filter = 'saturate(0.95) contrast(1.05) brightness(0.98)';
+                    update();
+                };
+                coverImage.addEventListener('animationend', onEnter, { once: true });
+                // Safety net in case animationend never fires (e.g. reduced motion mid-page)
+                setTimeout(onEnter, 1800);
+            } else if (coverImage) {
+                coverImage.style.opacity = '1';
+                coverImage.style.transform = 'scale(1.02)';
+            }
+
+            // Activate scene 1 immediately so it fades in alongside the image
+            requestAnimationFrame(() => {
+                if (scenes[0]) scenes[0].classList.add('active');
+                lastSceneIdx = 0;
+            });
+
+            function update() {
+                const rect = coverHero.getBoundingClientRect();
+                const winH = window.innerHeight;
+                const total = coverHero.offsetHeight - winH;
+                const passed = Math.max(0, Math.min(total, -rect.top));
+                const p = total > 0 ? passed / total : 0;
+
+                // Three even scene zones
+                const idx = Math.min(Math.floor(p * scenes.length), scenes.length - 1);
+                if (idx !== lastSceneIdx) {
+                    scenes.forEach((s, i) => s.classList.toggle('active', i === idx));
+                    lastSceneIdx = idx;
+                }
+
+                // Image: stays still during the journey, fades out at end of pin.
+                // Fade-in is owned by the CSS entry animation, not by scroll.
+                if (coverImage && imageReady && !reduceMotion) {
+                    let opacity = 1;
+                    if (p > 0.85) opacity = 1 - (p - 0.85) / 0.15;
+                    coverImage.style.opacity = Math.max(0, Math.min(1, opacity)).toFixed(3);
+                }
+
+                // Scroll cue fades the moment user starts moving
+                if (scrollCue) {
+                    scrollCue.style.opacity = Math.max(0, 1 - p * 8).toFixed(3);
+                }
+
+                bioTicking = false;
+            }
+            function onScroll() {
+                if (!bioTicking) {
+                    requestAnimationFrame(update);
+                    bioTicking = true;
+                }
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll, { passive: true });
+            update();
+        })();
     </script>
 </body>
 </html>
