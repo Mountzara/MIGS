@@ -164,12 +164,71 @@
             padding: 0;
         }
 
+        /* ========== Cinematic intro video backdrop ========== */
+        /* Apple-style fixed video backdrop that the page content rises over.
+           Sits at z-index 0; everything else stacks on top. Fades out on scroll. */
+        .cinematic-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background: #000;
+            will-change: opacity;
+        }
+        .cinematic-intro .intro-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.06);
+            animation: introZoom 28s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+        @keyframes introZoom {
+            from { transform: scale(1.06); }
+            to   { transform: scale(1.16) translateX(-2%); }
+        }
+        .cinematic-intro .intro-color {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background:
+                radial-gradient(ellipse 60% 50% at 22% 28%, rgba(118, 88, 255, 0.18), transparent 65%),
+                radial-gradient(ellipse 55% 50% at 80% 70%, rgba(0, 122, 255, 0.16), transparent 65%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+        .cinematic-intro .intro-tint {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background:
+                linear-gradient(180deg,
+                    rgba(0, 0, 0, 0.55) 0%,
+                    rgba(0, 0, 0, 0.45) 25%,
+                    rgba(0, 0, 0, 0.62) 60%,
+                    rgba(0, 0, 0, 0.92) 92%,
+                    rgba(0, 0, 0, 1) 100%);
+        }
+        .cinematic-intro .intro-vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            background: radial-gradient(ellipse 100% 80% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%);
+            pointer-events: none;
+        }
+
         /* ========== Hero ========== */
         .hero {
-            background:
-                linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.9) 100%),
-                radial-gradient(ellipse at 30% 40%, #1a1a1d 0%, #0a0a0c 60%),
-                #000;
+            /* Hero content sits OVER the cinematic backdrop. Background is transparent
+               so the fixed video shows through. The dim gradient that used to be here
+               now lives on .intro-tint. */
+            background: transparent;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -178,6 +237,7 @@
             text-align: center;
             padding: 100px 28px 120px;
             position: relative;
+            z-index: 2;
             overflow: hidden;
         }
 
@@ -2351,8 +2411,26 @@
         /* Sticky pinned showcase — three frames that swap on scroll */
         .pinned-showcase {
             position: relative;
+            z-index: 2;  /* covers the cinematic-intro video backdrop */
             min-height: 300vh;  /* generous so each frame gets a full viewport of dwell time */
             background: var(--bg);
+        }
+        /* All other sections need explicit z-index + solid bg so they cover the
+           fixed video backdrop after the user scrolls past the hero. */
+        .about-section,
+        .excellence-section,
+        .omm-section,
+        .apps-section,
+        .research-section,
+        .awards-section,
+        .education-section,
+        .contact-section,
+        footer {
+            position: relative;
+            z-index: 2;
+        }
+        nav.main-nav {
+            z-index: 50;  /* above everything except modals */
         }
         .pinned-stage {
             position: sticky;
@@ -2738,6 +2816,17 @@
             </ul>
         </div>
     </nav>
+
+    <!-- Cinematic intro video backdrop (Apple Vision Pro style) -->
+    <div class="cinematic-intro" id="cinematicIntro" aria-hidden="true">
+        <video class="intro-video" id="introVideo" autoplay muted playsinline loop preload="auto" poster="">
+            <source src="/media/hero-intro.webm" type="video/webm">
+            <source src="/media/hero-intro.mp4" type="video/mp4">
+        </video>
+        <div class="intro-color"></div>
+        <div class="intro-tint"></div>
+        <div class="intro-vignette"></div>
+    </div>
 
     <!-- Scroll progress indicator -->
     <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
@@ -4240,7 +4329,17 @@
         const pinnedSection = document.querySelector('.pinned-showcase');
         const pinnedFrames = pinnedSection ? Array.from(pinnedSection.querySelectorAll('.pinned-frame')) : [];
         const pinnedBg = pinnedSection ? pinnedSection.querySelector('.pinned-bg') : null;
+        const cinematicIntro = document.getElementById('cinematicIntro');
+        const introVideo = document.getElementById('introVideo');
+        // Make sure the video starts playing on page load (some mobile browsers
+        // need a manual nudge despite autoplay attribute when muted).
+        if (introVideo && !reduceMotion) {
+            const playWhenReady = () => introVideo.play().catch(() => {});
+            if (introVideo.readyState >= 2) playWhenReady();
+            else introVideo.addEventListener('loadeddata', playWhenReady, { once: true });
+        }
         let lastPinnedIdx = -1;
+        let videoPaused = false;
         let ticking = false;
 
         function tick() {
@@ -4263,6 +4362,23 @@
                 if (monogramStage) {
                     const mScale = 1 - t * 0.04;
                     monogramStage.style.transform = `translate3d(0, ${(-y * 0.02).toFixed(1)}px, 0) scale(${mScale.toFixed(3)})`;
+                }
+            }
+
+            // -- Cinematic video backdrop: fade out as user scrolls past hero,
+            //    pause video once it's fully covered to free up GPU. --
+            if (cinematicIntro && !reduceMotion) {
+                // Visible from y=0 to y=winH*1.05; fully gone by then.
+                const t = Math.max(0, Math.min(1, y / (winH * 1.05)));
+                cinematicIntro.style.opacity = (1 - t).toFixed(3);
+                if (introVideo) {
+                    if (t >= 0.99 && !videoPaused) {
+                        introVideo.pause();
+                        videoPaused = true;
+                    } else if (t < 0.95 && videoPaused) {
+                        introVideo.play().catch(() => {});
+                        videoPaused = false;
+                    }
                 }
             }
 
