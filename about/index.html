@@ -97,16 +97,16 @@
 
         /* Article Hero */
         .article-hero {
-            min-height: 95vh;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 140px 22px 100px;
+            padding: 140px clamp(20px, 4vw, 40px) 100px;
             position: relative;
+            overflow: hidden;
             background:
-                radial-gradient(ellipse at 50% 30%, rgba(41, 151, 255, 0.08), transparent 60%),
+                radial-gradient(ellipse at 30% 40%, rgba(41, 151, 255, 0.08), transparent 55%),
+                radial-gradient(ellipse at 75% 60%, rgba(0, 224, 167, 0.04), transparent 50%),
                 var(--black);
         }
 
@@ -116,8 +116,35 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 100px;
+            height: 120px;
             background: linear-gradient(to bottom, transparent, var(--black));
+            pointer-events: none;
+        }
+
+        .article-hero-inner {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: clamp(40px, 5vw, 72px);
+            align-items: center;
+            max-width: 1280px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (min-width: 900px) {
+            .article-hero-inner {
+                grid-template-columns: 1.15fr 1fr;
+                gap: 72px;
+            }
+        }
+
+        .article-hero-content {
+            text-align: center;
+        }
+
+        @media (min-width: 900px) {
+            .article-hero-content { text-align: left; }
         }
 
         .hero-eyebrow {
@@ -130,54 +157,119 @@
             display: inline-block;
         }
 
-        .article-hero .monogram {
-            max-width: 280px;
-            width: 55%;
-            height: auto;
-            display: block;
-            margin: 0 auto 56px;
-            filter: brightness(0) invert(1);
-            opacity: 0.92;
-        }
-
         .article-hero h1 {
-            font-size: clamp(40px, 6vw, 72px);
+            font-size: clamp(36px, 5.5vw, 64px);
             font-weight: 700;
             letter-spacing: -0.028em;
-            line-height: 1.04;
-            max-width: 1000px;
-            margin: 0 auto 36px;
+            line-height: 1.05;
+            max-width: 720px;
+            margin: 0 0 28px;
             background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-wrap: balance;
+        }
+
+        @media (max-width: 899px) {
+            .article-hero h1 { margin-left: auto; margin-right: auto; }
         }
 
         .article-hero .lede {
-            font-size: clamp(20px, 2.4vw, 28px);
+            font-size: clamp(18px, 2vw, 22px);
             font-weight: 300;
             color: var(--gray-3);
-            max-width: 780px;
-            margin: 0 auto;
-            letter-spacing: -0.012em;
-            line-height: 1.48;
+            max-width: 620px;
+            margin: 0 0 36px;
+            letter-spacing: -0.008em;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 899px) {
+            .article-hero .lede { margin-left: auto; margin-right: auto; }
         }
 
         .article-hero .meta {
-            margin-top: 56px;
             display: flex;
-            gap: 32px;
-            justify-content: center;
+            gap: 28px;
+            justify-content: flex-start;
             flex-wrap: wrap;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--gray-3);
-            letter-spacing: 0.04em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
+        }
+
+        @media (max-width: 899px) {
+            .article-hero .meta { justify-content: center; }
         }
 
         .article-hero .meta strong {
             color: var(--white);
+            font-weight: 600;
+        }
+
+        /* Editorial portrait */
+        .portrait-stage {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 auto;
+            max-width: 460px;
+            width: 100%;
+        }
+
+        .portrait-glow {
+            position: absolute;
+            inset: -40px;
+            background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(41, 151, 255, 0.15), transparent 65%);
+            filter: blur(40px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .portrait-frame {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            border-radius: 28px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 40px 100px -30px rgba(0, 0, 0, 0.8),
+                0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+        }
+
+        .portrait-frame::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.18) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .portrait {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 25%;
+            display: block;
+        }
+
+        .portrait-caption {
+            margin-top: 16px;
+            font-size: 11px;
             font-weight: 500;
+            color: var(--gray-3);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         /* Article body */
@@ -577,13 +669,23 @@
 
     <!-- Hero -->
     <header class="article-hero">
-        <span class="hero-eyebrow">The Story</span>
-        <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="monogram">
-        <h1>From a hospice in California to the operating rooms of Chicago — a journey shaped by purpose.</h1>
-        <p class="lede">The story of Christopher Z. Mabini, DO — son, surgeon, educator, builder.</p>
-        <div class="meta">
-            <span><strong>Christopher Z. Mabini</strong> · DO, MSAEd</span>
-            <span>Reading time · <strong>6 min</strong></span>
+        <div class="article-hero-inner">
+            <div class="article-hero-content">
+                <span class="hero-eyebrow">The Story</span>
+                <h1>From a hospice in California to the operating rooms of Chicago — a journey shaped by purpose.</h1>
+                <p class="lede">The story of Christopher Z. Mabini, DO — son, surgeon, educator, builder.</p>
+                <div class="meta">
+                    <span><strong>Christopher Z. Mabini</strong> · DO, MSAEd</span>
+                    <span>Reading time · <strong>6 min</strong></span>
+                </div>
+            </div>
+            <div class="portrait-stage">
+                <div class="portrait-glow"></div>
+                <div class="portrait-frame">
+                    <img src="/assets/images/headshot.jpg" alt="Christopher Z. Mabini, DO" class="portrait" loading="eager">
+                </div>
+                <div class="portrait-caption">Christopher Z. Mabini, DO, MSAEd · Chicago, IL</div>
+            </div>
         </div>
     </header>
 
@@ -624,20 +726,20 @@
             <h3>A practice measured in surgeries, papers, and people taught.</h3>
             <div class="interlude-grid">
                 <div class="interlude-stat">
-                    <span class="num">7+</span>
-                    <span class="lbl">Publications</span>
+                    <span class="num">100%</span>
+                    <span class="lbl">AAGL Acceptance Rate</span>
+                </div>
+                <div class="interlude-stat">
+                    <span class="num">3</span>
+                    <span class="lbl">National Awards</span>
+                </div>
+                <div class="interlude-stat">
+                    <span class="num">9+</span>
+                    <span class="lbl">Peer-Reviewed Presentations</span>
                 </div>
                 <div class="interlude-stat">
                     <span class="num">4</span>
                     <span class="lbl">Active IRB Studies</span>
-                </div>
-                <div class="interlude-stat">
-                    <span class="num">2</span>
-                    <span class="lbl">National Awards</span>
-                </div>
-                <div class="interlude-stat">
-                    <span class="num">5</span>
-                    <span class="lbl">macOS Apps</span>
                 </div>
             </div>
         </div>
