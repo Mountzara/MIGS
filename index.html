@@ -1860,6 +1860,364 @@
             color: var(--gray-2);
         }
 
+        /* ========== Apps detail modal ========== */
+        .app-card-v2 {
+            cursor: pointer;
+            outline: none;
+        }
+        .app-card-v2:focus-visible {
+            box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px rgba(0, 122, 255, 0.18);
+        }
+        .app-card-v2 .app-meta::after {
+            content: 'Learn more →';
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            opacity: 0.75;
+            transition: opacity 220ms ease, transform 220ms ease;
+        }
+        .app-card-v2:hover .app-meta::after {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        .app-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 250;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            background: rgba(8, 8, 10, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 380ms ease, background 380ms ease, backdrop-filter 380ms ease;
+            overflow: hidden;
+        }
+        .app-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+            background: rgba(8, 8, 10, 0.78);
+            backdrop-filter: blur(28px) saturate(140%);
+            -webkit-backdrop-filter: blur(28px) saturate(140%);
+        }
+        .app-modal-card {
+            position: relative;
+            width: min(96%, 1180px);
+            margin: 24px auto;
+            max-height: calc(100vh - 48px);
+            background: linear-gradient(180deg, #18181b 0%, #0e0e10 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(28px) scale(0.98);
+            opacity: 0;
+            transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+        }
+        .app-modal.open .app-modal-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        .app-modal-scroll {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        .app-modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            cursor: pointer;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: background 200ms ease, transform 200ms ease;
+        }
+        .app-modal-close:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: scale(1.06);
+        }
+        .app-modal-close svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2;
+        }
+
+        /* Modal hero with gradient banner */
+        .app-modal-hero {
+            position: relative;
+            padding: 64px 56px 48px;
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(0, 122, 255, 0.18), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(118, 88, 255, 0.16), transparent 60%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+        }
+        .app-modal-hero[data-tone="warm"] {
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255, 138, 76, 0.18), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(255, 90, 110, 0.14), transparent 60%);
+        }
+        .app-modal-hero[data-tone="violet"] {
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(168, 102, 255, 0.18), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(56, 84, 220, 0.16), transparent 60%);
+        }
+        .app-modal-hero[data-tone="dark"] {
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(80, 80, 100, 0.20), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(50, 50, 70, 0.18), transparent 60%);
+        }
+        .app-modal-hero[data-tone="accent"] {
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(0, 168, 255, 0.20), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(0, 90, 220, 0.14), transparent 60%);
+        }
+        .app-modal-icon {
+            width: 88px;
+            height: 88px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .app-modal-icon svg {
+            width: 44px;
+            height: 44px;
+            color: var(--white);
+            stroke-width: 1.4;
+        }
+        .app-modal-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.85);
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 999px;
+            margin-bottom: 16px;
+        }
+        .app-modal-title {
+            font-size: clamp(34px, 4vw, 56px);
+            font-weight: 700;
+            line-height: 1.04;
+            letter-spacing: -0.025em;
+            margin: 0 0 12px;
+            color: var(--white);
+            background: linear-gradient(180deg, #fff 0%, #b8b8c0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .app-modal-tagline {
+            font-size: clamp(16px, 1.4vw, 20px);
+            font-weight: 300;
+            line-height: 1.5;
+            color: var(--gray-2);
+            max-width: 720px;
+            margin: 0 0 28px;
+        }
+        .app-modal-platforms {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .platform-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.78);
+            padding: 7px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+        }
+
+        /* Modal body */
+        .app-modal-body {
+            padding: 56px;
+        }
+        .app-modal-section {
+            margin-bottom: 56px;
+        }
+        .app-modal-section:last-child { margin-bottom: 0; }
+        .app-modal-section-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gray-3);
+            margin-bottom: 12px;
+        }
+        .app-modal-section-title {
+            font-size: clamp(22px, 2vw, 30px);
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.012em;
+            margin: 0 0 24px;
+        }
+        .app-modal-section-lead {
+            font-size: 17px;
+            font-weight: 300;
+            line-height: 1.65;
+            color: var(--gray-1);
+            max-width: 760px;
+            margin: 0 0 32px;
+        }
+
+        .feature-grid-modal {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+        .feature-tile {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            transition: background 220ms ease, transform 220ms ease, border-color 220ms ease;
+        }
+        .feature-tile:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        .feature-tile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(0, 122, 255, 0.12);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+        .feature-tile-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
+        .feature-tile h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--white);
+            margin: 0 0 6px;
+            letter-spacing: -0.005em;
+        }
+        .feature-tile p {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--gray-2);
+            margin: 0;
+        }
+
+        .usecase-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        .usecase-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+        }
+        .usecase-marker {
+            flex: 0 0 6px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-top: 8px;
+        }
+        .usecase-row strong {
+            color: var(--white);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .usecase-row p {
+            color: var(--gray-2);
+            font-size: 14px;
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .tech-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tech-pill {
+            font-size: 12.5px;
+            color: var(--gray-1);
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+        }
+
+        .app-modal-footer-cta {
+            margin-top: 16px;
+            padding: 28px 32px;
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.10), rgba(118, 88, 255, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .app-modal-footer-cta strong {
+            display: block;
+            color: var(--white);
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .app-modal-footer-cta p {
+            color: var(--gray-2);
+            font-size: 13.5px;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .app-modal-card { margin: 12px; max-height: calc(100vh - 24px); border-radius: 22px; }
+            .app-modal-hero { padding: 44px 28px 32px; }
+            .app-modal-body { padding: 36px 28px; }
+            .app-modal-section { margin-bottom: 40px; }
+            .feature-grid-modal { grid-template-columns: 1fr; }
+            .app-modal-footer-cta { flex-direction: column; align-items: flex-start; }
+        }
+
         /* ========== Reveal animations ========== */
         .reveal {
             opacity: 0;
@@ -1873,38 +2231,39 @@
         }
 
         /* ========== Apple Vision Pro–style scroll system ========== */
-        /* Snappier, more readable: 650ms / softer translate / no blur on body text */
+        /* More pronounced motion + later trigger so animation runs when the user
+           is actively looking at the element, not before. */
         [data-reveal] {
             opacity: 0;
-            transform: translate3d(0, 22px, 0);
+            transform: translate3d(0, 48px, 0);
             transition:
-                opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
-                transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
-                filter 650ms cubic-bezier(0.22, 1, 0.36, 1);
+                opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+                filter 900ms cubic-bezier(0.16, 1, 0.3, 1);
             will-change: opacity, transform;
         }
         [data-reveal="scale"] {
-            transform: translate3d(0, 14px, 0) scale(0.975);
+            transform: translate3d(0, 28px, 0) scale(0.92);
         }
         [data-reveal="blur"] {
-            filter: blur(8px);
-            transform: translate3d(0, 12px, 0);
+            filter: blur(16px);
+            transform: translate3d(0, 24px, 0);
         }
         [data-reveal="fade"] {
-            transform: none;
+            transform: translate3d(0, 16px, 0);
         }
         [data-reveal].in {
             opacity: 1;
             transform: translate3d(0, 0, 0) scale(1);
             filter: none;
         }
-        /* Tighter stagger so groups settle inside ~400ms total */
-        [data-reveal][data-stagger="1"].in { transition-delay: 60ms; }
-        [data-reveal][data-stagger="2"].in { transition-delay: 120ms; }
-        [data-reveal][data-stagger="3"].in { transition-delay: 180ms; }
-        [data-reveal][data-stagger="4"].in { transition-delay: 240ms; }
-        [data-reveal][data-stagger="5"].in { transition-delay: 300ms; }
-        [data-reveal][data-stagger="6"].in { transition-delay: 360ms; }
+        /* Cascading stagger 80ms apart */
+        [data-reveal][data-stagger="1"].in { transition-delay: 80ms; }
+        [data-reveal][data-stagger="2"].in { transition-delay: 160ms; }
+        [data-reveal][data-stagger="3"].in { transition-delay: 240ms; }
+        [data-reveal][data-stagger="4"].in { transition-delay: 320ms; }
+        [data-reveal][data-stagger="5"].in { transition-delay: 400ms; }
+        [data-reveal][data-stagger="6"].in { transition-delay: 480ms; }
 
         /* Word-level reveal for headlines (per-word mask) */
         .word-reveal {
@@ -2812,7 +3171,7 @@
 
             <div class="apps-bento">
                 <!-- Featured: Mount Zara Clinical AI -->
-                <div class="app-card-v2 app-feature">
+                <div class="app-card-v2 app-feature" data-app="clinical" role="button" tabindex="0">
                     <div class="app-visual">
                         <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2v6m0 0c-3 0-5 2-5 5v3a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4v-3c0-3-2-5-5-5z"/>
@@ -2828,7 +3187,7 @@
                 </div>
 
                 <!-- ABOG Case List Manager -->
-                <div class="app-card-v2">
+                <div class="app-card-v2" data-app="abog" role="button" tabindex="0">
                     <div class="app-visual warm">
                         <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="4" y="3" width="16" height="18" rx="2"/>
@@ -2844,7 +3203,7 @@
                 </div>
 
                 <!-- Medical Transcription -->
-                <div class="app-card-v2">
+                <div class="app-card-v2" data-app="transcription" role="button" tabindex="0">
                     <div class="app-visual accent">
                         <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="2" width="6" height="13" rx="3"/>
@@ -2860,7 +3219,7 @@
                 </div>
 
                 <!-- MZ Research Suite -->
-                <div class="app-card-v2">
+                <div class="app-card-v2" data-app="research" role="button" tabindex="0">
                     <div class="app-visual violet">
                         <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="7"/>
@@ -2877,7 +3236,7 @@
                 </div>
 
                 <!-- Surgical Video Archive -->
-                <div class="app-card-v2">
+                <div class="app-card-v2" data-app="video" role="button" tabindex="0">
                     <div class="app-visual dark">
                         <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="6" width="14" height="12" rx="2"/>
@@ -3425,6 +3784,54 @@
     </footer>
 
     <!-- Contact Modal -->
+    <!-- Apps detail modal -->
+    <div class="app-modal" id="appModal" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+        <div class="app-modal-card">
+            <button type="button" class="app-modal-close" onclick="closeAppModal()" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+            </button>
+            <div class="app-modal-scroll" id="appModalScroll">
+                <div class="app-modal-hero" id="appModalHero">
+                    <div class="app-modal-icon" id="appModalIcon"></div>
+                    <span class="app-modal-tag" id="appModalTag"></span>
+                    <h2 class="app-modal-title" id="appModalTitle"></h2>
+                    <p class="app-modal-tagline" id="appModalTagline"></p>
+                    <div class="app-modal-platforms" id="appModalPlatforms"></div>
+                </div>
+                <div class="app-modal-body">
+                    <section class="app-modal-section">
+                        <div class="app-modal-section-eyebrow">Overview</div>
+                        <p class="app-modal-section-lead" id="appModalDescription"></p>
+                    </section>
+                    <section class="app-modal-section">
+                        <div class="app-modal-section-eyebrow">Features</div>
+                        <h3 class="app-modal-section-title">Built for the working surgeon, not the demo reel.</h3>
+                        <div class="feature-grid-modal" id="appModalFeatures"></div>
+                    </section>
+                    <section class="app-modal-section">
+                        <div class="app-modal-section-eyebrow">Who it's for</div>
+                        <h3 class="app-modal-section-title">Use cases.</h3>
+                        <div class="usecase-list" id="appModalUseCases"></div>
+                    </section>
+                    <section class="app-modal-section">
+                        <div class="app-modal-section-eyebrow">Engineering</div>
+                        <h3 class="app-modal-section-title">Built with.</h3>
+                        <div class="tech-pills" id="appModalTech"></div>
+                    </section>
+                    <section class="app-modal-section">
+                        <div class="app-modal-footer-cta">
+                            <div>
+                                <strong>Want early access?</strong>
+                                <p>The Mount Zara Suite is currently in private beta with a select group of OBGYN and CBG/MIGS practitioners.</p>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="closeAppModal(); setTimeout(openContactModal, 420);">Request access <span class="arrow"></span></button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="contact-modal" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
         <div class="contact-modal-card">
             <button type="button" class="contact-modal-close" onclick="closeContactModal()" aria-label="Close">
@@ -3526,6 +3933,187 @@
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+
+        // ==========================================================
+        // Apps detail modal — data-driven, single modal for all apps
+        // ==========================================================
+        const APPS = {
+            clinical: {
+                tone: 'accent',
+                tag: 'Flagship · Clinical AI',
+                title: 'MountZara Clinical AI',
+                tagline: 'The clinical companion built by an active surgeon — evidence-based decision support for the working OBGYN and CBG/MIGS practitioner.',
+                platforms: ['Native macOS', 'Apple Silicon optimized', 'On-device privacy'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
+                description: 'A deeply integrated AI clinical decision-support system designed around the modern OBGYN workflow. From pre-op planning through post-op follow-up, MountZara Clinical AI brings the latest evidence, surgical reasoning, and day-to-day support directly into your operating cadence — without forcing you to leave your workflow.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', title: 'Evidence-based reasoning', desc: 'Cross-referenced against ACOG, AAGL, ASRM, and SGS guidelines with citation-aware responses.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l4-7h10l4 7-9 10z"/></svg>', title: 'Pre-op case planning', desc: 'Structured workflows for laparoscopy, hysteroscopy, and robotic cases. Differential surgical approaches.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', title: 'Intra-op reference', desc: 'Quick anatomic, instrumentation, and decision references designed for fast, glanceable access.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14l4-4h7"/><path d="M16 19h6M19 16v6"/></svg>', title: 'Note & letter drafting', desc: 'Op note skeletons, consult letters, and patient-friendly explanations from your case context.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>', title: 'Post-op follow-up', desc: 'Protocol-based reminders for ERAS, complication windows, and patient outreach.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'On-device privacy', desc: 'Sensitive workflows process locally on Apple Silicon. No PHI ever leaves your machine.' },
+                ],
+                useCases: [
+                    { title: 'Working OBGYN', desc: 'Faster, evidence-aligned decisions during clinic — without a second screen, second login, or context switch.' },
+                    { title: 'CBG/MIGS surgeon', desc: 'Complex case planning with structured surgical reasoning, indication review, and approach comparison.' },
+                    { title: 'OBGYN resident', desc: 'A study companion grounded in current literature — not a textbook from five years ago.' },
+                ],
+                tech: ['Native Swift / SwiftUI', 'Apple Intelligence', 'On-device LLM inference', 'CoreML', 'Encrypted local storage', 'PubMed + guideline indexing'],
+            },
+            abog: {
+                tone: 'warm',
+                tag: 'Board Prep · Case Tracking',
+                title: 'ABOG Case List Manager',
+                tagline: 'Built for the OBGYN board exam — by someone who has been there. Track, categorize, and prepare your case list with the structure ABOG actually requires.',
+                platforms: ['Native macOS', 'iCloud sync', 'Print-ready exports'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+                description: 'Preparing your ABOG case list shouldn\'t feel like a side job. ABOG Case List Manager is purpose-built around the categories, formats, and oral-exam expectations the American Board of OBGYN actually publishes — so you can spend your prep time studying, not wrangling spreadsheets.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'ABOG categories pre-loaded', desc: 'All required case categories for OBGYN oral boards, organized exactly as ABOG expects them.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'CPT-aware classification', desc: 'Enter a CPT and the case auto-routes to the correct ABOG category. No manual re-mapping.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>', title: 'Print-ready exports', desc: 'Generate ABOG-formatted PDFs and CSVs with every required field, ready for submission.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'Oral exam mode', desc: 'Mock ABOG oral structure: case selection, prompts, and a randomized board-style review flow.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>', title: 'AI case summaries', desc: 'One-click clinical narratives in the structure your reviewers expect, drafted from your inputs.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6"/></svg>', title: 'Encrypted iCloud sync', desc: 'Pick up where you left off across Mac, iPad, and iPhone. PHI-grade encryption end-to-end.' },
+                ],
+                useCases: [
+                    { title: 'Senior OBGYN resident', desc: 'Track your last six months of cases with the categorization the ABOG list actually requires — from day one.' },
+                    { title: 'Recently graduated OBGYN', desc: 'Submission-ready case logs without the week-before scramble of cleaning up a spreadsheet.' },
+                    { title: 'Fellowship trainee', desc: 'Aggregate cases across hospital systems and EMRs into a single ABOG-aligned record.' },
+                ],
+                tech: ['Native Swift / SwiftUI', 'CoreData + CloudKit', 'PDF rendering', 'Encrypted at rest', 'Offline-first', 'Universal binary'],
+            },
+            transcription: {
+                tone: 'accent',
+                tag: 'Workflow AI · Dictation',
+                title: 'Medical Transcription',
+                tagline: 'AI dictation that actually understands medicine. Capture clinic notes, op notes, and patient encounters with specialty-tuned accuracy.',
+                platforms: ['Native macOS', 'On-device speech', 'EMR-friendly export'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>',
+                description: 'Generic dictation tools mangle "salpingo-oophorectomy" and choke on "isthmocele." Medical Transcription is tuned on a specialty-aware vocabulary spanning OBGYN, surgical anatomy, pharmacology, and procedural terminology — so what you say is what you get.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>', title: 'Specialty-aware vocabulary', desc: 'Tuned on OBGYN, MIGS, anatomy, pharmacology, and procedural language. No re-training, no glossary upkeep.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>', title: 'Real-time transcription', desc: 'Sub-second latency on Apple Silicon. Words appear as you speak, not after you finish.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v2H9zM9 13h6v2H9z"/></svg>', title: 'Template-driven notes', desc: 'SOAP, op note, consult, and discharge templates. Choose your structure and dictate to it.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/><path d="M9 12l2 2 4-4"/></svg>', title: 'HIPAA-grade privacy', desc: 'Speech and text never leave your Mac. Audio is processed on-device and never transmitted.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"/></svg>', title: 'EMR-ready export', desc: 'Copy / paste into Epic, Cerner, Athena. Or export RTF, DOCX, plain text, FHIR-compatible JSON.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>', title: 'Smart auto-correction', desc: 'Catches medical homophones (ileum vs. ilium), drug spelling, and dosage formatting in context.' },
+                ],
+                useCases: [
+                    { title: 'Clinic visit dictation', desc: 'A 12-minute visit captured in real time — turn around chart notes the same hour, not the same week.' },
+                    { title: 'Operative note capture', desc: 'Dictate op notes between cases on your iPhone or iPad mounted in the OR break room.' },
+                    { title: 'Patient encounter docs', desc: 'Letters, after-visit summaries, and education handouts drafted in your voice and your style.' },
+                ],
+                tech: ['Native Swift', 'Whisper-class ASR', 'Apple Speech framework', 'CoreML acceleration', 'On-device processing', 'FHIR-compatible export'],
+            },
+            research: {
+                tone: 'violet',
+                tag: 'Research AI · Manuscript Workflow',
+                title: 'MZ Research Suite',
+                tagline: 'From IRB to abstract — the entire research workflow, accelerated. Built by an active investigator with multiple peer-reviewed studies in flight.',
+                platforms: ['Native macOS', 'PubMed integration', 'Citation-managed'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 7v4l3 2"/></svg>',
+                description: 'Most clinician-investigators piece research workflow together from a dozen disjointed tools. MZ Research Suite collapses that stack: IRB protocol management, AI-assisted literature review with PubMed integration, citation handling, statistical reasoning, and abstract drafting — coordinated end-to-end.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>', title: 'IRB protocol templates', desc: 'Pre-built protocol skeletons for retrospective, prospective, and quality-improvement studies.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M8 11h6"/></svg>', title: 'AI literature review', desc: 'PubMed-aware semantic search with structured summaries, cited verbatim — no hallucinated citations.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 8h16M8 4v16"/></svg>', title: 'Citation manager', desc: 'BibTeX, EndNote, and Zotero-compatible. Drag in a PDF, the metadata fills itself in.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h4"/></svg>', title: 'Abstract drafting', desc: 'AAGL, ACOG, SGS, and journal-specific abstract structures with word-count-aware drafting.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M9 17v-6M13 17v-3M17 17V9"/></svg>', title: 'Statistical reasoning', desc: 'Test-selection guidance, sample-size estimation, and reporting language drafted to journal standards.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'Manuscript outlines', desc: 'IMRaD outlines pre-built for JMIG, Obstet Gynecol, AJOG, Fertility & Sterility, and more.' },
+                ],
+                useCases: [
+                    { title: 'Resident\'s first abstract', desc: 'From a clinical question to a submission-ready AAGL abstract in hours, not weekends.' },
+                    { title: 'Fellow with multiple IRBs', desc: 'Manage protocol versions, amendments, and approvals for several active studies in parallel.' },
+                    { title: 'Faculty manuscript pipeline', desc: 'Track manuscripts from draft → peer review → revision → publication, with co-author workflows.' },
+                ],
+                tech: ['Native Swift', 'PubMed E-utilities API', 'Modern LLMs with citation grounding', 'BibTeX / EndNote / Zotero', 'Markdown + LaTeX export', 'CoreData'],
+            },
+            video: {
+                tone: 'dark',
+                tag: 'Video AI · Surgical Media',
+                title: 'Surgical Video Archive',
+                tagline: 'The video workflow behind award-winning surgical content. Organize, tag, and learn from your own footage — built by the surgeon who won the Golden Hysteroscope.',
+                platforms: ['Native macOS', 'ProRes / H.264', 'Encrypted local'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>',
+                description: 'The same workflow behind multiple AAGL Global Congress acceptances and the Golden Hysteroscope Award. Surgical Video Archive is built around how surgeons actually learn from their operations: timeline annotations, procedure-aware tagging, side-by-side comparison, and clip exports ready for AAGL or ACOG submission.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>', title: 'Procedure-aware tagging', desc: 'Hysteroscopy, laparoscopy, robotic, hysterectomy, myomectomy — pre-loaded ontology with custom tags.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6l3-9 3 18 3-9h3"/></svg>', title: 'Timeline annotations', desc: 'Mark anatomic landmarks, decision points, and complications with frame-accurate precision.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>', title: 'Side-by-side comparison', desc: 'Review two cases of the same procedure synchronized — invaluable for technique refinement.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>', title: 'Submission-ready clips', desc: 'AAGL, ACOG, and IRB-compliant clip exports with built-in PHI scrub and compression presets.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', title: 'AI scene detection', desc: 'Automatically detect entry, dissection, hemostasis, and closure phases — no manual scrubbing.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'Encrypted local storage', desc: 'Surgical video stays on your machine. AES-256 at rest, no cloud upload required.' },
+                ],
+                useCases: [
+                    { title: 'Building a board-prep library', desc: 'A searchable, tagged library of your own cases — the highest-yield prep material there is.' },
+                    { title: 'Teaching content', desc: 'Build polished teaching reels for residents, fellows, and grand rounds in minutes, not days.' },
+                    { title: 'AAGL / ACOG video competition', desc: 'The same export pipeline that produced the Golden Hysteroscope-winning entry.' },
+                ],
+                tech: ['Native Swift / AVFoundation', 'Apple Video Toolbox', 'CoreML scene detection', 'ProRes 4444 + H.264 + H.265', 'Frame-accurate scrubbing', 'AES-256 encryption'],
+            },
+        };
+
+        const appModalEl = document.getElementById('appModal');
+        const appModalScroll = document.getElementById('appModalScroll');
+
+        function populateAppModal(key) {
+            const app = APPS[key];
+            if (!app) return;
+            document.getElementById('appModalHero').setAttribute('data-tone', app.tone || '');
+            document.getElementById('appModalIcon').innerHTML = app.icon;
+            document.getElementById('appModalTag').textContent = app.tag;
+            document.getElementById('appModalTitle').textContent = app.title;
+            document.getElementById('appModalTagline').textContent = app.tagline;
+            document.getElementById('appModalPlatforms').innerHTML = app.platforms
+                .map(p => `<span class="platform-pill">${p}</span>`).join('');
+            document.getElementById('appModalDescription').textContent = app.description;
+            document.getElementById('appModalFeatures').innerHTML = app.features
+                .map(f => `
+                    <div class="feature-tile">
+                        <div class="feature-tile-icon">${f.icon}</div>
+                        <h4>${f.title}</h4>
+                        <p>${f.desc}</p>
+                    </div>`).join('');
+            document.getElementById('appModalUseCases').innerHTML = app.useCases
+                .map(u => `
+                    <div class="usecase-row">
+                        <span class="usecase-marker"></span>
+                        <div>
+                            <strong>${u.title}</strong>
+                            <p>${u.desc}</p>
+                        </div>
+                    </div>`).join('');
+            document.getElementById('appModalTech').innerHTML = app.tech
+                .map(t => `<span class="tech-pill">${t}</span>`).join('');
+        }
+
+        function openAppModal(key) {
+            populateAppModal(key);
+            appModalEl.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (appModalScroll) appModalScroll.scrollTop = 0;
+        }
+        function closeAppModal() {
+            appModalEl.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        appModalEl.addEventListener('click', e => {
+            if (e.target === appModalEl) closeAppModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && appModalEl.classList.contains('open')) closeAppModal();
+        });
+        // Wire up every app card via event delegation
+        document.querySelectorAll('.app-card-v2[data-app]').forEach(card => {
+            const key = card.getAttribute('data-app');
+            const open = () => openAppModal(key);
+            card.addEventListener('click', open);
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
             });
         });
 
@@ -3637,7 +4225,7 @@
                         revealObs.unobserve(e.target);
                     }
                 });
-            }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+            }, { threshold: 0, rootMargin: '0px 0px -22% 0px' });
             reveals.forEach(el => revealObs.observe(el));
             // Reveal hero title immediately on load (it's already in view)
             if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
