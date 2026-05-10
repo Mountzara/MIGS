@@ -11,8 +11,8 @@ export async function onRequestGet({ request, env }) {
         return new Response("Not found", { status: 404 });
     }
 
-    if (!env.VIDEOS) {
-        return new Response("R2 binding 'VIDEOS' not configured", { status: 500 });
+    if (!env.MEDIA) {
+        return new Response("R2 binding 'MEDIA' not configured", { status: 500 });
     }
 
     // Handle HTTP Range requests for video streaming
@@ -29,7 +29,7 @@ export async function onRequestGet({ request, env }) {
         }
     }
 
-    const object = await env.VIDEOS.get(key, r2Options);
+    const object = await env.MEDIA.get(key, r2Options);
     if (!object) {
         return new Response("Video not found", { status: 404 });
     }

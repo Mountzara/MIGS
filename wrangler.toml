@@ -6,5 +6,5 @@ pages_build_output_dir = "."
 # R2 bucket binding for surgical video streaming via Pages Functions
 # Routes: /videos/<filename> → mountzara-videos/<filename>
 [[r2_buckets]]
-binding = "VIDEOS"
+binding = "MEDIA"
 bucket_name = "mountzara-media"
