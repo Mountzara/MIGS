@@ -122,9 +122,9 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center 28%;
+            object-position: 70% 22%;
             z-index: 0;
-            filter: saturate(0.92) contrast(1.04) brightness(0.95);
+            filter: saturate(0.95) contrast(1.05) brightness(0.98);
             transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
             transform: scale(1.02);
         }
@@ -164,15 +164,16 @@
             z-index: 3;
             background:
                 linear-gradient(180deg,
-                    rgba(0,0,0,0.55) 0%,
-                    rgba(0,0,0,0.15) 25%,
-                    rgba(0,0,0,0.05) 50%,
-                    rgba(0,0,0,0.45) 80%,
-                    rgba(0,0,0,0.85) 100%),
-                linear-gradient(95deg,
-                    rgba(0,0,0,0.55) 0%,
-                    rgba(0,0,0,0.2) 35%,
-                    transparent 60%);
+                    rgba(0,0,0,0.35) 0%,
+                    rgba(0,0,0,0.1) 18%,
+                    transparent 35%,
+                    transparent 55%,
+                    rgba(0,0,0,0.6) 78%,
+                    rgba(0,0,0,0.92) 100%),
+                linear-gradient(90deg,
+                    rgba(0,0,0,0.75) 0%,
+                    rgba(0,0,0,0.35) 28%,
+                    transparent 48%);
             pointer-events: none;
             transition: opacity 0.6s ease;
         }
@@ -224,41 +225,41 @@
             font-weight: 600;
         }
 
-        /* Main typography stage - overlapping the image */
+        /* Typography stage - lower-left, doesn't cover face */
         .cover-stage {
             position: absolute;
             z-index: 4;
             left: clamp(20px, 4vw, 56px);
             right: clamp(20px, 4vw, 56px);
-            bottom: clamp(80px, 12vw, 140px);
+            bottom: clamp(96px, 13vw, 140px);
             color: var(--white);
-            max-width: 1100px;
+            max-width: 540px;
         }
 
         .cover-eyebrow {
             display: inline-block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.32em;
             text-transform: uppercase;
             color: var(--white);
-            margin-bottom: clamp(16px, 2vw, 28px);
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: clamp(14px, 1.6vw, 22px);
+            padding: 7px 14px;
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 999px;
         }
 
         .cover-name {
-            font-size: clamp(48px, 11vw, 168px);
+            font-size: clamp(38px, 5.2vw, 76px);
             font-weight: 800;
-            line-height: 0.88;
-            letter-spacing: -0.045em;
-            margin: 0 0 clamp(20px, 2.5vw, 32px);
+            line-height: 0.95;
+            letter-spacing: -0.038em;
+            margin: 0 0 clamp(16px, 2vw, 24px);
             color: var(--white);
-            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.45);
+            text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
         }
 
         .cover-name-line {
@@ -266,41 +267,39 @@
         }
 
         .cover-name-line-2 {
-            background: linear-gradient(90deg, #fff 0%, rgba(255, 255, 255, 0.55) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: rgba(255, 255, 255, 0.72);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.72);
             font-style: italic;
             font-weight: 300;
             font-family: 'Avenir Next', Georgia, serif;
-            letter-spacing: -0.03em;
+            letter-spacing: -0.024em;
         }
 
         .cover-rule {
-            width: 80px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--white), rgba(255,255,255,0.1));
-            margin-bottom: 20px;
+            width: 56px;
+            height: 1.5px;
+            background: linear-gradient(90deg, var(--white), rgba(255,255,255,0.12));
+            margin-bottom: 16px;
         }
 
         .cover-tagline {
-            font-size: clamp(14px, 1.4vw, 17px);
+            font-size: 12px;
             font-weight: 600;
-            letter-spacing: 0.32em;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.85);
-            margin: 0 0 16px;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0 0 14px;
         }
 
         .cover-subtitle {
-            font-size: clamp(15px, 1.5vw, 19px);
+            font-size: clamp(14px, 1.3vw, 16px);
             font-weight: 300;
-            line-height: 1.5;
+            line-height: 1.55;
             letter-spacing: -0.005em;
-            color: rgba(255, 255, 255, 0.85);
-            max-width: 620px;
+            color: rgba(255, 255, 255, 0.88);
+            max-width: 480px;
             margin: 0;
-            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
         }
 
         /* Footer credit band */
@@ -344,15 +343,29 @@
         }
 
         @media (max-width: 720px) {
+            .cover-frame {
+                min-height: calc(100svh - 120px);
+            }
             .cover-name {
-                font-size: clamp(40px, 13vw, 80px);
+                font-size: clamp(36px, 9vw, 56px);
             }
             .cover-stage {
-                bottom: clamp(100px, 18vw, 160px);
+                bottom: clamp(140px, 26vw, 200px);
+                max-width: 100%;
             }
+            .cover-subtitle { max-width: 100%; }
             .cover-corner-tr .corner-meta:nth-child(2) { display: none; }
             .cover-image {
-                object-position: center 22%;
+                object-position: 60% 18%;
+            }
+            .cover-gradient {
+                background:
+                    linear-gradient(180deg,
+                        rgba(0,0,0,0.35) 0%,
+                        rgba(0,0,0,0.05) 18%,
+                        transparent 40%,
+                        rgba(0,0,0,0.7) 65%,
+                        rgba(0,0,0,0.95) 100%);
             }
             .cover-footer {
                 flex-direction: column;
