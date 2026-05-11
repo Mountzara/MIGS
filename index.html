@@ -1971,6 +1971,11 @@
                 grid-column: span 2;
                 grid-row: span 1;
             }
+
+            /* Center orphan card when alone on last row */
+            .apps-bento > .app-card-v2:not(.app-feature):last-child:nth-child(3n+2) {
+                grid-column: 2 / 3;
+            }
         }
 
         .app-card-v2 {
