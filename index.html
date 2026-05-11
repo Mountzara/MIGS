@@ -235,7 +235,7 @@
 
         /* ========== Hero ========== */
         .hero {
-            background: #000000;
+            background: transparent;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -245,9 +245,34 @@
             padding: 100px 28px 120px;
             position: relative;
             z-index: 2;
-            overflow: hidden;
+            overflow: visible;
         }
 
+        /* Persistent background stage - fixed to viewport, fades out via JS on deep scroll */
+        .hero-bg-stage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background: #000;
+            transition: opacity 0.8s ease-out;
+        }
+        .hero-bg-stage.faded {
+            opacity: 0;
+        }
+        .hero-bg-vignette {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 50% at 50% 50%, transparent 0%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.7) 100%),
+                linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.45) 100%);
+            z-index: 2;
+        }
         .hero-video {
             position: absolute;
             top: 50%;
@@ -260,7 +285,6 @@
             object-fit: cover;
             opacity: 1;
             pointer-events: none;
-            /* Slow Ken Burns on poster - runs until video plays, ensures motion is visible */
             animation: heroKenBurns 30s ease-in-out infinite alternate;
             transform: translate(-50%, -50%) scale(1);
         }
@@ -339,14 +363,75 @@
             width: 100%;
         }
 
-        .hero-content-delayed {
+        /* ============ Page Loader ============ */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .page-loader.hidden {
             opacity: 0;
-            transition: opacity 1.2s ease-out;
+            pointer-events: none;
+        }
+        .page-loader.removed {
+            display: none;
+        }
+        .page-loader-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+        }
+        .page-loader-mark {
+            width: 70px;
+            height: auto;
+            opacity: 0.92;
+            animation: loaderMarkPulse 2s ease-in-out infinite;
+        }
+        @keyframes loaderMarkPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .page-loader-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(255,255,255,0.12);
+            border-top-color: rgba(255,255,255,0.85);
+            border-radius: 50%;
+            animation: loaderSpin 0.9s linear infinite;
+        }
+        @keyframes loaderSpin {
+            to { transform: rotate(360deg); }
         }
 
-        .hero-content-delayed.visible {
-            opacity: 1;
+        /* ============ Hero content reveal (Apple-style staggered) ============ */
+        .hero-content-delayed {
+            opacity: 1; /* container visible, children animate in individually */
         }
+        .hero-content-delayed > * {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .hero-content-delayed.visible > * {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Stagger each child for a cascading Apple-style reveal */
+        .hero-content-delayed.visible > *:nth-child(1) { transition-delay: 0ms; }
+        .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 140ms; }
+        .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 280ms; }
+        .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 420ms; }
+        .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 560ms; }
 
         /* Monogram stage */
         .monogram-stage {
@@ -3596,6 +3681,14 @@
     </style>
 </head>
 <body>
+    <!-- Page loader: visible until critical assets are ready -->
+    <div id="pageLoader" class="page-loader" aria-hidden="true">
+        <div class="page-loader-inner">
+            <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="" class="page-loader-mark">
+            <div class="page-loader-spinner"></div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
@@ -3626,14 +3719,18 @@
     <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
 
     <!-- Hero -->
-    <section class="hero">
+    <!-- Persistent background animation - spans hero + pinned showcase -->
+    <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
         <img class="hero-video"
              src="https://mountzara.com/media/hero-animation.webp"
              alt=""
              id="heroVideo"
-             aria-hidden="true"
              fetchpriority="high"
              decoding="async">
+        <div class="hero-bg-vignette"></div>
+    </div>
+
+    <section class="hero">
         <div class="hero-mesh"></div>
         <div class="hero-grid"></div>
 
@@ -4971,36 +5068,83 @@
     </div>
 
     <script>
-        // Hero animation reveal logic
-        // WebP animation autoplays as image - no autoplay restrictions
+        // Orchestrated reveal sequence:
+        //   1. Page loader visible while critical assets download
+        //   2. Loader fades out
+        //   3. Hero animation plays (already in DOM, just becomes visible)
+        //   4. Text content cascades in Apple-style
+        //   5. Background image fades out when user scrolls past sticky sections
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
+        const pageLoader = document.getElementById('pageLoader');
+        const heroBgStage = document.getElementById('heroBgStage');
         const ANIMATION_DURATION_MS = 6762; // 161 frames * 42ms
 
-        if (heroVideo && heroContent) {
-            const startReveal = () => {
-                heroVideo.classList.add('playing');
-                // Show text 1s after animation starts
-                setTimeout(() => {
-                    heroContent.classList.add('visible');
-                }, 1000);
-                // Apply Ken Burns after animation finishes
-                setTimeout(() => {
-                    heroVideo.classList.remove('playing');
-                    heroVideo.classList.add('ken-burns');
-                }, ANIMATION_DURATION_MS);
-            };
+        function waitForImage(img) {
+            return new Promise(resolve => {
+                if (img.complete && img.naturalWidth > 0) return resolve();
+                const done = () => resolve();
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+            });
+        }
 
-            // Start reveal once image is loaded (animation starts immediately on load)
-            if (heroVideo.complete) {
-                startReveal();
-            } else {
-                heroVideo.addEventListener('load', startReveal, { once: true });
-                // Fallback if load event doesn't fire
-                setTimeout(startReveal, 500);
+        function waitForFonts() {
+            if (document.fonts && document.fonts.ready) {
+                return document.fonts.ready;
             }
-        } else if (heroContent) {
-            heroContent.classList.add('visible');
+            return Promise.resolve();
+        }
+
+        function startHeroSequence() {
+            if (!heroVideo || !heroContent) return;
+            heroVideo.classList.add('playing');
+            // Cascade hero text in Apple-style, ~600ms after animation starts
+            setTimeout(() => {
+                heroContent.classList.add('visible');
+            }, 600);
+            // Ken Burns after animation finishes
+            setTimeout(() => {
+                heroVideo.classList.remove('playing');
+                heroVideo.classList.add('ken-burns');
+            }, ANIMATION_DURATION_MS);
+        }
+
+        function hideLoader() {
+            if (!pageLoader) return;
+            pageLoader.classList.add('hidden');
+            setTimeout(() => pageLoader.classList.add('removed'), 800);
+        }
+
+        // Wait for critical assets, then orchestrate reveal
+        Promise.race([
+            Promise.all([
+                heroVideo ? waitForImage(heroVideo) : Promise.resolve(),
+                waitForFonts()
+            ]),
+            // Hard cap: never show loader longer than 6s
+            new Promise(resolve => setTimeout(resolve, 6000))
+        ]).then(() => {
+            // Small breath between loader fade and hero start, feels more deliberate
+            hideLoader();
+            setTimeout(startHeroSequence, 250);
+        });
+
+        // Fade out persistent bg after user scrolls past the pinned showcase
+        if (heroBgStage) {
+            const pinnedShowcase = document.querySelector('.pinned-showcase');
+            const fadeTrigger = () => {
+                const trigger = pinnedShowcase
+                    ? pinnedShowcase.offsetTop + pinnedShowcase.offsetHeight - window.innerHeight * 0.5
+                    : window.innerHeight * 3;
+                if (window.scrollY > trigger) {
+                    heroBgStage.classList.add('faded');
+                } else {
+                    heroBgStage.classList.remove('faded');
+                }
+            };
+            window.addEventListener('scroll', fadeTrigger, { passive: true });
+            fadeTrigger();
         }
 
         // Contact modal
