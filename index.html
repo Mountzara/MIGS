@@ -269,8 +269,7 @@
             inset: 0;
             pointer-events: none;
             background:
-                radial-gradient(ellipse 60% 50% at 50% 50%, transparent 0%, rgba(0,0,0,0.35) 75%, rgba(0,0,0,0.7) 100%),
-                linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.45) 100%);
+                radial-gradient(ellipse 80% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.18) 88%, rgba(0,0,0,0.45) 100%);
             z-index: 2;
         }
         .hero-video {
@@ -336,10 +335,9 @@
             pointer-events: none;
             z-index: 0;
             background:
-                radial-gradient(ellipse 50% 40% at 50% 45%, rgba(60, 60, 65, 0.15), transparent 70%),
-                radial-gradient(ellipse 40% 35% at 30% 60%, rgba(40, 40, 45, 0.12), transparent 65%),
-                linear-gradient(135deg, rgba(30, 30, 35, 0.08) 0%, transparent 50%);
-            opacity: 0.6;
+                radial-gradient(ellipse 50% 40% at 50% 45%, rgba(60, 60, 65, 0.08), transparent 70%),
+                radial-gradient(ellipse 40% 35% at 30% 60%, rgba(40, 40, 45, 0.06), transparent 65%);
+            opacity: 0.4;
         }
 
         .hero-grid {
@@ -504,24 +502,23 @@
             line-height: 1.02;
             margin-top: 0;
             margin-bottom: 16px;
-            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            opacity: 0;
-            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+            color: #fff;
+            text-shadow:
+                0 2px 28px rgba(0, 0, 0, 0.65),
+                0 1px 4px rgba(0, 0, 0, 0.5);
         }
 
         .hero-sub {
             font-size: clamp(19px, 2.1vw, 24px);
             font-weight: 300;
-            color: var(--gray-3);
+            color: rgba(255, 255, 255, 0.92);
             max-width: 740px;
             margin: 0 auto 28px;
             line-height: 1.5;
             letter-spacing: -0.005em;
-            opacity: 0;
-            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+            text-shadow:
+                0 1px 20px rgba(0, 0, 0, 0.7),
+                0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .hero-sub strong {
@@ -3323,19 +3320,9 @@
             justify-content: center;
             overflow: hidden;
         }
-        /* Dark scrim over the cinematic intro video — keeps frame text readable */
+        /* No scrim — animation shows through. Text legibility via text-shadow. */
         .pinned-bg {
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.04), transparent 60%),
-                linear-gradient(180deg,
-                    rgba(0,0,0,0.55) 0%,
-                    rgba(0,0,0,0.62) 50%,
-                    rgba(0,0,0,0.78) 100%);
-            opacity: 1;
-            transition: opacity 320ms ease-out;
-            pointer-events: none;
+            display: none;
         }
         .pinned-frames {
             position: relative;
@@ -3380,19 +3367,21 @@
             line-height: 1.02;
             letter-spacing: -0.034em;
             margin: 0 0 18px;
-            background: linear-gradient(180deg, #fff 0%, #b5b5be 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
+            color: #fff;
+            text-shadow:
+                0 2px 24px rgba(0, 0, 0, 0.7),
+                0 1px 4px rgba(0, 0, 0, 0.5);
         }
         .pinned-frame .frame-sub {
             font-size: clamp(15px, 1.4vw, 19px);
             font-weight: 300;
             line-height: 1.55;
-            color: var(--gray-2);
+            color: rgba(255, 255, 255, 0.92);
             max-width: 720px;
             margin: 0 auto;
+            text-shadow:
+                0 1px 16px rgba(0, 0, 0, 0.7),
+                0 1px 3px rgba(0, 0, 0, 0.5);
         }
         @media (max-width: 720px) {
             .pinned-showcase { min-height: 220vh; }
