@@ -3637,18 +3637,43 @@
             <source src="https://mountzara.com/media/hero-uterus-animation.mp4?v=2" type="video/mp4">
         </video>
         <script>
-            // Force play immediately - inline to execute ASAP
+            // Maximally aggressive autoplay trigger
             (function() {
                 const v = document.getElementById('heroVideo');
-                if (v) {
-                    v.muted = true;
-                    const tryPlay = () => v.play().catch(() => {});
+                if (!v) return;
+                v.muted = true;
+                v.defaultMuted = true;
+                v.playsInline = true;
+                v.autoplay = true;
+                let played = false;
+                const tryPlay = () => {
+                    if (played) return;
+                    const p = v.play();
+                    if (p && p.then) {
+                        p.then(() => { played = true; })
+                         .catch(() => {});
+                    }
+                };
+                // Try immediately
+                tryPlay();
+                // Try on every readiness event
+                ['loadstart','loadedmetadata','loadeddata','canplay','canplaythrough'].forEach(e => {
+                    v.addEventListener(e, tryPlay);
+                });
+                // Try at intervals for the first 3 seconds
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    if (played || attempts++ > 30) { clearInterval(interval); return; }
                     tryPlay();
-                    // Retry on user interaction in case autoplay blocked
-                    ['click','touchstart','scroll','keydown'].forEach(e => {
-                        document.addEventListener(e, tryPlay, { once: true, passive: true });
-                    });
-                }
+                }, 100);
+                // Try after document ready
+                if (document.readyState !== 'loading') tryPlay();
+                else document.addEventListener('DOMContentLoaded', tryPlay);
+                window.addEventListener('load', tryPlay);
+                // Try on ANY user interaction (autoplay-blocked browsers will play here)
+                ['mousemove','mousedown','click','touchstart','scroll','keydown','wheel','pointerdown','pointermove'].forEach(e => {
+                    document.addEventListener(e, tryPlay, { once: true, passive: true, capture: true });
+                });
             })();
         </script>
         <div class="hero-mesh"></div>
