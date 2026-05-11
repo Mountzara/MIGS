@@ -5452,6 +5452,35 @@
         });
 
         // ==========================================================
+        // Evidence cards — staggered reveal + cursor glow
+        // ==========================================================
+        (function initEvidenceCards() {
+            const cards = document.querySelectorAll('.evidence-card');
+            if (!cards.length) return;
+            cards.forEach((c, i) => c.style.setProperty('--si', i));
+            if ('IntersectionObserver' in window) {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('in');
+                            obs.unobserve(e.target);
+                        }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+                cards.forEach(c => obs.observe(c));
+            } else {
+                cards.forEach(c => c.classList.add('in'));
+            }
+            cards.forEach(card => {
+                card.addEventListener('pointermove', e => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                    card.style.setProperty('--my', `${e.clientY - r.top}px`);
+                });
+            });
+        })();
+
+        // ==========================================================
         // Surgical Focus cards — staggered reveal + cursor glow
         // ==========================================================
         (function initSurgicalCards() {
@@ -5533,7 +5562,6 @@
             { sel: '.populations-grid > *', kind: 'up' },
             { sel: '.technique-cell', kind: 'up' },
             { sel: '.techniques-grid > *', kind: 'up' },
-            { sel: '.evidence-card', kind: 'stagger' },
             { sel: '.pop-mod', kind: 'fade' },
             { sel: '.omm-quote-block', kind: 'fade' },
             { sel: '.sub-eyebrow', kind: 'up' },
