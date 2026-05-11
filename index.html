@@ -3722,10 +3722,9 @@
     <!-- Persistent background animation - spans hero + pinned showcase -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
         <img class="hero-video"
-             src="https://mountzara.com/media/hero-animation.webp"
+             data-src="https://mountzara.com/media/hero-animation.webp"
              alt=""
              id="heroVideo"
-             fetchpriority="high"
              decoding="async">
         <div class="hero-bg-vignette"></div>
     </div>
@@ -5080,13 +5079,13 @@
         const heroBgStage = document.getElementById('heroBgStage');
         const ANIMATION_DURATION_MS = 6762; // 161 frames * 42ms
 
-        function waitForImage(img) {
-            return new Promise(resolve => {
-                if (img.complete && img.naturalWidth > 0) return resolve();
-                const done = () => resolve();
-                img.addEventListener('load', done, { once: true });
-                img.addEventListener('error', done, { once: true });
-            });
+        function preloadImageURL(url) {
+            // Use fetch instead of new Image() — we want the bytes in the HTTP
+            // cache but NOT decoded yet, so the animation only begins when the
+            // real <img> element gets the src attribute.
+            return fetch(url, { cache: 'force-cache', mode: 'no-cors' })
+                .then(r => r.blob())
+                .catch(() => {});
         }
 
         function waitForFonts() {
@@ -5099,6 +5098,15 @@
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
+            // Setting src now restarts the WebP animation from frame 1
+            // (the file is already cached from preload, so this is instant)
+            const url = heroVideo.dataset.src;
+            if (url) {
+                // Setting src on a fresh <img> element decodes the WebP and
+                // starts its animation from frame 1. The file is already in
+                // cache from the <link rel="preload"> so this is instant.
+                heroVideo.src = url;
+            }
             // Cascade hero text in Apple-style, ~600ms after animation starts
             setTimeout(() => {
                 heroContent.classList.add('visible');
@@ -5116,17 +5124,19 @@
             setTimeout(() => pageLoader.classList.add('removed'), 800);
         }
 
-        // Wait for critical assets, then orchestrate reveal
+        // Preload WebP (decoded but never attached, so its animation isn't consumed)
+        // and wait for fonts. Then hide loader and start fresh animation.
+        const heroURL = heroVideo ? heroVideo.dataset.src : null;
         Promise.race([
             Promise.all([
-                heroVideo ? waitForImage(heroVideo) : Promise.resolve(),
+                heroURL ? preloadImageURL(heroURL) : Promise.resolve(),
                 waitForFonts()
             ]),
             // Hard cap: never show loader longer than 6s
             new Promise(resolve => setTimeout(resolve, 6000))
         ]).then(() => {
-            // Small breath between loader fade and hero start, feels more deliberate
             hideLoader();
+            // Small breath between loader fade and hero start, feels more deliberate
             setTimeout(startHeroSequence, 250);
         });
 
