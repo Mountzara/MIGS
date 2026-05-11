@@ -1457,6 +1457,125 @@
             border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
+        /* Evidence Base grid */
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-top: 36px;
+        }
+        @media (max-width: 1024px) {
+            .evidence-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .evidence-grid { grid-template-columns: 1fr; gap: 14px; }
+        }
+
+        .evidence-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            gap: 14px;
+            padding: 28px 24px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            cursor: pointer;
+            overflow: hidden;
+            color: inherit;
+            font-family: inherit;
+            transition:
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease,
+                background 0.35s ease,
+                box-shadow 0.45s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .evidence-card.in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: calc(var(--si, 0) * 70ms);
+        }
+        .evidence-card:hover,
+        .evidence-card:focus-visible {
+            transform: translateY(-4px);
+            background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
+            border-color: rgba(92, 182, 255, 0.32);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+            outline: none;
+        }
+        .evidence-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .evidence-card:hover::before { opacity: 1; }
+
+        .evidence-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(92, 182, 255, 0.10);
+            color: #5cb6ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
+        }
+        .evidence-card:hover .evidence-card-icon {
+            transform: scale(1.08) rotate(-3deg);
+            background: rgba(92, 182, 255, 0.18);
+        }
+        .evidence-card-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .evidence-card-meta {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(92, 182, 255, 0.85);
+        }
+        .evidence-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.012em;
+            color: var(--white);
+            margin: 0;
+        }
+        .evidence-card p {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.66);
+            margin: 0;
+        }
+        .evidence-card-cta {
+            margin-top: auto;
+            padding-top: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: rgba(92, 182, 255, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .evidence-card-cta::after {
+            content: '→';
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .evidence-card:hover .evidence-card-cta::after {
+            transform: translateX(4px);
+        }
+
         /* ========== Evidence Modal (PubMed OMT Research) ========== */
         .evidence-modal {
             position: fixed;
@@ -3909,6 +4028,72 @@
                 </div>
             </div>
 
+            <!-- Evidence Base Sub-Section -->
+            <div class="sub-section">
+                <span class="sub-eyebrow">Evidence Base</span>
+                <h3 class="sub-headline">Grounded in peer-reviewed research.</h3>
+                <p class="sub-sub">The osteopathic approach to women's health isn't anecdotal — it's supported by randomized trials, systematic reviews, and pilot studies indexed in PubMed. Tap a category to explore the evidence.</p>
+
+                <div class="evidence-grid">
+                    <button class="evidence-card" data-evidence="womens-health" type="button" aria-label="View women's health OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="5" y="3" width="14" height="18" rx="2"/>
+                                <path d="M9 8h6M9 12h6M9 16h4"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2017–2025</div>
+                        <h4>Women's Health</h4>
+                        <p>Standardized OMT protocols for primary dysmenorrhea, sacral imbalance, and viscerosomatic patterns.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="pregnancy" type="button" aria-label="View pregnancy OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3a4 4 0 0 1 4 4v2"/>
+                                <path d="M8 9V7a4 4 0 0 1 4-4"/>
+                                <path d="M6 13c0 4 2.5 8 6 8s6-4 6-8"/>
+                                <circle cx="13" cy="14" r="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2010–2017</div>
+                        <h4>Pregnancy</h4>
+                        <p>OMT for back pain, pelvic girdle pain, and functional decline during and after pregnancy.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="post-op" type="button" aria-label="View post-operative OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2016–2017</div>
+                        <h4>Post-Operative Recovery</h4>
+                        <p>Manual therapy for post-cesarean, post-laparoscopic adhesions, and endometriosis quality of life.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="pelvic-pain" type="button" aria-label="View pelvic pain OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 9c2-3 5-4 7-4s5 1 7 4"/>
+                                <path d="M4 13c0 4 3.5 8 8 8s8-4 8-8"/>
+                                <path d="M9 13h6"/>
+                                <circle cx="12" cy="17" r="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2022–2023</div>
+                        <h4>Pelvic Pain & Endometriosis</h4>
+                        <p>Systematic reviews and clinical evidence for chronic pelvic pain and pelvic floor dysfunction.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+                </div>
+            </div>
+
             <div class="omm-quote-block">
                 <blockquote>"The DO philosophy isn't an alternative to surgery — it's the lens that makes surgical care truly holistic. The best outcomes happen when we understand <em>why</em> the body presents the way it does, not just how to fix the immediate problem."</blockquote>
                 <cite>— Christopher Z. Mabini, DO, MSAEd</cite>
@@ -4986,6 +5171,7 @@
             evidenceModalEl.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
         }
+        // Bind evidence modal to population cards
         document.querySelectorAll('.population-card[data-evidence]').forEach(card => {
             card.addEventListener('click', () => {
                 const key = card.getAttribute('data-evidence');
@@ -4997,6 +5183,18 @@
                     const key = card.getAttribute('data-evidence');
                     openEvidenceModal(key);
                 }
+            });
+            card.addEventListener('mousemove', e => {
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                card.style.setProperty('--my', `${e.clientY - r.top}px`);
+            });
+        });
+        // Bind evidence modal to evidence base cards
+        document.querySelectorAll('.evidence-card[data-evidence]').forEach(card => {
+            card.addEventListener('click', () => {
+                const key = card.getAttribute('data-evidence');
+                openEvidenceModal(key);
             });
             card.addEventListener('mousemove', e => {
                 const r = card.getBoundingClientRect();
@@ -5277,6 +5475,7 @@
             { sel: '.populations-grid > *', kind: 'up' },
             { sel: '.technique-cell', kind: 'up' },
             { sel: '.techniques-grid > *', kind: 'up' },
+            { sel: '.evidence-card', kind: 'stagger' },
             { sel: '.pop-mod', kind: 'fade' },
             { sel: '.omm-quote-block', kind: 'fade' },
             { sel: '.sub-eyebrow', kind: 'up' },
