@@ -3605,6 +3605,19 @@
         <video class="hero-video" autoplay muted playsinline preload="auto" id="heroVideo">
             <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
         </video>
+        <script>
+            // Force play immediately - inline to execute ASAP
+            (function() {
+                const v = document.getElementById('heroVideo');
+                if (v) {
+                    v.muted = true; // Ensure muted
+                    v.play().catch(() => {
+                        // Retry on next tick
+                        setTimeout(() => v.play().catch(() => {}), 10);
+                    });
+                }
+            })();
+        </script>
         <div class="hero-mesh"></div>
         <div class="hero-grid"></div>
 
