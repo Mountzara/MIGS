@@ -1511,6 +1511,63 @@
             color: var(--gray-1);
         }
 
+        /* Shared architecture callout — appears under the section intro */
+        .apps-arch {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-width: 1100px;
+            margin: 36px auto 0;
+        }
+        @media (max-width: 760px) {
+            .apps-arch { grid-template-columns: 1fr; gap: 12px; }
+        }
+        .apps-arch-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 18px 20px;
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            transition: background 0.25s ease, border-color 0.25s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .apps-arch-item:hover {
+            background: rgba(41, 151, 255, 0.04);
+            border-color: rgba(41, 151, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .apps-arch-icon {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(41, 151, 255, 0.1);
+            color: #1e7fcf;
+        }
+        .apps-arch-icon svg { width: 18px; height: 18px; }
+        .apps-arch-item > div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+        .apps-arch-item strong {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: -0.005em;
+            line-height: 1.3;
+        }
+        .apps-arch-item span {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--gray-1);
+        }
+
         .apps-bento {
             display: grid;
             grid-template-columns: 1fr;
@@ -3939,6 +3996,36 @@
                 <span class="section-eyebrow">Mount Zara Suite</span>
                 <h2 class="section-headline">Five apps. One mission.</h2>
                 <p class="section-sub">A native suite for the modern physician — clinical decision support, board prep, research, transcription, and surgical media. Built end-to-end with modern AI. <strong>All apps are fully developed and currently in active beta testing.</strong></p>
+                <div class="apps-arch">
+                    <div class="apps-arch-item">
+                        <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h8v8H8z"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></span>
+                        <div>
+                            <strong>Base AI runs on-device.</strong>
+                            <span>Every app ships with native, on-device AI reasoning — fast, free, fully private. No internet required for the core workflow.</span>
+                        </div>
+                    </div>
+                    <div class="apps-arch-item">
+                        <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+                        <div>
+                            <strong>Optional Claude API for elevated reasoning.</strong>
+                            <span>For users who want deeper synthesis or larger-context reasoning, every app supports bring-your-own Claude API key — toggleable per query.</span>
+                        </div>
+                    </div>
+                    <div class="apps-arch-item">
+                        <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                        <div>
+                            <strong>Auto PHI redaction — on-device, before anything leaves.</strong>
+                            <span>Every app auto-redacts patient identifiers (names, MRNs, DOBs, addresses, dates) on-device before any external call. PHI isn't even stored long-term — it's stripped from the in-memory pipeline. No PHI ever leaves the phone or the Mac.</span>
+                        </div>
+                    </div>
+                    <div class="apps-arch-item">
+                        <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span>
+                        <div>
+                            <strong>HIPAA-compliant by design.</strong>
+                            <span>Every app implements the security architecture documented in Medical Transcription: on-device de-identification, encrypted at rest, no cloud audio, no cloud transcripts, audit-logged access. The same security model applies across the suite.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="apps-bento">
@@ -4819,16 +4906,16 @@
                 tag: 'Flagship · Clinical AI Engine',
                 title: 'MountZara Clinical AI',
                 tagline: 'A private clinical evidence engine — indexes your surgical literature, synthesizes meta-analyses, and detects conflicts across ACOG, AAGL, ASRM, and ESHRE guidelines. All on-device.',
-                platforms: ['Native macOS', 'On-device Phi-2 LoRA + Llama', 'No PHI leaves the machine', 'In Beta Testing'],
+                platforms: ['Native macOS', 'Base AI on-device · Phi-2 LoRA + Llama', 'Optional Claude API for elevated reasoning', 'Auto PHI redaction — HIPAA-compliant', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
-                description: 'Drop in a PDF — a journal article, a society guideline, your clinical notes — and MountZara Clinical AI indexes every citation down to the page, paragraph, and sentence. Then ask it anything. It runs a hybrid full-text and semantic search across up to 30 citations, synthesizes a meta-analysis with pooled outcomes, I² heterogeneity, and confidence intervals, then surfaces any evidence conflicts with AI-generated resolutions. The entire pipeline runs locally via a fine-tuned Phi-2 LoRA and Llama inference — no API call, no cloud upload, no PHI risk.',
+                description: 'Drop in a PDF — a journal article, a society guideline, your clinical notes — and MountZara Clinical AI indexes every citation down to the page, paragraph, and sentence. Then ask it anything. It runs a hybrid full-text and semantic search across up to 30 citations, synthesizes a meta-analysis with pooled outcomes, I² heterogeneity, and confidence intervals, then surfaces any evidence conflicts with AI-generated resolutions. Base reasoning runs locally on a fine-tuned Phi-2 LoRA and Llama inference — no internet required. For deeper synthesis on complex queries, users can optionally connect a Claude API key per query. Any text sent to the optional API is auto-redacted on-device first — patient identifiers, MRNs, names, dates — so no PHI ever leaves the machine, whether you stay local or use the cloud option.',
                 features: [
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', title: 'Deep PDF indexing', desc: 'Every citation stored with its exact document, page, paragraph, and sentence. Hover any citation for an instant AI synthesis — 1–2 seconds.' },
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>', title: 'Meta-analysis engine', desc: 'Pools statistics across indexed studies: sample size, outcomes, confidence intervals, I² heterogeneity, and study-design quality breakdown — publication-ready.' },
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'Evidence conflict detection', desc: 'Knowledge graph builder flags contradictions across your indexed literature and generates AI resolutions citing both sources.' },
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>', title: 'Surgical video analysis', desc: 'Upload operative footage — the app processes frames with on-device vision models and synthesizes clinical findings into indexed evidence.' },
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6l3-9 3 18 3-9h3"/></svg>', title: 'PubMed landmark search', desc: 'Query PubMed E-utilities directly for RCTs, guidelines, and society recommendations across ACOG, AAGL, SGO, ASRM, ESGE, ESHRE, FIGO, and WHO.' },
-                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'Fully private, fully local', desc: 'Phi-2 LoRA and Llama inference runs on-device via Ollama. No external API. No cloud. No PHI ever transmitted.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', title: 'Base AI on-device · optional Claude API · auto PHI redaction', desc: 'Phi-2 LoRA and Llama inference runs on-device via Ollama for the base reasoning loop. Users can optionally connect a Claude API key per query for elevated synthesis on complex literature. Either way, an on-device redaction pass strips all patient identifiers before any external call — PHI never leaves the machine. HIPAA-compliant by design.' },
                 ],
                 useCases: [
                     { title: 'Pre-op literature review', desc: 'Drop in 5 papers on isthmocele repair approaches, ask "what does the evidence say about robotic vs. laparoscopic outcomes?" — get a synthesized meta-analysis with citations in seconds.' },
@@ -4842,7 +4929,7 @@
                 tag: 'Board Prep · 101 ABOG Categories',
                 title: 'ABOG Case List Manager',
                 tagline: 'All 101 ABOG categories pre-loaded. Import a hospital chart PDF — on-device AI auto-redacts all PHI before analysis, then extracts, categorizes, and maps the case. Then simulates your oral boards with Whisper-transcribed voice answers.',
-                platforms: ['Native macOS', 'AI PDF extraction', 'Auto PHI redaction — no data leaves device', 'Voice oral exam simulation', 'In Beta Testing'],
+                platforms: ['Native macOS', 'Base AI on-device · AI PDF extraction', 'Optional Claude API for elevated reasoning', 'Auto PHI redaction — HIPAA-compliant', 'Voice oral exam simulation', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
                 description: 'The ABOG Certifying Examination requires 101 case categories — 30 Obstetric, 32 Gynecology, 39 Office Practice — tracked to an exact format with required fields for each type. This app has every category pre-loaded with its required fields, keywords, and validation rules. Upload a scanned hospital chart — before any analysis begins, on-device AI automatically redacts all patient-identifiable information (names, MRNs, dates of birth, addresses) so no PHI is stored or transmitted. After de-identification, the AI extracts the clinical narrative, suggests the applicable categories with confidence scores, and populates the fields. When your list is built, the Oral Exam Simulator plays examiner, records your voice answer with Whisper, transcribes it, and evaluates it against model answers — with "Model Answer," "Answers to Avoid," and a deep ACOG guideline dive for each question.',
                 features: [
@@ -4865,7 +4952,7 @@
                 tag: 'Mac · iPhone · Apple Watch',
                 title: 'Medical Transcription',
                 tagline: 'Record any encounter on Mac, iPhone, or Watch. Whisper transcribes and de-identifies on-device — no audio or PHI leaves the device, ever. Structures into a GYN/MIGS-subspecialist SOAP note, then auto-generates billing/coding analysis, medico-legal documentation flags, patient education summaries, and point-of-care guideline support — all grounded in the Counsel knowledge base, which cites primary source documents (no AI hallucination).',
-                platforms: ['macOS + iOS + watchOS', 'On-device Whisper — audio never uploaded', 'Counsel KB — source-grounded, no hallucination', 'Full de-identification — HIPAA-aligned', 'In Beta Testing'],
+                platforms: ['macOS + iOS + watchOS', 'On-device Whisper — audio never uploaded', 'Base AI on-device · Optional Claude API', 'Counsel KB — source-grounded, no hallucination', 'Auto PHI redaction — HIPAA-compliant', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>',
                 description: 'Start recording with ⌘⇧R on Mac, or tap Record on your iPhone or Apple Watch. Whisper — a custom fork with an iOS 18 BNNS fix — transcribes on-device in real time, then immediately de-identifies the transcript (names, MRNs, dates of birth, addresses) before any further processing. No audio file is ever uploaded; no PHI leaves the device. The de-identified transcript is structured into a SOAP note tailored to the GYN and CBG/MIGS subspecialist workflow — subjective, objective, assessment, and plan written at subspecialty level. From the structured note, the app auto-generates: (1) billing and coding analysis with AI-flagged missed opportunities for higher-level E&M coding; (2) medico-legal compliance recommendations and inline documentation edits; (3) a patient education summary written at patient reading level, specific to that encounter. Every guideline reference, treatment recommendation, and patient counseling line is grounded in the <strong>Counsel knowledge base</strong> — a curated, indexed library of primary source documents (ACOG Practice Bulletins, AAGL Position Statements, ESHRE guidelines, ASRM, ASCCP, CDC, and landmark trial PDFs) with every claim cited back to the exact source page, paragraph, and sentence. The AI cannot return an answer that isn\'t backed by an indexed citation — no general-LLM hallucination. Operative note templates, OB calculators, breast workup decision trees (BI-RADS → ACOG workup path), ASCCP cervical screening risk stratification, COC switching with VTE assessment, and a LARC reference tool are all built in. Copy the structured note with ⌘⇧C and paste straight into your EMR.',
                 features: [
@@ -4890,7 +4977,7 @@
                 tag: 'Study Management · Manuscript Writing',
                 title: 'MZ Research Suite',
                 tagline: 'From PICO question to published manuscript — participant tracking, custom case report forms, statistical analysis, surgical image archive, and a reference engine that auto-validates every citation.',
-                platforms: ['Native macOS', 'SwiftData persistence', 'Full audit trail', 'In Beta Testing'],
+                platforms: ['Native macOS', 'Base AI on-device for design + analysis', 'Optional Claude API for elevated reasoning', 'Auto PHI redaction — HIPAA-compliant', 'SwiftData persistence · Full audit trail', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 7v4l3 2"/></svg>',
                 description: 'MZ Research Suite manages a clinical study from the first PICO question to the final manuscript. Create the study, upload your protocol, and AI generates the PICO-formatted hypothesis and identifies primary outcome columns. Build a custom case report form — drag in sections (demographics, surgical findings, pathology, biopsy) and define fields with validation rules. Enroll participants, enter data with a full audit trail on every edit, then run descriptive stats, t-tests, chi-square, ANOVA, and correlation analyses with publication-ready output tables. The manuscript editor pre-generates an abstract from your study design; the reference engine auto-detects every citation in your text and validates it against your library — flagging missing or unused references before submission.',
                 features: [
@@ -4913,7 +5000,7 @@
                 tag: 'Video Analysis · AI Pipeline',
                 title: 'Surgical Video Archive',
                 tagline: 'Analyze your operative videos with AI — transcript, OCR, intra-op findings, technique notes, and procedure tags — generating a structured AI report formatted the way surgeons actually want to see the data.',
-                platforms: ['Native macOS + iPad', 'On-device analysis', 'Integrated with MountZara Clinical AI', 'In Beta Testing'],
+                platforms: ['Native macOS + iPad', 'Base AI on-device for video analysis', 'Optional Claude API for elevated reasoning', 'Auto PHI redaction — HIPAA-compliant', 'Integrated with MountZara Clinical AI', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>',
                 description: 'Surgical Video Archive manages your personal operative recordings with AI-powered analysis, tightly integrated with MountZara Clinical AI. Upload any video you own or have rights to analyze — an integrated pipeline transcribes the audio, runs OCR on screen overlays, and routes the combined signal through the MountZara Clinical AI engine. The AI generates a structured surgical report formatted the way surgeons actually want to see the data: indication and pre-op findings, anatomic landmarks, dissection plane and energy device used, intra-op findings and any complications, technique notes, estimated blood loss, repair / closure details, procedure tags, and a confidence score. Natural language smart search interprets queries ("hysterectomy with bladder injury") into surgical concepts and returns matching cases. Every analyzed video automatically syncs into MountZara Clinical AI — your video evidence and literature index share one unified queryable knowledge base.',
                 features: [
