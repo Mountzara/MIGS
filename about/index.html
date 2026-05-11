@@ -1108,6 +1108,35 @@
 
         .footer-links a:hover { color: var(--white); }
 
+        .footer-social {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .footer-social a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.55);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .footer-social a:hover {
+            color: #5cb6ff;
+            background: rgba(92, 182, 255, 0.12);
+            border-color: rgba(92, 182, 255, 0.32);
+            transform: translateY(-2px);
+        }
+        .footer-social a svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
         /* Reveal */
         .reveal {
             opacity: 0;
@@ -1440,6 +1469,11 @@
                 <a href="/#apps">Apps</a>
                 <a href="/#research">Research</a>
             </div>
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" aria-label="Connect on LinkedIn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.99 0 1.78-.77 1.78-1.72V1.72C24 .77 23.21 0 22.22 0z"/></svg>
+                </a>
+            </div>
         </div>
     </footer>
 
@@ -1485,6 +1519,16 @@
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><path d="M4 6l8 8 8-8M12 14v6"/></svg></span>
                         Yahoo Mail
+                    </span>
+                    <span class="modal-action-arrow">&rarr;</span>
+                </a>
+            </div>
+            <div class="modal-divider">Or connect on</div>
+            <div class="modal-actions">
+                <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" class="modal-action">
+                    <span class="modal-action-label">
+                        <span class="modal-action-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></span>
+                        LinkedIn
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
