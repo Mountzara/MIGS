@@ -178,19 +178,22 @@
             inset: 0;
             z-index: 2;
             background:
-                radial-gradient(ellipse 72% 62% at 52% 46%, transparent 28%, rgba(0,0,0,0.28) 100%);
+                radial-gradient(ellipse 62% 55% at 52% 46%, rgba(0,0,0,0) 22%, rgba(0,0,0,0.38) 100%);
             pointer-events: none;
         }
 
+        /* Each gradient: hold solid black for the first ~10%, then fade to rgba(0,0,0,0).
+           Using rgba(0,0,0,0) instead of 'transparent' avoids the gray-banding
+           artefact browsers produce when interpolating to the transparent keyword. */
         .cover-gradient {
             position: absolute;
             inset: 0;
             z-index: 3;
             background:
-                linear-gradient(to bottom, #000 0%, transparent 34%),
-                linear-gradient(to top,    #000 0%, transparent 45%),
-                linear-gradient(to right,  rgba(0,0,0,0.95) 0%, transparent 48%),
-                linear-gradient(to left,   rgba(0,0,0,0.88) 0%, transparent 45%);
+                linear-gradient(to bottom, #000 0%, #000 6%,  rgba(0,0,0,0) 40%),
+                linear-gradient(to top,    #000 0%, #000 8%,  rgba(0,0,0,0) 50%),
+                linear-gradient(to right,  #000 0%, #000 10%, rgba(0,0,0,0) 55%),
+                linear-gradient(to left,   #000 0%, #000 10%, rgba(0,0,0,0) 55%);
             pointer-events: none;
             transition: opacity 0.6s ease;
         }
@@ -268,7 +271,7 @@
 
         /* Scene 2 — bold statement */
         .cover-statement {
-            font-size: clamp(56px, 9vw, 120px);
+            font-size: clamp(40px, 4.2vw, 58px);
             font-weight: 200;
             line-height: 0.94;
             letter-spacing: -0.038em;
@@ -280,6 +283,10 @@
             margin: 0 0 clamp(18px, 2vw, 28px);
             text-shadow: 0 4px 36px rgba(0, 0, 0, 0.45);
             max-width: 720px;
+        }
+        /* Scene 2 sits lower so text clears the face */
+        .cover-scene--2 {
+            padding-bottom: clamp(88px, 9vw, 108px);
         }
         .cover-statement em {
             font-style: normal;
@@ -400,14 +407,14 @@
         }
 
         .cover-creds {
-            font-size: 0.38em;
-            font-weight: 500;
-            font-style: normal;
-            font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-            letter-spacing: 0.06em;
-            color: rgba(255, 255, 255, 0.48);
-            -webkit-text-fill-color: rgba(255, 255, 255, 0.48);
-            vertical-align: 0.12em;
+            font-size: 0.44em;
+            font-weight: 300;
+            font-style: inherit;
+            font-family: inherit;
+            letter-spacing: -0.01em;
+            color: rgba(255, 255, 255, 0.55);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.55);
+            vertical-align: 0.05em;
             white-space: nowrap;
         }
 
@@ -545,14 +552,14 @@
             }
             .cover-vignette {
                 background:
-                    radial-gradient(ellipse 68% 58% at 52% 44%, transparent 24%, rgba(0,0,0,0.32) 100%);
+                    radial-gradient(ellipse 60% 54% at 52% 44%, rgba(0,0,0,0) 20%, rgba(0,0,0,0.42) 100%);
             }
             .cover-gradient {
                 background:
-                    linear-gradient(to bottom, #000 0%, transparent 30%),
-                    linear-gradient(to top,    #000 0%, transparent 48%),
-                    linear-gradient(to right,  rgba(0,0,0,0.92) 0%, transparent 46%),
-                    linear-gradient(to left,   rgba(0,0,0,0.88) 0%, transparent 46%);
+                    linear-gradient(to bottom, #000 0%, #000 5%,  rgba(0,0,0,0) 36%),
+                    linear-gradient(to top,    #000 0%, #000 8%,  rgba(0,0,0,0) 52%),
+                    linear-gradient(to right,  #000 0%, #000 12%, rgba(0,0,0,0) 52%),
+                    linear-gradient(to left,   #000 0%, #000 12%, rgba(0,0,0,0) 52%);
             }
             .cover-footer {
                 flex-direction: column;
@@ -1125,7 +1132,7 @@
                             <span class="cover-eyebrow">The Story</span>
                             <h1 class="cover-name">
                                 <span class="cover-name-line">Christopher</span>
-                                <span class="cover-name-line cover-name-line-2">Z.&nbsp;Mabini<span class="cover-creds">,&nbsp;DO,&nbsp;MSAEd</span></span>
+                                <span class="cover-name-line cover-name-line-2">Z.&nbsp;Mabini<span class="cover-creds">&nbsp;&thinsp;·&thinsp;&nbsp;DO,&nbsp;MSAEd</span></span>
                             </h1>
                             <div class="cover-rule"></div>
                             <p class="cover-subtitle">Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery — practiced through an osteopathic lens, engineered for the future of women's health.</p>
