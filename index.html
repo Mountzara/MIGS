@@ -3592,15 +3592,12 @@
 
     <!-- Scroll progress indicator -->
     <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
-    <!-- Video loading overlay - covers page until video starts -->
-    <div id="videoLoadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000;"></div>
-
     <!-- Ambient scroll-driven glow -->
     <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
 
     <!-- Hero -->
     <section class="hero">
-        <video class="hero-video" muted playsinline preload="auto" id="heroVideo">
+        <video class="hero-video" autoplay muted playsinline preload="auto" id="heroVideo">
             <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
         </video>
         <div class="hero-mesh"></div>
@@ -4940,86 +4937,29 @@
     </div>
 
     <script>
-        // Hero video — AGGRESSIVE autoplay strategy
+        // Hero video - simple autoplay with delayed text reveal
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
-        const loadingOverlay = document.getElementById('videoLoadingOverlay');
 
-        if (heroVideo) {
-            let textShown = false;
-            let overlayRemoved = false;
-            let playing = false;
-
-            const removeOverlay = () => {
-                if (overlayRemoved || !loadingOverlay) return;
-                overlayRemoved = true;
-                loadingOverlay.style.transition = 'opacity 0.3s ease-out';
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => { loadingOverlay.remove(); }, 300);
-            };
-
-            const showText = () => {
-                if (textShown) return;
-                textShown = true;
-                setTimeout(() => {
-                    if (heroContent) heroContent.classList.add('visible');
-                }, 1000);
-            };
-
-            const attemptPlay = () => {
-                if (playing) return;
-                const promise = heroVideo.play();
-                if (promise !== undefined) {
-                    promise.then(() => {
-                        playing = true;
-                    }).catch(() => {
-                        // Retry after short delay
-                        setTimeout(attemptPlay, 50);
-                    });
-                }
-            };
-
-            // Remove overlay and show text when video actually starts
+        if (heroVideo && heroContent) {
+            // Show text 1 second after video starts playing
             heroVideo.addEventListener('playing', () => {
-                playing = true;
-                removeOverlay();
-                showText();
+                setTimeout(() => {
+                    heroContent.classList.add('visible');
+                }, 1000);
             }, { once: true });
 
-            // Multi-pronged attack: try to play at multiple opportunities
-            attemptPlay(); // Try immediately
-            heroVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
-            heroVideo.addEventListener('loadeddata', attemptPlay, { once: true });
-            heroVideo.addEventListener('canplay', attemptPlay, { once: true });
-
-            // Use rAF for next frame attempt
-            requestAnimationFrame(() => {
-                requestAnimationFrame(attemptPlay);
-            });
-
-            // Aggressive fallback: keep trying every 100ms for first second
-            let attempts = 0;
-            const interval = setInterval(() => {
-                if (playing || attempts++ > 10) {
-                    clearInterval(interval);
-                    return;
-                }
-                attemptPlay();
-            }, 100);
-
-            // Final safety fallback
-            setTimeout(() => {
-                removeOverlay();
-                showText();
-            }, 2000);
-
-            // Ken Burns on last frame
+            // Ken Burns effect on last frame
             heroVideo.addEventListener('ended', () => {
                 heroVideo.classList.add('ken-burns');
-            });
-        } else {
-            if (loadingOverlay) loadingOverlay.remove();
-            if (heroContent) heroContent.classList.add('visible');
+            }, { once: true });
+
+            // Fallback: show text after 3 seconds if video doesn't play
+            setTimeout(() => {
+                heroContent.classList.add('visible');
+            }, 3000);
+        } else if (heroContent) {
+            heroContent.classList.add('visible');
         }
 
         // Contact modal
