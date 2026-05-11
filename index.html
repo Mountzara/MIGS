@@ -4201,7 +4201,7 @@
                 <article class="research-feature" data-feature="rpoc">
                     <div class="research-feature-pin">
                         <video class="research-feature-video"
-                               muted playsinline loop preload="metadata"
+                               muted playsinline loop preload="auto" autoplay
                                aria-label="Golden Hysteroscope Award — RPOC case video">
                             <source src="/media/rpoc-golden-hysteroscope.mp4?v=1" type="video/mp4">
                         </video>
@@ -4272,7 +4272,7 @@
                 <article class="research-feature" data-feature="myomectomy">
                     <div class="research-feature-pin">
                         <video class="research-feature-video"
-                               muted playsinline loop preload="metadata"
+                               muted playsinline loop preload="auto" autoplay
                                aria-label="Fibroids à La Carte — robotic myomectomy workflow">
                             <source src="/media/myomectomy-gel-port.mp4?v=1" type="video/mp4">
                         </video>
@@ -4336,7 +4336,7 @@
                 <article class="research-feature" data-feature="isthmocele">
                     <div class="research-feature-pin">
                         <video class="research-feature-video"
-                               muted playsinline loop preload="metadata"
+                               muted playsinline loop preload="auto" autoplay
                                aria-label="Isthmocele in Asherman's — ICG-guided robotic excision">
                             <source src="/media/isthmocele-ashermans.mp4?v=1" type="video/mp4">
                         </video>
@@ -5344,13 +5344,18 @@
                 const p = introVideo.play();
                 if (p && typeof p.catch === 'function') p.catch(() => {});
             };
-            // Multiple play attempts on whichever event fires first
-            tryPlayIntro();
+            // Force the browser to start loading ASAP
+            try { introVideo.load(); } catch (_) {}
+            // Immediate play attempt (works if video is cached or loads fast)
+            requestAnimationFrame(() => {
+                tryPlayIntro();
+                // Retry after a brief delay for slower networks
+                setTimeout(tryPlayIntro, 100);
+            });
+            // Multiple play attempts on whichever event fires
             ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'].forEach(ev => {
                 introVideo.addEventListener(ev, tryPlayIntro, { once: true });
             });
-            // Force the browser to start loading early (helps cellular / slow links)
-            try { introVideo.load(); } catch (_) {}
         }
 
         // First-interaction fallback: as soon as the user does anything, retry
@@ -5384,7 +5389,8 @@
         }));
 
         // Play / pause via IntersectionObserver. Threshold 0.01 fires as soon as
-        // any part of the feature is visible; rootMargin starts loading 300px before.
+        // any part of the feature is visible; aggressive rootMargin (600px bottom) starts
+        // loading well before the user reaches the video for seamless playback.
         if ('IntersectionObserver' in window) {
             const playObs = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -5392,20 +5398,29 @@
                     if (!f || !f.video) return;
                     f.inView = entry.isIntersecting;
                     if (f.inView && !reduceMotion) {
-                        f.video.preload = 'auto';
-                        const tryPlay = () => f.video.play().catch(() => {});
-                        if (f.video.readyState >= 3) {
-                            tryPlay();
-                        } else {
+                        // Multiple play attempts: immediate, on canplay, and on canplaythrough
+                        const tryPlay = () => {
+                            const promise = f.video.play();
+                            if (promise && typeof promise.catch === 'function') {
+                                promise.catch(() => {});
+                            }
+                        };
+                        // Immediate attempt
+                        tryPlay();
+                        // Retry when video is ready (if not already)
+                        if (f.video.readyState < 3) {
                             f.video.addEventListener('canplay', tryPlay, { once: true });
-                            // Fallback in case canplay already fired before listener attached
-                            if (f.video.readyState >= 2) tryPlay();
+                            f.video.addEventListener('canplaythrough', tryPlay, { once: true });
+                        }
+                        // Force load if needed
+                        if (f.video.networkState === 0 || f.video.networkState === 3) {
+                            try { f.video.load(); } catch (_) {}
                         }
                     } else {
                         f.video.pause();
                     }
                 });
-            }, { threshold: 0.01, rootMargin: '0px 0px 300px 0px' });
+            }, { threshold: 0, rootMargin: '0px 0px 600px 0px' });
             researchFeatures.forEach(f => playObs.observe(f.el));
         }
 
