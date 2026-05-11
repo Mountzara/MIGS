@@ -3503,6 +3503,26 @@
         <div class="intro-tint"></div>
         <div class="intro-vignette"></div>
     </div>
+    <script>
+    // Immediate inline playback attempt - runs as soon as browser parses this script,
+    // before DOMContentLoaded, before any other JS. Zero delay.
+    (function() {
+        const v = document.getElementById('introVideo');
+        if (!v) return;
+        // Force load
+        try { v.load(); } catch(_) {}
+        // Immediate play attempt
+        const play = () => {
+            const p = v.play();
+            if (p && p.catch) p.catch(() => {});
+        };
+        play();
+        // Retry on key video events
+        ['loadedmetadata', 'loadeddata', 'canplay'].forEach(e =>
+            v.addEventListener(e, play, { once: true })
+        );
+    })();
+    </script>
 
     <!-- Scroll progress indicator -->
     <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
