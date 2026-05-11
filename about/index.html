@@ -7,7 +7,7 @@
     <title>The Story — Mount Zara</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
             --black: #000000;
@@ -683,57 +683,43 @@
             font-style: italic;
         }
 
-        /* Pull-quote — editorial, no card */
+        /* Pull-quote — card style matching homepage surgical cards */
         .pull-quote {
-            margin: 80px 0;
-            padding: 0;
-            background: none;
-            border: none;
-            border-radius: 0;
+            margin: 60px 0;
+            padding: 40px 32px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
             text-align: left;
             position: relative;
         }
 
         .pull-quote::before {
             content: '';
-            display: block;
-            width: 40px;
-            height: 1px;
-            background: linear-gradient(90deg, var(--white), rgba(255,255,255,0.08));
-            margin-bottom: 28px;
-            opacity: 0.7;
+            display: none;
         }
 
         .pull-quote blockquote {
-            font-family: 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
-            font-size: clamp(26px, 3.4vw, 40px);
-            font-weight: 300;
-            line-height: 1.32;
-            color: rgba(255, 255, 255, 0.94);
-            letter-spacing: -0.005em;
-            font-style: italic;
+            font-family: 'Avenir Next', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: clamp(18px, 2.2vw, 24px);
+            font-weight: 400;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.92);
+            letter-spacing: -0.008em;
+            font-style: normal;
             margin: 0;
             padding: 0;
-            quotes: '\201C' '\201D';
-            text-wrap: balance;
         }
 
-        .pull-quote blockquote::before {
-            content: open-quote;
-            color: rgba(255, 255, 255, 0.35);
-            margin-right: 0.05em;
-        }
-
+        .pull-quote blockquote::before,
         .pull-quote blockquote::after {
-            content: close-quote;
-            color: rgba(255, 255, 255, 0.35);
-            margin-left: 0.02em;
+            content: none;
         }
 
         @media (min-width: 700px) {
             .pull-quote {
-                margin: 110px 0;
-                padding-left: 24px;
+                margin: 80px 0;
+                padding: 48px 44px;
             }
         }
 
@@ -1400,7 +1386,7 @@
         </section>
 
         <div class="pull-quote">
-            <blockquote>"I chose OBGYN — and the most demanding surgery within it — to keep working alongside the woman who taught me what care really means. My mother gave twenty years to this specialty as a Kaiser nurse. The least I can do is give it the rest of mine."</blockquote>
+            <blockquote>"I chose OBGYN — and the most forward-thinking surgery within it — to keep working alongside in spirit with the woman who showed me what care means at all stages of life."</blockquote>
         </div>
 
         <section class="chapter">
@@ -1414,7 +1400,7 @@
         <section class="chapter">
             <span class="chapter-num">Chapter Three — The Path to Surgery</span>
             <h2>A doctor of the whole person.</h2>
-            <p>Christopher chose osteopathic medicine deliberately — drawn to a tradition that treats the body as an integrated system, not a collection of organ silos. At the <strong>Alabama College of Osteopathic Medicine</strong>, he earned a competitive <strong>Anatomy and Osteopathic Principles &amp; Practice Preclinical Fellowship</strong>, immersing himself in dissection-based teaching and the four core osteopathic manipulative techniques: Fascial Distortion Model, Muscle Energy, Counterstrain, and Myofascial Release.</p>
+            <p>Christopher chose Osteopathic Medicine deliberately — drawn to a tradition that treats the body as an integrated system, not a collection of organ silos. At the <strong>Alabama College of Osteopathic Medicine</strong>, he earned a competitive <strong>Anatomy and Osteopathic Principles &amp; Practice Preclinical Fellowship</strong>, immersing himself in dissection-based teaching and the four core osteopathic manipulative techniques: Fascial Distortion Model, Muscle Energy, Counterstrain, and Myofascial Release.</p>
             <p>His preclinical Anatomy &amp; OPP Fellowship at ACOM was paired with a <strong>combined Master's in Adult Education</strong> through Troy University — concentration in curriculum development and instructional design. Built into the fellowship pathway, the MSAEd gave him formal training in how adult learners actually acquire complex skills, which most surgeons-in-training never receive. Christopher saw the connection clearly: <em>great surgeons don't just operate. They teach.</em></p>
             <p>The decision to pursue <strong>OBGYN</strong> — and ultimately <strong>Complex Benign Gynecology and Minimally Invasive Gynecologic Surgery</strong> — was deliberate, and it was personal. It was the field his mother had given more than twenty years of her life to as a Kaiser Permanente OBGYN nurse, and the field she loved. Choosing it was a way to <em>solidify his connection to her</em> — to step into the same operating rooms, hallways, and patient stories she had spent her career inside, and to carry her work forward in the only language a surgeon-son could speak.</p>
             <p>Residency at <strong>Ascension Illinois St. Alexius</strong> followed. He emerged as <strong>Surgical Skills Chief</strong> — designing how the next generation would learn — and earned the <strong>Excellence in Minimally Invasive Gynecology</strong> recognition from AAGL.</p>
