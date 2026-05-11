@@ -257,9 +257,14 @@
             width: auto;
             height: auto;
             transform: translate(-50%, -50%);
-            z-index: 0;
+            z-index: 1;
             object-fit: cover;
-            opacity: 0.5;
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+
+        .hero-video.playing {
+            opacity: 1;
         }
 
         .hero-video.ken-burns {
@@ -4937,13 +4942,14 @@
     </div>
 
     <script>
-        // Hero video - simple autoplay with delayed text reveal
+        // Hero video - autoplay, fade in video, then text appears 1s later
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
 
         if (heroVideo && heroContent) {
-            // Show text 1 second after video starts playing
+            // When video starts playing: fade in video, then show text 1s later
             heroVideo.addEventListener('playing', () => {
+                heroVideo.classList.add('playing');
                 setTimeout(() => {
                     heroContent.classList.add('visible');
                 }, 1000);
@@ -4954,8 +4960,9 @@
                 heroVideo.classList.add('ken-burns');
             }, { once: true });
 
-            // Fallback: show text after 3 seconds if video doesn't play
+            // Fallback: if video doesn't start within 3s, show video and text anyway
             setTimeout(() => {
+                heroVideo.classList.add('playing');
                 heroContent.classList.add('visible');
             }, 3000);
         } else if (heroContent) {
