@@ -134,7 +134,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: 70% 22%;
+            object-position: 82% 18%;
             z-index: 0;
             filter: saturate(0.95) contrast(1.05) brightness(0.98);
             opacity: 0;
@@ -180,7 +180,7 @@
             inset: 0;
             z-index: 2;
             background:
-                radial-gradient(ellipse 70% 75% at 70% 35%,
+                radial-gradient(ellipse 70% 75% at 78% 30%,
                     rgba(0,0,0,0) 35%,
                     rgba(0,0,0,0.25) 55%,
                     rgba(0,0,0,0.65) 80%,
@@ -285,9 +285,9 @@
                 opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
                 transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
         }
-        /* Bottom-left anchor: keep text in left half, away from face (70% from left) */
+        /* Bottom-left anchor: keep text in left half, away from face (now at 82% from left) */
         .cover-scene > * {
-            max-width: min(50%, 620px);
+            max-width: min(45%, 540px);
             text-align: left;
         }
         @media (max-width: 768px) {
@@ -306,16 +306,16 @@
 
         /* Scene 2 — bold statement */
         .cover-statement {
-            font-size: clamp(40px, 4.2vw, 58px);
+            font-size: clamp(44px, 4.6vw, 64px);
             font-weight: 200;
-            line-height: 0.94;
-            letter-spacing: -0.038em;
+            line-height: 1.18;
+            letter-spacing: -0.028em;
             color: var(--white);
             background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.55) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin: 0 0 clamp(18px, 2vw, 28px);
+            margin: 0;
             text-shadow: 0 4px 36px rgba(0, 0, 0, 0.45);
             max-width: 720px;
         }
@@ -330,10 +330,10 @@
         .cover-statement-sub {
             font-size: clamp(13px, 1.2vw, 16px);
             font-weight: 600;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.78);
-            margin: 0;
+            margin: 0 0 clamp(28px, 3vw, 40px);
         }
 
         /* Scene 3 — quote */
@@ -533,7 +533,7 @@
             }
             .cover-statement {
                 font-size: clamp(40px, 12vw, 64px);
-                line-height: 0.96;
+                line-height: 1.22;
             }
             .cover-quote {
                 font-size: clamp(24px, 7vw, 40px);
@@ -541,7 +541,8 @@
             .cover-quote-sub,
             .cover-statement-sub {
                 font-size: 12px;
-                letter-spacing: 0.18em;
+                letter-spacing: 0.24em;
+                margin-bottom: 24px;
             }
             .cover-scene {
                 padding: 0 clamp(20px, 5vw, 32px) clamp(150px, 26vw, 200px);
