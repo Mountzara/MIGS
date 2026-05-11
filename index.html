@@ -2022,6 +2022,11 @@
             color: rgba(255,255,255,0.85);
         }
 
+        .app-visual.purple {
+            background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%);
+            color: rgba(255,255,255,0.85);
+        }
+
         .app-visual-label {
             position: absolute;
             bottom: 18px;
@@ -2744,6 +2749,11 @@
             background:
                 radial-gradient(ellipse 80% 60% at 30% 20%, rgba(168, 102, 255, 0.18), transparent 60%),
                 radial-gradient(ellipse 70% 60% at 80% 90%, rgba(56, 84, 220, 0.16), transparent 60%);
+        }
+        .app-modal-hero[data-tone="purple"] {
+            background:
+                radial-gradient(ellipse 80% 60% at 30% 20%, rgba(123, 44, 191, 0.22), transparent 60%),
+                radial-gradient(ellipse 70% 60% at 80% 90%, rgba(90, 24, 154, 0.18), transparent 60%);
         }
         .app-modal-hero[data-tone="dark"] {
             background:
@@ -4299,6 +4309,23 @@
                         <p>Analyze your operative videos with an integrated AI pipeline — Whisper transcription + OCR + the MountZara Clinical AI engine generates an AI report formatted the way surgeons actually want to see the data: clinical summary, key intra-operative findings, technique notes, procedure tags, and confidence score. Smart search reads natural-language surgical queries across your personal library.</p>
                     </div>
                 </div>
+
+                <!-- VideoAnnotator -->
+                <div class="app-card-v2" data-app="videoannotator" role="button" tabindex="0">
+                    <div class="app-visual purple">
+                        <svg class="app-icon-large" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            <rect x="2" y="6" width="10" height="8" rx="1"/>
+                        </svg>
+                        <span class="app-visual-label">In Beta Testing</span>
+                    </div>
+                    <div class="app-meta">
+                        <span class="app-tag">iPad · OR & Bedside</span>
+                        <h3>VideoAnnotator</h3>
+                        <p>Surgical video annotation and DICOM/PACS viewer for iPad — designed for the operating room and bedside. PencilKit drawing, measurement overlays, object tracking across frames, and thumbnail scrubber for frame-perfect annotation. Built-in DICOM parser with annotation and measurement tools for pre-op imaging review. Project-based workflow for teaching, case reviews, and surgical documentation.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -5330,6 +5357,32 @@
                     { title: 'Technique comparison across cases', desc: 'Smart-search "robotic isthmocele repair ICG" → pull all matching videos → compare technique variations across your personal archived cases side by side.' },
                 ],
                 tech: ['Native Swift / SwiftUI (macOS + iPad)', 'Integrated MountZara Clinical AI engine', 'Video analysis pipeline (audio transcription + OCR)', 'Smart search with query interpretation', 'Confidence scoring (0–1)', 'Encrypted video storage', 'Unified knowledge base sync'],
+            },
+            videoannotator: {
+                tone: 'purple',
+                tag: 'iPad · OR & Bedside',
+                title: 'VideoAnnotator',
+                tagline: 'Surgical video annotation and DICOM/PACS viewer for iPad — built for the operating room and bedside. Draw, measure, and track objects across frames. Review pre-op imaging with DICOM annotations and measurements.',
+                platforms: ['Native iPadOS', 'iPad-optimized (TARGETED_DEVICE_FAMILY = 2)', 'PencilKit integration', 'DICOM parsing engine', 'Project-based workflow', 'In Beta Testing'],
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/><rect x="2" y="6" width="10" height="8" rx="1"/></svg>',
+                description: 'VideoAnnotator is a dual-purpose iPad app designed for surgical teaching, case review, and intra-operative reference. The Video Annotation module lets you draw, measure, and annotate surgical recordings with frame-perfect precision — PencilKit canvas for freehand drawing, measurement overlays for distance and angle calculations, object tracking to follow anatomy or instruments across frames, and a thumbnail scrubber for instant navigation. The DICOM/PACS Viewer module parses DICOM medical imaging files (CT, MRI, ultrasound) and displays them with native annotation and measurement tools — perfect for pre-op case review at the bedside or in the OR. Both modules use a project-based workflow, so you can organize annotated videos and DICOM studies into teaching cases, fellowship portfolios, or surgical planning libraries. Everything stays on-device — no cloud uploads, no PHI transmission. Built for surgeons who need clinical-grade tools at the point of care.',
+                features: [
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>', title: 'PencilKit drawing canvas', desc: 'Native Apple Pencil integration for freehand drawing on surgical video — circle anatomy, trace dissection planes, annotate key findings. Pressure-sensitive, palm-rejection, and undo/redo built in.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M3 21L21 3"/><circle cx="12" cy="12" r="9"/></svg>', title: 'Measurement overlays', desc: 'Distance and angle measurements directly on video frames — measure lesion size, scope-to-landmark distance, or instrument angulation. Measurements persist across frames and export with annotations.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>', title: 'Object tracking', desc: 'Track anatomic landmarks, instruments, or pathology across video frames — mark a structure once, and the tracker follows it through the sequence. Essential for teaching instrument handling and dissection technique.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="19" width="18" height="4" rx="1"/></svg>', title: 'Thumbnail scrubber', desc: 'Frame-by-frame navigation via thumbnail scrubber — jump instantly to any moment in the video, perfect for reviewing key steps or finding the exact frame to annotate.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/></svg>', title: 'DICOM/PACS viewer', desc: 'Native DICOM parser for CT, MRI, ultrasound, and X-ray — load imaging directly from PACS exports or USB drives. Window/level controls, multi-planar reconstruction, and series navigation built in.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>', title: 'DICOM annotations & measurements', desc: 'Annotate DICOM images with freehand drawing, text labels, and calibrated measurements (distance, area, angle) — review pre-op imaging at the bedside or in the OR with surgical planning overlays intact.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>', title: 'Project-based workflow', desc: 'Organize annotated videos and DICOM studies into projects — teaching cases, fellowship portfolios, surgical planning folders, case reviews. Export projects as annotated video files or PDF reports.' },
+                    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/></svg>', title: 'On-device only — no cloud', desc: 'All video and DICOM files stay on the iPad. No cloud uploads, no PHI transmission, no external servers. Perfect for HIPAA-compliant surgical teaching and case review.' },
+                ],
+                useCases: [
+                    { title: 'OR teaching rounds', desc: 'Load a surgical video on the iPad, annotate key steps with Apple Pencil, track instruments or anatomy, then pass the iPad around for fellow and resident review — all in real time during the case or immediately post-op.' },
+                    { title: 'Pre-op imaging review at bedside', desc: 'Load the patient\'s DICOM CT or MRI from PACS, annotate the imaging with surgical planning notes (e.g., "excise here," "avoid ureter"), and review with the patient or surgical team at the bedside before the case.' },
+                    { title: 'Conference video preparation', desc: 'Annotate your surgical video for AAGL or ACOG submission — draw arrows, add measurements, track anatomy across frames — then export the annotated video as a submission-ready file.' },
+                    { title: 'Fellowship case portfolio', desc: 'Build a project library of annotated operative videos and DICOM studies — organized by procedure type, complexity, or teaching focus — as a portfolio for fellowship applications or board review.' },
+                ],
+                tech: ['Native Swift / SwiftUI (iPadOS)', 'PencilKit canvas integration', 'DICOM parsing engine (DICOMService.swift)', 'Object tracking (ObjectTracker.swift)', 'Video playback (VideoPlayerManager.swift)', 'Measurement overlays (MeasurementOverlayView.swift)', 'Annotation engine (AnnotationEngine.swift)', 'Project management (ProjectManager.swift)', 'Thumbnail scrubber (ThumbnailScrubberView.swift)'],
             },
         };
 
