@@ -7,6 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="video" href="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -310,11 +311,11 @@
 
         .hero-content-delayed {
             opacity: 0;
-            animation: heroContentFadeIn 1.2s ease-out 1s forwards;
+            transition: opacity 1.2s ease-out;
         }
 
-        @keyframes heroContentFadeIn {
-            to { opacity: 1; }
+        .hero-content-delayed.visible {
+            opacity: 1;
         }
 
         /* Monogram stage */
@@ -3596,7 +3597,7 @@
 
     <!-- Hero -->
     <section class="hero">
-        <video class="hero-video" autoplay muted playsinline id="heroVideo">
+        <video class="hero-video" autoplay muted playsinline preload="auto" id="heroVideo">
             <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
             <source src="https://mountzara.com/media/hero-uterus-animation.mov" type="video/quicktime">
         </video>
@@ -5003,12 +5004,38 @@
     </div>
 
     <script>
-        // Hero video — play once, then Ken Burns on last frame
+        // Hero video — play once, fade in text 1s after playback starts,
+        // Ken Burns on last frame after video ends
         const heroVideo = document.getElementById('heroVideo');
+        const heroContent = document.querySelector('.hero-content-delayed');
         if (heroVideo) {
+            let textShown = false;
+            const showText = () => {
+                if (textShown) return;
+                textShown = true;
+                setTimeout(() => {
+                    if (heroContent) heroContent.classList.add('visible');
+                }, 1000);
+            };
+            // Trigger as soon as video is actually playing
+            heroVideo.addEventListener('playing', showText, { once: true });
+            // Safety fallback: if video fails to start within 3s, show text anyway
+            setTimeout(showText, 3000);
+            // Try to play immediately (some browsers need explicit call)
+            const tryPlay = () => {
+                const p = heroVideo.play();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(() => { showText(); });
+                }
+            };
+            if (heroVideo.readyState >= 2) tryPlay();
+            else heroVideo.addEventListener('loadeddata', tryPlay, { once: true });
+            // Ken Burns on last frame after video ends
             heroVideo.addEventListener('ended', () => {
                 heroVideo.classList.add('ken-burns');
             });
+        } else if (heroContent) {
+            heroContent.classList.add('visible');
         }
 
         // Contact modal
