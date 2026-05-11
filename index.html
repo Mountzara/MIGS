@@ -3509,32 +3509,32 @@
         <div class="intro-vignette"></div>
     </div>
     <script>
-    // Immediate inline playback - plays once, never repeats
+    // Ensure video plays once immediately and never repeats
     (function() {
         const v = document.getElementById('introVideo');
         if (!v) return;
 
-        let hasPlayed = false;
-        const play = () => {
-            if (hasPlayed) return;
-            const p = v.play();
-            if (p && p.catch) p.catch(() => {});
-            hasPlayed = true;
-        };
-
-        // Prevent replay when video ends
-        v.addEventListener('ended', () => {
-            v.pause();
-            hasPlayed = true;
+        // Prevent replay when ended
+        v.addEventListener('ended', function() {
+            this.currentTime = this.duration;
+            this.pause();
         }, { once: true });
 
-        // Immediate play attempt
-        if (v.readyState >= 2) {
-            play();
-        } else {
-            // Wait for enough data loaded
-            v.addEventListener('canplay', play, { once: true });
-        }
+        // Force immediate play (autoplay attribute should handle this, but ensure it)
+        const forcePlay = function() {
+            if (v.paused) {
+                v.play().catch(function() {
+                    // If autoplay blocked, try on first user interaction
+                    document.addEventListener('click', function() {
+                        v.play().catch(function(){});
+                    }, { once: true });
+                });
+            }
+        };
+
+        // Try immediately and on data ready
+        forcePlay();
+        v.addEventListener('loadeddata', forcePlay, { once: true });
     })();
     </script>
 
@@ -3763,8 +3763,8 @@
                     <div class="stat-label">Active IRB studies</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-num">1</div>
-                    <div class="stat-label">International AAGL award</div>
+                    <div class="stat-num">2</div>
+                    <div class="stat-label">International awards (AAGL · CAOG)</div>
                 </div>
                 <div class="stat">
                     <div class="stat-num">5</div>
