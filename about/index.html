@@ -173,24 +173,38 @@
             pointer-events: none;
         }
 
+        /* Strong vignette: spotlight on face (70% 35%), fades to full black at edges.
+           The face stays clear; edges blend seamlessly into the black page background. */
         .cover-vignette {
             position: absolute;
             inset: 0;
             z-index: 2;
-            /* Soft vignette centered on face (70% 35%) - doesn't darken face area */
             background:
-                radial-gradient(ellipse 75% 75% at 70% 35%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 100%);
+                radial-gradient(ellipse 70% 75% at 70% 35%,
+                    rgba(0,0,0,0) 35%,
+                    rgba(0,0,0,0.25) 55%,
+                    rgba(0,0,0,0.65) 80%,
+                    rgba(0,0,0,0.95) 100%);
             pointer-events: none;
         }
 
-        /* Soft edge fade overlay - feathers edges to black background without darkening face */
+        /* Corner darkeners + edge fades - ensures the rectangular image edges
+           dissolve completely into the black background, never showing a hard edge. */
         .cover-gradient {
             position: absolute;
             inset: 0;
             z-index: 3;
             background:
-                /* Soft outer fade to background - only affects extreme edges */
-                radial-gradient(ellipse 95% 95% at 70% 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.6) 100%);
+                /* Corner radial darkeners */
+                radial-gradient(circle at 0% 0%,     rgba(0,0,0,0.85), rgba(0,0,0,0) 45%),
+                radial-gradient(circle at 100% 0%,   rgba(0,0,0,0.85), rgba(0,0,0,0) 45%),
+                radial-gradient(circle at 0% 100%,   rgba(0,0,0,0.85), rgba(0,0,0,0) 45%),
+                radial-gradient(circle at 100% 100%, rgba(0,0,0,0.85), rgba(0,0,0,0) 45%),
+                /* Soft edge fades */
+                linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 25%),
+                linear-gradient(to top,    rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 22%),
+                linear-gradient(to left,   rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%),
+                linear-gradient(to right,  rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%);
             pointer-events: none;
             transition: opacity 0.6s ease;
         }
