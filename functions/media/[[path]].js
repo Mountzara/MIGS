@@ -2,6 +2,19 @@
 // Bound name: MEDIA (configured in dashboard)
 // Routes: /media/<filename> → R2 object <filename>
 
+function contentTypeFor(key) {
+    const lower = key.toLowerCase();
+    if (lower.endsWith(".mp4")) return "video/mp4";
+    if (lower.endsWith(".mov")) return "video/quicktime";
+    if (lower.endsWith(".webm")) return "video/webm";
+    if (lower.endsWith(".m4v")) return "video/mp4";
+    if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+    if (lower.endsWith(".png")) return "image/png";
+    if (lower.endsWith(".gif")) return "image/gif";
+    if (lower.endsWith(".webp")) return "image/webp";
+    return "application/octet-stream";
+}
+
 export async function onRequestGet({ request, env }) {
     const url = new URL(request.url);
     // Strip leading "/media/" from the pathname
@@ -34,12 +47,15 @@ export async function onRequestGet({ request, env }) {
         return new Response("Video not found", { status: 404 });
     }
 
+    // Force content-type based on extension - don't trust R2 metadata
+    const forcedType = contentTypeFor(key);
+
     const headers = new Headers();
-    object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
     headers.set("accept-ranges", "bytes");
     headers.set("cache-control", "public, max-age=31536000, immutable");
-    headers.set("content-type", object.httpMetadata?.contentType || "video/mp4");
+    headers.set("content-type", forcedType);
+    headers.set("x-content-type-options", "nosniff");
 
     if (range && object.range) {
         const start = object.range.offset ?? 0;
