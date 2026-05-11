@@ -234,10 +234,7 @@
 
         /* ========== Hero ========== */
         .hero {
-            /* Hero content sits OVER the cinematic backdrop. Background is transparent
-               so the fixed video shows through. The dim gradient that used to be here
-               now lives on .intro-tint. */
-            background: transparent;
+            background: #000000;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -248,6 +245,20 @@
             position: relative;
             z-index: 2;
             overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            object-fit: cover;
+            opacity: 0.5;
         }
 
         /* Photographic backdrop overlay */
@@ -282,9 +293,13 @@
             z-index: 2;
             max-width: 1100px;
             width: 100%;
-            opacity: 0;
-            animation: heroContentFadeIn 1.2s ease-out 1.8s forwards;
         }
+
+        .hero-content-delayed {
+            opacity: 0;
+            animation: heroContentFadeIn 1.2s ease-out 1s forwards;
+        }
+
         @keyframes heroContentFadeIn {
             to { opacity: 1; }
         }
@@ -3576,10 +3591,14 @@
 
     <!-- Hero -->
     <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="https://mountzara.com/media/hero-uterus-animation.mov" type="video/quicktime">
+            <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
+        </video>
         <div class="hero-mesh"></div>
         <div class="hero-grid"></div>
 
-        <div class="hero-inner">
+        <div class="hero-inner hero-content-delayed">
             <div class="monogram-stage">
                 <div class="monogram-halo"></div>
                 <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="logo">
