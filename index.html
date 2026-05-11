@@ -1338,6 +1338,7 @@
         }
 
         .population-card {
+            position: relative;
             background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
             border-radius: 24px;
             padding: 48px 44px;
@@ -1346,12 +1347,57 @@
             min-height: 300px;
             display: flex;
             flex-direction: column;
+            cursor: pointer;
+            overflow: hidden;
+            outline: none;
         }
 
-        .population-card:hover {
+        .population-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle 260px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.08), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .population-card:hover,
+        .population-card:focus-visible {
             transform: translateY(-6px);
             border-color: rgba(41, 151, 255, 0.4);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+        }
+        .population-card:hover::before,
+        .population-card:focus-visible::before {
+            opacity: 1;
+        }
+
+        .pop-evidence-cta {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(92, 182, 255, 0.85);
+            transition: color 0.3s ease;
+        }
+        .pop-evidence-cta .arrow {
+            display: inline-block;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .population-card:hover .pop-evidence-cta .arrow,
+        .population-card:focus-visible .pop-evidence-cta .arrow {
+            transform: translateX(5px);
+        }
+        .population-card:hover .pop-evidence-cta,
+        .population-card:focus-visible .pop-evidence-cta {
+            color: #8dcaff;
         }
 
         .pop-tag {
@@ -1411,126 +1457,7 @@
             border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        /* ========== Evidence Cards (OMT Research) ========== */
-        .evidence-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-top: 36px;
-        }
-        @media (max-width: 1024px) {
-            .evidence-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 560px) {
-            .evidence-grid { grid-template-columns: 1fr; gap: 14px; }
-        }
-
-        .evidence-card {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            gap: 14px;
-            padding: 28px 24px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            cursor: pointer;
-            overflow: hidden;
-            color: inherit;
-            font-family: inherit;
-            transition:
-                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s ease,
-                background 0.35s ease,
-                box-shadow 0.45s ease;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        .evidence-card.in {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: calc(var(--si, 0) * 70ms);
-        }
-        .evidence-card:hover,
-        .evidence-card:focus-visible {
-            transform: translateY(-4px);
-            background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(92, 182, 255, 0.32);
-            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
-            outline: none;
-        }
-        .evidence-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-        }
-        .evidence-card:hover::before { opacity: 1; }
-
-        .evidence-card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(92, 182, 255, 0.10);
-            color: #5cb6ff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
-        }
-        .evidence-card:hover .evidence-card-icon {
-            transform: scale(1.08) rotate(-3deg);
-            background: rgba(92, 182, 255, 0.18);
-        }
-        .evidence-card-icon svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .evidence-card-meta {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.85);
-        }
-        .evidence-card h4 {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.012em;
-            color: var(--white);
-            margin: 0;
-        }
-        .evidence-card p {
-            font-size: 13.5px;
-            line-height: 1.55;
-            color: rgba(255, 255, 255, 0.66);
-            margin: 0;
-        }
-        .evidence-card-cta {
-            margin-top: auto;
-            padding-top: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            color: rgba(92, 182, 255, 0.9);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .evidence-card-cta::after {
-            content: '→';
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .evidence-card:hover .evidence-card-cta::after {
-            transform: translateX(4px);
-        }
-
-        /* ========== Evidence Modal ========== */
+        /* ========== Evidence Modal (PubMed OMT Research) ========== */
         .evidence-modal {
             position: fixed;
             inset: 0;
@@ -3931,7 +3858,7 @@
                 <p class="sub-sub">OMT applied with intent — adapted to the unique physiology, needs, and constraints of the women I treat.</p>
 
                 <div class="populations-grid">
-                    <div class="population-card">
+                    <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health OMT evidence">
                         <div class="pop-tag">Foundational Care</div>
                         <h4>Women's Health</h4>
                         <p>For dysmenorrhea, sacral imbalance, low back pain, and visceral-somatic patterns rooted in the pelvis. Manual therapy as a complement to gynecologic management — not a replacement for it.</p>
@@ -3940,9 +3867,10 @@
                             <span class="pop-mod">Myofascial Release</span>
                             <span class="pop-mod">Counterstrain</span>
                         </div>
+                        <span class="pop-evidence-cta">3 PubMed studies <span class="arrow">→</span></span>
                     </div>
 
-                    <div class="population-card">
+                    <div class="population-card" data-evidence="pregnancy" role="button" tabindex="0" aria-label="View Pregnancy OMT evidence">
                         <div class="pop-tag">Antepartum &amp; Postpartum</div>
                         <h4>Pregnant Patients</h4>
                         <p>Safe, gentle techniques for round ligament pain, sacroiliac dysfunction, sciatica, and pubic symphysis discomfort. Indirect approaches preferred during pregnancy; targeted release postpartum to support recovery.</p>
@@ -3951,9 +3879,10 @@
                             <span class="pop-mod">Muscle Energy (modified)</span>
                             <span class="pop-mod">Myofascial Release</span>
                         </div>
+                        <span class="pop-evidence-cta">3 PubMed studies <span class="arrow">→</span></span>
                     </div>
 
-                    <div class="population-card">
+                    <div class="population-card" data-evidence="post-op" role="button" tabindex="0" aria-label="View Post-Operative OMT evidence">
                         <div class="pop-tag">Recovery</div>
                         <h4>Post-Operative Patients</h4>
                         <p>Reducing the burden of post-cesarean and post-laparoscopic adhesions, restoring abdominal-wall fascial mobility, and easing the diaphragmatic and visceral patterns that linger after surgery.</p>
@@ -3962,9 +3891,10 @@
                             <span class="pop-mod">FDM</span>
                             <span class="pop-mod">Counterstrain</span>
                         </div>
+                        <span class="pop-evidence-cta">3 PubMed studies <span class="arrow">→</span></span>
                     </div>
 
-                    <div class="population-card">
+                    <div class="population-card" data-evidence="pelvic-pain" role="button" tabindex="0" aria-label="View Pelvic Pain and Endometriosis OMT evidence">
                         <div class="pop-tag">Chronic Pain</div>
                         <h4>Pelvic Pain</h4>
                         <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain — addressing the layered fascial, somatic, and viscerosomatic contributors that imaging alone can't see.</p>
@@ -3974,72 +3904,8 @@
                             <span class="pop-mod">Muscle Energy</span>
                             <span class="pop-mod">Counterstrain</span>
                         </div>
+                        <span class="pop-evidence-cta">3 PubMed studies <span class="arrow">→</span></span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Evidence Base Sub-Section -->
-            <div class="sub-section">
-                <span class="sub-eyebrow">Evidence Base</span>
-                <h3 class="sub-headline">Grounded in peer-reviewed research.</h3>
-                <p class="sub-sub">The osteopathic approach to women's health isn't anecdotal — it's supported by randomized trials, systematic reviews, and pilot studies indexed in PubMed. Tap a category to explore the evidence.</p>
-
-                <div class="evidence-grid">
-                    <button class="evidence-card" data-evidence="pregnancy" type="button" aria-label="View pregnancy OMT research">
-                        <div class="evidence-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M12 3a4 4 0 0 1 4 4v2"/>
-                                <path d="M8 9V7a4 4 0 0 1 4-4"/>
-                                <path d="M6 13c0 4 2.5 8 6 8s6-4 6-8"/>
-                                <circle cx="13" cy="14" r="1.5"/>
-                            </svg>
-                        </div>
-                        <div class="evidence-card-meta">3 Studies · 1995–2017</div>
-                        <h4>Pregnancy</h4>
-                        <p>OMT for back pain, pelvic girdle pain, and functional decline during and after pregnancy.</p>
-                        <span class="evidence-card-cta">Explore evidence</span>
-                    </button>
-
-                    <button class="evidence-card" data-evidence="endometriosis" type="button" aria-label="View endometriosis OMT research">
-                        <div class="evidence-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M12 3c-3 4-7 6-7 11a7 7 0 0 0 14 0c0-5-4-7-7-11z"/>
-                                <path d="M9 14c1 1.5 2 2 3 2s2-.5 3-2"/>
-                            </svg>
-                        </div>
-                        <div class="evidence-card-meta">3 Studies · 2016–2023</div>
-                        <h4>Endometriosis</h4>
-                        <p>Manual therapy for endometriosis-associated pelvic pain, dyspareunia, and quality of life.</p>
-                        <span class="evidence-card-cta">Explore evidence</span>
-                    </button>
-
-                    <button class="evidence-card" data-evidence="pelvic-pain" type="button" aria-label="View pelvic pain OMT research">
-                        <div class="evidence-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M5 9c2-3 5-4 7-4s5 1 7 4"/>
-                                <path d="M4 13c0 4 3.5 8 8 8s8-4 8-8"/>
-                                <path d="M9 13h6"/>
-                                <circle cx="12" cy="17" r="1.5"/>
-                            </svg>
-                        </div>
-                        <div class="evidence-card-meta">3 Studies · 2016–2023</div>
-                        <h4>Pelvic Pain</h4>
-                        <p>Systematic reviews and clinical evidence for chronic pelvic pain and pelvic floor dysfunction.</p>
-                        <span class="evidence-card-cta">Explore evidence</span>
-                    </button>
-
-                    <button class="evidence-card" data-evidence="protocols" type="button" aria-label="View OMT dysmenorrhea protocol research">
-                        <div class="evidence-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <rect x="5" y="3" width="14" height="18" rx="2"/>
-                                <path d="M9 8h6M9 12h6M9 16h4"/>
-                            </svg>
-                        </div>
-                        <div class="evidence-card-meta">3 Studies · 2017–2025</div>
-                        <h4>Protocols</h4>
-                        <p>Standardized OMT protocols for primary dysmenorrhea and viscerosomatic reflex management.</p>
-                        <span class="evidence-card-cta">Explore evidence</span>
-                    </button>
                 </div>
             </div>
 
@@ -4955,9 +4821,39 @@
         // Evidence modal — PubMed-indexed OMT research, data-driven
         // ==========================================================
         const EVIDENCE = {
+            'womens-health': {
+                title: 'OMT for Women\'s Health',
+                intro: 'For dysmenorrhea, sacral imbalance, and visceral-somatic patterns rooted in the pelvis, the literature increasingly supports defined OMT protocols combining muscle energy, myofascial release, and counterstrain across a structured number of sessions — adjunct to, not replacing, gynecologic management.',
+                studies: [
+                    {
+                        title: 'Effectiveness of osteopathic treatment in women with primary dysmenorrhea: A randomised controlled trial',
+                        authors: 'Pelegrini AHM, Vidal-Robayo MC, Pico-Espinosa OJ, et al.',
+                        journal: 'Int J Osteopath Med',
+                        year: '2025',
+                        pmid: '40325740',
+                        finding: 'Recent RCT confirming that a structured osteopathic treatment protocol significantly reduced pain intensity and duration in women with primary dysmenorrhea compared with control — reinforcing a multi-session protocol across menstrual cycles as clinically meaningful.',
+                    },
+                    {
+                        title: 'Osteopathic Manipulative Treatment in Dysmenorrhea: A Systematic Review',
+                        authors: 'Donà G, Esposito G, Bortolami V, et al.',
+                        journal: 'Healthcare (Basel)',
+                        year: '2024',
+                        pmid: '38389612',
+                        finding: 'Systematic review of OMT for dysmenorrhea finding consistent reductions in pain duration, pain intensity, and analgesic use across multiple studies — a small but growing literature supporting protocolized osteopathic care.',
+                    },
+                    {
+                        title: 'Osteopathic Manipulative Treatment of Primary Dysmenorrhea and Related Factors: A Randomized Controlled Trial',
+                        authors: 'Zecchillo D, Acquati A, Aquino A, et al.',
+                        journal: 'Int J Med Res Health Sci',
+                        year: '2017',
+                        pmid: 'Osteopathic Manipulative Treatment of Primary Dysmenorrhea Zecchillo',
+                        finding: 'RCT randomizing 72 women to treatment vs. control over three menstrual cycles. Five osteopathic treatments produced statistically significant reductions in pain intensity and number of days in pain — establishing a feasible clinical protocol.',
+                    },
+                ],
+            },
             pregnancy: {
                 title: 'OMT in Pregnancy',
-                intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline that most women experience in the third trimester.',
+                intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline most women experience in the third trimester.',
                 studies: [
                     {
                         title: 'Pregnancy Research on Osteopathic Manipulation Optimizing Treatment Effects: A Randomized Controlled Trial (PROMOTE)',
@@ -4965,7 +4861,7 @@
                         journal: 'Am J Obstet Gynecol',
                         year: '2015',
                         pmid: '25068560',
-                        finding: 'RCT of 400 women in their third trimester randomized to usual care, usual care + OMT, or usual care + placebo ultrasound (seven treatments over nine weeks). OMT produced clinically and statistically significant improvements in pain progression and back-related functional deterioration compared with usual care.',
+                        finding: 'RCT of 400 women in their third trimester randomized to usual care, usual care + OMT, or usual care + placebo ultrasound (seven treatments over nine weeks). OMT produced clinically and statistically significant improvements in pain progression and back-related functional deterioration compared with usual care alone.',
                     },
                     {
                         title: 'Osteopathic manipulative treatment of back pain and related symptoms during pregnancy: a randomized controlled trial',
@@ -4985,9 +4881,39 @@
                     },
                 ],
             },
-            endometriosis: {
-                title: 'OMT for Endometriosis',
-                intro: 'Manual therapy and osteopathic techniques have emerging evidence for endometriosis-associated pelvic pain, dyspareunia, and quality-of-life outcomes — including in patients with deep infiltrating disease and in post-operative recurrence.',
+            'post-op': {
+                title: 'OMT for Post-Operative Recovery',
+                intro: 'Post-operative recovery — particularly after cesarean and laparoscopic gynecologic surgery — involves fascial restrictions, adhesions, and viscerosomatic patterns that linger long after wound healing. The evidence base shows osteopathic manipulative therapy can meaningfully improve quality of life and reduce recurrent pain after surgery.',
+                studies: [
+                    {
+                        title: 'Impact of osteopathic manipulative therapy in patients with deep colorectal endometriosis: A classification based on symptoms and quality of life',
+                        authors: 'Daraï C, Deboute O, Zacharopoulou C, Laas E, Canlorbe G, Belghiti J, et al.',
+                        journal: 'Gynecol Obstet Fertil Senol',
+                        year: '2017',
+                        pmid: '28869181',
+                        finding: 'Prospective study of 46 patients with colorectal endometriosis. Significant improvement in both physical and mental component summaries of quality of life was observed after a course of osteopathic manipulative therapy, including in post-operative patients.',
+                    },
+                    {
+                        title: 'Osteopathy for Endometriosis and Chronic Pelvic Pain — A Pilot Study',
+                        authors: 'Schwerla F, Wirthwein P, Rütz M, Resch KL.',
+                        journal: 'Forsch Komplementmed',
+                        year: '2016',
+                        pmid: '27681520',
+                        finding: 'Pilot study of 28 women with chronic pelvic pain and painful pelvic floor muscle tightness — many with post-surgical adhesion patterns. After standardized osteopathic treatment, 17 of 28 reported symptom improvement; among the endometriosis subgroup, 10 of 14 improved.',
+                    },
+                    {
+                        title: 'Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review',
+                        authors: 'Ruffini N, D\'Alessandro G, Cardinali L, Frondaroli F, Cerritelli F.',
+                        journal: 'Complement Ther Med',
+                        year: '2016',
+                        pmid: '27261985',
+                        finding: 'Systematic review of 24 studies covering 1,840 participants across pregnancy-related back pain, postpartum recovery, dysmenorrhea, perimenopausal symptoms, and pelvic pain. OMT is supported as an adjunct to standard care across multiple recovery contexts.',
+                    },
+                ],
+            },
+            'pelvic-pain': {
+                title: 'OMT for Pelvic Pain & Endometriosis',
+                intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common, and endometriosis-associated pain often persists even after surgical excision. Randomized trials, systematic reviews, and clinical literature support manual osteopathic therapy as an adjunct to standard gynecologic care.',
                 studies: [
                     {
                         title: 'Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial',
@@ -4998,80 +4924,20 @@
                         finding: 'RCT of 41 women with endometriosis-associated pelvic pain. The manual therapy group showed significant improvement in pain intensity, perceived powerlessness, lumbar mobility, and physical quality-of-life scores compared with placebo.',
                     },
                     {
-                        title: 'Impact of osteopathic manipulative therapy in patients with deep colorectal endometriosis: A classification based on symptoms and quality of life',
-                        authors: 'Daraï C, Deboute O, Zacharopoulou C, Laas E, Canlorbe G, Belghiti J, et al.',
-                        journal: 'Gynecol Obstet Fertil Senol',
-                        year: '2017',
-                        pmid: '28869181',
-                        finding: 'Prospective study of 46 patients with colorectal endometriosis. Significant improvement in both physical and mental component summaries of quality of life was observed after a course of osteopathic manipulative therapy.',
-                    },
-                    {
-                        title: 'Osteopathy for Endometriosis and Chronic Pelvic Pain — A Pilot Study',
-                        authors: 'Schwerla F, Wirthwein P, Rütz M, Resch KL.',
-                        journal: 'Forsch Komplementmed',
-                        year: '2016',
-                        pmid: '27681520',
-                        finding: 'Pilot study of 28 women with chronic pelvic pain and painful pelvic floor muscle tightness. After standardized osteopathic treatment, 17 of 28 reported symptom improvement; among the endometriosis subgroup, 10 of 14 improved.',
-                    },
-                ],
-            },
-            'pelvic-pain': {
-                title: 'OMT for Pelvic Pain',
-                intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common. Systematic reviews and clinical evidence support OMT as an adjunct to standard gynecologic care, particularly for pelvic floor dysfunction and post-surgical pain.',
-                studies: [
-                    {
-                        title: 'Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review',
-                        authors: 'Ruffini N, D\'Alessandro G, Cardinali L, Frondaroli F, Cerritelli F.',
-                        journal: 'Complement Ther Med',
-                        year: '2016',
-                        pmid: '27261985',
-                        finding: '24 studies covering 1,840 participants across pregnancy-related back pain, dysmenorrhea, perimenopausal symptoms, and pelvic pain. OMT was found effective for pregnancy-related back pain; signal of benefit in dysmenorrhea and pelvic pain warrants further high-quality trials.',
-                    },
-                    {
                         title: 'The Role of Osteopathic Care in Gynaecology and Obstetrics: An Updated Systematic Review',
                         authors: 'Bagagiolo D, Rosa D, Borrelli F.',
                         journal: 'Healthcare (Basel)',
                         year: '2022',
                         pmid: '36011223',
-                        finding: 'Updated review of randomized and observational evidence confirming a positive effect of osteopathic care on pregnancy-related pain and a growing body of evidence for benefit in dysmenorrhea, infertility-related conditions, and chronic pelvic pain.',
+                        finding: 'Updated systematic review confirming a positive effect of osteopathic care on pregnancy-related pain and a growing body of evidence for benefit in dysmenorrhea, infertility-related conditions, and chronic pelvic pain — including endometriosis-associated pain.',
                     },
                     {
                         title: 'Osteopathic Manipulative Treatment of Chronic Pelvic Pain Due to High-Tone Pelvic Floor Dysfunction',
                         authors: 'Wallace SL, Miller LD, Mishra K.',
                         journal: 'Osteopathic Family Physician',
                         year: '2023',
-                        pmid: 'ACOFP-15-2',
-                        finding: 'Clinical review supporting manual therapy as an effective treatment for chronic pelvic pain with high-tone pelvic floor dysfunction. Osteopathic physicians are uniquely positioned to identify viscerosomatic reflexes and provide patient-centered manual care.',
-                    },
-                ],
-            },
-            protocols: {
-                title: 'Standardized OMT Protocols',
-                intro: 'Beyond individualized treatment, the literature increasingly supports defined protocols — particularly for primary dysmenorrhea — that combine muscle energy, myofascial release, counterstrain, and viscerosomatic reflex management across a structured number of sessions.',
-                studies: [
-                    {
-                        title: 'Effectiveness of osteopathic treatment in women with primary dysmenorrhea: A randomised controlled trial',
-                        authors: 'Pelegrini AHM, Vidal-Robayo MC, Pico-Espinosa OJ, et al.',
-                        journal: 'Int J Osteopath Med',
-                        year: '2025',
-                        pmid: '40325740',
-                        finding: 'Recent RCT confirming that a structured osteopathic treatment protocol significantly reduced pain intensity and duration in women with primary dysmenorrhea compared with control. Reinforces a 3-session protocol across menstrual cycles as clinically meaningful.',
-                    },
-                    {
-                        title: 'Osteopathic Manipulative Treatment in Dysmenorrhea: A Systematic Review',
-                        authors: 'Donà G, Esposito G, Bortolami V, et al.',
-                        journal: 'Healthcare (Basel)',
-                        year: '2024',
-                        pmid: '38389612',
-                        finding: 'Systematic review of OMT for dysmenorrhea finding consistent reductions in pain duration, pain intensity, and analgesic use across multiple studies — a small but growing literature supporting protocolized care.',
-                    },
-                    {
-                        title: 'Osteopathic Manipulative Treatment of Primary Dysmenorrhea and Related Factors: A Randomized Controlled Trial',
-                        authors: 'Zecchillo D, Acquati A, Aquino A, et al.',
-                        journal: 'Int J Med Res Health Sci',
-                        year: '2017',
-                        pmid: 'IJMRHS-6-12',
-                        finding: 'RCT randomizing 72 women to treatment vs. control over three menstrual cycles. Five osteopathic treatments were sufficient to produce statistically significant reductions in pain intensity and number of days in pain — establishing a feasible clinical protocol.',
+                        pmid: 'OMT chronic pelvic pain high-tone pelvic floor dysfunction Wallace',
+                        finding: 'Clinical review supporting manual therapy as effective treatment for chronic pelvic pain with high-tone pelvic floor dysfunction. Osteopathic physicians are uniquely positioned to identify viscerosomatic reflexes and provide patient-centered manual care.',
                     },
                 ],
             },
@@ -5120,15 +4986,22 @@
             evidenceModalEl.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
         }
-        document.querySelectorAll('.evidence-card').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const key = btn.getAttribute('data-evidence');
+        document.querySelectorAll('.population-card[data-evidence]').forEach(card => {
+            card.addEventListener('click', () => {
+                const key = card.getAttribute('data-evidence');
                 openEvidenceModal(key);
             });
-            btn.addEventListener('mousemove', e => {
-                const r = btn.getBoundingClientRect();
-                btn.style.setProperty('--mx', `${e.clientX - r.left}px`);
-                btn.style.setProperty('--my', `${e.clientY - r.top}px`);
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const key = card.getAttribute('data-evidence');
+                    openEvidenceModal(key);
+                }
+            });
+            card.addEventListener('mousemove', e => {
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                card.style.setProperty('--my', `${e.clientY - r.top}px`);
             });
         });
         document.getElementById('evidenceModalClose')?.addEventListener('click', closeEvidenceModal);
@@ -5138,21 +5011,6 @@
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && evidenceModalEl?.classList.contains('open')) closeEvidenceModal();
         });
-
-        // Stagger-in animation on scroll
-        const evidenceObserver = new IntersectionObserver(entries => {
-            entries.forEach((entry, i) => {
-                if (entry.isIntersecting) {
-                    const cards = entry.target.querySelectorAll('.evidence-card');
-                    cards.forEach((c, idx) => {
-                        c.style.setProperty('--si', idx);
-                        c.classList.add('in');
-                    });
-                    evidenceObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.15 });
-        document.querySelectorAll('.evidence-grid').forEach(g => evidenceObserver.observe(g));
 
         // ==========================================================
         // Apps detail modal — data-driven, single modal for all apps
