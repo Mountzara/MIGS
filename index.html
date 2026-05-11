@@ -3500,7 +3500,7 @@
 
     <!-- Cinematic intro video backdrop (Apple Vision Pro style) -->
     <div class="cinematic-intro" id="cinematicIntro" aria-hidden="true">
-        <video class="intro-video" id="introVideo" autoplay muted playsinline loop preload="auto" poster="">
+        <video class="intro-video" id="introVideo" autoplay muted playsinline preload="auto" poster="">
             <source src="/media/hero-intro.webm" type="video/webm">
             <source src="/media/hero-intro.mp4" type="video/mp4">
         </video>
@@ -3509,23 +3509,32 @@
         <div class="intro-vignette"></div>
     </div>
     <script>
-    // Immediate inline playback attempt - runs as soon as browser parses this script,
-    // before DOMContentLoaded, before any other JS. Zero delay.
+    // Immediate inline playback - plays once, never repeats
     (function() {
         const v = document.getElementById('introVideo');
         if (!v) return;
-        // Force load
-        try { v.load(); } catch(_) {}
-        // Immediate play attempt
+
+        let hasPlayed = false;
         const play = () => {
+            if (hasPlayed) return;
             const p = v.play();
             if (p && p.catch) p.catch(() => {});
+            hasPlayed = true;
         };
-        play();
-        // Retry on key video events
-        ['loadedmetadata', 'loadeddata', 'canplay'].forEach(e =>
-            v.addEventListener(e, play, { once: true })
-        );
+
+        // Prevent replay when video ends
+        v.addEventListener('ended', () => {
+            v.pause();
+            hasPlayed = true;
+        }, { once: true });
+
+        // Immediate play attempt
+        if (v.readyState >= 2) {
+            play();
+        } else {
+            // Wait for enough data loaded
+            v.addEventListener('canplay', play, { once: true });
+        }
     })();
     </script>
 
@@ -5353,48 +5362,8 @@
         const cinematicIntro = document.getElementById('cinematicIntro');
         const introVideo = document.getElementById('introVideo');
 
-        // Robust autoplay nudger — call after any event that may have relaxed
-        // browser autoplay restrictions. Safe to call repeatedly.
-        function nudgeAllMutedVideos() {
-            document.querySelectorAll('video[muted], video[autoplay]').forEach(v => {
-                if (v.paused && !reduceMotion) {
-                    const p = v.play();
-                    if (p && typeof p.catch === 'function') p.catch(() => {});
-                }
-            });
-        }
-
-        if (introVideo && !reduceMotion) {
-            const tryPlayIntro = () => {
-                const p = introVideo.play();
-                if (p && typeof p.catch === 'function') p.catch(() => {});
-            };
-            // Force the browser to start loading ASAP
-            try { introVideo.load(); } catch (_) {}
-            // Immediate play attempt (works if video is cached or loads fast)
-            requestAnimationFrame(() => {
-                tryPlayIntro();
-                // Retry after a brief delay for slower networks
-                setTimeout(tryPlayIntro, 100);
-            });
-            // Multiple play attempts on whichever event fires
-            ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'].forEach(ev => {
-                introVideo.addEventListener(ev, tryPlayIntro, { once: true });
-            });
-        }
-
-        // First-interaction fallback: as soon as the user does anything, retry
-        // all paused autoplay videos. Many autoplay-denied videos can play after
-        // any user input.
-        ['scroll', 'click', 'touchstart', 'keydown'].forEach(ev => {
-            window.addEventListener(ev, nudgeAllMutedVideos, { once: true, passive: true });
-        });
-        // Also nudge once the page has fully loaded
-        if (document.readyState === 'complete') {
-            requestAnimationFrame(nudgeAllMutedVideos);
-        } else {
-            window.addEventListener('load', () => requestAnimationFrame(nudgeAllMutedVideos), { once: true });
-        }
+        // Intro video is handled by inline script immediately after the <video> element.
+        // Research feature videos are handled by IntersectionObserver below.
         let lastPinnedIdx = -1;
         let videoPaused = false;
         let ticking = false;
@@ -5507,16 +5476,12 @@
                 cinematicIntro.style.opacity = (1 - t).toFixed(3);
 
                 if (introVideo) {
-                    if (t >= 0.99) {
-                        if (!videoPaused) { introVideo.pause(); videoPaused = true; }
-                    } else {
-                        // Anytime we're in the visible band, make sure it's playing
-                        // (covers both initial autoplay-denied case AND scroll-back).
-                        if (introVideo.paused && !reduceMotion) {
-                            introVideo.play().catch(() => {});
-                        }
-                        videoPaused = false;
+                    // Pause when fully scrolled past to free GPU
+                    if (t >= 0.99 && !videoPaused) {
+                        introVideo.pause();
+                        videoPaused = true;
                     }
+                    // Video plays once via inline script. Never restart.
                 }
             }
 
