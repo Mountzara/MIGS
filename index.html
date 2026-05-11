@@ -179,27 +179,18 @@
             background: #000;
             will-change: opacity;
         }
-        .cinematic-intro .intro-video {
+        .cinematic-intro .intro-gradient {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            transform: scale(1.06);
-            animation: introZoom 28s ease-in-out infinite alternate;
-            will-change: transform;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 20s ease-in-out infinite;
         }
-        @keyframes introZoom {
-            from { transform: scale(1.06); }
-            to   { transform: scale(1.16) translateX(-2%); }
-        }
-        /* Mobile: show full drawing without extra zoom */
-        @media (max-width: 720px) {
-            .cinematic-intro .intro-video {
-                object-fit: contain;
-                transform: none;
-                animation: none;
-            }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
         .cinematic-intro .intro-color {
             position: absolute;
@@ -3498,45 +3489,12 @@
         </div>
     </nav>
 
-    <!-- Cinematic intro video backdrop (Apple Vision Pro style) -->
+    <!-- Cinematic intro backdrop (CSS gradient animation) -->
     <div class="cinematic-intro" id="cinematicIntro" aria-hidden="true">
-        <video class="intro-video" id="introVideo" autoplay muted playsinline preload="auto" poster="">
-            <source src="/media/hero-intro.webm" type="video/webm">
-            <source src="/media/hero-intro.mp4" type="video/mp4">
-        </video>
-        <div class="intro-color"></div>
+        <div class="intro-gradient"></div>
         <div class="intro-tint"></div>
         <div class="intro-vignette"></div>
     </div>
-    <script>
-    // Ensure video plays once immediately and never repeats
-    (function() {
-        const v = document.getElementById('introVideo');
-        if (!v) return;
-
-        // Prevent replay when ended
-        v.addEventListener('ended', function() {
-            this.currentTime = this.duration;
-            this.pause();
-        }, { once: true });
-
-        // Force immediate play (autoplay attribute should handle this, but ensure it)
-        const forcePlay = function() {
-            if (v.paused) {
-                v.play().catch(function() {
-                    // If autoplay blocked, try on first user interaction
-                    document.addEventListener('click', function() {
-                        v.play().catch(function(){});
-                    }, { once: true });
-                });
-            }
-        };
-
-        // Try immediately and on data ready
-        forcePlay();
-        v.addEventListener('loadeddata', forcePlay, { once: true });
-    })();
-    </script>
 
     <!-- Scroll progress indicator -->
     <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
@@ -3576,7 +3534,15 @@
                     <span class="meta-value">
                         <span class="focus-list">
                             <span>Robotic Surgery</span>
+                            <span>Laparoscopic Surgery</span>
                             <span>Hysteroscopic Surgery</span>
+                            <span>Endometriosis</span>
+                            <span>Fibroids</span>
+                            <span>RPOC</span>
+                            <span>Fertility-sparing Surgery</span>
+                            <span>Asherman's Syndrome</span>
+                            <span>Isthmocele Repair</span>
+                            <span>Menopausal HRT</span>
                             <span>OMT</span>
                             <span>Clinical AI</span>
                             <span>Surgical Education</span>
@@ -5360,12 +5326,8 @@
         const pinnedFrames = pinnedSection ? Array.from(pinnedSection.querySelectorAll('.pinned-frame')) : [];
         const pinnedBg = pinnedSection ? pinnedSection.querySelector('.pinned-bg') : null;
         const cinematicIntro = document.getElementById('cinematicIntro');
-        const introVideo = document.getElementById('introVideo');
 
-        // Intro video is handled by inline script immediately after the <video> element.
-        // Research feature videos are handled by IntersectionObserver below.
         let lastPinnedIdx = -1;
-        let videoPaused = false;
         let ticking = false;
         let heroAnimationComplete = false;
 
@@ -5475,14 +5437,7 @@
                 const t = Math.max(0, Math.min(1, (y - fadeStart) / range));
                 cinematicIntro.style.opacity = (1 - t).toFixed(3);
 
-                if (introVideo) {
-                    // Pause when fully scrolled past to free GPU
-                    if (t >= 0.99 && !videoPaused) {
-                        introVideo.pause();
-                        videoPaused = true;
-                    }
-                    // Video plays once via inline script. Never restart.
-                }
+                // Cinematic gradient backdrop fades with scroll (CSS animation handles movement)
             }
 
             // -- Scroll progress bar --
