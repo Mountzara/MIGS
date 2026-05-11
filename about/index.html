@@ -178,22 +178,29 @@
             inset: 0;
             z-index: 2;
             background:
-                radial-gradient(ellipse 62% 55% at 52% 46%, rgba(0,0,0,0) 22%, rgba(0,0,0,0.38) 100%);
+                radial-gradient(ellipse 58% 52% at 52% 42%, rgba(0,0,0,0) 20%, rgba(0,0,0,0.58) 100%);
             pointer-events: none;
         }
 
-        /* Each gradient: hold solid black for the first ~10%, then fade to rgba(0,0,0,0).
-           Using rgba(0,0,0,0) instead of 'transparent' avoids the gray-banding
-           artefact browsers produce when interpolating to the transparent keyword. */
+        /* Four-edge fade + four corner darkeners. Hold zones are wide enough
+           that the actual photo edge is fully covered in solid black; the fade
+           then transitions to rgba(0,0,0,0) (avoids the gray-banding artefact
+           you get from interpolating to the 'transparent' keyword). */
         .cover-gradient {
             position: absolute;
             inset: 0;
             z-index: 3;
             background:
-                linear-gradient(to bottom, #000 0%, #000 6%,  rgba(0,0,0,0) 40%),
-                linear-gradient(to top,    #000 0%, #000 8%,  rgba(0,0,0,0) 50%),
-                linear-gradient(to right,  #000 0%, #000 10%, rgba(0,0,0,0) 55%),
-                linear-gradient(to left,   #000 0%, #000 10%, rgba(0,0,0,0) 55%);
+                /* Four edge fades — thicker hold zones so the photo edge is fully clipped to black */
+                linear-gradient(to bottom, #000 0%, #000 12%, rgba(0,0,0,0) 42%),
+                linear-gradient(to top,    #000 0%, #000 16%, rgba(0,0,0,0) 52%),
+                linear-gradient(to right,  #000 0%, #000 20%, rgba(0,0,0,0) 60%),
+                linear-gradient(to left,   #000 0%, #000 20%, rgba(0,0,0,0) 60%),
+                /* Corner radial darkeners — ensures the four corners are fully black */
+                radial-gradient(circle at 0% 0%,     rgba(0,0,0,0.95), rgba(0,0,0,0) 38%),
+                radial-gradient(circle at 100% 0%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 38%),
+                radial-gradient(circle at 0% 100%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 40%),
+                radial-gradient(circle at 100% 100%, rgba(0,0,0,0.95), rgba(0,0,0,0) 40%);
             pointer-events: none;
             transition: opacity 0.6s ease;
         }
@@ -202,7 +209,9 @@
             opacity: 0.85;
         }
 
-        /* Corner masthead marks */
+        /* Corner masthead marks — only visible in scene 1 (the magazine cover).
+           Hidden during scenes 2 and 3 so the scene eyebrow/quote can use the
+           top-left area without colliding with the issue/volume markers. */
         .cover-corner {
             position: absolute;
             z-index: 5;
@@ -214,6 +223,14 @@
             font-weight: 600;
             letter-spacing: 0.18em;
             text-transform: uppercase;
+            transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        /* Scene 2 (statement) and Scene 3 (journey quote) — fade the masthead out */
+        .cover-pin.scene-2 .cover-corner,
+        .cover-pin.scene-3 .cover-corner {
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
         }
 
         .cover-corner-tl {
@@ -552,14 +569,18 @@
             }
             .cover-vignette {
                 background:
-                    radial-gradient(ellipse 60% 54% at 52% 44%, rgba(0,0,0,0) 20%, rgba(0,0,0,0.42) 100%);
+                    radial-gradient(ellipse 56% 50% at 52% 40%, rgba(0,0,0,0) 18%, rgba(0,0,0,0.60) 100%);
             }
             .cover-gradient {
                 background:
-                    linear-gradient(to bottom, #000 0%, #000 5%,  rgba(0,0,0,0) 36%),
-                    linear-gradient(to top,    #000 0%, #000 8%,  rgba(0,0,0,0) 52%),
-                    linear-gradient(to right,  #000 0%, #000 12%, rgba(0,0,0,0) 52%),
-                    linear-gradient(to left,   #000 0%, #000 12%, rgba(0,0,0,0) 52%);
+                    linear-gradient(to bottom, #000 0%, #000 10%, rgba(0,0,0,0) 40%),
+                    linear-gradient(to top,    #000 0%, #000 14%, rgba(0,0,0,0) 54%),
+                    linear-gradient(to right,  #000 0%, #000 18%, rgba(0,0,0,0) 56%),
+                    linear-gradient(to left,   #000 0%, #000 18%, rgba(0,0,0,0) 56%),
+                    radial-gradient(circle at 0% 0%,     rgba(0,0,0,0.95), rgba(0,0,0,0) 36%),
+                    radial-gradient(circle at 100% 0%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 36%),
+                    radial-gradient(circle at 0% 100%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 40%),
+                    radial-gradient(circle at 100% 100%, rgba(0,0,0,0.95), rgba(0,0,0,0) 40%);
             }
             .cover-footer {
                 flex-direction: column;
@@ -1557,6 +1578,7 @@
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const coverHero = document.getElementById('coverHero');
             const coverImage = document.getElementById('coverImage');
+            const coverPin = document.querySelector('.cover-pin');
             const scenes = Array.from(document.querySelectorAll('.cover-scene'));
             const scrollCue = document.getElementById('coverScrollCue');
             if (!coverHero || !scenes.length) return;
@@ -1600,6 +1622,11 @@
                 const idx = Math.min(Math.floor(p * scenes.length), scenes.length - 1);
                 if (idx !== lastSceneIdx) {
                     scenes.forEach((s, i) => s.classList.toggle('active', i === idx));
+                    if (coverPin) {
+                        coverPin.classList.toggle('scene-1', idx === 0);
+                        coverPin.classList.toggle('scene-2', idx === 1);
+                        coverPin.classList.toggle('scene-3', idx === 2);
+                    }
                     lastSceneIdx = idx;
                 }
 
