@@ -5393,6 +5393,7 @@
         let lastPinnedIdx = -1;
         let videoPaused = false;
         let ticking = false;
+        let heroAnimationComplete = false;
 
         // ----- Cinematic research features -----
         // Each .research-feature contains a sticky pin with a backdrop video and
@@ -5455,9 +5456,9 @@
             const docH = document.documentElement.scrollHeight;
 
             // -- Hero: gentle parallax + fade only across the FIRST viewport --
-            // Stays fully visible until ~25% scroll, fully gone by 100% of one viewport.
-            // Predictable regardless of hero height.
-            if (heroEl && heroInner && !reduceMotion) {
+            // Plays once on initial scroll down. Once complete, stays in final state
+            // (faded out) and doesn't restart if user scrolls back up.
+            if (heroEl && heroInner && !reduceMotion && !heroAnimationComplete) {
                 const fadeStart = winH * 0.25;
                 const fadeEnd = winH * 0.95;
                 const t = Math.max(0, Math.min(1, (y - fadeStart) / (fadeEnd - fadeStart)));
@@ -5469,6 +5470,12 @@
                 if (monogramStage) {
                     const mScale = 1 - t * 0.04;
                     monogramStage.style.transform = `translate3d(0, ${(-y * 0.02).toFixed(1)}px, 0) scale(${mScale.toFixed(3)})`;
+                }
+                // Lock animation when fully scrolled past
+                if (t >= 1) {
+                    heroAnimationComplete = true;
+                    heroInner.style.opacity = '0';
+                    if (monogramStage) monogramStage.style.opacity = '0';
                 }
             }
 
