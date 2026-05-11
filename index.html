@@ -3592,6 +3592,9 @@
 
     <!-- Scroll progress indicator -->
     <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress-bar" id="scrollProgressBar"></div></div>
+    <!-- Video loading overlay - covers page until video starts -->
+    <div id="videoLoadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000;"></div>
+
     <!-- Ambient scroll-driven glow -->
     <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
 
@@ -4938,12 +4941,24 @@
     </div>
 
     <script>
-        // Hero video — play once, fade in text 1s after playback starts,
+        // Hero video — play immediately, fade in text 1s after playback starts,
         // Ken Burns on last frame after video ends
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
+        const loadingOverlay = document.getElementById('videoLoadingOverlay');
+
         if (heroVideo) {
             let textShown = false;
+            let overlayRemoved = false;
+
+            const removeOverlay = () => {
+                if (overlayRemoved || !loadingOverlay) return;
+                overlayRemoved = true;
+                loadingOverlay.style.transition = 'opacity 0.3s ease-out';
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => { loadingOverlay.remove(); }, 300);
+            };
+
             const showText = () => {
                 if (textShown) return;
                 textShown = true;
@@ -4951,25 +4966,35 @@
                     if (heroContent) heroContent.classList.add('visible');
                 }, 1000);
             };
-            // Trigger as soon as video is actually playing
-            heroVideo.addEventListener('playing', showText, { once: true });
-            // Safety fallback: if video fails to start within 3s, show text anyway
-            setTimeout(showText, 3000);
-            // Try to play immediately (some browsers need explicit call)
-            const tryPlay = () => {
-                const p = heroVideo.play();
-                if (p && typeof p.catch === 'function') {
-                    p.catch(() => { showText(); });
-                }
-            };
-            if (heroVideo.readyState >= 2) tryPlay();
-            else heroVideo.addEventListener('loadeddata', tryPlay, { once: true });
+
+            // Remove overlay as soon as video starts playing
+            heroVideo.addEventListener('playing', () => {
+                removeOverlay();
+                showText();
+            }, { once: true });
+
+            // Try to play IMMEDIATELY - don't wait for any events
+            heroVideo.play().then(() => {
+                // Success - video is playing
+            }).catch(() => {
+                // Autoplay blocked - try again after a tiny delay
+                setTimeout(() => { heroVideo.play().catch(() => {}); }, 100);
+            });
+
+            // Safety fallback: if video fails to start within 1.5s, remove overlay and show text anyway
+            setTimeout(() => {
+                removeOverlay();
+                showText();
+            }, 1500);
+
             // Ken Burns on last frame after video ends
             heroVideo.addEventListener('ended', () => {
                 heroVideo.classList.add('ken-burns');
             });
-        } else if (heroContent) {
-            heroContent.classList.add('visible');
+        } else {
+            // No video element - remove overlay and show content immediately
+            if (loadingOverlay) loadingOverlay.remove();
+            if (heroContent) heroContent.classList.add('visible');
         }
 
         // Contact modal
