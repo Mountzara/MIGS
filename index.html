@@ -1997,509 +1997,186 @@
         .pub-link:hover { text-decoration: underline; }
 
         /* ========== Research Feature — cinematic pinned video showcase ========== */
-        .research-features {
-            margin-top: 56px;
-            margin-bottom: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            /* Allow children to break out to viewport edges */
-            overflow: visible;
-        }
-        .research-feature {
-            position: relative;
-            height: 320vh; /* desktop: longer scroll for 3 crossfading scenes */
-            width: 100vw;
-            margin-left: calc(50% - 50vw);
-            margin-right: calc(50% - 50vw);
-        }
-        .research-feature-pin {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            width: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-        .research-feature-video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            z-index: 0;
-            filter: saturate(1.0) contrast(1.05);
-            transition: filter 600ms ease, transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
-            transform: scale(1.06);
-            /* Fades in on scroll — JS sets --video-opacity from 0 to 1 across the
-               first ~22% of scroll. Starts invisible; the user sees a solid black
-               pin first, then the video smoothly resolves into view. */
-            opacity: var(--video-opacity, 0);
-        }
-        .research-feature.scene-final .research-feature-video {
-            transform: scale(1.00);
-            filter: saturate(1.05) contrast(1.06);
-        }
-        /* Vignette: subtle while text overlays read, deeper as video takes over */
-        .research-feature-vignette {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-            background:
-                radial-gradient(ellipse 92% 78% at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%),
-                radial-gradient(circle at 0% 100%, rgba(0,0,0,0.45), transparent 36%),
-                radial-gradient(circle at 100% 100%, rgba(0,0,0,0.45), transparent 36%);
-            transition: opacity 600ms ease;
-            opacity: 1;
-        }
-        /* Tint layer adds atmospheric depth to the video — the scene glass cards
-           handle local text readability, so this stays subtle. */
-        .research-feature-tint {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            pointer-events: none;
-            background:
-                linear-gradient(180deg,
-                    rgba(0,0,0,0.38) 0%,
-                    rgba(0,0,0,0.16) 35%,
-                    rgba(0,0,0,0.10) 55%,
-                    rgba(0,0,0,0.42) 92%,
-                    rgba(0,0,0,0.72) 100%);
-            transition: opacity 700ms ease;
-            opacity: 1;
-        }
-        .research-feature.scene-final .research-feature-tint {
-            opacity: 0.12;
-        }
-        .research-feature.scene-final .research-feature-vignette {
-            opacity: 0.85;
-        }
-        .research-feature-grain {
-            position: absolute;
-            inset: 0;
-            z-index: 3;
-            pointer-events: none;
-            background-image:
-                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.018), transparent 1px),
-                radial-gradient(circle at 70% 60%, rgba(255,255,255,0.014), transparent 1px),
-                radial-gradient(circle at 40% 80%, rgba(255,255,255,0.018), transparent 1px);
-            background-size: 3px 3px, 5px 5px, 7px 7px;
-            opacity: 0.45;
-            mix-blend-mode: overlay;
-        }
-        /* Static masthead corners — only emerge during the final reveal so the
-           text scenes 1 & 2 read cleanly without competing background metadata. */
-        .research-feature-corner {
-            position: absolute;
-            z-index: 5;
-            color: rgba(255, 255, 255, 0.78);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            opacity: 0;
-            transform: translateY(-6px);
-            transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .research-feature.scene-final .research-feature-corner {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .research-feature-corner-tl {
-            top: clamp(80px, 8vh, 100px);
-            left: clamp(20px, 4vw, 48px);
-        }
-        .research-feature-corner-tr {
-            top: clamp(80px, 8vh, 100px);
-            right: clamp(20px, 4vw, 48px);
-            text-align: right;
-            align-items: flex-end;
-        }
-        .research-feature-corner .corner-meta {
-            color: rgba(255, 255, 255, 0.62);
-        }
-        /* Scenes: 3 crossfading text overlays */
-        .research-feature-scenes {
-            position: absolute;
-            inset: 0;
-            z-index: 4;
-            pointer-events: none;
-        }
-        .feature-scene {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 14vw, 140px);
-            color: #fff;
-            opacity: 0;
-            transform: translate3d(0, 32px, 0);
-            transition:
-                opacity 780ms cubic-bezier(0.16, 1, 0.3, 1),
-                transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .feature-scene.active {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-        }
-        /* Glass-card scrim behind the scene text — improves readability of white
-           text over the video without darkening the whole frame. */
-        .feature-scene-card {
-            display: inline-block;
-            max-width: min(820px, calc(100vw - 80px));
-            padding: clamp(22px, 3vw, 32px) clamp(22px, 3.4vw, 36px);
-            border-radius: 20px;
-            background: linear-gradient(180deg, rgba(8, 8, 12, 0.46), rgba(8, 8, 12, 0.62));
-            backdrop-filter: blur(22px) saturate(140%);
-            -webkit-backdrop-filter: blur(22px) saturate(140%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
-            text-align: left;
-        }
-        @media (max-width: 720px) {
-            .feature-scene-card {
-                max-width: calc(100vw - 44px);
-                padding: 22px 22px;
-                border-radius: 16px;
-            }
-        }
-        /* Scene 1: identity */
-        .feature-tags {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-        .feature-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.92);
-            padding: 7px 13px;
-            background: rgba(255, 255, 255, 0.10);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 999px;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-        .feature-tag.award {
-            color: #fcd34d;
-            border-color: rgba(252, 211, 77, 0.32);
-            background: rgba(252, 211, 77, 0.08);
-        }
-        .feature-tag.award::before {
-            content: '';
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: #fcd34d;
-        }
-        .feature-title {
-            font-size: clamp(36px, 5.4vw, 76px);
-            font-weight: 600;
-            line-height: 1.04;
-            letter-spacing: -0.028em;
-            margin: 0 0 18px;
-            max-width: 1100px;
-            color: #fff;
-            text-shadow: 0 4px 36px rgba(0,0,0,0.55);
-            background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.78) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .feature-journal {
-            font-size: clamp(14px, 1.2vw, 17px);
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.72);
-            letter-spacing: -0.005em;
-            max-width: 760px;
-        }
-        /* Scene 2: clinical narrative */
-        .feature-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.28em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.62);
-            margin-bottom: 16px;
-        }
-        .feature-narrative {
-            font-size: clamp(20px, 2.2vw, 30px);
-            font-weight: 400;
-            line-height: 1.42;
-            letter-spacing: -0.014em;
-            color: rgba(255, 255, 255, 0.94);
-            margin: 0 0 18px;
-            max-width: 880px;
-            text-shadow: 0 3px 24px rgba(0,0,0,0.5);
-        }
-        .feature-narrative strong {
-            color: #fff;
-            font-weight: 600;
-        }
-        .feature-byline {
-            font-size: 13px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.55);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-        /* Scene 3: watch the case */
-        .feature-watch {
-            position: absolute;
-            inset: auto 0 clamp(48px, 8vh, 80px) 0;
-            padding: 0 clamp(20px, 5vw, 64px);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            color: #fff;
-            opacity: 0;
-            transform: translate3d(0, 20px, 0);
-            transition: opacity 700ms ease, transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-        }
-        .research-feature.scene-final .feature-watch {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-        }
-        .feature-watch-label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.32em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.72);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .feature-watch-label::before {
-            content: '';
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 0 0 rgba(41,151,255,0.6);
-            animation: pulse 2s infinite;
-        }
-        .feature-watch-meta {
-            font-size: 12px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.55);
-            letter-spacing: 0.06em;
-        }
-        /* Progress dots — show current scene */
-        .feature-progress {
-            position: absolute;
-            top: 50%;
-            right: clamp(16px, 2.4vw, 28px);
-            transform: translateY(-50%);
-            z-index: 6;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            pointer-events: none;
-        }
-        .feature-progress-dot {
-            width: 6px;
-            height: 22px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.18);
-            transition: background 350ms ease, height 350ms ease;
-        }
-        .feature-progress-dot.active {
-            background: rgba(255, 255, 255, 0.85);
-            height: 32px;
-        }
-        /* Sound toggle */
-        .feature-sound {
-            position: absolute;
-            top: clamp(80px, 8vh, 100px);
-            right: clamp(20px, 4vw, 48px);
-            z-index: 7;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.20);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: none; /* shown by JS when scene-final */
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            cursor: pointer;
-            transition: background 200ms ease, transform 200ms ease;
-            opacity: 0;
-        }
-        .research-feature.scene-final .feature-sound {
-            display: flex;
-            opacity: 1;
-        }
-        .feature-sound:hover { background: rgba(0, 0, 0, 0.65); transform: scale(1.06); }
-        .feature-sound svg { width: 18px; height: 18px; stroke-width: 1.6; }
-        /* Hide the corners on mobile to keep the image clean */
-        @media (max-width: 720px) {
-            .research-feature { height: 260vh; }
-            .research-feature-corner { display: none; }
-            .feature-scene { padding: 0 22px 96px; }
-            .feature-title { font-size: clamp(28px, 8vw, 44px); }
-            .feature-narrative { font-size: clamp(17px, 4.5vw, 22px); line-height: 1.42; }
-            .feature-journal { font-size: 13px; }
-            .feature-watch { padding: 0 22px; bottom: 32px; }
-            .feature-watch-meta { display: none; }
-            .feature-progress { right: 12px; gap: 10px; }
-            .feature-progress-dot { width: 4px; height: 16px; }
-            .feature-progress-dot.active { height: 24px; }
-        }
-        /* prefers-reduced-motion: skip transitions, show final state immediately */
-        @media (prefers-reduced-motion: reduce) {
-            .feature-scene, .research-feature-tint, .research-feature-vignette,
-            .research-feature-video, .feature-watch {
-                transition: none !important;
-            }
-        }
-
-        /* ========== Awards ========== */
-        .awards-section {
-            background: var(--bg-light);
-            color: var(--dark);
-        }
-
-        .awards-section .section-headline {
-            color: var(--dark);
-            background: none;
-            -webkit-text-fill-color: var(--dark);
-        }
-
-        .awards-section .section-sub { color: var(--gray-1); }
-
-        .awards-grid {
+        /* Research Cards - Clean card grid */
+        .research-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 12px;
-            margin-top: 64px;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+            gap: 32px;
+            margin: 64px 0;
         }
 
-        .award-tile {
-            background: var(--white);
-            border-radius: 18px;
-            padding: 32px 28px;
+        .research-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .research-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.14);
+            transform: translateY(-2px);
+        }
+
+        .research-card-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .research-badge {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .research-badge.award {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.15));
+            border-color: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        .research-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 0 0 12px;
+            color: #fff;
+        }
+
+        .research-card-journal {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            margin: 0 0 16px;
+        }
+
+        .research-card-summary {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0 0 20px;
+        }
+
+        .research-card-video {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
             transition: transform 0.3s ease;
         }
 
-        .award-tile:hover {
-            transform: translateY(-3px);
+        .research-card-video:hover {
+            transform: scale(1.02);
         }
 
-        .award-year {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .award-tile h4 {
-            font-size: 19px;
-            font-weight: 600;
-            letter-spacing: -0.014em;
-            line-height: 1.25;
-            margin-bottom: 10px;
-            color: var(--dark);
-        }
-
-        .award-tile p {
-            font-size: 14px;
-            line-height: 1.5;
-            color: var(--gray-2);
-            letter-spacing: -0.003em;
-        }
-
-        /* ========== Education / Timeline ========== */
-        .education-section {
-            background: var(--black);
-        }
-
-        .timeline {
-            margin-top: 64px;
+        .video-preview-overlay {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
-            gap: 0;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
+            transition: background 0.3s ease;
         }
 
-        .timeline-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 32px;
-            padding: 32px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            align-items: baseline;
+        .research-card-video:hover .video-preview-overlay {
+            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
         }
 
-        .timeline-row:last-child {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        .play-button {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            color: #000;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
         }
 
-        .timeline-row .year {
+        .research-card-video:hover .play-button {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        .play-button svg {
+            width: 28px;
+            height: 28px;
+            margin-left: 3px;
+        }
+
+        .video-preview-label {
             font-size: 13px;
-            font-weight: 500;
-            color: var(--gray-3);
-            letter-spacing: 0.02em;
-        }
-
-        .timeline-row h4 {
-            font-size: 21px;
             font-weight: 600;
-            line-height: 1.3;
-            color: var(--white);
-            letter-spacing: -0.014em;
-            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .timeline-row p {
-            font-size: 15px;
-            color: var(--gray-3);
-            letter-spacing: -0.005em;
-            line-height: 1.5;
+        /* Video Modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            animation: fadeIn 0.2s ease;
         }
 
-        @media (max-width: 600px) {
-            .timeline-row {
+        .video-modal.active {
+            display: flex;
+        }
+
+        .video-modal video {
+            max-width: 90vw;
+            max-height: 90vh;
+            width: auto;
+            height: auto;
+            cursor: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .research-cards {
                 grid-template-columns: 1fr;
-                gap: 8px;
+                gap: 24px;
+                margin: 48px 0;
+            }
+
+            .research-card {
+                padding: 24px;
+            }
+
+            .research-card-title {
+                font-size: 18px;
+            }
+
+            .video-modal video {
+                max-width: 95vw;
+                max-height: 95vh;
             }
         }
-
-        /* ========== Contact ========== */
-        .contact-section {
-            background: var(--black);
-            text-align: center;
-            padding: clamp(96px, 14vw, 200px) 22px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .contact-section .section-headline {
-            background: linear-gradient(180deg, #fff 0%, #999 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .contact-section .section-sub {
-            margin: 0 auto 40px;
-        }
-
         /* ========== Footer ========== */
         footer {
             background: var(--bg);
@@ -4194,207 +3871,77 @@
                 </div>
             </div>
 
-            <!-- Cinematic featured cases — pinned video showcases -->
-            <div class="research-features">
+            <!-- Featured Research Cards -->
+            <div class="research-cards">
 
-                <!-- FEATURE 1: Golden Hysteroscope -->
-                <article class="research-feature" data-feature="rpoc">
-                    <div class="research-feature-pin">
-                        <video class="research-feature-video"
-                               muted playsinline loop preload="auto" autoplay
-                               aria-label="Golden Hysteroscope Award — RPOC case video">
-                            <source src="/media/rpoc-golden-hysteroscope.mp4?v=1" type="video/mp4">
-                        </video>
-                        <div class="research-feature-tint"></div>
-                        <div class="research-feature-vignette"></div>
-                        <div class="research-feature-grain"></div>
-
-                        <!-- Masthead corners -->
-                        <div class="research-feature-corner research-feature-corner-tl">
-                            <span class="corner-meta">Featured Case · 01</span>
-                            <span class="corner-meta">AAGL Global Congress · 2024</span>
-                        </div>
-                        <div class="research-feature-corner research-feature-corner-tr">
-                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
-                            <span class="corner-meta">Golden Hysteroscope Award</span>
-                        </div>
-
-                        <!-- Sound toggle (only visible in final scene) -->
-                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
-                                <path d="M11 5L6 9H2v6h4l5 4z"/>
-                                <line x1="22" y1="9" x2="16" y2="15"/>
-                                <line x1="16" y1="9" x2="22" y2="15"/>
-                            </svg>
-                        </button>
-
-                        <!-- Progress dots -->
-                        <div class="feature-progress" aria-hidden="true">
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                        </div>
-
-                        <!-- Scenes -->
-                        <div class="research-feature-scenes">
-                            <div class="feature-scene feature-scene--1">
-                                <div class="feature-scene-card">
-                                    <div class="feature-tags">
-                                        <span class="feature-tag award">Golden Hysteroscope Award</span>
-                                        <span class="feature-tag">Hysteroscopy</span>
-                                        <span class="feature-tag">2024</span>
-                                    </div>
-                                    <h3 class="feature-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus.</h3>
-                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
-                                </div>
+                <!-- Card 1: Golden Hysteroscope -->
+                <article class="research-card" data-reveal="up">
+                    <div class="research-card-header">
+                        <span class="research-badge award">Golden Hysteroscope Award</span>
+                        <span class="research-badge">2024</span>
+                    </div>
+                    <h3 class="research-card-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus</h3>
+                    <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
+                    <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
+                    <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
+                        <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
                             </div>
-                            <div class="feature-scene feature-scene--2">
-                                <div class="feature-scene-card">
-                                    <span class="feature-eyebrow">Why this case mattered</span>
-                                    <p class="feature-narrative"><strong>Retained products of conception</strong> in an <strong>arcuate uterus</strong> classically defy blind dilation and curettage. By substituting <strong>direct hysteroscopic visualization</strong> for blind instrumentation, the team preserved endometrial integrity and protected future fertility — establishing a new teaching standard recognized by AAGL with the <strong>Golden Hysteroscope Award</strong>.</p>
-                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
-                                </div>
-                            </div>
-                            <div class="feature-scene feature-scene--3">
-                                <!-- Intentionally empty: lets the video take over -->
-                            </div>
-                        </div>
-
-                        <!-- Final scene "watch the case" caption -->
-                        <div class="feature-watch">
-                            <span class="feature-watch-label">Watch the case</span>
-                            <span class="feature-watch-meta">Operative footage · 4K source</span>
+                            <span class="video-preview-label">Watch the case</span>
                         </div>
                     </div>
                 </article>
 
-                <!-- FEATURE 2: Myomectomy à La Carte -->
-                <article class="research-feature" data-feature="myomectomy">
-                    <div class="research-feature-pin">
-                        <video class="research-feature-video"
-                               muted playsinline loop preload="auto" autoplay
-                               aria-label="Fibroids à La Carte — robotic myomectomy workflow">
-                            <source src="/media/myomectomy-gel-port.mp4?v=1" type="video/mp4">
-                        </video>
-                        <div class="research-feature-tint"></div>
-                        <div class="research-feature-vignette"></div>
-                        <div class="research-feature-grain"></div>
-
-                        <div class="research-feature-corner research-feature-corner-tl">
-                            <span class="corner-meta">Featured Case · 02</span>
-                            <span class="corner-meta">AAGL Global Congress · 2024</span>
-                        </div>
-                        <div class="research-feature-corner research-feature-corner-tr">
-                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
-                            <span class="corner-meta">Robotic Workflow Refinement</span>
-                        </div>
-
-                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
-                                <path d="M11 5L6 9H2v6h4l5 4z"/>
-                                <line x1="22" y1="9" x2="16" y2="15"/>
-                                <line x1="16" y1="9" x2="22" y2="15"/>
-                            </svg>
-                        </button>
-
-                        <div class="feature-progress" aria-hidden="true">
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                        </div>
-
-                        <div class="research-feature-scenes">
-                            <div class="feature-scene feature-scene--1">
-                                <div class="feature-scene-card">
-                                    <div class="feature-tags">
-                                        <span class="feature-tag">Robotic Surgery</span>
-                                        <span class="feature-tag">Workflow</span>
-                                        <span class="feature-tag">2024</span>
-                                    </div>
-                                    <h3 class="feature-title">Fibroids à La Carte: a robotic myomectomy workflow that cuts operative time.</h3>
-                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S58 · AAGL Global Congress 2024</p>
-                                </div>
+                <!-- Card 2: Myomectomy -->
+                <article class="research-card" data-reveal="up">
+                    <div class="research-card-header">
+                        <span class="research-badge">Featured Case</span>
+                        <span class="research-badge">2024</span>
+                    </div>
+                    <h3 class="research-card-title">Fibroids à La Carte: Robotic myomectomy with gel-port extraction</h3>
+                    <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
+                    <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
+                    <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
+                        <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
                             </div>
-                            <div class="feature-scene feature-scene--2">
-                                <div class="feature-scene-card">
-                                    <span class="feature-eyebrow">The bottleneck — and the fix</span>
-                                    <p class="feature-narrative">Robotic myomectomy frequently <strong>bottlenecks at fibroid extraction</strong>. This work introduces a streamlined "à la carte" technique using a <strong>gel-based port and bag containment system</strong> — reducing total operative time, simplifying multi-fibroid removal, and preserving contained-morcellation safety.</p>
-                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
-                                </div>
-                            </div>
-                            <div class="feature-scene feature-scene--3"></div>
-                        </div>
-
-                        <div class="feature-watch">
-                            <span class="feature-watch-label">Watch the technique</span>
-                            <span class="feature-watch-meta">Operative footage · Da Vinci Xi</span>
+                            <span class="video-preview-label">Watch the procedure</span>
                         </div>
                     </div>
                 </article>
 
-                <!-- FEATURE 3: Isthmocele + Asherman's -->
-                <article class="research-feature" data-feature="isthmocele">
-                    <div class="research-feature-pin">
-                        <video class="research-feature-video"
-                               muted playsinline loop preload="auto" autoplay
-                               aria-label="Isthmocele in Asherman's — ICG-guided robotic excision">
-                            <source src="/media/isthmocele-ashermans.mp4?v=1" type="video/mp4">
-                        </video>
-                        <div class="research-feature-tint"></div>
-                        <div class="research-feature-vignette"></div>
-                        <div class="research-feature-grain"></div>
-
-                        <div class="research-feature-corner research-feature-corner-tl">
-                            <span class="corner-meta">Featured Case · 03</span>
-                            <span class="corner-meta">AAGL Global Congress · 2024</span>
-                        </div>
-                        <div class="research-feature-corner research-feature-corner-tr">
-                            <span class="corner-meta">JMIG Vol. 31, Issue 11</span>
-                            <span class="corner-meta">ICG · Hysteroscopic-Robotic</span>
-                        </div>
-
-                        <button type="button" class="feature-sound" aria-label="Toggle sound" onclick="toggleFeatureSound(this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" data-icon="muted">
-                                <path d="M11 5L6 9H2v6h4l5 4z"/>
-                                <line x1="22" y1="9" x2="16" y2="15"/>
-                                <line x1="16" y1="9" x2="22" y2="15"/>
-                            </svg>
-                        </button>
-
-                        <div class="feature-progress" aria-hidden="true">
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                            <span class="feature-progress-dot"></span>
-                        </div>
-
-                        <div class="research-feature-scenes">
-                            <div class="feature-scene feature-scene--1">
-                                <div class="feature-scene-card">
-                                    <div class="feature-tags">
-                                        <span class="feature-tag">ICG · Asherman's</span>
-                                        <span class="feature-tag">Hysteroscopic-Robotic</span>
-                                        <span class="feature-tag">2024</span>
-                                    </div>
-                                    <h3 class="feature-title">When in Doubt, Green It Out: ICG-guided isthmocele excision in Asherman's syndrome.</h3>
-                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11 · AAGL Global Congress 2024</p>
-                                </div>
+                <!-- Card 3: Isthmocele -->
+                <article class="research-card" data-reveal="up">
+                    <div class="research-card-header">
+                        <span class="research-badge">ICG Imaging</span>
+                        <span class="research-badge">2023</span>
+                    </div>
+                    <h3 class="research-card-title">Isthmocele Repair in Severe Asherman's Syndrome: ICG-guided robotic excision</h3>
+                    <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
+                    <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
+                    <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
+                        <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
                             </div>
-                            <div class="feature-scene feature-scene--2">
-                                <div class="feature-scene-card">
-                                    <span class="feature-eyebrow">Mapping a hidden defect</span>
-                                    <p class="feature-narrative">Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. A combined <strong>hysteroscopic-robotic approach</strong> with <strong>indocyanine green (ICG) fluorescence</strong> identifies the defect's true margins despite scarred terrain — letting the surgeon excise precisely where blind landmarks fail.</p>
-                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
-                                </div>
-                            </div>
-                            <div class="feature-scene feature-scene--3"></div>
-                        </div>
-
-                        <div class="feature-watch">
-                            <span class="feature-watch-label">Watch the technique</span>
-                            <span class="feature-watch-meta">Operative footage · ICG fluorescence</span>
+                            <span class="video-preview-label">Watch the technique</span>
                         </div>
                     </div>
                 </article>
+
+            </div>
+
+            <!-- Video Modal -->
+            <div class="video-modal" id="videoModal" onclick="closeVideoModal()">
+                <video id="modalVideo" playsinline controls></video>
             </div>
 
             <div class="research-list">
@@ -5237,6 +4784,7 @@
             { sel: '.education-item', kind: 'up' },
             { sel: '.research-list > *', kind: 'up' },
             { sel: '.research-item', kind: 'up' },
+            { sel: '.research-card', kind: 'up' },
             { sel: '.pub-item', kind: 'up' },
             { sel: '.research-video-block', kind: 'scale' },
             { sel: '.excellence-quote', kind: 'fade' },
@@ -5331,59 +4879,7 @@
         let ticking = false;
         let heroAnimationComplete = false;
 
-        // ----- Cinematic research features -----
-        // Each .research-feature contains a sticky pin with a backdrop video and
-        // three crossfading scenes. Scenes are driven by scroll progress through
-        // the feature's own bounding box; the video autoplays muted while the
-        // feature is in viewport and pauses otherwise.
-        const researchFeatures = Array.from(document.querySelectorAll('.research-feature')).map(el => ({
-            el,
-            video: el.querySelector('.research-feature-video'),
-            scenes: Array.from(el.querySelectorAll('.feature-scene')),
-            dots: Array.from(el.querySelectorAll('.feature-progress-dot')),
-            lastSceneIdx: -1,
-            inView: false,
-        }));
-
-        // Play / pause via IntersectionObserver. Threshold 0.01 fires as soon as
-        // any part of the feature is visible; aggressive rootMargin (600px bottom) starts
-        // loading well before the user reaches the video for seamless playback.
-        if ('IntersectionObserver' in window) {
-            const playObs = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const f = researchFeatures.find(rf => rf.el === entry.target);
-                    if (!f || !f.video) return;
-                    f.inView = entry.isIntersecting;
-                    if (f.inView && !reduceMotion) {
-                        // Multiple play attempts: immediate, on canplay, and on canplaythrough
-                        const tryPlay = () => {
-                            const promise = f.video.play();
-                            if (promise && typeof promise.catch === 'function') {
-                                promise.catch(() => {});
-                            }
-                        };
-                        // Immediate attempt
-                        tryPlay();
-                        // Retry when video is ready (if not already)
-                        if (f.video.readyState < 3) {
-                            f.video.addEventListener('canplay', tryPlay, { once: true });
-                            f.video.addEventListener('canplaythrough', tryPlay, { once: true });
-                        }
-                        // Force load if needed
-                        if (f.video.networkState === 0 || f.video.networkState === 3) {
-                            try { f.video.load(); } catch (_) {}
-                        }
-                    } else {
-                        f.video.pause();
-                    }
-                });
-            }, { threshold: 0, rootMargin: '0px 0px 600px 0px' });
-            researchFeatures.forEach(f => playObs.observe(f.el));
-        }
-
-        // Wrap the (currently-empty) feature title with split words for a richer entry
-        // on the first scene. We skip if reduce-motion or if already split.
-        // (kept inline — no extra animation classes; opacity transition handled by scene)
+        // Research cards use tap-to-open video modal (see openVideoModal function)
 
 
         function tick() {
@@ -5453,40 +4949,7 @@
                 ambient.style.setProperty('--ambient-y', (35 + p * 30) + '%');
             }
 
-            // -- Cinematic research features: video fade-in + scene crossfade based on scroll progress --
-            if (researchFeatures.length) {
-                for (const f of researchFeatures) {
-                    const rect = f.el.getBoundingClientRect();
-                    const total = f.el.offsetHeight - winH;
-                    if (total <= 0) continue;
-                    // 0 when pin first sticks (top of feature aligns with top of viewport)
-                    // 1 when pin releases (bottom of feature aligns with bottom of viewport)
-                    const passed = Math.max(0, Math.min(total, -rect.top));
-                    const p = passed / total;
-
-                    // Video fade-in: black until p=0.04, fully visible by p=0.22.
-                    // Holds at 1.0 throughout the rest of the section.
-                    const vOpacity = Math.max(0, Math.min(1, (p - 0.04) / 0.18));
-                    f.el.style.setProperty('--video-opacity', vOpacity.toFixed(3));
-
-                    // Scene timing shifted so the title doesn't appear over a black pin:
-                    //   scene 0 (title):      0.22 – 0.48
-                    //   scene 1 (narrative):  0.48 – 0.72
-                    //   scene 2 (final reveal): 0.72 – 1.00
-                    let idx;
-                    if (p < 0.22) idx = -1;      // intro window: video is fading in, no scene visible
-                    else if (p < 0.48) idx = 0;
-                    else if (p < 0.72) idx = 1;
-                    else idx = 2;
-
-                    if (idx !== f.lastSceneIdx) {
-                        f.scenes.forEach((s, i) => s.classList.toggle('active', i === idx));
-                        f.dots.forEach((d, i) => d.classList.toggle('active', i === idx && idx >= 0));
-                        f.el.classList.toggle('scene-final', idx === 2);
-                        f.lastSceneIdx = idx;
-                    }
-                }
-            }
+            // Research cards are static - no scroll effects
 
             // -- Pinned showcase frame switcher --
             if (pinnedSection && pinnedFrames.length && !reduceMotion) {
@@ -5521,35 +4984,39 @@
         window.addEventListener('resize', onScroll, { passive: true });
         tick();
 
-        // Toggle sound on the research-feature video. Only one plays unmuted at a time —
-        // unmuting one mutes the others, so we never have overlapping audio.
-        function toggleFeatureSound(btn) {
-            const feature = btn.closest('.research-feature');
-            if (!feature) return;
-            const v = feature.querySelector('.research-feature-video');
-            if (!v) return;
-            const willUnmute = v.muted;
-            // Mute everyone else and reset their icons first
-            document.querySelectorAll('.research-feature-video').forEach(other => {
-                if (other !== v) {
-                    other.muted = true;
-                    const otherBtn = other.parentElement.querySelector('.feature-sound svg');
-                    if (otherBtn) otherBtn.setAttribute('data-icon', 'muted');
-                }
-            });
-            v.muted = !willUnmute ? true : false;
-            const icon = btn.querySelector('svg');
-            if (icon) icon.setAttribute('data-icon', v.muted ? 'muted' : 'unmuted');
-            // Swap the icon path
-            if (icon) {
-                if (v.muted) {
-                    icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4z"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/>';
-                } else {
-                    icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>';
-                }
-            }
-            v.play().catch(() => {});
+        // Video modal functions
+        function openVideoModal(videoSrc, element) {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            if (!modal || !video) return;
+
+            video.src = videoSrc;
+            modal.classList.add('active');
+            video.play().catch(() => {});
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
         }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            if (!modal || !video) return;
+
+            video.pause();
+            video.src = '';
+            modal.classList.remove('active');
+
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeVideoModal();
+            }
+        });
         window.toggleFeatureSound = toggleFeatureSound;
     </script>
 </body>
