@@ -261,6 +261,19 @@
             opacity: 0.5;
         }
 
+        .hero-video.ken-burns {
+            animation: kenBurnsSlow 45s ease-in-out infinite alternate;
+        }
+
+        @keyframes kenBurnsSlow {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
         /* Photographic backdrop overlay */
         .hero-mesh {
             position: absolute;
@@ -3591,7 +3604,7 @@
 
     <!-- Hero -->
     <section class="hero">
-        <video class="hero-video" autoplay muted loop playsinline>
+        <video class="hero-video" autoplay muted playsinline id="heroVideo">
             <source src="https://mountzara.com/media/hero-uterus-animation.mov" type="video/quicktime">
             <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
         </video>
@@ -4998,6 +5011,14 @@
     </div>
 
     <script>
+        // Hero video — play once, then Ken Burns on last frame
+        const heroVideo = document.getElementById('heroVideo');
+        if (heroVideo) {
+            heroVideo.addEventListener('ended', () => {
+                heroVideo.classList.add('ken-burns');
+            });
+        }
+
         // Contact modal
         const contactModalEl = document.getElementById('contactModal');
         function openContactModal() {
