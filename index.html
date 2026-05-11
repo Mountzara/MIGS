@@ -393,55 +393,97 @@
             animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.9s both;
         }
 
-        /* Floating credential strip */
+        /* Floating credential strip — magazine masthead style */
         .hero-meta {
-            margin-top: 48px;
+            margin-top: clamp(48px, 6vw, 64px);
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            max-width: 720px;
+            grid-template-columns: 1.2fr 1.6fr 2.2fr;
+            gap: 0;
+            max-width: 980px;
             margin-left: auto;
             margin-right: auto;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.42);
             border-radius: 18px;
             overflow: hidden;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
             opacity: 0;
             animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 720px) {
             .hero-meta {
                 grid-template-columns: 1fr;
-                max-width: 360px;
+                max-width: 460px;
+            }
+            .meta-item + .meta-item {
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                border-left: none !important;
             }
         }
 
         .meta-item {
-            background: rgba(20, 20, 22, 0.55);
-            padding: 18px 22px;
+            padding: 20px 24px;
             text-align: left;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
+            position: relative;
+        }
+        .meta-item + .meta-item {
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .meta-item::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            width: 14px;
+            height: 1.5px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            opacity: 0.7;
         }
 
         .meta-label {
             font-size: 10px;
-            font-weight: 600;
-            color: var(--gray-3);
-            letter-spacing: 0.12em;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.28em;
             text-transform: uppercase;
+            padding-left: 20px;
+            line-height: 1;
+            display: block;
         }
 
         .meta-value {
             font-size: 14px;
             font-weight: 500;
             color: var(--white);
-            letter-spacing: -0.005em;
-            line-height: 1.3;
+            letter-spacing: -0.008em;
+            line-height: 1.42;
+        }
+        .meta-value strong {
+            font-weight: 700;
+            color: #fff;
+        }
+        .meta-value .focus-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 2px;
+        }
+        .meta-value .focus-list span {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.005em;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.92);
         }
 
         /* Scroll indicator */
@@ -585,6 +627,148 @@
         .section-sub.center { margin: 0 auto; }
         .section-headline.center { text-align: center; }
         .section-eyebrow.center { text-align: center; }
+
+        /* ========== Surgical Focus — animated interactive cards ========== */
+        .surgical-focus-section {
+            padding: clamp(80px, 10vw, 140px) 0 clamp(80px, 10vw, 140px);
+            background:
+                radial-gradient(ellipse 70% 80% at 50% 0%, rgba(41, 151, 255, 0.04), transparent 70%),
+                #0a0a0c;
+            color: var(--white);
+            position: relative;
+            z-index: 3;
+        }
+        .surgical-focus-section .section-eyebrow {
+            color: rgba(255, 255, 255, 0.62);
+            display: block;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .surgical-focus-section .section-headline {
+            text-align: center;
+            max-width: 880px;
+            margin: 0 auto 18px;
+        }
+        .surgical-focus-section .section-sub {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.62);
+            max-width: 680px;
+            margin: 0 auto clamp(40px, 5vw, 64px);
+        }
+        .surgical-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 clamp(20px, 4vw, 32px);
+        }
+        @media (max-width: 980px) {
+            .surgical-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .surgical-grid { grid-template-columns: 1fr; gap: 14px; }
+        }
+        .surgical-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 28px 26px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: default;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.35s ease,
+                        background 0.35s ease,
+                        box-shadow 0.45s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .surgical-card.in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: calc(var(--si, 0) * 70ms);
+        }
+        .surgical-card:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
+            border-color: rgba(92, 182, 255, 0.32);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+        }
+        .surgical-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle 240px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .surgical-card:hover::before {
+            opacity: 1;
+        }
+        .surgical-card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(92, 182, 255, 0.10);
+            color: #5cb6ff;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
+        }
+        .surgical-card:hover .surgical-card-icon {
+            transform: scale(1.08) rotate(-3deg);
+            background: rgba(92, 182, 255, 0.18);
+        }
+        .surgical-card-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+        .surgical-card-body h3 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.012em;
+            color: var(--white);
+            margin: 0 0 8px;
+        }
+        .surgical-card-body p {
+            font-size: 14px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.66);
+            margin: 0;
+        }
+        .surgical-card-hover {
+            position: absolute;
+            left: 26px;
+            right: 26px;
+            bottom: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #5cb6ff;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .surgical-card:hover .surgical-card-hover {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (max-width: 720px) {
+            .surgical-card { padding: 22px 20px; gap: 14px; }
+            .surgical-card-icon { width: 48px; height: 48px; }
+            .surgical-card-icon svg { width: 24px; height: 24px; }
+            .surgical-card-body h3 { font-size: 17px; }
+            .surgical-card-body p { font-size: 13px; }
+            .surgical-card-hover { position: static; opacity: 0.9; transform: none; margin-top: 6px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+        }
 
         /* ========== About / Stats ========== */
         .about-section {
@@ -2777,9 +2961,10 @@
         /* Sticky pinned showcase — three frames that swap on scroll */
         .pinned-showcase {
             position: relative;
-            z-index: 2;  /* covers the cinematic-intro video backdrop */
-            min-height: 300vh;  /* generous so each frame gets a full viewport of dwell time */
-            background: var(--bg);
+            z-index: 2;
+            min-height: 300vh;
+            /* No solid bg — lets the cinematic-intro video show through behind the frames */
+            background: transparent;
         }
         /* All other sections need explicit z-index + solid bg so they cover the
            fixed video backdrop after the user scrolls past the hero. */
@@ -2807,12 +2992,18 @@
             justify-content: center;
             overflow: hidden;
         }
+        /* Dark scrim over the cinematic intro video — keeps frame text readable */
         .pinned-bg {
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.07), transparent 60%);
-            opacity: 0;
-            transition: opacity 250ms ease-out;
+            background:
+                radial-gradient(ellipse 75% 65% at 50% 50%, rgba(255,255,255,0.04), transparent 60%),
+                linear-gradient(180deg,
+                    rgba(0,0,0,0.55) 0%,
+                    rgba(0,0,0,0.62) 50%,
+                    rgba(0,0,0,0.78) 100%);
+            opacity: 1;
+            transition: opacity 320ms ease-out;
             pointer-events: none;
         }
         .pinned-frames {
@@ -3221,15 +3412,23 @@
             <div class="hero-meta">
                 <div class="meta-item">
                     <span class="meta-label">Practice</span>
-                    <span class="meta-value">PRIME Saint Francis Hospital<br>Evanston, IL</span>
+                    <span class="meta-value"><strong>PRIME Saint Francis Hospital</strong><br>Evanston, IL</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Fellowship</span>
-                    <span class="meta-value">Complex Benign Gynecology &amp;<br>Minimally Invasive Gynecologic Surgery</span>
+                    <span class="meta-value"><strong>Complex Benign Gynecology</strong><br>&amp; Minimally Invasive Gynecologic Surgery</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Focus</span>
-                    <span class="meta-value">Robotic &amp; Hysteroscopic Surgery · Osteopathic Manipulative Treatment · Clinical AI Engineering · Surgical Education &amp; Research</span>
+                    <span class="meta-value">
+                        <span class="focus-list">
+                            <span>Robotic Surgery</span>
+                            <span>Hysteroscopic Surgery</span>
+                            <span>OMT</span>
+                            <span>Clinical AI</span>
+                            <span>Surgical Education</span>
+                        </span>
+                    </span>
                 </div>
             </div>
         </div>
@@ -3256,6 +3455,124 @@
                     <span class="frame-eyebrow">The Innovation</span>
                     <h2 class="frame-headline">Engineered for the working surgeon.</h2>
                     <p class="frame-sub">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Surgical Focus — animated interactive cards -->
+    <section id="surgical-focus" class="surgical-focus-section">
+        <div class="container">
+            <span class="section-eyebrow">Surgical Focus</span>
+            <h2 class="section-headline gradient">The full range of complex benign &amp; minimally invasive gynecologic surgery.</h2>
+            <p class="section-sub">Seven areas of operative emphasis — every one trained, practiced, and refined across high-volume Chicagoland fellowship sites.</p>
+
+            <div class="surgical-grid">
+                <div class="surgical-card" data-focus="robotics">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="16" cy="8" r="3"/>
+                            <path d="M16 11v6M10 17h12M10 17v6l-3 3M22 17v6l3 3M13 26l3-3 3 3"/>
+                            <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Robotic Surgery</h3>
+                        <p>Da Vinci-trained across the full spectrum of complex benign gynecologic procedures — hysterectomy, myomectomy, endometriosis excision, sacrocolpopexy, and adhesiolysis.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Robotic platform · Da Vinci</span>
+                </div>
+
+                <div class="surgical-card" data-focus="laparoscopy">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 16h6M22 16h6M16 4v6M16 22v6"/>
+                            <circle cx="16" cy="16" r="5"/>
+                            <path d="M16 11l2 2-2 2-2-2z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Advanced Laparoscopy</h3>
+                        <p>Multi-port and reduced-port laparoscopy for complex pelvic pathology, including dense adhesive disease, deep infiltrating endometriosis, and large fibroids.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Conventional · Reduced-port · vNOTES</span>
+                </div>
+
+                <div class="surgical-card" data-focus="endometriosis">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M8 12c0 6 4 10 8 14 4-4 8-8 8-14a8 8 0 0 0-16 0z"/>
+                            <circle cx="13" cy="12" r="1.5" fill="currentColor"/>
+                            <circle cx="19" cy="14" r="1.2" fill="currentColor"/>
+                            <circle cx="16" cy="18" r="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Endometriosis Excision</h3>
+                        <p>Complete excision of all visible disease — superficial, deep infiltrating, and atypical lesions — guided by ICG fluorescence for fibrosis detection. Active IRB research in the field.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">ICG-guided · Active IRB research</span>
+                </div>
+
+                <div class="surgical-card" data-focus="ovarian-preservation">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <ellipse cx="16" cy="16" rx="6" ry="9"/>
+                            <path d="M16 7v18M11 12c2 2 8 2 10 0M11 20c2-2 8-2 10 0"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Ovarian Preservation Surgery</h3>
+                        <p>Cystectomy and conservative surgery techniques that maximize ovarian reserve — meticulous capsule dissection, minimized cautery, and judicious use of bipolar energy.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Reserve-conscious technique</span>
+                </div>
+
+                <div class="surgical-card" data-focus="myomectomy">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M10 22c-2-1-4-4-4-7 0-5 4-9 10-9s10 4 10 9c0 3-2 6-4 7"/>
+                            <circle cx="13" cy="13" r="2.5" fill="rgba(255,255,255,0.12)"/>
+                            <circle cx="19" cy="16" r="3.5" fill="rgba(255,255,255,0.18)"/>
+                            <path d="M10 22l4-2M22 22l-4-2"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>MIS Robotic Myomectomy</h3>
+                        <p>Robotic myomectomy for symptomatic fibroids of any size or location — single, multiple, intramural, submucosal, and pedunculated. Gel-port and ICG-guided techniques published in JMIG.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Published technique · Gel-port</span>
+                </div>
+
+                <div class="surgical-card" data-focus="hysteroscopy">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="4" y="13" width="20" height="6" rx="3"/>
+                            <path d="M24 16h4"/>
+                            <circle cx="9" cy="16" r="1" fill="currentColor"/>
+                            <path d="M14 16h6"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Advanced Operative Hysteroscopy</h3>
+                        <p>Hysteroscopic myomectomy, septum resection, polypectomy, RPOC removal, isthmocele repair, and adhesiolysis (Asherman's). 2024 AAGL Golden Hysteroscope Award.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Golden Hysteroscope · 2024</span>
+                </div>
+
+                <div class="surgical-card" data-focus="fertility">
+                    <div class="surgical-card-icon">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M16 6c-3 0-6 2-6 5 0 3 3 5 6 5s6-2 6-5c0-3-3-5-6-5z"/>
+                            <path d="M16 16v10M12 21h8M14 26h4"/>
+                            <circle cx="16" cy="11" r="1.5" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="surgical-card-body">
+                        <h3>Fertility-Conscious Surgery</h3>
+                        <p>Surgical planning anchored in future fertility — uterine-sparing fibroid management, careful adhesion prevention, fallopian tube preservation, and isthmocele repair to optimize implantation.</p>
+                    </div>
+                    <span class="surgical-card-hover" aria-hidden="true">Uterine + tubal preservation</span>
                 </div>
             </div>
         </div>
@@ -4676,6 +4993,35 @@
         });
 
         // ==========================================================
+        // Surgical Focus cards — staggered reveal + cursor glow
+        // ==========================================================
+        (function initSurgicalCards() {
+            const cards = document.querySelectorAll('.surgical-card');
+            if (!cards.length) return;
+            cards.forEach((c, i) => c.style.setProperty('--si', i));
+            if ('IntersectionObserver' in window) {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('in');
+                            obs.unobserve(e.target);
+                        }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+                cards.forEach(c => obs.observe(c));
+            } else {
+                cards.forEach(c => c.classList.add('in'));
+            }
+            cards.forEach(card => {
+                card.addEventListener('pointermove', e => {
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                    card.style.setProperty('--my', `${e.clientY - r.top}px`);
+                });
+            });
+        })();
+
+        // ==========================================================
         // Apple Vision Pro–style scroll system (rewritten for polish)
         // ==========================================================
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -4800,12 +5146,43 @@
         const pinnedBg = pinnedSection ? pinnedSection.querySelector('.pinned-bg') : null;
         const cinematicIntro = document.getElementById('cinematicIntro');
         const introVideo = document.getElementById('introVideo');
-        // Make sure the video starts playing on page load (some mobile browsers
-        // need a manual nudge despite autoplay attribute when muted).
+
+        // Robust autoplay nudger — call after any event that may have relaxed
+        // browser autoplay restrictions. Safe to call repeatedly.
+        function nudgeAllMutedVideos() {
+            document.querySelectorAll('video[muted], video[autoplay]').forEach(v => {
+                if (v.paused && !reduceMotion) {
+                    const p = v.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                }
+            });
+        }
+
         if (introVideo && !reduceMotion) {
-            const playWhenReady = () => introVideo.play().catch(() => {});
-            if (introVideo.readyState >= 2) playWhenReady();
-            else introVideo.addEventListener('loadeddata', playWhenReady, { once: true });
+            const tryPlayIntro = () => {
+                const p = introVideo.play();
+                if (p && typeof p.catch === 'function') p.catch(() => {});
+            };
+            // Multiple play attempts on whichever event fires first
+            tryPlayIntro();
+            ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'].forEach(ev => {
+                introVideo.addEventListener(ev, tryPlayIntro, { once: true });
+            });
+            // Force the browser to start loading early (helps cellular / slow links)
+            try { introVideo.load(); } catch (_) {}
+        }
+
+        // First-interaction fallback: as soon as the user does anything, retry
+        // all paused autoplay videos. Many autoplay-denied videos can play after
+        // any user input.
+        ['scroll', 'click', 'touchstart', 'keydown'].forEach(ev => {
+            window.addEventListener(ev, nudgeAllMutedVideos, { once: true, passive: true });
+        });
+        // Also nudge once the page has fully loaded
+        if (document.readyState === 'complete') {
+            requestAnimationFrame(nudgeAllMutedVideos);
+        } else {
+            window.addEventListener('load', () => requestAnimationFrame(nudgeAllMutedVideos), { once: true });
         }
         let lastPinnedIdx = -1;
         let videoPaused = false;
@@ -4881,16 +5258,35 @@
 
             // -- Cinematic video backdrop: fade out as user scrolls past hero,
             //    pause video once it's fully covered to free up GPU. --
-            if (cinematicIntro && !reduceMotion) {
-                // Visible from y=0 to y=winH*1.05; fully gone by then.
-                const t = Math.max(0, Math.min(1, y / (winH * 1.05)));
+            if (cinematicIntro) {
+                // Persist the video as a fixed background through the hero AND the
+                // entire pinned showcase. Pinned showcase is 300vh tall and starts
+                // right after the hero (~100vh), so we keep the video at full opacity
+                // until roughly y = pinnedSection.bottom - winH, then fade across one
+                // viewport.
+                let fadeStart, fadeEnd;
+                if (pinnedSection) {
+                    const pinTop = pinnedSection.offsetTop;
+                    const pinHeight = pinnedSection.offsetHeight;
+                    fadeStart = pinTop + pinHeight - winH * 1.4;
+                    fadeEnd   = pinTop + pinHeight - winH * 0.4;
+                } else {
+                    fadeStart = winH * 0.55;
+                    fadeEnd   = winH * 1.05;
+                }
+                const range = Math.max(1, fadeEnd - fadeStart);
+                const t = Math.max(0, Math.min(1, (y - fadeStart) / range));
                 cinematicIntro.style.opacity = (1 - t).toFixed(3);
+
                 if (introVideo) {
-                    if (t >= 0.99 && !videoPaused) {
-                        introVideo.pause();
-                        videoPaused = true;
-                    } else if (t < 0.95 && videoPaused) {
-                        introVideo.play().catch(() => {});
+                    if (t >= 0.99) {
+                        if (!videoPaused) { introVideo.pause(); videoPaused = true; }
+                    } else {
+                        // Anytime we're in the visible band, make sure it's playing
+                        // (covers both initial autoplay-denied case AND scroll-back).
+                        if (introVideo.paused && !reduceMotion) {
+                            introVideo.play().catch(() => {});
+                        }
                         videoPaused = false;
                     }
                 }

@@ -814,6 +814,114 @@
             justify-content: center;
         }
 
+        /* CV access badges — replace the dumped credentials list */
+        .cv-access {
+            max-width: 720px;
+            margin: 80px auto 40px;
+            padding: 0 clamp(20px, 4vw, 24px);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .cv-badge {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 22px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--white);
+            text-decoration: none;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .cv-badge:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+        .cv-badge-primary {
+            background: linear-gradient(135deg, rgba(41, 151, 255, 0.18), rgba(41, 151, 255, 0.05));
+            border-color: rgba(41, 151, 255, 0.32);
+        }
+        .cv-badge-primary:hover {
+            background: linear-gradient(135deg, rgba(41, 151, 255, 0.26), rgba(41, 151, 255, 0.08));
+            border-color: rgba(41, 151, 255, 0.46);
+        }
+        .cv-badge-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .cv-badge-primary .cv-badge-icon {
+            background: rgba(41, 151, 255, 0.16);
+            color: #5cb6ff;
+        }
+        .cv-badge-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+        .cv-badge-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .cv-badge-label {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+        .cv-badge-meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 0.01em;
+        }
+        .cv-badge-arrow {
+            flex-shrink: 0;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.5);
+            transition: transform 0.32s ease, color 0.32s ease;
+        }
+        .cv-badge:hover .cv-badge-arrow {
+            color: var(--white);
+            transform: translateX(3px);
+        }
+        @media (max-width: 720px) {
+            .cv-access {
+                grid-template-columns: 1fr;
+                margin: 56px auto 24px;
+                gap: 12px;
+            }
+            .cv-badge {
+                padding: 16px 18px;
+                gap: 14px;
+            }
+            .cv-badge-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .cv-badge-label {
+                font-size: 14px;
+            }
+            .cv-badge-meta {
+                font-size: 11px;
+            }
+        }
+
         /* Comprehensive Credentials Section */
         .credentials {
             padding: 100px clamp(20px, 4vw, 28px) 120px;
@@ -1263,172 +1371,31 @@
             <blockquote>"The most important innovations are those that ultimately enhance patient care and outcomes. Everything else — the awards, the publications, the apps — is just the byproduct of doing the work right."</blockquote>
         </div>
 
-    </article>
-
-    <!-- Comprehensive Credentials -->
-    <section class="credentials">
-        <div class="credentials-inner">
-            <span class="credentials-eyebrow">Curriculum Vitae</span>
-            <h2 class="credentials-title">The full record.</h2>
-            <p class="credentials-sub">A surgeon's career, documented.</p>
-
-            <div class="cred-grid">
-                <!-- Awards -->
-                <div class="cred-card cred-card-wide">
-                    <h3>Awards &amp; Honors <span class="cred-meta">Peer-reviewed</span></h3>
-                    <ul class="cred-list">
-                        <li><strong>AAGL Golden Hysteroscope Award</strong> — Best Video Abstract in Hysteroscopy, AAGL Global Congress, New Orleans · 2024</li>
-                        <li><strong>George M. Morley Award for Best Gynecological Research</strong> — CAOG Annual Meeting, Indianapolis · 2023</li>
-                        <li><strong>Excellence in Minimally Invasive Gynecology</strong> — American Association of Gynecologic Laparoscopists (AAGL), PGY4 · 2023</li>
-                        <li><strong>Surgical Skills Chief</strong> — Ascension Illinois St. Alexius OBGYN Residency Program, PGY4 · 2022–2023</li>
-                        <li><strong>Best Overall Grand Rounds Presentation</strong> — Ascension Illinois St. Alexius OBGYN Residency, PGY1 · 2019</li>
-                        <li><strong>Best Overall Resident Lecture</strong> — Chiari malformations in pregnancy · 2019</li>
-                    </ul>
-                </div>
-
-                <!-- Journal Publications -->
-                <div class="cred-card">
-                    <h3>Journal Publications</h3>
-                    <ul class="cred-list">
-                        <li><strong>Multifocal Endometriosis with Atypical Papillary Fragments</strong> — Tam, Mabini, Fernandez et al. · GMIT 2026 (accepted)</li>
-                        <li><strong>ICG Imaging: Innovative Isthmocele Diagnosis &amp; Repair</strong> — Tam, Mabini, Fernandez et al. · Arch Gynecol Obstet · 2025</li>
-                        <li><strong>Mapping Deep Epigastric Vessels Stratified by BMI</strong> — Garza-Cavazos, Mabini et al. · JMIG · 2024</li>
-                        <li><strong>Self-Injury in Behavioral Organization</strong> — Sandman, Kemp, Mabini, Magnussun · J Intellect Disabil Res · 2012</li>
-                    </ul>
-                </div>
-
-                <!-- AAGL Abstracts -->
-                <div class="cred-card">
-                    <h3>AAGL Global Congress <span class="cred-meta">2020–2025</span></h3>
-                    <ul class="cred-list">
-                        <li><strong>NBI in Adenomyosis</strong> — JMIG 32(11):S105 · 2025</li>
-                        <li><strong>To See or Not to See? RPOC in Arcuate Uterus</strong> — JMIG 31(11):S14 · 2024 · <em>Golden Hysteroscope Award</em></li>
-                        <li><strong>Fibroids à La Carte: Robotic Myomectomy</strong> — JMIG 31(11):S58 · 2024</li>
-                        <li><strong>When in Doubt, Green It Out: ICG &amp; Asherman's</strong> — JMIG 31(11):S10–S11 · 2024</li>
-                        <li><strong>RPOC and Infertility: Hysteroscopic Approach</strong> — 2022</li>
-                        <li><strong>The Role of ICG in Endometriosis-Related Fibrosis</strong> — 2022</li>
-                        <li><strong>Robotic Myomectomy: 101</strong> — JMIG 27(7):S98 · 2020</li>
-                    </ul>
-                </div>
-
-                <!-- ACOG / CAOG Presentations -->
-                <div class="cred-card">
-                    <h3>ACOG &amp; CAOG Presentations</h3>
-                    <ul class="cred-list">
-                        <li><strong>Fluorescent ICG for Intraoperative Detection of Endometriosis</strong> — ACOG Annual Conference · May 2024</li>
-                        <li><strong>ICG in Detecting Endometriosis-Related Fibrosis</strong> — CAOG Annual Regional Conference, Indianapolis · September 2022 <em>(Morley Award basis)</em></li>
-                        <li><strong>ICG in Detecting Clear Endometriosis Lesions</strong> — ACOG Annual District Conference, Chicago · September 2022</li>
-                    </ul>
-                </div>
-
-                <!-- Active Research -->
-                <div class="cred-card">
-                    <h3>Active IRB Research</h3>
-                    <ul class="cred-list">
-                        <li><strong>ICG &amp; Endometriosis-Related Fibrosis</strong> — PRIME Illinois St. Francis · IRB RIL20220137</li>
-                        <li><strong>NBI in Adenomyosis Detection during Hysteroscopy</strong> — IRB RIL20240017</li>
-                        <li><strong>TAP Block Post-Op Pain RCT in ERAS Protocol</strong> — IRB RIL20240009 · Lukish, Mabini, Tam, Ward, Siddique</li>
-                        <li><strong>ICG for Appendiceal Endometriosis Detection</strong> — IRB RIL20240078</li>
-                    </ul>
-                </div>
-
-                <!-- Curriculum Design -->
-                <div class="cred-card">
-                    <h3>Curriculum Design &amp; Development</h3>
-                    <ul class="cred-list">
-                        <li><strong>MIGS Fellowship AI &amp; Advanced Technologies Curriculum</strong> — PRIME Illinois Saint Francis · 2024</li>
-                        <li><strong>MIGS / Surgical Skills &amp; Didactics Curriculum</strong> — Ascension Illinois St. Alexius OBGYN Residency · 2022</li>
-                        <li><strong>Pilot Hospice Core Clerkship Curriculum</strong> — Alabama College of Osteopathic Medicine · 2018</li>
-                        <li><strong>Redefining Aging: Lifelong Purpose &amp; Passion</strong> — Troy University · 2016</li>
-                    </ul>
-                </div>
-
-                <!-- Grand Rounds -->
-                <div class="cred-card">
-                    <h3>Grand Rounds Presentations</h3>
-                    <ul class="cred-list">
-                        <li><strong>Basics of Total Laparoscopic Hysterectomy</strong> — Ascension &amp; Saint Joseph MIGS Didactics · 2023, 2024</li>
-                        <li><strong>Laparoscopic Anatomy</strong> — Ascension &amp; Saint Joseph MIGS Didactics · 2023, 2024</li>
-                        <li><strong>Hysteroscopy Fundamentals</strong> — Saint Joseph OBGYN Residency · 2024, 2025</li>
-                        <li><strong>Isthmocele</strong> — Lutheran General MIGS Program · 2022</li>
-                        <li><strong>Suspected Ectopic Pregnancy in a Didelphys Uterus</strong> — Ascension Illinois St. Alexius · 2022</li>
-                        <li><strong>Chronic Pelvic Pain</strong> · <strong>Breast Disorders</strong> · <strong>Non-obstetric Surgery in Pregnancy</strong> · <strong>Interstitial Lung Disease in Pregnancy</strong> · <strong>Stroke in Pregnancy</strong> · <strong>Chiari Malformations in Pregnancy</strong></li>
-                    </ul>
-                </div>
-
-                <!-- Health Systems QI -->
-                <div class="cred-card">
-                    <h3>Health Systems Quality Improvement</h3>
-                    <ul class="cred-list">
-                        <li><strong>MIGS ERAS Protocol Implementation</strong> for COEMIG Accreditation at Ascension Illinois St. Alexius — Jachtorowycz, Calonje, Mabini, Monahan · 2023</li>
-                    </ul>
-                </div>
-
-                <!-- Hospital Affiliations -->
-                <div class="cred-card">
-                    <h3>Hospital Affiliations <span class="cred-meta">Chicagoland</span></h3>
-                    <ul class="cred-list">
-                        <li><strong>PRIME St. Francis</strong> — 355 Ridge Ave, Evanston, IL</li>
-                        <li><strong>PRIME St. Mary</strong> — 2233 W. Division St, Chicago, IL</li>
-                        <li><strong>Ascension St. Joseph</strong> — 2900 N. Lakeshore Ave, Chicago, IL</li>
-                        <li><strong>Thorek Memorial Hospital</strong> — 850 W Irving Park Rd, Chicago, IL</li>
-                    </ul>
-                </div>
-
-                <!-- Memberships & Committees -->
-                <div class="cred-card">
-                    <h3>Memberships &amp; Committees</h3>
-                    <ul class="cred-list">
-                        <li><strong>American Association of Gynecologic Laparoscopists (AAGL)</strong> — Member · 2019–Present</li>
-                        <li><strong>American College of Obstetricians and Gynecologists (ACOG)</strong> — Member · 2018–Present</li>
-                        <li><strong>Central Association of OBGYN (CAOG)</strong> — Member · 2023–Present</li>
-                        <li><strong>Chicago Gynecological Society</strong> — Member · 2019–Present</li>
-                        <li><strong>PRIME St. Francis Robotic Steering Committee</strong> — 2023–Present</li>
-                        <li><strong>Ascension COEMIG Committee</strong> — 2022–Present</li>
-                        <li><strong>Ascension ERAS Committee</strong> — Former Resident Champion · 2022–2023</li>
-                    </ul>
-                </div>
-
-                <!-- Specialized Training -->
-                <div class="cred-card">
-                    <h3>Specialized Training &amp; CME</h3>
-                    <ul class="cred-list">
-                        <li><strong>Medtronic Advanced Hysteroscopy Course</strong> — Medtronic Campus, Glendale, AZ · 2024</li>
-                        <li><strong>vNotes Provider Workshop</strong> — Applied Medical, Rosemont, IL · 2024</li>
-                        <li><strong>USF CAMLS Hysteroscopy / MIGS / Cadaver Course</strong> — University of South Florida · 2023</li>
-                        <li><strong>SGS Advanced MIGS &amp; Cadaver Course</strong> — Society of Gynecologic Surgeons, New Orleans · 2023</li>
-                        <li><strong>SAAO Annual Convocation for Osteopathic Manipulative Treatment</strong> — Colorado Springs · 2024</li>
-                        <li><strong>Fascial Distortion Model (FDM)</strong> — Academy of Fascial Distortion · 2016</li>
-                        <li><strong>Osteopathic Cranial Course</strong> — Cranial Academy, Atlanta · 2016</li>
-                    </ul>
-                </div>
-
-                <!-- Education -->
-                <div class="cred-card">
-                    <h3>Education &amp; Training</h3>
-                    <ul class="cred-list">
-                        <li><strong>Complex Benign Gynecology Fellowship (formerly MIGS)</strong> — PRIME St. Francis Hospital, Evanston · 2023–2026</li>
-                        <li><strong>OBGYN Residency</strong> — Ascension Illinois St. Alexius, ACGME 2201621094 · 2019–2023</li>
-                        <li><strong>Doctor of Osteopathic Medicine (DO)</strong> — Alabama College of Osteopathic Medicine · 2014–2019</li>
-                        <li><strong>Anatomy &amp; OPP Preclinical Fellowship</strong> — Alabama College of Osteopathic Medicine · 2015–2016</li>
-                        <li><strong>Master's in Adult Education</strong> — Curriculum Development &amp; Instructional Design · Troy University · 2016–2017</li>
-                        <li><strong>Postgraduate Certificate in Public Health</strong> — University of Liverpool, UK · 2009–2010</li>
-                        <li><strong>BS Biological Sciences</strong> — University of California, Irvine · 2002–2007</li>
-                    </ul>
-                </div>
-
-                <!-- Board Certification -->
-                <div class="cred-card">
-                    <h3>Board Eligibility &amp; Licensure</h3>
-                    <ul class="cred-list">
-                        <li><strong>ABOG Oral Exam Eligible</strong> — Intended Year: Fall/Winter 2026</li>
-                        <li><strong>Passed ABOG Written Exam</strong> — July 24, 2023</li>
-                        <li><strong>Passed AAGL EMIGS Skills Exam</strong> — October 2023</li>
-                    </ul>
-                </div>
-            </div>
+        <!-- CV access — replaces the dumped credentials list -->
+        <div class="cv-access">
+            <a href="/cv/" class="cv-badge cv-badge-primary">
+                <span class="cv-badge-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 14l2 2 4-4"/></svg>
+                </span>
+                <span class="cv-badge-text">
+                    <span class="cv-badge-label">View interactive CV</span>
+                    <span class="cv-badge-meta">Animated · full career record</span>
+                </span>
+                <span class="cv-badge-arrow" aria-hidden="true">↗</span>
+            </a>
+            <button type="button" class="cv-badge cv-badge-secondary" onclick="requestPrintCV()">
+                <span class="cv-badge-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+                </span>
+                <span class="cv-badge-text">
+                    <span class="cv-badge-label">Request print-friendly PDF</span>
+                    <span class="cv-badge-meta">Sent direct to your inbox</span>
+                </span>
+                <span class="cv-badge-arrow" aria-hidden="true">→</span>
+            </button>
         </div>
-    </section>
+
+    </article>
 
     <!-- Closing CTA -->
     <section class="closing">
@@ -1513,6 +1480,33 @@
         function closeContactModal() {
             contactModalEl.classList.remove('open');
             document.body.style.overflow = '';
+            // Reset any temporarily added subject to keep default state pristine
+            resetMailtoSubjects();
+        }
+        // CV print-friendly request: opens the contact modal and pre-fills
+        // the subject on every mailto/composer link in the modal.
+        const MAILTO_DEFAULTS = new WeakMap();
+        function setMailtoSubject(subject, body) {
+            const subj = encodeURIComponent(subject);
+            const bod = encodeURIComponent(body);
+            contactModalEl.querySelectorAll('a[href]').forEach(a => {
+                if (!MAILTO_DEFAULTS.has(a)) MAILTO_DEFAULTS.set(a, a.getAttribute('href'));
+                const base = MAILTO_DEFAULTS.get(a);
+                const sep = base.includes('?') ? '&' : '?';
+                a.setAttribute('href', `${base}${sep}subject=${subj}&body=${bod}`);
+            });
+        }
+        function resetMailtoSubjects() {
+            contactModalEl.querySelectorAll('a[href]').forEach(a => {
+                if (MAILTO_DEFAULTS.has(a)) a.setAttribute('href', MAILTO_DEFAULTS.get(a));
+            });
+        }
+        function requestPrintCV() {
+            setMailtoSubject(
+                'Print-friendly CV request',
+                'Hi Dr. Mabini,\n\nI\'d like to request a print-friendly copy of your CV. Please send it to this email when convenient.\n\nThank you,\n'
+            );
+            openContactModal();
         }
         contactModalEl.addEventListener('click', e => {
             if (e.target === contactModalEl) closeContactModal();
