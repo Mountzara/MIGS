@@ -184,23 +184,33 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 20s ease-in-out infinite;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 30%, #1a1f3a 0%, transparent 60%),
+                radial-gradient(ellipse 70% 55% at 80% 70%, #0f2440 0%, transparent 60%),
+                linear-gradient(135deg, #0a0a14 0%, #16162a 35%, #0d1428 65%, #0a0a14 100%);
+            background-size: 200% 200%, 200% 200%, 200% 200%;
+            animation: gradientShift 22s ease-in-out infinite;
         }
         @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            0%, 100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
+            50% { background-position: 100% 50%, 0% 50%, 100% 50%; }
         }
         .cinematic-intro .intro-color {
             position: absolute;
             inset: 0;
             z-index: 1;
             background:
-                radial-gradient(ellipse 60% 50% at 22% 28%, rgba(118, 88, 255, 0.18), transparent 65%),
-                radial-gradient(ellipse 55% 50% at 80% 70%, rgba(0, 122, 255, 0.16), transparent 65%);
+                radial-gradient(ellipse 55% 45% at 22% 28%, rgba(120, 90, 255, 0.55), transparent 65%),
+                radial-gradient(ellipse 50% 45% at 80% 72%, rgba(0, 130, 255, 0.50), transparent 65%),
+                radial-gradient(ellipse 40% 35% at 65% 18%, rgba(255, 100, 180, 0.18), transparent 60%);
             mix-blend-mode: screen;
             pointer-events: none;
+            animation: colorDrift 28s ease-in-out infinite alternate;
+        }
+        @keyframes colorDrift {
+            0%   { transform: scale(1) translate(0, 0); opacity: 0.95; }
+            50%  { transform: scale(1.06) translate(-1.5%, 1%); opacity: 1; }
+            100% { transform: scale(1.02) translate(1.5%, -1%); opacity: 0.92; }
         }
         .cinematic-intro .intro-tint {
             position: absolute;
@@ -208,17 +218,17 @@
             z-index: 2;
             background:
                 linear-gradient(180deg,
-                    rgba(0, 0, 0, 0.55) 0%,
-                    rgba(0, 0, 0, 0.45) 25%,
-                    rgba(0, 0, 0, 0.62) 60%,
-                    rgba(0, 0, 0, 0.92) 92%,
+                    rgba(0, 0, 0, 0.18) 0%,
+                    rgba(0, 0, 0, 0.22) 25%,
+                    rgba(0, 0, 0, 0.42) 60%,
+                    rgba(0, 0, 0, 0.85) 92%,
                     rgba(0, 0, 0, 1) 100%);
         }
         .cinematic-intro .intro-vignette {
             position: absolute;
             inset: 0;
             z-index: 3;
-            background: radial-gradient(ellipse 100% 80% at 50% 50%, transparent 35%, rgba(0,0,0,0.55) 100%);
+            background: radial-gradient(ellipse 110% 90% at 50% 45%, transparent 30%, rgba(0,0,0,0.55) 95%);
             pointer-events: none;
         }
 
@@ -1399,6 +1409,303 @@
             padding: 5px 11px;
             border-radius: 980px;
             border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* ========== Evidence Cards (OMT Research) ========== */
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-top: 36px;
+        }
+        @media (max-width: 1024px) {
+            .evidence-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .evidence-grid { grid-template-columns: 1fr; gap: 14px; }
+        }
+
+        .evidence-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            gap: 14px;
+            padding: 28px 24px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            cursor: pointer;
+            overflow: hidden;
+            color: inherit;
+            font-family: inherit;
+            transition:
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease,
+                background 0.35s ease,
+                box-shadow 0.45s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .evidence-card.in {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: calc(var(--si, 0) * 70ms);
+        }
+        .evidence-card:hover,
+        .evidence-card:focus-visible {
+            transform: translateY(-4px);
+            background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
+            border-color: rgba(92, 182, 255, 0.32);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+            outline: none;
+        }
+        .evidence-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .evidence-card:hover::before { opacity: 1; }
+
+        .evidence-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(92, 182, 255, 0.10);
+            color: #5cb6ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
+        }
+        .evidence-card:hover .evidence-card-icon {
+            transform: scale(1.08) rotate(-3deg);
+            background: rgba(92, 182, 255, 0.18);
+        }
+        .evidence-card-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .evidence-card-meta {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(92, 182, 255, 0.85);
+        }
+        .evidence-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.012em;
+            color: var(--white);
+            margin: 0;
+        }
+        .evidence-card p {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.66);
+            margin: 0;
+        }
+        .evidence-card-cta {
+            margin-top: auto;
+            padding-top: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: rgba(92, 182, 255, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .evidence-card-cta::after {
+            content: '→';
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .evidence-card:hover .evidence-card-cta::after {
+            transform: translateX(4px);
+        }
+
+        /* ========== Evidence Modal ========== */
+        .evidence-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: saturate(140%) blur(14px);
+            -webkit-backdrop-filter: saturate(140%) blur(14px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .evidence-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .evidence-modal-card {
+            position: relative;
+            width: 100%;
+            max-width: 760px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #1c1c1f 0%, #0e0e10 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 44px 44px 36px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+            transform: scale(0.96) translateY(12px);
+            transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+            -ms-overflow-style: none;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.18) transparent;
+        }
+        .evidence-modal-card::-webkit-scrollbar { width: 8px; }
+        .evidence-modal-card::-webkit-scrollbar-track { background: transparent; }
+        .evidence-modal-card::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.16);
+            border-radius: 999px;
+        }
+        .evidence-modal.open .evidence-modal-card {
+            transform: scale(1) translateY(0);
+        }
+        @media (max-width: 720px) {
+            .evidence-modal-card { padding: 36px 24px 28px; border-radius: 20px; }
+        }
+
+        .evidence-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--gray-3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            z-index: 2;
+        }
+        .evidence-modal-close:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--white);
+            transform: rotate(90deg);
+        }
+        .evidence-modal-close svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .evidence-modal-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(92, 182, 255, 0.9);
+            margin-bottom: 12px;
+        }
+        .evidence-modal-card h3 {
+            font-size: clamp(26px, 3.4vw, 34px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            color: var(--white);
+            margin: 0 0 12px;
+            text-wrap: balance;
+        }
+        .evidence-modal-intro {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.72);
+            margin: 0 0 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .evidence-study-list {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        .evidence-study {
+            padding: 22px 22px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+        .evidence-study:hover {
+            border-color: rgba(92, 182, 255, 0.28);
+            background: rgba(92, 182, 255, 0.04);
+        }
+        .evidence-study-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.008em;
+            line-height: 1.4;
+            margin: 0 0 8px;
+        }
+        .evidence-study-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 12px;
+        }
+        .evidence-study-meta .dot {
+            color: rgba(255, 255, 255, 0.22);
+        }
+        .evidence-study-finding {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.72);
+            margin: 0 0 14px;
+        }
+        .evidence-study-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #5cb6ff;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .evidence-study-link:hover {
+            color: #8dcaff;
+            transform: translateX(2px);
+        }
+        .evidence-study-link svg {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+        .evidence-modal-footnote {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.42);
+            line-height: 1.55;
         }
 
         .omm-quote-block {
@@ -3671,6 +3978,71 @@
                 </div>
             </div>
 
+            <!-- Evidence Base Sub-Section -->
+            <div class="sub-section">
+                <span class="sub-eyebrow">Evidence Base</span>
+                <h3 class="sub-headline">Grounded in peer-reviewed research.</h3>
+                <p class="sub-sub">The osteopathic approach to women's health isn't anecdotal — it's supported by randomized trials, systematic reviews, and pilot studies indexed in PubMed. Tap a category to explore the evidence.</p>
+
+                <div class="evidence-grid">
+                    <button class="evidence-card" data-evidence="pregnancy" type="button" aria-label="View pregnancy OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3a4 4 0 0 1 4 4v2"/>
+                                <path d="M8 9V7a4 4 0 0 1 4-4"/>
+                                <path d="M6 13c0 4 2.5 8 6 8s6-4 6-8"/>
+                                <circle cx="13" cy="14" r="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 1995–2017</div>
+                        <h4>Pregnancy</h4>
+                        <p>OMT for back pain, pelvic girdle pain, and functional decline during and after pregnancy.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="endometriosis" type="button" aria-label="View endometriosis OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3c-3 4-7 6-7 11a7 7 0 0 0 14 0c0-5-4-7-7-11z"/>
+                                <path d="M9 14c1 1.5 2 2 3 2s2-.5 3-2"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2016–2023</div>
+                        <h4>Endometriosis</h4>
+                        <p>Manual therapy for endometriosis-associated pelvic pain, dyspareunia, and quality of life.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="pelvic-pain" type="button" aria-label="View pelvic pain OMT research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 9c2-3 5-4 7-4s5 1 7 4"/>
+                                <path d="M4 13c0 4 3.5 8 8 8s8-4 8-8"/>
+                                <path d="M9 13h6"/>
+                                <circle cx="12" cy="17" r="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2016–2023</div>
+                        <h4>Pelvic Pain</h4>
+                        <p>Systematic reviews and clinical evidence for chronic pelvic pain and pelvic floor dysfunction.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+
+                    <button class="evidence-card" data-evidence="protocols" type="button" aria-label="View OMT dysmenorrhea protocol research">
+                        <div class="evidence-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="5" y="3" width="14" height="18" rx="2"/>
+                                <path d="M9 8h6M9 12h6M9 16h4"/>
+                            </svg>
+                        </div>
+                        <div class="evidence-card-meta">3 Studies · 2017–2025</div>
+                        <h4>Protocols</h4>
+                        <p>Standardized OMT protocols for primary dysmenorrhea and viscerosomatic reflex management.</p>
+                        <span class="evidence-card-cta">Explore evidence</span>
+                    </button>
+                </div>
+            </div>
+
             <div class="omm-quote-block">
                 <blockquote>"The DO philosophy isn't an alternative to surgery — it's the lens that makes surgical care truly holistic. The best outcomes happen when we understand <em>why</em> the body presents the way it does, not just how to fix the immediate problem."</blockquote>
                 <cite>— Christopher Z. Mabini, DO, MSAEd</cite>
@@ -4507,6 +4879,22 @@
         </div>
     </div>
 
+    <!-- Evidence Modal (OMT Research) -->
+    <div class="evidence-modal" id="evidenceModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="evidenceModalTitle">
+        <div class="evidence-modal-card" id="evidenceModalCard">
+            <button class="evidence-modal-close" id="evidenceModalClose" aria-label="Close research details" type="button">
+                <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13"/></svg>
+            </button>
+            <div class="evidence-modal-eyebrow" id="evidenceModalEyebrow">PubMed-Indexed Research</div>
+            <h3 id="evidenceModalTitle">Pregnancy</h3>
+            <p class="evidence-modal-intro" id="evidenceModalIntro"></p>
+            <div class="evidence-study-list" id="evidenceModalStudies"></div>
+            <div class="evidence-modal-footnote">
+                Citations sourced from PubMed (NCBI). External links open in a new tab. The presence of a study does not imply endorsement of every conclusion — only that the research is peer-reviewed and indexed.
+            </div>
+        </div>
+    </div>
+
     <script>
         // Contact modal
         const contactModalEl = document.getElementById('contactModal');
@@ -4562,6 +4950,209 @@
                 document.getElementById('navLinks').classList.remove('open');
             });
         });
+
+        // ==========================================================
+        // Evidence modal — PubMed-indexed OMT research, data-driven
+        // ==========================================================
+        const EVIDENCE = {
+            pregnancy: {
+                title: 'OMT in Pregnancy',
+                intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline that most women experience in the third trimester.',
+                studies: [
+                    {
+                        title: 'Pregnancy Research on Osteopathic Manipulation Optimizing Treatment Effects: A Randomized Controlled Trial (PROMOTE)',
+                        authors: 'Hensel KL, Buchanan S, Brown SK, Rodriguez M, Cruser dA.',
+                        journal: 'Am J Obstet Gynecol',
+                        year: '2015',
+                        pmid: '25068560',
+                        finding: 'RCT of 400 women in their third trimester randomized to usual care, usual care + OMT, or usual care + placebo ultrasound (seven treatments over nine weeks). OMT produced clinically and statistically significant improvements in pain progression and back-related functional deterioration compared with usual care.',
+                    },
+                    {
+                        title: 'Osteopathic manipulative treatment of back pain and related symptoms during pregnancy: a randomized controlled trial',
+                        authors: 'Licciardone JC, Buchanan S, Hensel KL, King HH, Fulda KG, Stoll ST.',
+                        journal: 'Am J Obstet Gynecol',
+                        year: '2010',
+                        pmid: '19766977',
+                        finding: 'RCT of 144 subjects comparing usual obstetric care, usual care + OMT, and usual care + sham ultrasound. The OMT group experienced significantly less deterioration in back-specific functioning (Roland-Morris Disability Questionnaire) during pregnancy.',
+                    },
+                    {
+                        title: 'Osteopathic manipulative treatment for low back and pelvic girdle pain during and after pregnancy: A systematic review and meta-analysis',
+                        authors: 'Franke H, Franke JD, Belz S, Fryer G.',
+                        journal: 'J Bodyw Mov Ther',
+                        year: '2017',
+                        pmid: '29037623',
+                        finding: 'Meta-analysis pooling multiple RCTs concluded that moderate-quality evidence supports a medium-sized effect of OMT in decreasing pain and increasing functional status in pregnant and postpartum women with low back pain.',
+                    },
+                ],
+            },
+            endometriosis: {
+                title: 'OMT for Endometriosis',
+                intro: 'Manual therapy and osteopathic techniques have emerging evidence for endometriosis-associated pelvic pain, dyspareunia, and quality-of-life outcomes — including in patients with deep infiltrating disease and in post-operative recurrence.',
+                studies: [
+                    {
+                        title: 'Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial',
+                        authors: 'Zota L, Stroescu C, Tomescu LF, et al.',
+                        journal: 'J Clin Med',
+                        year: '2023',
+                        pmid: '37176750',
+                        finding: 'RCT of 41 women with endometriosis-associated pelvic pain. The manual therapy group showed significant improvement in pain intensity, perceived powerlessness, lumbar mobility, and physical quality-of-life scores compared with placebo.',
+                    },
+                    {
+                        title: 'Impact of osteopathic manipulative therapy in patients with deep colorectal endometriosis: A classification based on symptoms and quality of life',
+                        authors: 'Daraï C, Deboute O, Zacharopoulou C, Laas E, Canlorbe G, Belghiti J, et al.',
+                        journal: 'Gynecol Obstet Fertil Senol',
+                        year: '2017',
+                        pmid: '28869181',
+                        finding: 'Prospective study of 46 patients with colorectal endometriosis. Significant improvement in both physical and mental component summaries of quality of life was observed after a course of osteopathic manipulative therapy.',
+                    },
+                    {
+                        title: 'Osteopathy for Endometriosis and Chronic Pelvic Pain — A Pilot Study',
+                        authors: 'Schwerla F, Wirthwein P, Rütz M, Resch KL.',
+                        journal: 'Forsch Komplementmed',
+                        year: '2016',
+                        pmid: '27681520',
+                        finding: 'Pilot study of 28 women with chronic pelvic pain and painful pelvic floor muscle tightness. After standardized osteopathic treatment, 17 of 28 reported symptom improvement; among the endometriosis subgroup, 10 of 14 improved.',
+                    },
+                ],
+            },
+            'pelvic-pain': {
+                title: 'OMT for Pelvic Pain',
+                intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common. Systematic reviews and clinical evidence support OMT as an adjunct to standard gynecologic care, particularly for pelvic floor dysfunction and post-surgical pain.',
+                studies: [
+                    {
+                        title: 'Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review',
+                        authors: 'Ruffini N, D\'Alessandro G, Cardinali L, Frondaroli F, Cerritelli F.',
+                        journal: 'Complement Ther Med',
+                        year: '2016',
+                        pmid: '27261985',
+                        finding: '24 studies covering 1,840 participants across pregnancy-related back pain, dysmenorrhea, perimenopausal symptoms, and pelvic pain. OMT was found effective for pregnancy-related back pain; signal of benefit in dysmenorrhea and pelvic pain warrants further high-quality trials.',
+                    },
+                    {
+                        title: 'The Role of Osteopathic Care in Gynaecology and Obstetrics: An Updated Systematic Review',
+                        authors: 'Bagagiolo D, Rosa D, Borrelli F.',
+                        journal: 'Healthcare (Basel)',
+                        year: '2022',
+                        pmid: '36011223',
+                        finding: 'Updated review of randomized and observational evidence confirming a positive effect of osteopathic care on pregnancy-related pain and a growing body of evidence for benefit in dysmenorrhea, infertility-related conditions, and chronic pelvic pain.',
+                    },
+                    {
+                        title: 'Osteopathic Manipulative Treatment of Chronic Pelvic Pain Due to High-Tone Pelvic Floor Dysfunction',
+                        authors: 'Wallace SL, Miller LD, Mishra K.',
+                        journal: 'Osteopathic Family Physician',
+                        year: '2023',
+                        pmid: 'ACOFP-15-2',
+                        finding: 'Clinical review supporting manual therapy as an effective treatment for chronic pelvic pain with high-tone pelvic floor dysfunction. Osteopathic physicians are uniquely positioned to identify viscerosomatic reflexes and provide patient-centered manual care.',
+                    },
+                ],
+            },
+            protocols: {
+                title: 'Standardized OMT Protocols',
+                intro: 'Beyond individualized treatment, the literature increasingly supports defined protocols — particularly for primary dysmenorrhea — that combine muscle energy, myofascial release, counterstrain, and viscerosomatic reflex management across a structured number of sessions.',
+                studies: [
+                    {
+                        title: 'Effectiveness of osteopathic treatment in women with primary dysmenorrhea: A randomised controlled trial',
+                        authors: 'Pelegrini AHM, Vidal-Robayo MC, Pico-Espinosa OJ, et al.',
+                        journal: 'Int J Osteopath Med',
+                        year: '2025',
+                        pmid: '40325740',
+                        finding: 'Recent RCT confirming that a structured osteopathic treatment protocol significantly reduced pain intensity and duration in women with primary dysmenorrhea compared with control. Reinforces a 3-session protocol across menstrual cycles as clinically meaningful.',
+                    },
+                    {
+                        title: 'Osteopathic Manipulative Treatment in Dysmenorrhea: A Systematic Review',
+                        authors: 'Donà G, Esposito G, Bortolami V, et al.',
+                        journal: 'Healthcare (Basel)',
+                        year: '2024',
+                        pmid: '38389612',
+                        finding: 'Systematic review of OMT for dysmenorrhea finding consistent reductions in pain duration, pain intensity, and analgesic use across multiple studies — a small but growing literature supporting protocolized care.',
+                    },
+                    {
+                        title: 'Osteopathic Manipulative Treatment of Primary Dysmenorrhea and Related Factors: A Randomized Controlled Trial',
+                        authors: 'Zecchillo D, Acquati A, Aquino A, et al.',
+                        journal: 'Int J Med Res Health Sci',
+                        year: '2017',
+                        pmid: 'IJMRHS-6-12',
+                        finding: 'RCT randomizing 72 women to treatment vs. control over three menstrual cycles. Five osteopathic treatments were sufficient to produce statistically significant reductions in pain intensity and number of days in pain — establishing a feasible clinical protocol.',
+                    },
+                ],
+            },
+        };
+
+        const evidenceModalEl = document.getElementById('evidenceModal');
+        const evidenceModalTitleEl = document.getElementById('evidenceModalTitle');
+        const evidenceModalIntroEl = document.getElementById('evidenceModalIntro');
+        const evidenceModalStudiesEl = document.getElementById('evidenceModalStudies');
+        const evidenceModalCardEl = document.getElementById('evidenceModalCard');
+
+        function pubmedUrl(pmid) {
+            // For non-numeric (journal-only) refs, link to a PubMed search
+            if (/^\d+$/.test(pmid)) return `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+            return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(pmid)}`;
+        }
+
+        function openEvidenceModal(key) {
+            const data = EVIDENCE[key];
+            if (!data) return;
+            evidenceModalTitleEl.textContent = data.title;
+            evidenceModalIntroEl.textContent = data.intro;
+            evidenceModalStudiesEl.innerHTML = data.studies.map(s => `
+                <article class="evidence-study">
+                    <h4 class="evidence-study-title">${s.title}</h4>
+                    <div class="evidence-study-meta">
+                        <span>${s.authors}</span>
+                        <span class="dot">·</span>
+                        <span><em>${s.journal}</em> · ${s.year}</span>
+                    </div>
+                    <p class="evidence-study-finding">${s.finding}</p>
+                    <a class="evidence-study-link" href="${pubmedUrl(s.pmid)}" target="_blank" rel="noopener noreferrer">
+                        View on PubMed
+                        <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 9l7-7M8 2h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                </article>
+            `).join('');
+            evidenceModalEl.classList.add('open');
+            evidenceModalEl.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            // Scroll the card to top in case a prior open scrolled it
+            if (evidenceModalCardEl) evidenceModalCardEl.scrollTop = 0;
+        }
+        function closeEvidenceModal() {
+            evidenceModalEl.classList.remove('open');
+            evidenceModalEl.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+        document.querySelectorAll('.evidence-card').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.getAttribute('data-evidence');
+                openEvidenceModal(key);
+            });
+            btn.addEventListener('mousemove', e => {
+                const r = btn.getBoundingClientRect();
+                btn.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                btn.style.setProperty('--my', `${e.clientY - r.top}px`);
+            });
+        });
+        document.getElementById('evidenceModalClose')?.addEventListener('click', closeEvidenceModal);
+        evidenceModalEl?.addEventListener('click', e => {
+            if (e.target === evidenceModalEl) closeEvidenceModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && evidenceModalEl?.classList.contains('open')) closeEvidenceModal();
+        });
+
+        // Stagger-in animation on scroll
+        const evidenceObserver = new IntersectionObserver(entries => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    const cards = entry.target.querySelectorAll('.evidence-card');
+                    cards.forEach((c, idx) => {
+                        c.style.setProperty('--si', idx);
+                        c.classList.add('in');
+                    });
+                    evidenceObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.evidence-grid').forEach(g => evidenceObserver.observe(g));
 
         // ==========================================================
         // Apps detail modal — data-driven, single modal for all apps
