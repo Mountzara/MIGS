@@ -653,7 +653,7 @@
         .surgical-focus-section .section-headline {
             text-align: center;
             max-width: 880px;
-            margin: 0 auto 18px;
+            margin: 0 auto 24px;
         }
         .surgical-focus-section .section-sub {
             text-align: center;
@@ -669,11 +669,28 @@
             margin: 0 auto;
             padding: 0 clamp(20px, 4vw, 32px);
         }
+        /* Center orphan card when it's alone on the last row of a 3-column grid */
+        .surgical-grid > .surgical-card:last-child:nth-child(3n+1) {
+            grid-column: 2 / 3;
+        }
         @media (max-width: 980px) {
             .surgical-grid { grid-template-columns: repeat(2, 1fr); }
+            /* Reset 3-col centering at this breakpoint */
+            .surgical-grid > .surgical-card:last-child:nth-child(3n+1) { grid-column: auto; }
+            /* Center orphan card when it's alone on the last row of a 2-column grid */
+            .surgical-grid > .surgical-card:last-child:nth-child(2n+1) {
+                grid-column: 1 / -1;
+                max-width: calc(50% - 9px);
+                justify-self: center;
+            }
         }
         @media (max-width: 600px) {
             .surgical-grid { grid-template-columns: 1fr; gap: 14px; }
+            .surgical-grid > .surgical-card:last-child:nth-child(2n+1) {
+                grid-column: auto;
+                max-width: none;
+                justify-self: auto;
+            }
         }
         .surgical-card {
             position: relative;
@@ -1230,8 +1247,8 @@
             font-size: clamp(24px, 3.5vw, 40px);
             font-weight: 600;
             letter-spacing: -0.02em;
-            line-height: 1.1;
-            margin-bottom: 18px;
+            line-height: 1.18;
+            margin-bottom: 22px;
             color: var(--white);
         }
 
@@ -2836,7 +2853,7 @@
             letter-spacing: 0.32em;
             text-transform: uppercase;
             color: var(--gray-3);
-            margin-bottom: 24px;
+            margin-bottom: 32px;
             display: inline-block;
             padding: 8px 16px;
             border: 1px solid rgba(255,255,255,0.12);
@@ -3179,6 +3196,7 @@
     <!-- Cinematic intro backdrop (CSS gradient animation) -->
     <div class="cinematic-intro" id="cinematicIntro" aria-hidden="true">
         <div class="intro-gradient"></div>
+        <div class="intro-color"></div>
         <div class="intro-tint"></div>
         <div class="intro-vignette"></div>
     </div>
@@ -3431,7 +3449,7 @@
     <section id="excellence" class="excellence-section">
         <div class="container-wide">
             <span class="section-eyebrow center">Surgical Excellence</span>
-            <h2 class="section-headline gradient center">Trained for the most complex cases. Reviewed without reservation.</h2>
+            <h2 class="section-headline gradient center">Trained for complex and minimally invasive gynecology cases. Reviewed without reservation.</h2>
             <p class="section-sub center">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area — across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
 
             <div class="excellence-quote">
