@@ -7,7 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="video" href="https://mountzara.com/media/hero-uterus-animation.mp4?v=2" type="video/mp4" fetchpriority="high">
+    <link rel="preload" as="image" href="https://mountzara.com/media/hero-animation.webp" type="image/webp" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -3627,55 +3627,13 @@
 
     <!-- Hero -->
     <section class="hero">
-        <video class="hero-video"
-               autoplay muted playsinline
-               preload="auto"
-               disablepictureinpicture
-               disableremoteplayback
-               poster="https://mountzara.com/media/hero-poster.jpg"
-               id="heroVideo">
-            <source src="https://mountzara.com/media/hero-uterus-animation.mp4?v=2" type="video/mp4">
-        </video>
-        <script>
-            // Maximally aggressive autoplay trigger
-            (function() {
-                const v = document.getElementById('heroVideo');
-                if (!v) return;
-                v.muted = true;
-                v.defaultMuted = true;
-                v.playsInline = true;
-                v.autoplay = true;
-                let played = false;
-                const tryPlay = () => {
-                    if (played) return;
-                    const p = v.play();
-                    if (p && p.then) {
-                        p.then(() => { played = true; })
-                         .catch(() => {});
-                    }
-                };
-                // Try immediately
-                tryPlay();
-                // Try on every readiness event
-                ['loadstart','loadedmetadata','loadeddata','canplay','canplaythrough'].forEach(e => {
-                    v.addEventListener(e, tryPlay);
-                });
-                // Try at intervals for the first 3 seconds
-                let attempts = 0;
-                const interval = setInterval(() => {
-                    if (played || attempts++ > 30) { clearInterval(interval); return; }
-                    tryPlay();
-                }, 100);
-                // Try after document ready
-                if (document.readyState !== 'loading') tryPlay();
-                else document.addEventListener('DOMContentLoaded', tryPlay);
-                window.addEventListener('load', tryPlay);
-                // Try on ANY user interaction (autoplay-blocked browsers will play here)
-                ['mousemove','mousedown','click','touchstart','scroll','keydown','wheel','pointerdown','pointermove'].forEach(e => {
-                    document.addEventListener(e, tryPlay, { once: true, passive: true, capture: true });
-                });
-            })();
-        </script>
+        <img class="hero-video"
+             src="https://mountzara.com/media/hero-animation.webp"
+             alt=""
+             id="heroVideo"
+             aria-hidden="true"
+             fetchpriority="high"
+             decoding="async">
         <div class="hero-mesh"></div>
         <div class="hero-grid"></div>
 
@@ -5013,29 +4971,34 @@
     </div>
 
     <script>
-        // Hero video reveal logic
+        // Hero animation reveal logic
+        // WebP animation autoplays as image - no autoplay restrictions
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
+        const ANIMATION_DURATION_MS = 6762; // 161 frames * 42ms
 
         if (heroVideo && heroContent) {
-            // When video starts playing: remove Ken Burns from poster, show text 1s later
-            heroVideo.addEventListener('playing', () => {
+            const startReveal = () => {
                 heroVideo.classList.add('playing');
+                // Show text 1s after animation starts
                 setTimeout(() => {
                     heroContent.classList.add('visible');
-                }, 800);
-            }, { once: true });
+                }, 1000);
+                // Apply Ken Burns after animation finishes
+                setTimeout(() => {
+                    heroVideo.classList.remove('playing');
+                    heroVideo.classList.add('ken-burns');
+                }, ANIMATION_DURATION_MS);
+            };
 
-            // Ken Burns effect on last frame when video ends
-            heroVideo.addEventListener('ended', () => {
-                heroVideo.classList.remove('playing');
-                heroVideo.classList.add('ken-burns');
-            }, { once: true });
-
-            // Fallback: show text after 2s even if video never plays (poster + Ken Burns is still beautiful)
-            setTimeout(() => {
-                heroContent.classList.add('visible');
-            }, 2000);
+            // Start reveal once image is loaded (animation starts immediately on load)
+            if (heroVideo.complete) {
+                startReveal();
+            } else {
+                heroVideo.addEventListener('load', startReveal, { once: true });
+                // Fallback if load event doesn't fire
+                setTimeout(startReveal, 500);
+            }
         } else if (heroContent) {
             heroContent.classList.add('visible');
         }
