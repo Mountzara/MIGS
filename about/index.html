@@ -7,7 +7,7 @@
     <title>The Story — Mount Zara</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
     <style>
         :root {
             --black: #000000;
@@ -654,6 +654,15 @@
             line-height: 1.08;
             margin-bottom: 36px;
             color: var(--white);
+            text-wrap: balance;
+            -webkit-hyphens: manual;
+            hyphens: manual;
+        }
+
+        .chapter h3 {
+            text-wrap: balance;
+            -webkit-hyphens: manual;
+            hyphens: manual;
         }
 
         .chapter p {
@@ -674,41 +683,57 @@
             font-style: italic;
         }
 
-        /* Pull-quote */
+        /* Pull-quote — editorial, no card */
         .pull-quote {
-            margin: 60px -22px;
-            padding: 56px 32px;
-            background: linear-gradient(135deg, #1d1d1f 0%, #131315 100%);
-            border-radius: 24px;
-            text-align: center;
+            margin: 80px 0;
+            padding: 0;
+            background: none;
+            border: none;
+            border-radius: 0;
+            text-align: left;
             position: relative;
         }
 
         .pull-quote::before {
-            content: '"';
-            position: absolute;
-            top: 8px;
-            left: 24px;
-            font-size: 80px;
-            color: var(--accent);
-            opacity: 0.35;
-            line-height: 1;
-            font-family: Georgia, serif;
+            content: '';
+            display: block;
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, var(--white), rgba(255,255,255,0.08));
+            margin-bottom: 28px;
+            opacity: 0.7;
         }
 
         .pull-quote blockquote {
-            font-size: clamp(22px, 3vw, 32px);
+            font-family: 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
+            font-size: clamp(26px, 3.4vw, 40px);
             font-weight: 300;
-            line-height: 1.4;
-            color: var(--white);
-            letter-spacing: -0.018em;
-            font-style: normal;
+            line-height: 1.32;
+            color: rgba(255, 255, 255, 0.94);
+            letter-spacing: -0.005em;
+            font-style: italic;
+            margin: 0;
+            padding: 0;
+            quotes: '\201C' '\201D';
+            text-wrap: balance;
+        }
+
+        .pull-quote blockquote::before {
+            content: open-quote;
+            color: rgba(255, 255, 255, 0.35);
+            margin-right: 0.05em;
+        }
+
+        .pull-quote blockquote::after {
+            content: close-quote;
+            color: rgba(255, 255, 255, 0.35);
+            margin-left: 0.02em;
         }
 
         @media (min-width: 700px) {
             .pull-quote {
-                margin: 80px -100px;
-                padding: 72px 80px;
+                margin: 110px 0;
+                padding-left: 24px;
             }
         }
 
@@ -742,6 +767,9 @@
             max-width: 580px;
             margin-left: auto;
             margin-right: auto;
+            text-wrap: balance;
+            -webkit-hyphens: manual;
+            hyphens: manual;
         }
 
         .interlude-grid {
@@ -795,6 +823,9 @@
             line-height: 1.15;
             margin-bottom: 16px;
             color: var(--white);
+            text-wrap: balance;
+            -webkit-hyphens: manual;
+            hyphens: manual;
         }
 
         .closing p {
@@ -1374,7 +1405,7 @@
 
         <section class="chapter">
             <span class="chapter-num">Chapter Two — Heritage</span>
-            <h2>Filipino-American roots. A maker's hands.</h2>
+            <h2>Filipino-American roots.<br>A maker's hands.</h2>
             <p>Christopher's Filipino heritage isn't a footnote — it's a discipline. He cooks traditional dishes the way some surgeons review anatomy: with reverence, repetition, and an eye for what the small details reveal about the larger system.</p>
             <p>Cooking, music production, and dance — earlier in his life — gave him something most surgeons don't bring to the OR: a creative instinct for problem-solving. The same hands that learned <strong>Best Hip Hop Dance Team</strong> choreography at UC Irvine became the hands that now navigate complex laparoscopic anatomy.</p>
             <p>He competed for UC Irvine's <strong>Divisional Rugby Conference Champion</strong> team. He earned a <strong>Postgraduate Certificate in Public Health</strong> from the <strong>University of Liverpool</strong>. Each chapter widened the lens.</p>
