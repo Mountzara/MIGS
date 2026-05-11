@@ -265,12 +265,7 @@
             opacity: 0;
         }
         .hero-bg-vignette {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(ellipse 80% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.18) 88%, rgba(0,0,0,0.45) 100%);
-            z-index: 2;
+            display: none; /* Removed entirely - let the animation colors shine */
         }
         .hero-video {
             position: absolute;
@@ -328,16 +323,9 @@
             }
         }
 
-        /* Photographic backdrop overlay */
+        /* Removed - was dimming the animation colors */
         .hero-mesh {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            background:
-                radial-gradient(ellipse 50% 40% at 50% 45%, rgba(60, 60, 65, 0.08), transparent 70%),
-                radial-gradient(ellipse 40% 35% at 30% 60%, rgba(40, 40, 45, 0.06), transparent 65%);
-            opacity: 0.4;
+            display: none;
         }
 
         .hero-grid {
