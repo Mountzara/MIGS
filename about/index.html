@@ -276,7 +276,8 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 0 clamp(20px, 4vw, 56px) clamp(160px, 22vw, 220px);
+            align-items: flex-start;
+            padding: 0 clamp(20px, 4vw, 56px) clamp(60px, 8vw, 100px);
             color: var(--white);
             opacity: 0;
             transform: translate3d(0, 28px, 0);
@@ -284,13 +285,17 @@
                 opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
                 transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
         }
-        /* Constrain scene text to left side so it doesn't run across the face (face is at 70% from left) */
+        /* Bottom-left anchor: keep text in left half, away from face (70% from left) */
         .cover-scene > * {
-            max-width: min(55%, 680px);
+            max-width: min(50%, 620px);
+            text-align: left;
         }
         @media (max-width: 768px) {
             .cover-scene > * {
                 max-width: 100%;
+            }
+            .cover-scene {
+                padding: 0 clamp(20px, 5vw, 32px) clamp(80px, 14vw, 120px);
             }
         }
         .cover-scene.active {
