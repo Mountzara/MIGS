@@ -177,30 +177,20 @@
             position: absolute;
             inset: 0;
             z-index: 2;
+            /* Soft vignette centered on face (70% 35%) - doesn't darken face area */
             background:
-                radial-gradient(ellipse 58% 52% at 52% 42%, rgba(0,0,0,0) 20%, rgba(0,0,0,0.58) 100%);
+                radial-gradient(ellipse 75% 75% at 70% 35%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.35) 100%);
             pointer-events: none;
         }
 
-        /* Four-edge fade + four corner darkeners. Hold zones are wide enough
-           that the actual photo edge is fully covered in solid black; the fade
-           then transitions to rgba(0,0,0,0) (avoids the gray-banding artefact
-           you get from interpolating to the 'transparent' keyword). */
+        /* Soft edge fade overlay - feathers edges to black background without darkening face */
         .cover-gradient {
             position: absolute;
             inset: 0;
             z-index: 3;
             background:
-                /* Four edge fades — thicker hold zones so the photo edge is fully clipped to black */
-                linear-gradient(to bottom, #000 0%, #000 12%, rgba(0,0,0,0) 42%),
-                linear-gradient(to top,    #000 0%, #000 16%, rgba(0,0,0,0) 52%),
-                linear-gradient(to right,  #000 0%, #000 20%, rgba(0,0,0,0) 60%),
-                linear-gradient(to left,   #000 0%, #000 20%, rgba(0,0,0,0) 60%),
-                /* Corner radial darkeners — ensures the four corners are fully black */
-                radial-gradient(circle at 0% 0%,     rgba(0,0,0,0.95), rgba(0,0,0,0) 38%),
-                radial-gradient(circle at 100% 0%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 38%),
-                radial-gradient(circle at 0% 100%,   rgba(0,0,0,0.95), rgba(0,0,0,0) 40%),
-                radial-gradient(circle at 100% 100%, rgba(0,0,0,0.95), rgba(0,0,0,0) 40%);
+                /* Soft outer fade to background - only affects extreme edges */
+                radial-gradient(ellipse 95% 95% at 70% 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.6) 100%);
             pointer-events: none;
             transition: opacity 0.6s ease;
         }
@@ -279,6 +269,15 @@
             transition:
                 opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
                 transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        /* Constrain scene text to left side so it doesn't run across the face (face is at 70% from left) */
+        .cover-scene > * {
+            max-width: min(55%, 680px);
+        }
+        @media (max-width: 768px) {
+            .cover-scene > * {
+                max-width: 100%;
+            }
         }
         .cover-scene.active {
             opacity: 1;
