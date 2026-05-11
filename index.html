@@ -2036,6 +2036,10 @@
             filter: saturate(1.0) contrast(1.05);
             transition: filter 600ms ease, transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
             transform: scale(1.06);
+            /* Fades in on scroll — JS sets --video-opacity from 0 to 1 across the
+               first ~22% of scroll. Starts invisible; the user sees a solid black
+               pin first, then the video smoothly resolves into view. */
+            opacity: var(--video-opacity, 0);
         }
         .research-feature.scene-final .research-feature-video {
             transform: scale(1.00);
@@ -2054,7 +2058,8 @@
             transition: opacity 600ms ease;
             opacity: 1;
         }
-        /* Tint layer dims the video when scenes are reading; lifts at the final scene */
+        /* Tint layer adds atmospheric depth to the video — the scene glass cards
+           handle local text readability, so this stays subtle. */
         .research-feature-tint {
             position: absolute;
             inset: 0;
@@ -2062,17 +2067,16 @@
             pointer-events: none;
             background:
                 linear-gradient(180deg,
-                    rgba(0,0,0,0.55) 0%,
-                    rgba(0,0,0,0.35) 30%,
-                    rgba(0,0,0,0.20) 55%,
-                    rgba(0,0,0,0.55) 85%,
-                    rgba(0,0,0,0.85) 100%),
-                linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 35%, transparent 55%);
+                    rgba(0,0,0,0.38) 0%,
+                    rgba(0,0,0,0.16) 35%,
+                    rgba(0,0,0,0.10) 55%,
+                    rgba(0,0,0,0.42) 92%,
+                    rgba(0,0,0,0.72) 100%);
             transition: opacity 700ms ease;
             opacity: 1;
         }
         .research-feature.scene-final .research-feature-tint {
-            opacity: 0.18;
+            opacity: 0.12;
         }
         .research-feature.scene-final .research-feature-vignette {
             opacity: 0.85;
@@ -2090,7 +2094,8 @@
             opacity: 0.45;
             mix-blend-mode: overlay;
         }
-        /* Static masthead corners */
+        /* Static masthead corners — only emerge during the final reveal so the
+           text scenes 1 & 2 read cleanly without competing background metadata. */
         .research-feature-corner {
             position: absolute;
             z-index: 5;
@@ -2102,6 +2107,13 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .research-feature.scene-final .research-feature-corner {
+            opacity: 1;
+            transform: translateY(0);
         }
         .research-feature-corner-tl {
             top: clamp(80px, 8vh, 100px);
@@ -2140,6 +2152,27 @@
         .feature-scene.active {
             opacity: 1;
             transform: translate3d(0, 0, 0);
+        }
+        /* Glass-card scrim behind the scene text — improves readability of white
+           text over the video without darkening the whole frame. */
+        .feature-scene-card {
+            display: inline-block;
+            max-width: min(820px, calc(100vw - 80px));
+            padding: clamp(22px, 3vw, 32px) clamp(22px, 3.4vw, 36px);
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(8, 8, 12, 0.46), rgba(8, 8, 12, 0.62));
+            backdrop-filter: blur(22px) saturate(140%);
+            -webkit-backdrop-filter: blur(22px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+            text-align: left;
+        }
+        @media (max-width: 720px) {
+            .feature-scene-card {
+                max-width: calc(100vw - 44px);
+                padding: 22px 22px;
+                border-radius: 16px;
+            }
         }
         /* Scene 1: identity */
         .feature-tags {
@@ -4176,18 +4209,22 @@
                         <!-- Scenes -->
                         <div class="research-feature-scenes">
                             <div class="feature-scene feature-scene--1">
-                                <div class="feature-tags">
-                                    <span class="feature-tag award">Golden Hysteroscope Award</span>
-                                    <span class="feature-tag">Hysteroscopy</span>
-                                    <span class="feature-tag">2024</span>
+                                <div class="feature-scene-card">
+                                    <div class="feature-tags">
+                                        <span class="feature-tag award">Golden Hysteroscope Award</span>
+                                        <span class="feature-tag">Hysteroscopy</span>
+                                        <span class="feature-tag">2024</span>
+                                    </div>
+                                    <h3 class="feature-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus.</h3>
+                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                                 </div>
-                                <h3 class="feature-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus.</h3>
-                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                             </div>
                             <div class="feature-scene feature-scene--2">
-                                <span class="feature-eyebrow">Why this case mattered</span>
-                                <p class="feature-narrative">An <strong>angular pregnancy</strong> in an <strong>arcuate uterus</strong> classically defies blind dilation and curettage. By substituting <strong>direct hysteroscopic visualization</strong> for blind instrumentation, the team preserved endometrial integrity and protected future fertility — establishing a new teaching standard recognized by AAGL with the <strong>Golden Hysteroscope Award</strong>.</p>
-                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                <div class="feature-scene-card">
+                                    <span class="feature-eyebrow">Why this case mattered</span>
+                                    <p class="feature-narrative">An <strong>angular pregnancy</strong> in an <strong>arcuate uterus</strong> classically defies blind dilation and curettage. By substituting <strong>direct hysteroscopic visualization</strong> for blind instrumentation, the team preserved endometrial integrity and protected future fertility — establishing a new teaching standard recognized by AAGL with the <strong>Golden Hysteroscope Award</strong>.</p>
+                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                </div>
                             </div>
                             <div class="feature-scene feature-scene--3">
                                 <!-- Intentionally empty: lets the video take over -->
@@ -4239,18 +4276,22 @@
 
                         <div class="research-feature-scenes">
                             <div class="feature-scene feature-scene--1">
-                                <div class="feature-tags">
-                                    <span class="feature-tag">Robotic Surgery</span>
-                                    <span class="feature-tag">Workflow</span>
-                                    <span class="feature-tag">2024</span>
+                                <div class="feature-scene-card">
+                                    <div class="feature-tags">
+                                        <span class="feature-tag">Robotic Surgery</span>
+                                        <span class="feature-tag">Workflow</span>
+                                        <span class="feature-tag">2024</span>
+                                    </div>
+                                    <h3 class="feature-title">Fibroids à La Carte: a robotic myomectomy workflow that cuts operative time.</h3>
+                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S58 · AAGL Global Congress 2024</p>
                                 </div>
-                                <h3 class="feature-title">Fibroids à La Carte: a robotic myomectomy workflow that cuts operative time.</h3>
-                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S58 · AAGL Global Congress 2024</p>
                             </div>
                             <div class="feature-scene feature-scene--2">
-                                <span class="feature-eyebrow">The bottleneck — and the fix</span>
-                                <p class="feature-narrative">Robotic myomectomy frequently <strong>bottlenecks at fibroid extraction</strong>. This work introduces a streamlined "à la carte" technique using a <strong>gel-based port and bag containment system</strong> — reducing total operative time, simplifying multi-fibroid removal, and preserving contained-morcellation safety.</p>
-                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                <div class="feature-scene-card">
+                                    <span class="feature-eyebrow">The bottleneck — and the fix</span>
+                                    <p class="feature-narrative">Robotic myomectomy frequently <strong>bottlenecks at fibroid extraction</strong>. This work introduces a streamlined "à la carte" technique using a <strong>gel-based port and bag containment system</strong> — reducing total operative time, simplifying multi-fibroid removal, and preserving contained-morcellation safety.</p>
+                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                </div>
                             </div>
                             <div class="feature-scene feature-scene--3"></div>
                         </div>
@@ -4299,18 +4340,22 @@
 
                         <div class="research-feature-scenes">
                             <div class="feature-scene feature-scene--1">
-                                <div class="feature-tags">
-                                    <span class="feature-tag">ICG · Asherman's</span>
-                                    <span class="feature-tag">Hysteroscopic-Robotic</span>
-                                    <span class="feature-tag">2024</span>
+                                <div class="feature-scene-card">
+                                    <div class="feature-tags">
+                                        <span class="feature-tag">ICG · Asherman's</span>
+                                        <span class="feature-tag">Hysteroscopic-Robotic</span>
+                                        <span class="feature-tag">2024</span>
+                                    </div>
+                                    <h3 class="feature-title">When in Doubt, Green It Out: ICG-guided isthmocele excision in Asherman's syndrome.</h3>
+                                    <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11 · AAGL Global Congress 2024</p>
                                 </div>
-                                <h3 class="feature-title">When in Doubt, Green It Out: ICG-guided isthmocele excision in Asherman's syndrome.</h3>
-                                <p class="feature-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S10–S11 · AAGL Global Congress 2024</p>
                             </div>
                             <div class="feature-scene feature-scene--2">
-                                <span class="feature-eyebrow">Mapping a hidden defect</span>
-                                <p class="feature-narrative">Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. A combined <strong>hysteroscopic-robotic approach</strong> with <strong>indocyanine green (ICG) fluorescence</strong> identifies the defect's true margins despite scarred terrain — letting the surgeon excise precisely where blind landmarks fail.</p>
-                                <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                <div class="feature-scene-card">
+                                    <span class="feature-eyebrow">Mapping a hidden defect</span>
+                                    <p class="feature-narrative">Asherman's syndrome distorts uterine anatomy, complicating the already-difficult repair of an isthmocele. A combined <strong>hysteroscopic-robotic approach</strong> with <strong>indocyanine green (ICG) fluorescence</strong> identifies the defect's true margins despite scarred terrain — letting the surgeon excise precisely where blind landmarks fail.</p>
+                                    <p class="feature-byline">Mabini · Tam · St. Alexius</p>
+                                </div>
                             </div>
                             <div class="feature-scene feature-scene--3"></div>
                         </div>
@@ -5393,7 +5438,7 @@
                 ambient.style.setProperty('--ambient-y', (35 + p * 30) + '%');
             }
 
-            // -- Cinematic research features: scene crossfade based on scroll progress --
+            // -- Cinematic research features: video fade-in + scene crossfade based on scroll progress --
             if (researchFeatures.length) {
                 for (const f of researchFeatures) {
                     const rect = f.el.getBoundingClientRect();
@@ -5404,18 +5449,24 @@
                     const passed = Math.max(0, Math.min(total, -rect.top));
                     const p = passed / total;
 
-                    // Three scenes, mapped to progress bands with overlap:
-                    //   scene 0: 0.00 – 0.34   (title / journal)
-                    //   scene 1: 0.34 – 0.68   (narrative)
-                    //   scene 2: 0.68 – 1.00   (video reveal — text fades away)
+                    // Video fade-in: black until p=0.04, fully visible by p=0.22.
+                    // Holds at 1.0 throughout the rest of the section.
+                    const vOpacity = Math.max(0, Math.min(1, (p - 0.04) / 0.18));
+                    f.el.style.setProperty('--video-opacity', vOpacity.toFixed(3));
+
+                    // Scene timing shifted so the title doesn't appear over a black pin:
+                    //   scene 0 (title):      0.22 – 0.48
+                    //   scene 1 (narrative):  0.48 – 0.72
+                    //   scene 2 (final reveal): 0.72 – 1.00
                     let idx;
-                    if (p < 0.34) idx = 0;
-                    else if (p < 0.68) idx = 1;
+                    if (p < 0.22) idx = -1;      // intro window: video is fading in, no scene visible
+                    else if (p < 0.48) idx = 0;
+                    else if (p < 0.72) idx = 1;
                     else idx = 2;
 
                     if (idx !== f.lastSceneIdx) {
                         f.scenes.forEach((s, i) => s.classList.toggle('active', i === idx));
-                        f.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+                        f.dots.forEach((d, i) => d.classList.toggle('active', i === idx && idx >= 0));
                         f.el.classList.toggle('scene-final', idx === 2);
                         f.lastSceneIdx = idx;
                     }
