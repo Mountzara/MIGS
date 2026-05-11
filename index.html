@@ -7,7 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="video" href="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4" fetchpriority="high">
+    <link rel="preload" as="video" href="https://mountzara.com/media/hero-uterus-animation.mp4?v=2" type="video/mp4" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -256,15 +256,40 @@
             min-height: 100%;
             width: auto;
             height: auto;
-            transform: translate(-50%, -50%);
             z-index: 1;
             object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.4s ease-in;
+            opacity: 1;
+            pointer-events: none;
+            /* Slow Ken Burns on poster - runs until video plays, ensures motion is visible */
+            animation: heroKenBurns 30s ease-in-out infinite alternate;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         .hero-video.playing {
-            opacity: 1;
+            animation: none;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .hero-video.ken-burns {
+            animation: heroKenBurnsSlow 45s ease-in-out infinite alternate;
+        }
+
+        @keyframes heroKenBurns {
+            0% {
+                transform: translate(-50%, -50%) scale(1.0);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.06);
+            }
+        }
+
+        @keyframes heroKenBurnsSlow {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.15);
+            }
         }
 
         .hero-video.ken-burns {
@@ -3602,18 +3627,26 @@
 
     <!-- Hero -->
     <section class="hero">
-        <video class="hero-video" autoplay muted playsinline preload="auto" id="heroVideo">
-            <source src="https://mountzara.com/media/hero-uterus-animation.mp4" type="video/mp4">
+        <video class="hero-video"
+               autoplay muted playsinline
+               preload="auto"
+               disablepictureinpicture
+               disableremoteplayback
+               poster="https://mountzara.com/media/hero-poster.jpg"
+               id="heroVideo">
+            <source src="https://mountzara.com/media/hero-uterus-animation.mp4?v=2" type="video/mp4">
         </video>
         <script>
             // Force play immediately - inline to execute ASAP
             (function() {
                 const v = document.getElementById('heroVideo');
                 if (v) {
-                    v.muted = true; // Ensure muted
-                    v.play().catch(() => {
-                        // Retry on next tick
-                        setTimeout(() => v.play().catch(() => {}), 10);
+                    v.muted = true;
+                    const tryPlay = () => v.play().catch(() => {});
+                    tryPlay();
+                    // Retry on user interaction in case autoplay blocked
+                    ['click','touchstart','scroll','keydown'].forEach(e => {
+                        document.addEventListener(e, tryPlay, { once: true, passive: true });
                     });
                 }
             })();
@@ -4955,29 +4988,29 @@
     </div>
 
     <script>
-        // Hero video - autoplay, fade in video, then text appears 1s later
+        // Hero video reveal logic
         const heroVideo = document.getElementById('heroVideo');
         const heroContent = document.querySelector('.hero-content-delayed');
 
         if (heroVideo && heroContent) {
-            // When video starts playing: fade in video, then show text 1s later
+            // When video starts playing: remove Ken Burns from poster, show text 1s later
             heroVideo.addEventListener('playing', () => {
                 heroVideo.classList.add('playing');
                 setTimeout(() => {
                     heroContent.classList.add('visible');
-                }, 1000);
+                }, 800);
             }, { once: true });
 
-            // Ken Burns effect on last frame
+            // Ken Burns effect on last frame when video ends
             heroVideo.addEventListener('ended', () => {
+                heroVideo.classList.remove('playing');
                 heroVideo.classList.add('ken-burns');
             }, { once: true });
 
-            // Fallback: if video doesn't start within 3s, show video and text anyway
+            // Fallback: show text after 2s even if video never plays (poster + Ken Burns is still beautiful)
             setTimeout(() => {
-                heroVideo.classList.add('playing');
                 heroContent.classList.add('visible');
-            }, 3000);
+            }, 2000);
         } else if (heroContent) {
             heroContent.classList.add('visible');
         }
