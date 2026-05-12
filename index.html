@@ -2879,6 +2879,33 @@
             transform: scale(1.02);
         }
 
+        /* Auto-playing muted preview — the actual video element behind the
+           overlay. Plays the first ~10 seconds via a media-fragment URL
+           (#t=0,10) and loops; the keyframe animation adds a subtle fade
+           at the loop boundary so the replay feels intentional rather
+           than abrupt. Hover pauses the fade so the user sees a clear
+           preview frame. */
+        .video-preview {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            animation: video-preview-fade 10s infinite ease-in-out;
+            pointer-events: none; /* clicks pass through to the parent */
+        }
+
+        @keyframes video-preview-fade {
+            0%, 80%  { opacity: 1; }
+            92%      { opacity: 0.55; }
+            100%     { opacity: 1; }
+        }
+
+        .research-card-video:hover .video-preview {
+            animation-play-state: paused;
+        }
+
         .video-preview-overlay {
             position: absolute;
             inset: 0;
@@ -2886,12 +2913,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
-            transition: background 0.3s ease;
+            background: linear-gradient(180deg,
+                rgba(0,0,0,0.05) 0%,
+                rgba(0,0,0,0.45) 55%,
+                rgba(0,0,0,0.78) 100%);
+            transition: opacity 0.3s ease, background 0.3s ease;
+            pointer-events: none; /* clicks pass through to the parent */
         }
 
         .research-card-video:hover .video-preview-overlay {
-            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+            opacity: 0.55;
         }
 
         .play-button {
@@ -4717,6 +4748,9 @@
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/rpoc-golden-hysteroscope.mp4#t=0,10" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -4738,6 +4772,9 @@
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/myomectomy-gel-port.mp4#t=0,10" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -4759,6 +4796,9 @@
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/isthmocele-ashermans.mp4#t=0,10" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -6290,6 +6330,13 @@
             const video = document.getElementById('modalVideo');
             if (!modal || !video) return;
 
+            // Pause every research-card auto-preview so we don't have
+            // overlapping audio (they're muted, but pausing them also
+            // saves CPU and keeps the visual focus on the modal).
+            document.querySelectorAll('.video-preview').forEach((v) => {
+                try { v.pause(); } catch (e) { /* ignore */ }
+            });
+
             video.src = videoSrc;
             modal.classList.add('active');
             video.play().catch(() => {});
@@ -6309,6 +6356,11 @@
 
             // Restore body scroll
             document.body.style.overflow = '';
+
+            // Resume the muted auto-previews on the cards.
+            document.querySelectorAll('.video-preview').forEach((v) => {
+                v.play().catch(() => {});
+            });
         }
 
         // Close modal on Escape key
