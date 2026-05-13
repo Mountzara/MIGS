@@ -53,6 +53,38 @@
         a { color: inherit; text-decoration: none; }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
+        /* Enhanced text selection */
+        ::selection {
+            background: rgba(92, 182, 255, 0.35);
+            color: #ffffff;
+        }
+
+        /* Smooth link underlines (for inline links) */
+        p a, li a, .research-detail a:not(.pub-link) {
+            position: relative;
+            color: rgba(92, 182, 255, 0.95);
+            transition: color 0.2s ease;
+        }
+        p a::after, li a::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(92, 182, 255, 0.4);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        p a:hover::after, li a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        p a:hover, li a:hover {
+            color: rgba(92, 182, 255, 1);
+        }
+
         /* ========== Keyboard Navigation / Accessibility ========== */
         /* Remove default outline, add custom focus ring for keyboard users */
         *:focus { outline: none; }
@@ -4823,7 +4855,7 @@
 
             <!-- Video Modal -->
             <div class="video-modal" id="videoModal" onclick="closeVideoModal()">
-                <video id="modalVideo" playsinline controls></video>
+                <video id="modalVideo" playsinline controls preload="metadata"></video>
             </div>
 
             <div class="research-list">
