@@ -2241,6 +2241,140 @@
             line-height: 1.55;
         }
 
+        /* Care path resource sections (Who / Services / Expect / FAQ / Literature) */
+        .evidence-section {
+            margin: 0 0 36px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .evidence-section:last-of-type {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 8px;
+        }
+        .evidence-section-head {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(92, 182, 255, 0.95);
+            margin: 0 0 14px;
+        }
+        .evidence-section-subhead {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.68);
+            margin: 0 0 18px;
+        }
+        .evidence-section-body {
+            font-size: 15px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.78);
+            margin: 0;
+        }
+
+        /* Services list */
+        .evidence-service-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 640px) {
+            .evidence-service-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .evidence-service-item {
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+        .evidence-service-item:hover {
+            border-color: rgba(92, 182, 255, 0.28);
+            background: rgba(92, 182, 255, 0.04);
+        }
+        .evidence-service-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.005em;
+            line-height: 1.35;
+            margin: 0 0 6px;
+        }
+        .evidence-service-desc {
+            font-size: 13px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.66);
+            margin: 0;
+        }
+
+        /* What to expect — before / during / after */
+        .evidence-expect-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 760px) {
+            .evidence-expect-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .evidence-expect-col {
+            padding: 18px 18px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+        }
+        .evidence-expect-col-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 0 0 10px;
+        }
+        .evidence-expect-col-body {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.78);
+            margin: 0;
+        }
+        .evidence-expect-course {
+            margin: 18px 0 0;
+            padding: 14px 16px;
+            background: rgba(92, 182, 255, 0.06);
+            border: 1px solid rgba(92, 182, 255, 0.18);
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        /* FAQ list */
+        .evidence-faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .evidence-faq-item {
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+        }
+        .evidence-faq-q {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+            margin: 0 0 8px;
+            letter-spacing: -0.005em;
+            line-height: 1.4;
+        }
+        .evidence-faq-a {
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.72);
+            margin: 0;
+        }
+
         .omm-quote-block {
             margin-top: 80px;
             padding: 56px 0;
@@ -2957,6 +3091,33 @@
             transform: scale(1.02);
         }
 
+        /* Auto-playing muted preview — the actual video element behind the
+           overlay. Plays the first ~10 seconds via a media-fragment URL
+           (#t=0,10) and loops; the keyframe animation adds a subtle fade
+           at the loop boundary so the replay feels intentional rather
+           than abrupt. Hover pauses the fade so the user sees a clear
+           preview frame. */
+        .video-preview {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            animation: video-preview-fade 10s infinite ease-in-out;
+            pointer-events: none; /* clicks pass through to the parent */
+        }
+
+        @keyframes video-preview-fade {
+            0%, 80%  { opacity: 1; }
+            92%      { opacity: 0.55; }
+            100%     { opacity: 1; }
+        }
+
+        .research-card-video:hover .video-preview {
+            animation-play-state: paused;
+        }
+
         .video-preview-overlay {
             position: absolute;
             inset: 0;
@@ -2964,12 +3125,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
-            transition: background 0.3s ease;
+            background: linear-gradient(180deg,
+                rgba(0,0,0,0.05) 0%,
+                rgba(0,0,0,0.45) 55%,
+                rgba(0,0,0,0.78) 100%);
+            transition: opacity 0.3s ease, background 0.3s ease;
+            pointer-events: none; /* clicks pass through to the parent */
         }
 
         .research-card-video:hover .video-preview-overlay {
-            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+            opacity: 0.55;
         }
 
         .play-button {
@@ -4798,6 +4963,9 @@
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/rpoc-golden-hysteroscope-preview.mp4" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -4819,6 +4987,9 @@
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/myomectomy-gel-port-preview.mp4" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -4840,6 +5011,9 @@
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/isthmocele-ashermans-preview.mp4" type="video/mp4">
+                        </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -4855,7 +5029,7 @@
 
             <!-- Video Modal -->
             <div class="video-modal" id="videoModal" onclick="closeVideoModal()">
-                <video id="modalVideo" playsinline controls preload="metadata"></video>
+                <video id="modalVideo" playsinline controls></video>
             </div>
 
             <div class="research-list">
@@ -5398,7 +5572,7 @@
             <h3 id="contactModalTitle">Get in touch</h3>
             <p class="modal-sub">Copy the email, or open it directly in your preferred mail service.</p>
             <div class="email-row">
-                <span class="email-text" id="contactEmail">cmabini@mountzara.com</span>
+                <span class="email-text" id="contactEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5c3f313d3e3532351c3133293228263d2e3d723f3331">[email&#160;protected]</a></span>
                 <button type="button" class="copy-btn" id="copyEmailBtn" onclick="copyEmail()">
                     <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
                     <span class="copy-label">Copy</span>
@@ -5406,7 +5580,7 @@
             </div>
             <div class="modal-divider">Open in</div>
             <div class="modal-actions">
-                <a href="mailto:cmabini@mountzara.com" class="modal-action">
+                <a href="/cdn-cgi/l/email-protection#c1a2aca0a3a8afa881acaeb4afb5bba0b3a0efa2aeac" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
                         Default mail app
@@ -5448,23 +5622,50 @@
         </div>
     </div>
 
-    <!-- Evidence Modal (OMT Research) -->
+    <!-- Evidence + Care Path Modal (Patient + Clinician Resource) -->
     <div class="evidence-modal" id="evidenceModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="evidenceModalTitle">
         <div class="evidence-modal-card" id="evidenceModalCard">
-            <button class="evidence-modal-close" id="evidenceModalClose" aria-label="Close research details" type="button">
+            <button class="evidence-modal-close" id="evidenceModalClose" aria-label="Close details" type="button">
                 <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13"/></svg>
             </button>
-            <div class="evidence-modal-eyebrow" id="evidenceModalEyebrow">PubMed-Indexed Research</div>
-            <h3 id="evidenceModalTitle">Pregnancy</h3>
+            <div class="evidence-modal-eyebrow" id="evidenceModalEyebrow">Care Path · Patient &amp; Clinician Resource</div>
+            <h3 id="evidenceModalTitle"></h3>
             <p class="evidence-modal-intro" id="evidenceModalIntro"></p>
-            <div class="evidence-study-list" id="evidenceModalStudies"></div>
+
+            <section class="evidence-section" id="evidenceModalWhoSection" hidden>
+                <h4 class="evidence-section-head">Who this care path is for</h4>
+                <p class="evidence-section-body" id="evidenceModalWho"></p>
+            </section>
+
+            <section class="evidence-section" id="evidenceModalServicesSection" hidden>
+                <h4 class="evidence-section-head">What this care path offers</h4>
+                <p class="evidence-section-subhead" id="evidenceModalServicesIntro" hidden></p>
+                <div class="evidence-service-grid" id="evidenceModalServices"></div>
+            </section>
+
+            <section class="evidence-section" id="evidenceModalExpectSection" hidden>
+                <h4 class="evidence-section-head">What to expect at a session</h4>
+                <div class="evidence-expect-grid" id="evidenceModalExpect"></div>
+                <p class="evidence-expect-course" id="evidenceModalCourse" hidden></p>
+            </section>
+
+            <section class="evidence-section" id="evidenceModalFaqSection" hidden>
+                <h4 class="evidence-section-head">Common questions</h4>
+                <div class="evidence-faq-list" id="evidenceModalFaqs"></div>
+            </section>
+
+            <section class="evidence-section" id="evidenceModalStudiesSection">
+                <h4 class="evidence-section-head">The published literature</h4>
+                <div class="evidence-study-list" id="evidenceModalStudies"></div>
+            </section>
+
             <div class="evidence-modal-footnote">
-                Citations sourced from PubMed (NCBI). External links open in a new tab. The presence of a study does not imply endorsement of every conclusion — only that the research is peer-reviewed and indexed.
+                Educational resource. Not a substitute for individualized medical evaluation. Citations sourced from PubMed (NCBI); links open in a new tab. The presence of a study does not imply endorsement of every conclusion — only that the research is peer-reviewed and indexed. Sensitive clinical specifics (technique sequencing, dosing, decision algorithms) are intentionally not published here.
             </div>
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Orchestrated reveal sequence:
         //   1. Page loader visible while critical assets download
         //   2. Loader fades out
@@ -5493,6 +5694,10 @@
             return Promise.resolve();
         }
 
+        // Hero text appears past the midpoint of the WebP animation so the
+        // visual sequence has clear identity before the overlay arrives.
+        const HERO_TEXT_DELAY_MS = Math.floor(ANIMATION_DURATION_MS * 0.55);
+
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
@@ -5505,10 +5710,11 @@
                 // cache from the <link rel="preload"> so this is instant.
                 heroVideo.src = url;
             }
-            // Cascade hero text in Apple-style, ~600ms after animation starts
+            // Cascade hero text in Apple-style — past the WebP midpoint so
+            // the animation has time to establish before the overlay appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
-            }, 600);
+            }, HERO_TEXT_DELAY_MS);
             // Ken Burns after WebP animation finishes
             setTimeout(() => {
                 heroVideo.classList.add('ken-burns');
@@ -5610,12 +5816,41 @@
         });
 
         // ==========================================================
-        // Evidence modal — PubMed-indexed OMT research, data-driven
+        // Evidence + Care Path modal — patient + clinician resource
+        // Sections: intro · who · services · what to expect · FAQ · published literature
+        // Source: patient-facing portions of the office's integrated OMT protocol
+        //   (Sections 4–6 of the master document). Technique sequencing, dosing,
+        //   decision algorithms, and billing details are intentionally not published.
         // ==========================================================
         const EVIDENCE = {
             'womens-health': {
                 title: 'OMT for Women\'s Health',
                 intro: 'For dysmenorrhea, sacral imbalance, and visceral-somatic patterns rooted in the pelvis, the literature increasingly supports defined OMT protocols combining muscle energy, myofascial release, and counterstrain across a structured number of sessions — adjunct to, not replacing, gynecologic management.',
+                whoItsFor: 'Women whose menstrual pain, ovulatory pain, low back and sacral pain, or visceral-somatic patterns are not fully addressed by hormonal therapy, NSAIDs, and lifestyle measures alone. Manual osteopathic care is offered as one layer of a fully multimodal plan — your contraceptive or hormonal management, anti-inflammatories, and any procedural or surgical care you may need remain the foundation; the manual work is added to address the structural and neurological substrate those treatments alone cannot reach.',
+                servicesIntro: 'A focused selection of evidence-supported osteopathic techniques. The specific combination, sequencing, and dosing are individualized at your first visit after a structured osteopathic structural examination — generalized names below describe the categories of work used in this care path.',
+                whatYouOffer: [
+                    { name: 'Spinal manipulation at the uterine sympathetic levels', desc: 'Gentle high-velocity, low-amplitude techniques at the lower thoracic and upper lumbar segments where the sympathetic nerves to the uterus originate. Addresses the spinal-cord amplification of menstrual pain signals.' },
+                    { name: 'Sacroiliac mobilization', desc: 'Treats sacral torsion and SI joint dysfunction that contribute to menstrual back pain and altered uterosacral-ligament tension. A double-blind randomized trial showed a single bilateral SI manipulation produced immediate, significant menstrual pain reduction with measurable release of the body\'s own serotonin and catecholamines.' },
+                    { name: 'Lumbar muscle-energy and articulatory work', desc: 'Restores motion at L1–L2 — the most commonly restricted segment in women with menstrual pain. Uses gentle isometric contractions rather than thrust techniques when preferred.' },
+                    { name: 'Pelvic diaphragm release', desc: 'External technique that reduces resting tension in the pelvic floor muscles. Common contributor to ovulatory pain, mid-cycle pelvic heaviness, and post-menstrual achiness.' },
+                    { name: 'Iliopsoas and quadratus lumborum release', desc: 'The deep hip flexors and side-back muscles often hold sustained tension that pulls the pelvis into a forward tilt — a frequently missed contributor to lower abdominal and groin pain mimicking visceral pain.' },
+                    { name: 'Chapman reflex point treatment', desc: 'Gentle rotary pressure on small lymphatic-reflex points associated with the uterus and ovaries. Reduces sympathetic tone and improves the local lymphatic drainage thought to contribute to congestive symptoms.' },
+                    { name: 'Vagal-modulating breathwork', desc: 'A 4-7-8 breathing pattern (4-second inhale, 7-second hold, 8-second exhale) for 5 minutes — taught at the first visit as a home practice. Activates parasympathetic tone through the vagus nerve and reduces the autonomic component of cyclic pain.' }
+                ],
+                whatToExpect: {
+                    before: 'Hydrate well — 16–24 oz of water in the two hours before the visit. Wear loose two-piece clothing (scrubs, leggings, or athletic wear). Take any anti-inflammatory you\'re prescribed 60–90 minutes before. Continue all other medications normally. Empty your bladder right before the visit. Sessions can be performed at any phase of the menstrual cycle; for cyclic dysmenorrhea, sessions are often intentionally timed around the pre-menstrual and early menstrual window for greatest effect.',
+                    during: 'Sessions are 30 minutes. You\'ll move between supine, side-lying, and seated positions. Most techniques are gentle — sustained pressure, slow stretches, breath-coordinated mobilization. Spinal manipulation, when used, produces a brief sensation and sometimes an audible pop; pain reduction occurs whether or not a pop is heard. Every technique can be paused or modified — speak up at any point.',
+                    after: 'Drink 16+ oz of water within an hour. A 20–30 minute gentle walk supports the lymphatic and visceral gains. Avoid heavy lifting, high-intensity exercise, or new yoga poses for 24 hours. Heat applied to the lower abdomen has shown equivalence to ibuprofen for menstrual pain in head-to-head trials. Mild soreness lasting 24–48 hours is normal — similar to delayed-onset soreness after a new workout.',
+                    course: 'For primary dysmenorrhea, the published Ruffini protocol uses five 30-minute sessions across consecutive cycles, with two sessions timed to the pre-menstrual and early menstrual window. Most patients begin to notice change between sessions 3 and 5. Responders move to a brief maintenance phase or care on a per-cycle basis as needed.'
+                },
+                faqs: [
+                    { q: 'How is OMT different from a massage?', a: 'Massage focuses on broad muscle relaxation. OMT is diagnostic and targeted — a structured osteopathic structural examination identifies specific somatic dysfunctions at specific spinal segments and tissue regions, and each technique is selected for the specific finding. Visceral, Chapman, and spinal manipulation work address neurological and fascial layers that massage does not target.' },
+                    { q: 'Is OMT the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: OMT is performed by a fully licensed physician who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed, and uses a broader range of techniques (visceral, fascial, cranial, Chapman point) in addition to spinal thrust. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures.' },
+                    { q: 'Is OMT covered by insurance?', a: 'Yes — OMT is billed under standard CPT codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
+                    { q: 'How long until I feel a difference?', a: 'For cyclic menstrual pain, the published five-session protocol showed approximately a 63% reduction in average menstrual pain by the end of the course (Ruffini 2018 RCT). Most patients notice change by the third or fourth session. Soreness during the first one or two sessions is normal and not a reason to discontinue.' },
+                    { q: 'Will I still need my other medications?', a: 'Yes — OMT is layered on top of your existing plan, not a replacement. The published trials all combined OMT with standard care (NSAIDs, hormonal therapy as indicated). The published heat-therapy data showing equivalence to ibuprofen still applies; many patients in this care path use NSAIDs strategically (pre-emptive dosing 1–2 days before period onset) and heat therapy at body temperature.' },
+                    { q: 'Is OMT safe?', a: 'Yes, with appropriate screening. Published gynecologic OMT trials report no serious adverse events. The most common side effect — mild post-session soreness for 24–48 hours — occurs in 10–25% of sessions. High-velocity techniques are modified or avoided in patients with osteoporosis, suspected pregnancy without confirmation, active anticoagulation, or significant disc disease at the target level. Your medical history is reviewed before any thrust technique.' }
+                ],
                 studies: [
                     {
                         title: 'Effectiveness of osteopathic treatment in women with primary dysmenorrhea: A randomised controlled trial',
@@ -5646,6 +5881,31 @@
             pregnancy: {
                 title: 'OMT in Pregnancy',
                 intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline most women experience in the third trimester.',
+                whoItsFor: 'Pregnant patients with low back pain, sacroiliac pain, pelvic girdle pain, sciatic symptoms, round-ligament pain, or postural strain — particularly in the second and third trimesters as the pelvis adapts to the growing uterus. Also appropriate for postpartum patients with pubic symphysis dysfunction, sacroiliac instability, and residual pelvic-girdle pain that persists beyond 6 weeks. Pregnancy-modified positioning and a defined safety profile guide every session.',
+                servicesIntro: 'Pregnancy-modified osteopathic care. High-velocity techniques at the sacrum and lumbar spine are avoided after roughly 16 weeks; supine positioning is limited after 20 weeks. Deep visceral abdominal work is not performed. The selected techniques below are the safe, evidence-supported pregnancy options.',
+                whatYouOffer: [
+                    { name: 'Side-lying lumbar and pelvic mobilization', desc: 'Gentle articulatory mobilization in the side-lying position — avoids inferior vena cava compression and is safe in any trimester. Addresses the segmental restriction that drives third-trimester back pain.' },
+                    { name: 'Sacroiliac muscle-energy techniques', desc: 'Patient uses her own muscle contractions, against the operator\'s counterforce, to restore SI joint motion. No thrust, no risk to the pregnancy. Highly effective for pelvic-girdle pain.' },
+                    { name: 'Pubic symphysis balancing', desc: 'Gentle muscle-energy and balanced ligamentous tension techniques for pubic symphysis dysfunction — common late in pregnancy and a frequent contributor to "walking pain."' },
+                    { name: 'Suboccipital and upper-cervical release', desc: 'Reduces tension headaches that often emerge during pregnancy and addresses the postural strain of carrying weight forward. Performed seated or in modified supine.' },
+                    { name: 'External pelvic diaphragm release (modified positioning)', desc: 'Gentle external work that reduces pelvic floor tension contributing to perineal pressure and urinary frequency — performed in side-lying for pregnancy comfort and safety.' },
+                    { name: 'Counterstrain at tender points', desc: 'Indirect technique that positions the body away from the painful direction and holds for 90 seconds — works with the body rather than against it. Useful for round-ligament and AIIS tender points in pregnancy.' },
+                    { name: 'Postpartum sacroiliac and pubic symphysis work', desc: 'For patients with residual pelvic-girdle pain after delivery — the same techniques used in pregnancy, now with the full range of supine positioning restored. Many patients experience meaningful improvement within 2–3 postpartum visits.' }
+                ],
+                whatToExpect: {
+                    before: 'Hydrate well — pregnancy increases fluid needs. Wear loose, comfortable two-piece clothing that accommodates a growing abdomen. Bring a pillow or bolster if you prefer a particular support configuration. Continue your prenatal vitamins and any prescribed medications. If you\'ve been told to limit time on your back, mention it before the session and we\'ll plan positioning accordingly.',
+                    during: 'Sessions are 30 minutes. Most work is in the side-lying or modified seated position after 20 weeks. No thrust techniques at the sacrum or lumbar spine after 16 weeks. No deep visceral abdominal work. The PROMOTE trial protocol — seven sessions over nine weeks in the third trimester — is the published reference. Movements are slow and deliberate; you control the pace.',
+                    after: 'Drink water. Light walking is encouraged. Avoid prolonged sitting; stand and walk for a few minutes every hour for the rest of the day. Mild soreness for 24–48 hours is normal. Watch for any new bleeding, persistent contractions, or decreased fetal movement — those would warrant immediate evaluation with your OB and are reasons to call the office.',
+                    course: 'The PROMOTE protocol used seven sessions over nine weeks beginning in the late second or early third trimester. Sessions may continue weekly until delivery, then resume postpartum at the 4–6 week mark for residual pelvic-girdle pain. The published meta-analysis (Franke 2017) supports moderate-quality evidence for medium-sized improvements in both pain and functional status during and after pregnancy.'
+                },
+                faqs: [
+                    { q: 'Is OMT safe during pregnancy?', a: 'Yes, with pregnancy-modified positioning and a defined safety profile. The PROMOTE trial enrolled 400 third-trimester women without serious adverse events. High-velocity techniques are avoided at the sacrum and lumbar spine after 16 weeks; supine positioning is limited after 20 weeks; deep visceral abdominal work is not performed. These adaptations are standard.' },
+                    { q: 'Can it help with sciatica or pelvic-girdle pain?', a: 'Yes — these are exactly the patterns most studied. The PROMOTE and Licciardone trials both targeted back-specific functional decline and pain progression in pregnancy, and both showed significant improvement compared to usual care alone. Side-lying lumbar work and sacroiliac muscle-energy techniques are the primary tools.' },
+                    { q: 'Will manipulation cause early labor?', a: 'There is no evidence in any published pregnancy OMT trial that osteopathic treatment is associated with preterm labor or other obstetric complications. The pregnancy-modified techniques used in this care path are specifically designed to avoid mechanical pressure on the uterus.' },
+                    { q: 'What if I have a high-risk pregnancy?', a: 'Some high-risk situations — placenta previa, active threatened preterm labor, severe preeclampsia — warrant deferral or a modified plan in close coordination with your OB. The structural exam and pre-session medication review will identify these. You don\'t need to know in advance whether OMT is right for your pregnancy — that\'s part of the initial visit.' },
+                    { q: 'When do I start, and how long do sessions last?', a: 'Most pregnancy patients benefit most from sessions starting in the late second or third trimester, when symptoms peak. The PROMOTE protocol used seven sessions over nine weeks. Sessions are 30 minutes. Some patients with earlier-onset back pain begin in the second trimester; the structural exam helps decide.' },
+                    { q: 'What about postpartum recovery?', a: 'Postpartum sessions typically begin at the 4–6 week mark, after you\'ve been cleared at your OB postpartum visit. Common targets: residual pubic symphysis or sacroiliac dysfunction, abdominal-wall myofascial pain, postural strain from feeding, and post-cesarean fascial restriction. The 2017 systematic review covers pregnancy and postpartum back pain together.' }
+                ],
                 studies: [
                     {
                         title: 'Pregnancy Research on Osteopathic Manipulation Optimizing Treatment Effects: A Randomized Controlled Trial (PROMOTE)',
@@ -5676,6 +5936,31 @@
             'post-op': {
                 title: 'OMT for Post-Operative Recovery',
                 intro: 'Post-operative recovery — particularly after cesarean and laparoscopic gynecologic surgery — involves fascial restrictions, adhesions, and viscerosomatic patterns that linger long after wound healing. The evidence base shows osteopathic manipulative therapy can meaningfully improve quality of life and reduce recurrent pain after surgery.',
+                whoItsFor: 'Patients recovering from cesarean delivery, laparoscopic gynecologic surgery, endometriosis excision, hysterectomy, or pelvic-floor reconstruction. Especially valuable for: recurrent pelvic pain after endometriosis excision; persistent deep dyspareunia after surgery; abdominal-wall trigger points along the incision; post-cesarean fascial restriction limiting trunk rotation and core engagement; post-laparoscopic shoulder, neck, or diaphragm pain from residual gas insufflation patterns.',
+                servicesIntro: 'Postoperative osteopathic care follows a defined timeline. Deep visceral abdominal work and high-velocity techniques in the surgical region are withheld for at least 6 weeks. Superficial abdominal mobilization and scar work can begin from postoperative day 14 with surgeon clearance per the MOVENDOP protocol (Comptour 2025). Suboccipital, thoracic, and upper-extremity work are permissible immediately when desired.',
+                whatYouOffer: [
+                    { name: 'MOVENDOP-style superficial abdominal mobilization', desc: 'Gentle, surface-level abdominal mobilization beginning ~2 weeks after surgery. Reduces adhesion-related dysfunction and improves quality-of-life scores in published trial data (Comptour, PLoS One 2025) — both pre-operatively and post-operatively.' },
+                    { name: 'Surgical scar mobilization', desc: 'Direct myofascial work along the incision and adjacent fascia, beginning once the wound is fully closed. Restores skin glide, reduces adhesion-related pulling sensations, and addresses abdominal-wall trigger points that can develop directly under or beside the scar.' },
+                    { name: 'Pelvic diaphragm release for post-surgical hypertonus', desc: 'External technique addressing the protective pelvic floor guarding that develops after pelvic surgery. Reduces deep dyspareunia, pelvic heaviness, and pelvic-floor "freeze" patterns that can persist for months after a procedure.' },
+                    { name: 'Diaphragm and rib cage mobilization', desc: 'Particularly useful after laparoscopy — residual carbon-dioxide insufflation patterns can produce referred pain to the shoulders, neck, and posterior diaphragm for weeks. Mobilizing the rib cage and the central tendon of the diaphragm shortens that recovery window.' },
+                    { name: 'Broad ligament and visceral mobilization (after 6 weeks)', desc: 'Once full healing is established, gentle visceral mobilization frees the post-surgical fascial restriction and visceral adhesion patterns most associated with recurrent pelvic pain and deep dyspareunia after endometriosis excision (Alboni 2024).' },
+                    { name: 'Suboccipital and upper-cervical release', desc: 'Addresses the postural strain of altered movement patterns during recovery and modulates the descending pain-control pathways from the brainstem. Performed in any positioning the patient finds comfortable.' },
+                    { name: 'Pre-operative osteopathic optimization (when applicable)', desc: 'For patients planning a known elective gynecologic surgery, a small number of pre-operative sessions optimize fascial mobility and reduce baseline pelvic floor tension. The MOVENDOP protocol established benefit when osteopathic work bracketed surgery on both sides.' },
+                    { name: 'Coordinated pelvic floor PT referral', desc: 'OMT is layered on top of, not in place of, pelvic floor physical therapy. Referral and shared planning with a pelvic floor PT — particularly for internal trigger-point work and biofeedback — is standard in the postoperative phase.' }
+                ],
+                whatToExpect: {
+                    before: 'Bring your operative report or know the procedure date and what was done. Hydrate well. Wear two-piece clothing that allows access to your back and abdomen without disturbing incision sites. Continue any prescribed pain medication on its normal schedule. If you have surgical-site concerns (drainage, increasing redness, fever), call the office before the session — the visit may be deferred until those are evaluated.',
+                    during: 'Sessions are 30 minutes. Early-recovery sessions (week 2–6 after surgery) focus on accessible regions — suboccipital, thoracic, rib cage, diaphragm — plus superficial abdominal mobilization with full surgeon clearance. Deeper visceral and HVLA work in the surgical region is deferred until ~6 weeks after surgery. The pace is slower and gentler than baseline pelvic pain care — your body is still healing.',
+                    after: 'Light walking remains the cornerstone of postoperative recovery — 20–30 minutes after each session supports lymphatic and visceral mobility gains. Hydrate. Avoid heavy lifting or any restriction your surgeon has placed on your activity, regardless of how good the session felt. Mild soreness is normal; significant pain at the surgical site is a reason to call.',
+                    course: 'Typical course: weekly sessions for 4–8 weeks beginning in the second postoperative week, then transition to per-symptom care. For patients with recurrent pelvic pain after endometriosis excision, the Alboni 2024 visceral/fascial protocol used 6–8 sessions to produce significant reduction in recurrent pain and deep dyspareunia. The schedule is individualized to your surgery, your recovery, and your surgeon\'s clearance.'
+                },
+                faqs: [
+                    { q: 'When can I start OMT after surgery?', a: 'Accessible regions (neck, upper back, rib cage, diaphragm) can be addressed within the first 1–2 weeks. Superficial abdominal mobilization begins around postoperative day 14 with surgeon clearance. Deep visceral and broad-ligament work, plus any high-velocity techniques in the lumbar or sacral region, are deferred to roughly the 6-week mark. The structural exam at your first visit confirms what\'s appropriate for your specific surgery.' },
+                    { q: 'Why am I still in pain months after my surgery?', a: 'Surgical pathology and post-surgical pain are not the same thing. Endometriosis excision removes the disease, but the central sensitization built up before surgery, the protective pelvic floor guarding, the fascial restriction along scar lines, and the abdominal-wall trigger points that develop under the incision can all persist after the disease itself is gone. The 2017 Daraï study of 46 patients with deep colorectal endometriosis — including post-operative patients — showed significant quality-of-life improvement with osteopathic therapy. The Alboni 2024 study specifically addressed recurrent pelvic pain after endometriosis surgery.' },
+                    { q: 'Will OMT disrupt my surgical repair?', a: 'No — when performed within the protocol\'s timing rules. High-velocity and deep visceral techniques are withheld until full healing is established (~6 weeks). The MOVENDOP-style gentle superficial mobilization that begins around postoperative day 14 has explicit published evidence of safety and benefit when added to standard postoperative care.' },
+                    { q: 'How does this work with pelvic floor PT?', a: 'They\'re complementary, not redundant. Pelvic floor PT directly addresses the internal pelvic floor muscles through internal manual therapy, biofeedback, and dilator work — that\'s the cornerstone of post-surgical recovery for many patients. OMT adds the structural layer above: rib cage, diaphragm, lumbar spine, sacroiliac joints, abdominal wall, scar, and broad ligament. The two are routinely combined.' },
+                    { q: 'Can OMT before surgery improve recovery?', a: 'There is published evidence that osteopathic abdominal mobilization performed pre-operatively (in addition to post-operatively) improves quality of life and reduces adhesion-related dysfunction (Comptour MOVENDOP 2025). For planned elective gynecologic surgery, a small number of pre-operative sessions can be incorporated into your overall plan.' }
+                ],
                 studies: [
                     {
                         title: 'Impact of osteopathic manipulative therapy in patients with deep colorectal endometriosis: A classification based on symptoms and quality of life',
@@ -5706,6 +5991,36 @@
             'pelvic-pain': {
                 title: 'OMT for Pelvic Pain & Endometriosis',
                 intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common, and endometriosis-associated pain often persists even after surgical excision. Randomized trials, systematic reviews, and clinical literature support manual osteopathic therapy as an adjunct to standard gynecologic care.',
+                whoItsFor: 'Women with chronic pelvic pain of any cause: endometriosis, adenomyosis, painful intercourse (dyspareunia, both entry and deep), pelvic floor hypertonicity, vulvodynia and provoked vestibulodynia, persistent pain after endometriosis excision, post-surgical adhesion patterns, abdominal-wall myofascial trigger points, and the centrally-sensitized pain that develops over months or years of unaddressed symptoms. OMT is offered as one layer of a fully multimodal plan — hormonal therapy, neuromodulators, pelvic floor physical therapy, behavioral pain care, and any procedural or surgical work you may need remain the foundation; the manual osteopathic care is added to address the structural and neurological substrate those treatments alone cannot reach.',
+                servicesIntro: 'A comprehensive catalogue of evidence-supported osteopathic techniques used in this care path. The specific combination, sequencing, and frequency are individualized after a structured osteopathic structural examination at the first visit — generalized names below describe the categories of work, not the patient-specific plan.',
+                whatYouOffer: [
+                    { name: 'Spinal manipulation at the sympathetic levels (T12–L2)', desc: 'Gentle high-velocity, low-amplitude techniques at the lower thoracic and upper lumbar segments — where the sympathetic nerves to the uterus, fallopian tubes, and ovaries originate. Reduces the spinal-cord amplification of pelvic pain signals that drives viscerosomatic facilitation in chronic pelvic pain.' },
+                    { name: 'Bilateral sacroiliac mobilization', desc: 'Treats sacral torsion and SI joint dysfunction, normalizing the S2–S4 parasympathetic outflow that supplies the bladder, rectum, and pelvic floor. The Molins-Cubero 2014 double-blind RCT showed a single bilateral SI manipulation produced immediate pain reduction with measurable release of the body\'s own serotonin and catecholamines — the body\'s natural pain-reducing chemicals.' },
+                    { name: 'Pelvic diaphragm release', desc: 'External technique targeting the levator-ani region. Reduces the resting tension in the pelvic floor muscles that contributes to deep dyspareunia, pelvic heaviness, and the protective "freeze" pattern many patients develop. Works alongside (not in place of) pelvic floor physical therapy.' },
+                    { name: 'Broad ligament and visceral mobilization', desc: 'Gentle fascial techniques that free restriction around the uterus, ovaries, and surrounding ligaments — common in endometriosis, post-surgical adhesions, and chronic inflammation. Helps restore the small, normal motions visceral organs make with breathing and movement, which the Muñoz-Gómez 2023 trial linked to significant improvements in endometriosis-specific quality of life.' },
+                    { name: 'Iliopsoas and quadratus lumborum release', desc: 'The deep hip flexors and side-back muscles often hold sustained tension in chronic pelvic pain, pulling the pelvis into a forward tilt that shortens and pre-tensions the pelvic floor at rest. Counterstrain and muscle-energy techniques release these without aggravating active pain.' },
+                    { name: 'Abdominal wall myofascial work', desc: 'For Carnett-positive trigger points (pain that increases when you lift your head, indicating a muscle-wall source rather than a deeper visceral source). Sustained pressure and myofascial release deactivate trigger points. Refractory points can be supplemented with a trigger-point injection as a separate procedure.' },
+                    { name: 'Chapman reflex point treatment', desc: 'Small tender lymphatic-reflex points associated with the female reproductive organs. Gentle rotary pressure for 30–60 seconds per point reduces sympathetic tone and improves the local lymphatic drainage that contributes to pelvic congestion.' },
+                    { name: 'Suboccipital and upper cervical work', desc: 'The base of the skull (the OAA region) influences the vagus nerve and the descending pain-modulating pathways from the brainstem. In centrally-sensitized patients, addressing upper cervical tension reduces the supraspinal amplification of pelvic pain.' },
+                    { name: 'Vagal-modulating breathwork', desc: 'A 4-7-8 breathing pattern (4-second inhale, 7-second hold, 8-second exhale) for 5 minutes — taught at the first visit as a home practice. Activates parasympathetic tone via the vagus nerve and reduces the autonomic component of chronic pain. Evidence-based replacement for older cranial autonomic techniques.' },
+                    { name: 'Coordinated multimodal management', desc: 'OMT is integrated with the full pharmacologic ladder (NSAIDs, neuromodulators, hormonal suppression, vaginal muscle relaxants, H1/H2 antihistamines for mast-cell phenotypes), pelvic floor PT, cognitive-behavioral therapy referral, high-frequency TENS, and procedural escalation pathways (trigger-point injections, botulinum toxin for refractory levator hypertonicity). Surgery remains available when indicated and is fully coordinated with this care path.' }
+                ],
+                whatToExpect: {
+                    before: 'Hydrate well — 16–24 oz of water in the two hours before your appointment. Wear loose two-piece clothing (scrubs, leggings, or athletic wear). Eat a light snack but not a heavy meal. If you take a prescribed NSAID like naproxen or ibuprofen as part of your plan, take it 60–90 minutes before the session for best tolerability. Continue all your other medications normally — your hormonal therapy, nerve-pain medication, muscle relaxants, and antihistamines all work synergistically with the manual care. Empty your bladder right before the visit. Patients with prior pelvic or sexual trauma can request trauma-informed pacing — please mention this before the session so positioning, draping, and consent steps can be adjusted in advance.',
+                    during: 'Sessions are 30 minutes. You\'ll move between supine, side-lying, and seated positions. Most techniques are gentle — sustained pressure, slow stretches, breath-coordinated mobilization. Spinal manipulation, when used, produces a brief sensation and sometimes an audible pop, but should not be sharp or painful — if it is, the technique is modified immediately. Speak up at any point: every technique can be paused, adjusted, or substituted. Occasional emotional release during pelvic-region work is recognized and supported — it is not a sign that something is wrong.',
+                    after: 'Drink 16+ oz of water within an hour. A 20–30 minute gentle walk supports lymphatic and visceral mobility gains. Avoid heavy lifting, high-intensity exercise, hot yoga, or new Pilates poses for 24 hours. Heat applied to the lower abdomen or sacrum at body temperature works as well as ibuprofen for pelvic pain in a head-to-head trial (Akin, Obstet Gynecol 2001). Mild soreness for 24–48 hours is normal — similar to delayed-onset soreness after a new workout. It is not a sign to stop treatment. Continue your home program between sessions: daily breathwork, high-frequency TENS as prescribed, magnesium glycinate, and heat as needed.',
+                    course: 'The published Muñoz-Gómez 2023 endometriosis protocol uses one 30-minute session per week for 8 weeks, with formal pain and quality-of-life reassessment at week 4 and at week 8. Most patients begin to notice meaningful change between sessions 4 and 6. Improvements were sustained at one-month follow-up in the published trial. Responders move to a monthly maintenance phase; non-responders at week 8 escalate per a predefined branch: a GnRH antagonist trial if not yet used, trigger-point injections, botulinum toxin for refractory levator hypertonicity, multidisciplinary pain-center referral, and surgical re-evaluation for selected patients.'
+                },
+                faqs: [
+                    { q: 'Is OMT the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: OMT is performed by a fully licensed physician (DO or MD with additional training) who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed. OMT also uses a broader range of techniques than typical chiropractic — visceral, fascial, cranial, Chapman point, and muscle-energy work in addition to thrust techniques. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures. Both have evidence for spinal pain; OMT specifically has randomized-trial evidence in pelvic pain and dysmenorrhea.' },
+                    { q: 'Why OMT if I\'m already in pelvic floor PT?', a: 'They\'re complementary, not redundant. PFPT directly addresses the levator-ani and obturator-internus muscles through internal manual therapy, biofeedback, and dilator/down-training — that\'s the cornerstone of treatment, and you stay in PT. OMT adds the layer above: the lower thoracic and upper lumbar spine where the sympathetic nerves to the uterus connect, the sacroiliac joints, the iliopsoas pulling the pelvis forward, the broad-ligament fascia, and the upper cervical region modulating central pain control. FitzGerald 2012 showed a 59% response with PFPT; OMT addresses the upstream contributors PFPT internal work cannot directly reach.' },
+                    { q: 'How long until I feel a difference?', a: 'Mild soreness during the first 2–3 sessions is normal and not a reason to stop. Meaningful pain change typically emerges between sessions 4 and 6 (around weeks 4–6 of the 8-week protocol). Full effect is assessed at week 8. In the Muñoz-Gómez 2023 endometriosis trial, improvements were sustained at one-month follow-up.' },
+                    { q: 'What if it doesn\'t work?', a: 'About 20–40% of patients are partial- or non-responders to a structured OMT course in the published literature. If you\'re a non-responder at week 8, there are predefined escalation paths: a GnRH antagonist trial if not yet used, trigger-point injections for refractory trigger points, botulinum toxin for resistant pelvic floor hypertonicity, multidisciplinary pain-center referral, and — for selected patients — surgical re-evaluation for new or missed structural disease. You don\'t hit a dead end at week 8; the plan branches.' },
+                    { q: 'I had endometriosis excision and I\'m still in pain. Will OMT help?', a: 'Possibly, yes. Excision removes the disease itself but does not address the central sensitization, the protective pelvic floor guarding, the fascial restriction along surgical and adhesion lines, the broad-ligament tension, or the abdominal-wall trigger points that can persist after surgery. The Alboni 2024 study specifically targeted recurrent pelvic pain and deep dyspareunia after endometriosis surgery with a visceral/fascial osteopathic protocol and showed significant reduction in both. The Daraï 2017 study showed significant quality-of-life improvement in post-operative patients with deep colorectal endometriosis.' },
+                    { q: 'Is OMT covered by insurance?', a: 'Yes — OMT is billed under standard CPT codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
+                    { q: 'Is OMT safe in centrally sensitized patients?', a: 'Yes, with adapted pacing. In centrally sensitized patients with allodynia at treatment sites, sessions begin with the lowest-intensity techniques only — gentle myofascial release and vagal breathwork — and grade up over the protocol. Cognitive-behavioral therapy is integrated early, ideally before starting OMT, when this phenotype is present. Pain flare in the first 24–48 hours occurs in 5–15% of sessions and is managed with the same NSAID, heat, and breathwork used between sessions.' },
+                    { q: 'I have a trauma history. Can I still do this?', a: 'Yes — and the care path is designed to accommodate it. Patients with prior pelvic or sexual trauma can request trauma-informed pacing, and we coordinate with pain psychology or CBT before initiating internal-adjacent pelvic work when a trauma history is identified. Treatment sessions can be paused and pacing adjusted at any time. Emotional release during pelvic-region work is recognized as a physiological response, not a sign that something is wrong.' }
+                ],
                 studies: [
                     {
                         title: 'Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial',
@@ -5747,26 +6062,106 @@
             return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(pmid)}`;
         }
 
+        // Helper: simple HTML-escape for user-facing strings
+        function _esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+        // Helper: show/hide a section element by id
+        function _toggleSection(id, show) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.hidden = !show;
+        }
+
         function openEvidenceModal(key) {
             const data = EVIDENCE[key];
             if (!data) return;
+
+            // Title + intro
             evidenceModalTitleEl.textContent = data.title;
             evidenceModalIntroEl.textContent = data.intro;
+
+            // Section: Who this care path is for
+            const hasWho = !!data.whoItsFor;
+            _toggleSection('evidenceModalWhoSection', hasWho);
+            if (hasWho) {
+                document.getElementById('evidenceModalWho').textContent = data.whoItsFor;
+            }
+
+            // Section: What this care path offers (services grid + optional intro)
+            const services = Array.isArray(data.whatYouOffer) ? data.whatYouOffer : [];
+            _toggleSection('evidenceModalServicesSection', services.length > 0);
+            if (services.length > 0) {
+                const introEl = document.getElementById('evidenceModalServicesIntro');
+                if (data.servicesIntro) {
+                    introEl.textContent = data.servicesIntro;
+                    introEl.hidden = false;
+                } else {
+                    introEl.hidden = true;
+                }
+                document.getElementById('evidenceModalServices').innerHTML = services.map(s => `
+                    <div class="evidence-service-item">
+                        <h5 class="evidence-service-name">${_esc(s.name)}</h5>
+                        <p class="evidence-service-desc">${_esc(s.desc)}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Section: What to expect (before / during / after + optional course note)
+            const expect = data.whatToExpect || null;
+            _toggleSection('evidenceModalExpectSection', !!expect);
+            if (expect) {
+                const cols = [
+                    { label: 'Before your session', body: expect.before },
+                    { label: 'During the session',   body: expect.during },
+                    { label: 'After the session',    body: expect.after  },
+                ].filter(c => c.body);
+                document.getElementById('evidenceModalExpect').innerHTML = cols.map(c => `
+                    <div class="evidence-expect-col">
+                        <p class="evidence-expect-col-label">${_esc(c.label)}</p>
+                        <p class="evidence-expect-col-body">${_esc(c.body)}</p>
+                    </div>
+                `).join('');
+                const courseEl = document.getElementById('evidenceModalCourse');
+                if (expect.course) {
+                    courseEl.textContent = expect.course;
+                    courseEl.hidden = false;
+                } else {
+                    courseEl.hidden = true;
+                }
+            }
+
+            // Section: Common questions
+            const faqs = Array.isArray(data.faqs) ? data.faqs : [];
+            _toggleSection('evidenceModalFaqSection', faqs.length > 0);
+            if (faqs.length > 0) {
+                document.getElementById('evidenceModalFaqs').innerHTML = faqs.map(f => `
+                    <div class="evidence-faq-item">
+                        <p class="evidence-faq-q">${_esc(f.q)}</p>
+                        <p class="evidence-faq-a">${_esc(f.a)}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Section: Published literature (existing)
             evidenceModalStudiesEl.innerHTML = data.studies.map(s => `
                 <article class="evidence-study">
-                    <h4 class="evidence-study-title">${s.title}</h4>
+                    <h4 class="evidence-study-title">${_esc(s.title)}</h4>
                     <div class="evidence-study-meta">
-                        <span>${s.authors}</span>
+                        <span>${_esc(s.authors)}</span>
                         <span class="dot">·</span>
-                        <span><em>${s.journal}</em> · ${s.year}</span>
+                        <span><em>${_esc(s.journal)}</em> · ${_esc(s.year)}</span>
                     </div>
-                    <p class="evidence-study-finding">${s.finding}</p>
+                    <p class="evidence-study-finding">${_esc(s.finding)}</p>
                     <a class="evidence-study-link" href="${pubmedUrl(s.pmid)}" target="_blank" rel="noopener noreferrer">
                         View on PubMed
                         <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 9l7-7M8 2h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </a>
                 </article>
             `).join('');
+
             evidenceModalEl.classList.add('open');
             evidenceModalEl.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
@@ -6371,6 +6766,13 @@
             const video = document.getElementById('modalVideo');
             if (!modal || !video) return;
 
+            // Pause every research-card auto-preview so we don't have
+            // overlapping audio (they're muted, but pausing them also
+            // saves CPU and keeps the visual focus on the modal).
+            document.querySelectorAll('.video-preview').forEach((v) => {
+                try { v.pause(); } catch (e) { /* ignore */ }
+            });
+
             video.src = videoSrc;
             modal.classList.add('active');
             video.play().catch(() => {});
@@ -6390,6 +6792,11 @@
 
             // Restore body scroll
             document.body.style.overflow = '';
+
+            // Resume the muted auto-previews on the cards.
+            document.querySelectorAll('.video-preview').forEach((v) => {
+                v.play().catch(() => {});
+            });
         }
 
         // Close modal on Escape key
@@ -6400,5 +6807,5 @@
         });
         window.toggleFeatureSound = toggleFeatureSound;
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9faebcb02f44e82c',t:'MTc3ODY0NDYyNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
