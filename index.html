@@ -21,7 +21,7 @@
             --gray-5: #d2d2d7;
             --gray-6: #f5f5f7;
             --white: #ffffff;
-            --accent: #2997ff;
+            --accent: #6d28d9;
             --bg: #000000;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
@@ -53,38 +53,6 @@
         a { color: inherit; text-decoration: none; }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
-        /* Enhanced text selection */
-        ::selection {
-            background: rgba(92, 182, 255, 0.35);
-            color: #ffffff;
-        }
-
-        /* Smooth link underlines (for inline links) */
-        p a, li a, .research-detail a:not(.pub-link) {
-            position: relative;
-            color: rgba(92, 182, 255, 0.95);
-            transition: color 0.2s ease;
-        }
-        p a::after, li a::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: rgba(92, 182, 255, 0.4);
-            transform: scaleX(0);
-            transform-origin: right;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        p a:hover::after, li a:hover::after {
-            transform: scaleX(1);
-            transform-origin: left;
-        }
-        p a:hover, li a:hover {
-            color: rgba(92, 182, 255, 1);
-        }
-
         /* ========== Keyboard Navigation / Accessibility ========== */
         /* Remove default outline, add custom focus ring for keyboard users */
         *:focus { outline: none; }
@@ -94,23 +62,23 @@
         button:focus-visible,
         [role="button"]:focus-visible,
         [tabindex]:not([tabindex="-1"]):focus-visible {
-            outline: 2px solid rgba(92, 182, 255, 0.85);
+            outline: 2px solid rgba(139, 92, 246, 0.85);
             outline-offset: 3px;
             border-radius: 4px;
         }
 
         /* Enhanced focus for primary buttons */
         .btn:focus-visible {
-            outline: 2px solid rgba(92, 182, 255, 1);
+            outline: 2px solid rgba(139, 92, 246, 1);
             outline-offset: 4px;
-            box-shadow: 0 0 0 6px rgba(92, 182, 255, 0.2);
+            box-shadow: 0 0 0 6px rgba(139, 92, 246, 0.2);
         }
 
         /* Card focus states */
         .award-tile:focus-visible,
         .curriculum-card:focus-visible,
         .timeline-row:focus-visible {
-            outline: 2px solid rgba(92, 182, 255, 0.7);
+            outline: 2px solid rgba(139, 92, 246, 0.7);
             outline-offset: 2px;
         }
 
@@ -121,7 +89,7 @@
             left: 20px;
             z-index: 10000;
             padding: 12px 24px;
-            background: rgba(92, 182, 255, 0.95);
+            background: rgba(139, 92, 246, 0.95);
             color: #000;
             font-weight: 600;
             border-radius: 6px;
@@ -640,14 +608,25 @@
         }
         .contact-section .container {
             max-width: 760px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .contact-section .section-eyebrow {
+            display: block;
+            margin: 0 0 clamp(14px, 1.6vw, 20px);
+        }
+        .contact-section .section-headline {
+            margin: 0 0 clamp(18px, 2.2vw, 26px);
         }
         .contact-section .section-sub {
-            margin: clamp(20px, 3vw, 28px) auto clamp(40px, 5vw, 56px);
+            margin: 0 auto clamp(36px, 4.5vw, 52px);
             max-width: 580px;
         }
         .contact-section .btn {
             font-size: 17px;
             padding: 16px 36px;
+            margin: 0 auto;
         }
 
         /* ========== Education / Training Section ========== */
@@ -688,14 +667,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(92, 182, 255, 0.12);
+            background: rgba(139, 92, 246, 0.12);
             border-radius: 12px;
             margin-bottom: 20px;
         }
         .curriculum-icon svg {
             width: 24px;
             height: 24px;
-            stroke: rgba(92, 182, 255, 0.9);
+            stroke: rgba(139, 92, 246, 0.9);
         }
         .curriculum-card h4 {
             font-size: 21px;
@@ -708,7 +687,7 @@
             font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(92, 182, 255, 0.8);
+            color: rgba(139, 92, 246, 0.8);
             margin: 0 0 16px;
         }
         .curriculum-card p {
@@ -720,8 +699,8 @@
         .curriculum-cta {
             margin-top: 48px;
             padding: 40px;
-            background: linear-gradient(135deg, rgba(92, 182, 255, 0.08) 0%, rgba(92, 182, 255, 0.02) 100%);
-            border: 1px solid rgba(92, 182, 255, 0.2);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
             border-radius: 20px;
         }
         .curriculum-cta-inner h3 {
@@ -750,34 +729,36 @@
             padding-left: clamp(40px, 5vw, 60px);
         }
 
-        /* Track: dim background line */
+        /* Track: dim background line. Ends well above the last dot so the
+           line never extends past the final marker. The dim opacity + lack
+           of any glow keeps the track feeling like a subtle scaffold rather
+           than a heavy stripe. */
         .timeline::before {
             content: '';
             position: absolute;
             left: clamp(12px, 1.6vw, 20px);
-            top: 24px;
-            bottom: 24px;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 2px;
+            top: 56px;
+            bottom: 56px;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 1px;
         }
 
-        /* Fill: bright gradient line that grows with scroll progress.
-           Uses --timeline-progress (0–1) set by JS based on scroll position. */
+        /* Fill: scroll-driven purple line that grows with scroll progress.
+           Uses --timeline-progress (0–1) set by JS based on scroll position.
+           Soft inner gradient + a faint halo so the line reads as light, not heavy. */
         .timeline::after {
             content: '';
             position: absolute;
             left: clamp(12px, 1.6vw, 20px);
-            top: 24px;
-            width: 2px;
-            height: calc((100% - 48px) * var(--timeline-progress, 0));
+            top: 56px;
+            width: 1px;
+            height: calc((100% - 112px) * var(--timeline-progress, 0));
             background: linear-gradient(180deg,
-                rgba(92, 182, 255, 0.95) 0%,
-                rgba(141, 90, 255, 0.85) 100%);
-            border-radius: 2px;
-            box-shadow:
-                0 0 12px rgba(92, 182, 255, 0.55),
-                0 0 24px rgba(92, 182, 255, 0.25);
+                rgba(139, 92, 246, 0.55) 0%,
+                rgba(109, 40, 217, 0.45) 100%);
+            border-radius: 1px;
+            box-shadow: 0 0 6px rgba(139, 92, 246, 0.18);
             transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
         }
@@ -794,8 +775,10 @@
         }
 
         /* Dot marker — small inactive state.
-           The box-shadow ring in the page bg color creates a visible GAP
-           around the dot so the timeline line never touches the dot. */
+           The box-shadow ring uses the ACTUAL page-bg color (#0a0a0c) so
+           it perfectly masks the line behind it. The 8px ring gives the line
+           a clean gap on both sides of every dot — the line stops before it,
+           and resumes after it, never touching. */
         .timeline-row::before {
             content: '';
             position: absolute;
@@ -807,9 +790,7 @@
             border: 2px solid rgba(255, 255, 255, 0.18);
             border-radius: 50%;
             z-index: 2;
-            /* 6px ring of bg color masks the line behind the dot,
-               creating a clean gap above and below */
-            box-shadow: 0 0 0 6px #000000;
+            box-shadow: 0 0 0 8px #0a0a0c;
             transition:
                 background 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
                 border-color 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -817,29 +798,29 @@
                 box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* Active dot — when row is in view. Keep bg mask ring,
-           layer glow rings on the outside. */
+        /* Active dot — when row is in view. Keeps the page-bg mask ring;
+           layers a soft purple glow on the outside. */
         .timeline-row.tl-active::before {
-            background: radial-gradient(circle, rgba(92, 182, 255, 1) 0%, rgba(141, 90, 255, 0.9) 100%);
-            border-color: rgba(255, 255, 255, 0.95);
+            background: radial-gradient(circle, rgba(139, 92, 246, 1) 0%, rgba(109, 40, 217, 0.92) 100%);
+            border-color: rgba(255, 255, 255, 0.92);
             box-shadow:
-                0 0 0 6px #000000,
-                0 0 0 10px rgba(92, 182, 255, 0.22),
-                0 0 22px rgba(92, 182, 255, 0.65);
-            transform: scale(1.15);
+                0 0 0 8px #0a0a0c,
+                0 0 0 11px rgba(139, 92, 246, 0.22),
+                0 0 22px rgba(139, 92, 246, 0.55);
+            transform: scale(1.12);
         }
 
         .timeline-row .year {
             font-size: 14px;
             font-weight: 600;
-            color: rgba(92, 182, 255, 0.75);
+            color: rgba(139, 92, 246, 0.75);
             letter-spacing: 0.04em;
             text-transform: uppercase;
             padding-top: 2px;
             transition: color 0.4s ease;
         }
         .timeline-row.tl-active .year {
-            color: rgba(141, 200, 255, 1);
+            color: rgba(186, 152, 255, 1);
         }
         .timeline-row h4 {
             font-size: 19px;
@@ -1215,14 +1196,14 @@
         .surgical-card:hover {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(92, 182, 255, 0.32);
+            border-color: rgba(139, 92, 246, 0.32);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
         }
         .surgical-card::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 240px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            background: radial-gradient(circle 240px at var(--mx, 50%) var(--my, 50%), rgba(139, 92, 246, 0.10), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -1237,13 +1218,13 @@
             width: 56px;
             height: 56px;
             border-radius: 14px;
-            background: rgba(92, 182, 255, 0.10);
-            color: #5cb6ff;
+            background: rgba(139, 92, 246, 0.10);
+            color: #8b5cf6;
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
         }
         .surgical-card:hover .surgical-card-icon {
             transform: scale(1.08) rotate(-3deg);
-            background: rgba(92, 182, 255, 0.18);
+            background: rgba(139, 92, 246, 0.18);
         }
         .surgical-card-icon svg {
             width: 28px;
@@ -1271,7 +1252,7 @@
             font-weight: 600;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: #5cb6ff;
+            color: #8b5cf6;
             opacity: 0;
             transform: translateY(8px);
             transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1843,7 +1824,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 260px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.08), transparent 60%);
+            background: radial-gradient(circle 260px at var(--mx, 50%) var(--my, 50%), rgba(139, 92, 246, 0.08), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -1871,7 +1852,7 @@
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.85);
+            color: rgba(139, 92, 246, 0.85);
             transition: color 0.3s ease;
         }
         .pop-evidence-cta .arrow {
@@ -1884,7 +1865,7 @@
         }
         .population-card:hover .pop-evidence-cta,
         .population-card:focus-visible .pop-evidence-cta {
-            color: #8dcaff;
+            color: #a78bfa;
         }
 
         .pop-tag {
@@ -1989,7 +1970,7 @@
         .evidence-card:focus-visible {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(92, 182, 255, 0.32);
+            border-color: rgba(139, 92, 246, 0.32);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
             outline: none;
         }
@@ -1997,7 +1978,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(139, 92, 246, 0.10), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -2008,8 +1989,8 @@
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: rgba(92, 182, 255, 0.10);
-            color: #5cb6ff;
+            background: rgba(139, 92, 246, 0.10);
+            color: #8b5cf6;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -2017,7 +1998,7 @@
         }
         .evidence-card:hover .evidence-card-icon {
             transform: scale(1.08) rotate(-3deg);
-            background: rgba(92, 182, 255, 0.18);
+            background: rgba(139, 92, 246, 0.18);
         }
         .evidence-card-icon svg {
             width: 24px;
@@ -2029,7 +2010,7 @@
             font-weight: 600;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.85);
+            color: rgba(139, 92, 246, 0.85);
         }
         .evidence-card h4 {
             font-size: 18px;
@@ -2050,7 +2031,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(92, 182, 255, 0.9);
+            color: rgba(139, 92, 246, 0.9);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -2149,7 +2130,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.9);
+            color: rgba(139, 92, 246, 0.9);
             margin-bottom: 12px;
         }
         .evidence-modal-card h3 {
@@ -2182,8 +2163,8 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         .evidence-study:hover {
-            border-color: rgba(92, 182, 255, 0.28);
-            background: rgba(92, 182, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.28);
+            background: rgba(139, 92, 246, 0.04);
         }
         .evidence-study-title {
             font-size: 15px;
@@ -2216,13 +2197,13 @@
             gap: 6px;
             font-size: 12px;
             font-weight: 600;
-            color: #5cb6ff;
+            color: #8b5cf6;
             text-decoration: none;
             letter-spacing: 0.01em;
             transition: color 0.2s ease, transform 0.2s ease;
         }
         .evidence-study-link:hover {
-            color: #8dcaff;
+            color: #a78bfa;
             transform: translateX(2px);
         }
         .evidence-study-link svg {
@@ -2257,7 +2238,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.95);
+            color: rgba(139, 92, 246, 0.95);
             margin: 0 0 14px;
         }
         .evidence-section-subhead {
@@ -2290,8 +2271,8 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         .evidence-service-item:hover {
-            border-color: rgba(92, 182, 255, 0.28);
-            background: rgba(92, 182, 255, 0.04);
+            border-color: rgba(139, 92, 246, 0.28);
+            background: rgba(139, 92, 246, 0.04);
         }
         .evidence-service-name {
             font-size: 14px;
@@ -2340,8 +2321,8 @@
         .evidence-expect-course {
             margin: 18px 0 0;
             padding: 14px 16px;
-            background: rgba(92, 182, 255, 0.06);
-            border: 1px solid rgba(92, 182, 255, 0.18);
+            background: rgba(139, 92, 246, 0.06);
+            border: 1px solid rgba(139, 92, 246, 0.18);
             border-radius: 12px;
             font-size: 13px;
             line-height: 1.6;
@@ -2634,7 +2615,7 @@
         }
 
         .app-visual.accent {
-            background: linear-gradient(135deg, #2997ff 0%, #0058a3 100%);
+            background: linear-gradient(135deg, #6d28d9 0%, #0058a3 100%);
             color: rgba(255,255,255,0.85);
         }
 
@@ -2759,7 +2740,7 @@
             line-height: 1;
             color: var(--accent);
             margin-bottom: 6px;
-            background: linear-gradient(180deg, #5cb6ff 0%, #2997ff 100%);
+            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -3124,30 +3105,38 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
+            padding-bottom: 24px;
             background: linear-gradient(180deg,
-                rgba(0,0,0,0.05) 0%,
-                rgba(0,0,0,0.45) 55%,
-                rgba(0,0,0,0.78) 100%);
-            transition: opacity 0.3s ease, background 0.3s ease;
-            pointer-events: none; /* clicks pass through to the parent */
+                rgba(0,0,0,0) 0%,
+                rgba(0,0,0,0) 50%,
+                rgba(0,0,0,0.30) 78%,
+                rgba(0,0,0,0.60) 100%);
+            transition: background 0.3s ease;
+            pointer-events: none;
         }
 
         .research-card-video:hover .video-preview-overlay {
-            opacity: 0.55;
+            background: linear-gradient(180deg,
+                rgba(0,0,0,0.10) 0%,
+                rgba(0,0,0,0.25) 50%,
+                rgba(0,0,0,0.50) 100%);
         }
 
         .play-button {
-            width: 64px;
-            height: 64px;
+            width: 46px;
+            height: 46px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 50%;
             color: #000;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
+            margin-bottom: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .research-card-video:hover .play-button {
@@ -3156,9 +3145,9 @@
         }
 
         .play-button svg {
-            width: 28px;
-            height: 28px;
-            margin-left: 3px;
+            width: 20px;
+            height: 20px;
+            margin-left: 2px;
         }
 
         .video-preview-label {
@@ -3270,9 +3259,9 @@
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .footer-social a:hover {
-            color: #5cb6ff;
-            background: rgba(92, 182, 255, 0.12);
-            border-color: rgba(92, 182, 255, 0.32);
+            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.12);
+            border-color: rgba(139, 92, 246, 0.32);
             transform: translateY(-2px);
         }
         .footer-social a svg {
@@ -4183,6 +4172,129 @@
             color: var(--white);
             transform: translateX(2px);
         }
+
+        /* ============================================================
+           Apple-glass card surfacing + deep-purple hover glow
+           Applies to every card surface on the site. Layered AFTER the
+           per-card declarations earlier in this stylesheet so this is
+           the final word on background, border, blur, and hover glow.
+           ============================================================ */
+
+        /* Brand glow color — deep violet (replaces the earlier blue accent on hover) */
+        :root {
+            --glow-purple: 139, 92, 246;          /* #8b5cf6 — Tailwind violet-500 */
+            --glow-purple-deep: 109, 40, 217;     /* #6d28d9 — violet-700 for the saturated outer halo */
+        }
+
+        /* Shared glassmorphism on every named card class. Uses very low
+           background opacity + backdrop-filter blur so the page behind
+           shows through with depth, plus a 1px translucent border and an
+           inset top highlight that gives the characteristic glass edge. */
+        .award-tile,
+        .curriculum-card,
+        .surgical-card,
+        .domain-card,
+        .zero-card,
+        .population-card,
+        .evidence-card,
+        .bento-card,
+        .app-card-v2,
+        .research-card,
+        .research-item,
+        .research-card-video {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 12px 32px -16px rgba(0, 0, 0, 0.45);
+        }
+
+        /* The app-card-v2 was previously solid white. Force a tinted glass
+           version that still reads on the section's lighter background. */
+        .app-card-v2 {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.65) 100%);
+            color: #0a0a0c;
+        }
+
+        /* Deep-purple hover glow — replaces every blue hover/focus accent on cards */
+        .award-tile:hover,
+        .curriculum-card:hover,
+        .surgical-card:hover,
+        .domain-card:hover,
+        .zero-card:hover,
+        .population-card:hover,
+        .evidence-card:hover,
+        .bento-card:hover,
+        .app-card-v2:hover,
+        .research-card:hover,
+        .research-item:hover,
+        .research-card-video:hover {
+            border-color: rgba(var(--glow-purple), 0.55);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.10),
+                0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45),
+                0 0 0 1px rgba(var(--glow-purple), 0.22);
+        }
+
+        /* Hover-state translucent overlays inside cards — purple-tinted */
+        .award-tile:hover,
+        .curriculum-card:hover,
+        .surgical-card:hover,
+        .evidence-card:hover,
+        .research-card:hover,
+        .research-item:hover {
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.08) 0%, rgba(var(--glow-purple), 0.02) 100%);
+        }
+
+        /* Keyboard focus ring — switch from blue to purple to match hover */
+        a:focus-visible,
+        button:focus-visible,
+        [role="button"]:focus-visible,
+        [tabindex]:not([tabindex="-1"]):focus-visible {
+            outline: 2px solid rgba(var(--glow-purple), 0.85);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+        .btn:focus-visible {
+            outline: 2px solid rgba(var(--glow-purple), 1);
+            outline-offset: 4px;
+            box-shadow: 0 0 0 6px rgba(var(--glow-purple), 0.22);
+        }
+        .award-tile:focus-visible,
+        .curriculum-card:focus-visible,
+        .timeline-row:focus-visible,
+        .population-card:focus-visible,
+        .research-card:focus-visible,
+        .research-item:focus-visible {
+            outline: 2px solid rgba(var(--glow-purple), 0.75);
+            outline-offset: 2px;
+        }
+
+        /* Skip-link tint — purple to match */
+        .skip-link {
+            background: rgba(var(--glow-purple), 0.95);
+            color: #fff;
+        }
+
+        /* Graceful fallback for browsers without backdrop-filter (very rare).
+           Use a slightly more opaque background so cards still have surface. */
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .award-tile,
+            .curriculum-card,
+            .surgical-card,
+            .domain-card,
+            .zero-card,
+            .population-card,
+            .evidence-card,
+            .bento-card,
+            .research-card,
+            .research-item,
+            .research-card-video {
+                background: linear-gradient(135deg, rgba(38, 38, 42, 0.92) 0%, rgba(22, 22, 26, 0.92) 100%);
+            }
+        }
     </style>
 </head>
 <body>
@@ -4465,7 +4577,7 @@
                 </div>
                 <div class="stat">
                     <div class="stat-num">2</div>
-                    <div class="stat-label">International awards (AAGL · CAOG)</div>
+                    <div class="stat-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
                 </div>
                 <div class="stat">
                     <div class="stat-num">5</div>
@@ -4946,7 +5058,7 @@
                 <div class="aagl-divider"></div>
                 <div class="aagl-stat">
                     <div class="aagl-num">2</div>
-                    <div class="aagl-label">National peer-reviewed awards · AAGL · CAOG</div>
+                    <div class="aagl-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
                 </div>
             </div>
 
@@ -4967,11 +5079,6 @@
                             <source src="/media/rpoc-golden-hysteroscope-preview.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
-                            <div class="play-button">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </div>
                             <span class="video-preview-label">Watch the case</span>
                         </div>
                     </div>
@@ -4991,11 +5098,6 @@
                             <source src="/media/myomectomy-gel-port-preview.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
-                            <div class="play-button">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </div>
                             <span class="video-preview-label">Watch the procedure</span>
                         </div>
                     </div>
@@ -5015,11 +5117,6 @@
                             <source src="/media/isthmocele-ashermans-preview.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
-                            <div class="play-button">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </div>
                             <span class="video-preview-label">Watch the technique</span>
                         </div>
                     </div>
@@ -5167,24 +5264,25 @@
                     </div>
                 </div>
 
-                <!-- ICG Endometriosis Fibrosis - National AAGL 2022 -->
+                <!-- ICG Endometriosis Fibrosis — AAGL Global Congress 2022 (oral presentation) + George M. Morley Award (CAOG 2023) -->
                 <div class="research-item">
                     <button class="research-toggle" onclick="toggleResearch(this)">
                         <div class="research-info">
                             <div class="research-tags">
                                 <span class="tag award">George M. Morley Award</span>
-                                <span class="tag">AAGL National · CAOG</span>
+                                <span class="tag">Oral Presentation · AAGL Global Congress</span>
+                                <span class="tag">CAOG</span>
                                 <span class="tag year">2022</span>
                             </div>
                             <h3>The Use of Indocyanine Green (ICG) in the Detection of Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
-                            <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · AAGL Global Congress 2022 · Also CAOG Annual Regional Conference, Indianapolis, IN · September 2022</div>
+                            <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Also CAOG Annual Regional Conference, Indianapolis, IN · September 2022</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
                     <div class="research-detail">
                         <div class="research-detail-inner">
                             <span class="ai-badge">AI Snapshot</span>
-                            <p>The foundational ICG-endometriosis research that earned the George M. Morley Award for Best Gynecological Research at the 2023 CAOG Annual Meeting. Presented nationally at AAGL Global Congress and regionally at CAOG, demonstrating how ICG fluorescence reveals endometriosis-related fibrosis and inflammatory changes invisible under standard white light — with direct implications for more complete excision and improved long-term symptom relief.</p>
+                            <p>The foundational ICG-endometriosis research that earned the George M. Morley Award for Best Gynecological Research at the 2023 CAOG Annual Meeting. Selected as an oral presentation at the AAGL Global Congress (international) and additionally presented at CAOG, demonstrating how ICG fluorescence reveals endometriosis-related fibrosis and inflammatory changes invisible under standard white light — with direct implications for more complete excision and improved long-term symptom relief.</p>
                             <a href="https://www.jmig.org/article/S1553-4650(22)00477-0/abstract" target="_blank" rel="noopener" class="pub-link">View publication →</a>
                         </div>
                     </div>
@@ -5217,7 +5315,7 @@
                     <button class="research-toggle" onclick="toggleResearch(this)">
                         <div class="research-info">
                             <div class="research-tags">
-                                <span class="tag">AAGL National</span>
+                                <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Hysteroscopy · Infertility</span>
                                 <span class="tag year">2022</span>
                             </div>
@@ -5262,7 +5360,7 @@
                     <button class="research-toggle" onclick="toggleResearch(this)">
                         <div class="research-info">
                             <div class="research-tags">
-                                <span class="tag">AAGL National</span>
+                                <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Robotic Surgery</span>
                                 <span class="tag year">2020</span>
                             </div>
@@ -5335,7 +5433,7 @@
 
             <div class="awards-grid">
                 <div class="award-tile">
-                    <div class="award-year">2024 · National</div>
+                    <div class="award-year">2024 · International</div>
                     <h4>AAGL Golden Hysteroscope Award</h4>
                     <p>Best Video Abstract in Hysteroscopy, AAGL Global Congress, New Orleans.</p>
                 </div>
@@ -5572,7 +5670,7 @@
             <h3 id="contactModalTitle">Get in touch</h3>
             <p class="modal-sub">Copy the email, or open it directly in your preferred mail service.</p>
             <div class="email-row">
-                <span class="email-text" id="contactEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5c3f313d3e3532351c3133293228263d2e3d723f3331">[email&#160;protected]</a></span>
+                <span class="email-text" id="contactEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="03606e62616a6d6a436e6c766d77796271622d606c6e">[email&#160;protected]</a></span>
                 <button type="button" class="copy-btn" id="copyEmailBtn" onclick="copyEmail()">
                     <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
                     <span class="copy-label">Copy</span>
@@ -5580,7 +5678,7 @@
             </div>
             <div class="modal-divider">Open in</div>
             <div class="modal-actions">
-                <a href="/cdn-cgi/l/email-protection#c1a2aca0a3a8afa881acaeb4afb5bba0b3a0efa2aeac" class="modal-action">
+                <a href="/cdn-cgi/l/email-protection#cdaea0acafa4a3a48da0a2b8a3b9b7acbface3aea2a0" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
                         Default mail app
@@ -6237,7 +6335,7 @@
                     { title: 'Clinical literature prep', desc: 'Index your entire reading list, then query by topic, procedure, or complication to build evidence-grounded clinical references.' },
                     { title: 'Manuscript background writing', desc: 'Ask "what are the contradictions in the ICG endometriosis literature?" — the conflict detector surfaces opposing findings with direct citation links for your introduction section.' },
                 ],
-                tech: ['Native Swift / SwiftUI', 'Phi-2 LoRA (on-device)', 'Llama / NativeLlamaService', 'Ollama vision inference', 'PubMed E-utilities API', 'Hybrid full-text + semantic search', 'Meta-analysis engine (I², CI, pooled outcomes)', 'Knowledge graph + conflict detection'],
+                tech: ['Native Swift / SwiftUI', 'Phi-2 LoRA (on-device)', 'Llama (native inference)', 'Ollama vision inference', 'PubMed E-utilities API', 'Hybrid full-text + semantic search', 'Meta-analysis engine (I², CI, pooled outcomes)', 'Knowledge graph + conflict detection'],
             },
             abog: {
                 tone: 'warm',
@@ -6357,7 +6455,7 @@
                     { title: 'Explaining a treatment plan at the bedside', desc: 'Load a CT showing a large fibroid burden. Annotate each fibroid, measure the uterus, draw the planned myomectomy approach. When the patient asks "can you show me where?" — you already are.' },
                     { title: 'Counseling on incidental findings', desc: 'A routine ultrasound shows an adnexal mass. Load the images, annotate the concerning features, measure the septations and solid components, and walk through the differential and next steps together — turning anxiety into informed understanding.' },
                 ],
-                tech: ['Native Swift / SwiftUI (iPadOS)', 'PencilKit canvas integration', 'DICOM parsing engine (DICOMService.swift)', 'Object tracking (ObjectTracker.swift)', 'Video playback (VideoPlayerManager.swift)', 'Measurement overlays (MeasurementOverlayView.swift)', 'Annotation engine (AnnotationEngine.swift)', 'Project management (ProjectManager.swift)', 'Thumbnail scrubber (ThumbnailScrubberView.swift)'],
+                tech: ['Native Swift / SwiftUI (iPadOS)', 'PencilKit canvas integration', 'DICOM parsing engine', 'Object tracking', 'Video playback', 'Measurement overlays', 'Annotation engine', 'Project management', 'Thumbnail scrubber'],
             },
         };
 
@@ -6761,6 +6859,53 @@
         tick();
 
         // Video modal functions
+        // Force the research-card video previews to autoplay reliably across
+        // browsers — especially iOS Safari, which otherwise overlays a native
+        // "tap to play" button on top of any <video autoplay> element whose
+        // playback hasn't actually started yet (the visible second play-button
+        // some users were seeing). Strategy: call .play() explicitly on load,
+        // again whenever the element enters the viewport, and once on the
+        // first user interaction as a last-resort fallback for autoplay-blocking
+        // policies.
+        (function ensureVideoPreviewsAutoplay() {
+            const tryPlay = (v) => {
+                if (!v || !v.paused) return;
+                const p = v.play();
+                if (p && typeof p.then === 'function') {
+                    p.catch(() => { /* autoplay blocked — handled by fallback below */ });
+                }
+            };
+            const playAll = () => document.querySelectorAll('.video-preview').forEach(tryPlay);
+
+            // Initial pass once the DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', playAll, { once: true });
+            } else {
+                playAll();
+            }
+
+            // Retry as previews enter the viewport (so Safari has a fresh nudge)
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) tryPlay(entry.target);
+                    });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.video-preview').forEach((v) => io.observe(v));
+            }
+
+            // Fallback: one-time user interaction unblocks autoplay everywhere
+            const onFirstInteract = () => {
+                playAll();
+                document.removeEventListener('touchstart', onFirstInteract, true);
+                document.removeEventListener('click', onFirstInteract, true);
+                document.removeEventListener('scroll', onFirstInteract, true);
+            };
+            document.addEventListener('touchstart', onFirstInteract, { capture: true, passive: true });
+            document.addEventListener('click', onFirstInteract, { capture: true });
+            document.addEventListener('scroll', onFirstInteract, { capture: true, passive: true });
+        })();
+
         function openVideoModal(videoSrc, element) {
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
@@ -6805,7 +6950,40 @@
                 closeVideoModal();
             }
         });
+
+        // Ensure research preview videos auto-play.
+        // Some browsers block autoplay despite muted+playsinline; explicit
+        // .play() after DOM ready + intersection-based play/pause is reliable.
+        (function initVideoPreviews() {
+            const previews = document.querySelectorAll('.video-preview');
+            if (!previews.length) return;
+            previews.forEach((video) => {
+                video.muted = true;
+                video.playsInline = true;
+                video.loop = true;
+                video.play().catch(() => {
+                    const retry = () => {
+                        video.play().catch(() => {});
+                    };
+                    document.addEventListener('click', retry, { once: true });
+                    document.addEventListener('touchstart', retry, { once: true });
+                });
+            });
+            if ('IntersectionObserver' in window) {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.play().catch(() => {});
+                        } else {
+                            entry.target.pause();
+                        }
+                    });
+                }, { threshold: 0.25 });
+                previews.forEach((v) => obs.observe(v));
+            }
+        })();
+
         window.toggleFeatureSound = toggleFeatureSound;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9faebcb02f44e82c',t:'MTc3ODY0NDYyNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
