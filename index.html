@@ -562,17 +562,65 @@
             margin-top: clamp(40px, 6vw, 60px);
         }
         .award-tile {
-            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
+            position: relative;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.09) 0%,
+                rgba(255,255,255,0.02) 55%,
+                rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 20px;
             padding: 28px;
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.12) inset,
+                0 -1px 0 rgba(255,255,255,0.04) inset,
+                0 16px 40px -16px rgba(0,0,0,0.55),
+                0 6px 16px -6px rgba(0,0,0,0.35);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.4s ease,
+                        box-shadow 0.4s ease,
+                        background 0.4s ease;
+            overflow: hidden;
+        }
+        .award-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.55) 50%,
+                transparent 100%);
+        }
+        .award-tile::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%,
+                rgba(255,255,255,0.08) 0%,
+                transparent 70%);
+            pointer-events: none;
+            opacity: 0.6;
+            transition: opacity 0.4s ease;
         }
         .award-tile:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.16);
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+            transform: translateY(-5px) scale(1.005);
+            border-color: rgba(255,255,255,0.22);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.13) 0%,
+                rgba(255,255,255,0.04) 55%,
+                rgba(255,255,255,0.08) 100%);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.20) inset,
+                0 -1px 0 rgba(255,255,255,0.06) inset,
+                0 28px 60px -16px rgba(0,0,0,0.65),
+                0 10px 24px -8px rgba(255,215,0,0.10);
         }
+        .award-tile:hover::after { opacity: 1; }
         .award-year {
             font-size: 12px;
             font-weight: 700;
@@ -650,17 +698,66 @@
             margin-top: clamp(40px, 6vw, 60px);
         }
         .curriculum-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
+            position: relative;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.09) 0%,
+                rgba(255,255,255,0.02) 55%,
+                rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 22px;
             padding: 32px;
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.12) inset,
+                0 -1px 0 rgba(255,255,255,0.04) inset,
+                0 18px 44px -16px rgba(0,0,0,0.55),
+                0 6px 16px -6px rgba(0,0,0,0.35);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.4s ease,
+                        box-shadow 0.4s ease,
+                        background 0.4s ease;
+            overflow: hidden;
+        }
+        .curriculum-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.55) 50%,
+                transparent 100%);
+        }
+        .curriculum-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%,
+                rgba(255,255,255,0.08) 0%,
+                transparent 70%);
+            pointer-events: none;
+            opacity: 0.6;
+            transition: opacity 0.4s ease;
         }
         .curriculum-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.14);
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+            transform: translateY(-5px) scale(1.005);
+            border-color: rgba(255,255,255,0.22);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.13) 0%,
+                rgba(255,255,255,0.04) 55%,
+                rgba(255,255,255,0.08) 100%);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.20) inset,
+                0 -1px 0 rgba(255,255,255,0.06) inset,
+                0 30px 64px -16px rgba(0,0,0,0.65),
+                0 10px 24px -8px rgba(139, 92, 246, 0.15);
         }
+        .curriculum-card:hover::after { opacity: 1; }
+        .curriculum-card > * { position: relative; z-index: 1; }
         .curriculum-icon {
             width: 44px;
             height: 44px;
@@ -1176,17 +1273,42 @@
             flex-direction: column;
             gap: 18px;
             padding: 28px 26px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.09) 0%,
+                rgba(255,255,255,0.02) 55%,
+                rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 22px;
             overflow: hidden;
             cursor: default;
-            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                        border-color 0.35s ease,
-                        background 0.35s ease,
-                        box-shadow 0.45s ease;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.12) inset,
+                0 -1px 0 rgba(255,255,255,0.04) inset,
+                0 16px 40px -16px rgba(0,0,0,0.55),
+                0 6px 16px -6px rgba(0,0,0,0.35);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.4s ease,
+                        background 0.4s ease,
+                        box-shadow 0.4s ease;
             opacity: 0;
             transform: translateY(20px);
+        }
+        /* Top specular highlight (Apple glass edge) */
+        .surgical-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.55) 50%,
+                transparent 100%);
+            pointer-events: none;
+            z-index: 2;
         }
         .surgical-card.in {
             opacity: 1;
@@ -1194,10 +1316,17 @@
             transition-delay: calc(var(--si, 0) * 70ms);
         }
         .surgical-card:hover {
-            transform: translateY(-4px);
-            background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
+            transform: translateY(-5px) scale(1.005);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.14) 0%,
+                rgba(139, 92, 246, 0.06) 55%,
+                rgba(255,255,255,0.07) 100%);
             border-color: rgba(139, 92, 246, 0.32);
-            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.20) inset,
+                0 -1px 0 rgba(255,255,255,0.06) inset,
+                0 30px 64px -16px rgba(0,0,0,0.65),
+                0 10px 24px -8px rgba(139, 92, 246, 0.20);
         }
         .surgical-card::before {
             content: '';
@@ -2997,18 +3126,82 @@
             margin: 64px 0;
         }
 
+        /* ========== Apple Glass Card (research) ========== */
         .research-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
+            position: relative;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                rgba(255, 255, 255, 0.02) 60%,
+                rgba(255, 255, 255, 0.04) 100%
+            );
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 22px;
             padding: 28px;
-            transition: all 0.3s ease;
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.10) inset,
+                0 -1px 0 rgba(255, 255, 255, 0.04) inset,
+                0 20px 50px -20px rgba(0, 0, 0, 0.6),
+                0 8px 20px -8px rgba(0, 0, 0, 0.4);
+            transition:
+                transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s ease,
+                box-shadow 0.4s ease,
+                background 0.4s ease;
+            overflow: hidden;
+        }
+
+        /* Top glass highlight - thin specular reflection */
+        .research-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                transparent 100%);
+            opacity: 0.7;
+        }
+
+        /* Soft inner glow gradient */
+        .research-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            background: radial-gradient(
+                ellipse 80% 50% at 50% 0%,
+                rgba(255, 255, 255, 0.08) 0%,
+                transparent 70%
+            );
+            pointer-events: none;
+            opacity: 0.6;
+            transition: opacity 0.4s ease;
         }
 
         .research-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.14);
-            transform: translateY(-2px);
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.12) 0%,
+                rgba(255, 255, 255, 0.04) 60%,
+                rgba(255, 255, 255, 0.07) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.20);
+            transform: translateY(-4px) scale(1.005);
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.18) inset,
+                0 -1px 0 rgba(255, 255, 255, 0.06) inset,
+                0 30px 70px -20px rgba(0, 0, 0, 0.7),
+                0 12px 30px -8px rgba(92, 182, 255, 0.15);
+        }
+
+        .research-card:hover::after {
+            opacity: 1;
         }
 
         .research-card-header {
