@@ -8,3 +8,12 @@ pages_build_output_dir = "."
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "mountzara-media"
+
+# R2 bucket binding for the MIGS & CBG Blog + Evidence Briefs content store.
+# Holds draft + published post JSON, served by /functions/api/posts/*.
+# Pipeline writes new drafts here; admin approve/reject toggles status.
+# CRITICAL: must be present at every deploy or /admin/ drafts list + /api/posts
+# read/write all fail with "R2 binding CONTENT not configured" (500).
+[[r2_buckets]]
+binding = "CONTENT"
+bucket_name = "mountzara-content"
