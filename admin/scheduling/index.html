@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Scheduling · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        header.bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            font-size: 13px;
+            color: var(--fg-soft);
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200;
+            font-size: clamp(28px, 3.6vw, 38px);
+            letter-spacing: -0.02em;
+            color: var(--fg-strong);
+            margin: 0 0 18px 0;
+        }
+        .lede {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--fg-mid);
+            max-width: 70ch;
+            margin: 0 0 28px 0;
+        }
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+        @media (min-width: 980px) {
+            .grid.two { grid-template-columns: 1fr 1fr; }
+        }
+        section.panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+        section.panel:hover {
+            border-color: rgba(var(--glow-purple), 0.30);
+        }
+        section.panel h2 {
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--fg-strong);
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        section.panel .panel-sub {
+            font-size: 13px;
+            color: var(--fg-soft);
+            margin: 0 0 16px 0;
+        }
+        label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fg-soft);
+            margin: 14px 0 6px 0;
+        }
+        input, select, textarea, button {
+            font: inherit;
+            color: var(--fg-strong);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.18s ease, background 0.18s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        textarea { min-height: 70px; resize: vertical; }
+        button {
+            cursor: pointer;
+            background: rgba(var(--glow-purple), 0.12);
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--accent-soft);
+            font-weight: 500;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            background: rgba(var(--glow-purple), 0.20);
+            border-color: rgba(var(--glow-purple), 0.65);
+            color: var(--fg-strong);
+        }
+        button.danger {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: rgba(252, 165, 165, 0.95);
+        }
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.20);
+            border-color: rgba(239, 68, 68, 0.65);
+            color: var(--fg-strong);
+        }
+        button.compact { width: auto; padding: 5px 10px; font-size: 12px; }
+        .form-row {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 1fr;
+            margin-top: 12px;
+        }
+        @media (min-width: 640px) { .form-row.two { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 760px) { .form-row.three { grid-template-columns: 1fr 1fr 1fr; } }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 3px 9px;
+            border-radius: 999px;
+        }
+        .pill.scheduled  { background: rgba(var(--glow-purple), 0.10); color: rgba(var(--glow-purple), 0.92); border: 1px solid rgba(var(--glow-purple), 0.45); }
+        .pill.completed  { background: rgba(16, 185, 129, 0.10);       color: rgba(110, 231, 183, 0.92); border: 1px solid rgba(16, 185, 129, 0.45); }
+        .pill.cancelled  { background: rgba(239, 68, 68, 0.10);        color: rgba(252, 165, 165, 0.92); border: 1px solid rgba(239, 68, 68, 0.45); }
+        .pill.no_show    { background: rgba(245, 158, 11, 0.10);       color: rgba(252, 211, 77, 0.92); border: 1px solid rgba(245, 158, 11, 0.45); }
+        .pill.rescheduled{ background: rgba(255, 255, 255, 0.06);      color: var(--fg-soft); border: 1px solid var(--border); }
+        .pill.in_person  { background: rgba(255, 255, 255, 0.06);      color: var(--fg-soft); border: 1px solid var(--border); }
+        .pill.telehealth { background: rgba(var(--glow-purple), 0.12); color: var(--accent-soft); border: 1px solid rgba(var(--glow-purple), 0.45); }
+        .appt-list, .avail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .appt-row, .avail-row {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: grid;
+            grid-template-columns: minmax(120px, 1fr) minmax(140px, 1.4fr) auto;
+            gap: 10px;
+            align-items: center;
+            transition: border-color 0.18s ease, background 0.18s ease;
+        }
+        .appt-row:hover, .avail-row:hover {
+            border-color: rgba(var(--glow-purple), 0.35);
+            background: rgba(var(--glow-purple), 0.05);
+        }
+        .appt-when, .avail-when {
+            font-size: 13.5px;
+            color: var(--fg-strong);
+            font-variant-numeric: tabular-nums;
+        }
+        .appt-meta, .avail-meta {
+            font-size: 13px;
+            color: var(--fg-soft);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .appt-actions, .avail-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .empty {
+            font-size: 13px;
+            color: var(--fg-dim);
+            text-align: center;
+            padding: 22px 0;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            margin-top: 14px;
+        }
+        .flash {
+            font-size: 13px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .flash.show { display: block; }
+        .flash.ok  { background: rgba(16, 185, 129, 0.10); color: rgba(110, 231, 183, 0.95); border: 1px solid rgba(16, 185, 129, 0.40); }
+        .flash.err { background: rgba(239, 68, 68, 0.10);  color: rgba(252, 165, 165, 0.95); border: 1px solid rgba(239, 68, 68, 0.40); }
+        details summary { cursor: pointer; color: var(--accent-soft); font-size: 13px; padding: 6px 0; }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before { content: "+ "; }
+        details[open] summary::before { content: "− "; }
+        .doxy-pill {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.18);
+            border: 1px solid rgba(var(--glow-purple), 0.55);
+            color: var(--fg-strong);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .doxy-pill:hover { background: rgba(var(--glow-purple), 0.30); }
+        .doxy-pill.disabled { opacity: 0.5; pointer-events: none; }
+        .health-line {
+            font-size: 11.5px;
+            color: var(--fg-dim);
+            margin-top: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> · Scheduling</span>
+            <span style="flex:1"></span>
+            <span id="ts" class="health-line"></span>
+        </header>
+
+        <h1 class="page-title">Scheduling &amp; Doxy.me</h1>
+        <p class="lede">Set availability, manage appointments, and configure the Doxy.me launch URL. Patient-facing booking lands in Phase 1; for now this admin panel is the source of truth.</p>
+
+        <div class="grid two">
+            <!-- PRACTICE SETTINGS -->
+            <section class="panel">
+                <h2>Practice Settings <span id="settings-status" class="pill scheduled" style="display:none">saving…</span></h2>
+                <p class="panel-sub">The Doxy.me room URL is embedded on every telehealth appointment at booking time. The address shows on patient-facing reminders.</p>
+
+                <label for="ps-doxy">Doxy.me room URL</label>
+                <input id="ps-doxy" type="url" placeholder="https://dr-mabini.doxy.me">
+                <button type="button" class="compact" style="margin-top:8px" onclick="saveSetting('doxy_room_url', document.getElementById('ps-doxy').value)">Save Doxy URL</button>
+
+                <label for="ps-tz">Timezone</label>
+                <input id="ps-tz" type="text" placeholder="America/Chicago">
+                <button type="button" class="compact" style="margin-top:8px" onclick="saveSetting('timezone', document.getElementById('ps-tz').value)">Save Timezone</button>
+
+                <label for="ps-addr">Practice address (displayed on confirmations)</label>
+                <textarea id="ps-addr" rows="2"></textarea>
+                <button type="button" class="compact" style="margin-top:8px" onclick="saveSetting('practice_address', document.getElementById('ps-addr').value)">Save Address</button>
+
+                <label for="ps-phone">Office phone</label>
+                <input id="ps-phone" type="text" placeholder="(555) 555-1234">
+                <button type="button" class="compact" style="margin-top:8px" onclick="saveSetting('phone_office', document.getElementById('ps-phone').value)">Save Phone</button>
+
+                <div id="settings-flash" class="flash"></div>
+            </section>
+
+            <!-- ADMIN-CREATED PATIENTS -->
+            <section class="panel">
+                <h2>Patients <span id="patients-count" class="pill rescheduled" style="display:none"></span></h2>
+                <p class="panel-sub">Phase 1 patient self-signup is queued; for now admin can create demo patient records to test booking + the Doxy.me launch flow.</p>
+
+                <details>
+                    <summary>Create demo patient</summary>
+                    <div class="form-row two">
+                        <div><label>First name</label><input id="pt-first" type="text"></div>
+                        <div><label>Last name</label><input id="pt-last" type="text"></div>
+                    </div>
+                    <div class="form-row two">
+                        <div><label>Email</label><input id="pt-email" type="email"></div>
+                        <div><label>DOB (YYYY-MM-DD)</label><input id="pt-dob" type="date"></div>
+                    </div>
+                    <button type="button" class="compact" style="margin-top:8px" onclick="createPatient()">Create patient</button>
+                </details>
+
+                <label for="pt-q" style="margin-top:18px">Search</label>
+                <input id="pt-q" type="search" placeholder="name or email" oninput="loadPatients()">
+                <div id="patient-list" class="appt-list"></div>
+                <div id="patients-flash" class="flash"></div>
+            </section>
+
+            <!-- AVAILABILITY -->
+            <section class="panel">
+                <h2>Availability <span id="avail-count" class="pill rescheduled" style="display:none"></span></h2>
+                <p class="panel-sub">Add 15-min-aligned blocks for the week. Block kind: open (bookable), blocked, admin, lunch, procedure, surgery.</p>
+
+                <details>
+                    <summary>Add availability block</summary>
+                    <div class="form-row two">
+                        <div><label>Date</label><input id="av-date" type="date"></div>
+                        <div><label>Block kind</label><select id="av-kind">
+                            <option value="open">Open (bookable)</option>
+                            <option value="blocked">Blocked</option>
+                            <option value="admin">Admin / Charts</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="procedure">Procedure</option>
+                            <option value="surgery">Surgery</option>
+                        </select></div>
+                    </div>
+                    <div class="form-row two">
+                        <div><label>Start (HH:MM, 15-min)</label><input id="av-start" type="time" step="900"></div>
+                        <div><label>End (HH:MM, 15-min)</label><input id="av-end" type="time" step="900"></div>
+                    </div>
+                    <div class="form-row two">
+                        <div><label>Location</label><select id="av-loc">
+                            <option value="">— any —</option>
+                            <option value="clinic">Clinic</option>
+                            <option value="telehealth_only">Telehealth only</option>
+                            <option value="procedure_room">Procedure room</option>
+                        </select></div>
+                        <div><label>Notes</label><input id="av-notes" type="text" maxlength="240"></div>
+                    </div>
+                    <button type="button" class="compact" style="margin-top:8px" onclick="createAvailability()">Add block</button>
+                </details>
+
+                <label for="av-from" style="margin-top:18px">Week of</label>
+                <input id="av-from" type="date" onchange="loadAvailability()">
+                <div id="avail-list" class="avail-list"></div>
+                <div id="avail-flash" class="flash"></div>
+            </section>
+
+            <!-- APPOINTMENTS -->
+            <section class="panel">
+                <h2>Appointments <span id="appt-count" class="pill rescheduled" style="display:none"></span></h2>
+                <p class="panel-sub">Book appointments on behalf of a patient. Telehealth appointments get a Doxy.me Join link (T-15 min).</p>
+
+                <details>
+                    <summary>Book appointment</summary>
+                    <div class="form-row two">
+                        <div><label>Patient</label><select id="ap-patient"></select></div>
+                        <div><label>Visit type</label><select id="ap-visit"></select></div>
+                    </div>
+                    <div class="form-row two">
+                        <div><label>Date</label><input id="ap-date" type="date"></div>
+                        <div><label>Time</label><input id="ap-time" type="time" step="900"></div>
+                    </div>
+                    <div class="form-row two">
+                        <div><label>Modality</label><select id="ap-modality">
+                            <option value="in_person">In person</option>
+                            <option value="telehealth">Telehealth</option>
+                        </select></div>
+                        <div><label>Duration (min)</label><input id="ap-duration" type="number" min="5" step="5"></div>
+                    </div>
+                    <label>Chief complaint summary (one line)</label>
+                    <input id="ap-cc" type="text" maxlength="240">
+                    <button type="button" class="compact" style="margin-top:8px" onclick="bookAppointment()">Book</button>
+                </details>
+
+                <label for="ap-from" style="margin-top:18px">From</label>
+                <input id="ap-from" type="date" onchange="loadAppointments()">
+                <div id="appt-list" class="appt-list"></div>
+                <div id="appt-flash" class="flash"></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    // ============================================================
+    // /admin/scheduling/ — vanilla JS client.
+    // Same-origin to /api/v1/admin/*; admin Basic Auth carries via the
+    // browser's cached credentials for the realm.
+    // ============================================================
+    const $ = (id) => document.getElementById(id);
+    const fmtDate = (ms) => {
+        const d = new Date(ms);
+        return d.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    };
+    const fmtTime = (mod) => {
+        const h = Math.floor(mod / 60), m = mod % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    };
+    const parseTimeStr = (s) => {
+        const [h, m] = s.split(':').map(n => parseInt(n, 10));
+        if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+        return h * 60 + m;
+    };
+    const todayIso = () => new Date().toISOString().slice(0, 10);
+    const isoOffset = (n) => {
+        const d = new Date(); d.setDate(d.getDate() + n);
+        return d.toISOString().slice(0, 10);
+    };
+    function flash(elId, msg, kind) {
+        const el = $(elId);
+        el.className = `flash show ${kind === 'ok' ? 'ok' : 'err'}`;
+        el.textContent = msg;
+        setTimeout(() => el.className = 'flash', 4500);
+    }
+
+    // -------- Practice settings --------
+    async function loadSettings() {
+        const r = await fetch('/api/v1/admin/practice-settings');
+        if (!r.ok) { flash('settings-flash', `Load failed: ${r.status}`, 'err'); return; }
+        const data = await r.json();
+        const s = data.settings || {};
+        $('ps-doxy').value = s.doxy_room_url || '';
+        $('ps-tz').value = s.timezone || '';
+        $('ps-addr').value = s.practice_address || '';
+        $('ps-phone').value = s.phone_office || '';
+    }
+    async function saveSetting(key, value) {
+        try {
+            const r = await fetch('/api/v1/admin/practice-settings', {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ key, value }),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            flash('settings-flash', `Saved ${key}.`, 'ok');
+        } catch (e) {
+            flash('settings-flash', `Save failed: ${e.message}`, 'err');
+        }
+    }
+
+    // -------- Patients --------
+    async function loadPatients() {
+        const q = $('pt-q').value;
+        const r = await fetch(`/api/v1/admin/patients?q=${encodeURIComponent(q)}&limit=30`);
+        if (!r.ok) { flash('patients-flash', `Load failed: ${r.status}`, 'err'); return; }
+        const data = await r.json();
+        const list = data.patients || [];
+        $('patients-count').textContent = list.length;
+        $('patients-count').style.display = 'inline-flex';
+        const el = $('patient-list');
+        if (!list.length) { el.innerHTML = '<div class="empty">No patients yet — create one above.</div>'; return; }
+        el.innerHTML = list.map(p => `
+            <div class="appt-row">
+                <div class="appt-when">${escapeHtml(p.last_name)}, ${escapeHtml(p.first_name)}</div>
+                <div class="appt-meta">${escapeHtml(p.email)} · DOB ${escapeHtml(p.dob)}</div>
+                <div class="appt-actions">
+                    <button type="button" class="compact" onclick="useAsBookingPatient('${escapeAttr(p.id)}','${escapeAttr(p.last_name)}','${escapeAttr(p.first_name)}')">Book</button>
+                </div>
+            </div>
+        `).join('');
+        populatePatientSelect(list);
+    }
+    function useAsBookingPatient(id, last, first) {
+        $('ap-patient').value = id;
+        document.querySelector('section.panel:nth-of-type(4) details')?.setAttribute('open', '');
+        $('ap-date').focus();
+        flash('appt-flash', `Selected ${last}, ${first} for booking.`, 'ok');
+    }
+    function populatePatientSelect(list) {
+        const sel = $('ap-patient');
+        const prev = sel.value;
+        sel.innerHTML = list.map(p => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.last_name)}, ${escapeHtml(p.first_name)} (${escapeHtml(p.email)})</option>`).join('');
+        if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+    }
+    async function createPatient() {
+        try {
+            const body = {
+                first_name: $('pt-first').value.trim(),
+                last_name: $('pt-last').value.trim(),
+                email: $('pt-email').value.trim().toLowerCase(),
+                dob: $('pt-dob').value,
+            };
+            const r = await fetch('/api/v1/admin/patients', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            $('pt-first').value = $('pt-last').value = $('pt-email').value = $('pt-dob').value = '';
+            flash('patients-flash', `Created ${j.last_name}, ${j.first_name}.`, 'ok');
+            await loadPatients();
+        } catch (e) {
+            flash('patients-flash', `Create failed: ${e.message}`, 'err');
+        }
+    }
+
+    // -------- Visit types --------
+    let VISIT_TYPES = [];
+    async function loadVisitTypes() {
+        const r = await fetch('/api/v1/admin/visit-types');
+        if (!r.ok) return;
+        const data = await r.json();
+        VISIT_TYPES = data.visit_types || [];
+        const sel = $('ap-visit');
+        sel.innerHTML = VISIT_TYPES.map(v => `<option value="${escapeAttr(v.key)}" data-duration="${v.duration_min}" data-modality="${v.modality_preferred}">${escapeHtml(v.label)} (${v.duration_min} min)</option>`).join('');
+        sel.addEventListener('change', () => {
+            const opt = sel.options[sel.selectedIndex];
+            $('ap-duration').value = opt.dataset.duration;
+            const m = opt.dataset.modality;
+            if (m === 'telehealth') $('ap-modality').value = 'telehealth';
+            else if (m === 'in_person') $('ap-modality').value = 'in_person';
+        });
+        sel.dispatchEvent(new Event('change'));
+    }
+
+    // -------- Availability --------
+    async function loadAvailability() {
+        const from = $('av-from').value || todayIso();
+        // Week-of view: from + 6 days.
+        const d = new Date(from + 'T00:00:00');
+        d.setDate(d.getDate() + 6);
+        const to = d.toISOString().slice(0, 10);
+        const r = await fetch(`/api/v1/admin/availability?from=${from}&to=${to}`);
+        if (!r.ok) { flash('avail-flash', `Load failed: ${r.status}`, 'err'); return; }
+        const data = await r.json();
+        const blocks = data.blocks || [];
+        $('avail-count').textContent = `${blocks.length} blocks`;
+        $('avail-count').style.display = 'inline-flex';
+        const el = $('avail-list');
+        if (!blocks.length) { el.innerHTML = '<div class="empty">No availability blocks for this week.</div>'; return; }
+        el.innerHTML = blocks.map(b => `
+            <div class="avail-row">
+                <div class="avail-when">${escapeHtml(b.date)} · ${fmtTime(b.start_minute_of_day)}&ndash;${fmtTime(b.end_minute_of_day)}</div>
+                <div class="avail-meta">
+                    <span class="pill ${escapeAttr(b.block_kind === 'open' ? 'scheduled' : 'rescheduled')}">${escapeHtml(b.block_kind)}</span>
+                    ${b.location ? `<span class="pill in_person">${escapeHtml(b.location)}</span>` : ''}
+                    ${b.notes ? `<span style="opacity:0.7">${escapeHtml(b.notes)}</span>` : ''}
+                </div>
+                <div class="avail-actions">
+                    <button type="button" class="compact danger" onclick="deleteAvailability('${escapeAttr(b.id)}')">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    async function createAvailability() {
+        try {
+            const date = $('av-date').value;
+            const start = parseTimeStr($('av-start').value);
+            const end = parseTimeStr($('av-end').value);
+            if (!date || start == null || end == null) throw new Error('date + start + end required');
+            const body = {
+                date,
+                start_minute_of_day: start,
+                end_minute_of_day: end,
+                block_kind: $('av-kind').value,
+                location: $('av-loc').value || null,
+                notes: $('av-notes').value || null,
+            };
+            const r = await fetch('/api/v1/admin/availability', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            $('av-notes').value = '';
+            flash('avail-flash', `Added ${date} ${fmtTime(start)}–${fmtTime(end)}.`, 'ok');
+            await loadAvailability();
+        } catch (e) {
+            flash('avail-flash', `Add failed: ${e.message}`, 'err');
+        }
+    }
+    async function deleteAvailability(id) {
+        if (!confirm('Delete this availability block?')) return;
+        try {
+            const r = await fetch(`/api/v1/admin/availability?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            flash('avail-flash', 'Deleted.', 'ok');
+            await loadAvailability();
+        } catch (e) {
+            flash('avail-flash', `Delete failed: ${e.message}`, 'err');
+        }
+    }
+
+    // -------- Appointments --------
+    async function loadAppointments() {
+        const from = $('ap-from').value || todayIso();
+        const d = new Date(from + 'T00:00:00');
+        d.setDate(d.getDate() + 30);
+        const to = d.toISOString().slice(0, 10);
+        const r = await fetch(`/api/v1/admin/appointments?from=${from}&to=${to}`);
+        if (!r.ok) { flash('appt-flash', `Load failed: ${r.status}`, 'err'); return; }
+        const data = await r.json();
+        const list = data.appointments || [];
+        $('appt-count').textContent = `${list.length} appts`;
+        $('appt-count').style.display = 'inline-flex';
+        const el = $('appt-list');
+        if (!list.length) { el.innerHTML = '<div class="empty">No appointments in this window.</div>'; return; }
+        el.innerHTML = list.map(a => {
+            const isTelehealth = a.modality === 'telehealth';
+            const doxyUrl = a.doxy_room_url;
+            const canJoin = isTelehealth && doxyUrl && (a.starts_at - Date.now()) < 15 * 60 * 1000 && a.status === 'scheduled';
+            const patientLabel = a.patient_last_name ? `${escapeHtml(a.patient_last_name)}, ${escapeHtml(a.patient_first_name)}` : escapeHtml(a.patient_id);
+            const vt = VISIT_TYPES.find(v => v.key === a.visit_type);
+            return `
+                <div class="appt-row">
+                    <div class="appt-when">${fmtDate(a.starts_at)}</div>
+                    <div class="appt-meta">
+                        <strong style="color:var(--fg-strong)">${patientLabel}</strong>
+                        <span class="pill ${escapeAttr(a.status)}">${escapeHtml(a.status)}</span>
+                        <span class="pill ${escapeAttr(a.modality)}">${a.modality === 'telehealth' ? 'telehealth' : 'in person'}</span>
+                        <span>${escapeHtml(vt ? vt.label : a.visit_type)} · ${a.duration_min} min</span>
+                        ${a.chief_complaint_summary ? `<span style="opacity:0.75">— ${escapeHtml(a.chief_complaint_summary)}</span>` : ''}
+                    </div>
+                    <div class="appt-actions">
+                        ${isTelehealth && doxyUrl
+                            ? `<a class="doxy-pill ${canJoin ? '' : 'disabled'}" href="${escapeAttr(doxyUrl)}" target="_blank" rel="noopener" onclick="logDoxyJoin('${escapeAttr(a.id)}')">Join Doxy</a>`
+                            : ''
+                        }
+                        ${a.status === 'scheduled' ? `
+                            <button type="button" class="compact" onclick="updateAppt('${escapeAttr(a.id)}', { status: 'completed' })">Complete</button>
+                            <button type="button" class="compact danger" onclick="cancelAppt('${escapeAttr(a.id)}')">Cancel</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    async function bookAppointment() {
+        try {
+            const date = $('ap-date').value;
+            const time = $('ap-time').value;
+            if (!date || !time) throw new Error('date + time required');
+            const starts_at = Date.parse(`${date}T${time}`);
+            if (!Number.isFinite(starts_at)) throw new Error('date/time parse failed');
+            const body = {
+                patient_id: $('ap-patient').value,
+                visit_type: $('ap-visit').value,
+                starts_at,
+                duration_min: parseInt($('ap-duration').value, 10) || undefined,
+                modality: $('ap-modality').value,
+                chief_complaint_summary: $('ap-cc').value || null,
+            };
+            const r = await fetch('/api/v1/admin/appointments', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            $('ap-cc').value = '';
+            flash('appt-flash', `Booked ${body.visit_type} at ${new Date(starts_at).toLocaleString()}.`, 'ok');
+            await loadAppointments();
+        } catch (e) {
+            flash('appt-flash', `Book failed: ${e.message}`, 'err');
+        }
+    }
+    async function updateAppt(id, patch) {
+        try {
+            const r = await fetch(`/api/v1/admin/appointments/${encodeURIComponent(id)}`, {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(patch),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+            flash('appt-flash', `Updated ${id.slice(0, 8)}…`, 'ok');
+            await loadAppointments();
+        } catch (e) {
+            flash('appt-flash', `Update failed: ${e.message}`, 'err');
+        }
+    }
+    async function cancelAppt(id) {
+        const reason = prompt('Cancellation reason?', 'patient cancellation');
+        if (reason == null) return;
+        await updateAppt(id, { status: 'cancelled', cancellation_reason: reason });
+    }
+    async function logDoxyJoin(id) {
+        try {
+            await fetch(`/api/v1/admin/appointments/${encodeURIComponent(id)}`, {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ doxy_join_logged_at: Date.now() }),
+            });
+        } catch (_) {}
+    }
+
+    function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+
+    // -------- Boot --------
+    (async function () {
+        $('ts').textContent = new Date().toLocaleString();
+        $('av-from').value = todayIso();
+        $('ap-from').value = todayIso();
+        $('av-date').value = isoOffset(1);
+        $('ap-date').value = isoOffset(1);
+        await Promise.all([loadSettings(), loadVisitTypes(), loadPatients()]);
+        await Promise.all([loadAvailability(), loadAppointments()]);
+    })();
+    </script>
+</body>
+</html>
