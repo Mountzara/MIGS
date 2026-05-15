@@ -9,11 +9,21 @@
 //   - Credentials travel from browser → edge over TLS 1.3 (Cloudflare).
 //   - The password is NOT stored in plaintext on Cloudflare. The
 //     ADMIN_PASS_HASH secret holds a PBKDF2-HMAC-SHA-256 hash with a
-//     per-user random salt and 200,000 iterations, encoded as:
+//     per-user random salt and 100,000 iterations, encoded as:
 //       "pbkdf2$<iterations>$<base64-salt>$<base64-hash>"
 //     Submitted passwords are hashed with the same salt+iterations and
 //     compared in constant time. Compromise of the Cloudflare secret
 //     leaks the hash, not the password.
+//
+//     IMPORTANT: Cloudflare Workers caps PBKDF2 iterations at 100,000.
+//     Higher values (e.g. 200,000, 600,000 per OWASP 2023 guidance)
+//     cause `crypto.subtle.deriveBits` to throw at verify time with
+//     "Pbkdf2 failed: iteration counts above 100000 are not supported".
+//     The catch block below converts that throw into a 401 "Invalid
+//     credentials" response — which looks identical to a wrong-password
+//     response and is impossible to diagnose without a log/probe.
+//     If a future Workers runtime raises the cap, bump this comment +
+//     scripts/_reset_admin_password_node.sh + auth.js's hashPassword().
 //   - Cloudflare Pages secrets are themselves encrypted at rest by
 //     Cloudflare's KMS; the hash adds defense-in-depth.
 //

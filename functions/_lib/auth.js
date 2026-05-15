@@ -21,6 +21,13 @@
 
 import { logAudit } from "./audit.js";
 
+// IMPORTANT: Cloudflare Workers caps PBKDF2 iterations at 100,000. Higher
+// values (e.g. 200,000, 600,000 per OWASP 2023) cause `subtle.deriveBits`
+// to throw at verify time ("Pbkdf2 failed: iteration counts above 100000
+// are not supported"). The middleware's try/catch turns that into a 401
+// "Invalid credentials" that's impossible to diagnose without a probe.
+// Confirmed 2026-05-15 via on-deploy diagnostic. Re-evaluate if Workers
+// raises the cap. See admin/_middleware.js header comment.
 const PBKDF2_ITERATIONS = 100_000;
 const PBKDF2_SALT_BYTES = 16;
 const PBKDF2_HASH_BYTES = 32;
