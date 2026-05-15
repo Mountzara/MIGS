@@ -17,3 +17,32 @@ bucket_name = "mountzara-media"
 [[r2_buckets]]
 binding = "CONTENT"
 bucket_name = "mountzara-content"
+
+# Phase 0 — PHI blob store (encounter notes, message bodies, uploaded documents).
+# Every object is envelope-encrypted by functions/_lib/phi.js (AES-GCM 256 with
+# per-record DEK wrapped by env.PHI_MASTER_KEY). CRITICAL: must be present at
+# every deploy or Phase 1+ patient portal blob ops 500 with "PHI R2 bucket not bound".
+[[r2_buckets]]
+binding = "PHI"
+bucket_name = "mountzara-phi"
+
+# Phase 0 — Cloudflare D1 (SQLite at the edge). Backing store for patients,
+# appointments, encounters, messages, audit_log, etc. Schema lives in
+# schema/0001_phase0_foundation.sql. CRITICAL: every Pages Function that
+# touches portal data depends on env.DB; remove this binding and Phase 1+
+# routes 500 with "D1 database not bound".
+[[d1_databases]]
+binding = "DB"
+database_name = "mountzara-clinical"
+database_id = "f9b4acfe-4f5f-43bb-a76e-bac87e912fdb"
+
+# Phase 0 — KV namespaces.
+#   MZ_SESSIONS    — active session lookup cache (TTL mirrors auth_sessions.expires_at)
+#   MZ_MAGIC_LINKS — reserved for Phase 1 magic-link fast-path; D1 is primary store
+[[kv_namespaces]]
+binding = "MZ_SESSIONS"
+id = "eead5eeea6564a83a772d4f497109ebd"
+
+[[kv_namespaces]]
+binding = "MZ_MAGIC_LINKS"
+id = "075ac87555274452ba3d370031030eb4"
