@@ -21,7 +21,9 @@
             --gray-5: #d2d2d7;
             --gray-6: #f5f5f7;
             --white: #ffffff;
-            --accent: #2997ff;
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
             --bg: #000000;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
@@ -610,14 +612,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(92, 182, 255, 0.12);
+            background: rgba(167, 139, 250, 0.12);
             border-radius: 12px;
             margin-bottom: 20px;
         }
         .curriculum-icon svg {
             width: 24px;
             height: 24px;
-            stroke: rgba(92, 182, 255, 0.9);
+            stroke: rgba(167, 139, 250, 0.9);
         }
         .curriculum-card h4 {
             font-size: 21px;
@@ -630,7 +632,7 @@
             font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(92, 182, 255, 0.8);
+            color: rgba(167, 139, 250, 0.8);
             margin: 0 0 16px;
         }
         .curriculum-card p {
@@ -642,8 +644,8 @@
         .curriculum-cta {
             margin-top: 48px;
             padding: 40px;
-            background: linear-gradient(135deg, rgba(92, 182, 255, 0.08) 0%, rgba(92, 182, 255, 0.02) 100%);
-            border: 1px solid rgba(92, 182, 255, 0.2);
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(167, 139, 250, 0.02) 100%);
+            border: 1px solid rgba(167, 139, 250, 0.2);
             border-radius: 20px;
         }
         .curriculum-cta-inner h3 {
@@ -694,12 +696,12 @@
             width: 2px;
             height: calc((100% - 48px) * var(--timeline-progress, 0));
             background: linear-gradient(180deg,
-                rgba(92, 182, 255, 0.95) 0%,
+                rgba(167, 139, 250, 0.95) 0%,
                 rgba(141, 90, 255, 0.85) 100%);
             border-radius: 2px;
             box-shadow:
-                0 0 12px rgba(92, 182, 255, 0.55),
-                0 0 24px rgba(92, 182, 255, 0.25);
+                0 0 12px rgba(167, 139, 250, 0.55),
+                0 0 24px rgba(167, 139, 250, 0.25);
             transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
         }
@@ -742,19 +744,19 @@
         /* Active dot — when row is in view. Keep bg mask ring,
            layer glow rings on the outside. */
         .timeline-row.tl-active::before {
-            background: radial-gradient(circle, rgba(92, 182, 255, 1) 0%, rgba(141, 90, 255, 0.9) 100%);
+            background: radial-gradient(circle, rgba(167, 139, 250, 1) 0%, rgba(141, 90, 255, 0.9) 100%);
             border-color: rgba(255, 255, 255, 0.95);
             box-shadow:
                 0 0 0 6px #000000,
-                0 0 0 10px rgba(92, 182, 255, 0.22),
-                0 0 22px rgba(92, 182, 255, 0.65);
+                0 0 0 10px rgba(167, 139, 250, 0.22),
+                0 0 22px rgba(167, 139, 250, 0.65);
             transform: scale(1.15);
         }
 
         .timeline-row .year {
             font-size: 14px;
             font-weight: 600;
-            color: rgba(92, 182, 255, 0.75);
+            color: rgba(167, 139, 250, 0.75);
             letter-spacing: 0.04em;
             text-transform: uppercase;
             padding-top: 2px;
@@ -961,17 +963,17 @@
         .btn-primary:hover {
             background: #0080ff;
             transform: translateY(-1px);
-            box-shadow: 0 8px 16px -4px rgba(41, 151, 255, 0.4);
+            box-shadow: 0 8px 16px -4px rgba(109, 40, 217, 0.4);
         }
 
         .btn-secondary {
             background: transparent;
             color: var(--accent);
-            border-color: rgba(41, 151, 255, 0.5);
+            border-color: rgba(109, 40, 217, 0.5);
         }
 
         .btn-secondary:hover {
-            background: rgba(41, 151, 255, 0.1);
+            background: rgba(109, 40, 217, 0.1);
             border-color: var(--accent);
             transform: translateY(-1px);
         }
@@ -1057,7 +1059,7 @@
         .surgical-focus-section {
             padding: clamp(80px, 10vw, 140px) 0 clamp(80px, 10vw, 140px);
             background:
-                radial-gradient(ellipse 70% 80% at 50% 0%, rgba(41, 151, 255, 0.04), transparent 70%),
+                radial-gradient(ellipse 70% 80% at 50% 0%, rgba(109, 40, 217, 0.04), transparent 70%),
                 #0a0a0c;
             color: var(--white);
             position: relative;
@@ -1137,14 +1139,14 @@
         .surgical-card:hover {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(92, 182, 255, 0.32);
+            border-color: rgba(167, 139, 250, 0.32);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
         }
         .surgical-card::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 240px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            background: radial-gradient(circle 240px at var(--mx, 50%) var(--my, 50%), rgba(167, 139, 250, 0.10), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -1159,13 +1161,13 @@
             width: 56px;
             height: 56px;
             border-radius: 14px;
-            background: rgba(92, 182, 255, 0.10);
-            color: #5cb6ff;
+            background: rgba(167, 139, 250, 0.10);
+            color: #a78bfa;
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
         }
         .surgical-card:hover .surgical-card-icon {
             transform: scale(1.08) rotate(-3deg);
-            background: rgba(92, 182, 255, 0.18);
+            background: rgba(167, 139, 250, 0.18);
         }
         .surgical-card-icon svg {
             width: 28px;
@@ -1193,7 +1195,7 @@
             font-weight: 600;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: #5cb6ff;
+            color: #a78bfa;
             opacity: 0;
             transform: translateY(8px);
             transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1326,7 +1328,7 @@
             transform: translateX(-50%);
             width: 1000px;
             height: 600px;
-            background: radial-gradient(ellipse, rgba(41, 151, 255, 0.05) 0%, transparent 60%);
+            background: radial-gradient(ellipse, rgba(109, 40, 217, 0.05) 0%, transparent 60%);
             pointer-events: none;
             z-index: 0;
         }
@@ -1357,7 +1359,7 @@
             max-width: 880px;
             padding: clamp(48px, 6vw, 72px) clamp(32px, 5vw, 72px);
             background:
-                radial-gradient(ellipse at top, rgba(41, 151, 255, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at top, rgba(109, 40, 217, 0.06) 0%, transparent 60%),
                 linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1497,7 +1499,7 @@
 
         .zero-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(41, 151, 255, 0.3);
+            border-color: rgba(109, 40, 217, 0.3);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
         }
 
@@ -1569,7 +1571,7 @@
 
         .domain-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(41, 151, 255, 0.3);
+            border-color: rgba(109, 40, 217, 0.3);
         }
 
         .domain-tag {
@@ -1765,7 +1767,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 260px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.08), transparent 60%);
+            background: radial-gradient(circle 260px at var(--mx, 50%) var(--my, 50%), rgba(167, 139, 250, 0.08), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -1774,7 +1776,7 @@
         .population-card:hover,
         .population-card:focus-visible {
             transform: translateY(-6px);
-            border-color: rgba(41, 151, 255, 0.4);
+            border-color: rgba(109, 40, 217, 0.4);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
         }
         .population-card:hover::before,
@@ -1793,7 +1795,7 @@
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.85);
+            color: rgba(167, 139, 250, 0.85);
             transition: color 0.3s ease;
         }
         .pop-evidence-cta .arrow {
@@ -1806,7 +1808,7 @@
         }
         .population-card:hover .pop-evidence-cta,
         .population-card:focus-visible .pop-evidence-cta {
-            color: #8dcaff;
+            color: #c4b5fd;
         }
 
         .pop-tag {
@@ -1911,7 +1913,7 @@
         .evidence-card:focus-visible {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(92, 182, 255, 0.32);
+            border-color: rgba(167, 139, 250, 0.32);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
             outline: none;
         }
@@ -1919,7 +1921,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(92, 182, 255, 0.10), transparent 60%);
+            background: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(167, 139, 250, 0.10), transparent 60%);
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
@@ -1930,8 +1932,8 @@
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: rgba(92, 182, 255, 0.10);
-            color: #5cb6ff;
+            background: rgba(167, 139, 250, 0.10);
+            color: #a78bfa;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1939,7 +1941,7 @@
         }
         .evidence-card:hover .evidence-card-icon {
             transform: scale(1.08) rotate(-3deg);
-            background: rgba(92, 182, 255, 0.18);
+            background: rgba(167, 139, 250, 0.18);
         }
         .evidence-card-icon svg {
             width: 24px;
@@ -1951,7 +1953,7 @@
             font-weight: 600;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.85);
+            color: rgba(167, 139, 250, 0.85);
         }
         .evidence-card h4 {
             font-size: 18px;
@@ -1972,7 +1974,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(92, 182, 255, 0.9);
+            color: rgba(167, 139, 250, 0.9);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -2071,7 +2073,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(92, 182, 255, 0.9);
+            color: rgba(167, 139, 250, 0.9);
             margin-bottom: 12px;
         }
         .evidence-modal-card h3 {
@@ -2104,8 +2106,8 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         .evidence-study:hover {
-            border-color: rgba(92, 182, 255, 0.28);
-            background: rgba(92, 182, 255, 0.04);
+            border-color: rgba(167, 139, 250, 0.28);
+            background: rgba(167, 139, 250, 0.04);
         }
         .evidence-study-title {
             font-size: 15px;
@@ -2138,13 +2140,13 @@
             gap: 6px;
             font-size: 12px;
             font-weight: 600;
-            color: #5cb6ff;
+            color: #a78bfa;
             text-decoration: none;
             letter-spacing: 0.01em;
             transition: color 0.2s ease, transform 0.2s ease;
         }
         .evidence-study-link:hover {
-            color: #8dcaff;
+            color: #c4b5fd;
             transform: translateX(2px);
         }
         .evidence-study-link svg {
@@ -2318,8 +2320,8 @@
             transition: background 0.25s ease, border-color 0.25s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .apps-arch-item:hover {
-            background: rgba(41, 151, 255, 0.04);
-            border-color: rgba(41, 151, 255, 0.22);
+            background: rgba(109, 40, 217, 0.04);
+            border-color: rgba(109, 40, 217, 0.22);
             transform: translateY(-1px);
         }
         .apps-arch-icon {
@@ -2330,7 +2332,7 @@
             width: 36px;
             height: 36px;
             border-radius: 10px;
-            background: rgba(41, 151, 255, 0.1);
+            background: rgba(109, 40, 217, 0.1);
             color: #1e7fcf;
         }
         .apps-arch-icon svg { width: 18px; height: 18px; }
@@ -2422,7 +2424,7 @@
         }
 
         .app-visual.accent {
-            background: linear-gradient(135deg, #2997ff 0%, #0058a3 100%);
+            background: linear-gradient(135deg, #6d28d9 0%, #0058a3 100%);
             color: rgba(255,255,255,0.85);
         }
 
@@ -2524,9 +2526,9 @@
             margin-top: 40px;
             padding: 28px clamp(24px, 4vw, 48px);
             background:
-                radial-gradient(ellipse at center, rgba(41, 151, 255, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at center, rgba(109, 40, 217, 0.08) 0%, transparent 70%),
                 linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(41, 151, 255, 0.18);
+            border: 1px solid rgba(109, 40, 217, 0.18);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -2547,7 +2549,7 @@
             line-height: 1;
             color: var(--accent);
             margin-bottom: 6px;
-            background: linear-gradient(180deg, #5cb6ff 0%, #2997ff 100%);
+            background: linear-gradient(180deg, #a78bfa 0%, #6d28d9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -2722,14 +2724,14 @@
             height: 8px;
             border-radius: 50%;
             background: var(--accent);
-            box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.6);
+            box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.6);
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.6); }
-            70% { box-shadow: 0 0 0 8px rgba(41, 151, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(109, 40, 217, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0); }
         }
 
         .research-detail-inner p {
@@ -3058,9 +3060,9 @@
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .footer-social a:hover {
-            color: #5cb6ff;
-            background: rgba(92, 182, 255, 0.12);
-            border-color: rgba(92, 182, 255, 0.32);
+            color: #a78bfa;
+            background: rgba(167, 139, 250, 0.12);
+            border-color: rgba(167, 139, 250, 0.32);
             transform: translateY(-2px);
         }
         .footer-social a svg {
@@ -3971,6 +3973,378 @@
             color: var(--white);
             transform: translateX(2px);
         }
+
+        /* ============================================================
+           SITE-WIDE APPLE-GLASS TREATMENT (task #51 / §3.10 Principle 4)
+           Single override block ensuring every card-like surface on the
+           homepage shares the same glass + purple-accent visual grammar
+           — backdrop-filter blur(28px) saturate(165%), rgba(255,255,255,
+           0.04) base, 1px translucent border, 14px radius, hover lift via
+           translateY(-2px), purple-accent border intensification on
+           hover/focus. If a new card class is added without this glass
+           treatment, append it to the selector list here.
+           ============================================================ */
+        .app-card-v2,
+        .research-card,
+        .frame-card,
+        .carepath-card,
+        .modal-action,
+        .population-card,
+        .preview-card,
+        .award-card,
+        .timeline-card,
+        .skill-card,
+        .nav-linkedin {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+        .app-card-v2:hover,
+        .research-card:hover,
+        .frame-card:hover,
+        .carepath-card:hover,
+        .modal-action:hover,
+        .population-card:hover,
+        .preview-card:hover,
+        .award-card:hover,
+        .timeline-card:hover,
+        .skill-card:hover,
+        .nav-linkedin:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+
+        /* Care-path cards (OMT patient + clinician walk-through) */
+        .omt-carepath { margin-top: clamp(40px, 5vw, 64px); }
+        .carepath-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .carepath-card {
+            padding: 22px 22px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-margin-top: 80px;
+        }
+        .carepath-icon {
+            width: 32px;
+            height: 32px;
+            color: rgba(var(--glow-purple), 0.95);
+        }
+        .carepath-icon svg { width: 100%; height: 100%; }
+        .carepath-title {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            margin: 0;
+        }
+        .carepath-body {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: rgba(245, 245, 247, 0.82);
+            margin: 0;
+        }
+        .carepath-body strong {
+            color: rgba(var(--glow-purple), 0.95);
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           OMT — Integrated Six-Pillar Framework (v4.0 protocol layer)
+           Pillar cards reuse the glass + hover pattern from carepath-card
+           but carry a numbered eyebrow + mechanism + components + citation
+           anatomy that's heavier and clinically denser.
+           Per CLAUDE.md §3.10 Principle 1 (visualization first), Principle 4
+           (Apple-glass + purple, NO BLUE), Principle 7 (long-form reading).
+           ============================================================ */
+        .omt-pillars { margin-top: clamp(40px, 5vw, 64px); }
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .pillar-card {
+            padding: 24px 22px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-margin-top: 80px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+        .pillar-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        .pillar-num {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            font-feature-settings: "tnum";
+        }
+        .pillar-title {
+            font-size: 19px;
+            font-weight: 500;
+            letter-spacing: -0.012em;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.3;
+        }
+        .pillar-mech,
+        .pillar-content {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: rgba(245, 245, 247, 0.82);
+            margin: 0;
+        }
+        .pillar-mech strong,
+        .pillar-content strong {
+            color: rgba(var(--glow-purple), 0.95);
+            font-weight: 600;
+        }
+        .pillar-cite {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.58);
+            margin: 4px 0 0 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .pillar-cite em { color: rgba(245, 245, 247, 0.72); font-style: italic; }
+
+        /* OMT — Standard-of-care backbone (Level A recs by condition) */
+        .omt-soc { margin-top: clamp(40px, 5vw, 64px); }
+        .soc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .soc-block {
+            padding: 22px 22px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .soc-block:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        .soc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .soc-tag {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+        .soc-grade {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            padding: 3px 8px;
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+            border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.08);
+        }
+        .soc-list {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .soc-list li {
+            position: relative;
+            padding-left: 18px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.84);
+        }
+        .soc-list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(var(--glow-purple), 0.85);
+        }
+        .soc-list li em { color: rgba(var(--glow-purple), 0.95); font-style: italic; }
+        .soc-anchors {
+            font-size: 12px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.55);
+            margin: 6px 0 0 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        /* OMT — 8-week treatment trajectory */
+        .omt-trajectory { margin-top: clamp(40px, 5vw, 64px); }
+        .trajectory-rail {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .traj-card {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+            position: relative;
+        }
+        .traj-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        .traj-week {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            font-feature-settings: "tnum";
+        }
+        .traj-title {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            margin: 0;
+        }
+        .traj-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(245, 245, 247, 0.80);
+            margin: 0;
+        }
+
+        /* Reduced-motion accessibility — pillars / soc / trajectory all
+           inherit site-wide mzRise stagger; force instant + opacity 1 here
+           for any user who prefers reduced motion. */
+        @media (prefers-reduced-motion: reduce) {
+            .pillar-card,
+            .soc-block,
+            .traj-card {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* ============================================================
+           SITE-WIDE APPLE-GLASS TREATMENT (task #51, #94)
+           Every card-like element across the site shares the same
+           Apple-glass visual grammar: thin border, subtle background,
+           backdrop-filter blur + saturation, purple-accented hover lift.
+           This override block ensures consistent treatment regardless
+           of the specific card class (.app-card-v2, .research-card,
+           .award-card, .feature-card, .frame, .timeline-card, etc.).
+           Per CLAUDE.md §3.10 Principle 4. DO NOT REMOVE OR REVERT.
+           ============================================================ */
+        .app-card-v2,
+        .research-card,
+        .award-card,
+        .feature-card,
+        .frame,
+        .timeline-card,
+        .video-card,
+        .carepath-block,
+        .education-card,
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+        .app-card-v2:hover,
+        .research-card:hover,
+        .award-card:hover,
+        .feature-card:hover,
+        .frame:hover,
+        .timeline-card:hover,
+        .video-card:hover,
+        .carepath-block:hover,
+        .education-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        .app-card-v2:focus-visible,
+        .research-card:focus-visible,
+        .award-card:focus-visible,
+        .feature-card:focus-visible,
+        .frame:focus-visible {
+            outline: 2px solid rgba(var(--glow-purple), 0.70);
+            outline-offset: 2px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .app-card-v2,
+            .research-card,
+            .award-card,
+            .feature-card,
+            .frame,
+            .timeline-card,
+            .video-card,
+            .carepath-block,
+            .education-card,
+            .timeline-content {
+                transition: none;
+            }
+            .app-card-v2:hover,
+            .research-card:hover,
+            .award-card:hover,
+            .feature-card:hover,
+            .frame:hover,
+            .timeline-card:hover,
+            .video-card:hover {
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -4434,6 +4808,196 @@
                 </div>
             </div>
 
+            <!-- OMT Care-Path Resource (patient + clinician walk-through) -->
+            <div class="sub-section omt-carepath">
+                <span class="sub-eyebrow">The Care Path</span>
+                <h3 class="sub-headline">What working with me looks like — start to finish.</h3>
+                <p class="sub-sub">A complete patient-side walk-through of osteopathic + MIGS care, written for patients and the clinicians who refer to me.</p>
+
+                <div class="carepath-grid">
+                    <article class="carepath-card frame-card">
+                        <div class="carepath-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="3.5"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+                        </div>
+                        <h4 class="carepath-title">Who</h4>
+                        <p class="carepath-body">Patients with cyclic pelvic pain, dysmenorrhea, suspected or biopsy-confirmed endometriosis, fibroids, adenomyosis, post-cesarean scar discomfort, isthmocele, Asherman's syndrome, chronic pelvic pain not yet attributed, fertility patients carrying somatic-dysfunction signs, and patients pursuing pre- or post-operative osteopathic optimization. Adults of all ages; complex cases welcome.</p>
+                    </article>
+
+                    <article class="carepath-card frame-card">
+                        <div class="carepath-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                        </div>
+                        <h4 class="carepath-title">Services</h4>
+                        <p class="carepath-body">Osteopathic structural evaluation, OMT (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vNOTES, robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two — pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
+                    </article>
+
+                    <article class="carepath-card frame-card">
+                        <div class="carepath-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        </div>
+                        <h4 class="carepath-title">What to Expect</h4>
+                        <p class="carepath-body">A first visit runs 60–90 minutes — a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. OMT-only visits run 30–45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3–6 visits when an OMT course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
+                    </article>
+
+                    <article class="carepath-card frame-card">
+                        <div class="carepath-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 9.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5c0 2-1.5 3-3 3.5v2"/><circle cx="13" cy="18" r="0.6" fill="currentColor"/></svg>
+                        </div>
+                        <h4 class="carepath-title">FAQ</h4>
+                        <p class="carepath-body"><strong>Will OMT replace my surgery?</strong> No — it complements it. OMT addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is OMT painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> OMT codes (98925–98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> OMT is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
+                    </article>
+
+                    <article class="carepath-card frame-card">
+                        <div class="carepath-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5v14h16V5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+                        </div>
+                        <h4 class="carepath-title">Literature</h4>
+                        <p class="carepath-body">The four patient-population cards below open PubMed-indexed evidence reviews for OMT in women's health, pregnancy, post-operative recovery, and pelvic pain &amp; endometriosis — each with the specific RCT, systematic-review, and meta-analytic data that anchors my recommendations. Click any population to see the references in full.</p>
+                    </article>
+                </div>
+            </div>
+
+            <!-- Integrated Six-Pillar Framework (drawn from the integrated pelvic-pain protocol, v4.0) -->
+            <div class="sub-section omt-pillars">
+                <span class="sub-eyebrow">The Integrated Framework</span>
+                <h3 class="sub-headline">Six pillars, layered with intent.</h3>
+                <p class="sub-sub">Pelvic pain is rarely one disease. It is a layered, multi-system problem — and the women I see in clinic deserve a treatment plan that is just as layered. Every patient gets all six pillars considered; the osteopathic structural layer does not replace the medical, hormonal, procedural, behavioral, or surgical pathways — it addresses the viscerosomatic substrate the other five cannot reach.</p>
+
+                <div class="pillars-grid">
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">01</span>
+                        <h4 class="pillar-title">Osteopathic Structural Layer</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Viscerosomatic reflex modulation; segmental dorsal-horn inhibition at T10&ndash;L2 and S2&ndash;S4; fascial restriction release; periaqueductal-gray descending inhibition.</p>
+                        <p class="pillar-content"><strong>Components.</strong> An 8-week course of OAA HVLA, T12&ndash;L1 HVLA, bilateral sacroiliac HVLA, abdominal visceral mobilization, broad ligament mobilization, external pelvic diaphragm release, 4-7-8 vagal-modulating breathwork, and Chapman reflex point treatment. Cranial CV-4 omitted per the 2017 systematic review showing heterogeneous autonomic effects.</p>
+                        <p class="pillar-cite">Mu&ntilde;oz-G&oacute;mez, <em>J Clin Med</em> 2023;12:3310 (RCT, n=41, PMID 37176750) &middot; Molins-Cubero, <em>Pain Med</em> 2014;15(9):1455&ndash;1463 (double-blind RCT, n=40, PMID 24666560) &middot; Ruffini, <em>J Bodyw Mov Ther</em> 2018 (RCT, n=31) &middot; FitzGerald, <em>J Urol</em> 2012;187(6):2113&ndash;2118 (Level I, PMID 22503015).</p>
+                    </article>
+
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">02</span>
+                        <h4 class="pillar-title">Pharmacologic Ladder</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Peripheral COX inhibition; central sensitization control via tricyclic and gabapentinoid neuromodulators; smooth-muscle spasm relief; mast-cell-mediated neurogenic inflammation suppression; reversal of atrophic vaginitis.</p>
+                        <p class="pillar-content"><strong>Components.</strong> NSAIDs first-line for primary dysmenorrhea (NNT&thinsp;~2&ndash;3). Neuromodulators (amitriptyline, nortriptyline, gabapentin, pregabalin, duloxetine) for centrally sensitized pain. Vaginal diazepam, cyclobenzaprine, baclofen, tizanidine for hypertonic pelvic floor. H1/H2 antihistamines for mast-cell-driven endometriosis pain. Topical lidocaine 5%, compounded creams, vaginal estrogen for vestibular and atrophic surfaces.</p>
+                        <p class="pillar-cite">ACOG Practice Bulletin 218 (PMID 32080045) &middot; ACOG CPG 11 Endometriosis 2026 &middot; Marjoribanks, <em>Cochrane Database Syst Rev</em> 2015 (NSAIDs for dysmenorrhoea, CD001751) &middot; Mantha, <em>AJOG Glob Rep</em> 2023;3:100274 (H1 antihistamines).</p>
+                    </article>
+
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">03</span>
+                        <h4 class="pillar-title">Hormonal Suppression</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Ovulation suppression; decidualization and atrophy of ectopic implants; endometrial prostaglandin reduction.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Continuous combined hormonal contraceptives, norethindrone acetate 5&thinsp;mg, the 52&thinsp;mg LNG-IUD (Mirena/Liletta), DMPA, etonogestrel implant, and oral GnRH antagonists (elagolix; relugolix combination therapy) with estradiol/norethindrone add-back to mitigate bone-mineral-density loss. Long-term combined oral contraceptive use is effective in reducing endometrioma recurrence and reducing dysmenorrhea severity.</p>
+                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; ESHRE guideline 2022 &middot; Elaris EM-I and EM-II trials &middot; Zakhari 2021 (PMID 33020832) &middot; Vercellini 2023 (PMID 36948440).</p>
+                    </article>
+
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">04</span>
+                        <h4 class="pillar-title">Procedural Interventions</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Direct mechanical or chemical deactivation of refractory trigger points; sustained neuromuscular relaxation of hypertonic pelvic floor; targeted regional anesthesia.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Trigger point injection with bupivacaine&thinsp;0.25% &plusmn; triamcinolone, levator ani injection, abdominal wall TPI at Carnett-positive points, onabotulinumtoxinA 100&ndash;300 units to a refractory levator, pudendal nerve block, and supervised vaginal dilator therapy. Procedures are sequenced behind manual and pharmacologic work, not in front of them.</p>
+                        <p class="pillar-cite">FitzGerald, <em>J Urol</em> 2012 (PMID 22503015) &middot; EAU CPP Guidelines &middot; multiple RCTs cited in ACOG PB 218.</p>
+                    </article>
+
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">05</span>
+                        <h4 class="pillar-title">Behavioral &amp; Rehabilitative</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Myofascial trigger-point deactivation through pelvic floor physical therapy; pain reappraisal and catastrophizing reduction through cognitive-behavioral therapy; spinal gate-control analgesia via high-frequency TENS.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Pelvic floor PT 1&ndash;2x/week for 12&ndash;16 sessions, CBT for chronic pain (telehealth or in-person), sex therapy and couples counseling where indicated, pain psychology, and high-frequency TENS at 80&ndash;100&thinsp;Hz. PFPT addresses the levator and obturator directly; OMT addresses the upstream segmental, fascial, visceral, and autonomic contributors. The two are complementary, not redundant.</p>
+                        <p class="pillar-cite">FitzGerald 2012 (Level I, PMID 22503015) &middot; Evans HaPPI RCT, <em>Hum Reprod Open</em> 2026 (telehealth CBT, n=334) &middot; Han, <em>Cochrane Database Syst Rev</em> 2024 (TENS for primary dysmenorrhoea, CD013331, PMID 39037764).</p>
+                    </article>
+
+                    <article class="pillar-card frame-card">
+                        <span class="pillar-num">06</span>
+                        <h4 class="pillar-title">Surgical Pathway</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Excision of structural disease; vestibulectomy where indicated; presacral neurectomy in highly selected cases; definitive management of adenomyosis when reproductive goals are complete.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Diagnostic and operative laparoscopy with excision of endometriosis (excision is superior to drainage and ablation for endometriomas), adhesiolysis where adhesions are causing symptoms, hysteroscopic management of intracavitary pathology, vNOTES and robotic-assisted approaches where appropriate, and fertility-preserving reconstructive work. Routine laparoscopic adhesiolysis is <em>not</em> recommended for chronic pelvic pain in isolation.</p>
+                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; Bafort, <em>Cochrane Database Syst Rev</em> 2020 (PMID 33095458) &middot; ACOG PB 218 (PMID 32080045).</p>
+                    </article>
+                </div>
+            </div>
+
+            <!-- Standard-of-care backbone (Level A recommendations from ACOG / UpToDate-anchored topic syntheses) -->
+            <div class="sub-section omt-soc">
+                <span class="sub-eyebrow">The Standard-of-Care Backbone</span>
+                <h3 class="sub-headline">What the highest-grade evidence says.</h3>
+                <p class="sub-sub">OMT is layered onto a strict standard of care &mdash; not in place of it. The Level&thinsp;A recommendations below are the floor every patient is offered; the osteopathic and integrative work then builds on top.</p>
+
+                <div class="soc-grid">
+                    <div class="soc-block frame-card">
+                        <div class="soc-header">
+                            <span class="soc-tag">Endometriosis</span>
+                            <span class="soc-grade">Level A</span>
+                        </div>
+                        <ul class="soc-list">
+                            <li>Transvaginal ultrasonography is the imaging modality of choice when assessing the presence of endometriosis.</li>
+                            <li>Medical suppressive therapy improves pain symptoms; recurrence rates remain high after the medication is discontinued.</li>
+                            <li>Conservative surgical treatment provides significant short-term pain improvement; recurrence rates are also significant.</li>
+                            <li>Medical suppressive therapy (OCs, GnRH agonists) for endometriosis-associated infertility is ineffective.</li>
+                            <li>Surgical management of endometriosis-related infertility improves pregnancy rates, though the magnitude is uncertain.</li>
+                            <li>Excision of an endometrioma is superior to simple drainage and ablation of the cyst wall.</li>
+                            <li>When GnRH-agonist therapy is continued, add-back therapy reduces or eliminates bone loss and hypoestrogenic symptoms without reducing efficacy.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG Clinical Practice Guideline No. 11 (2026); UpToDate: Endometriosis. Landmark meta-analyses: Vercellini 2023 (PMID 36948440); Guerriero 2018 (PMID 29154402); Bafort 2020 Cochrane (PMID 33095458); Zakhari 2021 (PMID 33020832).</p>
+                    </div>
+
+                    <div class="soc-block frame-card">
+                        <div class="soc-header">
+                            <span class="soc-tag">Chronic Pelvic Pain</span>
+                            <span class="soc-grade">Level A</span>
+                        </div>
+                        <ul class="soc-list">
+                            <li>Routine laparoscopic adhesiolysis is <em>not</em> recommended solely for chronic pelvic pain.</li>
+                            <li>Transvaginal ultrasound is first-line imaging for assessing endometriosis as a cause of pelvic pain.</li>
+                            <li>Medical suppressive therapy (combined oral contraceptives, progestins, GnRH agonists) improves endometriosis-related pain.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG Practice Bulletin 218: Chronic Pelvic Pain (PMID 32080045). Recent evidence: Salmeri 2024 on uterine contractility (PMID 39067674); Min 2025 on cesarean-scar niche and pelvic pain (PMID 40680988); Marvi 2022 on mode of delivery and dyspareunia (PMID 34231435).</p>
+                    </div>
+
+                    <div class="soc-block frame-card">
+                        <div class="soc-header">
+                            <span class="soc-tag">Dysmenorrhea</span>
+                            <span class="soc-grade">Level A</span>
+                        </div>
+                        <ul class="soc-list">
+                            <li>NSAIDs are effective first-line treatment for primary dysmenorrhea.</li>
+                            <li>Combined hormonal contraceptives effectively treat dysmenorrhea.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG dysmenorrhea guidance. Systematic-review support: Marjoribanks Cochrane 2015 (NSAIDs, CD001751); Sharghi 2019 (PMID 30521155); Earl 2021 Cochrane (nifedipine, PMID 34921554); Ruffini 2016 systematic review of OMT in gynecology and obstetrics (PMID 27261985).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8-week treatment trajectory (per Mu&ntilde;oz-G&oacute;mez 2023 weekly OMT protocol) -->
+            <div class="sub-section omt-trajectory">
+                <span class="sub-eyebrow">The Treatment Trajectory</span>
+                <h3 class="sub-headline">An 8-week course, calibrated to what the literature actually shows.</h3>
+                <p class="sub-sub">For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 &mdash; not session 1.</p>
+
+                <div class="trajectory-rail">
+                    <article class="traj-card frame-card">
+                        <span class="traj-week">Weeks 1&ndash;3</span>
+                        <h4 class="traj-title">Adjustment</h4>
+                        <p class="traj-body">Mild post-session soreness for 24&ndash;48&thinsp;h is expected and is the most common adverse event &mdash; similar to delayed-onset muscle soreness after new exercise. Pain scores often look flat. Body is adjusting to manipulation. Focus on home program adherence and on the concurrent pharmacologic, hormonal, and PFPT work that the OMT layer sits on top of.</p>
+                    </article>
+
+                    <article class="traj-card frame-card">
+                        <span class="traj-week">Week 4</span>
+                        <h4 class="traj-title">Mid-Protocol Reassessment</h4>
+                        <p class="traj-body">Formal VAS and EHP-30 quality-of-life reassessment. Early responders typically show 10&ndash;20% improvement by this point. Neuromodulator titration is reviewed. Some patients are still flat at week 4 &mdash; the literature shows the inflection point is sessions 4&ndash;6, so this is not the moment to abandon course.</p>
+                    </article>
+
+                    <article class="traj-card frame-card">
+                        <span class="traj-week">Weeks 6&ndash;8</span>
+                        <h4 class="traj-title">Inflection &amp; Endpoint</h4>
+                        <p class="traj-body">The majority of patients show 30&ndash;60% VAS reduction and meaningful functional gain at the end of the 8-week protocol. Ruffini 2018 reported a 63% reduction in NRS pain in primary dysmenorrhea. Molins-Cubero 2014 reported immediate significant VAS reduction (p=0.003) after a single bilateral global sacroiliac HVLA. FitzGerald 2012 reported a 59% response rate for pelvic floor myofascial PT versus 26% for global massage in IC/BPS. Full outcome battery is run at week 8.</p>
+                    </article>
+
+                    <article class="traj-card frame-card">
+                        <span class="traj-week">Week 12</span>
+                        <h4 class="traj-title">One-Month Durability</h4>
+                        <p class="traj-body">Improvements sustained at one month post-protocol per Mu&ntilde;oz-G&oacute;mez 2023. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance OMT monthly for 3 sessions, then as-needed. Non-responders are escalated: GnRH antagonist if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
+                    </article>
+                </div>
+            </div>
+
             <!-- Patient Populations Sub-Section -->
             <div class="sub-section">
                 <span class="sub-eyebrow">Tailored Care</span>
@@ -4800,6 +5364,29 @@
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
                         <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
                             <source src="/media/isthmocele-ashermans.mp4#t=0,10" type="video/mp4">
+                        </video>
+                        <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                            <span class="video-preview-label">Watch the technique</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="research-card" data-reveal="up">
+                    <div class="research-card-header">
+                        <span class="research-badge">Featured Case</span>
+                        <span class="research-badge">2024</span>
+                    </div>
+                    <h3 class="research-card-title">RPOC in an Arcuate Uterus: visually-directed hysteroscopic management</h3>
+                    <p class="research-card-journal">AAGL Global Congress · Surgical Video Library</p>
+                    <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
+                    <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
+                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
+                            <source src="/media/rpoc-arcuate-preview.mp4#t=0,10" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
