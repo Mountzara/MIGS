@@ -3613,6 +3613,54 @@
         nav.main-nav {
             z-index: 50;  /* above everything except modals */
         }
+
+        /* ============================================================
+           Patient Portal nav link with "Coming Soon" badge.
+           Public visitors see this in both the main nav and footer; the
+           link target /portal/ is gated by functions/portal/_middleware.js
+           which serves a designed Coming Soon page until launch.
+           Per CLAUDE.md §3.10 Principle 4 — purple accent, no blue tokens.
+           ============================================================ */
+        .nav-portal-link {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .nav-portal-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            background: rgba(var(--glow-purple), 0.10);
+            border: 1px solid rgba(var(--glow-purple), 0.42);
+            border-radius: 999px;
+            padding: 2px 7px;
+            line-height: 1.2;
+            transition: background 0.22s ease, border-color 0.22s ease;
+        }
+        .nav-portal-link:hover .nav-portal-badge {
+            background: rgba(var(--glow-purple), 0.18);
+            border-color: rgba(var(--glow-purple), 0.68);
+        }
+        .nav-portal-badge-footer {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.90);
+            background: rgba(var(--glow-purple), 0.10);
+            border: 1px solid rgba(var(--glow-purple), 0.38);
+            border-radius: 999px;
+            padding: 1px 6px;
+            margin-left: 6px;
+            line-height: 1.2;
+            vertical-align: 1px;
+        }
+
         .pinned-stage {
             position: sticky;
             top: 0;
@@ -4376,6 +4424,7 @@
                 <li><a href="#awards">Awards</a></li>
                 <li><a href="/evidence/">Evidence</a></li>
                 <li><a href="/blog/">Trending</a></li>
+                <li><a href="/portal/" class="nav-portal-link">Patient Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
                 <li><a href="/about/">Bio</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
@@ -5881,6 +5930,7 @@
                 <a href="#awards">Awards</a>
                 <a href="/evidence/">Evidence</a>
                 <a href="/blog/">Trending</a>
+                <a href="/portal/">Patient Portal <span class="nav-portal-badge-footer">soon</span></a>
                 <a href="/about/">Bio</a>
             </div>
             <div class="footer-social">

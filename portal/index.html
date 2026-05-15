@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Patient Portal · Admin Preview · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 40px);
+        }
+        .admin-banner {
+            background: rgba(245, 158, 11, 0.10);
+            border: 1px solid rgba(245, 158, 11, 0.40);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: rgba(252, 211, 77, 0.95);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-banner::before {
+            content: "\\26A0";
+            font-size: 14px;
+        }
+        .eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 18px;
+        }
+        h1 {
+            font-weight: 200;
+            font-size: clamp(30px, 4.2vw, 46px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 16px 0;
+        }
+        .lede {
+            font-size: 17px;
+            line-height: 1.65;
+            color: var(--fg-mid);
+            max-width: 64ch;
+            margin: 0 0 36px 0;
+        }
+        .phases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .phase {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 18px 18px 16px;
+        }
+        .phase-tag {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin-bottom: 8px;
+        }
+        .phase-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--fg-strong);
+            margin: 0 0 6px 0;
+        }
+        .phase-body {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--fg-soft);
+            margin: 0 0 10px 0;
+        }
+        .phase-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--fg-soft);
+        }
+        .phase-status .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(245, 245, 247, 0.30);
+        }
+        .phase-status.done   .dot { background: #10b981; }
+        .phase-status.live   .dot { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18); }
+        .phase-status.active .dot { background: var(--accent-soft); box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.22); }
+        .phase-status.queued .dot { background: rgba(245, 245, 247, 0.30); }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="admin-banner">
+            Admin preview &mdash; this surface is hidden from the public until the launch flag flips. Anonymous visitors see the Coming Soon page.
+        </div>
+        <p class="eyebrow">Patient Portal &middot; Admin Build View</p>
+        <h1>The patient portal, under construction.</h1>
+        <p class="lede">Phase 0 foundation is live. Phase 2 admin scheduling builds next, then Phase 1 patient login + intake. Patient-facing surfaces will appear under this section as they pass design review.</p>
+
+        <section class="phases" aria-label="Phase build status">
+            <article class="phase">
+                <div class="phase-tag">Phase 0</div>
+                <h2 class="phase-title">Foundation</h2>
+                <p class="phase-body">D1 schema, R2 PHI bucket, auth + audit + PHI envelope-encryption libs, BAA ledger, /api/v1/_health.</p>
+                <span class="phase-status done"><span class="dot"></span>Complete &middot; live</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 2</div>
+                <h2 class="phase-title">Scheduling &amp; Doxy.me (clinician side)</h2>
+                <p class="phase-body">Drag-to-set availability, appointment management, Doxy.me launch button. Patient-facing booking deferred until Phase 1 auth lands.</p>
+                <span class="phase-status active"><span class="dot"></span>Building now</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 1</div>
+                <h2 class="phase-title">Patient Portal MVP</h2>
+                <p class="phase-body">Login, signup, magic-link, profile, 19-section intake wizard with autosave, document upload.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 2.5</div>
+                <h2 class="phase-title">AI Triage Scheduling</h2>
+                <p class="phase-body">Claude triages completed intakes, categorizes the visit type, filters slot offerings per §11.7 workflow rules.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">Secure Messaging</h2>
+                <p class="phase-body">Patient ↔ clinician threads, attachments, notifications. Bodies envelope-encrypted in R2.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 4</div>
+                <h2 class="phase-title">App Sync Layer</h2>
+                <p class="phase-body">Transcription / Clinical AI / Surgical Workflow / iOS push to the website's patient record.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 5</div>
+                <h2 class="phase-title">Clinician Workspace</h2>
+                <p class="phase-body">/admin/patients, /admin/cases/&lt;patient_id&gt; aggregation view, calendar.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 6+7</div>
+                <h2 class="phase-title">Billing &amp; Hardening</h2>
+                <p class="phase-body">Stripe BAA-gated invoices + superbill, pen test, HIPAA risk assessment, DR drill.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
