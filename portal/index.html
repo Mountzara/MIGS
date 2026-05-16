@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Patient Portal · Admin Preview · Mount Zara</title>
+    <title>Patient Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,218 +12,496 @@
     <style>
         :root {
             --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
             --fg-strong: #ffffff;
             --fg-mid: rgba(245, 245, 247, 0.84);
             --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
             --glow-purple: 167, 139, 250;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
         }
         * { box-sizing: border-box; }
         html, body {
             margin: 0; padding: 0;
             background:
-                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
                 var(--bg-base);
             color: var(--fg-mid);
-            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
             font-feature-settings: "ss01", "cv11";
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
-        .wrap {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 40px);
-        }
-        .admin-banner {
-            background: rgba(245, 158, 11, 0.10);
-            border: 1px solid rgba(245, 158, 11, 0.40);
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 13px;
-            color: rgba(252, 211, 77, 0.95);
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(28px, 5vw, 48px) clamp(20px, 5vw, 36px) 80px; }
+        .top-row {
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 28px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 13px; color: var(--fg-soft);
         }
-        .admin-banner::before {
-            content: "\\26A0";
-            font-size: 14px;
+        .top-row .brand {
+            display: flex; align-items: center; gap: 10px;
+            color: var(--fg-strong); font-weight: 500;
         }
+        .top-row .session-actions {
+            display: flex; gap: 10px; align-items: center;
+        }
+        .top-row .session-actions a { font-size: 12.5px; }
         .eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
             color: rgba(var(--glow-purple), 0.95);
-            margin-bottom: 18px;
+            margin-bottom: 14px;
         }
         h1 {
-            font-weight: 200;
-            font-size: clamp(30px, 4.2vw, 46px);
-            letter-spacing: -0.022em;
-            line-height: 1.1;
-            color: var(--fg-strong);
-            margin: 0 0 16px 0;
+            font-weight: 200; font-size: clamp(28px, 4vw, 40px);
+            letter-spacing: -0.022em; line-height: 1.1;
+            color: var(--fg-strong); margin: 0 0 10px 0;
         }
-        .lede {
-            font-size: 17px;
-            line-height: 1.65;
-            color: var(--fg-mid);
-            max-width: 64ch;
-            margin: 0 0 36px 0;
+        .greeting-sub {
+            font-size: 15px; line-height: 1.55;
+            color: var(--fg-soft); margin: 0 0 32px 0; max-width: 64ch;
         }
-        .phases {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 14px;
+
+        .grid {
+            display: grid; gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
-        .phase {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 14px;
+            padding: 18px 20px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
-            padding: 18px 18px 16px;
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            display: flex; flex-direction: column;
+            text-decoration: none; color: inherit;
+            animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+            position: relative;
         }
-        .phase-tag {
-            font-size: 10.5px;
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
-            margin-bottom: 8px;
+        .card:nth-child(1) { animation-delay: 0.04s; }
+        .card:nth-child(2) { animation-delay: 0.08s; }
+        .card:nth-child(3) { animation-delay: 0.12s; }
+        .card:nth-child(4) { animation-delay: 0.16s; }
+        .card:nth-child(5) { animation-delay: 0.20s; }
+        .card:nth-child(6) { animation-delay: 0.24s; }
+        .card:nth-child(7) { animation-delay: 0.28s; }
+        .card:nth-child(8) { animation-delay: 0.32s; }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .phase-title {
-            font-size: 16px;
-            font-weight: 500;
+        a.card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.04);
+            color: inherit;
+        }
+        .card-eyebrow {
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.85);
+            margin-bottom: 6px;
+        }
+        .card h2 {
+            font-size: 17px; font-weight: 500;
+            letter-spacing: -0.005em;
             color: var(--fg-strong);
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
         }
-        .phase-body {
-            font-size: 13.5px;
+        .card-body {
+            font-size: 13.5px; line-height: 1.5;
+            color: var(--fg-soft);
+            flex: 1;
+        }
+        .card-action {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--accent-soft);
+            display: inline-flex; align-items: center; gap: 6px;
+            font-weight: 500;
+            transition: transform 0.2s, color 0.2s;
+        }
+        a.card:hover .card-action { color: var(--fg-strong); transform: translateX(2px); }
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px;
+            white-space: nowrap;
+        }
+        .badge-pending {
+            background: rgba(var(--glow-purple), 0.16);
+            color: var(--accent-soft);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+        }
+        .badge-released {
+            background: rgba(16, 185, 129, 0.12);
+            color: rgba(110, 231, 183, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+        }
+        .badge-urgent {
+            background: rgba(245, 158, 11, 0.12);
+            color: rgba(252, 211, 77, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+        }
+        .badge-empty {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--fg-soft);
+            border: 1px solid var(--border);
+        }
+        .badge-row {
+            position: absolute; top: 14px; right: 18px;
+        }
+
+        .stat-row {
+            display: flex; align-items: baseline; gap: 8px;
+            margin-bottom: 4px;
+        }
+        .stat {
+            font-size: 28px; font-weight: 200;
+            color: var(--fg-strong);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .stat-unit { font-size: 12px; color: var(--fg-dim); }
+
+        .panic {
+            margin-top: 36px;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: rgba(252, 165, 165, 0.92);
             line-height: 1.55;
-            color: var(--fg-soft);
-            margin: 0 0 10px 0;
         }
-        .phase-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
-            color: var(--fg-soft);
-        }
-        .phase-status .dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: rgba(245, 245, 247, 0.30);
-        }
-        .phase-status.done   .dot { background: #10b981; }
-        .phase-status.live   .dot { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18); }
-        .phase-status.active .dot { background: var(--accent-soft); box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.22); }
-        .phase-status.queued .dot { background: rgba(245, 245, 247, 0.30); }
+        .panic strong { color: rgba(252, 211, 77, 0.96); font-weight: 600; }
+
         @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
     <main class="wrap">
-        <div class="admin-banner">
-            Admin preview &mdash; this surface is hidden from the public until the launch flag flips. Anonymous visitors see the Coming Soon page.
+        <div class="top-row">
+            <div class="brand">
+                <img src="/assets/images/monogram.svg" alt="" width="20" height="20" style="opacity:0.9" onerror="this.remove()">
+                <span>Mount Zara · Patient Portal</span>
+            </div>
+            <div class="session-actions">
+                <a href="/portal/profile/">Profile</a>
+                <a href="#" id="link-logout">Sign out</a>
+            </div>
         </div>
-        <p class="eyebrow">Patient Portal &middot; Admin Build View</p>
-        <h1>The patient portal, under construction.</h1>
-        <p class="lede">Phase 0 foundation is live. Phase 2 admin scheduling has shipped. Phase 1 patient identity comes next, then the symptom diary, women's-health tooling, AI visit recaps, content integration, and education library. Patient-facing surfaces will appear under this section as each one passes design review.</p>
 
-        <section class="phases" aria-label="Phase build status">
-            <article class="phase">
-                <div class="phase-tag">Phase 0</div>
-                <h2 class="phase-title">Foundation</h2>
-                <p class="phase-body">D1 schema, R2 PHI bucket, auth + audit + PHI envelope-encryption libs, BAA ledger, /api/v1/_health.</p>
-                <span class="phase-status done"><span class="dot"></span>Complete &middot; live</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 2 (admin)</div>
-                <h2 class="phase-title">Scheduling &amp; Doxy.me</h2>
-                <p class="phase-body">Drag-to-set availability, appointment management, Doxy.me launch button, visit-type catalog. Patient-facing booking deferred until Phase 1 auth lands.</p>
-                <span class="phase-status done"><span class="dot"></span>Complete &middot; live (admin)</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 1</div>
-                <h2 class="phase-title">Patient Portal MVP</h2>
-                <p class="phase-body">Login, signup, magic-link, profile, 19-section intake wizard with autosave, document upload. The foundation every later module sits on top of.</p>
-                <span class="phase-status active"><span class="dot"></span>Building next</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 2.5</div>
-                <h2 class="phase-title">AI Triage Scheduling</h2>
-                <p class="phase-body">Claude triages completed intakes, categorizes the visit type, filters slot offerings per §11.7 workflow rules.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Symptom Tracker &amp; Diary</h2>
-                <p class="phase-body">Daily diary: pelvic pain (location/intensity/triggers), bleeding, cycle, sleep, mood, sexual function, bowel + bladder. Charts over time. Surfaces into clinician /admin/cases dashboard.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Women&rsquo;s Health Tooling</h2>
-                <p class="phase-body">Cycle + ovulation tracking, perimenopause/menopause symptom flagging, pregnancy-loss support, postpartum follow-through, contraception decision aids.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">AI Visit Summaries</h2>
-                <p class="phase-body">Post-visit AI recap of discussion + plan + meds + next steps. Generated from transcription app output, reviewed and signed off by Dr. Mabini before the patient sees it.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Content Integration</h2>
-                <p class="phase-body">Trending blog + Evidence/MIGS Monday Morning research digests surfaced into the portal so patients see Dr. Mabini&rsquo;s content as it goes live.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Education Materials</h2>
-                <p class="phase-body">Patient-facing primers Dr. Mabini has authored on endometriosis, fibroids, adenomyosis, OMT, perioperative prep, surgical recovery &mdash; delivered when relevant to the care plan.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Latest Literature Feed</h2>
-                <p class="phase-body">Weekly peer-reviewed updates relevant to a MIGS patient&rsquo;s diagnoses. Pulled from the same PubMed pipeline that drives MIGS Monday Morning, rendered in plain language with the bottom line first.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 4</div>
-                <h2 class="phase-title">Secure Messaging</h2>
-                <p class="phase-body">Patient &harr; clinician threads, attachments, notifications. Bodies envelope-encrypted in R2.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 5</div>
-                <h2 class="phase-title">App Sync Layer</h2>
-                <p class="phase-body">Transcription / Clinical AI / Surgical Workflow / iOS push to the website&rsquo;s patient record. Feeds the AI visit summary + the case-aggregation view.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 6</div>
-                <h2 class="phase-title">Clinician Workspace</h2>
-                <p class="phase-body">/admin/patients, /admin/cases/&lt;patient_id&gt; aggregation view, calendar, symptom-diary timeline.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
-            <article class="phase">
-                <div class="phase-tag">Phase 7+8</div>
-                <h2 class="phase-title">Billing &amp; Hardening</h2>
-                <p class="phase-body">Stripe BAA-gated invoices + superbill, pen test, HIPAA risk assessment, DR drill, breach playbook.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
-            </article>
+        <p class="eyebrow">Patient portal</p>
+        <h1 id="greeting">Welcome.</h1>
+        <p class="greeting-sub" id="greeting-sub">Loading your dashboard…</p>
+
+        <section class="grid">
+            <a class="card" href="/portal/appointments/book/" id="card-appointment">
+                <div class="badge-row"><span class="badge badge-empty" id="appt-badge">—</span></div>
+                <div class="card-eyebrow">Appointments</div>
+                <h2 id="appt-title">Loading…</h2>
+                <div class="card-body" id="appt-body">Pulling your latest triage and any upcoming slot.</div>
+                <span class="card-action" id="appt-action">Open scheduling →</span>
+            </a>
+
+            <a class="card" href="/portal/messages/" id="card-messages">
+                <div class="badge-row"><span class="badge badge-empty" id="msg-badge">—</span></div>
+                <div class="card-eyebrow">Messages</div>
+                <h2 id="msg-title">Loading…</h2>
+                <div class="card-body" id="msg-body">Conversations with Dr. Mabini.</div>
+                <span class="card-action">Open messages →</span>
+            </a>
+
+            <a class="card" href="/portal/symptoms/" id="card-symptoms">
+                <div class="badge-row"><span class="badge badge-empty" id="sym-badge">—</span></div>
+                <div class="card-eyebrow">Symptom diary</div>
+                <h2 id="sym-title">Loading…</h2>
+                <div class="card-body" id="sym-body">Track pain, bleeding, sleep, cycle, mood — Dr. Mabini reviews your trends before every visit.</div>
+                <span class="card-action">Log today's symptoms →</span>
+            </a>
+
+            <a class="card" href="/portal/intake/" id="card-intake">
+                <div class="badge-row"><span class="badge badge-empty" id="intake-badge">—</span></div>
+                <div class="card-eyebrow">Intake</div>
+                <h2 id="intake-title">Loading…</h2>
+                <div class="card-body" id="intake-body">Your 19-section comprehensive history. Submit once, edit later if anything changes.</div>
+                <span class="card-action">Open your intake →</span>
+            </a>
+
+            <a class="card" href="/portal/documents/">
+                <div class="card-eyebrow">Documents</div>
+                <h2>Records & uploads</h2>
+                <div class="card-body">Imaging discs, outside records, AAGL reports, and anything Dr. Mabini sends back to you.</div>
+                <span class="card-action">Open documents →</span>
+            </a>
+
+            <a class="card" href="/portal/profile/">
+                <div class="card-eyebrow">Profile</div>
+                <h2>Your information</h2>
+                <div class="card-body">Phone, pronouns, preferred name, contact preferences. Sensitive identity fields (DOB, legal name) sit behind clinician review.</div>
+                <span class="card-action">Open profile →</span>
+            </a>
+
+            <div class="card" id="card-content-placeholder" style="opacity:0.65;">
+                <div class="badge-row"><span class="badge badge-empty">coming soon</span></div>
+                <div class="card-eyebrow">Latest evidence</div>
+                <h2>What's new for you</h2>
+                <div class="card-body">When you subscribe to topics (endometriosis, fibroids, perimenopause, etc.), the most recent peer-reviewed updates will surface here in plain language with the bottom line on top.</div>
+                <span class="card-action">Subscribing soon…</span>
+            </div>
+
+            <div class="card" id="card-education-placeholder" style="opacity:0.65;">
+                <div class="badge-row"><span class="badge badge-empty">coming soon</span></div>
+                <div class="card-eyebrow">Education</div>
+                <h2>Primers from Dr. Mabini</h2>
+                <div class="card-body">Patient-facing primers on endometriosis, adenomyosis, fibroids, OMT, perioperative prep, surgical recovery. Delivered when relevant to your care plan.</div>
+                <span class="card-action">Library opening soon…</span>
+            </div>
         </section>
+
+        <div class="panic">
+            <strong>If you have an emergency</strong> — chest pain, heavy bleeding through a pad per hour for more than two hours, severe abdominal pain, signs of stroke — call <strong>911</strong>. For after-hours non-emergency clinical issues, call the practice line. This portal is for non-urgent messages, documents, scheduling, and tracking.
+        </div>
     </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        async function fetchJson(url) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error;
+                e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+
+        function fmtRelativeDate(ms) {
+            if (!ms) return '—';
+            const d = new Date(typeof ms === 'string' ? parseInt(ms, 10) : ms);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const dayMs = 24 * 3600 * 1000;
+            const diffDays = Math.round((d.setHours(0,0,0,0) - today.getTime()) / dayMs);
+            const dd = new Date(ms);
+            if (diffDays === 0) return 'Today · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            if (diffDays === 1) return 'Tomorrow · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            if (diffDays > 0 && diffDays < 7) return dd.toLocaleDateString(undefined, { weekday: 'long' }) + ' · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            if (diffDays < 0) {
+                if (diffDays === -1) return 'Yesterday';
+                if (diffDays > -7) return `${-diffDays} days ago`;
+                return dd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            }
+            return dd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        }
+        function todayISO() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
+        // ---- bootstrap ----
+        (async function init() {
+            // 1. who am I?
+            let me;
+            try {
+                me = await fetchJson('/api/v1/auth/me');
+            } catch (e) {
+                if (e.status === 401 || e.code === 'unauthorized') {
+                    window.location.href = '/portal/login?next=' + encodeURIComponent('/portal/');
+                    return;
+                }
+                $('greeting').textContent = 'Welcome.';
+                $('greeting-sub').textContent = 'Could not load your profile: ' + (e.message || 'unknown error');
+                return;
+            }
+            const name = me.first_name || me.preferred_name || (me.email ? me.email.split('@')[0] : 'there');
+            $('greeting').textContent = `Hi, ${name}.`;
+            $('greeting-sub').textContent = "Here's a snapshot of your portal. Tap into any card to go deeper.";
+
+            // 2. fan-out to each module
+            loadAppointmentCard();
+            loadMessagesCard();
+            loadSymptomCard();
+            loadIntakeCard();
+
+            // 3. logout
+            $('link-logout').addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
+                } catch {}
+                window.location.href = '/portal/login';
+            });
+        })();
+
+        async function loadAppointmentCard() {
+            try {
+                const t = await fetchJson('/api/v1/patient/triage/current');
+                const triage = t.triage;
+                if (!triage) {
+                    $('appt-title').textContent = 'No appointment scheduled';
+                    $('appt-body').textContent = 'Submit your intake to start scheduling.';
+                    $('appt-badge').textContent = '—';
+                    return;
+                }
+                const statusToBadge = {
+                    released: { cls: 'badge-released', label: 'ready to book' },
+                    pending_review: { cls: 'badge-pending', label: 'in review' },
+                    manual_review_required: { cls: 'badge-urgent', label: 'manual review' },
+                };
+                const b = statusToBadge[triage.status] || statusToBadge.pending_review;
+                $('appt-badge').textContent = b.label;
+                $('appt-badge').className = `badge ${b.cls}`;
+
+                if (triage.status === 'released') {
+                    $('appt-title').textContent = labelVisit(triage.visit_type);
+                    $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${triage.duration_min} min</strong> · ${triage.in_person_required ? 'In person' : 'In person or telehealth'} · Tap to choose a time that works for you.`;
+                    $('appt-action').textContent = 'Pick a time →';
+                } else if (triage.status === 'pending_review') {
+                    $('appt-title').textContent = 'Awaiting clinician review';
+                    $('appt-body').innerHTML = `Your intake categorization is in for Dr. Mabini to confirm. Auto-releases within 4 hours if not yet reviewed.`;
+                    $('appt-action').textContent = 'View status →';
+                } else {
+                    $('appt-title').textContent = 'Manual review needed';
+                    $('appt-body').textContent = "Dr. Mabini will reach out directly to confirm what visit type fits best.";
+                    $('appt-action').textContent = 'See details →';
+                }
+            } catch (e) {
+                if (e.code === 'no_triage') {
+                    $('appt-title').textContent = 'Start with your intake';
+                    $('appt-body').textContent = 'Once your intake is submitted, we triage it and release the right slots.';
+                    $('appt-badge').textContent = 'awaiting intake';
+                    $('appt-action').textContent = 'Begin intake →';
+                    $('card-appointment').setAttribute('href', '/portal/intake/');
+                } else {
+                    $('appt-title').textContent = 'Scheduling';
+                    $('appt-body').textContent = 'Could not load triage status (' + (e.message || 'unknown') + ').';
+                }
+            }
+        }
+
+        async function loadMessagesCard() {
+            try {
+                const r = await fetchJson('/api/v1/patient/messages?limit=20');
+                const threads = r.threads || [];
+                const unread = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
+                if (threads.length === 0) {
+                    $('msg-title').textContent = 'No messages yet';
+                    $('msg-body').textContent = 'Send Dr. Mabini a non-urgent question or pre-visit update anytime.';
+                    $('msg-badge').textContent = '—';
+                } else if (unread > 0) {
+                    $('msg-title').innerHTML = `<span class="stat">${unread}</span> <span class="stat-unit">new message${unread === 1 ? '' : 's'}</span>`;
+                    $('msg-body').innerHTML = `Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
+                    $('msg-badge').textContent = `${unread} new`;
+                    $('msg-badge').className = 'badge badge-released';
+                } else {
+                    $('msg-title').textContent = `${threads.length} thread${threads.length === 1 ? '' : 's'}`;
+                    $('msg-body').innerHTML = `Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
+                    $('msg-badge').textContent = 'all read';
+                    $('msg-badge').className = 'badge badge-empty';
+                }
+            } catch (e) {
+                $('msg-title').textContent = 'Messages';
+                $('msg-body').textContent = 'Could not load thread count.';
+            }
+        }
+
+        async function loadSymptomCard() {
+            try {
+                const today = todayISO();
+                const e = await fetchJson(`/api/v1/patient/symptoms/diary/${today}`);
+                if (e.entry) {
+                    const keys = Object.keys(e.entry.values || {});
+                    $('sym-title').innerHTML = `<span class="stat">${keys.length}</span> <span class="stat-unit">tracked today</span>`;
+                    $('sym-body').textContent = "Updated " + new Date(e.entry.updated_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) + '. Tap to add more or review trends.';
+                    $('sym-badge').textContent = 'logged';
+                    $('sym-badge').className = 'badge badge-released';
+                } else {
+                    $('sym-title').textContent = "Today's diary is empty";
+                    $('sym-body').textContent = "Even one symptom is helpful — Dr. Mabini reviews your trend before every visit.";
+                    $('sym-badge').textContent = 'not logged';
+                    $('sym-badge').className = 'badge badge-pending';
+                }
+            } catch (e) {
+                $('sym-title').textContent = 'Symptom diary';
+                $('sym-body').textContent = "Could not load today's entry.";
+            }
+        }
+
+        async function loadIntakeCard() {
+            try {
+                const i = await fetchJson('/api/v1/patient/intake/current');
+                if (!i || !i.intake) {
+                    $('intake-title').textContent = 'No intake started';
+                    $('intake-body').textContent = 'A 19-section comprehensive history. Autosaves as you go.';
+                    $('intake-badge').textContent = 'not started';
+                    $('intake-badge').className = 'badge badge-pending';
+                    return;
+                }
+                const status = i.intake.status;
+                const stepDone = i.completed_section_count != null ? i.completed_section_count : '—';
+                if (status === 'submitted' || status === 'reviewed') {
+                    $('intake-title').textContent = status === 'reviewed' ? 'Reviewed by Dr. Mabini' : 'Submitted';
+                    $('intake-body').textContent = "Your intake is on file. We'll surface it in clinic and tie it into your triage.";
+                    $('intake-badge').textContent = status;
+                    $('intake-badge').className = 'badge badge-released';
+                } else {
+                    $('intake-title').textContent = 'Intake in progress';
+                    $('intake-body').textContent = `${stepDone} section${stepDone === 1 ? '' : 's'} saved so far. Pick up where you left off.`;
+                    $('intake-badge').textContent = 'in progress';
+                    $('intake-badge').className = 'badge badge-pending';
+                }
+            } catch (e) {
+                $('intake-title').textContent = 'Intake';
+                $('intake-body').textContent = 'Could not load intake status.';
+            }
+        }
+
+        function labelVisit(key) {
+            const labels = {
+                new_patient_complex: "New Patient — Complex",
+                new_patient_standard: "New Patient — Standard",
+                endo_pain_evaluation: "Complex Pelvic Pain / Endo Evaluation",
+                endo_pain_followup: "Endo Follow-up",
+                omt_treatment: "OMT Treatment",
+                aub_eval: "AUB / Heavy Bleeding Evaluation",
+                pre_op: "Pre-Operative Visit",
+                post_op_early: "Early Post-Op",
+                post_op_late: "Post-Op (6 weeks)",
+                routine_followup: "Routine Follow-up",
+                office_procedure: "Office Procedure",
+                quick_concern: "Quick Concern",
+                annual_exam: "Annual Exam",
+                telehealth_consult: "Telehealth Consult",
+                manual_review_required: "Manual review required",
+            };
+            return labels[key] || key;
+        }
+    </script>
 </body>
 </html>
