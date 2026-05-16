@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Signing you in… · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            display: flex; align-items: center; justify-content: center;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s ease; }
+        a:hover { color: var(--fg-strong); }
+        main {
+            width: min(440px, 100%);
+            padding: clamp(28px, 6vw, 48px);
+            text-align: center;
+            animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 16px;
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .pulse {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            box-shadow: 0 0 0 0 rgba(var(--glow-purple), 0.55);
+            animation: mzPulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        h1 {
+            font-weight: 200;
+            font-size: clamp(28px, 4.2vw, 38px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 14px 0;
+        }
+        .lede { font-size: 15px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 24px 0; }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 22px;
+        }
+        .msg { font-size: 14px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; display: none; }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .alt-actions { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-size: 13.5px; }
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @keyframes mzPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(var(--glow-purple), 0.55); }
+            50%      { box-shadow: 0 0 0 9px rgba(var(--glow-purple), 0); }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main>
+        <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>Patient Portal &middot; Magic Link</p>
+        <h1 id="head">Signing you in&hellip;</h1>
+        <p class="lede" id="sub">Verifying your one-time link.</p>
+        <div class="card" id="card">
+            <div id="msg" class="msg" role="status" aria-live="polite"></div>
+            <div class="alt-actions" id="alt"></div>
+        </div>
+    </main>
+    <script>
+        const head = document.getElementById('head');
+        const sub = document.getElementById('sub');
+        const msg = document.getElementById('msg');
+        const alt = document.getElementById('alt');
+
+        function showError(text) {
+            head.textContent = "Link didn't work";
+            sub.textContent = '';
+            msg.textContent = text;
+            msg.className = 'msg error';
+            const a1 = document.createElement('a'); a1.href = '/portal/magic-link/'; a1.textContent = 'Request a new link';
+            const a2 = document.createElement('a'); a2.href = '/portal/login/'; a2.textContent = 'Sign in with password';
+            alt.appendChild(a1); alt.appendChild(document.createTextNode(' · ')); alt.appendChild(a2);
+        }
+
+        async function go() {
+            const params = new URLSearchParams(location.search);
+            const token = params.get('token');
+            if (!token) { showError('No token in URL. Magic links must be opened from the email you received.'); return; }
+            try {
+                const r = await fetch('/api/v1/auth/magic-link/redeem', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ token }),
+                });
+                if (r.ok) {
+                    location.href = '/portal/profile/';
+                    return;
+                }
+                if (r.status === 401) {
+                    showError('That link has expired or was already used. Request a fresh one and try again.');
+                } else if (r.status === 404) {
+                    showError('Magic-link sign-in is not yet open to the public.');
+                } else {
+                    const body = await r.json().catch(() => ({}));
+                    showError(body.message || 'Could not sign you in.');
+                }
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+        go();
+    </script>
+</body>
+</html>

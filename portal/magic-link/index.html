@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Sign in with a magic link · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            display: flex; align-items: center; justify-content: center;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s ease; }
+        a:hover { color: var(--fg-strong); }
+        main { width: min(440px, 100%); padding: clamp(28px, 6vw, 48px); animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-soft); margin-bottom: 28px; }
+        .nav-back::before { content: "\2190"; font-size: 14px; }
+        .eyebrow {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95); margin-bottom: 16px;
+        }
+        h1 { font-weight: 200; font-size: clamp(28px, 4.2vw, 38px); letter-spacing: -0.022em; line-height: 1.1; color: var(--fg-strong); margin: 0 0 14px 0; }
+        .lede { font-size: 15px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 28px 0; }
+        form {
+            display: flex; flex-direction: column; gap: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 22px;
+        }
+        label { font-size: 12px; font-weight: 600; color: var(--fg-mid); letter-spacing: 0.02em; display: flex; flex-direction: column; gap: 6px; }
+        input[type=email] {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 15px;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+        input:focus { outline: none; border-color: rgba(var(--glow-purple), 0.65); background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18); }
+        button {
+            width: 100%; padding: 13px 16px;
+            background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+            color: #fff; font: inherit; font-size: 15px; font-weight: 600;
+            border: none; border-radius: 10px;
+            cursor: pointer;
+            transition: filter 0.18s ease, transform 0.18s ease;
+            margin-top: 4px;
+        }
+        button:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        button[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
+        .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; display: none; }
+        .msg.ok    { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg .dev-url { display: block; margin-top: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; word-break: break-all; }
+        .alt { margin-top: 18px; font-size: 13px; color: var(--fg-soft); text-align: center; }
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main>
+        <a class="nav-back" href="/portal/login/">Back to sign in</a>
+        <p class="eyebrow">Patient Portal &middot; Magic Link</p>
+        <h1>Sign in without a password.</h1>
+        <p class="lede">Enter your email and we&rsquo;ll issue a one-time sign-in link valid for 15 minutes. Email delivery launches alongside scheduling and reminders &mdash; in the meantime the link will be made available by the office.</p>
+        <form id="magicForm" autocomplete="on">
+            <label>Email
+                <input type="email" id="email" name="email" autocomplete="username" required>
+            </label>
+            <div id="msg" class="msg" role="status" aria-live="polite"></div>
+            <button type="submit" id="submitBtn">Send sign-in link</button>
+            <p class="alt">Have a password? <a href="/portal/login/">Sign in with password</a>.</p>
+        </form>
+    </main>
+    <script>
+        const form = document.getElementById('magicForm');
+        const msg = document.getElementById('msg');
+        const submitBtn = document.getElementById('submitBtn');
+        function showOk(text, devUrl) {
+            msg.innerHTML = '';
+            msg.className = 'msg ok';
+            msg.appendChild(document.createTextNode(text));
+            if (devUrl) {
+                const a = document.createElement('a');
+                a.className = 'dev-url';
+                a.href = devUrl;
+                a.textContent = devUrl;
+                msg.appendChild(a);
+            }
+        }
+        function showError(text) { msg.textContent = text; msg.className = 'msg error'; }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg.className = 'msg';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Issuing…';
+            try {
+                const res = await fetch('/api/v1/auth/magic-link/issue', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ email: document.getElementById('email').value.trim() }),
+                });
+                const body = await res.json().catch(() => ({}));
+                if (res.ok) {
+                    // The dev-return URL appears only when admin has MAGIC_LINK_DEV_RETURN=yes.
+                    showOk(body.message || 'If an account exists, a sign-in link has been issued.',
+                        body._dev_url || null);
+                } else if (res.status === 404) {
+                    showError('Magic-link sign-in is not yet open to the public.');
+                } else {
+                    showError(body.message || 'Something went wrong. Please try again.');
+                }
+            } catch (err) {
+                showError('Network error. Please check your connection.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send sign-in link';
+            }
+        });
+    </script>
+</body>
+</html>
