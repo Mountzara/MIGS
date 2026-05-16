@@ -2249,6 +2249,53 @@
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
         }
 
+        /* Clickable bento card (OMT consolidated grid) — adds a focus ring,
+           a reveal-on-hover CTA chip, and a small purple glow on hover so
+           the card reads as actionable. */
+        .bento-card.omt-bento-clickable {
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.22s ease, border-color 0.22s ease,
+                        background 0.22s ease, box-shadow 0.22s ease;
+        }
+        .bento-card.omt-bento-clickable:hover,
+        .bento-card.omt-bento-clickable:focus-visible {
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.35),
+                        0 0 0 1px rgba(var(--glow-purple), 0.18);
+        }
+        .bento-card.omt-bento-clickable:focus-visible {
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.30),
+                        0 20px 40px -12px rgba(0, 0, 0, 0.35);
+        }
+        .bento-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: rgba(var(--glow-purple), 0.92);
+            margin-top: 14px;
+            opacity: 0.72;
+            transition: opacity 0.22s ease, gap 0.22s ease;
+        }
+        .bento-card.omt-bento-clickable:hover .bento-cta,
+        .bento-card.omt-bento-clickable:focus-visible .bento-cta {
+            opacity: 1;
+            gap: 10px;
+        }
+        .bento-cta .arrow { transition: transform 0.22s ease; }
+        .bento-card.omt-bento-clickable:hover .bento-cta .arrow,
+        .bento-card.omt-bento-clickable:focus-visible .bento-cta .arrow {
+            transform: translateX(2px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .bento-card.omt-bento-clickable,
+            .bento-cta, .bento-cta .arrow { transition: none !important; }
+        }
+
         .bento-card .num {
             font-size: 13px;
             font-weight: 500;
@@ -4909,8 +4956,12 @@
             <h2 class="section-headline gradient">Treating the whole person.<br>Not just the diagnosis.</h2>
             <p class="section-sub">A foundation built on osteopathic principles — where structure, function, and the body's innate capacity to heal inform every facet of women's health care.</p>
 
-            <div class="bento-grid quad">
-                <div class="bento-card">
+            <!-- ONE bento-grid for the whole OMT section. Each card opens
+                 its own deep-content modal. Matches the AI + Apps section
+                 pattern: one section header + one card grid, no fan-out
+                 sub-sections. Per user 2026-05-16 directive. -->
+            <div class="bento-grid">
+                <div class="bento-card omt-bento-clickable" data-omt-modal="philosophy" role="button" tabindex="0" aria-label="Open the osteopathic philosophy">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="9"/>
@@ -4919,178 +4970,65 @@
                         <div class="num">01 — Philosophy</div>
                         <h3>Whole-Person Care</h3>
                         <p>The osteopathic tenet — body, mind, and spirit work as a unit, with structure and function inseparably linked — shapes every consultation.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-                <div class="bento-card">
+                <div class="bento-card omt-bento-clickable" data-omt-modal="techniques" role="button" tabindex="0" aria-label="Open the OMT techniques">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0z"/>
                             <path d="M5 11c0 4 3 7 7 7s7-3 7-7"/>
                             <path d="M12 18v3"/>
                         </svg>
-                        <div class="num">02 — Manual Therapy</div>
-                        <h3>OMT in Women's Health</h3>
-                        <p>Manual techniques for pelvic floor dysfunction, dysmenorrhea, sacral imbalance, post-cesarean adhesions, and post-op recovery.</p>
+                        <div class="num">02 — Techniques</div>
+                        <h3>The Four Core Modalities</h3>
+                        <p>FDM, muscle energy, counterstrain, myofascial release — each chosen and combined for the patient in front of me, not by protocol.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-                <div class="bento-card">
+                <div class="bento-card omt-bento-clickable" data-omt-modal="carepath" role="button" tabindex="0" aria-label="Open the care path">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12h4l3-9 4 18 3-9h4"/>
+                            <path d="M4 7h16M4 12h16M4 17h10"/>
                         </svg>
-                        <div class="num">03 — Anatomy</div>
-                        <h3>Structural Integration</h3>
-                        <p>An anatomy-fellowship-trained surgeon understands how scar, fascia, and visceral mobility shape outcomes — informing surgical planning and rehabilitation.</p>
+                        <div class="num">03 — Care Path</div>
+                        <h3>What Working With Me Looks Like</h3>
+                        <p>A walk-through of who I see, the services I offer, what to expect from a first visit, and frequently asked questions — for patients and the clinicians who refer to me.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-                <div class="bento-card">
+                <div class="bento-card omt-bento-clickable" data-omt-modal="pillars" role="button" tabindex="0" aria-label="Open the six-pillar integrated framework">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            <path d="M3 21V8M9 21V8M15 21V8M21 21V8M3 8h18M5 8V4h14v4"/>
                         </svg>
-                        <div class="num">04 — Continued Mastery</div>
-                        <h3>Advanced Modalities</h3>
-                        <p>Continued training in Fascial Distortion Model (FDM), Osteopathic Cranial techniques, and the SAAO Convocation.</p>
+                        <div class="num">04 — Framework</div>
+                        <h3>The Integrated Six-Pillar Approach</h3>
+                        <p>Osteopathic structural layer, pharmacologic ladder, hormonal suppression, procedural interventions, behavioral &amp; rehabilitative care, surgical pathway — six pillars, layered with intent.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Techniques Sub-Section -->
-            <div class="sub-section">
-                <span class="sub-eyebrow">The Techniques</span>
-                <h3 class="sub-headline">Hands-on, evidence-aligned modalities.</h3>
-                <p class="sub-sub">Trained across the four core osteopathic manipulative techniques — each chosen and combined for the patient in front of me, not by protocol.</p>
-
-                <div class="techniques-grid">
-                    <div class="technique-cell">
-                        <span class="technique-num">FDM</span>
-                        <h4>Fascial Distortion Model</h4>
-                        <p>A precise diagnostic and treatment framework targeting six specific fascial distortion patterns — particularly powerful for acute pain, restricted range of motion, and post-surgical adhesions.</p>
-                    </div>
-                    <div class="technique-cell">
-                        <span class="technique-num">ME</span>
-                        <h4>Muscle Energy</h4>
-                        <p>A direct, active technique using the patient's own muscle contractions against precise counterforce — restoring sacral mechanics, pelvic alignment, and lumbar function safely in pregnancy.</p>
-                    </div>
-                    <div class="technique-cell">
-                        <span class="technique-num">CS</span>
-                        <h4>Counterstrain</h4>
-                        <p>An indirect, gentle positional release method ideal for tender points, post-operative bodies, and patients in too much pain for direct techniques — calming the nervous system as it works.</p>
-                    </div>
-                    <div class="technique-cell">
-                        <span class="technique-num">MFR</span>
-                        <h4>Myofascial Release</h4>
-                        <p>Sustained pressure into restrictive fascial patterns — addressing scar tissue, chronic pelvic floor tension, abdominal wall restrictions, and the visceral-somatic dysfunctions central to pelvic pain.</p>
+                <div class="bento-card omt-bento-clickable" data-omt-modal="trajectory" role="button" tabindex="0" aria-label="Open the 8-week trajectory and evidence backbone">
+                    <div>
+                        <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 7v5l3 2"/>
+                        </svg>
+                        <div class="num">05 — Trajectory</div>
+                        <h3>The 8-Week Treatment Course</h3>
+                        <p>One 30-minute session weekly for 8 weeks, calibrated to what the literature actually shows — anchored to ACOG and UpToDate Level A recommendations.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-            </div>
-
-            <!-- OMT Care-Path Resource (patient + clinician walk-through) -->
-            <div class="sub-section omt-carepath">
-                <span class="sub-eyebrow">The Care Path</span>
-                <h3 class="sub-headline">What working with me looks like — start to finish.</h3>
-                <p class="sub-sub">A complete patient-side walk-through of osteopathic + MIGS care, written for patients and the clinicians who refer to me.</p>
-
-                <div class="carepath-grid">
-                    <article class="carepath-card frame-card">
-                        <div class="carepath-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="3.5"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
-                        </div>
-                        <h4 class="carepath-title">Who</h4>
-                        <p class="carepath-body">Patients with cyclic pelvic pain, dysmenorrhea, suspected or biopsy-confirmed endometriosis, fibroids, adenomyosis, post-cesarean scar discomfort, isthmocele, Asherman's syndrome, chronic pelvic pain not yet attributed, fertility patients carrying somatic-dysfunction signs, and patients pursuing pre- or post-operative osteopathic optimization. Adults of all ages; complex cases welcome.</p>
-                    </article>
-
-                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="pillars" role="button" tabindex="0" aria-label="Open the six-pillar integrated framework">
-                        <div class="carepath-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
-                        </div>
-                        <h4 class="carepath-title">Services</h4>
-                        <p class="carepath-body">Osteopathic structural evaluation, OMT (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vNOTES, robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two — pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
-                        <span class="carepath-cta">Open the six-pillar framework <span class="arrow">&rarr;</span></span>
-                    </article>
-
-                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="trajectory" role="button" tabindex="0" aria-label="Open the 8-week treatment trajectory">
-                        <div class="carepath-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                        </div>
-                        <h4 class="carepath-title">What to Expect</h4>
-                        <p class="carepath-body">A first visit runs 60–90 minutes — a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. OMT-only visits run 30–45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3–6 visits when an OMT course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
-                        <span class="carepath-cta">Open the 8-week trajectory <span class="arrow">&rarr;</span></span>
-                    </article>
-
-                    <article class="carepath-card frame-card">
-                        <div class="carepath-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9.5 9.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5c0 2-1.5 3-3 3.5v2"/><circle cx="13" cy="18" r="0.6" fill="currentColor"/></svg>
-                        </div>
-                        <h4 class="carepath-title">FAQ</h4>
-                        <p class="carepath-body"><strong>Will OMT replace my surgery?</strong> No — it complements it. OMT addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is OMT painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> OMT codes (98925–98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> OMT is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
-                    </article>
-
-                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="backbone" role="button" tabindex="0" aria-label="Open the standard-of-care evidence backbone">
-                        <div class="carepath-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5v14h16V5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
-                        </div>
-                        <h4 class="carepath-title">Literature</h4>
-                        <p class="carepath-body">The Level A recommendations that anchor every care plan &mdash; for endometriosis, chronic pelvic pain, and dysmenorrhea &mdash; sourced from ACOG and UpToDate-anchored topic syntheses, with landmark PMIDs. The four patient-population cards below open the OMT-specific evidence reviews (women&rsquo;s health, pregnancy, post-operative recovery, and pelvic pain &amp; endometriosis).</p>
-                        <span class="carepath-cta">Open the evidence backbone <span class="arrow">&rarr;</span></span>
-                    </article>
-                </div>
-            </div>
-
-            <!-- Patient Populations Sub-Section -->
-            <div class="sub-section">
-                <span class="sub-eyebrow">Tailored Care</span>
-                <h3 class="sub-headline">Designed around the patient.</h3>
-                <p class="sub-sub">OMT applied with intent — adapted to the unique physiology, needs, and constraints of the women I treat.</p>
-
-                <div class="populations-grid">
-                    <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health OMT evidence">
-                        <div class="pop-tag">Foundational Care</div>
-                        <h4>Women's Health</h4>
-                        <p>For dysmenorrhea, sacral imbalance, low back pain, and visceral-somatic patterns rooted in the pelvis. Manual therapy as a complement to gynecologic management — not a replacement for it.</p>
-                        <div class="pop-modalities">
-                            <span class="pop-mod">Muscle Energy</span>
-                            <span class="pop-mod">Myofascial Release</span>
-                            <span class="pop-mod">Counterstrain</span>
-                        </div>
-                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">→</span></span>
-                    </div>
-
-                    <div class="population-card" data-evidence="pregnancy" role="button" tabindex="0" aria-label="View Pregnancy OMT evidence">
-                        <div class="pop-tag">Antepartum &amp; Postpartum</div>
-                        <h4>Pregnant Patients</h4>
-                        <p>Safe, gentle techniques for round ligament pain, sacroiliac dysfunction, sciatica, and pubic symphysis discomfort. Indirect approaches preferred during pregnancy; targeted release postpartum to support recovery.</p>
-                        <div class="pop-modalities">
-                            <span class="pop-mod">Counterstrain</span>
-                            <span class="pop-mod">Muscle Energy (modified)</span>
-                            <span class="pop-mod">Myofascial Release</span>
-                        </div>
-                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">→</span></span>
-                    </div>
-
-                    <div class="population-card" data-evidence="post-op" role="button" tabindex="0" aria-label="View Post-Operative OMT evidence">
-                        <div class="pop-tag">Recovery</div>
-                        <h4>Post-Operative Patients</h4>
-                        <p>Reducing the burden of post-cesarean and post-laparoscopic adhesions, restoring abdominal-wall fascial mobility, and easing the diaphragmatic and visceral patterns that linger after surgery.</p>
-                        <div class="pop-modalities">
-                            <span class="pop-mod">Myofascial Release</span>
-                            <span class="pop-mod">FDM</span>
-                            <span class="pop-mod">Counterstrain</span>
-                        </div>
-                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">→</span></span>
-                    </div>
-
-                    <div class="population-card" data-evidence="pelvic-pain" role="button" tabindex="0" aria-label="View Pelvic Pain and Endometriosis OMT evidence">
-                        <div class="pop-tag">Chronic Pain</div>
-                        <h4>Pelvic Pain</h4>
-                        <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain — addressing the layered fascial, somatic, and viscerosomatic contributors that imaging alone can't see.</p>
-                        <div class="pop-modalities">
-                            <span class="pop-mod">FDM</span>
-                            <span class="pop-mod">Myofascial Release</span>
-                            <span class="pop-mod">Muscle Energy</span>
-                            <span class="pop-mod">Counterstrain</span>
-                        </div>
-                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">→</span></span>
+                <div class="bento-card omt-bento-clickable" data-omt-modal="populations" role="button" tabindex="0" aria-label="Open patient populations and evidence">
+                    <div>
+                        <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="8" r="3"/><path d="M15 11l1 -3l3 1"/><path d="M3 21c0-4 3-6.5 7-6.5"/><path d="M14 17c0-2.5 2-4.5 4.5-4.5"/>
+                        </svg>
+                        <div class="num">06 — Populations</div>
+                        <h3>Tailored to the Patient</h3>
+                        <p>Women's Health, pregnancy &amp; postpartum, post-operative recovery, and pelvic pain &amp; endometriosis — each with its own PubMed-anchored evidence review.</p>
+                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
             </div>
@@ -6427,6 +6365,93 @@
         // .carepath-card[data-omt-modal="..."] in the OMT section.
         // ==========================================================
         const OMT_MODAL_DATA = {
+            philosophy: {
+                eyebrow: 'Whole-Person Philosophy',
+                title: 'Treating the whole person — body, mind, and structure.',
+                intro: 'Four threads weave through every consultation: the osteopathic tenet of body unity, the role of manual therapy in women\'s health, anatomy-grounded surgical planning, and continued mastery of advanced modalities.',
+                body: `
+                    <div class="pillars-grid">
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">01</span>
+                        <h4 class="pillar-title">Whole-Person Care</h4>
+                        <p class="pillar-content">The osteopathic tenet &mdash; body, mind, and spirit work as a unit, with structure and function inseparably linked &mdash; shapes every consultation. Symptoms are read against the whole person, not against a single diagnosis label.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">02</span>
+                        <h4 class="pillar-title">OMT in Women's Health</h4>
+                        <p class="pillar-content">Manual techniques applied to pelvic floor dysfunction, dysmenorrhea, sacral imbalance, post-cesarean adhesions, broad ligament tension, and post-op recovery. OMT complements pharmacologic and surgical care &mdash; it does not replace either.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">03</span>
+                        <h4 class="pillar-title">Structural Integration</h4>
+                        <p class="pillar-content">An anatomy-fellowship-trained surgeon understands how scar, fascia, and visceral mobility shape surgical outcomes. That structural reading informs operative planning AND post-op rehabilitation, not just the OR.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">04</span>
+                        <h4 class="pillar-title">Continued Mastery</h4>
+                        <p class="pillar-content">Ongoing training in the Fascial Distortion Model (FDM), Osteopathic Cranial techniques, and the SAAO Convocation. The MIGS surgeon&rsquo;s manual-therapy toolkit keeps growing.</p>
+                      </article>
+                    </div>
+                `,
+            },
+            techniques: {
+                eyebrow: 'The Techniques',
+                title: 'Hands-on, evidence-aligned modalities.',
+                intro: 'Trained across the four core osteopathic manipulative techniques. Each one is chosen and combined for the patient in front of me — not by protocol.',
+                body: `
+                    <div class="pillars-grid">
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">FDM</span>
+                        <h4 class="pillar-title">Fascial Distortion Model</h4>
+                        <p class="pillar-content">A precise diagnostic and treatment framework targeting six specific fascial distortion patterns &mdash; particularly powerful for acute pain, restricted range of motion, and post-surgical adhesions.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">ME</span>
+                        <h4 class="pillar-title">Muscle Energy</h4>
+                        <p class="pillar-content">A direct, active technique using the patient&rsquo;s own muscle contractions against precise counterforce &mdash; restoring sacral mechanics, pelvic alignment, and lumbar function safely in pregnancy.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">CS</span>
+                        <h4 class="pillar-title">Counterstrain</h4>
+                        <p class="pillar-content">An indirect, gentle positional release method ideal for tender points, post-operative bodies, and patients in too much pain for direct techniques &mdash; calming the nervous system as it works.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">MFR</span>
+                        <h4 class="pillar-title">Myofascial Release</h4>
+                        <p class="pillar-content">Sustained pressure into restrictive fascial patterns &mdash; addressing scar tissue, chronic pelvic floor tension, abdominal wall restrictions, and the visceral-somatic dysfunctions central to pelvic pain.</p>
+                      </article>
+                    </div>
+                `,
+            },
+            carepath: {
+                eyebrow: 'The Care Path',
+                title: 'What working with me looks like &mdash; start to finish.',
+                intro: 'A complete walk-through of osteopathic + MIGS care, written for patients and the clinicians who refer to me.',
+                body: `
+                    <div class="pillars-grid">
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">01</span>
+                        <h4 class="pillar-title">Who I see</h4>
+                        <p class="pillar-content">Patients with cyclic pelvic pain, dysmenorrhea, suspected or biopsy-confirmed endometriosis, fibroids, adenomyosis, post-cesarean scar discomfort, isthmocele, Asherman&rsquo;s syndrome, chronic pelvic pain not yet attributed, fertility patients carrying somatic-dysfunction signs, and patients pursuing pre- or post-operative osteopathic optimization. Adults of all ages; complex cases welcome.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">02</span>
+                        <h4 class="pillar-title">Services</h4>
+                        <p class="pillar-content">Osteopathic structural evaluation, OMT (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vNOTES, robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two &mdash; pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">03</span>
+                        <h4 class="pillar-title">What to Expect</h4>
+                        <p class="pillar-content">A first visit runs 60&ndash;90 minutes &mdash; a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. OMT-only visits run 30&ndash;45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3&ndash;6 visits when an OMT course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">04</span>
+                        <h4 class="pillar-title">FAQ</h4>
+                        <p class="pillar-content"><strong>Will OMT replace my surgery?</strong> No &mdash; it complements it. OMT addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is OMT painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> OMT codes (98925&ndash;98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> OMT is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
+                      </article>
+                    </div>
+                `,
+            },
             pillars: {
                 eyebrow: 'The Integrated Framework',
                 title: 'Six pillars, layered with intent.',
@@ -6479,9 +6504,9 @@
                 `,
             },
             trajectory: {
-                eyebrow: 'The Treatment Trajectory',
+                eyebrow: 'The Treatment Trajectory + Standard of Care',
                 title: 'An 8-week course, calibrated to what the literature actually shows.',
-                intro: 'For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 — not session 1.',
+                intro: 'For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 — not session 1. The 8-week course is layered onto, never in place of, the ACOG-anchored standard of care for endometriosis, chronic pelvic pain, and dysmenorrhea (below).',
                 body: `
                     <div class="trajectory-rail">
                       <article class="traj-card frame-card">
@@ -6505,13 +6530,7 @@
                         <p class="traj-body">Improvements sustained at one month post-protocol per Mu&ntilde;oz-G&oacute;mez 2023. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance OMT monthly for 3 sessions, then as-needed. Non-responders are escalated: GnRH antagonist if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
                       </article>
                     </div>
-                `,
-            },
-            backbone: {
-                eyebrow: 'The Standard-of-Care Backbone',
-                title: 'What the highest-grade evidence says.',
-                intro: 'OMT is layered onto a strict standard of care — not in place of it. The Level A recommendations below are the floor every patient is offered; the osteopathic and integrative work then builds on top.',
-                body: `
+                    <h4 style="font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(var(--glow-purple),0.92);margin:28px 0 12px 0">The standard-of-care backbone &mdash; Level A</h4>
                     <div class="soc-grid">
                       <div class="soc-block frame-card">
                         <div class="soc-header"><span class="soc-tag">Endometriosis</span><span class="soc-grade">Level A</span></div>
@@ -6546,6 +6565,43 @@
                     </div>
                 `,
             },
+            populations: {
+                eyebrow: 'Tailored Care',
+                title: 'Designed around the patient.',
+                intro: 'OMT applied with intent — adapted to the unique physiology, needs, and constraints of the women I treat. Click any population to open its PubMed-indexed evidence review.',
+                body: `
+                    <div class="populations-grid">
+                      <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health OMT evidence">
+                        <div class="pop-tag">Foundational Care</div>
+                        <h4>Women's Health</h4>
+                        <p>For dysmenorrhea, sacral imbalance, low back pain, and visceral-somatic patterns rooted in the pelvis. Manual therapy as a complement to gynecologic management &mdash; not a replacement for it.</p>
+                        <div class="pop-modalities"><span class="pop-mod">Muscle Energy</span><span class="pop-mod">Myofascial Release</span><span class="pop-mod">Counterstrain</span></div>
+                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
+                      </div>
+                      <div class="population-card" data-evidence="pregnancy" role="button" tabindex="0" aria-label="View Pregnancy OMT evidence">
+                        <div class="pop-tag">Antepartum &amp; Postpartum</div>
+                        <h4>Pregnant Patients</h4>
+                        <p>Safe, gentle techniques for round ligament pain, sacroiliac dysfunction, sciatica, and pubic symphysis discomfort. Indirect approaches preferred during pregnancy; targeted release postpartum to support recovery.</p>
+                        <div class="pop-modalities"><span class="pop-mod">Counterstrain</span><span class="pop-mod">Muscle Energy (modified)</span><span class="pop-mod">Myofascial Release</span></div>
+                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
+                      </div>
+                      <div class="population-card" data-evidence="post-op" role="button" tabindex="0" aria-label="View Post-Operative OMT evidence">
+                        <div class="pop-tag">Recovery</div>
+                        <h4>Post-Operative Patients</h4>
+                        <p>Reducing the burden of post-cesarean and post-laparoscopic adhesions, restoring abdominal-wall fascial mobility, and easing the diaphragmatic and visceral patterns that linger after surgery.</p>
+                        <div class="pop-modalities"><span class="pop-mod">Myofascial Release</span><span class="pop-mod">FDM</span><span class="pop-mod">Counterstrain</span></div>
+                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
+                      </div>
+                      <div class="population-card" data-evidence="pelvic-pain" role="button" tabindex="0" aria-label="View Pelvic Pain and Endometriosis OMT evidence">
+                        <div class="pop-tag">Chronic Pain</div>
+                        <h4>Pelvic Pain</h4>
+                        <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain &mdash; addressing the layered fascial, somatic, and viscerosomatic contributors that imaging alone can&rsquo;t see.</p>
+                        <div class="pop-modalities"><span class="pop-mod">FDM</span><span class="pop-mod">Myofascial Release</span><span class="pop-mod">Muscle Energy</span><span class="pop-mod">Counterstrain</span></div>
+                        <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
+                      </div>
+                    </div>
+                `,
+            },
         };
         const omtModalEl = document.getElementById('omtModal');
         const omtModalEyebrowEl = document.getElementById('omtModalEyebrow');
@@ -6553,6 +6609,28 @@
         const omtModalIntroEl = document.getElementById('omtModalIntro');
         const omtModalBodyEl = document.getElementById('omtModalBody');
         const omtModalCardEl = document.getElementById('omtModalCard');
+        // Attach the evidence-modal click handlers to any .population-card[data-evidence]
+        // inside a freshly-rendered modal body (the populations modal injects four
+        // population-cards dynamically, so the page-load forEach over those cards
+        // misses them). Safe to call repeatedly — re-binding doesn't double-fire.
+        function wirePopulationCardsInside(container) {
+            if (!container) return;
+            container.querySelectorAll('.population-card[data-evidence]').forEach(card => {
+                if (card.__mzWired) return;
+                const k = card.getAttribute('data-evidence');
+                const handler = (e) => {
+                    if (e && e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+                    if (e && e.preventDefault) e.preventDefault();
+                    // Close the OMT modal first so the evidence modal stacks visually.
+                    closeOmtModal();
+                    openEvidenceModal(k);
+                };
+                card.addEventListener('click', handler);
+                card.addEventListener('keydown', handler);
+                card.__mzWired = true;
+            });
+        }
+
         function openOmtModal(key) {
             const data = OMT_MODAL_DATA[key];
             if (!data || !omtModalEl) return;
@@ -6560,6 +6638,9 @@
             omtModalTitleEl.textContent = data.title;
             omtModalIntroEl.textContent = data.intro;
             omtModalBodyEl.innerHTML = data.body;
+            // The populations modal injects .population-card[data-evidence]
+            // sub-cards dynamically. Bind their evidence-modal handlers now.
+            if (key === 'populations') wirePopulationCardsInside(omtModalBodyEl);
             omtModalEl.classList.add('open');
             omtModalEl.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
@@ -6570,7 +6651,10 @@
             omtModalEl.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
         }
-        document.querySelectorAll('.carepath-card[data-omt-modal]').forEach(card => {
+        // Selector covers both: legacy .carepath-card[data-omt-modal] (none
+        // remain after the 2026-05-16 refactor) AND the new .bento-card[data-omt-modal]
+        // inside the consolidated OMT bento grid.
+        document.querySelectorAll('[data-omt-modal]').forEach(card => {
             const key = card.getAttribute('data-omt-modal');
             card.addEventListener('click', () => openOmtModal(key));
             card.addEventListener('keydown', e => {
