@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Intake · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981;
+            --amber: #f59e0b;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { display: grid; grid-template-columns: 280px 1fr; gap: 28px; max-width: 1280px; margin: 0 auto; padding: clamp(20px, 4vw, 40px); }
+        @media (max-width: 920px) { .wrap { grid-template-columns: 1fr; } }
+        .top-row { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--fg-soft); margin-bottom: 8px; }
+        button.text-btn { background: none; border: none; padding: 6px 10px; border-radius: 8px; color: var(--fg-soft); font: inherit; font-size: 13px; cursor: pointer; transition: background 0.18s ease, color 0.18s ease; }
+        button.text-btn:hover { color: var(--fg-strong); background: rgba(var(--glow-purple), 0.10); }
+
+        /* SIDEBAR */
+        aside.toc {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 18px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        .toc-title { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
+        .progress {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; color: var(--fg-soft);
+            margin-bottom: 14px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-bar > span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+            width: 0%;
+            transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+        .toc-list li button {
+            width: 100%;
+            text-align: left;
+            font: inherit;
+            font-size: 13.5px;
+            background: none;
+            border: none;
+            color: var(--fg-soft);
+            padding: 9px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+        .toc-list li button:hover { background: rgba(var(--glow-purple), 0.08); color: var(--fg-strong); }
+        .toc-list li button.active { background: rgba(var(--glow-purple), 0.14); color: var(--fg-strong); }
+        .toc-list .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(245, 245, 247, 0.20); flex-shrink: 0; }
+        .toc-list .done .dot { background: var(--green); }
+        .toc-list .active .dot { background: var(--accent-soft); box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.22); }
+
+        /* MAIN */
+        main.body { min-width: 0; }
+        .header h1 {
+            font-weight: 200;
+            font-size: clamp(26px, 3.4vw, 34px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 8px 0;
+        }
+        .header .lede { font-size: 15px; line-height: 1.6; color: var(--fg-soft); max-width: 60ch; margin: 0 0 20px 0; }
+        .save-status {
+            position: fixed;
+            bottom: 22px; right: 22px;
+            padding: 8px 14px;
+            background: rgba(7, 7, 10, 0.85);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 999px;
+            font-size: 12.5px;
+            color: var(--fg-soft);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+        .save-status.show { opacity: 1; }
+        .save-status.ok { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.35); }
+        .save-status.err { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.35); }
+
+        section.panel {
+            display: none;
+            animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        section.panel.active { display: block; }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        .card h2 {
+            font-size: 13px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 4px 0;
+        }
+        .card h3 {
+            font-weight: 300;
+            font-size: clamp(22px, 2.4vw, 26px);
+            letter-spacing: -0.012em;
+            color: var(--fg-strong);
+            margin: 0 0 8px 0;
+        }
+        .card .desc { font-size: 14px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 20px 0; max-width: 64ch; }
+        .card .subhead {
+            font-size: 12.5px; font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin: 22px 0 10px 0;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+        label {
+            font-size: 12.5px; font-weight: 600;
+            color: var(--fg-mid);
+            letter-spacing: 0.01em;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        label.full { grid-column: 1 / -1; }
+        label .hint { font-size: 11.5px; font-weight: 400; color: var(--fg-dim); letter-spacing: 0; }
+        input[type=text], input[type=email], input[type=tel], input[type=date],
+        input[type=number], select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 9px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 14px;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+        textarea { resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.5; }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(var(--glow-purple), 0.65);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
+        }
+        .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+        .check {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9px;
+            cursor: pointer;
+            transition: border-color 0.18s ease, background 0.18s ease;
+            font-size: 13.5px;
+            font-weight: 400;
+        }
+        .check input { margin: 2px 0 0 0; accent-color: var(--accent); }
+        .check:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .check input:checked + span { color: var(--fg-strong); }
+        .check.with-detail { flex-direction: column; align-items: stretch; gap: 8px; }
+        .check.with-detail .row { display: flex; align-items: center; gap: 10px; }
+        .check.with-detail input[type=text],
+        .check.with-detail input[type=number],
+        .check.with-detail input[type=date] { font-size: 13px; padding: 6px 10px; }
+        .radio-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .radio-row label {
+            font-size: 13px; font-weight: 500;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: border-color 0.18s ease, background 0.18s ease;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .radio-row label:hover { border-color: rgba(var(--glow-purple), 0.40); }
+        .radio-row input { accent-color: var(--accent); }
+        .radio-row input:checked + span { color: var(--fg-strong); }
+        .radio-row label:has(input:checked) { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.50); }
+
+        .footer-nav {
+            display: flex; justify-content: space-between; gap: 12px;
+            margin-top: 18px;
+        }
+        button.nav-btn {
+            padding: 11px 22px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 14px; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        }
+        button.nav-btn:hover { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); }
+        button.nav-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+        button.primary {
+            padding: 11px 22px;
+            background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+            color: #fff;
+            font: inherit; font-size: 14px; font-weight: 600;
+            border: none; border-radius: 10px;
+            cursor: pointer;
+            transition: filter 0.18s ease, transform 0.18s ease;
+        }
+        button.primary:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        button[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
+
+        .banner {
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+        .banner.info { background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.30); color: rgba(196, 181, 253, 0.95); }
+        .banner.warn { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.35); color: rgba(252, 211, 77, 0.95); }
+        .banner.ok   { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.30); color: rgba(110, 231, 183, 0.95); }
+
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row">
+            <a href="/portal/profile/">&larr; Profile</a>
+            <button class="text-btn" id="logoutBtn">Log out</button>
+        </div>
+
+        <aside class="toc">
+            <div class="toc-title">Intake &middot; Sections</div>
+            <div class="progress">
+                <span id="pctLabel">0%</span>
+                <div class="progress-bar"><span id="pctBar"></span></div>
+            </div>
+            <ul class="toc-list" id="tocList"></ul>
+        </aside>
+
+        <main class="body">
+            <div class="header">
+                <h1>Patient Intake</h1>
+                <p class="lede">Eighteen short sections. Your work is autosaved as you type — close the tab anytime and come back to finish. The final submit button is on the last section.</p>
+            </div>
+            <div id="banner"></div>
+            <form id="intakeForm" autocomplete="on" novalidate></form>
+            <div class="footer-nav">
+                <button type="button" class="nav-btn" id="prevBtn" disabled>&larr; Previous</button>
+                <button type="button" class="nav-btn" id="nextBtn">Next &rarr;</button>
+                <button type="button" class="primary" id="submitBtn" style="display:none">Submit intake</button>
+            </div>
+        </main>
+    </div>
+
+    <div class="save-status" id="saveStatus" role="status" aria-live="polite"></div>
+
+    <script>
+    // ==========================================================
+    // 18 patient-facing sections (Section 3 Office Use Only skipped).
+    // Each section is rendered upfront; only one is visible via CSS.
+    // ==========================================================
+    const SECTIONS = [
+        { n: 1, key: 'patient_information', label: 'Patient Information' },
+        { n: 2, key: 'consent', label: 'Consent' },
+        { n: 4, key: 'chief_gynecologic_complaint', label: 'Chief Complaint' },
+        { n: 5, key: 'detailed_menstrual_history', label: 'Menstrual History' },
+        { n: 6, key: 'previous_gyn_treatments', label: 'Previous Treatments' },
+        { n: 7, key: 'previous_gyn_surgeries', label: 'Previous Surgeries' },
+        { n: 8, key: 'fertility_and_pregnancy', label: 'Fertility & Pregnancy' },
+        { n: 9, key: 'sexual_function', label: 'Sexual Function' },
+        { n: 10, key: 'relevant_imaging', label: 'Imaging Studies' },
+        { n: 11, key: 'gi_gu_symptoms', label: 'GI / GU Symptoms' },
+        { n: 12, key: 'medical_history_eras', label: 'Medical History & ERAS' },
+        { n: 13, key: 'current_medications', label: 'Current Medications' },
+        { n: 14, key: 'allergies', label: 'Allergies' },
+        { n: 15, key: 'family_gyn_history', label: 'Family Gyn History' },
+        { n: 16, key: 'social_history', label: 'Social History' },
+        { n: 17, key: 'mental_health_screening', label: 'Mental Health' },
+        { n: 18, key: 'social_determinants', label: 'Social Determinants' },
+        { n: 19, key: 'review_of_systems', label: 'Review of Systems' },
+    ];
+
+    function h(tag, attrs, ...children) {
+        const el = document.createElement(tag);
+        if (attrs) for (const k of Object.keys(attrs)) {
+            if (k === 'class') el.className = attrs[k];
+            else if (k === 'html') el.innerHTML = attrs[k];
+            else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+            else if (attrs[k] !== false && attrs[k] != null) el.setAttribute(k, attrs[k]);
+        }
+        for (const c of children.flat()) {
+            if (c == null || c === false) continue;
+            el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+        }
+        return el;
+    }
+
+    // Field shorthand helpers.
+    function field(label, input, hint) {
+        const lbl = h('label', { class: input.dataset?.full ? 'full' : '' }, label, hint ? h('span', { class: 'hint' }, hint) : null, input);
+        return lbl;
+    }
+    function textIn(name, opts = {}) {
+        const i = h('input', Object.assign({ type: 'text', name, autocomplete: 'off' }, opts));
+        if (opts.full) i.dataset.full = '1';
+        return i;
+    }
+    function numIn(name, opts = {}) { const i = h('input', Object.assign({ type: 'number', name, autocomplete: 'off', step: 'any' }, opts)); if (opts.full) i.dataset.full='1'; return i; }
+    function dateIn(name, opts = {}) { const i = h('input', Object.assign({ type: 'date', name, autocomplete: 'off' }, opts)); if (opts.full) i.dataset.full='1'; return i; }
+    function emailIn(name, opts = {}) { const i = h('input', Object.assign({ type: 'email', name, autocomplete: 'email' }, opts)); if (opts.full) i.dataset.full='1'; return i; }
+    function telIn(name, opts = {}) { const i = h('input', Object.assign({ type: 'tel', name, autocomplete: 'tel' }, opts)); if (opts.full) i.dataset.full='1'; return i; }
+    function textareaIn(name, opts = {}) { const i = h('textarea', Object.assign({ name, rows: 3 }, opts)); if (opts.full) i.dataset.full='1'; return i; }
+    function selectIn(name, options, opts = {}) {
+        const s = h('select', Object.assign({ name }, opts), ...options.map(o => h('option', { value: o.v }, o.l)));
+        if (opts.full) s.dataset.full = '1';
+        return s;
+    }
+    function checkbox(name, label, opts = {}) {
+        return h('label', { class: 'check' + (opts.detail ? ' with-detail' : '') },
+            h('div', { class: 'row' },
+                h('input', Object.assign({ type: 'checkbox', name }, opts.attrs || {})),
+                h('span', null, label)),
+            opts.detail || null);
+    }
+    function radioGroup(name, options) {
+        return h('div', { class: 'radio-row' }, ...options.map(o =>
+            h('label', null,
+                h('input', { type: 'radio', name, value: o.v }),
+                h('span', null, o.l))));
+    }
+
+    // ==========================================================
+    // Section renderers. Each returns a card <div>.
+    // ==========================================================
+    const RENDER = {
+        1: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 1 of 18'),
+            h('h3', null, 'Patient Information'),
+            h('p', { class: 'desc' }, 'A few essentials for the record. Most you can update later in your profile too.'),
+            h('div', { class: 'grid-2' },
+                field('Full legal name', textIn('full_name', { full: 1, autocomplete: 'name' })),
+                field('Date of birth', dateIn('dob', { full: 1, autocomplete: 'bday' })),
+                field('Phone', telIn('phone', { full: 1 })),
+                field('Email', emailIn('email', { full: 1 })),
+                field('Referred by', textIn('referred_by', { full: 1 })),
+                field('Interpreter language (if needed)', textIn('interpreter_language', { full: 1 })),
+            ),
+            h('p', { class: 'subhead' }, 'Visit purpose'),
+            h('div', { class: 'check-grid' },
+                checkbox('is_second_opinion', 'This is a second opinion'),
+                checkbox('recommended_surgery', 'Surgery has been recommended to me')),
+            field('If surgery recommended, type', textIn('recommended_surgery_type', { full: 1 }))),
+
+        2: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 2 of 18'),
+            h('h3', null, 'Consent'),
+            h('p', { class: 'desc' }, 'Confirming that the information you provide is accurate, and authorizing evaluation and treatment.'),
+            h('div', { class: 'banner info' }, 'Your electronic signature below is treated like an in-person signature for the purpose of starting evaluation. You can withdraw consent at any time.'),
+            h('div', { class: 'check-grid' },
+                checkbox('consent_accuracy', 'I confirm the information I provide here is accurate to the best of my knowledge.'),
+                checkbox('consent_treatment', 'I authorize evaluation and any treatment Dr. Mabini and I agree on after discussion.')),
+            h('div', { class: 'grid-2' },
+                field('Electronic signature (type your full legal name)', textIn('electronic_signature', { full: 1 })),
+                field('Date', dateIn('consent_date', { full: 1 })))),
+
+        4: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 3 of 18'),
+            h('h3', null, 'Chief Gynecologic Complaint'),
+            h('p', { class: 'desc' }, 'In your own words, what is the main reason you are coming in? Then check the patterns that match.'),
+            field('Chief complaint (in your own words)', textareaIn('chief_complaint', { full: 1, rows: 4 })),
+            h('p', { class: 'subhead' }, 'Bleeding issues'),
+            h('div', { class: 'check-grid' },
+                checkbox('bleed_over_8_days', 'Bleeding lasting more than 8 days'),
+                checkbox('bleed_pad_per_hour', 'Soaking a pad every hour'),
+                checkbox('bleed_clots_quarter', 'Clots larger than a quarter'),
+                checkbox('bleed_anemia', 'Anemia from bleeding'),
+                checkbox('bleed_unpredictable', 'Bleeding that is unpredictable')),
+            field('How long has the bleeding been a problem? (months)', numIn('bleed_duration_months', { full: 1, min: 0, max: 600 })),
+            h('p', { class: 'subhead' }, 'Pelvic pain'),
+            h('div', { class: 'grid-2' },
+                field('Pain location', selectIn('pain_location', [
+                    { v: '', l: '—' }, { v: 'center', l: 'Center' }, { v: 'right', l: 'Right' },
+                    { v: 'left', l: 'Left' }, { v: 'both', l: 'Both sides' }], { full: 1 })),
+                field('Pain on a 0–10 scale', numIn('pain_scale', { full: 1, min: 0, max: 10 }))),
+            h('p', { class: 'subhead' }, 'Pain triggers'),
+            h('div', { class: 'check-grid' },
+                checkbox('trig_with_periods', 'With my periods'),
+                checkbox('trig_constant', 'Constant'),
+                checkbox('trig_with_intercourse', 'With intercourse'),
+                checkbox('trig_with_ovulation', 'With ovulation'),
+                checkbox('trig_full_bladder', 'With a full bladder'),
+                checkbox('trig_with_bms', 'With bowel movements')),
+            h('div', { class: 'grid-2' },
+                field('Pain impacts work/school', radioGroup('pain_work_impact', [
+                    { v: 'no', l: 'No' }, { v: 'sometimes', l: 'Sometimes' }, { v: 'often', l: 'Often' }])),
+                field('Days missed per month (avg)', numIn('days_missed_month', { min: 0, max: 31 }))),
+            h('p', { class: 'subhead' }, 'Pelvic mass / fibroids / other'),
+            h('div', { class: 'check-grid' },
+                checkbox('mass_fibroids', 'Diagnosed fibroids', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Size cm'), numIn('fibroid_size_cm', { min: 0, max: 40, step: '0.1' })) }),
+                checkbox('mass_ovarian_cyst', 'Ovarian cyst', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Size cm'), numIn('cyst_size_cm', { min: 0, max: 40, step: '0.1' })) }),
+                checkbox('mass_adenomyosis', 'Adenomyosis'),
+                checkbox('mass_polyp', 'Polyp')),
+            field('Other pelvic mass (free text)', textIn('mass_other', { full: 1 })),
+            h('p', { class: 'subhead' }, 'Pressure symptoms'),
+            h('div', { class: 'check-grid' },
+                checkbox('press_bloating', 'Bloating'),
+                checkbox('press_urinary_freq', 'Urinary frequency'),
+                checkbox('press_constipation', 'Constipation')),
+            h('p', { class: 'subhead' }, 'Treatment goals & expectations'),
+            h('div', { class: 'check-grid' },
+                checkbox('goal_eliminate_pain', 'Eliminate pain'),
+                checkbox('goal_reduce_bleeding', 'Reduce bleeding'),
+                checkbox('goal_preserve_fertility', 'Preserve fertility'),
+                checkbox('goal_avoid_hysterectomy', 'Avoid hysterectomy'),
+                checkbox('goal_improve_qol', 'Improve quality of life'),
+                checkbox('goal_return_to_work', 'Return to work')),
+            field('Treatment preference', radioGroup('treatment_preference', [
+                { v: 'conservative', l: 'Conservative' },
+                { v: 'definitive', l: 'Definitive' },
+                { v: 'unsure', l: 'Unsure' }])),
+            field('Treatments I do NOT want (any)', textareaIn('treatments_to_avoid', { full: 1 })),
+            field('Specific questions for Dr. Mabini', textareaIn('questions_for_surgeon', { full: 1 }))),
+
+        5: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 4 of 18'),
+            h('h3', null, 'Detailed Menstrual History'),
+            h('p', { class: 'desc' }, 'Pattern of recent periods and how they affect daily life.'),
+            h('div', { class: 'grid-2' },
+                field('Last menstrual period (date)', dateIn('lmp_date', { full: 1 })),
+                field('Was the LMP a normal period?', radioGroup('lmp_normal', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }, { v: 'unsure', l: 'Unsure' }])),
+                field('Cycle length (days)', numIn('cycle_length_days', { min: 0, max: 365 })),
+                field('Bleeding days per period', numIn('bleeding_days', { min: 0, max: 31 })),
+                field('Spotting days per cycle', numIn('spotting_days', { min: 0, max: 31 }))),
+            h('p', { class: 'subhead' }, 'Sanitary products on heaviest day'),
+            h('div', { class: 'grid-2' },
+                field('Regular pads', numIn('products_regular_pads', { min: 0, max: 60 })),
+                field('Overnight pads', numIn('products_overnight_pads', { min: 0, max: 60 })),
+                field('Super tampons', numIn('products_super_tampons', { min: 0, max: 60 }))),
+            h('div', { class: 'check-grid' },
+                checkbox('uses_double_protection', 'I use double protection'),
+                checkbox('bleed_affects_activities', 'Bleeding limits my activities'),
+                checkbox('avoid_light_clothing', 'I avoid light-colored clothing during periods'),
+                checkbox('night_accidents', 'I have nighttime accidents'))),
+
+        6: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 5 of 18'),
+            h('h3', null, 'Previous Gynecologic Treatments'),
+            h('p', { class: 'desc' }, 'Treatments you have tried, whether on prescription or over the counter.'),
+            h('div', { class: 'check-grid' },
+                checkbox('tx_bcp', 'Birth control pills'),
+                checkbox('tx_mirena', 'Mirena / Liletta IUD'),
+                checkbox('tx_depo', 'Depo-Provera'),
+                checkbox('tx_gnrh', 'Lupron / Orilissa / Myfembree'),
+                checkbox('tx_txa', 'Tranexamic acid'),
+                checkbox('tx_progesterone', 'Progesterone'),
+                checkbox('tx_narcotics', 'Narcotics for pain'),
+                checkbox('tx_pfpt', 'Pelvic floor physical therapy'),
+                checkbox('tx_acupuncture', 'Acupuncture')),
+            field('Other treatment(s)', textIn('tx_other', { full: 1 })),
+            field('What worked best?', textareaIn('tx_what_worked', { full: 1 })),
+            field('Why did you stop any of them?', textareaIn('tx_why_stopped', { full: 1 }))),
+
+        7: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 6 of 18'),
+            h('h3', null, 'Previous Gynecologic Surgeries'),
+            h('p', { class: 'desc' }, 'Mark any surgery you have had and (if you remember) the year.'),
+            h('div', { class: 'check-grid' },
+                ...[
+                    ['surg_diag_lap', 'Diagnostic laparoscopy'],
+                    ['surg_endo_excision', 'Endometriosis excision'],
+                    ['surg_endo_ablation', 'Endometriosis ablation'],
+                    ['surg_myomectomy', 'Myomectomy'],
+                    ['surg_ovarian_cystectomy', 'Ovarian cystectomy'],
+                    ['surg_hysteroscopy', 'Hysteroscopy'],
+                    ['surg_polypectomy', 'Polypectomy'],
+                    ['surg_dnc', 'D&C'],
+                    ['surg_endo_ablation_uterine', 'Endometrial ablation'],
+                    ['surg_tubal_ligation', 'Tubal ligation'],
+                ].map(([key, label]) =>
+                    checkbox(key, label, { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Year'), numIn(key + '_year', { min: 1950, max: 2100 })) }))),
+            field('Other surgery', textIn('surg_other', { full: 1 })),
+            field('Findings from prior surgery (if known)', textareaIn('surg_findings', { full: 1 }))),
+
+        8: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 7 of 18'),
+            h('h3', null, 'Fertility & Pregnancy'),
+            h('div', { class: 'grid-2' },
+                field('Future pregnancy desired?', radioGroup('preg_desired', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }, { v: 'unsure', l: 'Unsure' }])),
+                field('Trying to conceive now?', radioGroup('ttc_now', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+                field('If trying — for how many months?', numIn('ttc_months', { min: 0, max: 360 })),
+                field('Infertility diagnosis?', radioGroup('infertility', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+                field('Fertility treatment in progress?', radioGroup('fertility_tx', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+                field('Total pregnancies', numIn('total_pregnancies', { min: 0, max: 30 })),
+                field('Vaginal births', numIn('vaginal_births', { min: 0, max: 30 })),
+                field('Cesarean sections', numIn('c_sections', { min: 0, max: 30 })),
+                field('Miscarriages', numIn('miscarriages', { min: 0, max: 30 })),
+                field('Ectopic pregnancies', numIn('ectopic', { min: 0, max: 30 })))),
+
+        9: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 8 of 18'),
+            h('h3', null, 'Sexual Function'),
+            h('p', { class: 'desc' }, 'These questions help identify pain patterns that affect daily life. Share what you are comfortable sharing.'),
+            field('Sexually active?', radioGroup('sexually_active', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+            field('Pain with intercourse?', radioGroup('pain_intercourse', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+            h('p', { class: 'subhead' }, 'If yes, when?'),
+            h('div', { class: 'check-grid' },
+                checkbox('dysp_entry', 'With entry'),
+                checkbox('dysp_deep', 'Deep'),
+                checkbox('dysp_during', 'During'),
+                checkbox('dysp_after', 'After'),
+                checkbox('dysp_orgasm', 'With orgasm')),
+            h('div', { class: 'check-grid' },
+                checkbox('avoid_pain', 'I avoid intercourse because of pain'),
+                checkbox('avoid_bleeding', 'I avoid intercourse because of bleeding'))),
+
+        10: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 9 of 18'),
+            h('h3', null, 'Relevant Imaging'),
+            h('p', { class: 'desc' }, 'Anything that may be on file with another office is fine to enter from memory.'),
+            h('p', { class: 'subhead' }, 'Most recent transvaginal ultrasound'),
+            h('div', { class: 'grid-2' },
+                field('Date', dateIn('tvus_date')),
+                field('Endometrial thickness (mm)', numIn('tvus_endometrial_mm', { min: 0, max: 60, step: '0.1' })),
+                field('Fibroid count', numIn('tvus_fibroid_count', { min: 0, max: 60 })),
+                field('Largest fibroid (cm)', numIn('tvus_largest_fibroid_cm', { min: 0, max: 40, step: '0.1' }))),
+            field('TVUS findings (in your own words)', textareaIn('tvus_findings', { full: 1 })),
+            h('p', { class: 'subhead' }, 'Other imaging on file'),
+            h('div', { class: 'check-grid' },
+                checkbox('img_pelvic_mri', 'Pelvic MRI', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Date'), dateIn('img_pelvic_mri_date')) }),
+                checkbox('img_ct_abdpelvis', 'CT abdomen/pelvis', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Date'), dateIn('img_ct_abdpelvis_date')) }),
+                checkbox('img_sonohysterography', 'Sonohysterography', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Date'), dateIn('img_sonohysterography_date')) }),
+                checkbox('img_hsg', 'HSG', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Date'), dateIn('img_hsg_date')) }))),
+
+        11: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 10 of 18'),
+            h('h3', null, 'GI / GU Symptoms'),
+            h('p', { class: 'subhead' }, 'Bowel'),
+            h('div', { class: 'check-grid' },
+                checkbox('gi_painful_bms', 'Painful bowel movements'),
+                checkbox('gi_diarrhea_with_periods', 'Diarrhea with periods'),
+                checkbox('gi_chronic_constipation', 'Chronic constipation'),
+                checkbox('gi_rectal_bleeding', 'Rectal bleeding'),
+                checkbox('gi_bloating', 'Bloating'),
+                checkbox('gi_ibs_symptoms', 'IBS symptoms'),
+                checkbox('gi_other', 'Other GI')),
+            h('p', { class: 'subhead' }, 'Urinary'),
+            h('div', { class: 'check-grid' },
+                checkbox('gu_painful_urination', 'Painful urination'),
+                checkbox('gu_frequency_over_8', 'Urinary frequency > 8x / day'),
+                checkbox('gu_urgency', 'Urgency'),
+                checkbox('gu_nocturia_over_2', 'Nocturia > 2x / night'),
+                checkbox('gu_stress_incontinence', 'Stress incontinence'),
+                checkbox('gu_incomplete_emptying', 'Incomplete emptying'),
+                checkbox('gu_other', 'Other GU'))),
+
+        12: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 11 of 18'),
+            h('h3', null, 'Medical History & ERAS Perioperative Considerations'),
+            h('div', { class: 'banner warn' }, 'This is the most important section for surgical safety. Please be thorough — especially about GLP-1 medications (Ozempic / Wegovy / Mounjaro), blood thinners, and herbs that affect bleeding.'),
+            h('p', { class: 'subhead' }, 'Critical surgical factors'),
+            h('div', { class: 'check-grid' },
+                checkbox('eras_anemia', 'Anemia', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Last Hgb g/dL'), numIn('eras_anemia_hgb', { min: 0, max: 25, step: '0.1' }), h('span', { class: 'hint' }, 'Date'), dateIn('eras_anemia_date')) }),
+                checkbox('eras_sleep_apnea', 'Sleep apnea', { detail: h('label', { class: 'check' }, h('div', { class: 'row' }, h('input', { type: 'checkbox', name: 'eras_cpap' }), h('span', null, 'I use CPAP'))) }),
+                checkbox('eras_smoking', 'Active smoker', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Packs per day'), numIn('eras_smoking_ppd', { min: 0, max: 10, step: '0.1' })) }),
+                checkbox('eras_diabetes', 'Diabetes', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'HbA1c %'), numIn('eras_diabetes_hba1c', { min: 3, max: 20, step: '0.1' }), h('span', { class: 'hint' }, 'Date'), dateIn('eras_diabetes_date')) }),
+                checkbox('eras_bmi40', 'BMI > 40', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Weight lbs'), numIn('eras_weight_lbs', { min: 0, max: 1000 })) }),
+                checkbox('eras_bleeding_disorder', 'Bleeding disorder'),
+                checkbox('eras_dvt_pe', 'Prior DVT/PE', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Year'), numIn('eras_dvt_pe_year', { min: 1950, max: 2100 })) }),
+                checkbox('eras_cardiac', 'Cardiac disease', { detail: textIn('eras_cardiac_type', { placeholder: 'Type' }) }),
+                checkbox('eras_ckd', 'Chronic kidney disease', { detail: h('div', { class: 'row' }, h('span', { class: 'hint' }, 'Creatinine'), numIn('eras_ckd_creatinine', { min: 0, max: 15, step: '0.01' })) }),
+                checkbox('eras_latex_allergy', 'Latex or anesthesia allergy')),
+            h('p', { class: 'subhead' }, 'GLP-1 / weight-loss medications (critical — affects anesthesia)'),
+            h('div', { class: 'check-grid' },
+                checkbox('glp1_ozempic', 'Ozempic'),
+                checkbox('glp1_wegovy', 'Wegovy'),
+                checkbox('glp1_mounjaro', 'Mounjaro'),
+                checkbox('glp1_saxenda', 'Saxenda'),
+                checkbox('glp1_other', 'Other GLP-1 / weight-loss med')),
+            field('Last GLP-1 dose date', dateIn('glp1_last_dose_date', { full: 1 })),
+            h('p', { class: 'subhead' }, 'Hormone therapy'),
+            h('div', { class: 'check-grid' },
+                checkbox('ht_bcp', 'Birth control'),
+                checkbox('ht_hrt', 'HRT'),
+                checkbox('ht_tamoxifen', 'Tamoxifen'),
+                checkbox('ht_gnrh', 'Lupron / Orilissa'),
+                checkbox('ht_progesterone', 'Progesterone')),
+            checkbox('ht_stop_needed', 'I have been told to stop hormones before surgery'),
+            h('p', { class: 'subhead' }, 'Blood thinners'),
+            h('div', { class: 'check-grid' },
+                checkbox('bt_asa', 'Aspirin'),
+                checkbox('bt_plavix', 'Plavix'),
+                checkbox('bt_coumadin', 'Coumadin'),
+                checkbox('bt_eliquis', 'Eliquis'),
+                checkbox('bt_xarelto', 'Xarelto'),
+                checkbox('bt_other', 'Other')),
+            h('p', { class: 'subhead' }, 'Herbs / supplements that affect bleeding'),
+            h('div', { class: 'check-grid' },
+                checkbox('herb_garlic', 'Garlic'), checkbox('herb_ginger', 'Ginger'),
+                checkbox('herb_ginkgo', 'Ginkgo'), checkbox('herb_ginseng', 'Ginseng'),
+                checkbox('herb_st_johns', "St John's Wort"), checkbox('herb_vit_e', 'Vitamin E'),
+                checkbox('herb_fish_oil', 'Fish oil'), checkbox('herb_turmeric', 'Turmeric'),
+                checkbox('herb_green_tea', 'Green tea')),
+            h('p', { class: 'subhead' }, 'Hormonal / GYN herbs'),
+            h('div', { class: 'check-grid' },
+                checkbox('hh_black_cohosh', 'Black cohosh'), checkbox('hh_evening_primrose', 'Evening primrose'),
+                checkbox('hh_soy', 'Soy isoflavones'), checkbox('hh_dong_quai', 'Dong quai'),
+                checkbox('hh_licorice', 'Licorice root'), checkbox('hh_red_clover', 'Red clover'),
+                checkbox('hh_vitex', 'Vitex / chasteberry'), checkbox('hh_maca', 'Maca'),
+                checkbox('hh_ashwagandha', 'Ashwagandha')),
+            h('p', { class: 'subhead' }, 'Other medical conditions'),
+            h('div', { class: 'check-grid' },
+                checkbox('med_htn', 'Hypertension'), checkbox('med_asthma_copd', 'Asthma / COPD'),
+                checkbox('med_thyroid', 'Thyroid disorder'), checkbox('med_autoimmune', 'Autoimmune disease'),
+                checkbox('med_migraines', 'Migraines'), checkbox('med_depression_anxiety', 'Depression / anxiety')),
+            h('p', { class: 'subhead' }, 'Gynecologic conditions previously diagnosed'),
+            h('div', { class: 'check-grid' },
+                checkbox('gyn_endometriosis', 'Endometriosis (confirmed)'),
+                checkbox('gyn_pcos', 'PCOS'),
+                checkbox('gyn_adenomyosis', 'Adenomyosis'),
+                checkbox('gyn_cpp', 'Chronic pelvic pain'),
+                checkbox('gyn_ic', 'Interstitial cystitis'),
+                checkbox('gyn_vulvodynia', 'Vulvodynia')),
+            field('Other GYN conditions', textIn('gyn_other', { full: 1 }))),
+
+        13: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 12 of 18'),
+            h('h3', null, 'Current Medications'),
+            h('p', { class: 'desc' }, 'List what you are currently taking. Doses are helpful when you know them.'),
+            field('Pain medications', textareaIn('meds_pain', { full: 1 })),
+            field('Contraceptives / hormones', textareaIn('meds_hormones', { full: 1 })),
+            field('Other medications', textareaIn('meds_other', { full: 1 }))),
+
+        14: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 13 of 18'),
+            h('h3', null, 'Allergies'),
+            h('div', { class: 'grid-2' },
+                field('Drug allergies?', radioGroup('drug_allergies', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+                field('Latex allergy?', radioGroup('latex_allergy', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }]))),
+            field('Allergy list (one per line, format: medication — reaction)', textareaIn('allergies_list', { full: 1, rows: 5 }))),
+
+        15: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 14 of 18'),
+            h('h3', null, 'Family Gynecologic History'),
+            h('p', { class: 'desc' }, 'Any first- or second-degree relative.'),
+            h('div', { class: 'check-grid' },
+                checkbox('fam_endometriosis', 'Endometriosis'),
+                checkbox('fam_fibroids', 'Fibroids'),
+                checkbox('fam_ovarian_ca', 'Ovarian cancer'),
+                checkbox('fam_uterine_ca', 'Uterine cancer'),
+                checkbox('fam_breast_ca', 'Breast cancer'),
+                checkbox('fam_colon_ca', 'Colon cancer'),
+                checkbox('fam_bleeding_disorders', 'Bleeding disorders'),
+                checkbox('fam_infertility', 'Infertility'),
+                checkbox('fam_hyst_before_50', 'Hysterectomy before age 50'))),
+
+        16: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 15 of 18'),
+            h('h3', null, 'Social History'),
+            h('div', { class: 'grid-2' },
+                field('Occupation', textIn('occupation', { full: 1 })),
+                field('Heavy lifting at work?', radioGroup('heavy_lifting', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }]))),
+            field('Tobacco use', radioGroup('tobacco_use', [
+                { v: 'never', l: 'Never' }, { v: 'current', l: 'Current' }, { v: 'former', l: 'Former' }])),
+            h('div', { class: 'grid-2' },
+                field('Tobacco amount', textIn('tobacco_amount', { full: 1, placeholder: 'e.g. 0.5 ppd' })),
+                field('Years of tobacco use', numIn('tobacco_years', { full: 1, min: 0, max: 100 }))),
+            field('Marijuana / CBD use?', radioGroup('marijuana_cbd', [{ v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }])),
+            field('Support at home (free text)', textIn('support_at_home', { full: 1 })),
+            field('Time off work available (weeks)', numIn('time_off_weeks', { full: 1, min: 0, max: 52 }))),
+
+        17: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 16 of 18'),
+            h('h3', null, 'Mental Health'),
+            h('p', { class: 'desc' }, 'Over the last 2 weeks, how often have you been bothered by these problems?'),
+            h('p', { class: 'subhead' }, 'PHQ-2'),
+            field('Little interest or pleasure in doing things', radioGroup('phq2_anhedonia', [
+                { v: '0', l: '0 — Not at all' }, { v: '1', l: '1 — Several days' },
+                { v: '2', l: '2 — More than half the days' }, { v: '3', l: '3 — Nearly every day' }])),
+            field('Feeling down, depressed, or hopeless', radioGroup('phq2_depressed', [
+                { v: '0', l: '0 — Not at all' }, { v: '1', l: '1 — Several days' },
+                { v: '2', l: '2 — More than half the days' }, { v: '3', l: '3 — Nearly every day' }])),
+            field('Anxiety about surgery', radioGroup('surgical_anxiety', [
+                { v: 'none', l: 'None' }, { v: 'mild', l: 'Mild' }, { v: 'moderate', l: 'Moderate' }, { v: 'severe', l: 'Severe' }]))),
+
+        18: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 17 of 18'),
+            h('h3', null, 'Social Determinants of Health'),
+            h('p', { class: 'desc' }, 'These help us tailor care to what is realistic for you. Sensitive — share what you are comfortable sharing.'),
+            field('Housing', radioGroup('housing', [
+                { v: 'own', l: 'Own' }, { v: 'rent', l: 'Rent' },
+                { v: 'with_family', l: 'With family' }, { v: 'unstable', l: 'Unstable' }])),
+            field('Food security', radioGroup('food_security', [
+                { v: 'adequate', l: 'Adequate' }, { v: 'sometimes_inadequate', l: 'Sometimes inadequate' }, { v: 'often_inadequate', l: 'Often inadequate' }])),
+            field('Reliable transportation to appointments?', radioGroup('transportation', [
+                { v: 'yes', l: 'Yes' }, { v: 'sometimes', l: 'Sometimes' }, { v: 'no', l: 'No' }])),
+            field('Can you afford your medications?', radioGroup('medication_affordability', [
+                { v: 'always', l: 'Always' }, { v: 'sometimes', l: 'Sometimes' }, { v: 'difficult', l: 'Difficult' }])),
+            field('Do you feel safe at home?', radioGroup('safety_at_home', [
+                { v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }, { v: 'prefer_not', l: 'Prefer not to say' }])),
+            field('Childcare available when needed?', radioGroup('childcare', [
+                { v: 'yes', l: 'Yes' }, { v: 'sometimes', l: 'Sometimes' }, { v: 'no', l: 'No' }, { v: 'na', l: 'Not applicable' }])),
+            field('Education level', radioGroup('education_level', [
+                { v: 'elementary', l: 'Elementary' }, { v: 'hs', l: 'High school' }, { v: 'college', l: 'College' }, { v: 'graduate', l: 'Graduate' }])),
+            field('Insurance', radioGroup('insurance', [
+                { v: 'yes', l: 'Yes' }, { v: 'no', l: 'No' }, { v: 'applying', l: 'Applying' }])),
+            field('Insurance type (if yes)', textIn('insurance_type', { full: 1 }))),
+
+        19: () => h('div', { class: 'card' },
+            h('h2', null, 'Section 18 of 18'),
+            h('h3', null, 'Review of Systems'),
+            h('p', { class: 'desc' }, 'Check anything bothering you currently or recently.'),
+            h('div', { class: 'check-grid' },
+                checkbox('ros_fever_chills', 'Fever / chills'),
+                checkbox('ros_weight_loss', 'Unintentional weight loss'),
+                checkbox('ros_fatigue', 'Fatigue'),
+                checkbox('ros_chest_pain', 'Chest pain'),
+                checkbox('ros_sob', 'Shortness of breath'),
+                checkbox('ros_palpitations', 'Palpitations'),
+                checkbox('ros_abd_pain', 'Abdominal pain'),
+                checkbox('ros_n_v', 'Nausea / vomiting'),
+                checkbox('ros_change_bowel_habits', 'Change in bowel habits'),
+                checkbox('ros_dysuria', 'Dysuria'),
+                checkbox('ros_hematuria', 'Blood in urine'),
+                checkbox('ros_urinary_frequency', 'Urinary frequency'),
+                checkbox('ros_headaches', 'Headaches'),
+                checkbox('ros_dizziness', 'Dizziness'),
+                checkbox('ros_numbness_tingling', 'Numbness / tingling'),
+                checkbox('ros_joint_pain', 'Joint pain'),
+                checkbox('ros_leg_swelling', 'Leg swelling'),
+                checkbox('ros_rash', 'Rash'),
+                checkbox('ros_depression', 'Depression'),
+                checkbox('ros_anxiety', 'Anxiety'),
+                checkbox('ros_insomnia', 'Insomnia'))),
+    };
+
+    // ==========================================================
+    // State + boot
+    // ==========================================================
+    let intakeId = null;
+    let currentIdx = 0;
+    const sectionData = {}; // { sectionNum: lastSavedData }
+    const dirtyTimers = {}; // { sectionNum: timeoutId }
+    const sectionEls = {};
+
+    const form = document.getElementById('intakeForm');
+    const tocList = document.getElementById('tocList');
+    const pctBar = document.getElementById('pctBar');
+    const pctLabel = document.getElementById('pctLabel');
+    const banner = document.getElementById('banner');
+    const saveStatus = document.getElementById('saveStatus');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function showStatus(text, cls) {
+        saveStatus.textContent = text;
+        saveStatus.className = 'save-status show ' + (cls || '');
+        clearTimeout(showStatus._t);
+        showStatus._t = setTimeout(() => { saveStatus.className = 'save-status'; }, 2400);
+    }
+
+    function buildToc() {
+        tocList.innerHTML = '';
+        SECTIONS.forEach((s, i) => {
+            const li = h('li', null,
+                h('button', { type: 'button', onClick: () => goTo(i) },
+                    h('span', { class: 'dot' }),
+                    h('span', null, s.label)));
+            tocList.appendChild(li);
+        });
+    }
+
+    function buildSections() {
+        SECTIONS.forEach((s) => {
+            const panel = h('section', { class: 'panel', 'data-section': s.n });
+            const card = RENDER[s.n] ? RENDER[s.n]() : h('div', { class: 'card' }, h('h3', null, s.label));
+            panel.appendChild(card);
+            form.appendChild(panel);
+            sectionEls[s.n] = panel;
+            panel.addEventListener('input', () => onSectionDirty(s.n));
+            panel.addEventListener('change', () => onSectionDirty(s.n));
+        });
+    }
+
+    function snapshotSection(n) {
+        const panel = sectionEls[n];
+        const out = {};
+        panel.querySelectorAll('input, select, textarea').forEach((el) => {
+            const name = el.name;
+            if (!name) return;
+            if (el.type === 'checkbox') out[name] = !!el.checked;
+            else if (el.type === 'radio') { if (el.checked) out[name] = el.value; }
+            else out[name] = el.value === '' ? null : el.value;
+        });
+        return out;
+    }
+
+    function hydrateSection(n, data) {
+        if (!data) return;
+        const panel = sectionEls[n];
+        panel.querySelectorAll('input, select, textarea').forEach((el) => {
+            const name = el.name;
+            if (!name || !(name in data)) return;
+            const v = data[name];
+            if (el.type === 'checkbox') el.checked = !!v;
+            else if (el.type === 'radio') el.checked = (el.value === String(v));
+            else el.value = v == null ? '' : v;
+        });
+    }
+
+    function setProgress(pct) {
+        pctBar.style.width = (pct || 0) + '%';
+        pctLabel.textContent = (pct || 0) + '%';
+    }
+
+    function markFilled(n) {
+        const btn = tocList.children[SECTIONS.findIndex(s => s.n === n)]?.querySelector('button');
+        if (btn) btn.parentElement.classList.add('done');
+    }
+
+    function setActiveIdx(i) {
+        currentIdx = i;
+        Array.from(form.children).forEach((el, idx) => {
+            el.classList.toggle('active', idx === i);
+        });
+        Array.from(tocList.children).forEach((li, idx) => {
+            li.querySelector('button').classList.toggle('active', idx === i);
+            li.classList.toggle('active', idx === i);
+        });
+        prevBtn.disabled = i === 0;
+        nextBtn.style.display = (i === SECTIONS.length - 1) ? 'none' : '';
+        submitBtn.style.display = (i === SECTIONS.length - 1) ? '' : 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goTo(i) { setActiveIdx(Math.max(0, Math.min(SECTIONS.length - 1, i))); }
+
+    async function onSectionDirty(n) {
+        clearTimeout(dirtyTimers[n]);
+        dirtyTimers[n] = setTimeout(() => saveSection(n), 800);
+    }
+
+    async function saveSection(n) {
+        if (!intakeId) return;
+        const snap = snapshotSection(n);
+        if (JSON.stringify(snap) === JSON.stringify(sectionData[n] || {})) return;
+        showStatus('Saving…');
+        try {
+            const r = await fetch(`/api/v1/patient/intake/${intakeId}/section/${n}`, {
+                method: 'PATCH',
+                credentials: 'same-origin',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(snap),
+            });
+            if (!r.ok) {
+                if (r.status === 401) { location.href = '/portal/login/'; return; }
+                if (r.status === 409) { showStatus('Intake already submitted', 'err'); return; }
+                showStatus('Save failed', 'err');
+                return;
+            }
+            const body = await r.json();
+            sectionData[n] = snap;
+            setProgress(body.completion_pct);
+            markFilled(n);
+            showStatus('Saved', 'ok');
+        } catch (err) {
+            showStatus('Network error', 'err');
+        }
+    }
+
+    async function flushAll() {
+        await Promise.all(SECTIONS.map(s => saveSection(s.n)));
+    }
+
+    async function doSubmit() {
+        if (!intakeId) return;
+        await flushAll();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+        try {
+            const r = await fetch(`/api/v1/patient/intake/${intakeId}/submit`, {
+                method: 'POST', credentials: 'same-origin',
+            });
+            const body = await r.json().catch(() => ({}));
+            if (r.ok) {
+                banner.innerHTML = '';
+                banner.appendChild(h('div', { class: 'banner ok' }, 'Intake submitted. Dr. Mabini and the office will review it before your visit.'));
+                form.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                prevBtn.disabled = true;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (r.status === 409 && body.error === 'consent_required') {
+                showStatus('Please save the Consent section first', 'err');
+                goTo(SECTIONS.findIndex(s => s.n === 2));
+            } else {
+                showStatus(body.message || 'Submit failed', 'err');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit intake';
+            }
+        } catch (err) {
+            showStatus('Network error', 'err');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit intake';
+        }
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+    nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+    submitBtn.addEventListener('click', doSubmit);
+    logoutBtn.addEventListener('click', async () => {
+        await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+        location.href = '/portal/';
+    });
+
+    async function boot() {
+        try {
+            const me = await fetch('/api/v1/auth/me', { credentials: 'same-origin' });
+            if (me.status === 401) { location.href = '/portal/login/'; return; }
+            if (me.status === 404) { location.href = '/portal/'; return; }
+            const r = await fetch('/api/v1/patient/intake/current', { credentials: 'same-origin' });
+            const data = await r.json();
+
+            buildToc();
+            buildSections();
+
+            if (data?.intake) {
+                intakeId = data.intake.id;
+                setProgress(data.intake.completion_pct || 0);
+                if (data.intake.status !== 'in_progress') {
+                    banner.innerHTML = '';
+                    banner.appendChild(h('div', { class: 'banner ok' }, 'Your intake has been submitted. Open your profile to update editable fields.'));
+                    form.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                    submitBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                    prevBtn.disabled = true;
+                }
+                for (const [n, payload] of Object.entries(data.sections || {})) {
+                    sectionData[n] = payload.data || {};
+                    hydrateSection(Number(n), payload.data || {});
+                    markFilled(Number(n));
+                }
+            } else {
+                const create = await fetch('/api/v1/patient/intake/new', {
+                    method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: '{}',
+                });
+                const cb = await create.json();
+                intakeId = cb.intake_id;
+                setProgress(0);
+            }
+            setActiveIdx(0);
+        } catch (err) {
+            showStatus('Could not load intake', 'err');
+        }
+    }
+    boot();
+    </script>
+</body>
+</html>
