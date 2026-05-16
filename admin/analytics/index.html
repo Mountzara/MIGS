@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Analytics · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%), var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+        header.bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+            font-size: 13px; color: var(--fg-soft); flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 6px 0;
+        }
+        .lede {
+            font-size: 14.5px; line-height: 1.55; color: var(--fg-mid);
+            max-width: 76ch; margin: 0 0 18px 0;
+        }
+        .filter-bar {
+            display: flex; gap: 6px; margin: 0 0 20px 0; flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-chip {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 999px; padding: 6px 14px;
+            color: var(--fg-soft); font-size: 12px;
+            cursor: pointer; font: inherit;
+            transition: all 0.18s;
+        }
+        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+
+        /* KPI grid */
+        .kpi-grid {
+            display: grid; gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            margin-bottom: 22px;
+        }
+        .kpi {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            transition: border-color 0.22s;
+            animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .kpi:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); }
+        }
+        .kpi .label {
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--fg-dim); margin-bottom: 6px;
+        }
+        .kpi .value {
+            font-size: 28px; font-weight: 200;
+            color: var(--fg-strong); letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .kpi .sub {
+            font-size: 11.5px; color: var(--fg-soft); margin-top: 4px;
+        }
+        .kpi.alert { border-color: rgba(245, 158, 11, 0.45); }
+        .kpi.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .kpi.good { border-color: rgba(16, 185, 129, 0.45); }
+        .kpi.purple .value { color: var(--accent-soft); }
+
+        /* panels */
+        .grid-2 {
+            display: grid; gap: 16px;
+            grid-template-columns: minmax(0, 1fr);
+            margin-bottom: 18px;
+        }
+        @media (min-width: 920px) {
+            .grid-2.split { grid-template-columns: 1fr 1fr; }
+        }
+        .panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        }
+        .panel h2 {
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 14px 0;
+        }
+
+        /* horizontal bar chart */
+        .bar-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 40px;
+            gap: 10px; align-items: center;
+            margin-bottom: 8px;
+            font-size: 12.5px;
+            color: var(--fg-mid);
+        }
+        .bar-row .label-cell { color: var(--fg-strong); }
+        .bar-row .bar {
+            background: rgba(255,255,255,0.04);
+            height: 18px; border-radius: 4px; overflow: hidden;
+        }
+        .bar-row .bar-fill {
+            background: linear-gradient(to right, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.85));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bar-row .count {
+            font-size: 12px; font-weight: 500; color: var(--fg-strong);
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* funnel */
+        .funnel { display: flex; gap: 8px; align-items: stretch; }
+        .funnel-step {
+            flex: 1; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px 12px;
+            text-align: center;
+        }
+        .funnel-step .stage {
+            font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--fg-dim); font-weight: 700; margin-bottom: 6px;
+        }
+        .funnel-step .n {
+            font-size: 22px; font-weight: 200; color: var(--fg-strong);
+            letter-spacing: -0.02em;
+        }
+        .funnel-arrow { color: var(--fg-dim); font-size: 18px; align-self: center; }
+
+        /* next-5 appointments list */
+        .next-list { display: flex; flex-direction: column; gap: 8px; }
+        .next-row {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px 12px;
+            display: grid;
+            grid-template-columns: max-content 1fr max-content;
+            gap: 12px; align-items: baseline;
+            font-size: 12.5px;
+            text-decoration: none; color: inherit;
+            transition: all 0.18s;
+        }
+        .next-row:hover {
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.05);
+        }
+        .next-row .when { color: var(--fg-strong); font-weight: 500; }
+        .next-row .patient { color: var(--accent-soft); }
+        .next-row .vt { font-size: 11.5px; color: var(--fg-soft); }
+
+        /* alert patient list */
+        .alert-list { display: flex; flex-direction: column; gap: 8px; }
+        .alert-row {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.30);
+            border-radius: 10px; padding: 10px 12px;
+            display: grid;
+            grid-template-columns: 1fr max-content max-content;
+            gap: 12px; align-items: baseline;
+            text-decoration: none; color: inherit;
+            transition: all 0.18s;
+        }
+        .alert-row:hover {
+            border-color: rgba(245, 158, 11, 0.55);
+            background: rgba(245, 158, 11, 0.10);
+        }
+        .alert-row .name { color: var(--fg-strong); font-weight: 500; font-size: 13.5px; }
+        .alert-row .pain { color: rgba(252, 165, 165, 0.95); font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .alert-row .when { font-size: 11px; color: var(--fg-dim); }
+
+        .empty-state {
+            padding: 28px 18px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Analytics</span>
+            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);">/admin/analytics</span>
+        </header>
+
+        <h1 class="page-title">Practice analytics</h1>
+        <p class="lede">A live cross-patient panorama. Window controls the time horizon for messaging-activity, symptom signals, and audit counts; lifetime counts are unaffected.</p>
+
+        <div class="filter-bar">
+            <button class="filter-chip" data-window="14">Last 14 d</button>
+            <button class="filter-chip active" data-window="30">Last 30 d</button>
+            <button class="filter-chip" data-window="90">Last 90 d</button>
+            <span style="margin-left:auto; font-size: 12px; color: var(--fg-dim);" id="window-label">—</span>
+        </div>
+
+        <div id="kpis" class="kpi-grid">
+            <div class="kpi"><div class="label">loading…</div></div>
+        </div>
+
+        <div class="grid-2 split">
+            <div class="panel">
+                <h2>Intake funnel</h2>
+                <div id="funnel"></div>
+            </div>
+            <div class="panel">
+                <h2>Triage breakdown</h2>
+                <div id="triage-summary" style="font-size: 13px; color: var(--fg-soft); margin-bottom: 12px;"></div>
+                <h3 style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 14px 0 8px 0;">By visit type</h3>
+                <div id="triage-by-visit"></div>
+            </div>
+        </div>
+
+        <div class="grid-2 split">
+            <div class="panel">
+                <h2>Appointments by status</h2>
+                <div id="appt-status"></div>
+                <h3 style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 16px 0 8px 0;">Next 5 scheduled</h3>
+                <div class="next-list" id="next-list"></div>
+            </div>
+            <div class="panel">
+                <h2>Visit type mix</h2>
+                <div id="appt-visit-type"></div>
+            </div>
+        </div>
+
+        <div class="grid-2 split">
+            <div class="panel">
+                <h2>Symptom signals (last 7 d)</h2>
+                <div id="symptom-summary" style="margin-bottom: 12px;"></div>
+                <h3 style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 8px 0 8px 0;">High-pain patients (≥ 8)</h3>
+                <div class="alert-list" id="alert-list"></div>
+            </div>
+            <div class="panel">
+                <h2>Messaging + audit activity</h2>
+                <div id="msg-summary" style="font-size: 13px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 16px;"></div>
+                <h3 style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 8px 0 8px 0;">Audit events by action</h3>
+                <div id="audit-by-action"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = { window_days: 30, data: null };
+
+        async function fetchJson(url) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error; e.status = res.status; throw e;
+            }
+            return body;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function fmtDateTime(ms) {
+            if (!ms) return '—';
+            return new Date(ms).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        }
+        function fmtRelative(ms) {
+            if (!ms) return '—';
+            const diffMin = (Date.now() - ms) / 60000;
+            if (diffMin < 60) return `${Math.max(1, Math.round(diffMin))} min ago`;
+            if (diffMin < 24*60) return `${Math.round(diffMin/60)} h ago`;
+            return `${Math.round(diffMin/(60*24))} d ago`;
+        }
+        const VISIT_LABELS = {
+            new_patient_complex: "New Patient — Complex",
+            new_patient_standard: "New Patient — Standard",
+            endo_pain_evaluation: "Endo Eval",
+            endo_pain_followup: "Endo Follow-up",
+            omt_treatment: "OMT Treatment",
+            aub_eval: "AUB Eval",
+            pre_op: "Pre-Op",
+            post_op_early: "Post-Op (1-2 wk)",
+            post_op_late: "Post-Op (6 wk)",
+            routine_followup: "Routine Follow-up",
+            office_procedure: "Office Procedure",
+            quick_concern: "Quick Concern",
+            annual_exam: "Annual Exam",
+            telehealth_consult: "Telehealth Consult",
+            manual_review_required: "Manual review required",
+        };
+        const fmtVT = (k) => VISIT_LABELS[k] || k;
+
+        async function load() {
+            try {
+                const data = await fetchJson(`/api/v1/admin/analytics?window=${state.window_days}`);
+                state.data = data;
+                render();
+            } catch (e) {
+                $('kpis').innerHTML = `<div class="empty-state">Could not load analytics: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function render() {
+            const d = state.data;
+            $('window-label').textContent = `${d.window.from} → ${d.window.to} · ${d.window.days} d`;
+
+            // KPIs
+            const t = d.totals;
+            const kpis = [
+                { label: 'Patients', value: t.patients, sub: 'on file' },
+                { label: 'Upcoming visits', value: t.appointments_upcoming, sub: `${t.appointments_total} all time`, cls: 'good' },
+                { label: 'Intakes in progress', value: t.intakes_in_progress, sub: `${t.intakes_submitted} submitted`, cls: 'purple' },
+                { label: 'Triage pending', value: d.triage.pending, sub: `${d.triage.released} released · ${d.triage.booked} booked`, cls: d.triage.pending > 0 ? 'alert' : 'good' },
+                { label: 'Unread messages', value: t.messages_unread_for_clinician, sub: `${t.messages_threads} thread${t.messages_threads === 1 ? '' : 's'}`, cls: t.messages_unread_for_clinician > 0 ? 'alert' : '' },
+                { label: 'Symptom entries', value: t.symptom_entries_window, sub: `last ${d.window.days} d` },
+                { label: 'Documents', value: t.documents, sub: 'envelope-encrypted in R2' },
+                { label: 'Education', value: t.education_published, sub: `${t.education_assigned} assigned` },
+            ];
+            $('kpis').innerHTML = kpis.map(k => `
+                <div class="kpi ${k.cls || ''}">
+                    <div class="label">${escapeHtml(k.label)}</div>
+                    <div class="value">${k.value}</div>
+                    <div class="sub">${escapeHtml(k.sub || '')}</div>
+                </div>
+            `).join('');
+
+            // Funnel
+            const f = d.intake_funnel;
+            $('funnel').innerHTML = `
+                <div class="funnel">
+                    <div class="funnel-step"><div class="stage">Started</div><div class="n">${f.started}</div></div>
+                    <div class="funnel-arrow">→</div>
+                    <div class="funnel-step"><div class="stage">In progress</div><div class="n">${f.in_progress}</div></div>
+                    <div class="funnel-arrow">→</div>
+                    <div class="funnel-step"><div class="stage">Submitted</div><div class="n">${f.submitted}</div></div>
+                    <div class="funnel-arrow">→</div>
+                    <div class="funnel-step"><div class="stage">Reviewed</div><div class="n">${f.reviewed}</div></div>
+                </div>
+            `;
+
+            // Triage breakdown
+            const tt = d.triage;
+            $('triage-summary').innerHTML = `
+                <strong style="color:var(--fg-strong);">${tt.total}</strong> total triage runs ·
+                <span style="color: ${tt.pending > 0 ? 'rgba(252,211,77,0.95)' : 'var(--fg-soft)'};">${tt.pending} pending</span> ·
+                ${tt.released} released · ${tt.booked} booked ·
+                ${tt.manual_review_required > 0 ? `<span style="color: rgba(252,165,165,0.95);">${tt.manual_review_required} manual review</span>` : 'no manual-review rows'}
+            `;
+            $('triage-by-visit').innerHTML = renderBarChart(tt.by_visit_type.map(r => ({ label: fmtVT(r.visit_type), count: r.count })));
+
+            // Appointments
+            $('appt-status').innerHTML = renderBarChart((d.appointments.by_status || []).map(r => ({ label: r.status, count: r.count })));
+            $('appt-visit-type').innerHTML = renderBarChart((d.appointments.by_visit_type || []).map(r => ({ label: fmtVT(r.visit_type), count: r.count })));
+
+            // Next 5
+            const next5 = d.appointments.next_5 || [];
+            $('next-list').innerHTML = next5.length === 0
+                ? '<div class="empty-state">No upcoming visits.</div>'
+                : next5.map(a => `
+                    <a class="next-row" href="/admin/cases/${encodeURIComponent(a.patient_id)}/">
+                        <span class="when">${fmtDateTime(a.starts_at)}</span>
+                        <span><span class="patient">${escapeHtml(a.patient_name || '(no name)')}</span> · <span class="vt">${escapeHtml(fmtVT(a.visit_type))}</span></span>
+                        <span style="font-size: 11px; color: var(--fg-dim);">${escapeHtml(a.modality)}</span>
+                    </a>
+                `).join('');
+
+            // Symptom signals
+            const ss = d.symptom_signals;
+            $('symptom-summary').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div>
+                        <div style="font-size: 22px; font-weight: 200; color: var(--fg-strong);">${ss.unique_patients_logging_last_7d}</div>
+                        <div style="font-size: 11px; color: var(--fg-soft);">patients logging</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_avg && ss.recent_pain_avg >= 7 ? 'rgba(252, 165, 165, 0.95)' : 'var(--fg-strong)'};">${ss.recent_pain_avg != null ? ss.recent_pain_avg.toFixed(1) : '—'}</div>
+                        <div style="font-size: 11px; color: var(--fg-soft);">avg pain (0-10)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_high_count > 0 ? 'rgba(252, 211, 77, 0.95)' : 'var(--fg-strong)'};">${ss.recent_pain_high_count}</div>
+                        <div style="font-size: 11px; color: var(--fg-soft);">≥ 8/10 today</div>
+                    </div>
+                </div>
+            `;
+            const urgent = ss.urgent_pain_patients || [];
+            $('alert-list').innerHTML = urgent.length === 0
+                ? '<div class="empty-state" style="padding: 16px;">No high-pain patients in the last 7 days.</div>'
+                : urgent.map(p => `
+                    <a class="alert-row" href="/admin/cases/${encodeURIComponent(p.id)}/">
+                        <span class="name">${escapeHtml(p.name)}</span>
+                        <span class="pain">pain ${p.pain_max}/10</span>
+                        <span class="when">${escapeHtml(p.latest_date || '—')}</span>
+                    </a>
+                `).join('');
+
+            // Messaging + audit
+            const ma = d.messaging_activity;
+            const oldestUnread = ma.oldest_unread_thread_at ? fmtRelative(ma.oldest_unread_thread_at) : null;
+            $('msg-summary').innerHTML = `
+                <strong style="color: var(--fg-strong);">${ma.messages_window}</strong> messages in window
+                (${ma.clinician_replies_window} from clinician/staff) ·
+                <strong style="color: ${ma.threads_with_unread > 0 ? 'rgba(252, 211, 77, 0.95)' : 'var(--fg-soft)'};">${ma.threads_with_unread}</strong>
+                thread${ma.threads_with_unread === 1 ? '' : 's'} with unread.${oldestUnread ? ` Oldest unread: <strong>${oldestUnread}</strong>.` : ''}
+            `;
+            $('audit-by-action').innerHTML = renderBarChart((d.audit_signals.by_action || []).map(r => ({ label: r.action, count: r.count })));
+        }
+
+        function renderBarChart(rows) {
+            if (!rows || rows.length === 0) return '<div class="empty-state" style="padding: 16px;">No data.</div>';
+            const max = Math.max(...rows.map(r => r.count), 1);
+            return rows.map(r => `
+                <div class="bar-row">
+                    <span class="label-cell">${escapeHtml(r.label)}</span>
+                    <div class="bar"><div class="bar-fill" style="width: ${(r.count / max * 100).toFixed(1)}%;"></div></div>
+                    <span class="count">${r.count}</span>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('.filter-chip').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(x => x.classList.toggle('active', x === c));
+                state.window_days = parseInt(c.getAttribute('data-window'), 10);
+                load();
+            });
+        });
+
+        load();
+        // refresh every 2 min
+        setInterval(load, 120000);
+    </script>
+</body>
+</html>
