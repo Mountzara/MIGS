@@ -57,13 +57,18 @@ The structure of this ledger mirrors the D1 `baa_ledger` table; the markdown fil
 | Contract location | Doxy.me HIPAA terms accepted in their portal — no separate BAA needed for the launch-button integration model. |
 | Notes | Per CLAUDE.md §11 Tier 6, mountzara.com hosts only the launch button; the video session lives entirely on `dr-mabini.doxy.me` where Doxy.me's HIPAA boundary applies. |
 
-### 5. Anthropic (Claude API for AI triage)
+### 5. Anthropic, PBC (Claude API for AI triage)
 
 | Field | Value |
 |---|---|
-| Status | **na — but mitigations required** |
-| Scope | §11.7 AI triage prompt. Receives PHI from intake (chief complaint, pain scores, ERAS factors) to produce a visit-type categorization. |
-| Notes | Anthropic does NOT currently offer a HIPAA BAA. **Mitigation:** all PHI sent to Claude in the triage prompt is de-identified per §4.2 (no patient name, no DOB, no contact info, MRN replaced with `appointment_triage.id`). The decision rationale returned by Claude is stored in `appointment_triage.ai_rationale`. If a future Anthropic BAA becomes available, switch to identified prompts for richer triage. |
+| Status | **pending — BAA available; execution in progress** |
+| Scope | §11.7 AI triage prompt. Receives a **de-identified** intake summary (no name, no DOB, no phone/email, no e-signature, no referred-by, age replaced with decade bucket, MRN replaced with the `appointment_triage.id`) to produce a visit-type categorization. Per `functions/_lib/intake_triage.js` `deidentifyIntake()`. |
+| Contract location | Not yet executed. Outreach draft saved to `~/Desktop/Anthropic_BAA_Request.txt`. |
+| BAA program | Anthropic offers a HIPAA BAA to qualifying first-party API customers. Coverage activates the **HIPAA-Ready API Org** designation, which gates use of PHI to the following endpoints: Messages API (the one this practice uses for §11.7 triage), Token Counting, Models, Org Management, Compliance APIs. The following endpoints are **not** in scope and MUST NOT receive PHI even after BAA execution: Batch API, Files API, Skills API, Code Execution tool, Computer Use tool, Web Fetch tool. |
+| Process | (1) Organization owner signs the BAA via the dashboard / sales contact. (2) Sales enables the HIPAA-Ready API Org flag on the account. (3) `ANTHROPIC_API_KEY` is then provisioned on Cloudflare Pages production secrets. (4) Until all three complete, `functions/_lib/anthropic.js` raises `ANTHROPIC_API_KEY env secret not configured` and the triage path writes the `manual_review_required` placeholder row defined in `functions/api/v1/patient/intake/[intake_id]/triage.js`. |
+| Interim mitigation | The de-identifier in `functions/_lib/intake_triage.js` is the floor of PHI minimization the practice runs **regardless of BAA status** — even after BAA execution, the prompt never carries name, DOB (only decade bucket), phone, or email. This reduces the practice's exposure should an Anthropic system error ever occur. The decision rationale returned by Claude is stored in `appointment_triage.ai_rationale` and surfaces in `/admin/triage/`. |
+| Renewal cadence | Per Anthropic standard BAA — re-confirm annually. |
+| Reference | Anthropic Trust Center → HIPAA, accessed 2026-05-16. |
 
 ### 6. Google Workspace (Calendar API for clinician sync)
 
@@ -94,4 +99,4 @@ If a Business Associate notifies the practice of a breach affecting PHI:
 
 ---
 
-*Last updated: 2026-05-15 by Phase 0 foundation work.*
+*Last updated: 2026-05-16 by Phase 2.5 Round A — Anthropic BAA ledger entry corrected from "na" to "pending"; outreach draft prepared at `~/Desktop/Anthropic_BAA_Request.txt`.*

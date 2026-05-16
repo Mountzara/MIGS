@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Triage Review · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        header.bar {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 28px; font-size: 13px; color: var(--fg-soft);
+            flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(28px, 3.6vw, 38px);
+            letter-spacing: -0.02em; color: var(--fg-strong);
+            margin: 0 0 18px 0;
+        }
+        .lede {
+            font-size: 15px; line-height: 1.6; color: var(--fg-mid);
+            max-width: 78ch; margin: 0 0 28px 0;
+        }
+        .filter-bar {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin: 0 0 24px 0;
+        }
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 7px 14px;
+            color: var(--fg-soft);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
+        }
+        .filter-chip:hover {
+            transform: translateY(-1px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--fg-strong);
+        }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+        .count-badge {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--fg-soft);
+        }
+        .empty-state {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 38px 24px;
+            text-align: center;
+            color: var(--fg-soft);
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .empty-state .emoji {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.6;
+        }
+
+        .triage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        article.triage-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+            overflow: hidden;
+        }
+        article.triage-card:hover {
+            border-color: rgba(var(--glow-purple), 0.30);
+            transform: translateY(-1px);
+        }
+        article.triage-card.overdue {
+            border-color: rgba(245, 158, 11, 0.55);
+        }
+        article.triage-card.manual_review {
+            border-color: rgba(239, 68, 68, 0.55);
+        }
+        article.triage-card.released {
+            border-color: rgba(16, 185, 129, 0.40);
+            opacity: 0.85;
+        }
+        .card-header {
+            padding: 18px 22px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: start;
+            cursor: pointer;
+        }
+        .card-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 17px;
+            font-weight: 500;
+            color: var(--fg-strong);
+            letter-spacing: -0.005em;
+        }
+        .card-header .patient-sub {
+            font-size: 12.5px;
+            color: var(--fg-soft);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .card-header .patient-sub span.dot {
+            opacity: 0.4;
+        }
+        .ai-summary {
+            display: flex;
+            gap: 16px;
+            font-size: 12.5px;
+            color: var(--fg-soft);
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .ai-summary .ai-kv {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .ai-summary .ai-k {
+            color: var(--fg-dim);
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .ai-summary .ai-v {
+            color: var(--fg-strong);
+            font-weight: 500;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 3px 9px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .pill.pending {
+            background: rgba(var(--glow-purple), 0.12);
+            color: var(--accent-soft);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+        }
+        .pill.overdue {
+            background: rgba(245, 158, 11, 0.12);
+            color: rgba(252, 211, 77, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+        }
+        .pill.released {
+            background: rgba(16, 185, 129, 0.12);
+            color: rgba(110, 231, 183, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+        }
+        .pill.manual {
+            background: rgba(239, 68, 68, 0.12);
+            color: rgba(252, 165, 165, 0.95);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+        }
+        .pill.urgent {
+            background: rgba(239, 68, 68, 0.10);
+            color: rgba(252, 165, 165, 0.92);
+            border: 1px solid rgba(239, 68, 68, 0.40);
+        }
+        .pill.routine {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--fg-soft);
+            border: 1px solid var(--border);
+        }
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .chevron {
+            color: var(--fg-dim);
+            font-size: 12px;
+            transition: transform 0.22s;
+        }
+        article.expanded .chevron { transform: rotate(180deg); }
+        .card-detail {
+            display: none;
+            padding: 0 22px 22px 22px;
+            border-top: 1px solid var(--border);
+            margin-top: 4px;
+        }
+        article.expanded .card-detail { display: block; }
+        .detail-grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: minmax(0, 1fr);
+            padding-top: 18px;
+        }
+        @media (min-width: 980px) {
+            .detail-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .ai-block, .clinician-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+        .ai-block h4, .clinician-block h4 {
+            margin: 0 0 12px 0;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+        }
+        .ai-block .rationale {
+            font-size: 13px;
+            color: var(--fg-mid);
+            line-height: 1.55;
+            margin: 0 0 12px 0;
+            background: rgba(255, 255, 255, 0.025);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 2px solid rgba(var(--glow-purple), 0.55);
+        }
+        .ai-fields {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 6px 12px;
+            font-size: 13px;
+        }
+        .ai-fields .k {
+            color: var(--fg-dim);
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+            padding-top: 2px;
+        }
+        .ai-fields .v { color: var(--fg-strong); }
+        .secondary-concerns {
+            margin-top: 12px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .concern-chip {
+            background: rgba(245, 158, 11, 0.10);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: rgba(252, 211, 77, 0.95);
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.02em;
+        }
+        label.field-label {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            color: var(--fg-soft);
+            margin: 12px 0 5px 0;
+        }
+        select, input, textarea {
+            font: inherit;
+            color: var(--fg-strong);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.18s ease, background 0.18s ease;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        textarea { min-height: 70px; resize: vertical; }
+        .form-row {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 700px) { .form-row.two { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 880px) { .form-row.three { grid-template-columns: 1fr 1fr 1fr; } }
+        .toggle-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 13px;
+            color: var(--fg-mid);
+            margin: 8px 0 4px 0;
+        }
+        .toggle-row input[type=checkbox] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            margin: 0;
+        }
+        .actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            cursor: pointer;
+            background: rgba(var(--glow-purple), 0.12);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+            border-radius: 8px;
+            padding: 9px 16px;
+            color: var(--accent-soft);
+            font-weight: 500;
+            font-size: 13px;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            background: rgba(var(--glow-purple), 0.20);
+            border-color: rgba(var(--glow-purple), 0.65);
+            color: var(--fg-strong);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button.primary {
+            background: rgba(var(--glow-purple), 0.25);
+            border-color: rgba(var(--glow-purple), 0.75);
+            color: var(--fg-strong);
+        }
+        button.ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border);
+            color: var(--fg-soft);
+        }
+        button.ghost:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--fg-strong);
+        }
+        .ai-meta {
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--fg-dim);
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .chief-complaint {
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--fg-mid);
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.025);
+            border-radius: 8px;
+            padding: 10px 12px;
+            border-left: 2px solid rgba(255, 255, 255, 0.10);
+        }
+        .chief-complaint .label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--fg-dim);
+            margin-bottom: 6px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            color: rgba(167, 243, 208, 0.98);
+            font-size: 13px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.22s, transform 0.22s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.error {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.55);
+            color: rgba(252, 165, 165, 0.98);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; <a href="/admin/scheduling/">Scheduling</a> &rsaquo; Triage</span>
+            <span class="count-badge" id="ctx-info">—</span>
+        </header>
+
+        <h1 class="page-title">Triage Review</h1>
+        <p class="lede">
+            Every submitted patient intake runs through the AI triage assistant, which categorizes the visit and surfaces perioperative flags. Review each pending row below, adjust any field that needs an override, then release the categorization so the patient sees only the matching booking slots. Rows auto-release to the patient four hours after AI categorization if not reviewed.
+        </p>
+
+        <div class="filter-bar">
+            <button class="filter-chip active" data-status="pending">Pending review</button>
+            <button class="filter-chip" data-status="released">Released</button>
+            <button class="filter-chip" data-status="all">All</button>
+            <span class="count-badge" id="row-count">loading…</span>
+        </div>
+
+        <div id="triage-list" class="triage-list">
+            <div class="empty-state">Loading…</div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const state = {
+            statusFilter: 'pending',
+            rows: [],
+            visitTypes: [],
+            expandedId: null,
+        };
+
+        const $list = document.getElementById('triage-list');
+        const $count = document.getElementById('row-count');
+        const $ctxInfo = document.getElementById('ctx-info');
+        const $toast = document.getElementById('toast');
+
+        function fmtTimestamp(ms) {
+            if (!ms) return '—';
+            try {
+                const d = new Date(typeof ms === 'string' ? parseInt(ms, 10) : ms);
+                return d.toLocaleString(undefined, {
+                    month: 'short', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit'
+                });
+            } catch { return '—'; }
+        }
+
+        function fmtVisitTypeKey(key) {
+            const vt = state.visitTypes.find(v => v.key === key);
+            return vt ? vt.label : (key || '—');
+        }
+
+        function fmtAgeDob(age, dob) {
+            const parts = [];
+            if (age != null) parts.push(`${age} y`);
+            if (dob) parts.push(dob);
+            return parts.join(' · ') || '—';
+        }
+
+        function showToast(msg, isError) {
+            $toast.textContent = msg;
+            $toast.className = 'toast' + (isError ? ' error' : '') + ' show';
+            clearTimeout($toast._t);
+            $toast._t = setTimeout(() => {
+                $toast.classList.remove('show');
+            }, 3500);
+        }
+
+        async function fetchJson(url, opts) {
+            const res = await fetch(url, {
+                credentials: 'include',
+                cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                ...(opts || {}),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const msg = (body && body.error) || res.statusText;
+                const err = new Error(msg);
+                err.body = body;
+                err.status = res.status;
+                throw err;
+            }
+            return body;
+        }
+
+        async function loadVisitTypes() {
+            try {
+                const data = await fetchJson('/api/v1/admin/visit-types');
+                state.visitTypes = data.visit_types || data.options || data || [];
+            } catch (e) {
+                console.warn('visit-types load failed', e);
+                state.visitTypes = [];
+            }
+        }
+
+        async function loadRows() {
+            try {
+                const data = await fetchJson(`/api/v1/admin/triage?status=${state.statusFilter}&limit=100`);
+                state.rows = data.rows || [];
+                $count.textContent = `${state.rows.length} row${state.rows.length === 1 ? '' : 's'}`;
+                render();
+            } catch (e) {
+                $list.innerHTML = `<div class="empty-state"><span class="emoji">⚠</span>Could not load triage rows: ${e.message}</div>`;
+                $count.textContent = '—';
+            }
+        }
+
+        function renderRow(row) {
+            const isManual = row.ai_visit_type === 'manual_review_required';
+            const isReleased = !!row.clinician_reviewed_at;
+            const cardClass = ['triage-card'];
+            if (row.is_overdue && !isReleased) cardClass.push('overdue');
+            if (isManual && !isReleased) cardClass.push('manual_review');
+            if (isReleased) cardClass.push('released');
+            if (state.expandedId === row.id) cardClass.push('expanded');
+
+            const statePill = isReleased
+                ? `<span class="pill released">released</span>`
+                : isManual
+                    ? `<span class="pill manual">manual review required</span>`
+                    : row.is_overdue
+                        ? `<span class="pill overdue">${row.hours_pending}h pending</span>`
+                        : `<span class="pill pending">${row.hours_pending}h pending</span>`;
+
+            const urgPill = row.ai_urgency === 'urgent'
+                ? `<span class="pill urgent">urgent</span>`
+                : `<span class="pill routine">routine</span>`;
+
+            const concerns = (row.ai_secondary_concerns || []).map(c =>
+                `<span class="concern-chip">${escapeHtml(c)}</span>`
+            ).join('');
+
+            const visitTypeOptions = state.visitTypes.map(vt =>
+                `<option value="${vt.key}" ${vt.key === row.ai_visit_type ? 'selected' : ''}>${escapeHtml(vt.label)} · ${vt.duration_min} min</option>`
+            ).join('');
+
+            const chiefBlock = row.chief_complaint_summary
+                ? `<div class="chief-complaint">
+                       <span class="label">Chief complaint (verbatim from intake)</span>
+                       ${escapeHtml(row.chief_complaint_summary)}
+                   </div>` : '';
+
+            const releasedMeta = isReleased
+                ? `<div class="ai-meta">
+                     <span><strong>Released:</strong> ${fmtTimestamp(row.clinician_reviewed_at)}</span>
+                     <span><strong>By:</strong> ${escapeHtml(row.clinician_reviewer_id || '—')}</span>
+                     ${row.final_visit_type ? `<span><strong>Final visit type:</strong> ${escapeHtml(fmtVisitTypeKey(row.final_visit_type))} · ${row.final_duration_min || '—'} min</span>` : ''}
+                   </div>` : '';
+
+            const formDisabled = isReleased ? 'disabled' : '';
+
+            return `
+            <article class="${cardClass.join(' ')}" data-id="${row.id}">
+              <div class="card-header" data-toggle="${row.id}">
+                <div>
+                  <h3>${escapeHtml(row.patient_name || row.patient_email || '(no name)')}</h3>
+                  <div class="patient-sub">
+                    <span>${escapeHtml(row.patient_email || '—')}</span>
+                    <span class="dot">·</span>
+                    <span>${fmtAgeDob(row.age_years, row.patient_dob)}</span>
+                    <span class="dot">·</span>
+                    <span>Submitted ${fmtTimestamp(row.intake_submitted_at)}</span>
+                  </div>
+                  <div class="ai-summary">
+                    <span class="ai-kv">
+                      <span class="ai-k">AI says</span>
+                      <span class="ai-v">${escapeHtml(fmtVisitTypeKey(row.ai_visit_type))}</span>
+                    </span>
+                    <span class="ai-kv">
+                      <span class="ai-k">Duration</span>
+                      <span class="ai-v">${row.ai_duration_min} min</span>
+                    </span>
+                    <span class="ai-kv">
+                      <span class="ai-k">Modality</span>
+                      <span class="ai-v">${row.ai_in_person_required ? 'in person' : 'either'}</span>
+                    </span>
+                    <span class="ai-kv">
+                      <span class="ai-k">Time</span>
+                      <span class="ai-v">${escapeHtml(row.ai_preferred_time_of_day || 'any')}</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="header-right">
+                  ${statePill}
+                  ${!isReleased ? urgPill : ''}
+                  <span class="chevron">▾</span>
+                </div>
+              </div>
+
+              <div class="card-detail">
+                <div class="detail-grid">
+                  <section class="ai-block">
+                    <h4>AI Categorization</h4>
+                    <div class="rationale">${escapeHtml(row.ai_rationale || '(no rationale)')}</div>
+                    <div class="ai-fields">
+                      <span class="k">Visit type</span><span class="v">${escapeHtml(fmtVisitTypeKey(row.ai_visit_type))}</span>
+                      <span class="k">Duration</span><span class="v">${row.ai_duration_min} min</span>
+                      <span class="k">Urgency</span><span class="v">${escapeHtml(row.ai_urgency)}</span>
+                      <span class="k">Modality</span><span class="v">${row.ai_in_person_required ? 'in-person required' : 'telehealth eligible'}</span>
+                      <span class="k">Preferred time</span><span class="v">${escapeHtml(row.ai_preferred_time_of_day || 'any')}</span>
+                    </div>
+                    ${concerns ? `<div class="secondary-concerns">${concerns}</div>` : ''}
+                    ${chiefBlock}
+                    <div class="ai-meta">
+                      <span><strong>Prompt:</strong> ${escapeHtml(row.ai_prompt_version || '—')}</span>
+                      <span><strong>Triaged:</strong> ${fmtTimestamp(row.triage_created_at)}</span>
+                    </div>
+                    ${releasedMeta}
+                  </section>
+
+                  <section class="clinician-block">
+                    <h4>${isReleased ? 'Released decision' : 'Clinician override (optional)'}</h4>
+
+                    <label class="field-label">Visit type</label>
+                    <select data-field="visit_type" ${formDisabled}>
+                      ${visitTypeOptions}
+                    </select>
+
+                    <div class="form-row two">
+                      <div>
+                        <label class="field-label">Duration (min)</label>
+                        <input type="number" min="5" max="240" step="5" data-field="duration_min" value="${row.clinician_override_duration_min || row.ai_duration_min}" ${formDisabled}>
+                      </div>
+                      <div>
+                        <label class="field-label">Urgency</label>
+                        <select data-field="urgency" ${formDisabled}>
+                          <option value="routine" ${row.ai_urgency === 'routine' ? 'selected' : ''}>routine</option>
+                          <option value="urgent"  ${row.ai_urgency === 'urgent' ? 'selected' : ''}>urgent</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-row two">
+                      <div>
+                        <label class="field-label">Preferred time</label>
+                        <select data-field="preferred_time_of_day" ${formDisabled}>
+                          <option value="any"       ${row.ai_preferred_time_of_day === 'any' ? 'selected' : ''}>any</option>
+                          <option value="morning"   ${row.ai_preferred_time_of_day === 'morning' ? 'selected' : ''}>morning</option>
+                          <option value="afternoon" ${row.ai_preferred_time_of_day === 'afternoon' ? 'selected' : ''}>afternoon</option>
+                        </select>
+                      </div>
+                      <div class="toggle-row" style="margin-top: 26px;">
+                        <input type="checkbox" data-field="in_person_required" ${row.ai_in_person_required ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
+                        <label for="ipr-${row.id}">In-person required</label>
+                      </div>
+                    </div>
+
+                    <label class="field-label">Override reason (optional, ≤500 chars)</label>
+                    <textarea data-field="override_reason" maxlength="500" placeholder="${isManual ? 'Required: explain why AI fell back to manual review (e.g. ANTHROPIC_API_KEY pending) or what clinical context to use instead.' : 'Why are you overriding the AI? Brief note for the audit log.'}" ${formDisabled}>${escapeHtml(row.clinician_override_reason || '')}</textarea>
+
+                    ${isReleased ? '' : `
+                    <div class="actions">
+                      <button class="primary" data-action="release" data-id="${row.id}">Release as-is to patient</button>
+                      <button class="ghost"   data-action="save"    data-id="${row.id}">Save override (don't release)</button>
+                    </div>
+                    `}
+                  </section>
+                </div>
+              </div>
+            </article>`;
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function render() {
+            if (state.rows.length === 0) {
+                const msg = state.statusFilter === 'pending'
+                    ? 'No triage rows pending review.'
+                    : state.statusFilter === 'released'
+                        ? 'No released triage rows yet.'
+                        : 'No triage rows.';
+                $list.innerHTML = `<div class="empty-state"><span class="emoji">✓</span>${msg}</div>`;
+                return;
+            }
+            $list.innerHTML = state.rows.map(renderRow).join('');
+            wireRowHandlers();
+        }
+
+        function wireRowHandlers() {
+            $list.querySelectorAll('.card-header').forEach(h => {
+                h.addEventListener('click', (e) => {
+                    const id = h.getAttribute('data-toggle');
+                    state.expandedId = (state.expandedId === id) ? null : id;
+                    render();
+                });
+            });
+
+            $list.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const action = btn.getAttribute('data-action');
+                    const id = btn.getAttribute('data-id');
+                    if (action === 'release') doRelease(id, btn);
+                    if (action === 'save') doSave(id, btn);
+                });
+            });
+        }
+
+        function gatherFields(article) {
+            const out = {};
+            article.querySelectorAll('[data-field]').forEach(el => {
+                const k = el.getAttribute('data-field');
+                if (el.type === 'checkbox') out[k] = el.checked;
+                else if (el.type === 'number') out[k] = el.value === '' ? null : Number(el.value);
+                else out[k] = el.value;
+            });
+            return out;
+        }
+
+        async function doSave(id, btn) {
+            const article = btn.closest('article.triage-card');
+            const f = gatherFields(article);
+            btn.disabled = true;
+            try {
+                await fetchJson(`/api/v1/admin/triage/${id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        visit_type: f.visit_type,
+                        duration_min: f.duration_min,
+                        urgency: f.urgency,
+                        in_person_required: f.in_person_required,
+                        preferred_time_of_day: f.preferred_time_of_day,
+                        override_reason: f.override_reason || '',
+                    }),
+                });
+                showToast('Override saved.');
+                await loadRows();
+            } catch (e) {
+                showToast('Save failed: ' + e.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function doRelease(id, btn) {
+            const article = btn.closest('article.triage-card');
+            const f = gatherFields(article);
+            btn.disabled = true;
+            try {
+                await fetchJson(`/api/v1/admin/triage/${id}/release`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        final_visit_type: f.visit_type,
+                        final_duration_min: f.duration_min,
+                        final_urgency: f.urgency,
+                        final_in_person: f.in_person_required,
+                        final_preferred_time_of_day: f.preferred_time_of_day,
+                        override_reason: f.override_reason || '',
+                    }),
+                });
+                showToast('Released to patient.');
+                await loadRows();
+            } catch (e) {
+                showToast('Release failed: ' + e.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                state.statusFilter = chip.getAttribute('data-status');
+                loadRows();
+            });
+        });
+
+        (async function init() {
+            $ctxInfo.textContent = '/admin/triage/';
+            await loadVisitTypes();
+            await loadRows();
+            // Auto-refresh every 60 s for pending view only.
+            setInterval(() => {
+                if (state.statusFilter === 'pending' && !state.expandedId) {
+                    loadRows();
+                }
+            }, 60000);
+        })();
+    </script>
+</body>
+</html>
