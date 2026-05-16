@@ -178,10 +178,16 @@ const COMING_SOON_HTML = `<!doctype html>
             transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .feature:nth-of-type(1) { animation-delay: 0.55s; }
-        .feature:nth-of-type(2) { animation-delay: 0.65s; }
-        .feature:nth-of-type(3) { animation-delay: 0.75s; }
-        .feature:nth-of-type(4) { animation-delay: 0.85s; }
+        .feature:nth-of-type(1)  { animation-delay: 0.55s; }
+        .feature:nth-of-type(2)  { animation-delay: 0.62s; }
+        .feature:nth-of-type(3)  { animation-delay: 0.69s; }
+        .feature:nth-of-type(4)  { animation-delay: 0.76s; }
+        .feature:nth-of-type(5)  { animation-delay: 0.83s; }
+        .feature:nth-of-type(6)  { animation-delay: 0.90s; }
+        .feature:nth-of-type(7)  { animation-delay: 0.97s; }
+        .feature:nth-of-type(8)  { animation-delay: 1.04s; }
+        .feature:nth-of-type(9)  { animation-delay: 1.11s; }
+        .feature:nth-of-type(10) { animation-delay: 1.18s; }
         .feature:hover {
             transform: translateY(-2px);
             border-color: rgba(var(--glow-purple), 0.45);
@@ -215,13 +221,13 @@ const COMING_SOON_HTML = `<!doctype html>
             padding: 4px 0 4px 16px;
             margin: 0 0 32px 0;
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-            animation-delay: 0.95s;
+            animation-delay: 1.28s;
         }
         .footer-links {
             font-size: 13px;
             color: var(--fg-soft);
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-            animation-delay: 1.05s;
+            animation-delay: 1.36s;
         }
         .footer-links a { margin: 0 6px; }
         @keyframes mzRise {
@@ -244,14 +250,29 @@ const COMING_SOON_HTML = `<!doctype html>
     <main class="wrap">
         <a class="nav-back" href="/">Back to mountzara.com</a>
         <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Patient Portal &middot; In Active Design</span>
-        <h1 class="title">Building <em>a place to take care</em> of you between visits.</h1>
-        <p class="lede">A complete patient portal is in active design &mdash; <strong>intake forms, telehealth visits, secure messaging, document handling, and scheduling that respects how a MIGS practice actually runs.</strong> When it&rsquo;s ready, you&rsquo;ll see it here.</p>
+        <h1 class="title">Building <em>a place to take care</em> of you, between visits and beyond.</h1>
+        <p class="lede">A complete patient portal is in active design. <strong>Intake forms, scheduling, telehealth, secure messaging, document handling, a symptom tracker &amp; diary, women&rsquo;s-health tooling, education materials, and AI-summarized recaps of your prior visits</strong> &mdash; plus a feed of the newest evidence-based literature and content from Dr. Mabini directly. When it&rsquo;s ready, you&rsquo;ll see it here.</p>
 
         <section class="features" aria-label="What the portal will offer">
             <article class="feature">
                 <div class="feature-label">Intake</div>
                 <h2 class="feature-title">A 19-section comprehensive intake</h2>
                 <p class="feature-body">Tailored to MIGS gynecology &mdash; bleeding history, pelvic pain mapping, perioperative risk factors (including GLP-1 use and herbs that affect bleeding), and treatment goals. Autosaves as you go.</p>
+            </article>
+            <article class="feature">
+                <div class="feature-label">Symptom Tracker &amp; Diary</div>
+                <h2 class="feature-title">Track what you&rsquo;re actually feeling</h2>
+                <p class="feature-body">A daily diary for pelvic pain (location, intensity, triggers), bleeding patterns, cycle, sleep, mood, sexual function, bowel and bladder symptoms. Charts trends over time so visits start with data, not memory.</p>
+            </article>
+            <article class="feature">
+                <div class="feature-label">Women&rsquo;s Health</div>
+                <h2 class="feature-title">Tools built around women&rsquo;s needs</h2>
+                <p class="feature-body">Cycle and ovulation tracking, perimenopause and menopause symptom flagging, pregnancy-loss support resources, postpartum follow-through, and contraception decision aids &mdash; built around what a MIGS gynecology practice actually sees.</p>
+            </article>
+            <article class="feature">
+                <div class="feature-label">AI Visit Summaries</div>
+                <h2 class="feature-title">A clear recap of every visit</h2>
+                <p class="feature-body">After each appointment, an AI-generated summary of what was discussed, the plan, the medications, and the next steps &mdash; reviewed and signed off by Dr. Mabini, then easy to revisit when you need it.</p>
             </article>
             <article class="feature">
                 <div class="feature-label">Telehealth</div>
@@ -264,13 +285,33 @@ const COMING_SOON_HTML = `<!doctype html>
                 <p class="feature-body">Complex pelvic pain consults get the time they need. Quick follow-ups don&rsquo;t. The system reads your intake and offers only slots that fit your visit type.</p>
             </article>
             <article class="feature">
+                <div class="feature-label">Latest Literature</div>
+                <h2 class="feature-title">The newest evidence, made readable</h2>
+                <p class="feature-body">Each week&rsquo;s peer-reviewed updates relevant to MIGS, endometriosis, fibroids, hormones, menopause, and adjacent topics &mdash; pulled into your portal in plain language, anchored to PubMed, with the bottom line up top.</p>
+            </article>
+            <article class="feature">
+                <div class="feature-label">Dr. Mabini&rsquo;s Content</div>
+                <h2 class="feature-title">Stay informed, on your own terms</h2>
+                <p class="feature-body">Integrated with the Trending and Evidence sections of mountzara.com so you see Dr. Mabini&rsquo;s commentary on social-media health trends and his MIGS Monday Morning research digests as they go live.</p>
+            </article>
+            <article class="feature">
+                <div class="feature-label">Education Materials</div>
+                <h2 class="feature-title">Things to read before and after visits</h2>
+                <p class="feature-body">Patient-facing primers Dr. Mabini has authored on endometriosis, adenomyosis, dysmenorrhea, fibroids, OMT, perioperative preparation, and surgical recovery &mdash; sent to you when they&rsquo;re relevant to your care plan.</p>
+            </article>
+            <article class="feature">
                 <div class="feature-label">Messaging &amp; Documents</div>
                 <h2 class="feature-title">Secure, on the record</h2>
                 <p class="feature-body">A thread with the practice for questions between visits. Upload imaging, records, and pre-op forms. Encrypted at rest with per-record envelope keys.</p>
             </article>
+            <article class="feature">
+                <div class="feature-label">And more</div>
+                <h2 class="feature-title">Built around your care, not around the chart</h2>
+                <p class="feature-body">Pre-operative checklists, post-operative recovery trackers, family-history mapping for hereditary risk, billing transparency, and care-plan summaries you can take to other clinicians &mdash; layered in as the portal grows.</p>
+            </article>
         </section>
 
-        <p class="note">If you&rsquo;re an existing patient and need to reach the office in the meantime, please call the practice directly or email <a href="mailto:chris.mabini@gmail.com">chris.mabini@gmail.com</a>.</p>
+        <p class="note">If you&rsquo;re an existing patient and need to reach the office in the meantime, please call the practice directly or email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
 
         <p class="footer-links">
             <a href="/">Home</a>

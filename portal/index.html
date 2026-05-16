@@ -136,7 +136,7 @@
         </div>
         <p class="eyebrow">Patient Portal &middot; Admin Build View</p>
         <h1>The patient portal, under construction.</h1>
-        <p class="lede">Phase 0 foundation is live. Phase 2 admin scheduling builds next, then Phase 1 patient login + intake. Patient-facing surfaces will appear under this section as they pass design review.</p>
+        <p class="lede">Phase 0 foundation is live. Phase 2 admin scheduling has shipped. Phase 1 patient identity comes next, then the symptom diary, women's-health tooling, AI visit recaps, content integration, and education library. Patient-facing surfaces will appear under this section as each one passes design review.</p>
 
         <section class="phases" aria-label="Phase build status">
             <article class="phase">
@@ -146,16 +146,16 @@
                 <span class="phase-status done"><span class="dot"></span>Complete &middot; live</span>
             </article>
             <article class="phase">
-                <div class="phase-tag">Phase 2</div>
-                <h2 class="phase-title">Scheduling &amp; Doxy.me (clinician side)</h2>
-                <p class="phase-body">Drag-to-set availability, appointment management, Doxy.me launch button. Patient-facing booking deferred until Phase 1 auth lands.</p>
-                <span class="phase-status active"><span class="dot"></span>Building now</span>
+                <div class="phase-tag">Phase 2 (admin)</div>
+                <h2 class="phase-title">Scheduling &amp; Doxy.me</h2>
+                <p class="phase-body">Drag-to-set availability, appointment management, Doxy.me launch button, visit-type catalog. Patient-facing booking deferred until Phase 1 auth lands.</p>
+                <span class="phase-status done"><span class="dot"></span>Complete &middot; live (admin)</span>
             </article>
             <article class="phase">
                 <div class="phase-tag">Phase 1</div>
                 <h2 class="phase-title">Patient Portal MVP</h2>
-                <p class="phase-body">Login, signup, magic-link, profile, 19-section intake wizard with autosave, document upload.</p>
-                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+                <p class="phase-body">Login, signup, magic-link, profile, 19-section intake wizard with autosave, document upload. The foundation every later module sits on top of.</p>
+                <span class="phase-status active"><span class="dot"></span>Building next</span>
             </article>
             <article class="phase">
                 <div class="phase-tag">Phase 2.5</div>
@@ -165,26 +165,62 @@
             </article>
             <article class="phase">
                 <div class="phase-tag">Phase 3</div>
-                <h2 class="phase-title">Secure Messaging</h2>
-                <p class="phase-body">Patient ↔ clinician threads, attachments, notifications. Bodies envelope-encrypted in R2.</p>
+                <h2 class="phase-title">Symptom Tracker &amp; Diary</h2>
+                <p class="phase-body">Daily diary: pelvic pain (location/intensity/triggers), bleeding, cycle, sleep, mood, sexual function, bowel + bladder. Charts over time. Surfaces into clinician /admin/cases dashboard.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">Women&rsquo;s Health Tooling</h2>
+                <p class="phase-body">Cycle + ovulation tracking, perimenopause/menopause symptom flagging, pregnancy-loss support, postpartum follow-through, contraception decision aids.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">AI Visit Summaries</h2>
+                <p class="phase-body">Post-visit AI recap of discussion + plan + meds + next steps. Generated from transcription app output, reviewed and signed off by Dr. Mabini before the patient sees it.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">Content Integration</h2>
+                <p class="phase-body">Trending blog + Evidence/MIGS Monday Morning research digests surfaced into the portal so patients see Dr. Mabini&rsquo;s content as it goes live.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">Education Materials</h2>
+                <p class="phase-body">Patient-facing primers Dr. Mabini has authored on endometriosis, fibroids, adenomyosis, OMT, perioperative prep, surgical recovery &mdash; delivered when relevant to the care plan.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 3</div>
+                <h2 class="phase-title">Latest Literature Feed</h2>
+                <p class="phase-body">Weekly peer-reviewed updates relevant to a MIGS patient&rsquo;s diagnoses. Pulled from the same PubMed pipeline that drives MIGS Monday Morning, rendered in plain language with the bottom line first.</p>
                 <span class="phase-status queued"><span class="dot"></span>Queued</span>
             </article>
             <article class="phase">
                 <div class="phase-tag">Phase 4</div>
-                <h2 class="phase-title">App Sync Layer</h2>
-                <p class="phase-body">Transcription / Clinical AI / Surgical Workflow / iOS push to the website's patient record.</p>
+                <h2 class="phase-title">Secure Messaging</h2>
+                <p class="phase-body">Patient &harr; clinician threads, attachments, notifications. Bodies envelope-encrypted in R2.</p>
                 <span class="phase-status queued"><span class="dot"></span>Queued</span>
             </article>
             <article class="phase">
                 <div class="phase-tag">Phase 5</div>
-                <h2 class="phase-title">Clinician Workspace</h2>
-                <p class="phase-body">/admin/patients, /admin/cases/&lt;patient_id&gt; aggregation view, calendar.</p>
+                <h2 class="phase-title">App Sync Layer</h2>
+                <p class="phase-body">Transcription / Clinical AI / Surgical Workflow / iOS push to the website&rsquo;s patient record. Feeds the AI visit summary + the case-aggregation view.</p>
                 <span class="phase-status queued"><span class="dot"></span>Queued</span>
             </article>
             <article class="phase">
-                <div class="phase-tag">Phase 6+7</div>
+                <div class="phase-tag">Phase 6</div>
+                <h2 class="phase-title">Clinician Workspace</h2>
+                <p class="phase-body">/admin/patients, /admin/cases/&lt;patient_id&gt; aggregation view, calendar, symptom-diary timeline.</p>
+                <span class="phase-status queued"><span class="dot"></span>Queued</span>
+            </article>
+            <article class="phase">
+                <div class="phase-tag">Phase 7+8</div>
                 <h2 class="phase-title">Billing &amp; Hardening</h2>
-                <p class="phase-body">Stripe BAA-gated invoices + superbill, pen test, HIPAA risk assessment, DR drill.</p>
+                <p class="phase-body">Stripe BAA-gated invoices + superbill, pen test, HIPAA risk assessment, DR drill, breach playbook.</p>
                 <span class="phase-status queued"><span class="dot"></span>Queued</span>
             </article>
         </section>

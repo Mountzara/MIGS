@@ -1,0 +1,112 @@
+# mountzara.com — robots policy
+#
+# Search engines: indexing of public pages is allowed (the blog and
+# evidence briefs are intentionally public). Admin and draft surfaces
+# are blocked. The site's clinical/research authorship is Christopher Z.
+# Mabini, DO, MSAEd — see https://mountzara.com/about/ for attribution.
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/posts/_admin
+Disallow: /api/posts/_admin/
+Disallow: /drafts/
+
+# ----------------------------------------------------------------------
+# AI / LLM crawlers — disallowed across the board. The content is not
+# licensed for training data, retrieval-augmented generation against
+# third-party models, or any other automated synthesis use. Contact
+# info@mountzara.com for licensing inquiries.
+# ----------------------------------------------------------------------
+
+# OpenAI
+User-agent: GPTBot
+Disallow: /
+User-agent: ChatGPT-User
+Disallow: /
+User-agent: OAI-SearchBot
+Disallow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Disallow: /
+User-agent: Claude-Web
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+
+# Google's separate AI-training crawler
+User-agent: Google-Extended
+Disallow: /
+
+# Meta / Facebook AI
+User-agent: FacebookBot
+Disallow: /
+User-agent: Meta-ExternalAgent
+Disallow: /
+User-agent: meta-externalagent
+Disallow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Disallow: /
+User-agent: Perplexity-User
+Disallow: /
+
+# Common Crawl (used by many LLM training sets)
+User-agent: CCBot
+Disallow: /
+
+# ByteDance / Bytespider
+User-agent: Bytespider
+Disallow: /
+
+# Amazon
+User-agent: Amazonbot
+Disallow: /
+
+# Mistral
+User-agent: MistralAI-User
+Disallow: /
+
+# Apple
+User-agent: Applebot-Extended
+Disallow: /
+
+# DuckDuckGo's AI assistant
+User-agent: DuckAssistBot
+Disallow: /
+
+# Diffbot
+User-agent: Diffbot
+Disallow: /
+
+# Cohere
+User-agent: cohere-ai
+Disallow: /
+User-agent: cohere-training-data-crawler
+Disallow: /
+
+# AI2 (Allen Institute)
+User-agent: AI2Bot
+Disallow: /
+
+# Hugging Face
+User-agent: huggingface
+Disallow: /
+
+# xAI
+User-agent: xAI-Crawler
+Disallow: /
+
+# Generic catch-all hints for automated scrapers
+User-agent: SemrushBot
+Disallow: /
+User-agent: AhrefsBot
+Disallow: /
+User-agent: MJ12bot
+Disallow: /
+User-agent: DotBot
+Disallow: /
+
+Sitemap: https://mountzara.com/sitemap.xml

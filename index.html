@@ -4105,6 +4105,134 @@
             font-weight: 600;
         }
 
+        /* Care-path cards that open a deep-dive modal (Services / What to
+           Expect / Literature). The CTA chip appears on hover/focus, the
+           card lifts more, and the icon goes purple-tinted. */
+        .carepath-card.carepath-clickable {
+            cursor: pointer;
+            position: relative;
+            outline: none;
+        }
+        .carepath-card.carepath-clickable:focus-visible {
+            border-color: rgba(var(--glow-purple), 0.65);
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.22);
+        }
+        .carepath-card.carepath-clickable .carepath-icon {
+            color: rgba(var(--glow-purple), 0.95);
+            transition: transform 0.22s ease;
+        }
+        .carepath-card.carepath-clickable:hover .carepath-icon,
+        .carepath-card.carepath-clickable:focus-visible .carepath-icon {
+            transform: scale(1.06);
+        }
+        .carepath-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: rgba(var(--glow-purple), 0.92);
+            margin-top: 4px;
+            opacity: 0.72;
+            transition: opacity 0.22s ease, gap 0.22s ease;
+        }
+        .carepath-card.carepath-clickable:hover .carepath-cta,
+        .carepath-card.carepath-clickable:focus-visible .carepath-cta {
+            opacity: 1;
+            gap: 10px;
+        }
+        .carepath-cta .arrow { transition: transform 0.22s ease; }
+        .carepath-card.carepath-clickable:hover .carepath-cta .arrow,
+        .carepath-card.carepath-clickable:focus-visible .carepath-cta .arrow {
+            transform: translateX(2px);
+        }
+
+        /* OMT care-path modal — visual grammar mirrors evidence-modal so
+           the experience is consistent, with the same Apple-glass +
+           purple-accent treatment. */
+        .omt-modal {
+            position: fixed; inset: 0;
+            background: rgba(7, 7, 10, 0.78);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            z-index: 9000;
+            display: flex; align-items: center; justify-content: center;
+            padding: clamp(20px, 4vw, 48px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        .omt-modal.open { opacity: 1; pointer-events: auto; }
+        .omt-modal-card {
+            position: relative;
+            width: min(820px, 100%);
+            max-height: 86vh;
+            overflow-y: auto;
+            background: linear-gradient(180deg, rgba(20, 20, 28, 0.96) 0%, rgba(12, 12, 18, 0.96) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 22px;
+            padding: 44px 36px 32px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(var(--glow-purple), 0.20);
+            transform: translateY(12px) scale(0.985);
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .omt-modal.open .omt-modal-card { transform: none; }
+        .omt-modal-card::-webkit-scrollbar { width: 8px; }
+        .omt-modal-card::-webkit-scrollbar-track { background: transparent; }
+        .omt-modal-card::-webkit-scrollbar-thumb {
+            background: rgba(var(--glow-purple), 0.30);
+            border-radius: 4px;
+        }
+        @media (max-width: 640px) {
+            .omt-modal-card { padding: 36px 22px 26px; border-radius: 18px; }
+        }
+        .omt-modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 34px; height: 34px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            color: rgba(245, 245, 247, 0.85);
+            cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        }
+        .omt-modal-close:hover {
+            background: rgba(var(--glow-purple), 0.15);
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: #fff;
+        }
+        .omt-modal-close svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.6; fill: none; }
+        .omt-modal-eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 12px;
+        }
+        .omt-modal-card h3 {
+            font-family: inherit;
+            font-weight: 300;
+            font-size: clamp(22px, 2.6vw, 30px);
+            letter-spacing: -0.018em;
+            line-height: 1.18;
+            color: #fff;
+            margin: 0 0 16px 0;
+        }
+        .omt-modal-intro {
+            font-size: 15.5px;
+            line-height: 1.65;
+            color: rgba(245, 245, 247, 0.84);
+            margin: 0 0 24px 0;
+            max-width: 60ch;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .omt-modal { transition: none; }
+            .omt-modal-card { transition: none; transform: none !important; }
+            .carepath-cta, .carepath-cta .arrow { transition: none; }
+        }
+
         /* ============================================================
            OMT — Integrated Six-Pillar Framework (v4.0 protocol layer)
            Pillar cards reuse the glass + hover pattern from carepath-card
@@ -4872,20 +5000,22 @@
                         <p class="carepath-body">Patients with cyclic pelvic pain, dysmenorrhea, suspected or biopsy-confirmed endometriosis, fibroids, adenomyosis, post-cesarean scar discomfort, isthmocele, Asherman's syndrome, chronic pelvic pain not yet attributed, fertility patients carrying somatic-dysfunction signs, and patients pursuing pre- or post-operative osteopathic optimization. Adults of all ages; complex cases welcome.</p>
                     </article>
 
-                    <article class="carepath-card frame-card">
+                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="pillars" role="button" tabindex="0" aria-label="Open the six-pillar integrated framework">
                         <div class="carepath-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
                         </div>
                         <h4 class="carepath-title">Services</h4>
                         <p class="carepath-body">Osteopathic structural evaluation, OMT (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vNOTES, robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two — pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
+                        <span class="carepath-cta">Open the six-pillar framework <span class="arrow">&rarr;</span></span>
                     </article>
 
-                    <article class="carepath-card frame-card">
+                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="trajectory" role="button" tabindex="0" aria-label="Open the 8-week treatment trajectory">
                         <div class="carepath-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                         </div>
                         <h4 class="carepath-title">What to Expect</h4>
                         <p class="carepath-body">A first visit runs 60–90 minutes — a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. OMT-only visits run 30–45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3–6 visits when an OMT course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
+                        <span class="carepath-cta">Open the 8-week trajectory <span class="arrow">&rarr;</span></span>
                     </article>
 
                     <article class="carepath-card frame-card">
@@ -4896,153 +5026,13 @@
                         <p class="carepath-body"><strong>Will OMT replace my surgery?</strong> No — it complements it. OMT addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is OMT painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> OMT codes (98925–98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> OMT is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
                     </article>
 
-                    <article class="carepath-card frame-card">
+                    <article class="carepath-card frame-card carepath-clickable" data-omt-modal="backbone" role="button" tabindex="0" aria-label="Open the standard-of-care evidence backbone">
                         <div class="carepath-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5v14h16V5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
                         </div>
                         <h4 class="carepath-title">Literature</h4>
-                        <p class="carepath-body">The four patient-population cards below open PubMed-indexed evidence reviews for OMT in women's health, pregnancy, post-operative recovery, and pelvic pain &amp; endometriosis — each with the specific RCT, systematic-review, and meta-analytic data that anchors my recommendations. Click any population to see the references in full.</p>
-                    </article>
-                </div>
-            </div>
-
-            <!-- Integrated Six-Pillar Framework (drawn from the integrated pelvic-pain protocol, v4.0) -->
-            <div class="sub-section omt-pillars">
-                <span class="sub-eyebrow">The Integrated Framework</span>
-                <h3 class="sub-headline">Six pillars, layered with intent.</h3>
-                <p class="sub-sub">Pelvic pain is rarely one disease. It is a layered, multi-system problem — and the women I see in clinic deserve a treatment plan that is just as layered. Every patient gets all six pillars considered; the osteopathic structural layer does not replace the medical, hormonal, procedural, behavioral, or surgical pathways — it addresses the viscerosomatic substrate the other five cannot reach.</p>
-
-                <div class="pillars-grid">
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">01</span>
-                        <h4 class="pillar-title">Osteopathic Structural Layer</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Viscerosomatic reflex modulation; segmental dorsal-horn inhibition at T10&ndash;L2 and S2&ndash;S4; fascial restriction release; periaqueductal-gray descending inhibition.</p>
-                        <p class="pillar-content"><strong>Components.</strong> An 8-week course of OAA HVLA, T12&ndash;L1 HVLA, bilateral sacroiliac HVLA, abdominal visceral mobilization, broad ligament mobilization, external pelvic diaphragm release, 4-7-8 vagal-modulating breathwork, and Chapman reflex point treatment. Cranial CV-4 omitted per the 2017 systematic review showing heterogeneous autonomic effects.</p>
-                        <p class="pillar-cite">Mu&ntilde;oz-G&oacute;mez, <em>J Clin Med</em> 2023;12:3310 (RCT, n=41, PMID 37176750) &middot; Molins-Cubero, <em>Pain Med</em> 2014;15(9):1455&ndash;1463 (double-blind RCT, n=40, PMID 24666560) &middot; Ruffini, <em>J Bodyw Mov Ther</em> 2018 (RCT, n=31) &middot; FitzGerald, <em>J Urol</em> 2012;187(6):2113&ndash;2118 (Level I, PMID 22503015).</p>
-                    </article>
-
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">02</span>
-                        <h4 class="pillar-title">Pharmacologic Ladder</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Peripheral COX inhibition; central sensitization control via tricyclic and gabapentinoid neuromodulators; smooth-muscle spasm relief; mast-cell-mediated neurogenic inflammation suppression; reversal of atrophic vaginitis.</p>
-                        <p class="pillar-content"><strong>Components.</strong> NSAIDs first-line for primary dysmenorrhea (NNT&thinsp;~2&ndash;3). Neuromodulators (amitriptyline, nortriptyline, gabapentin, pregabalin, duloxetine) for centrally sensitized pain. Vaginal diazepam, cyclobenzaprine, baclofen, tizanidine for hypertonic pelvic floor. H1/H2 antihistamines for mast-cell-driven endometriosis pain. Topical lidocaine 5%, compounded creams, vaginal estrogen for vestibular and atrophic surfaces.</p>
-                        <p class="pillar-cite">ACOG Practice Bulletin 218 (PMID 32080045) &middot; ACOG CPG 11 Endometriosis 2026 &middot; Marjoribanks, <em>Cochrane Database Syst Rev</em> 2015 (NSAIDs for dysmenorrhoea, CD001751) &middot; Mantha, <em>AJOG Glob Rep</em> 2023;3:100274 (H1 antihistamines).</p>
-                    </article>
-
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">03</span>
-                        <h4 class="pillar-title">Hormonal Suppression</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Ovulation suppression; decidualization and atrophy of ectopic implants; endometrial prostaglandin reduction.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Continuous combined hormonal contraceptives, norethindrone acetate 5&thinsp;mg, the 52&thinsp;mg LNG-IUD (Mirena/Liletta), DMPA, etonogestrel implant, and oral GnRH antagonists (elagolix; relugolix combination therapy) with estradiol/norethindrone add-back to mitigate bone-mineral-density loss. Long-term combined oral contraceptive use is effective in reducing endometrioma recurrence and reducing dysmenorrhea severity.</p>
-                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; ESHRE guideline 2022 &middot; Elaris EM-I and EM-II trials &middot; Zakhari 2021 (PMID 33020832) &middot; Vercellini 2023 (PMID 36948440).</p>
-                    </article>
-
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">04</span>
-                        <h4 class="pillar-title">Procedural Interventions</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Direct mechanical or chemical deactivation of refractory trigger points; sustained neuromuscular relaxation of hypertonic pelvic floor; targeted regional anesthesia.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Trigger point injection with bupivacaine&thinsp;0.25% &plusmn; triamcinolone, levator ani injection, abdominal wall TPI at Carnett-positive points, onabotulinumtoxinA 100&ndash;300 units to a refractory levator, pudendal nerve block, and supervised vaginal dilator therapy. Procedures are sequenced behind manual and pharmacologic work, not in front of them.</p>
-                        <p class="pillar-cite">FitzGerald, <em>J Urol</em> 2012 (PMID 22503015) &middot; EAU CPP Guidelines &middot; multiple RCTs cited in ACOG PB 218.</p>
-                    </article>
-
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">05</span>
-                        <h4 class="pillar-title">Behavioral &amp; Rehabilitative</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Myofascial trigger-point deactivation through pelvic floor physical therapy; pain reappraisal and catastrophizing reduction through cognitive-behavioral therapy; spinal gate-control analgesia via high-frequency TENS.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Pelvic floor PT 1&ndash;2x/week for 12&ndash;16 sessions, CBT for chronic pain (telehealth or in-person), sex therapy and couples counseling where indicated, pain psychology, and high-frequency TENS at 80&ndash;100&thinsp;Hz. PFPT addresses the levator and obturator directly; OMT addresses the upstream segmental, fascial, visceral, and autonomic contributors. The two are complementary, not redundant.</p>
-                        <p class="pillar-cite">FitzGerald 2012 (Level I, PMID 22503015) &middot; Evans HaPPI RCT, <em>Hum Reprod Open</em> 2026 (telehealth CBT, n=334) &middot; Han, <em>Cochrane Database Syst Rev</em> 2024 (TENS for primary dysmenorrhoea, CD013331, PMID 39037764).</p>
-                    </article>
-
-                    <article class="pillar-card frame-card">
-                        <span class="pillar-num">06</span>
-                        <h4 class="pillar-title">Surgical Pathway</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Excision of structural disease; vestibulectomy where indicated; presacral neurectomy in highly selected cases; definitive management of adenomyosis when reproductive goals are complete.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Diagnostic and operative laparoscopy with excision of endometriosis (excision is superior to drainage and ablation for endometriomas), adhesiolysis where adhesions are causing symptoms, hysteroscopic management of intracavitary pathology, vNOTES and robotic-assisted approaches where appropriate, and fertility-preserving reconstructive work. Routine laparoscopic adhesiolysis is <em>not</em> recommended for chronic pelvic pain in isolation.</p>
-                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; Bafort, <em>Cochrane Database Syst Rev</em> 2020 (PMID 33095458) &middot; ACOG PB 218 (PMID 32080045).</p>
-                    </article>
-                </div>
-            </div>
-
-            <!-- Standard-of-care backbone (Level A recommendations from ACOG / UpToDate-anchored topic syntheses) -->
-            <div class="sub-section omt-soc">
-                <span class="sub-eyebrow">The Standard-of-Care Backbone</span>
-                <h3 class="sub-headline">What the highest-grade evidence says.</h3>
-                <p class="sub-sub">OMT is layered onto a strict standard of care &mdash; not in place of it. The Level&thinsp;A recommendations below are the floor every patient is offered; the osteopathic and integrative work then builds on top.</p>
-
-                <div class="soc-grid">
-                    <div class="soc-block frame-card">
-                        <div class="soc-header">
-                            <span class="soc-tag">Endometriosis</span>
-                            <span class="soc-grade">Level A</span>
-                        </div>
-                        <ul class="soc-list">
-                            <li>Transvaginal ultrasonography is the imaging modality of choice when assessing the presence of endometriosis.</li>
-                            <li>Medical suppressive therapy improves pain symptoms; recurrence rates remain high after the medication is discontinued.</li>
-                            <li>Conservative surgical treatment provides significant short-term pain improvement; recurrence rates are also significant.</li>
-                            <li>Medical suppressive therapy (OCs, GnRH agonists) for endometriosis-associated infertility is ineffective.</li>
-                            <li>Surgical management of endometriosis-related infertility improves pregnancy rates, though the magnitude is uncertain.</li>
-                            <li>Excision of an endometrioma is superior to simple drainage and ablation of the cyst wall.</li>
-                            <li>When GnRH-agonist therapy is continued, add-back therapy reduces or eliminates bone loss and hypoestrogenic symptoms without reducing efficacy.</li>
-                        </ul>
-                        <p class="soc-anchors">Anchored to ACOG Clinical Practice Guideline No. 11 (2026); UpToDate: Endometriosis. Landmark meta-analyses: Vercellini 2023 (PMID 36948440); Guerriero 2018 (PMID 29154402); Bafort 2020 Cochrane (PMID 33095458); Zakhari 2021 (PMID 33020832).</p>
-                    </div>
-
-                    <div class="soc-block frame-card">
-                        <div class="soc-header">
-                            <span class="soc-tag">Chronic Pelvic Pain</span>
-                            <span class="soc-grade">Level A</span>
-                        </div>
-                        <ul class="soc-list">
-                            <li>Routine laparoscopic adhesiolysis is <em>not</em> recommended solely for chronic pelvic pain.</li>
-                            <li>Transvaginal ultrasound is first-line imaging for assessing endometriosis as a cause of pelvic pain.</li>
-                            <li>Medical suppressive therapy (combined oral contraceptives, progestins, GnRH agonists) improves endometriosis-related pain.</li>
-                        </ul>
-                        <p class="soc-anchors">Anchored to ACOG Practice Bulletin 218: Chronic Pelvic Pain (PMID 32080045). Recent evidence: Salmeri 2024 on uterine contractility (PMID 39067674); Min 2025 on cesarean-scar niche and pelvic pain (PMID 40680988); Marvi 2022 on mode of delivery and dyspareunia (PMID 34231435).</p>
-                    </div>
-
-                    <div class="soc-block frame-card">
-                        <div class="soc-header">
-                            <span class="soc-tag">Dysmenorrhea</span>
-                            <span class="soc-grade">Level A</span>
-                        </div>
-                        <ul class="soc-list">
-                            <li>NSAIDs are effective first-line treatment for primary dysmenorrhea.</li>
-                            <li>Combined hormonal contraceptives effectively treat dysmenorrhea.</li>
-                        </ul>
-                        <p class="soc-anchors">Anchored to ACOG dysmenorrhea guidance. Systematic-review support: Marjoribanks Cochrane 2015 (NSAIDs, CD001751); Sharghi 2019 (PMID 30521155); Earl 2021 Cochrane (nifedipine, PMID 34921554); Ruffini 2016 systematic review of OMT in gynecology and obstetrics (PMID 27261985).</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 8-week treatment trajectory (per Mu&ntilde;oz-G&oacute;mez 2023 weekly OMT protocol) -->
-            <div class="sub-section omt-trajectory">
-                <span class="sub-eyebrow">The Treatment Trajectory</span>
-                <h3 class="sub-headline">An 8-week course, calibrated to what the literature actually shows.</h3>
-                <p class="sub-sub">For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 &mdash; not session 1.</p>
-
-                <div class="trajectory-rail">
-                    <article class="traj-card frame-card">
-                        <span class="traj-week">Weeks 1&ndash;3</span>
-                        <h4 class="traj-title">Adjustment</h4>
-                        <p class="traj-body">Mild post-session soreness for 24&ndash;48&thinsp;h is expected and is the most common adverse event &mdash; similar to delayed-onset muscle soreness after new exercise. Pain scores often look flat. Body is adjusting to manipulation. Focus on home program adherence and on the concurrent pharmacologic, hormonal, and PFPT work that the OMT layer sits on top of.</p>
-                    </article>
-
-                    <article class="traj-card frame-card">
-                        <span class="traj-week">Week 4</span>
-                        <h4 class="traj-title">Mid-Protocol Reassessment</h4>
-                        <p class="traj-body">Formal VAS and EHP-30 quality-of-life reassessment. Early responders typically show 10&ndash;20% improvement by this point. Neuromodulator titration is reviewed. Some patients are still flat at week 4 &mdash; the literature shows the inflection point is sessions 4&ndash;6, so this is not the moment to abandon course.</p>
-                    </article>
-
-                    <article class="traj-card frame-card">
-                        <span class="traj-week">Weeks 6&ndash;8</span>
-                        <h4 class="traj-title">Inflection &amp; Endpoint</h4>
-                        <p class="traj-body">The majority of patients show 30&ndash;60% VAS reduction and meaningful functional gain at the end of the 8-week protocol. Ruffini 2018 reported a 63% reduction in NRS pain in primary dysmenorrhea. Molins-Cubero 2014 reported immediate significant VAS reduction (p=0.003) after a single bilateral global sacroiliac HVLA. FitzGerald 2012 reported a 59% response rate for pelvic floor myofascial PT versus 26% for global massage in IC/BPS. Full outcome battery is run at week 8.</p>
-                    </article>
-
-                    <article class="traj-card frame-card">
-                        <span class="traj-week">Week 12</span>
-                        <h4 class="traj-title">One-Month Durability</h4>
-                        <p class="traj-body">Improvements sustained at one month post-protocol per Mu&ntilde;oz-G&oacute;mez 2023. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance OMT monthly for 3 sessions, then as-needed. Non-responders are escalated: GnRH antagonist if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
+                        <p class="carepath-body">The Level A recommendations that anchor every care plan &mdash; for endometriosis, chronic pelvic pain, and dysmenorrhea &mdash; sourced from ACOG and UpToDate-anchored topic syntheses, with landmark PMIDs. The four patient-population cards below open the OMT-specific evidence reviews (women&rsquo;s health, pregnancy, post-operative recovery, and pelvic pain &amp; endometriosis).</p>
+                        <span class="carepath-cta">Open the evidence backbone <span class="arrow">&rarr;</span></span>
                     </article>
                 </div>
             </div>
@@ -5998,7 +5988,7 @@
             <h3 id="contactModalTitle">Get in touch</h3>
             <p class="modal-sub">Copy the email, or open it directly in your preferred mail service.</p>
             <div class="email-row">
-                <span class="email-text" id="contactEmail">cmabini@mountzara.com</span>
+                <span class="email-text" id="contactEmail">info@mountzara.com</span>
                 <button type="button" class="copy-btn" id="copyEmailBtn" onclick="copyEmail()">
                     <svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
                     <span class="copy-label">Copy</span>
@@ -6006,28 +5996,28 @@
             </div>
             <div class="modal-divider">Open in</div>
             <div class="modal-actions">
-                <a href="mailto:cmabini@mountzara.com" class="modal-action">
+                <a href="mailto:info@mountzara.com" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
                         Default mail app
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cmabini@mountzara.com" target="_blank" rel="noopener" class="modal-action">
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=info@mountzara.com" target="_blank" rel="noopener" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2"/></svg></span>
                         Gmail
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
-                <a href="https://outlook.office.com/mail/deeplink/compose?to=cmabini@mountzara.com" target="_blank" rel="noopener" class="modal-action">
+                <a href="https://outlook.office.com/mail/deeplink/compose?to=info@mountzara.com" target="_blank" rel="noopener" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="1.5"/><path d="M16 9l5-2v10l-5-2"/></svg></span>
                         Outlook
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
-                <a href="https://compose.mail.yahoo.com/?to=cmabini@mountzara.com" target="_blank" rel="noopener" class="modal-action">
+                <a href="https://compose.mail.yahoo.com/?to=info@mountzara.com" target="_blank" rel="noopener" class="modal-action">
                     <span class="modal-action-label">
                         <span class="modal-action-icon"><svg viewBox="0 0 24 24"><path d="M4 6l8 8 8-8M12 14v6"/></svg></span>
                         Yahoo Mail
@@ -6045,6 +6035,20 @@
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
             </div>
+        </div>
+    </div>
+
+    <!-- OMT Care-Path Modal (Services / What to Expect / Literature deep-dives) -->
+    <!-- Triggered by clicking carepath-card[data-omt-modal] in the OMT section. -->
+    <div class="omt-modal" id="omtModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="omtModalTitle">
+        <div class="omt-modal-card" id="omtModalCard">
+            <button class="omt-modal-close" id="omtModalClose" aria-label="Close" type="button">
+                <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13"/></svg>
+            </button>
+            <div class="omt-modal-eyebrow" id="omtModalEyebrow"></div>
+            <h3 id="omtModalTitle"></h3>
+            <p class="omt-modal-intro" id="omtModalIntro"></p>
+            <div id="omtModalBody"></div>
         </div>
     </div>
 
@@ -6415,6 +6419,173 @@
         });
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && evidenceModalEl?.classList.contains('open')) closeEvidenceModal();
+        });
+
+        // ==========================================================
+        // OMT Care-Path Modal — Six-pillar framework / 8-week trajectory /
+        // standard-of-care backbone deep-dives, opened from clickable
+        // .carepath-card[data-omt-modal="..."] in the OMT section.
+        // ==========================================================
+        const OMT_MODAL_DATA = {
+            pillars: {
+                eyebrow: 'The Integrated Framework',
+                title: 'Six pillars, layered with intent.',
+                intro: 'Pelvic pain is rarely one disease. It is a layered, multi-system problem — and the women I see in clinic deserve a treatment plan that is just as layered. Every patient gets all six pillars considered; the osteopathic structural layer does not replace the medical, hormonal, procedural, behavioral, or surgical pathways — it addresses the viscerosomatic substrate the other five cannot reach.',
+                body: `
+                    <div class="pillars-grid">
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">01</span>
+                        <h4 class="pillar-title">Osteopathic Structural Layer</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Viscerosomatic reflex modulation; segmental dorsal-horn inhibition at T10&ndash;L2 and S2&ndash;S4; fascial restriction release; periaqueductal-gray descending inhibition.</p>
+                        <p class="pillar-content"><strong>Components.</strong> An 8-week course of OAA HVLA, T12&ndash;L1 HVLA, bilateral sacroiliac HVLA, abdominal visceral mobilization, broad ligament mobilization, external pelvic diaphragm release, 4-7-8 vagal-modulating breathwork, and Chapman reflex point treatment. Cranial CV-4 omitted per the 2017 systematic review showing heterogeneous autonomic effects.</p>
+                        <p class="pillar-cite">Mu&ntilde;oz-G&oacute;mez, <em>J Clin Med</em> 2023;12:3310 (RCT, n=41, PMID 37176750) &middot; Molins-Cubero, <em>Pain Med</em> 2014;15(9):1455&ndash;1463 (double-blind RCT, n=40, PMID 24666560) &middot; Ruffini, <em>J Bodyw Mov Ther</em> 2018 (RCT, n=31) &middot; FitzGerald, <em>J Urol</em> 2012;187(6):2113&ndash;2118 (Level I, PMID 22503015).</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">02</span>
+                        <h4 class="pillar-title">Pharmacologic Ladder</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Peripheral COX inhibition; central sensitization control via tricyclic and gabapentinoid neuromodulators; smooth-muscle spasm relief; mast-cell-mediated neurogenic inflammation suppression; reversal of atrophic vaginitis.</p>
+                        <p class="pillar-content"><strong>Components.</strong> NSAIDs first-line for primary dysmenorrhea (NNT&thinsp;~2&ndash;3). Neuromodulators (amitriptyline, nortriptyline, gabapentin, pregabalin, duloxetine) for centrally sensitized pain. Vaginal diazepam, cyclobenzaprine, baclofen, tizanidine for hypertonic pelvic floor. H1/H2 antihistamines for mast-cell-driven endometriosis pain. Topical lidocaine 5%, compounded creams, vaginal estrogen for vestibular and atrophic surfaces.</p>
+                        <p class="pillar-cite">ACOG Practice Bulletin 218 (PMID 32080045) &middot; ACOG CPG 11 Endometriosis 2026 &middot; Marjoribanks, <em>Cochrane Database Syst Rev</em> 2015 (NSAIDs for dysmenorrhoea, CD001751) &middot; Mantha, <em>AJOG Glob Rep</em> 2023;3:100274 (H1 antihistamines).</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">03</span>
+                        <h4 class="pillar-title">Hormonal Suppression</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Ovulation suppression; decidualization and atrophy of ectopic implants; endometrial prostaglandin reduction.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Continuous combined hormonal contraceptives, norethindrone acetate 5&thinsp;mg, the 52&thinsp;mg LNG-IUD (Mirena/Liletta), DMPA, etonogestrel implant, and oral GnRH antagonists (elagolix; relugolix combination therapy) with estradiol/norethindrone add-back to mitigate bone-mineral-density loss. Long-term combined oral contraceptive use is effective in reducing endometrioma recurrence and reducing dysmenorrhea severity.</p>
+                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; ESHRE guideline 2022 &middot; Elaris EM-I and EM-II trials &middot; Zakhari 2021 (PMID 33020832) &middot; Vercellini 2023 (PMID 36948440).</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">04</span>
+                        <h4 class="pillar-title">Procedural Interventions</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Direct mechanical or chemical deactivation of refractory trigger points; sustained neuromuscular relaxation of hypertonic pelvic floor; targeted regional anesthesia.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Trigger point injection with bupivacaine&thinsp;0.25% &plusmn; triamcinolone, levator ani injection, abdominal wall TPI at Carnett-positive points, onabotulinumtoxinA 100&ndash;300 units to a refractory levator, pudendal nerve block, and supervised vaginal dilator therapy. Procedures are sequenced behind manual and pharmacologic work, not in front of them.</p>
+                        <p class="pillar-cite">FitzGerald, <em>J Urol</em> 2012 (PMID 22503015) &middot; EAU CPP Guidelines &middot; multiple RCTs cited in ACOG PB 218.</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">05</span>
+                        <h4 class="pillar-title">Behavioral &amp; Rehabilitative</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Myofascial trigger-point deactivation through pelvic floor physical therapy; pain reappraisal and catastrophizing reduction through cognitive-behavioral therapy; spinal gate-control analgesia via high-frequency TENS.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Pelvic floor PT 1&ndash;2x/week for 12&ndash;16 sessions, CBT for chronic pain (telehealth or in-person), sex therapy and couples counseling where indicated, pain psychology, and high-frequency TENS at 80&ndash;100&thinsp;Hz. PFPT addresses the levator and obturator directly; OMT addresses the upstream segmental, fascial, visceral, and autonomic contributors. The two are complementary, not redundant.</p>
+                        <p class="pillar-cite">FitzGerald 2012 (Level I, PMID 22503015) &middot; Evans HaPPI RCT, <em>Hum Reprod Open</em> 2026 (telehealth CBT, n=334) &middot; Han, <em>Cochrane Database Syst Rev</em> 2024 (TENS for primary dysmenorrhoea, CD013331, PMID 39037764).</p>
+                      </article>
+                      <article class="pillar-card frame-card">
+                        <span class="pillar-num">06</span>
+                        <h4 class="pillar-title">Surgical Pathway</h4>
+                        <p class="pillar-mech"><strong>Mechanism.</strong> Excision of structural disease; vestibulectomy where indicated; presacral neurectomy in highly selected cases; definitive management of adenomyosis when reproductive goals are complete.</p>
+                        <p class="pillar-content"><strong>Components.</strong> Diagnostic and operative laparoscopy with excision of endometriosis (excision is superior to drainage and ablation for endometriomas), adhesiolysis where adhesions are causing symptoms, hysteroscopic management of intracavitary pathology, vNOTES and robotic-assisted approaches where appropriate, and fertility-preserving reconstructive work. Routine laparoscopic adhesiolysis is <em>not</em> recommended for chronic pelvic pain in isolation.</p>
+                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; Bafort, <em>Cochrane Database Syst Rev</em> 2020 (PMID 33095458) &middot; ACOG PB 218 (PMID 32080045).</p>
+                      </article>
+                    </div>
+                `,
+            },
+            trajectory: {
+                eyebrow: 'The Treatment Trajectory',
+                title: 'An 8-week course, calibrated to what the literature actually shows.',
+                intro: 'For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 — not session 1.',
+                body: `
+                    <div class="trajectory-rail">
+                      <article class="traj-card frame-card">
+                        <span class="traj-week">Weeks 1&ndash;3</span>
+                        <h4 class="traj-title">Adjustment</h4>
+                        <p class="traj-body">Mild post-session soreness for 24&ndash;48&thinsp;h is expected and is the most common adverse event &mdash; similar to delayed-onset muscle soreness after new exercise. Pain scores often look flat. Body is adjusting to manipulation. Focus on home program adherence and on the concurrent pharmacologic, hormonal, and PFPT work that the OMT layer sits on top of.</p>
+                      </article>
+                      <article class="traj-card frame-card">
+                        <span class="traj-week">Week 4</span>
+                        <h4 class="traj-title">Mid-Protocol Reassessment</h4>
+                        <p class="traj-body">Formal VAS and EHP-30 quality-of-life reassessment. Early responders typically show 10&ndash;20% improvement by this point. Neuromodulator titration is reviewed. Some patients are still flat at week 4 &mdash; the literature shows the inflection point is sessions 4&ndash;6, so this is not the moment to abandon course.</p>
+                      </article>
+                      <article class="traj-card frame-card">
+                        <span class="traj-week">Weeks 6&ndash;8</span>
+                        <h4 class="traj-title">Inflection &amp; Endpoint</h4>
+                        <p class="traj-body">The majority of patients show 30&ndash;60% VAS reduction and meaningful functional gain at the end of the 8-week protocol. Ruffini 2018 reported a 63% reduction in NRS pain in primary dysmenorrhea. Molins-Cubero 2014 reported immediate significant VAS reduction (p=0.003) after a single bilateral global sacroiliac HVLA. FitzGerald 2012 reported a 59% response rate for pelvic floor myofascial PT versus 26% for global massage in IC/BPS. Full outcome battery is run at week 8.</p>
+                      </article>
+                      <article class="traj-card frame-card">
+                        <span class="traj-week">Week 12</span>
+                        <h4 class="traj-title">One-Month Durability</h4>
+                        <p class="traj-body">Improvements sustained at one month post-protocol per Mu&ntilde;oz-G&oacute;mez 2023. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance OMT monthly for 3 sessions, then as-needed. Non-responders are escalated: GnRH antagonist if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
+                      </article>
+                    </div>
+                `,
+            },
+            backbone: {
+                eyebrow: 'The Standard-of-Care Backbone',
+                title: 'What the highest-grade evidence says.',
+                intro: 'OMT is layered onto a strict standard of care — not in place of it. The Level A recommendations below are the floor every patient is offered; the osteopathic and integrative work then builds on top.',
+                body: `
+                    <div class="soc-grid">
+                      <div class="soc-block frame-card">
+                        <div class="soc-header"><span class="soc-tag">Endometriosis</span><span class="soc-grade">Level A</span></div>
+                        <ul class="soc-list">
+                          <li>Transvaginal ultrasonography is the imaging modality of choice when assessing the presence of endometriosis.</li>
+                          <li>Medical suppressive therapy improves pain symptoms; recurrence rates remain high after the medication is discontinued.</li>
+                          <li>Conservative surgical treatment provides significant short-term pain improvement; recurrence rates are also significant.</li>
+                          <li>Medical suppressive therapy (OCs, GnRH agonists) for endometriosis-associated infertility is ineffective.</li>
+                          <li>Surgical management of endometriosis-related infertility improves pregnancy rates, though the magnitude is uncertain.</li>
+                          <li>Excision of an endometrioma is superior to simple drainage and ablation of the cyst wall.</li>
+                          <li>When GnRH-agonist therapy is continued, add-back therapy reduces or eliminates bone loss and hypoestrogenic symptoms without reducing efficacy.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG Clinical Practice Guideline No. 11 (2026); UpToDate: Endometriosis. Landmark meta-analyses: Vercellini 2023 (PMID 36948440); Guerriero 2018 (PMID 29154402); Bafort 2020 Cochrane (PMID 33095458); Zakhari 2021 (PMID 33020832).</p>
+                      </div>
+                      <div class="soc-block frame-card">
+                        <div class="soc-header"><span class="soc-tag">Chronic Pelvic Pain</span><span class="soc-grade">Level A</span></div>
+                        <ul class="soc-list">
+                          <li>Routine laparoscopic adhesiolysis is <em>not</em> recommended solely for chronic pelvic pain.</li>
+                          <li>Transvaginal ultrasound is first-line imaging for assessing endometriosis as a cause of pelvic pain.</li>
+                          <li>Medical suppressive therapy (combined oral contraceptives, progestins, GnRH agonists) improves endometriosis-related pain.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG Practice Bulletin 218: Chronic Pelvic Pain (PMID 32080045). Recent evidence: Salmeri 2024 on uterine contractility (PMID 39067674); Min 2025 on cesarean-scar niche and pelvic pain (PMID 40680988); Marvi 2022 on mode of delivery and dyspareunia (PMID 34231435).</p>
+                      </div>
+                      <div class="soc-block frame-card">
+                        <div class="soc-header"><span class="soc-tag">Dysmenorrhea</span><span class="soc-grade">Level A</span></div>
+                        <ul class="soc-list">
+                          <li>NSAIDs are effective first-line treatment for primary dysmenorrhea.</li>
+                          <li>Combined hormonal contraceptives effectively treat dysmenorrhea.</li>
+                        </ul>
+                        <p class="soc-anchors">Anchored to ACOG dysmenorrhea guidance. Systematic-review support: Marjoribanks Cochrane 2015 (NSAIDs, CD001751); Sharghi 2019 (PMID 30521155); Earl 2021 Cochrane (nifedipine, PMID 34921554); Ruffini 2016 systematic review of OMT in gynecology and obstetrics (PMID 27261985).</p>
+                      </div>
+                    </div>
+                `,
+            },
+        };
+        const omtModalEl = document.getElementById('omtModal');
+        const omtModalEyebrowEl = document.getElementById('omtModalEyebrow');
+        const omtModalTitleEl = document.getElementById('omtModalTitle');
+        const omtModalIntroEl = document.getElementById('omtModalIntro');
+        const omtModalBodyEl = document.getElementById('omtModalBody');
+        const omtModalCardEl = document.getElementById('omtModalCard');
+        function openOmtModal(key) {
+            const data = OMT_MODAL_DATA[key];
+            if (!data || !omtModalEl) return;
+            omtModalEyebrowEl.textContent = data.eyebrow;
+            omtModalTitleEl.textContent = data.title;
+            omtModalIntroEl.textContent = data.intro;
+            omtModalBodyEl.innerHTML = data.body;
+            omtModalEl.classList.add('open');
+            omtModalEl.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            if (omtModalCardEl) omtModalCardEl.scrollTop = 0;
+        }
+        function closeOmtModal() {
+            omtModalEl.classList.remove('open');
+            omtModalEl.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+        document.querySelectorAll('.carepath-card[data-omt-modal]').forEach(card => {
+            const key = card.getAttribute('data-omt-modal');
+            card.addEventListener('click', () => openOmtModal(key));
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openOmtModal(key);
+                }
+            });
+        });
+        document.getElementById('omtModalClose')?.addEventListener('click', closeOmtModal);
+        omtModalEl?.addEventListener('click', e => {
+            if (e.target === omtModalEl) closeOmtModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && omtModalEl?.classList.contains('open')) closeOmtModal();
         });
 
         // ==========================================================
