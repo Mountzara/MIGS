@@ -1,0 +1,47 @@
+# Cloudflare Pages applies these headers to every response.
+# Documented at https://developers.cloudflare.com/pages/configuration/headers/
+
+# Site-wide hardening
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  Cross-Origin-Opener-Policy: same-origin
+  X-Robots-Tag: index, follow, noai, noimageai
+  X-AI-Training: noai, noimageai
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://*.mountzara.com https://mountzara.com data:; media-src 'self' https://*.mountzara.com https://mountzara.com blob:; connect-src 'self' https://*.mountzara.com https://mountzara.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+# Admin surface — never index, never embed, no caching
+/admin/*
+  X-Robots-Tag: noindex, nofollow, noai, noimageai, nosnippet, noarchive
+  X-Frame-Options: DENY
+  Cache-Control: no-store, max-age=0
+  Cross-Origin-Resource-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+# Patient portal — never index, never embed, no caching. Patient surface
+# carries the most PHI risk; same posture as /admin.
+/portal/*
+  X-Robots-Tag: noindex, nofollow, noai, noimageai, nosnippet, noarchive
+  X-Frame-Options: DENY
+  Cache-Control: no-store, max-age=0
+  Cross-Origin-Resource-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+# All API endpoints — JSON, never cached, never embedded.
+/api/*
+  X-Robots-Tag: noindex, nofollow, noai, noimageai, nosnippet, noarchive
+  Cache-Control: no-store, max-age=0
+  Cross-Origin-Resource-Policy: same-origin
+
+# Admin API endpoints — explicit no-archive on top of /api/* (older path).
+/api/posts/_admin*
+  X-Robots-Tag: noindex, nofollow, noai, noimageai, nosnippet, noarchive
+  Cache-Control: no-store, max-age=0
+
+# Drafts directory (whether or not it ends up populated)
+/drafts/*
+  X-Robots-Tag: noindex, nofollow, noai, noimageai
+  Cache-Control: no-store, max-age=0
