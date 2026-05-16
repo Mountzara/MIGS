@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Education · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981;
+            --amber: #f59e0b;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 920px; margin: 0 auto; padding: clamp(28px, 5vw, 48px) clamp(20px, 5vw, 36px) 64px; }
+        .top-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 22px; font-size: 13px; color: var(--fg-soft);
+        }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-weight: 200; font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.022em; line-height: 1.1;
+            color: var(--fg-strong); margin: 0 0 8px 0;
+        }
+        .lede {
+            font-size: 15px; line-height: 1.6;
+            color: var(--fg-soft); margin: 0 0 24px 0; max-width: 64ch;
+        }
+
+        .filter-bar { display: flex; gap: 6px; margin: 14px 0 18px 0; flex-wrap: wrap; }
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 14px;
+            color: var(--fg-soft);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+
+        .grid {
+            display: grid; gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+        .ed-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            cursor: pointer;
+            display: flex; flex-direction: column;
+            text-decoration: none; color: inherit;
+            transition: all 0.22s;
+            animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+            position: relative;
+        }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ed-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.04);
+        }
+        .ed-card h3 {
+            margin: 0 0 6px 0; font-size: 16px; font-weight: 500;
+            color: var(--fg-strong); letter-spacing: -0.005em;
+        }
+        .ed-card .ed-summary {
+            font-size: 13px; line-height: 1.5; color: var(--fg-soft);
+            flex: 1; margin: 0 0 12px 0;
+        }
+        .ed-card .ed-meta {
+            font-size: 11px; color: var(--fg-dim);
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        }
+        .ed-tag {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 10.5px;
+            letter-spacing: 0.02em;
+            color: var(--fg-soft);
+        }
+        .ed-badge-row { position: absolute; top: 14px; right: 16px; display: flex; gap: 6px; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 999px;
+            white-space: nowrap;
+        }
+        .badge-assigned {
+            background: rgba(245, 158, 11, 0.12);
+            color: rgba(252, 211, 77, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+        }
+        .badge-completed {
+            background: rgba(16, 185, 129, 0.12);
+            color: rgba(110, 231, 183, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+        }
+        .badge-new {
+            background: rgba(var(--glow-purple), 0.18);
+            color: var(--accent-soft);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+        }
+
+        .empty-state {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 20px;
+            text-align: center; color: var(--fg-soft); font-size: 14px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        }
+
+        /* reader pane */
+        .reader { display: none; }
+        .reader.open { display: block; }
+        .reader-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; color: var(--fg-soft);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: all 0.18s;
+        }
+        .reader-back:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .reader-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            margin-bottom: 14px;
+        }
+        .reader-header h2 { margin: 0 0 6px 0; font-weight: 300; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); letter-spacing: -0.015em; }
+        .reader-header .summary { font-size: 14.5px; color: var(--fg-soft); margin: 0 0 12px 0; line-height: 1.55; }
+        .reader-header .meta { font-size: 11.5px; color: var(--fg-dim); display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .prose {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 28px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            font-size: 15px; line-height: 1.65;
+            color: var(--fg-mid);
+        }
+        .prose h1 { font-size: 26px; font-weight: 300; color: var(--fg-strong); letter-spacing: -0.012em; margin: 0 0 14px 0; }
+        .prose h2 { font-size: 19px; font-weight: 500; color: var(--fg-strong); margin: 28px 0 10px 0; }
+        .prose h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 24px 0 8px 0; }
+        .prose p { margin: 0 0 12px 0; }
+        .prose ul, .prose ol { margin: 0 0 14px 0; padding-left: 22px; }
+        .prose li { margin: 4px 0; }
+        .prose code {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1px 6px;
+            font-size: 0.92em;
+        }
+        .prose strong { color: var(--fg-strong); }
+        .prose a { color: var(--accent-soft); text-decoration: underline; text-decoration-color: rgba(var(--glow-purple), 0.40); text-underline-offset: 3px; }
+        .prose blockquote {
+            border-left: 2px solid rgba(var(--glow-purple), 0.55);
+            margin: 14px 0;
+            padding: 6px 14px;
+            color: var(--fg-soft);
+            background: rgba(var(--glow-purple), 0.04);
+            border-radius: 0 8px 8px 0;
+        }
+        .complete-row {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 14px; margin-top: 14px; flex-wrap: wrap;
+        }
+        button {
+            font: inherit; cursor: pointer;
+            background: rgba(var(--glow-purple), 0.18);
+            border: 1px solid rgba(var(--glow-purple), 0.55);
+            border-radius: 9px;
+            padding: 10px 16px;
+            color: var(--fg-strong);
+            font-size: 13px; font-weight: 500;
+            transition: transform 0.18s, background 0.18s, border-color 0.18s;
+        }
+        button:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.26); }
+        button.ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border); color: var(--fg-soft);
+        }
+        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row">
+            <a href="/portal/">&larr; Patient portal</a>
+            <span style="color: var(--fg-dim);">/portal/education</span>
+        </div>
+
+        <div id="list-view">
+            <p class="eyebrow">Patient portal · Learn</p>
+            <h1>Primers from Dr. Mabini</h1>
+            <p class="lede">Plain-language explainers on the conditions, procedures, and recovery topics that come up most often in MIGS care. Anything Dr. Mabini has assigned to you sits at the top.</p>
+
+            <div class="filter-bar" id="tag-filter">
+                <button class="filter-chip active" data-tag="">All</button>
+            </div>
+
+            <div id="grid" class="grid">
+                <div class="empty-state">Loading materials…</div>
+            </div>
+        </div>
+
+        <div id="reader-view" class="reader">
+            <button class="reader-back" id="btn-back">&larr; Back to library</button>
+            <div class="reader-header">
+                <h2 id="r-title">—</h2>
+                <p class="summary" id="r-summary">—</p>
+                <div class="meta" id="r-meta"></div>
+            </div>
+            <div class="prose" id="r-prose"></div>
+            <div class="complete-row">
+                <div id="complete-status" style="font-size:13px; color:var(--fg-soft);">—</div>
+                <div style="display:flex; gap:8px;">
+                    <button class="ghost" id="btn-incomplete" style="display:none;">Mark not done</button>
+                    <button id="btn-complete">Mark complete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = {
+            materials: [],
+            allTags: new Set(),
+            currentSlug: null,
+            currentMaterial: null,
+            filterTag: '',
+        };
+
+        async function fetchJson(url, opts) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                ...(opts || {}),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error;
+                e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
+        // ---- minimal markdown renderer (safe-by-default) ----
+        // Renders headings (#, ##, ###), paragraphs, **bold**, *italic*,
+        // `code`, [text](url), > blockquotes, - / * / 1. lists.
+        // No raw HTML pass-through; everything is escaped first.
+        function renderMarkdown(src) {
+            if (typeof src !== 'string') return '';
+            // Normalize line endings + escape HTML first.
+            const lines = src.replace(/\r\n/g, '\n').split('\n');
+            const out = [];
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                // Heading
+                let m;
+                if ((m = /^(#{1,3})\s+(.+)$/.exec(line))) {
+                    const level = m[1].length;
+                    out.push(`<h${level}>${inlineMd(m[2])}</h${level}>`);
+                    i++; continue;
+                }
+                // Blockquote (single-line)
+                if (/^>\s+/.test(line)) {
+                    const block = [];
+                    while (i < lines.length && /^>\s+/.test(lines[i])) {
+                        block.push(lines[i].replace(/^>\s+/, ''));
+                        i++;
+                    }
+                    out.push(`<blockquote>${inlineMd(block.join(' '))}</blockquote>`);
+                    continue;
+                }
+                // Unordered list
+                if (/^[-*]\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
+                        items.push(lines[i].replace(/^[-*]\s+/, ''));
+                        i++;
+                    }
+                    out.push(`<ul>${items.map(it => `<li>${inlineMd(it)}</li>`).join('')}</ul>`);
+                    continue;
+                }
+                // Ordered list
+                if (/^\d+\.\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+                        items.push(lines[i].replace(/^\d+\.\s+/, ''));
+                        i++;
+                    }
+                    out.push(`<ol>${items.map(it => `<li>${inlineMd(it)}</li>`).join('')}</ol>`);
+                    continue;
+                }
+                // Blank line breaks paragraphs
+                if (line.trim() === '') { i++; continue; }
+                // Paragraph (gather consecutive non-blank lines)
+                const para = [];
+                while (i < lines.length && lines[i].trim() !== '' &&
+                       !/^(#{1,3})\s+/.test(lines[i]) &&
+                       !/^[-*]\s+/.test(lines[i]) &&
+                       !/^\d+\.\s+/.test(lines[i]) &&
+                       !/^>\s+/.test(lines[i])) {
+                    para.push(lines[i]);
+                    i++;
+                }
+                out.push(`<p>${inlineMd(para.join(' '))}</p>`);
+            }
+            return out.join('\n');
+        }
+        function inlineMd(s) {
+            // Escape first
+            let t = escapeHtml(s);
+            // links [text](url)
+            t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) => {
+                // sanitize url scheme — allow http(s), mailto, relative
+                if (!/^(https?:|mailto:|\/)/i.test(url)) return text;
+                return `<a href="${url}" rel="noopener noreferrer" target="_blank">${text}</a>`;
+            });
+            // **bold**
+            t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            // *italic*
+            t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+            // `code`
+            t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return t;
+        }
+
+        async function loadList() {
+            try {
+                const data = await fetchJson('/api/v1/patient/education');
+                state.materials = data.materials || [];
+                state.allTags.clear();
+                state.materials.forEach(m => (m.topic_tags || []).forEach(t => state.allTags.add(t)));
+                renderTags();
+                renderGrid();
+            } catch (e) {
+                if (e.status === 401) {
+                    window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
+                    return;
+                }
+                $('grid').innerHTML = `<div class="empty-state">Could not load library: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function renderTags() {
+            const bar = $('tag-filter');
+            // Keep the "All" chip; append per-tag chips.
+            bar.innerHTML = `<button class="filter-chip${state.filterTag === '' ? ' active' : ''}" data-tag="">All</button>` +
+                Array.from(state.allTags).sort().map(t =>
+                    `<button class="filter-chip${state.filterTag === t ? ' active' : ''}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`
+                ).join('');
+            bar.querySelectorAll('.filter-chip').forEach(c => {
+                c.addEventListener('click', () => {
+                    state.filterTag = c.getAttribute('data-tag') || '';
+                    renderTags();
+                    renderGrid();
+                });
+            });
+        }
+
+        function renderGrid() {
+            const matches = state.filterTag
+                ? state.materials.filter(m => (m.topic_tags || []).includes(state.filterTag))
+                : state.materials;
+            if (matches.length === 0) {
+                $('grid').innerHTML = '<div class="empty-state">No primers in this view yet. Dr. Mabini is building the library.</div>';
+                return;
+            }
+            $('grid').innerHTML = matches.map(m => {
+                const completed = m.view && m.view.completed;
+                const seen = m.view && m.view.view_count > 0;
+                const badges = [];
+                if (m.assignment) badges.push('<span class="badge badge-assigned">Assigned</span>');
+                if (completed) badges.push('<span class="badge badge-completed">✓ Done</span>');
+                else if (!seen) badges.push('<span class="badge badge-new">New</span>');
+                const tagChips = (m.topic_tags || []).slice(0, 3).map(t => `<span class="ed-tag">${escapeHtml(t)}</span>`).join('');
+                return `
+                    <a class="ed-card" data-slug="${escapeHtml(m.slug)}" href="#">
+                        ${badges.length ? `<div class="ed-badge-row">${badges.join('')}</div>` : ''}
+                        <h3>${escapeHtml(m.title)}</h3>
+                        <p class="ed-summary">${escapeHtml(m.summary || '')}</p>
+                        <div class="ed-meta">${tagChips}</div>
+                    </a>
+                `;
+            }).join('');
+            $('grid').querySelectorAll('.ed-card').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openMaterial(el.getAttribute('data-slug'));
+                });
+            });
+        }
+
+        async function openMaterial(slug) {
+            try {
+                const data = await fetchJson(`/api/v1/patient/education/${encodeURIComponent(slug)}`);
+                state.currentSlug = slug;
+                state.currentMaterial = data;
+                $('r-title').textContent = data.material.title;
+                $('r-summary').textContent = data.material.summary || '';
+                const tagsHtml = (data.material.topic_tags || []).map(t => `<span class="ed-tag">${escapeHtml(t)}</span>`).join('');
+                $('r-meta').innerHTML = tagsHtml + (data.assignment ? ' · <span style="color:rgba(252,211,77,0.92);">Assigned by Dr. Mabini</span>' : '');
+                $('r-prose').innerHTML = renderMarkdown(data.material.body_md || '');
+                // Completion state
+                const inList = state.materials.find(m => m.slug === slug);
+                const completed = inList && inList.view && inList.view.completed;
+                renderCompleteState(completed);
+                $('list-view').style.display = 'none';
+                $('reader-view').classList.add('open');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (e) {
+                alert('Could not open: ' + e.message);
+            }
+        }
+        function renderCompleteState(completed) {
+            $('btn-complete').style.display = completed ? 'none' : 'inline-block';
+            $('btn-incomplete').style.display = completed ? 'inline-block' : 'none';
+            $('complete-status').textContent = completed
+                ? "Marked complete. Tap Mark not done to clear."
+                : "Once you've read this through, tap Mark complete so Dr. Mabini sees you finished it.";
+        }
+        async function setComplete(completed) {
+            try {
+                await fetchJson(`/api/v1/patient/education/${encodeURIComponent(state.currentSlug)}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ completed }),
+                });
+                // Update local list cache.
+                const m = state.materials.find(x => x.slug === state.currentSlug);
+                if (m) {
+                    m.view = m.view || { view_count: 1, first_viewed_at: Date.now(), last_viewed_at: Date.now() };
+                    m.view.completed = completed ? 1 : 0;
+                }
+                renderCompleteState(completed);
+            } catch (e) {
+                alert('Could not update: ' + e.message);
+            }
+        }
+
+        $('btn-back').addEventListener('click', () => {
+            $('reader-view').classList.remove('open');
+            $('list-view').style.display = 'block';
+            renderGrid();
+            window.scrollTo({ top: 0 });
+        });
+        $('btn-complete').addEventListener('click', () => setComplete(true));
+        $('btn-incomplete').addEventListener('click', () => setComplete(false));
+
+        loadList();
+    </script>
+</body>
+</html>

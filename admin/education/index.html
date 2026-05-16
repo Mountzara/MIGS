@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Education materials · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        header.bar {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 24px; font-size: 13px; color: var(--fg-soft);
+            flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong);
+            margin: 0 0 14px 0;
+        }
+        .lede {
+            font-size: 14.5px; line-height: 1.55;
+            color: var(--fg-mid); max-width: 80ch;
+            margin: 0 0 20px 0;
+        }
+        button {
+            font: inherit; cursor: pointer; border-radius: 9px; padding: 9px 14px;
+            font-size: 13px; transition: transform 0.18s, background 0.18s, border-color 0.18s;
+        }
+        button.primary {
+            background: rgba(var(--glow-purple), 0.22);
+            border: 1px solid rgba(var(--glow-purple), 0.65);
+            color: var(--fg-strong); font-weight: 500;
+        }
+        button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
+        button.ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--fg-soft);
+        }
+        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.danger {
+            background: rgba(239, 68, 68, 0.10);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            color: rgba(252, 165, 165, 0.95);
+        }
+        button.danger:hover { background: rgba(239, 68, 68, 0.18); color: var(--fg-strong); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .top-actions { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+        .filter-bar { display: flex; gap: 6px; margin: 0 0 18px 0; flex-wrap: wrap; }
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 13px;
+            color: var(--fg-soft);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+
+        .list { display: flex; flex-direction: column; gap: 10px; }
+        .row {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.18s;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        }
+        .row:hover {
+            transform: translateY(-1px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.04);
+        }
+        .row h3 { margin: 0 0 4px 0; font-size: 15.5px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
+        .row .row-summary { font-size: 12.5px; color: var(--fg-soft); margin: 0 0 6px 0; }
+        .row .row-meta { font-size: 11px; color: var(--fg-dim); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .badge {
+            display: inline-flex; align-items: center;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+        }
+        .badge-draft     { background: rgba(255,255,255,0.05); color: var(--fg-soft); border: 1px solid var(--border); }
+        .badge-published { background: rgba(16,185,129,0.12); color: rgba(110,231,183,0.95); border: 1px solid rgba(16,185,129,0.45); }
+        .badge-archived  { background: rgba(245,158,11,0.12); color: rgba(252,211,77,0.95); border: 1px solid rgba(245,158,11,0.45); }
+
+        .empty-state {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 20px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        }
+
+        /* modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed; inset: 0; z-index: 90;
+            background: rgba(7, 7, 10, 0.75);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            align-items: flex-start; justify-content: center;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid rgba(var(--glow-purple), 0.35);
+            border-radius: 14px;
+            padding: 24px 26px;
+            max-width: 920px; width: 100%;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal h3 { margin: 0; font-weight: 500; font-size: 18px; color: var(--fg-strong); }
+        .row-form { display: grid; gap: 12px; grid-template-columns: 1fr; }
+        @media (min-width: 720px) {
+            .row-form.two { grid-template-columns: 1fr 1fr; }
+            .row-form.three { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        label.label {
+            display: block; font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.10em; text-transform: uppercase;
+            color: var(--fg-soft); margin: 0 0 5px 0;
+        }
+        input[type=text], textarea, select {
+            font: inherit; width: 100%;
+            padding: 9px 11px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--fg-strong);
+            font-size: 13.5px;
+            transition: border-color 0.22s, background 0.22s;
+            outline: none;
+        }
+        input[type=text]:focus, textarea:focus, select:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.05);
+        }
+        textarea {
+            min-height: 280px;
+            resize: vertical;
+            font-family: 'SF Mono', Menlo, ui-monospace, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .preview-toggle { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .preview {
+            background: rgba(0, 0, 0, 0.20);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 14px 16px;
+            min-height: 280px;
+            font-size: 14px; line-height: 1.6;
+            display: none;
+        }
+        .preview.open { display: block; }
+        .preview h1 { font-size: 22px; font-weight: 300; color: var(--fg-strong); margin: 0 0 12px 0; }
+        .preview h2 { font-size: 17px; font-weight: 500; color: var(--fg-strong); margin: 22px 0 8px 0; }
+        .preview h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 18px 0 6px 0; }
+        .preview p { margin: 0 0 10px 0; }
+        .preview ul, .preview ol { padding-left: 20px; }
+        .preview blockquote { border-left: 2px solid rgba(var(--glow-purple),0.55); padding: 4px 12px; color: var(--fg-soft); margin: 10px 0; }
+
+        .row-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: space-between; flex-wrap: wrap; }
+        .row-actions .left { display: flex; gap: 8px; flex-wrap: wrap; }
+        .row-actions .right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            padding: 12px 18px; border-radius: 10px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            color: rgba(167, 243, 208, 0.98);
+            font-size: 13px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.22s, transform 0.22s;
+            pointer-events: none; z-index: 1000;
+        }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Education materials</span>
+            <span style="margin-left: auto; font-size: 12px; color: var(--fg-dim);">/admin/education</span>
+        </header>
+
+        <h1 class="page-title">Patient education materials</h1>
+        <p class="lede">Author plain-language primers patients see in <code>/portal/education</code>. Drafts stay hidden from patients until you publish. Markdown body supports headings, lists, links, blockquotes, bold, italic, and inline code.</p>
+
+        <div class="top-actions">
+            <button class="primary" id="btn-new">+ New material</button>
+            <button class="ghost" id="btn-refresh">Refresh</button>
+        </div>
+
+        <div class="filter-bar" id="status-filter">
+            <button class="filter-chip" data-status="all">All</button>
+            <button class="filter-chip active" data-status="draft">Drafts</button>
+            <button class="filter-chip" data-status="published">Published</button>
+            <button class="filter-chip" data-status="archived">Archived</button>
+        </div>
+
+        <div id="list" class="list">
+            <div class="empty-state">Loading…</div>
+        </div>
+
+        <div id="modal" class="modal-backdrop">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-title">New material</h3>
+                    <button class="ghost" id="btn-close">Close (Esc)</button>
+                </div>
+
+                <div class="row-form two">
+                    <div>
+                        <label class="label" for="f-slug">Slug</label>
+                        <input id="f-slug" type="text" maxlength="80" placeholder="endometriosis-101">
+                    </div>
+                    <div>
+                        <label class="label" for="f-audience">Target audience</label>
+                        <select id="f-audience">
+                            <option value="all">All</option>
+                            <option value="preop">Pre-op</option>
+                            <option value="postop">Post-op</option>
+                            <option value="menopause">Menopause</option>
+                            <option value="pregnancy">Pregnancy</option>
+                            <option value="pcos">PCOS</option>
+                            <option value="endo">Endometriosis</option>
+                            <option value="aub">AUB</option>
+                            <option value="omt">OMT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <label class="label" for="f-title">Title</label>
+                    <input id="f-title" type="text" maxlength="200" placeholder="Endometriosis: what it is and how we treat it">
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <label class="label" for="f-summary">Summary (≤ 280 chars; shown on the card)</label>
+                    <input id="f-summary" type="text" maxlength="280" placeholder="A 5-minute primer explaining endometriosis and the options for managing it.">
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <label class="label" for="f-tags">Topic tags (comma-separated, lowercase)</label>
+                    <input id="f-tags" type="text" placeholder="endometriosis, pain, surgery">
+                </div>
+
+                <div style="margin-top: 14px;">
+                    <div class="preview-toggle">
+                        <label class="label" style="margin: 0;">Markdown body</label>
+                        <button class="ghost" id="btn-preview" style="margin-left:auto; padding: 5px 10px; font-size: 12px;">Preview</button>
+                    </div>
+                    <textarea id="f-body" placeholder="# Heading&#10;&#10;Body paragraph. **Bold** and *italic* supported.&#10;&#10;## Section heading&#10;- Bullet&#10;- Bullet"></textarea>
+                    <div class="preview" id="preview"></div>
+                </div>
+
+                <div class="row-actions">
+                    <div class="left">
+                        <button class="danger" id="btn-archive" style="display:none;">Archive</button>
+                    </div>
+                    <div class="right">
+                        <button class="ghost" id="btn-save-draft">Save as draft</button>
+                        <button class="primary" id="btn-publish">Publish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = {
+            materials: [],
+            filter: 'draft',
+            editing: null, // null = creating new
+        };
+
+        async function fetchJson(url, opts) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                ...(opts || {}),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error; e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function showToast(msg, isError) {
+            const t = $('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (isError ? ' error' : '') + ' show';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        function fmtDate(ms) {
+            if (!ms) return '—';
+            return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // ---- markdown renderer (same as patient side, abbreviated) ----
+        function renderMarkdown(src) {
+            if (typeof src !== 'string') return '';
+            const lines = src.replace(/\r\n/g, '\n').split('\n');
+            const out = []; let i = 0;
+            while (i < lines.length) {
+                const line = lines[i]; let m;
+                if ((m = /^(#{1,3})\s+(.+)$/.exec(line))) {
+                    out.push(`<h${m[1].length}>${inlineMd(m[2])}</h${m[1].length}>`); i++; continue;
+                }
+                if (/^>\s+/.test(line)) {
+                    const b = [];
+                    while (i < lines.length && /^>\s+/.test(lines[i])) { b.push(lines[i].replace(/^>\s+/, '')); i++; }
+                    out.push(`<blockquote>${inlineMd(b.join(' '))}</blockquote>`); continue;
+                }
+                if (/^[-*]\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^[-*]\s+/.test(lines[i])) { items.push(lines[i].replace(/^[-*]\s+/, '')); i++; }
+                    out.push(`<ul>${items.map(it => `<li>${inlineMd(it)}</li>`).join('')}</ul>`); continue;
+                }
+                if (/^\d+\.\s+/.test(line)) {
+                    const items = [];
+                    while (i < lines.length && /^\d+\.\s+/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s+/, '')); i++; }
+                    out.push(`<ol>${items.map(it => `<li>${inlineMd(it)}</li>`).join('')}</ol>`); continue;
+                }
+                if (line.trim() === '') { i++; continue; }
+                const para = [];
+                while (i < lines.length && lines[i].trim() !== '' &&
+                       !/^(#{1,3})\s+/.test(lines[i]) && !/^[-*]\s+/.test(lines[i]) &&
+                       !/^\d+\.\s+/.test(lines[i]) && !/^>\s+/.test(lines[i])) {
+                    para.push(lines[i]); i++;
+                }
+                out.push(`<p>${inlineMd(para.join(' '))}</p>`);
+            }
+            return out.join('\n');
+        }
+        function inlineMd(s) {
+            let t = escapeHtml(s);
+            t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) => {
+                if (!/^(https?:|mailto:|\/)/i.test(url)) return text;
+                return `<a href="${url}" rel="noopener noreferrer" target="_blank">${text}</a>`;
+            });
+            t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+            t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return t;
+        }
+
+        async function loadList() {
+            try {
+                const data = await fetchJson(`/api/v1/admin/education?status=${state.filter}`);
+                state.materials = data.materials || [];
+                render();
+            } catch (e) {
+                $('list').innerHTML = `<div class="empty-state">Could not load: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+        function render() {
+            if (state.materials.length === 0) {
+                $('list').innerHTML = `<div class="empty-state">No materials in this view. Click "+ New material" to author one.</div>`;
+                return;
+            }
+            $('list').innerHTML = state.materials.map(m => `
+                <div class="row" data-slug="${escapeHtml(m.slug)}">
+                    <div>
+                        <h3>${escapeHtml(m.title)}</h3>
+                        <p class="row-summary">${escapeHtml(m.summary || '')}</p>
+                        <div class="row-meta">
+                            <span class="badge badge-${m.status}">${m.status}</span>
+                            <span>${escapeHtml(m.slug)}</span>
+                            <span>${(m.topic_tags||[]).join(', ')}</span>
+                            <span>v${m.version}</span>
+                            <span>updated ${fmtDate(m.updated_at)}</span>
+                            ${m.status === 'published' ? `<span>published ${fmtDate(m.published_at)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="text-align:right; color: var(--fg-dim); font-size: 11px;">
+                        ${m.has_inline_body ? 'inline' : (m.has_r2_body ? 'R2' : 'empty')}
+                    </div>
+                </div>
+            `).join('');
+            $('list').querySelectorAll('.row').forEach(el => {
+                el.addEventListener('click', () => openEdit(el.getAttribute('data-slug')));
+            });
+        }
+
+        document.querySelectorAll('.filter-chip').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(x => x.classList.toggle('active', x === c));
+                state.filter = c.getAttribute('data-status');
+                loadList();
+            });
+        });
+        $('btn-refresh').addEventListener('click', loadList);
+
+        // ---- modal ----
+        function openCreate() {
+            state.editing = null;
+            $('modal-title').textContent = 'New material';
+            $('f-slug').value = '';
+            $('f-slug').disabled = false;
+            $('f-audience').value = 'all';
+            $('f-title').value = '';
+            $('f-summary').value = '';
+            $('f-tags').value = '';
+            $('f-body').value = '';
+            $('preview').classList.remove('open');
+            $('btn-archive').style.display = 'none';
+            $('modal').classList.add('open');
+            setTimeout(() => $('f-slug').focus(), 50);
+        }
+        async function openEdit(slug) {
+            try {
+                const data = await fetchJson(`/api/v1/admin/education/${encodeURIComponent(slug)}`);
+                state.editing = data.material;
+                $('modal-title').textContent = `Edit · ${data.material.title}`;
+                $('f-slug').value = data.material.slug;
+                $('f-slug').disabled = true;     // slug immutable post-create
+                $('f-audience').value = data.material.target_audience || 'all';
+                $('f-title').value = data.material.title;
+                $('f-summary').value = data.material.summary || '';
+                $('f-tags').value = (data.material.topic_tags || []).join(', ');
+                $('f-body').value = data.material.body_md || '';
+                $('preview').classList.remove('open');
+                $('btn-archive').style.display = data.material.status === 'archived' ? 'none' : 'inline-block';
+                $('modal').classList.add('open');
+            } catch (e) {
+                showToast('Could not open: ' + e.message, true);
+            }
+        }
+        function closeModal() { $('modal').classList.remove('open'); }
+        $('btn-new').addEventListener('click', openCreate);
+        $('btn-close').addEventListener('click', closeModal);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        $('btn-preview').addEventListener('click', () => {
+            const isOpen = $('preview').classList.toggle('open');
+            $('btn-preview').textContent = isOpen ? 'Edit' : 'Preview';
+            if (isOpen) {
+                $('preview').innerHTML = renderMarkdown($('f-body').value);
+            }
+        });
+
+        function gather() {
+            const tags = $('f-tags').value
+                .split(',')
+                .map(s => s.trim().toLowerCase())
+                .filter(s => s.length > 0);
+            return {
+                slug: $('f-slug').value.trim(),
+                title: $('f-title').value.trim(),
+                summary: $('f-summary').value.trim(),
+                topic_tags: tags,
+                target_audience: $('f-audience').value,
+                body_md: $('f-body').value,
+            };
+        }
+
+        async function save(status) {
+            const data = gather();
+            data.status = status;
+            try {
+                if (state.editing) {
+                    await fetchJson(`/api/v1/admin/education/${encodeURIComponent(state.editing.slug)}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({
+                            title: data.title, summary: data.summary,
+                            topic_tags: data.topic_tags, target_audience: data.target_audience,
+                            body_md: data.body_md, status,
+                        }),
+                    });
+                    showToast(status === 'published' ? 'Published.' : 'Saved.');
+                } else {
+                    await fetchJson(`/api/v1/admin/education`, {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                    });
+                    showToast(status === 'published' ? 'Created + published.' : 'Created as draft.');
+                }
+                closeModal();
+                loadList();
+            } catch (e) {
+                showToast('Save failed: ' + e.message, true);
+            }
+        }
+        $('btn-save-draft').addEventListener('click', () => save('draft'));
+        $('btn-publish').addEventListener('click', () => save('published'));
+        $('btn-archive').addEventListener('click', async () => {
+            if (!state.editing) return;
+            if (!confirm('Archive this material? It will be hidden from patients but stays on file.')) return;
+            try {
+                await fetchJson(`/api/v1/admin/education/${encodeURIComponent(state.editing.slug)}`, { method: 'DELETE' });
+                showToast('Archived.');
+                closeModal();
+                loadList();
+            } catch (e) {
+                showToast('Archive failed: ' + e.message, true);
+            }
+        });
+
+        loadList();
+    </script>
+</body>
+</html>
