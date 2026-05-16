@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Patients · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        header.bar {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 22px;
+            font-size: 13px; color: var(--fg-soft); flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 14px 0;
+        }
+        .lede {
+            font-size: 14.5px; line-height: 1.55; color: var(--fg-mid);
+            max-width: 76ch; margin: 0 0 20px 0;
+        }
+        .controls {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap;
+        }
+        input[type=search] {
+            font: inherit;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 9px; padding: 9px 12px;
+            color: var(--fg-strong); font-size: 14px;
+            min-width: 260px;
+        }
+        input[type=search]:focus {
+            outline: none;
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        button {
+            font: inherit; cursor: pointer; font-size: 13px;
+            border-radius: 9px; padding: 9px 14px;
+            transition: transform 0.18s, background 0.18s, border-color 0.18s;
+        }
+        button.primary {
+            background: rgba(var(--glow-purple), 0.22);
+            border: 1px solid rgba(var(--glow-purple), 0.65);
+            color: var(--fg-strong); font-weight: 500;
+        }
+        button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
+        button.ghost {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border); color: var(--fg-soft);
+        }
+        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+
+        .list { display: flex; flex-direction: column; gap: 8px; }
+        .row {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px; align-items: center;
+            cursor: pointer;
+            transition: all 0.18s;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            text-decoration: none; color: inherit;
+        }
+        .row:hover {
+            transform: translateY(-1px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.04);
+        }
+        .row h3 { margin: 0 0 4px 0; font-size: 15.5px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
+        .row .row-meta { font-size: 12px; color: var(--fg-soft); display: flex; gap: 12px; flex-wrap: wrap; }
+        .row .row-meta .k { color: var(--fg-dim); }
+        .row .row-meta .v { color: var(--fg-mid); }
+        .row .arrow { color: var(--fg-dim); font-size: 14px; }
+        .row:hover .arrow { color: var(--accent-soft); }
+        .empty-state {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 20px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Patients</span>
+            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);">/admin/patients</span>
+        </header>
+        <h1 class="page-title">Patients</h1>
+        <p class="lede">Click into a patient for the unified case view: intake, triage, appointments, messages, symptoms, education, and the audit timeline in one place.</p>
+
+        <div class="controls">
+            <input type="search" id="q" placeholder="Search by last name, first name, or email…">
+            <button class="ghost" id="btn-refresh">Refresh</button>
+            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="count">—</span>
+        </div>
+
+        <div id="list" class="list"><div class="empty-state">Loading…</div></div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = { patients: [], filter: '', timer: null };
+
+        async function fetchJson(url) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error; e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function fmtDate(ms) {
+            if (!ms) return '—';
+            return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        function age(dob) {
+            if (!dob) return null;
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob);
+            if (!m) return null;
+            const y = parseInt(m[1], 10), mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+            const t = new Date();
+            let a = t.getFullYear() - y;
+            if (t.getMonth() + 1 < mo || (t.getMonth() + 1 === mo && t.getDate() < d)) a -= 1;
+            return a;
+        }
+
+        async function load() {
+            try {
+                const q = state.filter ? `?q=${encodeURIComponent(state.filter)}&limit=100` : '?limit=100';
+                const data = await fetchJson(`/api/v1/admin/patients${q}`);
+                state.patients = data.patients || [];
+                render();
+            } catch (e) {
+                $('list').innerHTML = `<div class="empty-state">Could not load: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function render() {
+            $('count').textContent = `${state.patients.length} patient${state.patients.length === 1 ? '' : 's'}`;
+            if (state.patients.length === 0) {
+                $('list').innerHTML = '<div class="empty-state">No patients match this search.</div>';
+                return;
+            }
+            $('list').innerHTML = state.patients.map(p => {
+                const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || '(no name)';
+                const ageY = age(p.dob);
+                const statusBadge = p.status !== 'active'
+                    ? ` · <span style="color: rgba(252, 211, 77, 0.92);">${escapeHtml(p.status)}</span>` : '';
+                return `
+                    <a class="row" href="/admin/cases/${encodeURIComponent(p.id)}/">
+                        <div>
+                            <h3>${escapeHtml(name)}${statusBadge}</h3>
+                            <div class="row-meta">
+                                <span><span class="k">Email:</span> <span class="v">${escapeHtml(p.email || '—')}</span></span>
+                                <span><span class="k">DOB:</span> <span class="v">${escapeHtml(p.dob || '—')}${ageY != null ? ` (${ageY}y)` : ''}</span></span>
+                                <span><span class="k">Joined:</span> <span class="v">${fmtDate(p.created_at)}</span></span>
+                                ${p.phone ? `<span><span class="k">Phone:</span> <span class="v">${escapeHtml(p.phone)}</span></span>` : ''}
+                            </div>
+                        </div>
+                        <span class="arrow">→</span>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        $('q').addEventListener('input', () => {
+            clearTimeout(state.timer);
+            state.timer = setTimeout(() => {
+                state.filter = $('q').value.trim();
+                load();
+            }, 220);
+        });
+        $('btn-refresh').addEventListener('click', load);
+
+        load();
+    </script>
+</body>
+</html>

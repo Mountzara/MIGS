@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Case · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%), var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+        header.bar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; font-size: 13px; color: var(--fg-soft); flex-wrap: wrap; }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+
+        /* patient header card */
+        .patient-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+            margin-bottom: 18px;
+            animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); }
+        }
+        .patient-card h1 {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 34px);
+            color: var(--fg-strong); margin: 0 0 6px 0; letter-spacing: -0.015em;
+        }
+        .patient-meta { font-size: 13px; color: var(--fg-soft); display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+        .patient-meta .k { color: var(--fg-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10.5px; margin-right: 4px; }
+        .summary-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+        .chip {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 10px; padding: 8px 12px;
+            font-size: 12px; color: var(--fg-mid);
+            display: inline-flex; align-items: baseline; gap: 8px;
+        }
+        .chip .label { color: var(--fg-dim); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+        .chip .value { color: var(--fg-strong); font-weight: 500; font-size: 13px; }
+        .chip.alert { border-color: rgba(245, 158, 11, 0.55); background: rgba(245, 158, 11, 0.06); }
+        .chip.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .chip.good { border-color: rgba(16, 185, 129, 0.45); }
+        .chip.good .value { color: rgba(110, 231, 183, 0.95); }
+        .chip.purple { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.08); }
+        .chip.purple .value { color: var(--accent-soft); }
+
+        /* tabs */
+        .tab-bar {
+            display: flex; gap: 6px; margin: 0 0 18px 0;
+            overflow-x: auto; padding-bottom: 4px;
+            scrollbar-width: thin; scrollbar-color: rgba(var(--glow-purple), 0.4) transparent;
+        }
+        .tab-bar::-webkit-scrollbar { height: 4px; }
+        .tab-bar::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 2px; }
+        .tab {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 999px; padding: 7px 14px;
+            color: var(--fg-soft); font-size: 12.5px; letter-spacing: 0.04em;
+            font: inherit; cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.18s;
+        }
+        .tab:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .tab.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+        .tab .count {
+            background: rgba(var(--glow-purple), 0.20);
+            border-radius: 999px;
+            padding: 1px 7px; margin-left: 5px;
+            font-size: 10px; color: var(--fg-strong); font-weight: 600;
+        }
+
+        .panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+            display: none; margin-bottom: 14px;
+            animation: mzRise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .panel.active { display: block; }
+        .panel h2 {
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 14px 0;
+        }
+
+        /* overview grid */
+        .overview-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+        .ov-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+        }
+        .ov-card .head {
+            display: flex; align-items: baseline; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .ov-card h3 { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
+        .ov-card .stat { font-size: 22px; font-weight: 200; color: var(--fg-strong); margin: 4px 0; letter-spacing: -0.02em; }
+        .ov-card .stat-unit { font-size: 12px; color: var(--fg-dim); }
+        .ov-card .ov-link { font-size: 12px; color: var(--accent-soft); margin-top: 8px; display: inline-block; }
+        .ov-card .ov-link:hover { color: var(--fg-strong); }
+
+        /* intake section accordion */
+        details.section {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 11px; padding: 0;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        details.section summary {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 14px; color: var(--fg-strong);
+            list-style: none;
+        }
+        details.section summary::-webkit-details-marker { display: none; }
+        details.section summary::after {
+            content: '+'; color: var(--fg-dim); font-size: 16px;
+            margin-left: 10px;
+        }
+        details.section[open] summary::after { content: '−'; }
+        details.section .section-meta { color: var(--fg-dim); font-size: 11px; }
+        details.section .section-body {
+            padding: 0 16px 14px 16px;
+            font-size: 12.5px;
+        }
+        .kv-grid {
+            display: grid; grid-template-columns: max-content 1fr;
+            gap: 4px 14px;
+            color: var(--fg-mid);
+        }
+        .kv-grid .k { color: var(--fg-dim); font-size: 11px; padding-top: 1px; }
+        .kv-grid .v { color: var(--fg-strong); word-break: break-word; }
+        .kv-grid .v.bool-true { color: rgba(252, 211, 77, 0.95); font-weight: 500; }
+        .kv-grid .v.bool-false { color: var(--fg-dim); }
+
+        /* triage / appt / thread / doc row */
+        .row {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 11px; padding: 12px 14px;
+            margin-bottom: 8px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px; align-items: center;
+        }
+        .row h3 { margin: 0 0 4px 0; font-size: 14px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
+        .row .row-meta { font-size: 12px; color: var(--fg-soft); display: flex; gap: 10px; flex-wrap: wrap; }
+        .row .row-meta .k { color: var(--fg-dim); }
+        .badge {
+            display: inline-flex; align-items: center;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.14em; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+        }
+        .badge-released { background: rgba(16, 185, 129, 0.12); color: rgba(110, 231, 183, 0.95); border: 1px solid rgba(16, 185, 129, 0.45); }
+        .badge-pending  { background: rgba(var(--glow-purple), 0.16); color: var(--accent-soft); border: 1px solid rgba(var(--glow-purple), 0.55); }
+        .badge-urgent   { background: rgba(245, 158, 11, 0.12); color: rgba(252, 211, 77, 0.95); border: 1px solid rgba(245, 158, 11, 0.45); }
+        .badge-neutral  { background: rgba(255, 255, 255, 0.05); color: var(--fg-soft); border: 1px solid var(--border); }
+        .badge-cancelled { background: rgba(239, 68, 68, 0.12); color: rgba(252, 165, 165, 0.95); border: 1px solid rgba(239, 68, 68, 0.45); }
+
+        /* symptom chart */
+        .trend-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        .trend-card h3 { margin: 0 0 6px 0; font-size: 13px; font-weight: 500; color: var(--fg-strong); }
+        .trend-card .trend-sub { font-size: 11px; color: var(--fg-dim); margin-bottom: 8px; }
+        svg.trend { width: 100%; height: 110px; display: block; }
+
+        /* audit list */
+        .audit-row {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 9px; padding: 10px 14px; margin-bottom: 6px;
+            font-size: 12.5px;
+            display: grid;
+            grid-template-columns: max-content 1fr max-content;
+            gap: 12px; align-items: baseline;
+        }
+        .audit-row .time { color: var(--fg-dim); font-size: 11px; }
+        .audit-row .action { color: var(--fg-strong); font-weight: 500; }
+        .audit-row .who { color: var(--fg-soft); font-size: 11px; }
+
+        .empty-state {
+            padding: 28px 18px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+        }
+
+        .note-box {
+            background: rgba(var(--glow-purple), 0.04); border: 1px solid rgba(var(--glow-purple), 0.30);
+            border-radius: 9px; padding: 10px 14px;
+            color: var(--fg-mid); font-size: 13px;
+            margin: 10px 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; <a href="/admin/patients/">Patients</a> &rsaquo; <span id="crumb-name">…</span></span>
+            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="patient-id">—</span>
+        </header>
+
+        <section class="patient-card">
+            <h1 id="p-name">Loading…</h1>
+            <div class="patient-meta" id="p-meta"></div>
+            <div class="summary-chips" id="summary-chips"></div>
+        </section>
+
+        <nav class="tab-bar" id="tab-bar"></nav>
+
+        <section class="panel" id="panel-overview">
+            <h2>Snapshot</h2>
+            <div class="overview-grid" id="overview-grid"></div>
+        </section>
+
+        <section class="panel" id="panel-intake">
+            <h2>Intake</h2>
+            <div id="intake-body"></div>
+        </section>
+
+        <section class="panel" id="panel-triage">
+            <h2>Triage history</h2>
+            <div id="triage-body"></div>
+        </section>
+
+        <section class="panel" id="panel-appointments">
+            <h2>Appointments</h2>
+            <div id="appt-body"></div>
+        </section>
+
+        <section class="panel" id="panel-messages">
+            <h2>Messages</h2>
+            <div id="msg-body"></div>
+        </section>
+
+        <section class="panel" id="panel-symptoms">
+            <h2>Symptom diary</h2>
+            <div id="sym-body"></div>
+        </section>
+
+        <section class="panel" id="panel-education">
+            <h2>Education assignments</h2>
+            <div id="edu-body"></div>
+        </section>
+
+        <section class="panel" id="panel-documents">
+            <h2>Documents</h2>
+            <div id="doc-body"></div>
+        </section>
+
+        <section class="panel" id="panel-audit">
+            <h2>Audit timeline</h2>
+            <div id="audit-body"></div>
+        </section>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = { case: null };
+
+        // Extract patient_id from URL: /admin/cases/<id>/
+        const pathMatch = location.pathname.match(/\/admin\/cases\/([^\/?#]+)/);
+        const patient_id = pathMatch ? decodeURIComponent(pathMatch[1]) : '';
+
+        const TABS = [
+            { key: 'overview',     label: 'Overview' },
+            { key: 'intake',       label: 'Intake' },
+            { key: 'triage',       label: 'Triage' },
+            { key: 'appointments', label: 'Appointments' },
+            { key: 'messages',     label: 'Messages' },
+            { key: 'symptoms',     label: 'Symptoms' },
+            { key: 'education',    label: 'Education' },
+            { key: 'documents',    label: 'Documents' },
+            { key: 'audit',        label: 'Audit' },
+        ];
+        const VISIT_LABELS = {
+            new_patient_complex: "New Patient — Complex",
+            new_patient_standard: "New Patient — Standard",
+            endo_pain_evaluation: "Complex Pelvic Pain / Endo Eval",
+            endo_pain_followup: "Endo Follow-up",
+            omt_treatment: "OMT Treatment",
+            aub_eval: "AUB / Bleeding Eval",
+            pre_op: "Pre-Op Visit",
+            post_op_early: "Post-Op (1–2 wk)",
+            post_op_late: "Post-Op (6 wk)",
+            routine_followup: "Routine Follow-up",
+            office_procedure: "Office Procedure",
+            quick_concern: "Quick Concern",
+            annual_exam: "Annual Exam",
+            telehealth_consult: "Telehealth Consult",
+            manual_review_required: "Manual review required",
+        };
+
+        async function fetchJson(url) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error; e.status = res.status; throw e;
+            }
+            return body;
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function fmtDate(ms) { return ms ? new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
+        function fmtDateTime(ms) {
+            if (!ms) return '—';
+            return new Date(ms).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        }
+        function fmtVisitType(k) { return VISIT_LABELS[k] || k || '—'; }
+        function fmtDur(min) { return min ? (min >= 60 ? `${Math.floor(min/60)}h ${min%60 ? min%60+'m' : ''}`.trim() : `${min} min`) : '—'; }
+
+        // ---- bootstrap ----
+        (async function init() {
+            if (!patient_id) { document.body.innerHTML = '<div class="wrap"><div class="empty-state">Missing patient id in URL.</div></div>'; return; }
+            try {
+                const data = await fetchJson(`/api/v1/admin/cases/${encodeURIComponent(patient_id)}`);
+                state.case = data;
+                renderPatientHeader(data);
+                renderTabs(data);
+                renderAll(data);
+            } catch (e) {
+                document.body.innerHTML = `<div class="wrap"><div class="empty-state">Could not load case: ${escapeHtml(e.message)}</div></div>`;
+            }
+        })();
+
+        function renderPatientHeader(d) {
+            const p = d.patient;
+            const name = p.display_name || `${p.first_name||''} ${p.last_name||''}`.trim();
+            $('crumb-name').textContent = name;
+            $('patient-id').textContent = p.id;
+            $('p-name').textContent = name;
+            document.title = `Case · ${name}`;
+            const meta = [
+                p.dob ? `<span><span class="k">DOB</span>${escapeHtml(p.dob)}${p.age_years != null ? ` (${p.age_years}y)` : ''}</span>` : '',
+                p.email ? `<span><span class="k">Email</span>${escapeHtml(p.email)}</span>` : '',
+                p.phone ? `<span><span class="k">Phone</span>${escapeHtml(p.phone)}</span>` : '',
+                p.pronouns ? `<span><span class="k">Pronouns</span>${escapeHtml(p.pronouns)}</span>` : '',
+                p.mrn ? `<span><span class="k">MRN</span>${escapeHtml(p.mrn)}</span>` : '',
+                p.timezone ? `<span><span class="k">TZ</span>${escapeHtml(p.timezone)}</span>` : '',
+                `<span><span class="k">Joined</span>${fmtDate(p.created_at)}</span>`,
+                p.status !== 'active' ? `<span><span class="k">Status</span>${escapeHtml(p.status)}</span>` : '',
+            ].filter(Boolean).join(' ');
+            $('p-meta').innerHTML = meta;
+
+            const chips = [];
+            // Intake
+            if (d.intake) {
+                const cls = d.intake.status === 'submitted' || d.intake.status === 'reviewed' ? 'good' : 'purple';
+                chips.push(`<div class="chip ${cls}"><span class="label">Intake</span><span class="value">${escapeHtml(d.intake.status)} · ${d.intake.completion_pct || 0}%</span></div>`);
+            } else {
+                chips.push('<div class="chip"><span class="label">Intake</span><span class="value">none</span></div>');
+            }
+            // Triage
+            if (d.triage_history && d.triage_history.length > 0) {
+                const t = d.triage_history[0];
+                const cls = t.clinician_reviewed_at ? (t.appointment_id ? 'good' : 'purple') : 'alert';
+                const label = t.clinician_reviewed_at ? (t.appointment_id ? 'booked' : 'released') : 'pending';
+                chips.push(`<div class="chip ${cls}"><span class="label">Triage</span><span class="value">${escapeHtml(fmtVisitType(t.final_visit_type || t.ai_visit_type))} · ${label}</span></div>`);
+            }
+            // Next appointment
+            const nextAppt = d.appointments && d.appointments.upcoming && d.appointments.upcoming[0];
+            if (nextAppt) {
+                chips.push(`<div class="chip good"><span class="label">Next visit</span><span class="value">${fmtDateTime(nextAppt.starts_at)} · ${escapeHtml(fmtVisitType(nextAppt.visit_type))}</span></div>`);
+            }
+            // Messages
+            if (d.messages.unread_for_clinician > 0) {
+                chips.push(`<div class="chip alert"><span class="label">Messages</span><span class="value">${d.messages.unread_for_clinician} unread</span></div>`);
+            } else {
+                chips.push(`<div class="chip"><span class="label">Messages</span><span class="value">${(d.messages.threads||[]).length} thread${(d.messages.threads||[]).length === 1 ? '' : 's'}</span></div>`);
+            }
+            // Symptoms
+            if (d.symptoms.entry_count > 0) {
+                chips.push(`<div class="chip purple"><span class="label">Diary</span><span class="value">${d.symptoms.entry_count} entries · last ${d.symptoms.diary[d.symptoms.diary.length-1]?.entry_date || '—'}</span></div>`);
+            }
+            // Audit
+            chips.push(`<div class="chip"><span class="label">Audit events</span><span class="value">${(d.audit||[]).length}</span></div>`);
+            $('summary-chips').innerHTML = chips.join('');
+        }
+
+        function renderTabs(d) {
+            const counts = {
+                intake: d.intake ? d.intake.section_count : 0,
+                triage: (d.triage_history||[]).length,
+                appointments: (d.appointments.upcoming.length + d.appointments.past.length),
+                messages: (d.messages.threads||[]).length,
+                symptoms: d.symptoms.entry_count,
+                education: (d.education.assignments||[]).length,
+                documents: (d.documents||[]).length,
+                audit: (d.audit||[]).length,
+            };
+            $('tab-bar').innerHTML = TABS.map(t => {
+                const c = counts[t.key];
+                const countBadge = c != null && c > 0 ? `<span class="count">${c}</span>` : '';
+                return `<button class="tab" data-tab="${t.key}">${t.label}${countBadge}</button>`;
+            }).join('');
+            $('tab-bar').querySelectorAll('.tab').forEach(b => {
+                b.addEventListener('click', () => activateTab(b.getAttribute('data-tab')));
+            });
+            const initial = location.hash.replace('#', '') || 'overview';
+            activateTab(TABS.find(t => t.key === initial) ? initial : 'overview');
+        }
+        function activateTab(key) {
+            $('tab-bar').querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === key));
+            TABS.forEach(t => {
+                const el = $(`panel-${t.key}`);
+                if (el) el.classList.toggle('active', t.key === key);
+            });
+            if (history.replaceState) history.replaceState(null, '', '#' + key);
+        }
+
+        function renderAll(d) {
+            renderOverview(d);
+            renderIntake(d);
+            renderTriage(d);
+            renderAppointments(d);
+            renderMessages(d);
+            renderSymptoms(d);
+            renderEducation(d);
+            renderDocuments(d);
+            renderAudit(d);
+        }
+
+        function renderOverview(d) {
+            const cards = [];
+            // Intake card
+            if (d.intake) {
+                cards.push(`<div class="ov-card">
+                    <div class="head"><h3>Intake</h3></div>
+                    <div class="stat">${d.intake.completion_pct || 0}<span class="stat-unit">% complete</span></div>
+                    <div style="font-size:12px; color: var(--fg-soft);">Started ${fmtDate(d.intake.started_at)}. ${d.intake.submitted_at ? 'Submitted ' + fmtDate(d.intake.submitted_at) + '.' : 'Still in progress.'}</div>
+                    <a class="ov-link" href="#intake" onclick="activateTab('intake')">Open intake →</a>
+                </div>`);
+            }
+            // Triage card
+            if (d.triage_history && d.triage_history[0]) {
+                const t = d.triage_history[0];
+                cards.push(`<div class="ov-card">
+                    <div class="head"><h3>Latest triage</h3></div>
+                    <div class="stat" style="font-size: 16px; font-weight: 400;">${escapeHtml(fmtVisitType(t.final_visit_type || t.ai_visit_type))}</div>
+                    <div style="font-size:12px; color: var(--fg-soft);">${t.clinician_reviewed_at ? 'Released ' + fmtDate(t.clinician_reviewed_at) : 'Pending clinician review'}${t.appointment_id ? ' · booked' : ''}.</div>
+                    <a class="ov-link" href="#triage" onclick="activateTab('triage')">Triage history →</a>
+                </div>`);
+            }
+            // Next appointment
+            const nextAppt = d.appointments.upcoming[0];
+            if (nextAppt) {
+                cards.push(`<div class="ov-card">
+                    <div class="head"><h3>Next visit</h3></div>
+                    <div class="stat" style="font-size: 16px; font-weight: 400;">${fmtDateTime(nextAppt.starts_at)}</div>
+                    <div style="font-size:12px; color: var(--fg-soft);">${escapeHtml(fmtVisitType(nextAppt.visit_type))} · ${fmtDur(nextAppt.duration_min)} · ${escapeHtml(nextAppt.modality)}</div>
+                    <a class="ov-link" href="#appointments" onclick="activateTab('appointments')">All appointments →</a>
+                </div>`);
+            }
+            // Messages
+            cards.push(`<div class="ov-card">
+                <div class="head"><h3>Messages</h3></div>
+                <div class="stat">${d.messages.unread_for_clinician}<span class="stat-unit"> unread</span></div>
+                <div style="font-size:12px; color: var(--fg-soft);">${(d.messages.threads||[]).length} thread${(d.messages.threads||[]).length === 1 ? '' : 's'} total.</div>
+                <a class="ov-link" href="#messages" onclick="activateTab('messages')">Open inbox →</a>
+            </div>`);
+            // Symptoms
+            cards.push(`<div class="ov-card">
+                <div class="head"><h3>Symptom diary</h3></div>
+                <div class="stat">${d.symptoms.entry_count}<span class="stat-unit"> entries (${d.symptoms.window.days} d)</span></div>
+                <div style="font-size:12px; color: var(--fg-soft);">${d.symptoms.entry_count > 0 ? `Latest ${d.symptoms.diary[d.symptoms.diary.length-1]?.entry_date || '—'}` : 'Not yet logged.'}</div>
+                <a class="ov-link" href="#symptoms" onclick="activateTab('symptoms')">Trends →</a>
+            </div>`);
+            // Education
+            cards.push(`<div class="ov-card">
+                <div class="head"><h3>Education</h3></div>
+                <div class="stat">${(d.education.assignments||[]).length}<span class="stat-unit"> assigned</span></div>
+                <div style="font-size:12px; color: var(--fg-soft);">${d.education.completed_count} completed.</div>
+                <a class="ov-link" href="#education" onclick="activateTab('education')">Assignments →</a>
+            </div>`);
+            // Documents
+            cards.push(`<div class="ov-card">
+                <div class="head"><h3>Documents</h3></div>
+                <div class="stat">${(d.documents||[]).length}<span class="stat-unit"> files</span></div>
+                <a class="ov-link" href="#documents" onclick="activateTab('documents')">Open documents →</a>
+            </div>`);
+            $('overview-grid').innerHTML = cards.join('');
+        }
+
+        function renderIntake(d) {
+            if (!d.intake) { $('intake-body').innerHTML = '<div class="empty-state">No intake started.</div>'; return; }
+            const meta = `<div class="note-box">Status <strong>${escapeHtml(d.intake.status)}</strong> · started ${fmtDate(d.intake.started_at)}${d.intake.submitted_at ? ' · submitted ' + fmtDate(d.intake.submitted_at) : ''} · ${d.intake.completion_pct || 0}% complete · ${d.intake.section_count} of 19 sections saved.</div>`;
+            const sections = (d.intake.sections || []).map(s => {
+                const keys = Object.keys(s.data || {});
+                const summary = keys.length > 0 ? `${keys.length} field${keys.length === 1 ? '' : 's'} saved` : 'empty';
+                const fields = keys.map(k => {
+                    const v = s.data[k];
+                    let display = '';
+                    let cls = '';
+                    if (typeof v === 'boolean') { display = v ? 'yes' : 'no'; cls = v ? 'bool-true' : 'bool-false'; }
+                    else if (Array.isArray(v)) display = v.join(', ');
+                    else if (typeof v === 'object' && v !== null) display = JSON.stringify(v);
+                    else if (v === null || v === '') display = '—';
+                    else display = String(v);
+                    return `<span class="k">${escapeHtml(k)}</span><span class="v ${cls}">${escapeHtml(display)}</span>`;
+                }).join('');
+                return `
+                    <details class="section">
+                        <summary>
+                            <span><strong style="color: var(--fg-strong);">${s.section_number}.</strong> ${escapeHtml(s.section_key.replace(/_/g, ' '))}</span>
+                            <span class="section-meta">${summary} · updated ${fmtDate(s.last_updated_at)}</span>
+                        </summary>
+                        <div class="section-body">
+                            <div class="kv-grid">${fields || '<span class="k">—</span><span class="v">empty</span>'}</div>
+                        </div>
+                    </details>
+                `;
+            }).join('');
+            $('intake-body').innerHTML = meta + sections;
+        }
+
+        function renderTriage(d) {
+            const rows = (d.triage_history || []).map(t => {
+                const cls = t.clinician_reviewed_at ? (t.appointment_id ? 'badge-released' : 'badge-pending') : 'badge-urgent';
+                const label = t.clinician_reviewed_at ? (t.appointment_id ? 'booked' : 'released') : 'pending review';
+                const finalVT = t.final_visit_type || t.clinician_override_visit_type || t.ai_visit_type;
+                const overrideNote = t.clinician_override_visit_type && t.clinician_override_visit_type !== t.ai_visit_type
+                    ? `<div style="font-size: 11px; color: rgba(252, 211, 77, 0.92); margin-top: 4px;">Clinician overrode AI's <em>${escapeHtml(fmtVisitType(t.ai_visit_type))}</em>${t.clinician_override_reason ? ' — ' + escapeHtml(t.clinician_override_reason) : ''}</div>`
+                    : '';
+                const rationale = t.ai_rationale ? `<div style="font-size: 12px; color: var(--fg-soft); margin-top: 6px; padding: 6px 10px; background: rgba(255,255,255,0.025); border-left: 2px solid rgba(var(--glow-purple), 0.55); border-radius: 0 6px 6px 0;">${escapeHtml(t.ai_rationale)}</div>` : '';
+                return `<div class="row" style="display:block;">
+                    <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                        <div>
+                            <h3>${escapeHtml(fmtVisitType(finalVT))} · ${fmtDur(t.final_duration_min || t.ai_duration_min)} · ${t.ai_urgency}</h3>
+                            <div class="row-meta">
+                                <span><span class="k">Triaged</span> ${fmtDateTime(t.created_at)}</span>
+                                ${t.clinician_reviewed_at ? `<span><span class="k">Released</span> ${fmtDateTime(t.clinician_reviewed_at)} by ${escapeHtml(t.clinician_reviewer_id || '—')}</span>` : ''}
+                                <span><span class="k">Prompt</span> ${escapeHtml(t.ai_prompt_version || '—')}</span>
+                            </div>
+                        </div>
+                        <span class="badge ${cls}">${label}</span>
+                    </div>
+                    ${overrideNote}
+                    ${rationale}
+                </div>`;
+            }).join('');
+            $('triage-body').innerHTML = rows || '<div class="empty-state">No triage runs yet.</div>';
+        }
+
+        function renderAppointments(d) {
+            const up = d.appointments.upcoming || [];
+            const past = d.appointments.past || [];
+            const renderAppt = (a) => {
+                const cls = a.status === 'scheduled' ? 'badge-pending'
+                          : a.status === 'completed' ? 'badge-released'
+                          : a.status === 'cancelled' ? 'badge-cancelled'
+                          : 'badge-neutral';
+                return `<div class="row" style="display:block;">
+                    <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                        <div>
+                            <h3>${fmtDateTime(a.starts_at)} · ${escapeHtml(fmtVisitType(a.visit_type))}</h3>
+                            <div class="row-meta">
+                                <span><span class="k">Duration</span> ${fmtDur(a.duration_min)}</span>
+                                <span><span class="k">Modality</span> ${escapeHtml(a.modality)}</span>
+                                ${a.doxy_room_url ? `<span><a href="${escapeHtml(a.doxy_room_url)}" target="_blank">Doxy room</a></span>` : ''}
+                                ${a.chief_complaint_summary ? `<span><span class="k">CC</span> ${escapeHtml(a.chief_complaint_summary)}</span>` : ''}
+                            </div>
+                        </div>
+                        <span class="badge ${cls}">${a.status}</span>
+                    </div>
+                </div>`;
+            };
+            $('appt-body').innerHTML = `
+                <h3 style="font-size: 12px; color: var(--fg-dim); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 10px 0;">Upcoming (${up.length})</h3>
+                ${up.length ? up.map(renderAppt).join('') : '<div class="empty-state">No upcoming visits.</div>'}
+                <h3 style="font-size: 12px; color: var(--fg-dim); letter-spacing: 0.12em; text-transform: uppercase; margin: 18px 0 10px 0;">Past (${past.length})</h3>
+                ${past.length ? past.map(renderAppt).join('') : '<div class="empty-state">No past visits.</div>'}
+            `;
+        }
+
+        function renderMessages(d) {
+            const rows = (d.messages.threads || []).map(t => {
+                const unread = (t.clinician_unread_count || 0) > 0 ? `<span class="badge badge-urgent">${t.clinician_unread_count} unread</span>` : '<span class="badge badge-neutral">read</span>';
+                return `<a class="row" style="text-decoration:none; color:inherit;" href="/admin/messages/">
+                    <div>
+                        <h3>${escapeHtml(t.subject)}</h3>
+                        <div class="row-meta">
+                            <span><span class="k">Last</span> ${escapeHtml(t.last_message_from_role)}, ${fmtDateTime(t.last_message_at)}</span>
+                            <span style="color: var(--fg-mid);">${escapeHtml(t.last_message_preview || '')}</span>
+                        </div>
+                    </div>
+                    ${unread}
+                </a>`;
+            }).join('');
+            $('msg-body').innerHTML = rows || '<div class="empty-state">No threads yet.</div>';
+        }
+
+        function renderSymptoms(d) {
+            if (d.symptoms.entry_count === 0) {
+                $('sym-body').innerHTML = '<div class="empty-state">No diary entries in this window.</div>';
+                return;
+            }
+            const trends = d.symptoms.trends || {};
+            const charts = Object.entries(trends).map(([key, series]) => renderTrendChart(key, series)).join('');
+            const recent = d.symptoms.diary.slice(-7).reverse().map(e => {
+                const keys = Object.keys(e.values || {});
+                const summary = keys.map(k => `${k.replace(/_/g, ' ').replace(/0 10/g, '')}=${formatValue(e.values[k])}`).join(' · ');
+                return `<div class="row" style="display:block;">
+                    <div><strong style="color: var(--fg-strong); font-size: 13px;">${escapeHtml(e.entry_date)}</strong> <span style="font-size: 11px; color: var(--fg-dim);">updated ${fmtDateTime(e.updated_at)}</span></div>
+                    <div style="font-size: 12.5px; color: var(--fg-mid); margin-top: 4px;">${escapeHtml(summary)}</div>
+                    ${e.note ? `<div style="font-size: 12px; color: var(--fg-soft); margin-top: 4px; font-style: italic;">${escapeHtml(e.note)}</div>` : ''}
+                </div>`;
+            }).join('');
+            $('sym-body').innerHTML = `
+                <div style="margin-bottom: 14px;">${charts}</div>
+                <h3 style="font-size: 12px; color: var(--fg-dim); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 10px 0;">Recent entries</h3>
+                ${recent}
+            `;
+        }
+        function formatValue(v) {
+            if (typeof v === 'boolean') return v ? 'yes' : 'no';
+            if (Array.isArray(v)) return v.join(',');
+            return String(v);
+        }
+        function renderTrendChart(key, series) {
+            const nonNull = series.filter(p => p.value !== null);
+            if (nonNull.length === 0) {
+                return `<div class="trend-card"><h3>${escapeHtml(key.replace(/_/g, ' '))}</h3><div class="trend-sub" style="color:var(--fg-dim);">No data in this window.</div></div>`;
+            }
+            const W = 780, H = 110, PAD_L = 28, PAD_R = 8, PAD_T = 8, PAD_B = 20;
+            const innerW = W - PAD_L - PAD_R, innerH = H - PAD_T - PAD_B;
+            const values = nonNull.map(p => p.value);
+            const minY = Math.min(0, ...values);
+            const maxY = Math.max(...values, key.endsWith('_0_10') ? 10 : 1);
+            const rangeY = maxY - minY || 1;
+            const stepX = innerW / Math.max(1, series.length - 1);
+            const x = (i) => PAD_L + i * stepX;
+            const y = (v) => PAD_T + innerH - ((v - minY) / rangeY) * innerH;
+            // Break line on null gaps.
+            const segs = []; let cur = [];
+            series.forEach((p, i) => {
+                if (p.value == null) { if (cur.length) segs.push(cur); cur = []; }
+                else cur.push({ i, v: p.value });
+            });
+            if (cur.length) segs.push(cur);
+            const lines = segs.map(seg => seg.map((pt, k) => `${k === 0 ? 'M' : 'L'}${x(pt.i).toFixed(1)},${y(pt.v).toFixed(1)}`).join(' ')).join(' ');
+            const dots = nonNull.map(p => {
+                const i = series.findIndex(s => s.date === p.date);
+                return `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2" fill="rgba(167,139,250,1)" />`;
+            }).join('');
+            return `
+                <div class="trend-card">
+                    <h3>${escapeHtml(key.replace(/_/g, ' '))}</h3>
+                    <div class="trend-sub">${nonNull.length} day${nonNull.length === 1 ? '' : 's'} logged · range ${minY}–${maxY}</div>
+                    <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="${escapeHtml(key)} trend">
+                        <line x1="${PAD_L}" y1="${y(maxY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(maxY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>
+                        <line x1="${PAD_L}" y1="${y(minY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(minY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>
+                        <text x="${PAD_L - 4}" y="${(y(maxY) + 3).toFixed(1)}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${maxY}</text>
+                        <text x="${PAD_L - 4}" y="${(y(minY) + 3).toFixed(1)}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${minY}</text>
+                        <path d="${lines}" fill="none" stroke="rgba(167,139,250,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        ${dots}
+                    </svg>
+                </div>
+            `;
+        }
+
+        function renderEducation(d) {
+            const rows = (d.education.assignments || []).map(a => {
+                const status = a.completed_at ? 'badge-released' : a.first_opened_at ? 'badge-pending' : 'badge-neutral';
+                const label = a.completed_at ? `completed ${fmtDate(a.completed_at)}` : a.first_opened_at ? `opened ${fmtDate(a.first_opened_at)}` : 'not opened';
+                return `<div class="row" style="display:block;">
+                    <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                        <div>
+                            <h3>${escapeHtml(a.title || a.slug)}</h3>
+                            <div class="row-meta">
+                                <span><span class="k">Slug</span> ${escapeHtml(a.slug || '—')}</span>
+                                <span><span class="k">Assigned by</span> ${escapeHtml(a.assigned_by_role)} ${a.assigned_by_id ? '(' + escapeHtml(a.assigned_by_id) + ')' : ''}</span>
+                                <span><span class="k">Reason</span> ${escapeHtml(a.reason || '—')}</span>
+                                <span><span class="k">Views</span> ${a.view_count}</span>
+                            </div>
+                            ${a.summary ? `<div style="font-size: 12px; color: var(--fg-soft); margin-top: 4px;">${escapeHtml(a.summary)}</div>` : ''}
+                        </div>
+                        <span class="badge ${status}">${label}</span>
+                    </div>
+                </div>`;
+            }).join('');
+            $('edu-body').innerHTML = rows || '<div class="empty-state">No education assignments.</div>';
+        }
+
+        function renderDocuments(d) {
+            const rows = (d.documents || []).map(doc => `
+                <div class="row" style="display:block;">
+                    <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                        <div>
+                            <h3>${escapeHtml(doc.filename)}</h3>
+                            <div class="row-meta">
+                                <span><span class="k">Kind</span> ${escapeHtml(doc.kind)}</span>
+                                <span><span class="k">MIME</span> ${escapeHtml(doc.mime_type || '—')}</span>
+                                <span><span class="k">Size</span> ${doc.size_bytes ? (doc.size_bytes/1024).toFixed(0) + ' KB' : '—'}</span>
+                                <span><span class="k">From</span> ${escapeHtml(doc.uploaded_by_role)} ${doc.source_app ? '· ' + escapeHtml(doc.source_app) : ''}</span>
+                                <span><span class="k">Uploaded</span> ${fmtDateTime(doc.uploaded_at)}</span>
+                            </div>
+                            ${doc.description ? `<div style="font-size: 12px; color: var(--fg-soft); margin-top: 4px;">${escapeHtml(doc.description)}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            $('doc-body').innerHTML = rows || '<div class="empty-state">No documents on file.</div>';
+        }
+
+        function renderAudit(d) {
+            const rows = (d.audit || []).map(e => `
+                <div class="audit-row">
+                    <span class="time">${fmtDateTime(e.ts)}</span>
+                    <span><span class="action">${escapeHtml(e.action)}</span> <span style="color: var(--fg-dim); font-size: 11px;">${escapeHtml(e.record_type || '—')}</span>${e.success === false ? ' <span class="badge badge-cancelled">fail</span>' : ''}</span>
+                    <span class="who">${escapeHtml(e.user_role)} ${e.user_id ? '· ' + escapeHtml(e.user_id) : ''}</span>
+                </div>
+            `).join('');
+            $('audit-body').innerHTML = rows || '<div class="empty-state">No audit events.</div>';
+        }
+    </script>
+</body>
+</html>

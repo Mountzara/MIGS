@@ -7,3 +7,10 @@
 # embed that pointed at /blog/... is 301 redirected to /trending/...
 /blog/ /trending/ 301
 /blog/* /trending/:splat 301
+
+# Phase 5 clinician workspace — /admin/cases/<patient_id>/ is a single
+# static SPA at /admin/cases/[id]/index.html. Cloudflare Pages serves
+# the literal [id] folder only when the URL also has [id] in it, so we
+# rewrite any patient_id path to that one file. The SPA reads the
+# patient_id from window.location.pathname itself.
+/admin/cases/* /admin/cases/[id]/index.html 200
