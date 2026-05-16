@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Profile · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s ease; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 760px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 40px); }
+        .top-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--fg-soft);
+            margin-bottom: 28px;
+        }
+        button.text-btn {
+            background: none; border: none; padding: 6px 10px; border-radius: 8px;
+            color: var(--fg-soft); font: inherit; font-size: 13px; cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+        button.text-btn:hover { color: var(--fg-strong); background: rgba(var(--glow-purple), 0.10); }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-weight: 200;
+            font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 8px 0;
+        }
+        .lede { font-size: 15.5px; line-height: 1.65; color: var(--fg-soft); margin: 0 0 28px 0; max-width: 56ch; }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 22px 22px 20px;
+            margin-bottom: 16px;
+            animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .card h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        dl { margin: 0; display: grid; grid-template-columns: 1fr 2fr; gap: 8px 18px; font-size: 14px; }
+        dt { color: var(--fg-soft); }
+        dd { margin: 0; color: var(--fg-strong); word-break: break-word; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 540px) { .grid-2 { grid-template-columns: 1fr; } dl { grid-template-columns: 1fr; } dt { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; } }
+        label { font-size: 12px; font-weight: 600; color: var(--fg-mid); letter-spacing: 0.02em; display: flex; flex-direction: column; gap: 6px; }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 9px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 14px;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: rgba(var(--glow-purple), 0.65);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
+        }
+        button.primary {
+            padding: 11px 18px;
+            background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+            color: #fff;
+            font: inherit; font-size: 14px; font-weight: 600;
+            border: none; border-radius: 9px;
+            cursor: pointer;
+            transition: filter 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            margin-top: 8px;
+        }
+        button.primary:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(var(--glow-purple), 0.55); }
+        button[disabled] { opacity: 0.5; cursor: not-allowed; }
+        .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; margin-top: 10px; display: none; }
+        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .loading { color: var(--fg-soft); font-size: 14px; }
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row">
+            <a href="/portal/">&larr; Portal home</a>
+            <button class="text-btn" id="logoutBtn">Log out</button>
+        </div>
+        <p class="eyebrow">Patient Portal &middot; Your profile</p>
+        <h1 id="welcomeName">Profile</h1>
+        <p class="lede">The basics on file. Email, date of birth, and legal name are part of your identity record and require chart review to change. Everything else you can edit here.</p>
+
+        <div class="card" id="identityCard">
+            <h2>Identity &middot; on the record</h2>
+            <div class="loading" id="identityLoading">Loading…</div>
+            <dl id="identityList" style="display:none">
+                <dt>Name</dt><dd id="fName"></dd>
+                <dt>Email</dt><dd id="fEmail"></dd>
+                <dt>Date of birth</dt><dd id="fDob"></dd>
+                <dt>Account status</dt><dd id="fStatus"></dd>
+                <dt>Created</dt><dd id="fCreated"></dd>
+            </dl>
+        </div>
+
+        <div class="card">
+            <h2>Editable</h2>
+            <form id="profileForm" autocomplete="on">
+                <div class="grid-2">
+                    <label>Preferred name
+                        <input type="text" id="preferred_name" name="preferred_name" maxlength="80">
+                    </label>
+                    <label>Pronouns
+                        <input type="text" id="pronouns" name="pronouns" maxlength="40" placeholder="e.g. she/her">
+                    </label>
+                    <label>Phone
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" maxlength="40" placeholder="e.g. +1 312 555 0100">
+                    </label>
+                    <label>Preferred language
+                        <select id="preferred_language" name="preferred_language">
+                            <option value="en">English</option>
+                            <option value="es">Espa&ntilde;ol</option>
+                        </select>
+                    </label>
+                    <label>Time zone
+                        <input type="text" id="timezone" name="timezone" placeholder="America/Chicago">
+                    </label>
+                </div>
+                <button class="primary" type="submit" id="saveBtn">Save changes</button>
+                <div id="msg" class="msg" role="status" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const msg = $('msg');
+        function showMsg(text, cls) { msg.textContent = text; msg.className = 'msg ' + cls; }
+        function clearMsg() { msg.className = 'msg'; msg.textContent = ''; }
+
+        async function loadProfile() {
+            try {
+                const me = await fetch('/api/v1/auth/me', { credentials: 'same-origin' });
+                if (me.status === 401) { location.href = '/portal/login/'; return; }
+                if (me.status === 404) { location.href = '/portal/'; return; }
+                const meBody = await me.json();
+                if (meBody?.profile?.first_name) {
+                    $('welcomeName').textContent = `Hi, ${meBody.profile.first_name}.`;
+                }
+
+                const r = await fetch('/api/v1/patient/profile', { credentials: 'same-origin' });
+                if (!r.ok) { showMsg('Could not load profile.', 'error'); return; }
+                const body = await r.json();
+                const p = body.profile;
+                $('fName').textContent = `${p.first_name} ${p.last_name}${p.preferred_name ? ' (' + p.preferred_name + ')' : ''}`;
+                $('fEmail').textContent = p.email;
+                $('fDob').textContent = p.dob;
+                $('fStatus').textContent = p.status;
+                $('fCreated').textContent = new Date(p.created_at).toLocaleDateString();
+                $('identityLoading').style.display = 'none';
+                $('identityList').style.display = '';
+                $('preferred_name').value = p.preferred_name || '';
+                $('pronouns').value = p.pronouns || '';
+                $('phone').value = p.phone || '';
+                $('preferred_language').value = p.preferred_language || 'en';
+                $('timezone').value = p.timezone || 'America/Chicago';
+            } catch (err) {
+                showMsg('Network error loading profile.', 'error');
+            }
+        }
+        loadProfile();
+
+        $('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMsg();
+            $('saveBtn').disabled = true;
+            try {
+                const body = {
+                    preferred_name: $('preferred_name').value.trim(),
+                    pronouns: $('pronouns').value.trim(),
+                    phone: $('phone').value.trim(),
+                    preferred_language: $('preferred_language').value,
+                    timezone: $('timezone').value.trim(),
+                };
+                const r = await fetch('/api/v1/patient/profile', {
+                    method: 'PATCH',
+                    credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                if (r.ok) { showMsg('Saved.', 'ok'); }
+                else { const j = await r.json().catch(() => ({})); showMsg(j.message || 'Save failed.', 'error'); }
+            } catch (err) {
+                showMsg('Network error.', 'error');
+            } finally {
+                $('saveBtn').disabled = false;
+            }
+        });
+
+        $('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+            location.href = '/portal/';
+        });
+    </script>
+</body>
+</html>

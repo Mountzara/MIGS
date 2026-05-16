@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Create an account · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            display: flex; align-items: center; justify-content: center;
+            padding: clamp(20px, 4vw, 40px);
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s ease; }
+        a:hover { color: var(--fg-strong); }
+        main {
+            width: min(520px, 100%);
+            animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-soft); margin-bottom: 24px; }
+        .nav-back::before { content: "\2190"; font-size: 14px; }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-weight: 200;
+            font-size: clamp(28px, 4.2vw, 38px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 14px 0;
+        }
+        .lede {
+            font-size: 15px; line-height: 1.6;
+            color: var(--fg-soft);
+            margin: 0 0 24px 0;
+        }
+        form {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 22px;
+        }
+        @media (max-width: 540px) { form { grid-template-columns: 1fr; } }
+        label.full { grid-column: 1 / -1; }
+        label {
+            font-size: 12px; font-weight: 600;
+            color: var(--fg-mid);
+            letter-spacing: 0.02em;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 10px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 15px;
+            transition: border-color 0.22s ease, background 0.22s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: rgba(var(--glow-purple), 0.65);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
+        }
+        .hint {
+            font-size: 11.5px;
+            color: var(--fg-soft);
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+        .actions { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+        button {
+            width: 100%;
+            padding: 13px 16px;
+            background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+            color: #fff;
+            font: inherit; font-size: 15px; font-weight: 600;
+            letter-spacing: 0.02em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+        button:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(var(--glow-purple), 0.55); }
+        button[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
+        .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; display: none; }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .alt { font-size: 13px; color: var(--fg-soft); text-align: center; }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main>
+        <a class="nav-back" href="/portal/">Back to portal</a>
+        <p class="eyebrow">Patient Portal &middot; Create an Account</p>
+        <h1>Let&rsquo;s get you set up.</h1>
+        <p class="lede">A few essentials to create your account. After this, you&rsquo;ll be guided through the comprehensive intake when you&rsquo;re ready &mdash; it autosaves, so you can pause anytime.</p>
+        <form id="signupForm" autocomplete="on">
+            <label>First name
+                <input type="text" id="first_name" name="first_name" required autocomplete="given-name">
+            </label>
+            <label>Last name
+                <input type="text" id="last_name" name="last_name" required autocomplete="family-name">
+            </label>
+            <label class="full">Email
+                <input type="email" id="email" name="email" required autocomplete="email">
+            </label>
+            <label class="full">Date of birth
+                <input type="date" id="dob" name="dob" required autocomplete="bday">
+            </label>
+            <label class="full">Password <span class="hint">&mdash; at least 12 characters</span>
+                <input type="password" id="password" name="password" required minlength="12" autocomplete="new-password">
+            </label>
+            <div class="actions">
+                <div id="msg" class="msg" role="alert" aria-live="polite"></div>
+                <button type="submit" id="submitBtn">Create account</button>
+                <p class="alt">Already have an account? <a href="/portal/login/">Sign in</a>.</p>
+            </div>
+        </form>
+    </main>
+    <script>
+        const form = document.getElementById('signupForm');
+        const msg = document.getElementById('msg');
+        const submitBtn = document.getElementById('submitBtn');
+        function showError(t) { msg.textContent = t; msg.className = 'msg error'; }
+        function clearMsg() { msg.className = 'msg'; msg.textContent = ''; }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMsg();
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account…';
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago';
+                const res = await fetch('/api/v1/auth/signup', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value.trim(),
+                        password: document.getElementById('password').value,
+                        first_name: document.getElementById('first_name').value.trim(),
+                        last_name: document.getElementById('last_name').value.trim(),
+                        dob: document.getElementById('dob').value,
+                        timezone: tz,
+                    }),
+                });
+                if (res.status === 201) {
+                    location.href = '/portal/profile/';
+                    return;
+                }
+                const body = await res.json().catch(() => ({}));
+                if (res.status === 409) {
+                    showError('An account already exists for that email. Try signing in instead.');
+                } else if (res.status === 404) {
+                    showError('Sign-up is not yet open to the public.');
+                } else {
+                    showError(body.message || 'Sign-up failed. Please check your information and try again.');
+                }
+            } catch (err) {
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create account';
+            }
+        });
+    </script>
+</body>
+</html>
