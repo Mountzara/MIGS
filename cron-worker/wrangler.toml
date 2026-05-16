@@ -1,0 +1,42 @@
+# =====================================================================
+# cron-worker/wrangler.toml — standalone Cloudflare Worker for nightly
+# D1 backup. Deployed separately from the Pages project so it can run on
+# a cron trigger (Pages Functions do not support cron triggers).
+#
+# Deploy:
+#   cd cron-worker && npx wrangler deploy
+#
+# Cron schedule (UTC):
+#   0 9 * * *   ⇒ 09:00 UTC daily ⇒ 03:00 America/Chicago (CST)
+#                                      / 04:00 America/Chicago (CDT)
+#   Practice timezone shifts during DST; we run UTC-anchored so the
+#   schedule is stable regardless of DST. Operator can adjust if a
+#   different local time is preferred.
+# =====================================================================
+
+name = "mountzara-cron"
+main = "index.js"
+compatibility_date = "2025-01-15"
+
+# This Worker should NOT have a public workers.dev URL — the cron trigger
+# is the only invocation path. The manual /backup HTTP handler is exposed
+# only when MANUAL_BACKUP_TOKEN is set + a custom route binds the Worker.
+workers_dev = false
+
+# Nightly trigger.
+[triggers]
+crons = ["0 9 * * *"]
+
+# Same D1 binding as the Pages project so the Worker reads from the
+# canonical patient store.
+[[d1_databases]]
+binding = "DB"
+database_name = "mountzara-clinical"
+database_id = "f9b4acfe-4f5f-43bb-a76e-bac87e912fdb"
+
+# Backup destination — the bucket has a 90-day lock rule on the d1/ prefix,
+# so Cloudflare will reject any DELETE on snapshot files under 90 days
+# regardless of who issues the request.
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "mountzara-backups"
