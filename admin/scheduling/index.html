@@ -622,7 +622,8 @@
             const isTelehealth = a.modality === 'telehealth';
             const doxyUrl = a.doxy_room_url;
             const canJoin = isTelehealth && doxyUrl && (a.starts_at - Date.now()) < 15 * 60 * 1000 && a.status === 'scheduled';
-            const patientLabel = a.patient_last_name ? `${escapeHtml(a.patient_last_name)}, ${escapeHtml(a.patient_first_name)}` : escapeHtml(a.patient_id);
+            const patientLabelText = a.patient_last_name ? `${a.patient_last_name}, ${a.patient_first_name}` : a.patient_id;
+            const patientLabel = `<a href="/admin/cases/${encodeURIComponent(a.patient_id)}/" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(var(--glow-purple), 0.45);">${escapeHtml(patientLabelText)}</a>`;
             const vt = VISIT_TYPES.find(v => v.key === a.visit_type);
             return `
                 <div class="appt-row">

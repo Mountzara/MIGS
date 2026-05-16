@@ -481,7 +481,7 @@
                 return `
                     <div class="thread-item${t.unread_count > 0 ? ' unread' : ''}${state.currentThreadId === t.id ? ' active' : ''}" data-id="${t.id}">
                         <div class="ti-row1">
-                            <span class="ti-patient">${escapeHtml(patientName)}</span>
+                            <span class="ti-patient"><a href="/admin/cases/${encodeURIComponent(t.patient_id)}/" onclick="event.stopPropagation()" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(var(--glow-purple), 0.45);">${escapeHtml(patientName)}</a></span>
                             <span class="ti-time">${fmtTimestamp(t.last_message_at)}</span>
                         </div>
                         <div class="ti-subject">${escapeHtml(t.subject)}</div>
@@ -508,7 +508,9 @@
                 $('reader').classList.add('open');
                 $('reader-subject').textContent = data.thread.subject;
                 const name = [data.thread.patient_first_name, data.thread.patient_last_name].filter(Boolean).join(' ') || data.thread.patient_email || '—';
-                $('reader-patient').textContent = name;
+                // Wrap the reader-header patient name in a link to /admin/cases for cross-navigation.
+                const namelink = `<a href="/admin/cases/${encodeURIComponent(data.thread.patient_id)}/" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(var(--glow-purple), 0.45);">${escapeHtml(name)}</a>`;
+                $('reader-patient').innerHTML = namelink;
                 $('reader-email').textContent = data.thread.patient_email || '—';
                 $('reader-created').textContent = fmtTimestamp(data.thread.created_at);
                 renderMessages();

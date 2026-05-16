@@ -615,7 +615,7 @@
             <article class="${cardClass.join(' ')}" data-id="${row.id}">
               <div class="card-header" data-toggle="${row.id}">
                 <div>
-                  <h3>${escapeHtml(row.patient_name || row.patient_email || '(no name)')}</h3>
+                  <h3><a href="/admin/cases/${encodeURIComponent(row.patient_id)}/" style="color: var(--fg-strong); text-decoration: none; border-bottom: 1px dashed rgba(var(--glow-purple), 0.45);">${escapeHtml(row.patient_name || row.patient_email || '(no name)')}</a></h3>
                   <div class="patient-sub">
                     <span>${escapeHtml(row.patient_email || '—')}</span>
                     <span class="dot">·</span>
