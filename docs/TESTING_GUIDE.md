@@ -43,7 +43,7 @@ The check column in each step is "expected outcome." If you see what's listed, t
 
 ## 1. Admin sanity check (3 minutes)
 
-Start here. Confirms admin auth + every admin page renders.
+Start here. Confirms admin auth + every admin page renders. **As of 2026-05-16, every `/admin/*` page carries a shared top-of-page section nav** — once you're authenticated you can click between Analytics / Patients / Scheduling / Triage / Messages / Education / Posts without ever typing another URL. The active page is highlighted in purple.
 
 | Step | URL | Action | Expected |
 |---|---|---|---|
@@ -78,6 +78,84 @@ Use the Jane credentials from `~/Desktop/JaneDoe_credentials.txt`. **Open a fres
 | 2.10 | Click Intake card | | Multi-step intake wizard at `/portal/intake/`. Saved sections (1, 4, 5, 12, 17) should preserve their values when you click into each step. Other sections empty. Navigate but don't submit (submitting triggers triage which re-runs and could overwrite Jane's released state). |
 | 2.11 | Click Documents card | | Empty state. Try uploading a small image or PDF from your Mac — verify it appears in the list with size + thumbnail. |
 | 2.12 | Click Sign out (top right) | | Returns to `/portal/login`. Re-login required to see Jane again. |
+
+---
+
+## 2.5. Brand-new patient — the public sign-up journey (15 minutes)
+
+This is the experience a real first-time prospective patient would have. Two ways to test it depending on whether the portal is publicly launched.
+
+### 2.5.A Pre-launch — admin-preview only (current state)
+
+Right now the portal is still gated by `PORTAL_PUBLIC_LAUNCH` so an anonymous visitor sees the Coming Soon page when they hit `/portal/*`. To test the new-patient flow, you bypass the gate by visiting any `/admin/*` URL first (which caches your Basic Auth credential in the browser session) — then everything `/portal/*` behaves as if the gate were open.
+
+| Step | Where | What you do | What you should see |
+|---|---|---|---|
+| 2.5.1 | Open a fresh incognito/private window | Visit https://mountzara.com/ | The real public homepage — every visitor sees this. Hero, OMT section, AI/Apps bento, footer. Click around: About, Trending, Evidence. None of these prompt for login. |
+| 2.5.2 | (still in the incognito window) | https://mountzara.com/admin/ | Browser prompts for Basic Auth (Mount Zara Admin realm). Enter admin email + Keychain password. The admin dashboard renders. **At this point your incognito session has the admin credential cached so the preview gate is unlocked for /portal/* too.** |
+| 2.5.3 | (same window) | https://mountzara.com/portal/login | Portal login form renders (no second Basic Auth prompt because the cache is still warm). |
+| 2.5.4 | Click "Sign up" | | https://mountzara.com/portal/signup with form: email, password, first name, last name, DOB, phone. |
+| 2.5.5 | Fill in with a fresh test email | e.g. `new-test-${date}@example.test`, password something rememberable, DOB any past date | On submit, a new patient row writes to D1, session cookie sets, redirects to `/portal/`. |
+| 2.5.6 | Land on dashboard | | Greeting "Hi, FirstName." Every card shows the brand-new-patient empty state — same as Blank Tester. |
+| 2.5.7 | Click "Begin your intake" | | The 19-section intake wizard at `/portal/intake/new` — wizard starts on section 1. Autosaves as you go. |
+| 2.5.8 | Walk through 2-3 sections | Section 1 (patient info), section 2 (consent), section 4 (chief complaint with at least one pain symptom). | After section 2 is saved, you can technically submit the intake even with the other sections empty — but more sections = better triage. |
+| 2.5.9 | Hit `/portal/` while intake is partial | | Intake card now reads "In progress · 11%" or so. Other cards still empty. |
+| 2.5.10 | Finish intake and submit | Last step → "Submit my intake" | Submit response. Because `ANTHROPIC_API_KEY` is not provisioned, triage runs the fallback path: writes `appointment_triage` row with `ai_visit_type = manual_review_required`. |
+| 2.5.11 | Hit `/portal/` after submit | | Appointment card flips to "Manual review needed — Dr. Mabini will reach out directly." |
+| 2.5.12 | Switch to admin tab | https://mountzara.com/admin/triage/ | The new triage row appears on Pending review. Click in, set visit_type (e.g. `new_patient_complex`), set duration, optional override reason, click "Release". |
+| 2.5.13 | Back in patient tab | Refresh `/portal/` | Appointment card now shows "Ready to book · New Patient — Complex · 60 min". |
+| 2.5.14 | Click into booking | | Slot picker. Pick any available time → confirm → success state. |
+| 2.5.15 | Send a message + log a symptom + open the education primer | (use the rest of the dashboard cards) | Each empty state flips populated. |
+| 2.5.16 | Sign out | Top-right "Sign out" link | Returns to /portal/login. |
+
+That sequence proves the entire fresh-patient lifecycle: anonymous visitor → admin reviews the surface in preview → user signs up → intake → triage → admin releases → booking → ongoing care.
+
+### 2.5.B Post-launch — flip the public-launch flag
+
+Once you're ready for real patients to find the portal on their own:
+
+```bash
+# Provision the flag (value: "true").
+source ~/.config/mountzara/cf-creds.env 2>/dev/null
+curl -X PATCH \
+  "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/mountzara" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"deployment_configs":{"production":{"env_vars":{"PORTAL_PUBLIC_LAUNCH":{"value":"true","type":"plain_text"}}}}}'
+./scripts/deploy-prod.sh "flip portal public launch"
+```
+
+After that:
+- Any visitor can hit `/portal/login` directly — no Basic Auth prompt.
+- The "Patient Portal — Coming Soon" link in the homepage nav now goes to the real portal.
+- `/portal/signup` is publicly reachable.
+- The exact same 2.5.A flow above works without you needing to pass admin Basic Auth first.
+
+To take it back down (e.g. during emergency maintenance): set `PORTAL_PUBLIC_LAUNCH` to anything other than the literal string `true` (delete it, or set to `false`, or set to `paused`) and redeploy. The Coming Soon page returns.
+
+### 2.5.C Cleaning up your test patients
+
+After you've created a few `new-test-*@example.test` accounts, you can purge them from D1:
+
+```bash
+npx wrangler d1 execute mountzara-clinical --remote --command="
+  DELETE FROM intake_section_data WHERE intake_id IN (
+    SELECT id FROM intake_responses
+    WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test')
+  );
+  DELETE FROM intake_responses WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM appointment_triage WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM appointments WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM message_threads WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM messages WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM symptom_diary_entries WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM patient_education_assignments WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM auth_sessions WHERE patient_id IN (SELECT id FROM patients WHERE email LIKE 'new-test-%@example.test');
+  DELETE FROM patients WHERE email LIKE 'new-test-%@example.test';
+"
+```
+
+audit_log rows persist by design (6-year HIPAA retention) — that's intentional and not a cleanup target.
 
 ---
 
