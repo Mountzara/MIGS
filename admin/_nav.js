@@ -103,6 +103,21 @@
             background: rgba(167, 139, 250, 0.10);
             color: #ffffff;
         }
+        .mz-admin-section-nav .mz-asn-signout {
+            font-size: 11.5px;
+            color: rgba(245, 245, 247, 0.55);
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            transition: background 0.18s, color 0.18s, border-color 0.18s;
+        }
+        .mz-admin-section-nav .mz-asn-signout:hover {
+            background: rgba(239, 68, 68, 0.10);
+            color: rgba(252, 165, 165, 0.95);
+            border-color: rgba(239, 68, 68, 0.40);
+        }
         @media (max-width: 640px) {
             .mz-admin-section-nav .mz-asn-brand {
                 font-size: 10px;
@@ -137,6 +152,7 @@
                 <span class="mz-asn-spacer"></span>
                 <span class="mz-asn-right">
                     <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener">View patient portal →</a>
+                    <a class="mz-asn-signout" href="/admin/_signout" title="Drop the cached admin credentials. Use when leaving an unattended Mac.">Sign out</a>
                 </span>
             </div>
         `;
