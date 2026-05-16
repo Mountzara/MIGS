@@ -97,6 +97,18 @@ export async function verifyPbkdf2(password, stored) {
     return safeBytesEq(new Uint8Array(bits), expected);
 }
 
+// Lazy import to avoid pulling rate_limit.js into the auth-header-missing
+// path (which is the most common — every fresh tab triggers it before the
+// browser prompts).
+async function rlImport() {
+    return import("../_lib/rate_limit.js");
+}
+
+// Per HIPAA risk register row 6. Same policy as patient login: 10 failures
+// per 15-min window triggers soft-lockout.
+const ADMIN_RL_THRESHOLD = 10;
+const ADMIN_RL_WINDOW_SECONDS = 15 * 60;
+
 export async function onRequest({ request, env, next }) {
     // Defense-in-depth: wrap the entire auth gate in try/catch so a rejected
     // WebCrypto promise (e.g. crypto.subtle.deriveBits rejecting on malformed
@@ -132,6 +144,40 @@ export async function onRequest({ request, env, next }) {
         const user = decoded.slice(0, sep);
         const pass = decoded.slice(sep + 1);
 
+        // Rate-limit BEFORE PBKDF2 (which is expensive). Identifier is
+        // submittedUser|IP to throttle both per-account brute force and
+        // per-IP credential stuffing. Fail-open if MZ_SESSIONS is missing.
+        const ip = request.headers.get("CF-Connecting-IP") || "";
+        const rlIdentifier = `admin:${user.trim().toLowerCase()}|${ip}`;
+        let rl = null;
+        if (env.MZ_SESSIONS) {
+            try {
+                rl = await rlImport();
+                const lock = await rl.checkLockout({
+                    env, prefix: "admin_login", identifier: rlIdentifier,
+                    threshold: ADMIN_RL_THRESHOLD, windowSeconds: ADMIN_RL_WINDOW_SECONDS,
+                });
+                if (lock.locked) {
+                    return new Response(JSON.stringify({
+                        error: "rate_limited",
+                        message: "Too many failed admin attempts. Try again in a few minutes.",
+                        retry_after_seconds: lock.retry_after_seconds,
+                    }), {
+                        status: 429,
+                        headers: {
+                            "content-type": "application/json",
+                            "retry-after": String(lock.retry_after_seconds || 60),
+                            "cache-control": "no-store",
+                        },
+                    });
+                }
+            } catch (e) {
+                // Fail-open on KV outage — don't lock the operator out due to KV problems.
+                console.warn("admin._middleware rate-limit fail-open", { error: String(e) });
+                rl = null;
+            }
+        }
+
         // Email-address comparison is case-insensitive (RFC 5321 §2.3.11
         // for the domain part; Gmail and every other major provider treats
         // the local part case-insensitively too) — and iOS/Safari
@@ -143,7 +189,12 @@ export async function onRequest({ request, env, next }) {
         // the PBKDF2 hash check below.
         const expectedUser = (env.ADMIN_USER || "admin").trim().toLowerCase();
         const submittedUser = user.trim().toLowerCase();
-        if (!safeStringEq(submittedUser, expectedUser)) return unauthorized("Invalid credentials");
+        if (!safeStringEq(submittedUser, expectedUser)) {
+            if (rl) {
+                try { await rl.recordFailure({ env, prefix: "admin_login", identifier: rlIdentifier, threshold: ADMIN_RL_THRESHOLD, windowSeconds: ADMIN_RL_WINDOW_SECONDS }); } catch {}
+            }
+            return unauthorized("Invalid credentials");
+        }
 
         let ok = false;
         try {
@@ -164,9 +215,18 @@ export async function onRequest({ request, env, next }) {
             });
             return unauthorized("Invalid credentials");
         }
-        if (!ok) return unauthorized("Invalid credentials");
+        if (!ok) {
+            if (rl) {
+                try { await rl.recordFailure({ env, prefix: "admin_login", identifier: rlIdentifier, threshold: ADMIN_RL_THRESHOLD, windowSeconds: ADMIN_RL_WINDOW_SECONDS }); } catch {}
+            }
+            return unauthorized("Invalid credentials");
+        }
 
-        // Authenticated. Pass through to the static /admin/ file.
+        // Authenticated — clear the counter so the operator's next visit
+        // isn't shadowed by accumulated failures.
+        if (rl) {
+            try { await rl.clearLockout({ env, prefix: "admin_login", identifier: rlIdentifier }); } catch {}
+        }
         return next();
     } catch (e) {
         // Last-resort safety net for ANY unanticipated throw above.
