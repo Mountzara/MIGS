@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Messages · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        header.bar {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 24px; font-size: 13px; color: var(--fg-soft);
+            flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong);
+            margin: 0 0 14px 0;
+        }
+        .lede {
+            font-size: 14.5px; line-height: 1.55;
+            color: var(--fg-mid); max-width: 76ch;
+            margin: 0 0 22px 0;
+        }
+        .top-actions {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 18px;
+        }
+        button {
+            font: inherit; cursor: pointer; border-radius: 9px; padding: 9px 14px;
+            font-size: 13px; transition: transform 0.18s, background 0.18s, border-color 0.18s;
+        }
+        button.primary {
+            background: rgba(var(--glow-purple), 0.22);
+            border: 1px solid rgba(var(--glow-purple), 0.65);
+            color: var(--fg-strong); font-weight: 500;
+        }
+        button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
+        button.primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        button.ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--fg-soft);
+        }
+        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+
+        .layout {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+        @media (min-width: 1000px) {
+            .layout { grid-template-columns: 360px 1fr; align-items: start; }
+        }
+
+        section.panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        section.panel h2 {
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 14px 0;
+        }
+
+        .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 12px;
+            color: var(--fg-soft);
+            font-size: 11.5px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+
+        .thread-list {
+            display: flex; flex-direction: column; gap: 8px;
+            max-height: 70vh; overflow-y: auto; padding-right: 4px;
+        }
+        .thread-list::-webkit-scrollbar { width: 6px; }
+        .thread-list::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 3px; }
+
+        .thread-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 13px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .thread-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.04);
+        }
+        .thread-item.active {
+            background: rgba(var(--glow-purple), 0.12);
+            border-color: rgba(var(--glow-purple), 0.55);
+        }
+        .thread-item.unread {
+            border-left: 3px solid rgba(var(--glow-purple), 0.85);
+        }
+        .ti-row1 {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 8px; margin-bottom: 3px;
+        }
+        .ti-patient { font-size: 14px; font-weight: 500; color: var(--fg-strong); }
+        .ti-time { font-size: 11px; color: var(--fg-dim); white-space: nowrap; }
+        .ti-subject {
+            font-size: 12.5px; color: var(--fg-soft);
+            margin-bottom: 4px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .ti-preview {
+            font-size: 12px; color: var(--fg-dim); line-height: 1.4;
+            overflow: hidden; text-overflow: ellipsis;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .ti-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 6px; font-size: 10px; color: var(--fg-dim);
+        }
+        .unread-dot {
+            display: inline-flex; align-items: center;
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 2px 7px; border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.18);
+            color: var(--accent-soft);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+        }
+
+        .empty-state {
+            padding: 32px 18px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+        }
+
+        .reader { display: none; }
+        .reader.open { display: block; }
+        .reader-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 12px; margin-bottom: 14px;
+        }
+        .reader-header h3 {
+            font-size: 16px; font-weight: 500; margin: 0;
+            color: var(--fg-strong); letter-spacing: -0.005em;
+        }
+        .reader-meta {
+            font-size: 11.5px; color: var(--fg-soft);
+            margin-bottom: 14px;
+            display: flex; gap: 14px; flex-wrap: wrap;
+        }
+        .reader-meta .k { color: var(--fg-dim); font-weight: 600; }
+        .messages {
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;
+            max-height: 55vh; overflow-y: auto; padding-right: 4px;
+        }
+        .messages::-webkit-scrollbar { width: 6px; }
+        .messages::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 3px; }
+        .msg {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 11px 13px;
+        }
+        .msg.from-clinician, .msg.from-staff {
+            background: rgba(var(--glow-purple), 0.06);
+            border-color: rgba(var(--glow-purple), 0.30);
+        }
+        .msg-meta {
+            font-size: 11px; color: var(--fg-dim);
+            margin-bottom: 6px;
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+        .msg-meta .who { color: var(--fg-soft); font-weight: 500; }
+        .msg-body {
+            font-size: 13.5px; line-height: 1.55; color: var(--fg-strong);
+            white-space: pre-wrap; word-wrap: break-word;
+        }
+        .compose {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(var(--glow-purple), 0.40);
+            border-radius: 11px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        textarea, input {
+            font: inherit; width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--fg-strong);
+            font-size: 13.5px;
+            transition: border-color 0.22s, background 0.22s;
+            outline: none;
+        }
+        textarea:focus, input:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.05);
+        }
+        textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+        label {
+            display: block; font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.10em; text-transform: uppercase;
+            color: var(--fg-soft); margin: 10px 0 5px 0;
+        }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+        /* new-thread modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed; inset: 0; z-index: 90;
+            background: rgba(7, 7, 10, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid rgba(var(--glow-purple), 0.35);
+            border-radius: 14px;
+            padding: 22px 24px;
+            max-width: 540px; width: 100%;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .modal h3 { margin: 0 0 12px 0; font-weight: 500; font-size: 17px; color: var(--fg-strong); }
+        .patient-results {
+            display: flex; flex-direction: column; gap: 4px;
+            max-height: 200px; overflow-y: auto; margin-top: 6px;
+        }
+        .patient-result {
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .patient-result:hover {
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.45);
+        }
+        .patient-result.selected {
+            background: rgba(var(--glow-purple), 0.18);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--fg-strong);
+        }
+
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            padding: 12px 18px; border-radius: 10px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            color: rgba(167, 243, 208, 0.98);
+            font-size: 13px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.22s, transform 0.22s;
+            pointer-events: none; z-index: 1000;
+        }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Messages</span>
+            <span style="margin-left: auto; font-size: 12px; color: var(--fg-dim);" id="ctx-info">/admin/messages</span>
+        </header>
+
+        <h1 class="page-title">Patient messages</h1>
+        <p class="lede">Threads from patients sit here. Bodies are envelope-encrypted in <code>mountzara-phi</code> R2; opening a thread decrypts in the worker and marks it read.</p>
+
+        <div class="top-actions">
+            <button class="primary" id="btn-new">+ New message to a patient</button>
+            <button class="ghost" id="btn-refresh">Refresh</button>
+        </div>
+
+        <div class="layout">
+            <section class="panel">
+                <h2>Threads</h2>
+                <div class="filter-bar">
+                    <button class="filter-chip active" data-status="all">All</button>
+                    <button class="filter-chip" data-status="unread">Unread</button>
+                </div>
+                <div id="thread-list" class="thread-list">
+                    <div class="empty-state">Loading…</div>
+                </div>
+            </section>
+
+            <section id="reader-panel" class="panel">
+                <div id="reader-empty" class="empty-state">Select a thread to read.</div>
+                <div id="reader" class="reader">
+                    <div class="reader-header">
+                        <h3 id="reader-subject">—</h3>
+                        <span id="reader-status" class="unread-dot" style="display:none;">unread</span>
+                    </div>
+                    <div class="reader-meta">
+                        <span><span class="k">Patient:</span> <span id="reader-patient">—</span></span>
+                        <span><span class="k">Email:</span> <span id="reader-email">—</span></span>
+                        <span><span class="k">Started:</span> <span id="reader-created">—</span></span>
+                    </div>
+                    <div id="messages" class="messages"></div>
+
+                    <div class="compose">
+                        <label for="reply-body">Reply to patient</label>
+                        <textarea id="reply-body" placeholder="Type a reply…"></textarea>
+                        <div class="actions">
+                            <button class="primary" id="btn-send-reply">Send reply</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="new-modal" class="modal-backdrop">
+            <div class="modal">
+                <h3>New message to a patient</h3>
+                <label for="search-patient">Find a patient (name or email)</label>
+                <input id="search-patient" placeholder="e.g. Tester, info@…">
+                <div id="patient-results" class="patient-results"></div>
+                <label for="new-subject">Subject</label>
+                <input id="new-subject" maxlength="140" placeholder="Subject of the conversation">
+                <label for="new-body">Message</label>
+                <textarea id="new-body" placeholder="Type your message…"></textarea>
+                <div class="actions">
+                    <button class="primary" id="btn-send-new">Send</button>
+                    <button class="ghost" id="btn-cancel-new">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = {
+            threads: [],
+            filter: 'all',
+            currentThreadId: null,
+            currentThread: null,
+            messages: [],
+            selectedPatient: null,
+            patientSearchTimer: null,
+        };
+
+        function showToast(msg, isError) {
+            const t = $('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (isError ? ' error' : '') + ' show';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        async function fetchJson(url, opts) {
+            const res = await fetch(url, {
+                credentials: 'include',
+                cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                ...(opts || {}),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error;
+                e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+
+        function fmtTimestamp(ms) {
+            if (!ms) return '—';
+            try {
+                const d = new Date(typeof ms === 'string' ? parseInt(ms, 10) : ms);
+                const now = new Date();
+                const diffMin = (now - d) / 60000;
+                if (diffMin < 60) return `${Math.max(1, Math.round(diffMin))} min ago`;
+                if (diffMin < 24 * 60) return `${Math.round(diffMin / 60)} h ago`;
+                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            } catch { return '—'; }
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        async function loadThreads() {
+            try {
+                const data = await fetchJson('/api/v1/admin/messages');
+                state.threads = data.threads || [];
+                renderList();
+            } catch (e) {
+                $('thread-list').innerHTML = `<div class="empty-state">Could not load threads: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function renderList() {
+            const filtered = state.filter === 'unread'
+                ? state.threads.filter(t => t.unread_count > 0)
+                : state.threads;
+            if (filtered.length === 0) {
+                $('thread-list').innerHTML = '<div class="empty-state">No threads.</div>';
+                return;
+            }
+            $('thread-list').innerHTML = filtered.map(t => {
+                const patientName = [t.patient_first_name, t.patient_last_name].filter(Boolean).join(' ') || t.patient_email || '(no name)';
+                const unreadBadge = t.unread_count > 0 ? `<span class="unread-dot">${t.unread_count}</span>` : '';
+                const lastFrom = t.last_message_from_role === 'patient' ? 'Patient' : (t.last_message_from_role === 'clinician' ? 'You' : 'Staff');
+                return `
+                    <div class="thread-item${t.unread_count > 0 ? ' unread' : ''}${state.currentThreadId === t.id ? ' active' : ''}" data-id="${t.id}">
+                        <div class="ti-row1">
+                            <span class="ti-patient">${escapeHtml(patientName)}</span>
+                            <span class="ti-time">${fmtTimestamp(t.last_message_at)}</span>
+                        </div>
+                        <div class="ti-subject">${escapeHtml(t.subject)}</div>
+                        <div class="ti-preview">${escapeHtml(t.last_message_preview || '')}</div>
+                        <div class="ti-footer">
+                            <span>Last: ${lastFrom}</span>
+                            ${unreadBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            $('thread-list').querySelectorAll('.thread-item').forEach(el => {
+                el.addEventListener('click', () => openThread(el.getAttribute('data-id')));
+            });
+        }
+
+        async function openThread(thread_id) {
+            try {
+                const data = await fetchJson(`/api/v1/admin/messages/${thread_id}`);
+                state.currentThreadId = thread_id;
+                state.currentThread = data.thread;
+                state.messages = data.messages;
+                $('reader-empty').style.display = 'none';
+                $('reader').classList.add('open');
+                $('reader-subject').textContent = data.thread.subject;
+                const name = [data.thread.patient_first_name, data.thread.patient_last_name].filter(Boolean).join(' ') || data.thread.patient_email || '—';
+                $('reader-patient').textContent = name;
+                $('reader-email').textContent = data.thread.patient_email || '—';
+                $('reader-created').textContent = fmtTimestamp(data.thread.created_at);
+                renderMessages();
+                renderList();           // refresh active highlight + unread badge
+                // refresh threads in bg
+                loadThreads();
+            } catch (e) {
+                showToast('Could not open thread: ' + e.message, true);
+            }
+        }
+
+        function renderMessages() {
+            $('messages').innerHTML = state.messages.map(m => {
+                const who = m.from_role === 'patient' ? 'Patient'
+                          : m.from_role === 'clinician' ? 'You (Dr. Mabini)'
+                          : 'Staff';
+                return `
+                    <div class="msg from-${m.from_role}">
+                        <div class="msg-meta">
+                            <span class="who">${who}</span>
+                            <span>${fmtTimestamp(m.created_at)}</span>
+                            ${m.read_at && m.from_role === 'clinician' ? '<span>read by patient</span>' : ''}
+                        </div>
+                        <div class="msg-body">${escapeHtml(m.body)}</div>
+                    </div>
+                `;
+            }).join('');
+            $('messages').scrollTop = $('messages').scrollHeight;
+        }
+
+        $('btn-refresh').addEventListener('click', () => loadThreads());
+
+        $('btn-send-reply').addEventListener('click', async () => {
+            const body = $('reply-body').value.trim();
+            if (!body) { showToast('Reply cannot be empty', true); return; }
+            if (!state.currentThreadId) return;
+            $('btn-send-reply').disabled = true;
+            try {
+                await fetchJson(`/api/v1/admin/messages/${state.currentThreadId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ body }),
+                });
+                $('reply-body').value = '';
+                showToast('Reply sent to patient.');
+                openThread(state.currentThreadId);
+            } catch (e) {
+                showToast('Reply failed: ' + e.message, true);
+            } finally {
+                $('btn-send-reply').disabled = false;
+            }
+        });
+
+        // filter chips
+        document.querySelectorAll('.filter-chip').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(x => x.classList.toggle('active', x === c));
+                state.filter = c.getAttribute('data-status');
+                renderList();
+            });
+        });
+
+        // new-thread modal
+        $('btn-new').addEventListener('click', () => {
+            $('search-patient').value = '';
+            $('new-subject').value = '';
+            $('new-body').value = '';
+            $('patient-results').innerHTML = '';
+            state.selectedPatient = null;
+            $('new-modal').classList.add('open');
+            setTimeout(() => $('search-patient').focus(), 50);
+        });
+        $('btn-cancel-new').addEventListener('click', () => $('new-modal').classList.remove('open'));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') $('new-modal').classList.remove('open');
+        });
+
+        $('search-patient').addEventListener('input', () => {
+            clearTimeout(state.patientSearchTimer);
+            const q = $('search-patient').value.trim();
+            if (q.length < 2) { $('patient-results').innerHTML = ''; return; }
+            state.patientSearchTimer = setTimeout(async () => {
+                try {
+                    const d = await fetchJson(`/api/v1/admin/patients?q=${encodeURIComponent(q)}&limit=8`);
+                    const list = d.patients || [];
+                    if (list.length === 0) {
+                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No matches.</div>';
+                        return;
+                    }
+                    $('patient-results').innerHTML = list.map(p => {
+                        const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
+                        return `<div class="patient-result" data-id="${p.id}" data-name="${escapeHtml(name)}">${escapeHtml(name)} · ${escapeHtml(p.email || '')}</div>`;
+                    }).join('');
+                    $('patient-results').querySelectorAll('.patient-result').forEach(el => {
+                        el.addEventListener('click', () => {
+                            state.selectedPatient = {
+                                id: el.getAttribute('data-id'),
+                                name: el.getAttribute('data-name'),
+                            };
+                            $('patient-results').querySelectorAll('.patient-result').forEach(x => x.classList.toggle('selected', x === el));
+                        });
+                    });
+                } catch (e) {
+                    $('patient-results').innerHTML = `<div class="patient-result" style="opacity:0.6;">Search failed: ${escapeHtml(e.message)}</div>`;
+                }
+            }, 220);
+        });
+
+        $('btn-send-new').addEventListener('click', async () => {
+            if (!state.selectedPatient) { showToast('Pick a patient first', true); return; }
+            const subject = $('new-subject').value.trim();
+            const bodyText = $('new-body').value.trim();
+            if (!subject) { showToast('Subject required', true); return; }
+            if (!bodyText) { showToast('Message body required', true); return; }
+            $('btn-send-new').disabled = true;
+            try {
+                const data = await fetchJson('/api/v1/admin/messages', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        patient_id: state.selectedPatient.id,
+                        subject, body: bodyText,
+                    }),
+                });
+                showToast(`Sent to ${state.selectedPatient.name}.`);
+                $('new-modal').classList.remove('open');
+                await loadThreads();
+                openThread(data.thread_id);
+            } catch (e) {
+                showToast('Send failed: ' + e.message, true);
+            } finally {
+                $('btn-send-new').disabled = false;
+            }
+        });
+
+        loadThreads();
+        // auto-refresh inbox every 90s
+        setInterval(() => { if (state.filter && !document.hidden) loadThreads(); }, 90000);
+    </script>
+</body>
+</html>
