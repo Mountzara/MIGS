@@ -265,13 +265,13 @@
                 <span class="card-action">Subscribing soon…</span>
             </div>
 
-            <div class="card" id="card-education-placeholder" style="opacity:0.65;">
-                <div class="badge-row"><span class="badge badge-empty">coming soon</span></div>
+            <a class="card" href="/portal/education/" id="card-education">
+                <div class="badge-row"><span class="badge badge-empty" id="edu-badge">—</span></div>
                 <div class="card-eyebrow">Education</div>
-                <h2>Primers from Dr. Mabini</h2>
-                <div class="card-body">Patient-facing primers on endometriosis, adenomyosis, fibroids, OMT, perioperative prep, surgical recovery. Delivered when relevant to your care plan.</div>
-                <span class="card-action">Library opening soon…</span>
-            </div>
+                <h2 id="edu-title">Primers from Dr. Mabini</h2>
+                <div class="card-body" id="edu-body">Patient-facing primers on endometriosis, adenomyosis, fibroids, OMT, perioperative prep, surgical recovery.</div>
+                <span class="card-action">Open library →</span>
+            </a>
         </section>
 
         <div class="panic">
@@ -348,6 +348,7 @@
             loadMessagesCard();
             loadSymptomCard();
             loadIntakeCard();
+            loadEducationCard();
 
             // 3. logout
             $('link-logout').addEventListener('click', async (e) => {
@@ -450,6 +451,40 @@
             } catch (e) {
                 $('sym-title').textContent = 'Symptom diary';
                 $('sym-body').textContent = "Could not load today's entry.";
+            }
+        }
+
+        async function loadEducationCard() {
+            try {
+                const data = await fetchJson('/api/v1/patient/education');
+                const materials = data.materials || [];
+                if (materials.length === 0) {
+                    $('edu-title').textContent = 'Library opening soon';
+                    $('edu-body').textContent = 'Dr. Mabini is publishing primers — they will appear here.';
+                    $('edu-badge').textContent = 'empty';
+                    return;
+                }
+                const assigned = materials.filter(m => m.assignment).length;
+                const unread = materials.filter(m => !m.view).length;
+                if (assigned > 0) {
+                    $('edu-title').innerHTML = `<span class="stat">${assigned}</span> <span class="stat-unit">assigned for you</span>`;
+                    $('edu-body').textContent = `Dr. Mabini has lined up reading for you. Click in to start.`;
+                    $('edu-badge').textContent = 'assigned';
+                    $('edu-badge').className = 'badge badge-urgent';
+                } else if (unread > 0) {
+                    $('edu-title').textContent = `${materials.length} primer${materials.length === 1 ? '' : 's'} available`;
+                    $('edu-body').textContent = `${unread} unread. Topics include ${materials.slice(0,3).map(m => (m.topic_tags||[])[0]).filter(Boolean).join(', ') || 'general health'}.`;
+                    $('edu-badge').textContent = `${unread} new`;
+                    $('edu-badge').className = 'badge badge-released';
+                } else {
+                    $('edu-title').textContent = `${materials.length} primer${materials.length === 1 ? '' : 's'} available`;
+                    $('edu-body').textContent = 'Caught up — re-read anytime.';
+                    $('edu-badge').textContent = 'caught up';
+                    $('edu-badge').className = 'badge badge-empty';
+                }
+            } catch (e) {
+                $('edu-title').textContent = 'Primers from Dr. Mabini';
+                $('edu-body').textContent = 'Could not load library count.';
             }
         }
 
