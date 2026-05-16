@@ -199,6 +199,28 @@ export async function loadThreadMessages(env, thread_id) {
         WHERE thread_id = ? AND deleted_at IS NULL
         ORDER BY created_at ASC
     `).bind(thread_id).all();
+
+    const messageIds = (rows?.results || []).map(m => m.id);
+    const attachmentsByMessage = new Map();
+    if (messageIds.length > 0) {
+        const ph = messageIds.map(() => "?").join(",");
+        const ar = await env.DB.prepare(`
+            SELECT id, message_id, filename, mime_type, size_bytes, created_at
+            FROM message_attachments WHERE message_id IN (${ph})
+            ORDER BY created_at ASC
+        `).bind(...messageIds).all();
+        for (const a of (ar?.results || [])) {
+            if (!attachmentsByMessage.has(a.message_id)) attachmentsByMessage.set(a.message_id, []);
+            attachmentsByMessage.get(a.message_id).push({
+                id: a.id,
+                filename: a.filename,
+                mime_type: a.mime_type,
+                size_bytes: a.size_bytes,
+                created_at: a.created_at,
+            });
+        }
+    }
+
     const out = [];
     for (const m of (rows?.results || [])) {
         let body = "";
@@ -220,6 +242,7 @@ export async function loadThreadMessages(env, thread_id) {
             body,
             subject: m.subject,
             has_attachments: !!m.has_attachments,
+            attachments: attachmentsByMessage.get(m.id) || [],
             created_at: m.created_at,
             read_at: m.read_at,
         });
