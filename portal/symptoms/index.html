@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Symptom Diary · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: clamp(28px, 5vw, 48px) clamp(20px, 5vw, 36px) 64px; }
+        .top-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--fg-soft); margin-bottom: 22px;
+        }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-weight: 200; font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.022em; line-height: 1.1;
+            color: var(--fg-strong); margin: 0 0 8px 0;
+        }
+        .lede {
+            font-size: 15px; line-height: 1.6;
+            color: var(--fg-soft); margin: 0 0 22px 0; max-width: 64ch;
+        }
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 22px 22px 20px;
+            margin-bottom: 16px;
+            animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes mzRise {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .panel h2 {
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 14px 0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        button {
+            font: inherit; cursor: pointer;
+            background: rgba(var(--glow-purple), 0.18);
+            border: 1px solid rgba(var(--glow-purple), 0.55);
+            border-radius: 9px;
+            padding: 9px 14px;
+            color: var(--fg-strong);
+            font-size: 13px; font-weight: 500;
+            transition: transform 0.18s, background 0.18s, border-color 0.18s;
+        }
+        button:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.26); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        button.ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border); color: var(--fg-soft);
+        }
+        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.icon {
+            padding: 6px 10px; min-width: 36px;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border); color: var(--fg-soft);
+        }
+        button.icon:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+
+        .date-nav {
+            display: flex; align-items: center; gap: 10px;
+            justify-content: center;
+            margin-bottom: 22px;
+        }
+        .date-nav .current-date {
+            font-size: 18px; font-weight: 400; color: var(--fg-strong);
+            letter-spacing: -0.01em;
+            min-width: 200px; text-align: center;
+        }
+        .date-nav .day-label {
+            display: block; font-size: 11px; letter-spacing: 0.14em;
+            color: var(--fg-dim); margin-top: 2px; text-transform: uppercase;
+        }
+
+        .domains {
+            display: grid; gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+        .domain-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            transition: border-color 0.22s, background 0.22s;
+        }
+        .domain-card:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .domain-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--accent-soft);
+        }
+
+        .symptom-row { margin-bottom: 14px; }
+        .symptom-row:last-child { margin-bottom: 0; }
+        .symptom-label {
+            font-size: 12px; color: var(--fg-soft); margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px;
+        }
+        .symptom-label .name { color: var(--fg-mid); font-weight: 500; }
+        .symptom-label .value-readout {
+            font-size: 13px; color: var(--fg-strong); font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* numeric slider */
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 28px; background: transparent;
+            margin: 0; padding: 0; cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            background: linear-gradient(to right,
+                rgba(16, 185, 129, 0.6) 0%,
+                rgba(245, 158, 11, 0.55) 50%,
+                rgba(239, 68, 68, 0.7) 100%);
+            height: 4px; border-radius: 2px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--fg-strong);
+            border: 2px solid rgba(var(--glow-purple), 0.85);
+            margin-top: -6px;
+            box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.15);
+            cursor: pointer;
+        }
+        input[type=range]::-moz-range-track {
+            background: linear-gradient(to right,
+                rgba(16, 185, 129, 0.6) 0%,
+                rgba(245, 158, 11, 0.55) 50%,
+                rgba(239, 68, 68, 0.7) 100%);
+            height: 4px; border-radius: 2px;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--fg-strong);
+            border: 2px solid rgba(var(--glow-purple), 0.85);
+            cursor: pointer;
+        }
+        .scale-ticks {
+            display: flex; justify-content: space-between;
+            font-size: 10px; color: var(--fg-dim);
+            margin-top: 2px;
+        }
+
+        /* boolean toggle */
+        .yesno {
+            display: inline-flex; gap: 0;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        .yesno button {
+            background: transparent;
+            border: none; border-radius: 0;
+            padding: 6px 16px;
+            color: var(--fg-soft); font-size: 12.5px;
+        }
+        .yesno button.active {
+            background: rgba(var(--glow-purple), 0.20);
+            color: var(--fg-strong);
+        }
+        .yesno button:hover { transform: none; color: var(--fg-strong); }
+
+        /* enum chips */
+        .chips {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 12px;
+            color: var(--fg-soft); font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip:hover {
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--fg-strong);
+        }
+        .chip.active {
+            background: rgba(var(--glow-purple), 0.18);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+
+        /* number stepper */
+        .stepper {
+            display: inline-flex; align-items: center;
+            gap: 0;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+        }
+        .stepper button { background: transparent; border: none; border-radius: 0; padding: 6px 12px; color: var(--fg-soft); font-size: 16px; min-width: 36px; }
+        .stepper button:hover { background: rgba(var(--glow-purple), 0.16); color: var(--fg-strong); transform: none; }
+        .stepper input {
+            background: transparent; border: none; padding: 6px 10px;
+            color: var(--fg-strong); width: 64px; text-align: center;
+            font: inherit; font-size: 14px; font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+        .stepper input:focus { outline: none; }
+
+        /* text input for medication */
+        textarea, input[type=text] {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: var(--fg-strong);
+            width: 100%;
+            font: inherit; font-size: 13.5px;
+            transition: border-color 0.18s, background 0.18s;
+        }
+        textarea:focus, input[type=text]:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.05);
+            outline: none;
+        }
+
+        .note-row {
+            margin-top: 22px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(var(--glow-purple), 0.30);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .note-row label { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--fg-soft); font-weight: 700; display: block; margin-bottom: 6px; }
+        .note-row textarea { min-height: 70px; resize: vertical; }
+
+        .save-bar {
+            position: sticky; bottom: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(var(--glow-purple), 0.35);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            font-size: 13px;
+            color: var(--fg-soft);
+        }
+        .save-bar .indicator {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 11.5px;
+        }
+        .save-bar .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(var(--glow-purple), 0.5);
+            box-shadow: 0 0 0 0 rgba(var(--glow-purple), 0.5);
+            transition: background 0.22s, box-shadow 0.6s;
+        }
+        .save-bar.saved .dot { background: var(--green); }
+        .save-bar.dirty .dot { background: var(--amber); animation: pulse 1.4s infinite; }
+        .save-bar.error .dot { background: var(--red); }
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+            70%  { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        /* trend chart panel */
+        .trend-controls {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .trend-controls select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 8px 12px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 13px;
+            min-width: 220px;
+        }
+        .trend-controls select:focus {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.05);
+            outline: none;
+        }
+        .trend-svg-wrap {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+        svg.trend { width: 100%; height: 220px; display: block; }
+        .trend-empty {
+            padding: 30px 16px; text-align: center;
+            color: var(--fg-soft); font-size: 13px;
+        }
+
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            padding: 12px 18px; border-radius: 10px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            color: rgba(167, 243, 208, 0.98);
+            font-size: 13px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.22s, transform 0.22s;
+            pointer-events: none; z-index: 1000;
+        }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row">
+            <a href="/portal/">&larr; Patient portal</a>
+            <span style="color: var(--fg-dim);">/portal/symptoms</span>
+        </div>
+
+        <p class="eyebrow">Patient portal · Daily diary</p>
+        <h1>Symptom diary</h1>
+        <p class="lede">Tap or drag for each symptom you want to track today. Anything you leave blank stays blank — log only what matters today. Dr. Mabini reviews these trends before every visit, so the data shapes the conversation.</p>
+
+        <div class="date-nav">
+            <button class="icon" id="btn-prev">◀</button>
+            <div class="current-date">
+                <span id="current-date">—</span>
+                <span class="day-label" id="current-dow">—</span>
+            </div>
+            <button class="icon" id="btn-next">▶</button>
+            <button class="ghost" id="btn-today">Today</button>
+        </div>
+
+        <section class="panel">
+            <h2>
+                <span>Today's entry</span>
+                <span style="font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 11px; color: var(--fg-dim);" id="entry-meta">—</span>
+            </h2>
+            <div id="domains" class="domains">
+                <div style="grid-column: 1/-1; color: var(--fg-soft); padding: 16px; text-align: center;">Loading symptoms…</div>
+            </div>
+            <div class="note-row">
+                <label for="note">Note for today (optional)</label>
+                <textarea id="note" maxlength="500" placeholder="Anything you want Dr. Mabini to know in context (≤ 500 chars)"></textarea>
+            </div>
+            <div class="save-bar saved" id="save-bar">
+                <span class="indicator"><span class="dot"></span><span id="save-text">Saved.</span></span>
+                <button id="btn-save">Save now</button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>30-day trend</h2>
+            <div class="trend-controls">
+                <select id="trend-key" aria-label="Symptom"></select>
+                <button class="ghost" id="trend-refresh">Refresh</button>
+            </div>
+            <div class="trend-svg-wrap" id="trend-svg-wrap">
+                <div class="trend-empty">Pick a symptom to chart.</div>
+            </div>
+        </section>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = {
+            symptoms: [],            // from definitions endpoint
+            byDomain: {},
+            byKey: {},
+            currentDate: todayISO(),
+            entry: { values: {}, note: '' },
+            dirty: false,
+            saveTimer: null,
+        };
+
+        // ---- utils ----
+        function todayISO() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function addDaysISO(iso, days) {
+            const [y,m,d] = iso.split('-').map(n => parseInt(n,10));
+            const dt = new Date(Date.UTC(y, m-1, d));
+            dt.setUTCDate(dt.getUTCDate() + days);
+            return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+        }
+        function fmtDateLong(iso) {
+            const [y,m,d] = iso.split('-').map(n => parseInt(n,10));
+            const dt = new Date(y, m-1, d);
+            return dt.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+        function fmtDayOfWeek(iso) {
+            const [y,m,d] = iso.split('-').map(n => parseInt(n,10));
+            const dt = new Date(y, m-1, d);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const diffDays = Math.round((dt - today) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return 'Today · ' + dt.toLocaleDateString(undefined, { weekday: 'long' });
+            if (diffDays === -1) return 'Yesterday · ' + dt.toLocaleDateString(undefined, { weekday: 'long' });
+            if (diffDays === 1) return 'Tomorrow · ' + dt.toLocaleDateString(undefined, { weekday: 'long' });
+            return dt.toLocaleDateString(undefined, { weekday: 'long' });
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+        function showToast(msg, isError) {
+            const t = $('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (isError ? ' error' : '') + ' show';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+        async function fetchJson(url, opts) {
+            const res = await fetch(url, {
+                credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                ...(opts || {}),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const body = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((body && body.message) || (body && body.error) || res.statusText);
+                e.code = body && body.error; e.status = res.status;
+                throw e;
+            }
+            return body;
+        }
+
+        // ---- save indicator ----
+        function setSaveState(s) {
+            const bar = $('save-bar');
+            bar.className = 'save-bar ' + s;
+            $('save-text').textContent = ({
+                saved: 'Saved.',
+                dirty: 'Unsaved changes…',
+                saving: 'Saving…',
+                error: 'Save failed — retry?',
+            })[s] || s;
+        }
+
+        // ---- catalog ----
+        const DOMAIN_TITLES = {
+            pain:       'Pain',
+            bleeding:   'Bleeding',
+            cycle:      'Cycle',
+            menopause:  'Menopause / vasomotor',
+            mood:       'Mood',
+            sleep:      'Sleep',
+            sexual:     'Sexual function',
+            gi:         'GI',
+            gu:         'Urinary',
+            other:      'Today',
+        };
+        const DOMAIN_ORDER = ['pain','bleeding','cycle','menopause','mood','sleep','sexual','gi','gu','other'];
+
+        async function loadCatalog() {
+            const data = await fetchJson('/api/v1/patient/symptoms/definitions');
+            state.symptoms = data.symptoms;
+            state.byDomain = {};
+            state.byKey = {};
+            for (const s of state.symptoms) {
+                if (!state.byDomain[s.domain]) state.byDomain[s.domain] = [];
+                state.byDomain[s.domain].push(s);
+                state.byKey[s.key] = s;
+            }
+            // populate trend select
+            const trendSel = $('trend-key');
+            trendSel.innerHTML = state.symptoms
+                .filter(s => s.scale_kind !== 'text')
+                .map(s => `<option value="${s.key}">${escapeHtml(s.display_name)} · ${s.domain}</option>`)
+                .join('');
+        }
+
+        async function loadEntry() {
+            try {
+                const data = await fetchJson(`/api/v1/patient/symptoms/diary/${state.currentDate}`);
+                state.entry = data.entry || { values: {}, note: '' };
+                if (state.entry.updated_at) {
+                    $('entry-meta').textContent = 'Updated ' + new Date(state.entry.updated_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+                } else {
+                    $('entry-meta').textContent = 'No entry yet';
+                }
+                renderDomains();
+                $('note').value = state.entry.note || '';
+                setSaveState('saved');
+                state.dirty = false;
+            } catch (e) {
+                if (e.code === 'unauthorized' || e.status === 401) {
+                    window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
+                    return;
+                }
+                showToast('Could not load entry: ' + e.message, true);
+            }
+        }
+
+        function renderDomains() {
+            const dom = $('domains');
+            const presentDomains = DOMAIN_ORDER.filter(d => state.byDomain[d] && state.byDomain[d].length);
+            dom.innerHTML = presentDomains.map(d => {
+                return `
+                    <div class="domain-card" data-domain="${d}">
+                        <h3>${escapeHtml(DOMAIN_TITLES[d] || d)}</h3>
+                        ${state.byDomain[d].map(renderSymptom).join('')}
+                    </div>
+                `;
+            }).join('');
+            wireSymptomHandlers();
+        }
+
+        function renderSymptom(s) {
+            const val = state.entry.values[s.key];
+            switch (s.scale_kind) {
+                case 'numeric_0_10':
+                case 'numeric_0_4': {
+                    const min = s.scale_min ?? 0;
+                    const max = s.scale_max ?? 10;
+                    const v = (val === undefined || val === null || val === '') ? '' : val;
+                    const displayValue = v === '' ? '—' : v;
+                    return `
+                        <div class="symptom-row" data-key="${s.key}" data-kind="${s.scale_kind}">
+                            <div class="symptom-label"><span class="name">${escapeHtml(s.display_name)}</span><span class="value-readout" data-readout="${s.key}">${displayValue}</span></div>
+                            <input type="range" min="${min}" max="${max}" step="1" value="${v === '' ? min : v}" ${v === '' ? 'data-empty="1"' : ''}>
+                            <div class="scale-ticks"><span>${min}</span><span>${max}</span></div>
+                        </div>
+                    `;
+                }
+                case 'boolean': {
+                    return `
+                        <div class="symptom-row" data-key="${s.key}" data-kind="boolean">
+                            <div class="symptom-label"><span class="name">${escapeHtml(s.display_name)}</span></div>
+                            <div class="yesno">
+                                <button data-bool="true"  class="${val === true ? 'active' : ''}">Yes</button>
+                                <button data-bool="false" class="${val === false ? 'active' : ''}">No</button>
+                                <button data-bool="null"  class="${val === undefined || val === null ? 'active' : ''}">—</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                case 'enum': {
+                    const allowed = s.enum_options || [];
+                    const isMulti = s.key === 'pain_location' || s.key === 'pain_triggers';
+                    const cur = Array.isArray(val) ? val : (val ? [val] : []);
+                    return `
+                        <div class="symptom-row" data-key="${s.key}" data-kind="enum" data-multi="${isMulti}">
+                            <div class="symptom-label"><span class="name">${escapeHtml(s.display_name)}</span></div>
+                            <div class="chips">
+                                ${allowed.map(opt => `<span class="chip ${cur.includes(opt) ? 'active' : ''}" data-opt="${escapeHtml(opt)}">${escapeHtml(labelOpt(opt))}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                case 'count_per_day':
+                case 'minutes':
+                case 'mm_per_day': {
+                    const min = s.scale_min ?? 0;
+                    const max = s.scale_max ?? 99;
+                    const v = (val === undefined || val === null || val === '') ? '' : val;
+                    const unit = s.unit ? ` ${s.unit}` : '';
+                    return `
+                        <div class="symptom-row" data-key="${s.key}" data-kind="${s.scale_kind}">
+                            <div class="symptom-label"><span class="name">${escapeHtml(s.display_name)}${unit ? ` <span style="color:var(--fg-dim); font-weight:400;">(${escapeHtml(unit.trim())})</span>` : ''}</span></div>
+                            <div class="stepper">
+                                <button data-delta="-1">−</button>
+                                <input type="number" min="${min}" max="${max}" step="1" value="${v}">
+                                <button data-delta="1">+</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                case 'text': {
+                    const v = (typeof val === 'string') ? val : '';
+                    return `
+                        <div class="symptom-row" data-key="${s.key}" data-kind="text">
+                            <div class="symptom-label"><span class="name">${escapeHtml(s.display_name)}</span></div>
+                            <input type="text" maxlength="240" placeholder="e.g. naproxen 500 mg x2" value="${escapeHtml(v)}">
+                        </div>
+                    `;
+                }
+                default:
+                    return '';
+            }
+        }
+        function labelOpt(opt) {
+            return String(opt).replace(/_/g, ' ');
+        }
+
+        function setValue(key, value) {
+            if (value === null || value === undefined ||
+                (Array.isArray(value) && value.length === 0) ||
+                (typeof value === 'string' && value === '')) {
+                delete state.entry.values[key];
+            } else {
+                state.entry.values[key] = value;
+            }
+            markDirty();
+            // Refresh just the readout for slider values.
+            const ro = document.querySelector(`[data-readout="${CSS.escape(key)}"]`);
+            if (ro) ro.textContent = state.entry.values[key] !== undefined ? state.entry.values[key] : '—';
+        }
+
+        function wireSymptomHandlers() {
+            document.querySelectorAll('.symptom-row').forEach(row => {
+                const key = row.getAttribute('data-key');
+                const kind = row.getAttribute('data-kind');
+                if (kind === 'numeric_0_10' || kind === 'numeric_0_4') {
+                    const range = row.querySelector('input[type=range]');
+                    range.addEventListener('input', () => {
+                        range.removeAttribute('data-empty');
+                        setValue(key, parseInt(range.value, 10));
+                    });
+                } else if (kind === 'boolean') {
+                    row.querySelectorAll('button[data-bool]').forEach(b => {
+                        b.addEventListener('click', () => {
+                            row.querySelectorAll('button[data-bool]').forEach(x => x.classList.remove('active'));
+                            b.classList.add('active');
+                            const v = b.getAttribute('data-bool');
+                            setValue(key, v === 'true' ? true : (v === 'false' ? false : null));
+                        });
+                    });
+                } else if (kind === 'enum') {
+                    const isMulti = row.getAttribute('data-multi') === 'true';
+                    row.querySelectorAll('.chip').forEach(c => {
+                        c.addEventListener('click', () => {
+                            const opt = c.getAttribute('data-opt');
+                            if (isMulti) {
+                                let cur = Array.isArray(state.entry.values[key]) ? [...state.entry.values[key]] : [];
+                                if (cur.includes(opt)) cur = cur.filter(x => x !== opt);
+                                else cur.push(opt);
+                                c.classList.toggle('active');
+                                setValue(key, cur);
+                            } else {
+                                row.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === c && !c.classList.contains('active')));
+                                const isActive = c.classList.contains('active');
+                                setValue(key, isActive ? opt : null);
+                            }
+                        });
+                    });
+                } else if (kind === 'count_per_day' || kind === 'minutes' || kind === 'mm_per_day') {
+                    const input = row.querySelector('input[type=number]');
+                    row.querySelectorAll('button[data-delta]').forEach(b => {
+                        b.addEventListener('click', () => {
+                            const delta = parseInt(b.getAttribute('data-delta'), 10);
+                            const cur = input.value === '' ? 0 : parseInt(input.value, 10);
+                            const next = Math.max(parseInt(input.min, 10), Math.min(parseInt(input.max, 10), cur + delta));
+                            input.value = next;
+                            setValue(key, next);
+                        });
+                    });
+                    input.addEventListener('input', () => {
+                        if (input.value === '') { setValue(key, null); return; }
+                        const n = parseInt(input.value, 10);
+                        if (Number.isFinite(n)) setValue(key, n);
+                    });
+                } else if (kind === 'text') {
+                    const input = row.querySelector('input[type=text]');
+                    input.addEventListener('input', () => setValue(key, input.value));
+                }
+            });
+        }
+
+        // ---- save ----
+        function markDirty() {
+            state.dirty = true;
+            setSaveState('dirty');
+            clearTimeout(state.saveTimer);
+            state.saveTimer = setTimeout(saveNow, 1100);
+        }
+        async function saveNow() {
+            if (!state.dirty) return;
+            setSaveState('saving');
+            try {
+                await fetchJson(`/api/v1/patient/symptoms/diary/${state.currentDate}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        values: state.entry.values,
+                        note: $('note').value,
+                    }),
+                });
+                state.dirty = false;
+                setSaveState('saved');
+                $('entry-meta').textContent = 'Updated ' + new Date().toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+            } catch (e) {
+                setSaveState('error');
+                showToast('Save failed: ' + e.message, true);
+            }
+        }
+        $('btn-save').addEventListener('click', saveNow);
+        $('note').addEventListener('input', () => markDirty());
+
+        // ---- date nav ----
+        $('btn-prev').addEventListener('click', () => goToDate(addDaysISO(state.currentDate, -1)));
+        $('btn-next').addEventListener('click', () => goToDate(addDaysISO(state.currentDate, 1)));
+        $('btn-today').addEventListener('click', () => goToDate(todayISO()));
+        async function goToDate(iso) {
+            if (state.dirty) await saveNow();
+            state.currentDate = iso;
+            $('current-date').textContent = fmtDateLong(iso);
+            $('current-dow').textContent = fmtDayOfWeek(iso);
+            await loadEntry();
+        }
+
+        // ---- trend ----
+        async function loadTrend() {
+            const key = $('trend-key').value;
+            if (!key) return;
+            const wrap = $('trend-svg-wrap');
+            wrap.innerHTML = '<div class="trend-empty">Loading…</div>';
+            try {
+                const data = await fetchJson(`/api/v1/patient/symptoms/trends?key=${encodeURIComponent(key)}`);
+                renderTrend(data);
+            } catch (e) {
+                wrap.innerHTML = `<div class="trend-empty">Could not load trend: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+        function renderTrend(data) {
+            const series = data.series;
+            const wrap = $('trend-svg-wrap');
+            const nonNull = series.filter(p => p.value !== null);
+            if (nonNull.length === 0) {
+                wrap.innerHTML = '<div class="trend-empty">No data logged for this symptom in the last 30 days. Start logging to see a trend.</div>';
+                return;
+            }
+            const W = 780, H = 220, PAD_L = 36, PAD_R = 12, PAD_T = 12, PAD_B = 28;
+            const innerW = W - PAD_L - PAD_R;
+            const innerH = H - PAD_T - PAD_B;
+            const minY = Math.min(0, ...nonNull.map(p => p.value));
+            const maxY = Math.max(...nonNull.map(p => p.value), data.kind === 'numeric_0_10' ? 10 : (data.kind === 'numeric_0_4' ? 4 : 1));
+            const rangeY = maxY - minY || 1;
+            const stepX = innerW / Math.max(1, series.length - 1);
+            const x = (i) => PAD_L + i * stepX;
+            const y = (v) => PAD_T + innerH - ((v - minY) / rangeY) * innerH;
+
+            // segments: connect consecutive non-null points; nulls break the line.
+            const segs = [];
+            let cur = [];
+            series.forEach((p, i) => {
+                if (p.value == null) {
+                    if (cur.length) segs.push(cur);
+                    cur = [];
+                } else {
+                    cur.push({ i, v: p.value });
+                }
+            });
+            if (cur.length) segs.push(cur);
+
+            const lines = segs.map(seg => seg.map((pt, k) =>
+                `${k === 0 ? 'M' : 'L'}${x(pt.i).toFixed(1)},${y(pt.v).toFixed(1)}`
+            ).join(' ')).join(' ');
+
+            const dots = nonNull.map(p => {
+                const i = series.findIndex(s => s.date === p.date);
+                return `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="2.5" fill="rgba(167,139,250,1)" />`;
+            }).join('');
+
+            // x-axis labels: every ~6th day
+            const labelEvery = Math.max(1, Math.floor(series.length / 5));
+            const xLabels = series.filter((_, i) => i % labelEvery === 0 || i === series.length - 1).map((p, k) => {
+                const i = series.findIndex(s => s.date === p.date);
+                const [yr, mo, d] = p.date.split('-');
+                return `<text x="${x(i).toFixed(1)}" y="${H - 6}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="middle">${mo}/${d}</text>`;
+            }).join('');
+
+            // y-axis tick at min and max
+            const yLabels = [
+                `<text x="${PAD_L - 6}" y="${y(maxY).toFixed(1) + 3}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${maxY}</text>`,
+                `<text x="${PAD_L - 6}" y="${y(minY).toFixed(1) + 3}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${minY}</text>`,
+            ].join('');
+
+            // baseline & grid
+            const gridY1 = `<line x1="${PAD_L}" y1="${y(maxY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(maxY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>`;
+            const gridY0 = `<line x1="${PAD_L}" y1="${y(minY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(minY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>`;
+
+            const symName = state.byKey[data.key] ? state.byKey[data.key].display_name : data.key;
+
+            wrap.innerHTML = `
+                <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="30-day trend of ${escapeHtml(symName)}">
+                    ${gridY1}
+                    ${gridY0}
+                    <path d="${lines}" fill="none" stroke="rgba(167,139,250,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    ${dots}
+                    ${xLabels}
+                    ${yLabels}
+                </svg>
+                <div style="font-size:11px; color:var(--fg-dim); margin-top:8px; text-align:center;">
+                    ${nonNull.length} day${nonNull.length === 1 ? '' : 's'} logged · ${escapeHtml(symName)}
+                </div>
+            `;
+        }
+        $('trend-key').addEventListener('change', loadTrend);
+        $('trend-refresh').addEventListener('click', loadTrend);
+
+        // ---- bootstrap ----
+        (async function init() {
+            $('current-date').textContent = fmtDateLong(state.currentDate);
+            $('current-dow').textContent = fmtDayOfWeek(state.currentDate);
+            try {
+                await loadCatalog();
+                await loadEntry();
+                await loadTrend();
+            } catch (e) {
+                if (e.code === 'unauthorized' || e.status === 401) {
+                    window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
+                    return;
+                }
+                showToast('Setup failed: ' + e.message, true);
+            }
+        })();
+
+        // Save on tab hide / unload — beacon to ensure no loss.
+        window.addEventListener('beforeunload', () => {
+            if (!state.dirty) return;
+            try {
+                navigator.sendBeacon(
+                    `/api/v1/patient/symptoms/diary/${state.currentDate}`,
+                    new Blob([JSON.stringify({ values: state.entry.values, note: $('note').value })], { type: 'application/json' })
+                );
+            } catch {}
+        });
+    </script>
+</body>
+</html>
