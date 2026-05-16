@@ -10,3 +10,9 @@ node_modules/
 # Large video files - upload to R2 instead
 assets/videos/*.mp4
 assets/videos/*.mov
+
+# Local secrets — Cloudflare Pages secrets that mirror to disk for local
+# scripts. NEVER commit. Per CLAUDE.md §4.2.
+.env
+.env.*
+!.env.example

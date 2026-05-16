@@ -17,6 +17,7 @@
 import { previewAccess, preLaunchNotFound } from "../../../../../_lib/preview_gate.js";
 import { requireRole, nowMs } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
+import { triageForIntake } from "./triage.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -96,12 +97,36 @@ export async function onRequestPost(ctx) {
         details: mh_flag ? { mental_health_flag: mh_flag } : null,
     });
 
+    // Chain auto-triage (§11.7 Phase 2.5). Failure inside triage MUST NOT
+    // fail the submit response — the intake was successfully captured;
+    // triage is a downstream enrichment. The triage helper handles its
+    // own fallback to a `manual_review_required` row if Anthropic is
+    // unreachable or the response fails validation, so a clinician can
+    // still hand-triage from the dashboard.
+    let triage = null;
+    try {
+        triage = await triageForIntake(ctx, intake_id);
+    } catch (e) {
+        console.error("intake submit auto-triage threw", { error: String(e), intake_id });
+    }
+
     return new Response(JSON.stringify({
         ok: true,
         intake_id,
         status: "submitted",
         submitted_at: now,
         mental_health_flag: mh_flag,
+        triage: triage && triage.ok ? {
+            id: triage.triage_id || triage.row?.id || null,
+            ai_used: !!triage.ai_used,
+            visit_type: triage.row?.ai_visit_type || null,
+            duration_min: triage.row?.ai_duration_min || null,
+            urgency: triage.row?.ai_urgency || null,
+            in_person_required: !!triage.row?.ai_in_person_required,
+            preferred_time_of_day: triage.row?.ai_preferred_time_of_day || null,
+            fallback_reason: triage.fallback_reason || null,
+            existing: !!triage.existing,
+        } : { error: triage?.error || "triage_failed" },
     }), {
         status: 200,
         headers: { "content-type": "application/json", "cache-control": "no-store" },
