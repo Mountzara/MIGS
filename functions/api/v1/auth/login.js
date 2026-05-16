@@ -11,6 +11,12 @@
 import { previewAccess, preLaunchNotFound } from "../../../_lib/preview_gate.js";
 import { verifyPassword, createSession, buildSessionCookie, normalizeEmail } from "../../../_lib/auth.js";
 import { logAudit } from "../../../_lib/audit.js";
+import { checkLockout, recordFailure, clearLockout, tooManyRequests } from "../../../_lib/rate_limit.js";
+
+// Per HIPAA risk register row 5. 10 failures per 15-min window
+// triggers a soft-lockout for the remainder of that window.
+const RL_THRESHOLD = 10;
+const RL_WINDOW_SECONDS = 15 * 60;
 
 function badRequest(message) {
     return new Response(JSON.stringify({ error: "bad_request", message }), {
@@ -46,6 +52,24 @@ export async function onRequestPost(ctx) {
     const ip = request.headers.get("CF-Connecting-IP") || "";
     const ua = request.headers.get("User-Agent") || "";
 
+    // Rate-limit by (email + ip) — combined identifier means a per-account
+    // brute force throttles AND a per-IP credential-stuffing run throttles.
+    const rlIdentifier = `${email}|${ip}`;
+    const lock = await checkLockout({
+        env, prefix: "login", identifier: rlIdentifier,
+        threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+    });
+    if (lock.locked) {
+        await logAudit(env, {
+            user_id: null, user_role: "anonymous",
+            action: "login_fail",
+            record_type: "patient",
+            ip, user_agent: ua, success: false,
+            details: { reason: "rate_limited", fails: lock.fails, retry_after_seconds: lock.retry_after_seconds },
+        });
+        return tooManyRequests(lock.retry_after_seconds);
+    }
+
     const row = await env.DB.prepare(
         "SELECT id, password_hash, status FROM patients WHERE email = ? LIMIT 1"
     ).bind(email).first();
@@ -59,6 +83,10 @@ export async function onRequestPost(ctx) {
         : await verifyPassword(password, dummy).then(() => false);
 
     if (!row || !ok) {
+        const fr = await recordFailure({
+            env, prefix: "login", identifier: rlIdentifier,
+            threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+        });
         await logAudit(env, {
             user_id: row?.id || null,
             user_role: "anonymous",
@@ -67,12 +95,25 @@ export async function onRequestPost(ctx) {
             record_id: row?.id || null,
             ip, user_agent: ua,
             success: false,
-            details: { reason: row ? "wrong_password" : "no_such_email" },
+            details: {
+                reason: row ? "wrong_password" : "no_such_email",
+                fails: fr.fails,
+                locked_after_this: fr.locked_after_this,
+            },
         });
+        // If THIS failure triggers the lockout, return 429 instead of 401
+        // so the attacker sees the soft-lockout immediately on attempt #10.
+        if (fr.locked_after_this) {
+            return tooManyRequests(RL_WINDOW_SECONDS);
+        }
         return unauthorized();
     }
 
     if (row.status !== "active") {
+        const fr = await recordFailure({
+            env, prefix: "login", identifier: rlIdentifier,
+            threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+        });
         await logAudit(env, {
             user_id: row.id,
             user_role: "anonymous",
@@ -81,10 +122,13 @@ export async function onRequestPost(ctx) {
             record_id: row.id,
             ip, user_agent: ua,
             success: false,
-            details: { reason: `status_${row.status}` },
+            details: { reason: `status_${row.status}`, fails: fr.fails },
         });
         return unauthorized();
     }
+
+    // Successful auth — clear any accumulated failure count.
+    await clearLockout({ env, prefix: "login", identifier: rlIdentifier });
 
     let session;
     try {
