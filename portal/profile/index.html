@@ -123,6 +123,21 @@
         <h1 id="welcomeName">Profile</h1>
         <p class="lede">The basics on file. Email, date of birth, and legal name are part of your identity record and require chart review to change. Everything else you can edit here.</p>
 
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.10);">
+                <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Intake</div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your intake</div>
+                    <div style="font-size: 13px; color: var(--fg-soft);">18 short sections, autosaved. Resume any time. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
+                </a>
+                <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Documents</div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Upload records &amp; imaging</div>
+                    <div style="font-size: 13px; color: var(--fg-soft);">Encrypted on the server. PDF, images, DOCX, DICOM. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
+                </a>
+            </div>
+        </div>
+
         <div class="card" id="identityCard">
             <h2>Identity &middot; on the record</h2>
             <div class="loading" id="identityLoading">Loading…</div>

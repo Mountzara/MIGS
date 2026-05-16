@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Documents · Patient Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s ease; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 880px; margin: 0 auto; padding: clamp(24px, 4vw, 48px) clamp(20px, 5vw, 40px); }
+        .top-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--fg-soft); margin-bottom: 28px; }
+        button.text-btn { background: none; border: none; padding: 6px 10px; border-radius: 8px; color: var(--fg-soft); font: inherit; font-size: 13px; cursor: pointer; transition: background 0.18s ease, color 0.18s ease; }
+        button.text-btn:hover { color: var(--fg-strong); background: rgba(var(--glow-purple), 0.10); }
+        .eyebrow {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-weight: 200;
+            font-size: clamp(28px, 4.2vw, 38px);
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            color: var(--fg-strong);
+            margin: 0 0 10px 0;
+        }
+        .lede { font-size: 15.5px; line-height: 1.65; color: var(--fg-soft); max-width: 64ch; margin: 0 0 28px 0; }
+
+        .drop {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px dashed rgba(var(--glow-purple), 0.35);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 36px;
+            text-align: center;
+            transition: border-color 0.22s ease, background 0.22s ease;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+        .drop:hover, .drop.dragover {
+            border-color: rgba(var(--glow-purple), 0.65);
+            background: rgba(var(--glow-purple), 0.08);
+        }
+        .drop h2 { font-size: 17px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; letter-spacing: -0.01em; }
+        .drop p { font-size: 13px; color: var(--fg-soft); margin: 0; }
+        .drop p .hint { color: var(--fg-dim); display: block; margin-top: 4px; font-size: 12.5px; }
+        .drop input[type=file] { display: none; }
+
+        .desc-row {
+            display: flex; gap: 8px;
+            margin-bottom: 24px;
+        }
+        .desc-row input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 9px;
+            color: var(--fg-strong);
+            font: inherit; font-size: 14px;
+        }
+        .desc-row input:focus { outline: none; border-color: rgba(var(--glow-purple), 0.65); }
+
+        .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
+        .msg.ok    { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg.busy  { display: block; background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.32); color: rgba(196, 181, 253, 0.95); }
+
+        h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 32px 0 12px 0; }
+        .doc-list { display: flex; flex-direction: column; gap: 10px; }
+        .doc-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            transition: border-color 0.18s ease, background 0.18s ease;
+            animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .doc-card:hover { border-color: rgba(var(--glow-purple), 0.35); background: rgba(var(--glow-purple), 0.05); }
+        .doc-ico {
+            width: 36px; height: 36px;
+            border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(var(--glow-purple), 0.12);
+            color: rgba(var(--glow-purple), 0.95);
+            flex-shrink: 0;
+        }
+        .doc-ico svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.6; fill: none; }
+        .doc-meta { flex: 1; min-width: 0; }
+        .doc-name { color: var(--fg-strong); font-size: 14.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .doc-sub  { color: var(--fg-soft); font-size: 12px; margin-top: 2px; }
+        .doc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .doc-actions button, .doc-actions a {
+            font: inherit; font-size: 12.5px; font-weight: 600;
+            padding: 7px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 8px;
+            color: var(--fg-strong);
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease;
+            text-decoration: none;
+        }
+        .doc-actions button:hover, .doc-actions a:hover { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); }
+        .doc-actions .danger { color: rgba(252, 165, 165, 0.95); }
+        .doc-actions .danger:hover { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.40); }
+        .empty {
+            text-align: center;
+            font-size: 14px;
+            color: var(--fg-soft);
+            padding: 32px 0;
+        }
+
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row">
+            <a href="/portal/profile/">&larr; Profile</a>
+            <button class="text-btn" id="logoutBtn">Log out</button>
+        </div>
+        <p class="eyebrow">Patient Portal &middot; Documents</p>
+        <h1>Documents on file</h1>
+        <p class="lede">Imaging reports, prior records, pre-op forms — upload anything you want Dr. Mabini to see. Files are encrypted on the server with a per-record key. Max 50 MB per file.</p>
+
+        <div class="desc-row">
+            <input type="text" id="descInput" placeholder="Optional description (e.g. ‘TVUS report from Dr. Smith, March 2026’)" maxlength="500">
+        </div>
+
+        <label class="drop" id="drop" for="fileInput">
+            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.tif,.tiff,.gif,.webp,.doc,.docx,.txt,.dcm,application/pdf,application/dicom,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,text/plain">
+            <h2>Drop a file here, or click to choose</h2>
+            <p>Accepts PDF, common images (JPG / PNG / HEIC / TIFF), DOC / DOCX, plain text, DICOM.
+                <span class="hint">Encrypted at rest with a per-record envelope key.</span></p>
+        </label>
+
+        <div id="msg" class="msg" role="status" aria-live="polite"></div>
+
+        <h2 class="section-h">Your documents</h2>
+        <div class="doc-list" id="docList"><div class="empty">Loading…</div></div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const drop = $('drop');
+        const fileInput = $('fileInput');
+        const descInput = $('descInput');
+        const msg = $('msg');
+        const docList = $('docList');
+
+        function showMsg(text, cls) { msg.textContent = text; msg.className = 'msg ' + cls; }
+        function clearMsg() { msg.className = 'msg'; msg.textContent = ''; }
+
+        function fmtBytes(n) {
+            if (!n && n !== 0) return '';
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+            return (n / 1024 / 1024).toFixed(1) + ' MB';
+        }
+        function fmtDate(ms) {
+            try { return new Date(ms).toLocaleString(); } catch { return String(ms); }
+        }
+        function iconFor(mime) {
+            if (mime?.startsWith('image/')) return '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-4-4-8 8"/></svg>';
+            if (mime === 'application/pdf') return '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>';
+            if (mime === 'application/dicom' || mime === 'application/octet-stream') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>';
+            return '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>';
+        }
+
+        async function loadDocs() {
+            try {
+                const r = await fetch('/api/v1/patient/documents', { credentials: 'same-origin' });
+                if (r.status === 401) { location.href = '/portal/login/'; return; }
+                if (r.status === 404) { location.href = '/portal/'; return; }
+                const data = await r.json();
+                const docs = data.documents || [];
+                if (docs.length === 0) {
+                    docList.innerHTML = '<div class="empty">No documents yet — upload one above.</div>';
+                    return;
+                }
+                docList.innerHTML = '';
+                for (const d of docs) {
+                    const card = document.createElement('div');
+                    card.className = 'doc-card';
+                    card.innerHTML = `
+                        <div class="doc-ico">${iconFor(d.mime_type)}</div>
+                        <div class="doc-meta">
+                            <div class="doc-name"></div>
+                            <div class="doc-sub"></div>
+                        </div>
+                        <div class="doc-actions">
+                            <a class="dl" target="_blank" rel="noopener">Download</a>
+                            <button class="danger del" type="button">Delete</button>
+                        </div>`;
+                    card.querySelector('.doc-name').textContent = d.filename || '(unnamed)';
+                    const subBits = [fmtBytes(d.size_bytes), fmtDate(d.uploaded_at)];
+                    if (d.description) subBits.push(d.description);
+                    card.querySelector('.doc-sub').textContent = subBits.filter(Boolean).join(' · ');
+                    const dl = card.querySelector('.dl');
+                    dl.href = `/api/v1/patient/documents/${d.id}`;
+                    dl.setAttribute('download', d.filename || 'download');
+                    card.querySelector('.del').addEventListener('click', () => deleteDoc(d.id, d.filename));
+                    docList.appendChild(card);
+                }
+            } catch (err) {
+                showMsg('Network error loading documents.', 'error');
+            }
+        }
+
+        async function uploadFile(file) {
+            if (!file) return;
+            if (file.size > 50 * 1024 * 1024) {
+                showMsg(`That file is ${fmtBytes(file.size)} — the max is 50 MB.`, 'error');
+                return;
+            }
+            const fd = new FormData();
+            fd.append('file', file);
+            const desc = descInput.value.trim();
+            if (desc) fd.append('description', desc);
+            showMsg(`Uploading ${file.name} (${fmtBytes(file.size)})…`, 'busy');
+            try {
+                const r = await fetch('/api/v1/patient/documents', {
+                    method: 'POST', credentials: 'same-origin', body: fd,
+                });
+                if (r.status === 401) { location.href = '/portal/login/'; return; }
+                if (!r.ok) {
+                    const body = await r.json().catch(() => ({}));
+                    showMsg(body.message || 'Upload failed.', 'error');
+                    return;
+                }
+                descInput.value = '';
+                showMsg(`Uploaded ${file.name}.`, 'ok');
+                loadDocs();
+            } catch (err) {
+                showMsg('Network error during upload.', 'error');
+            }
+        }
+
+        async function deleteDoc(id, filename) {
+            if (!confirm(`Delete ${filename || 'this document'}? This cannot be undone.`)) return;
+            try {
+                const r = await fetch(`/api/v1/patient/documents/${id}`, {
+                    method: 'DELETE', credentials: 'same-origin',
+                });
+                if (!r.ok) {
+                    showMsg('Delete failed.', 'error');
+                    return;
+                }
+                showMsg('Deleted.', 'ok');
+                loadDocs();
+            } catch (err) {
+                showMsg('Network error during delete.', 'error');
+            }
+        }
+
+        // Drag and drop
+        ['dragenter', 'dragover'].forEach(evt => drop.addEventListener(evt, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            drop.classList.add('dragover');
+        }));
+        ['dragleave', 'drop'].forEach(evt => drop.addEventListener(evt, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            drop.classList.remove('dragover');
+        }));
+        drop.addEventListener('drop', (e) => {
+            const file = e.dataTransfer?.files?.[0];
+            if (file) uploadFile(file);
+        });
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (file) uploadFile(file);
+            e.target.value = ''; // allow re-selecting the same file
+        });
+
+        $('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+            location.href = '/portal/';
+        });
+
+        loadDocs();
+    </script>
+</body>
+</html>
