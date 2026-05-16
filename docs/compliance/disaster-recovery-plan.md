@@ -19,6 +19,11 @@ Per CLAUDE.md §11 Tier 7 / HIPAA §164.308(a)(7) Contingency Plan Standard. Rev
 
 - **D1 snapshots:** `scripts/_backup_d1_to_r2.sh` exports the live D1 to `r2://mountzara-backups/d1/<UTC-date>.sql.gz` and prunes to the last 14 snapshots. Operator-runnable today; Phase 7 Round B will migrate this to a Cloudflare Workers cron trigger so the operator's Mac doesn't need to be awake.
 - **R2 default durability:** Cloudflare guarantees 99.999999999% (11 nines) annual durability across multi-AZ replication. We do not maintain a second cloud mirror; instead we rely on Cloudflare's stated durability + our envelope-encryption invariant (compromise of one R2 bucket cannot decrypt without `PHI_MASTER_KEY`).
+- **R2 object-lock retention** (added 2026-05-16):
+  - `mountzara-phi` — lock rule `phi-hipaa-7yr`: every object retained for 2555 days (7 years, HIPAA 6-year minimum + 1-year buffer). Cloudflare blocks DELETE of any object under retention regardless of who issues the request, including from the operator Mac with a full-access API token. This is the load-bearing defense against accidental or malicious bulk-delete of PHI bodies.
+  - `mountzara-content` — lock rule `posts-1yr`: 365-day retention on the entire bucket so a misfired pipeline run cannot wipe historical Evidence/Trending posts.
+  - `mountzara-backups` — lock rule `d1-snapshot-90d`: 90-day retention on the `d1/` prefix so D1 snapshots cannot be deleted by the retention pruner below the 90-day floor. The `_backup_d1_to_r2.sh` 14-rotation policy still applies for tidy-up; lock just forbids reach-back beyond 90 days.
+  - Inspect locks: `wrangler r2 bucket lock list <bucket>`. Add/remove locks: `wrangler r2 bucket lock add|remove`.
 - **Pages deploys:** the Cloudflare Pages dashboard retains every deployment indefinitely; rollback is `wrangler pages deployment alias`.
 - **Code:** GitHub `github.com/Mountzara/MIGS` is the source of truth. Local clones on operator Mac + any active Claude session are working copies.
 - **Master key escrow:** the operator MUST keep an offline paper or hardware-token copy of `PHI_MASTER_KEY`. Currently held in operator's macOS Keychain only — that is a single point of failure that this plan flags as a known risk pending hardware-token enrollment.
