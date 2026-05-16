@@ -1,2 +1,9 @@
 # Cloudflare Pages redirect rules
 /about /about/index.html 200
+
+# 2026-05-16 URL rename — the /blog/ directory was renamed to /trending/ so
+# the URL label matches the actual content (kind=blog → Trend Briefs from
+# Dr. Mabini's social-media response work). Any external bookmark or post
+# embed that pointed at /blog/... is 301 redirected to /trending/...
+/blog/ /trending/ 301
+/blog/* /trending/:splat 301

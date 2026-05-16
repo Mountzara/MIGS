@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Trend Briefs — public-facing evaluations of trending gynecologic claims circulating on social media, by Christopher Z. Mabini, DO, MSAEd.">
+    <title>Trend Briefs — Mount Zara</title>
+    <link rel="icon" type="image/png" href="/assets/images/Black White Elegant Personal Monogram Logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --white: #ffffff;
+            --gray-1: rgba(255, 255, 255, 0.72);
+            --gray-2: rgba(255, 255, 255, 0.5);
+            --gray-3: rgba(255, 255, 255, 0.3);
+            --glow-purple: 139, 92, 246;
+            --glow-purple-deep: 109, 40, 217;
+            --bg-soft: #1d1d1f;
+            --text-on-dark: #f5f5f7;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 60%, #000000 100%);
+            color: var(--text-on-dark);
+            min-height: 100vh;
+            font-feature-settings: "ss01", "cv11";
+            line-height: 1.5;
+        }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+        /* Top nav (mirrors the site nav, minimal) */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 18px clamp(20px, 4vw, 48px);
+            background: rgba(10, 10, 12, 0.72);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--white);
+        }
+        .nav-brand img { height: 32px; filter: brightness(0) invert(1); }
+        .nav-links {
+            display: flex;
+            gap: clamp(14px, 2.2vw, 28px);
+            font-size: 15px;
+        }
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.72);
+            transition: color 0.2s ease;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+        /* Hero */
+        .hero {
+            padding: clamp(80px, 12vw, 160px) clamp(20px, 5vw, 64px) clamp(60px, 8vw, 100px);
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(var(--glow-purple), 0.16), transparent 60%);
+            pointer-events: none;
+        }
+        .eyebrow {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        h1.title {
+            font-size: clamp(36px, 5.5vw, 64px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 22px;
+            color: var(--white);
+            position: relative;
+        }
+        .title-accent {
+            background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-purple), 0.95) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: clamp(17px, 1.8vw, 21px);
+            font-weight: 400;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.72);
+            max-width: 720px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Listing grid */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 10vw, 140px);
+        }
+        .post-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+        @media (min-width: 720px) {
+            .post-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (min-width: 1080px) {
+            .post-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        /* Mobile portrait — the previous styles used minimum padding values
+           that, combined with the post-card's own padding, left the card
+           content with ~280px of usable width on a 390px iPhone screen.
+           Tightening the outer container and post-card padding gives the
+           card content room to breathe, and shrinking the hero padding
+           recovers vertical real estate so the post grid is visible above
+           the fold. */
+        @media (max-width: 640px) {
+            .hero {
+                padding: 64px 16px 40px;
+            }
+            .container {
+                padding: 0 14px 60px;
+            }
+            .post-grid { gap: 14px; }
+            .post-card { padding: 20px 18px; }
+            .post-card .post-card-title { font-size: 18px; }
+            .post-detail {
+                padding: 0 16px 60px;
+            }
+            .post-detail-back {
+                margin-bottom: 20px;
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            .post-detail-meta {
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 14px;
+            }
+            .post-detail-title {
+                font-size: 26px;
+                margin-bottom: 12px;
+            }
+            .post-detail-subtitle {
+                font-size: 15px;
+                margin-bottom: 24px;
+                padding-bottom: 20px;
+            }
+            .post-detail-body { font-size: 15.5px; line-height: 1.7; }
+            .post-detail-body h2 { font-size: 21px; margin: 28px 0 10px; }
+            .post-detail-body h3 { font-size: 17px; margin: 22px 0 8px; }
+        }
+        .post-card {
+            display: flex;
+            flex-direction: column;
+            padding: clamp(26px, 2.4vw, 32px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 20px;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 12px 32px -16px rgba(0, 0, 0, 0.45);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s ease, background 0.3s ease;
+            opacity: 0;
+            transform: translateY(28px);
+            cursor: pointer;
+            min-height: 240px;
+        }
+        .post-card.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .post-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(var(--glow-purple), 0.42);
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10) 0%, rgba(var(--glow-purple), 0.02) 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.10),
+                0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45),
+                0 0 0 1px rgba(var(--glow-purple), 0.22);
+        }
+        .post-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .post-badge {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            padding: 5px 11px;
+            border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.10);
+            border: 1px solid rgba(var(--glow-purple), 0.24);
+        }
+        .post-date {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding-top: 5px;
+        }
+        .post-card-title {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.012em;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: var(--white);
+        }
+        .post-summary {
+            font-size: 14.5px;
+            line-height: 1.62;
+            color: rgba(255, 255, 255, 0.7);
+            flex: 1;
+            margin-bottom: 18px;
+        }
+        .post-topics {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .post-topic {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+        }
+        .post-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-top: auto;
+            transition: gap 0.2s ease, color 0.2s ease;
+        }
+        .post-card:hover .post-cta {
+            gap: 12px;
+            color: #fff;
+        }
+        .post-cta-arrow {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+        .post-card:hover .post-cta-arrow { transform: translateX(2px); }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: clamp(60px, 8vw, 100px) 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px dashed rgba(255, 255, 255, 0.10);
+            border-radius: 24px;
+        }
+
+        /* Single-post detail view */
+        .post-detail {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 0 clamp(20px, 5vw, 48px) clamp(80px, 10vw, 140px);
+        }
+        .post-detail-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease;
+        }
+        .post-detail-back:hover {
+            background: rgba(var(--glow-purple), 0.12);
+            color: #fff;
+            gap: 12px;
+        }
+        .post-detail-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .post-detail-title {
+            font-size: clamp(30px, 4vw, 48px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+            margin-bottom: 18px;
+            color: var(--white);
+        }
+        .post-detail-subtitle {
+            font-size: clamp(17px, 1.7vw, 20px);
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.72);
+            margin-bottom: 36px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .post-detail-body {
+            font-size: 16px;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.86);
+        }
+        /* Constrain the embedded body styling so generated HTML inherits site type */
+        .post-detail-body h2 {
+            font-size: clamp(22px, 2.2vw, 30px);
+            margin: 36px 0 12px;
+            color: var(--white);
+            letter-spacing: -0.018em;
+            line-height: 1.2;
+            font-weight: 600;
+        }
+        .post-detail-body h3 {
+            font-size: clamp(18px, 1.8vw, 22px);
+            margin: 28px 0 10px;
+            color: var(--white);
+            line-height: 1.3;
+            font-weight: 600;
+        }
+        .post-detail-body p { margin: 14px 0; }
+        .post-detail-body ul, .post-detail-body ol { margin: 14px 0; padding-left: 22px; }
+        .post-detail-body li { margin: 8px 0; }
+        .post-detail-body a {
+            color: rgba(var(--glow-purple), 0.95);
+            border-bottom: 1px solid rgba(var(--glow-purple), 0.32);
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        .post-detail-body a:hover { color: #fff; border-bottom-color: rgba(var(--glow-purple), 0.95); }
+        .post-detail-body code {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: 'SF Mono', Menlo, monospace;
+            font-size: 0.92em;
+        }
+        .post-detail-body blockquote {
+            border-left: 3px solid rgba(var(--glow-purple), 0.55);
+            margin: 20px 0;
+            padding: 12px 0 12px 20px;
+            color: rgba(255, 255, 255, 0.74);
+            font-style: italic;
+        }
+        .post-detail-manifest {
+            margin-top: 56px;
+            padding: 22px 24px;
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
+            border: 1px solid rgba(var(--glow-purple), 0.18);
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.75);
+        }
+        .post-detail-manifest h4 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 12px;
+        }
+        .post-detail-manifest dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 18px; }
+        .post-detail-manifest dt { color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+
+        /* Loader */
+        .loader {
+            text-align: center;
+            padding: clamp(60px, 8vw, 100px);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .loader-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(var(--glow-purple), 0.18);
+            border-top-color: rgba(var(--glow-purple), 0.95);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Footer */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        footer a { color: rgba(var(--glow-purple), 0.85); }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-brand">
+            <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara">
+            MOUNT ZARA
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trending/" class="active">Trending</a>
+            <a href="/evidence/">Evidence</a>
+            <a href="/about/">Bio</a>
+        </div>
+    </nav>
+
+    <!-- Listing view -->
+    <div id="listingView">
+        <section class="hero">
+            <span class="eyebrow">Trend Briefs · Influencer Page</span>
+            <h1 class="title">When a viral claim hits the clinic. <span class="title-accent">Here's what the literature actually says.</span></h1>
+            <p class="subtitle">When a claim about women's health makes the rounds online, it deserves an honest, careful look. Each brief here walks through the underlying biology and the published clinical evidence, side by side, and arrives at a plain-language verdict — so anyone reading can weigh the science alongside the headline.</p>
+        </section>
+
+        <main class="container">
+            <div id="postList">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    Loading posts…
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail view (hidden until a post is selected) -->
+    <div id="detailView" hidden>
+        <article class="post-detail">
+            <a href="/trending/" class="post-detail-back">← Back to all posts</a>
+            <div id="detailContent">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    Loading post…
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>© 2026 Mount Zara LLC · Christopher Z. Mabini, DO, MSAEd · <a href="/">mountzara.com</a></p>
+    </footer>
+
+    <script>
+        const API = '/api/posts';
+
+        function fmtDate(iso) {
+            if (!iso) return '';
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch { return ''; }
+        }
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+
+        async function loadList() {
+            try {
+                const res = await fetch(`${API}?kind=blog&status=published`);
+                const data = await res.json();
+                const posts = (data.posts || []);
+                const grid = document.getElementById('postList');
+                if (posts.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty">
+                            <p style="font-size:18px; color:rgba(255,255,255,0.78); margin-bottom:8px;">No posts published yet.</p>
+                            <p>The first MIGS Monday Morning digest will appear here once approved in the admin dashboard.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                grid.innerHTML = '<div class="post-grid">' + posts.map(p => `
+                    <a class="post-card" href="?id=${encodeURIComponent(p.id)}">
+                        <div class="post-meta">
+                            <span class="post-badge">${esc(p.week_label || 'Weekly digest')}</span>
+                            <span class="post-date">${esc(fmtDate(p.published_at || p.created_at))}</span>
+                        </div>
+                        <h2 class="post-card-title">${esc(p.title || '(Untitled)')}</h2>
+                        <p class="post-summary">${esc(p.summary || '')}</p>
+                        ${(p.topics_covered || []).length ? '<div class="post-topics">' + p.topics_covered.slice(0, 4).map(t => `<span class="post-topic">${esc(t)}</span>`).join('') + '</div>' : ''}
+                        <span class="post-cta">Read the digest <span class="post-cta-arrow">→</span></span>
+                    </a>
+                `).join('') + '</div>';
+                // Stagger reveal
+                document.querySelectorAll('.post-card').forEach((card, i) => {
+                    setTimeout(() => card.classList.add('in'), 80 * i);
+                });
+            } catch (e) {
+                document.getElementById('postList').innerHTML = `<div class="empty">Failed to load posts: ${esc(e.message || String(e))}</div>`;
+            }
+        }
+
+        async function loadDetail(id) {
+            try {
+                const res = await fetch(`${API}/${encodeURIComponent(id)}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const post = await res.json();
+                document.title = `${post.title || 'Brief'} — Trend Briefs`;
+                const manifest = `
+                    <div class="post-detail-manifest">
+                        <h4>Evidence manifest</h4>
+                        <dl>
+                            <dt>Topics</dt><dd>${(post.topics_covered || []).map(esc).join(', ') || '—'}</dd>
+                            <dt>PMIDs cited</dt><dd>${(post.pmids_cited || []).map(esc).join(', ') || '—'}</dd>
+                            <dt>KB entries</dt><dd>${(post.kb_entries_retrieved || []).length || 0} entries retrieved · § 0.8 compliant</dd>
+                            ${(post.gaps_surfaced || []).length ? `<dt>Gaps</dt><dd>${post.gaps_surfaced.map(esc).join(', ')}</dd>` : ''}
+                            <dt>Published</dt><dd>${esc(fmtDate(post.published_at) || '—')}</dd>
+                        </dl>
+                    </div>
+                `;
+                document.getElementById('detailContent').innerHTML = `
+                    <div class="post-detail-meta">
+                        <span class="post-badge">${esc(post.week_label || 'Weekly digest')}</span>
+                        <span class="post-date" style="padding-top:7px;">${esc(fmtDate(post.published_at || post.created_at))}</span>
+                    </div>
+                    <h1 class="post-detail-title">${esc(post.title)}</h1>
+                    <p class="post-detail-subtitle">${esc(post.summary)}</p>
+                    <div class="post-detail-body">${post.body_html || ''}</div>
+                    ${manifest}
+                `;
+            } catch (e) {
+                document.getElementById('detailContent').innerHTML = `<div class="empty">Post not found: ${esc(e.message || String(e))}</div>`;
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        if (id) {
+            document.getElementById('listingView').hidden = true;
+            document.getElementById('detailView').hidden = false;
+            loadDetail(id);
+        } else {
+            loadList();
+        }
+    </script>
+</body>
+</html>

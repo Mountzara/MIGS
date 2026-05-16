@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MIGS & CBG — Physician Blog and Journal Club. Weekly synthesis of the peer-reviewed gynecologic surgery and complex benign gynecology literature, by Christopher Z. Mabini, DO, MSAEd.">
+    <title>MIGS & CBG — Physician Blog · Mount Zara</title>
+    <link rel="icon" type="image/png" href="/assets/images/Black White Elegant Personal Monogram Logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --white: #ffffff;
+            --gray-1: rgba(255, 255, 255, 0.72);
+            --gray-2: rgba(255, 255, 255, 0.5);
+            --gray-3: rgba(255, 255, 255, 0.3);
+            --glow-purple: 139, 92, 246;
+            --glow-purple-deep: 109, 40, 217;
+            --verdict-supported: 52, 199, 89;
+            --verdict-mixed: 255, 159, 10;
+            --verdict-unsupported: 255, 99, 99;
+            --text-on-dark: #f5f5f7;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 60%, #000000 100%);
+            color: var(--text-on-dark);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+        .nav {
+            position: sticky; top: 0; z-index: 100;
+            padding: 18px clamp(20px, 4vw, 48px);
+            background: rgba(10, 10, 12, 0.72);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-brand { display: inline-flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: var(--white); }
+        .nav-brand img { height: 32px; filter: brightness(0) invert(1); }
+        .nav-links { display: flex; gap: clamp(14px, 2.2vw, 28px); font-size: 15px; }
+        .nav-links a { color: rgba(255, 255, 255, 0.72); transition: color 0.2s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--white); }
+
+        .hero {
+            padding: clamp(80px, 12vw, 160px) clamp(20px, 5vw, 64px) clamp(60px, 8vw, 100px);
+            max-width: 1200px; margin: 0 auto; text-align: center; position: relative;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(var(--glow-purple), 0.16), transparent 60%);
+            pointer-events: none;
+        }
+        .eyebrow {
+            display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+            text-transform: uppercase; color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 20px; position: relative;
+        }
+        h1.title {
+            font-size: clamp(36px, 5.5vw, 64px); font-weight: 700; letter-spacing: -0.03em;
+            line-height: 1.05; margin-bottom: 22px; color: var(--white); position: relative;
+        }
+        .title-accent {
+            background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-purple), 0.95) 100%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: clamp(17px, 1.8vw, 21px); font-weight: 400; line-height: 1.55;
+            color: rgba(255, 255, 255, 0.72); max-width: 720px; margin: 0 auto; position: relative;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 10vw, 140px); }
+        .brief-grid { display: grid; grid-template-columns: 1fr; gap: 22px; }
+        @media (min-width: 720px) { .brief-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1080px) { .brief-grid { grid-template-columns: 1fr 1fr 1fr; } }
+        /* Mobile portrait — tighten outer padding, shrink hero vertical
+           space, reduce brief-card padding so card content has room to
+           breathe on a ~390px iPhone screen. */
+        @media (max-width: 640px) {
+            .hero { padding: 64px 16px 40px; }
+            .container { padding: 0 14px 60px; }
+            .brief-grid { gap: 14px; }
+            .brief-card { padding: 20px 18px; }
+            .brief-detail { padding: 0 16px 60px; }
+        }
+        .brief-card {
+            display: flex; flex-direction: column;
+            padding: clamp(26px, 2.4vw, 32px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 20px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 32px -16px rgba(0, 0, 0, 0.45);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s ease, background 0.3s ease;
+            opacity: 0; transform: translateY(28px); cursor: pointer; min-height: 240px;
+        }
+        .brief-card.in { opacity: 1; transform: translateY(0); }
+        .brief-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(var(--glow-purple), 0.42);
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10) 0%, rgba(var(--glow-purple), 0.02) 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45), 0 0 0 1px rgba(var(--glow-purple), 0.22);
+        }
+        .brief-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .verdict-badge {
+            display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+            text-transform: uppercase; padding: 5px 12px; border-radius: 999px;
+        }
+        .verdict-supported { color: rgba(var(--verdict-supported), 0.95); background: rgba(var(--verdict-supported), 0.10); border: 1px solid rgba(var(--verdict-supported), 0.30); }
+        .verdict-mixed { color: rgba(var(--verdict-mixed), 0.95); background: rgba(var(--verdict-mixed), 0.10); border: 1px solid rgba(var(--verdict-mixed), 0.30); }
+        .verdict-unsupported { color: rgba(var(--verdict-unsupported), 0.95); background: rgba(var(--verdict-unsupported), 0.10); border: 1px solid rgba(var(--verdict-unsupported), 0.30); }
+        .verdict-neutral { color: rgba(var(--glow-purple), 0.95); background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.24); }
+        .brief-date { font-size: 12.5px; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.04em; text-transform: uppercase; padding-top: 5px; }
+        .brief-card-title { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.35; margin-bottom: 12px; color: var(--white); }
+        .brief-summary { font-size: 14.5px; line-height: 1.62; color: rgba(255, 255, 255, 0.7); flex: 1; margin-bottom: 18px; }
+        .brief-cta {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 600; color: rgba(var(--glow-purple), 0.95);
+            margin-top: auto; transition: gap 0.2s ease, color 0.2s ease;
+        }
+        .brief-card:hover .brief-cta { gap: 12px; color: #fff; }
+
+        .empty {
+            text-align: center; padding: clamp(60px, 8vw, 100px) 20px;
+            color: rgba(255, 255, 255, 0.5); font-size: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px dashed rgba(255, 255, 255, 0.10); border-radius: 24px;
+        }
+
+        /* Brief detail view */
+        .brief-detail { max-width: 880px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 48px) clamp(80px, 10vw, 140px); }
+        .brief-detail-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px; padding: 10px 16px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease;
+        }
+        .brief-detail-back:hover { background: rgba(var(--glow-purple), 0.12); color: #fff; gap: 12px; }
+        .brief-detail-meta { display: flex; gap: 12px; margin-bottom: 18px; }
+        .brief-detail-title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 18px; color: var(--white); }
+        .brief-detail-claim {
+            font-size: clamp(17px, 1.7vw, 20px); line-height: 1.55;
+            color: rgba(255, 255, 255, 0.84); margin-bottom: 36px; padding: 24px 28px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
+            border: 1px solid rgba(var(--glow-purple), 0.20);
+            font-style: italic;
+        }
+        .brief-detail-claim-label {
+            display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em;
+            text-transform: uppercase; color: rgba(var(--glow-purple), 0.95);
+            margin-bottom: 10px; font-style: normal;
+        }
+        .brief-detail-body { font-size: 16px; line-height: 1.75; color: rgba(255, 255, 255, 0.86); }
+        .brief-detail-body h2 { font-size: clamp(22px, 2.2vw, 30px); margin: 36px 0 12px; color: var(--white); letter-spacing: -0.018em; line-height: 1.2; font-weight: 600; }
+        .brief-detail-body h3 { font-size: clamp(18px, 1.8vw, 22px); margin: 28px 0 10px; color: var(--white); line-height: 1.3; font-weight: 600; }
+        .brief-detail-body p { margin: 14px 0; }
+        .brief-detail-body ul, .brief-detail-body ol { margin: 14px 0; padding-left: 22px; }
+        .brief-detail-body li { margin: 8px 0; }
+        .brief-detail-body a { color: rgba(var(--glow-purple), 0.95); border-bottom: 1px solid rgba(var(--glow-purple), 0.32); transition: color 0.2s ease, border-color 0.2s ease; }
+        .brief-detail-body a:hover { color: #fff; border-bottom-color: rgba(var(--glow-purple), 0.95); }
+        .brief-detail-manifest {
+            margin-top: 56px; padding: 22px 24px;
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
+            border: 1px solid rgba(var(--glow-purple), 0.18); border-radius: 16px;
+            font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.75);
+        }
+        .brief-detail-manifest h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
+        .brief-detail-manifest dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 18px; }
+        .brief-detail-manifest dt { color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+
+        .loader { text-align: center; padding: clamp(60px, 8vw, 100px); color: rgba(255, 255, 255, 0.5); }
+        .loader-spinner { width: 32px; height: 32px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: rgba(var(--glow-purple), 0.95); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer { padding: 40px 24px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.04); }
+        footer a { color: rgba(var(--glow-purple), 0.85); }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-brand">
+            <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara">
+            MOUNT ZARA
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trending/">Trending</a>
+            <a href="/evidence/" class="active">Evidence</a>
+            <a href="/about/">Bio</a>
+        </div>
+    </nav>
+
+    <div id="listingView">
+        <section class="hero">
+            <span class="eyebrow">MIGS &amp; CBG · Physician Blog</span>
+            <h1 class="title">Evidence, weekly. <span class="title-accent">A working clinician's journal club.</span></h1>
+            <p class="subtitle">Every Monday morning — a synthesis of the prior week's peer-reviewed minimally invasive gynecologic surgery and complex benign gynecology literature. Journal-club analysis per paper: design, key findings, limitations, and where the result fits in the broader evidence base. Written for clinicians, with every citation linkable for further reading.</p>
+        </section>
+
+        <main class="container">
+            <div id="briefList">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    Loading briefs…
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="detailView" hidden>
+        <article class="brief-detail">
+            <a href="/evidence/" class="brief-detail-back">← Back to all briefs</a>
+            <div id="detailContent">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    Loading brief…
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>© 2026 Mount Zara LLC · Christopher Z. Mabini, DO, MSAEd · <a href="/">mountzara.com</a></p>
+    </footer>
+
+    <script>
+        const API = '/api/posts';
+        function fmtDate(iso) {
+            if (!iso) return '';
+            try { return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); } catch { return ''; }
+        }
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function verdictClass(v) {
+            if (!v) return 'verdict-neutral';
+            const upper = String(v).toUpperCase();
+            if (upper.includes('SUPPORT') && !upper.includes('UN')) return 'verdict-supported';
+            if (upper.includes('UNSUPPORT') || upper.includes('NO EVIDENCE') || upper.includes('CONTRA')) return 'verdict-unsupported';
+            if (upper.includes('MIXED') || upper.includes('PARTIAL') || upper.includes('LIMITED')) return 'verdict-mixed';
+            return 'verdict-neutral';
+        }
+
+        async function loadList() {
+            try {
+                const res = await fetch(`${API}?kind=evidence&status=published`);
+                const data = await res.json();
+                const briefs = (data.posts || []);
+                const grid = document.getElementById('briefList');
+                if (briefs.length === 0) {
+                    grid.innerHTML = `<div class="empty">
+                        <p style="font-size:18px; color:rgba(255,255,255,0.78); margin-bottom:8px;">No briefs published yet.</p>
+                        <p>The first influencer-claim evidence brief will appear here once approved in the admin dashboard.</p>
+                    </div>`;
+                    return;
+                }
+                grid.innerHTML = '<div class="brief-grid">' + briefs.map(b => `
+                    <a class="brief-card" href="?id=${encodeURIComponent(b.id)}">
+                        <div class="brief-meta">
+                            <span class="verdict-badge ${verdictClass(b.verdict)}">${esc(b.verdict || 'Reviewed')}</span>
+                            <span class="brief-date">${esc(fmtDate(b.published_at || b.created_at))}</span>
+                        </div>
+                        <h2 class="brief-card-title">${esc(b.title || '(Untitled)')}</h2>
+                        <p class="brief-summary">${esc(b.summary || '')}</p>
+                        <span class="brief-cta">Read the evidence <span>→</span></span>
+                    </a>
+                `).join('') + '</div>';
+                document.querySelectorAll('.brief-card').forEach((card, i) => setTimeout(() => card.classList.add('in'), 80 * i));
+            } catch (e) {
+                document.getElementById('briefList').innerHTML = `<div class="empty">Failed to load briefs: ${esc(e.message || String(e))}</div>`;
+            }
+        }
+
+        async function loadDetail(id) {
+            try {
+                const res = await fetch(`${API}/${encodeURIComponent(id)}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const post = await res.json();
+                document.title = `${post.title || 'Post'} — MIGS &amp; CBG Physician Blog`;
+                const claim = post.summary || '';
+                const manifest = `
+                    <div class="brief-detail-manifest">
+                        <h4>Evidence manifest</h4>
+                        <dl>
+                            <dt>PMIDs cited</dt><dd>${(post.pmids_cited || []).map(esc).join(', ') || '—'}</dd>
+                            <dt>KB entries</dt><dd>${(post.kb_entries_retrieved || []).length || 0} entries retrieved · § 0.8 compliant</dd>
+                            ${(post.gaps_surfaced || []).length ? `<dt>Gaps</dt><dd>${post.gaps_surfaced.map(esc).join(', ')}</dd>` : ''}
+                            <dt>Source</dt><dd>PubMed E-Utilities (§ 3.6 validated API)</dd>
+                            <dt>Published</dt><dd>${esc(fmtDate(post.published_at) || '—')}</dd>
+                        </dl>
+                    </div>
+                `;
+                document.getElementById('detailContent').innerHTML = `
+                    <div class="brief-detail-meta">
+                        <span class="verdict-badge ${verdictClass(post.verdict)}">${esc(post.verdict || 'Reviewed')}</span>
+                        <span class="brief-date" style="padding-top:7px;">${esc(fmtDate(post.published_at || post.created_at))}</span>
+                    </div>
+                    <h1 class="brief-detail-title">${esc(post.title)}</h1>
+                    <div class="brief-detail-claim">
+                        <span class="brief-detail-claim-label">Claim under review</span>
+                        ${esc(claim)}
+                    </div>
+                    <div class="brief-detail-body">${post.body_html || ''}</div>
+                    ${manifest}
+                `;
+            } catch (e) {
+                document.getElementById('detailContent').innerHTML = `<div class="empty">Brief not found: ${esc(e.message || String(e))}</div>`;
+            }
+        }
+
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (id) {
+            document.getElementById('listingView').hidden = true;
+            document.getElementById('detailView').hidden = false;
+            loadDetail(id);
+        } else {
+            loadList();
+        }
+    </script>
+</body>
+</html>

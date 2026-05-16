@@ -546,7 +546,7 @@
                 main.innerHTML = `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
                 return;
             }
-            const publicPath = post.kind === 'blog' ? `/blog/?id=${encodeURIComponent(post.id)}` : `/evidence/?id=${encodeURIComponent(post.id)}`;
+            const publicPath = post.kind === 'blog' ? `/trending/?id=${encodeURIComponent(post.id)}` : `/evidence/?id=${encodeURIComponent(post.id)}`;
             const isDraft = post.status === 'draft';
             const isRejected = post.status === 'rejected';
             main.innerHTML = `

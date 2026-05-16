@@ -320,7 +320,7 @@ const COMING_SOON_HTML = `<!doctype html>
             <span aria-hidden="true">&middot;</span>
             <a href="/evidence/">Evidence</a>
             <span aria-hidden="true">&middot;</span>
-            <a href="/blog/">Trending</a>
+            <a href="/trending/">Trending</a>
         </p>
     </main>
 </body>
