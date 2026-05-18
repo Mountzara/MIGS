@@ -109,6 +109,29 @@ export async function onRequestPost(ctx) {
         detail: { op: "thread_reply" },
     });
 
+    // Phase 9.5 — record an encounter event so the clinician's case view
+    // surfaces "patient replied" on the "what's new since you last looked"
+    // panel and the patient is marked dirty for snapshot regeneration.
+    // Best-effort: never blocks the reply.
+    try {
+        // Need the subject for the summary string; loadThread already
+        // succeeded inside replyInThread so we can re-fetch lightly here.
+        const subjRow = await env.DB.prepare(
+            "SELECT subject FROM message_threads WHERE id = ? LIMIT 1"
+        ).bind(out.thread_id).first();
+        const subj = (subjRow && subjRow.subject) || "(no subject)";
+        const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+        await recordEncounterEvent(env, {
+            patient_id: session.patient_id,
+            event_type: "message_reply",
+            event_summary: `Patient replied in thread "${String(subj).slice(0, 80)}"`,
+            severity: "info",
+            ref_kind: "message",
+            ref_id: out.message_id,
+            details: { thread_id: out.thread_id, from_role: "patient" }
+        });
+    } catch {}
+
     return new Response(JSON.stringify({
         ok: true,
         thread_id: out.thread_id,

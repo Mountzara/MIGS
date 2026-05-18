@@ -80,6 +80,21 @@ export async function onRequestPost(ctx) {
             thread_id: out.thread_id, message_id: out.message_id,
             detail: { op: "thread_reply_by_clinician" },
         });
+        // Phase 9.5 — record an encounter event so the patient is marked dirty
+        // and the case-view "what's new since you last looked" panel surfaces
+        // the clinician outbound. Best-effort: never blocks the reply.
+        try {
+            const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id: thread.patient_id,
+                event_type: "message_reply",
+                event_summary: `Clinician replied in thread "${(thread.subject || "(no subject)").slice(0, 80)}"`,
+                severity: "info",
+                ref_kind: "message",
+                ref_id: out.message_id,
+                details: { thread_id: out.thread_id, from_role: "clinician" }
+            });
+        } catch {}
         return jsonResponse({
             ok: true,
             thread_id: out.thread_id,

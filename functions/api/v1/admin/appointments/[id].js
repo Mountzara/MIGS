@@ -93,6 +93,45 @@ export async function onRequestPatch(ctx) {
         });
 
         const row = await env.DB.prepare(`SELECT * FROM appointments WHERE id = ?`).bind(id).first();
+
+        // Phase 9.5 — record encounter events for any status change that
+        // matters to the case-view "what's new" panel. Best-effort.
+        try {
+            const eventMap = {
+                "appointment_complete":  { type: "appointment_completed",   severity: "info"    },
+                "appointment_cancel":    { type: "appointment_cancelled",   severity: "warning" },
+                "appointment_no_show":   { type: "appointment_no_show",     severity: "warning" },
+                "appointment_reschedule":{ type: "appointment_rescheduled", severity: "info"    },
+                "doxy_join":             { type: "doxy_join_logged",        severity: "info"    },
+            };
+            const cfg = eventMap[action_for_audit];
+            if (cfg && row && row.patient_id) {
+                let summary;
+                if (action_for_audit === "appointment_complete") {
+                    summary = `Visit completed (${row.visit_type || "visit"})`;
+                } else if (action_for_audit === "appointment_cancel") {
+                    summary = `Appointment cancelled${body.cancellation_reason ? `: ${String(body.cancellation_reason).slice(0, 80)}` : ""}`;
+                } else if (action_for_audit === "appointment_no_show") {
+                    summary = `No-show recorded for ${row.visit_type || "visit"}`;
+                } else if (action_for_audit === "appointment_reschedule") {
+                    const d = body.starts_at ? new Date(body.starts_at).toISOString().slice(0, 10) : "";
+                    summary = `Appointment rescheduled${d ? ` to ${d}` : ""}`;
+                } else {
+                    summary = `Patient joined telehealth room`;
+                }
+                const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+                await recordEncounterEvent(env, {
+                    patient_id: row.patient_id,
+                    event_type: cfg.type,
+                    event_summary: summary,
+                    severity: cfg.severity,
+                    ref_kind: "appointment",
+                    ref_id: id,
+                    details: auditDetails,
+                });
+            }
+        } catch {}
+
         return jsonResponse({ ok: true, appointment: row });
     });
 }

@@ -18,6 +18,7 @@ import { previewAccess, preLaunchNotFound } from "../../../../../_lib/preview_ga
 import { requireRole, nowMs } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
 import { triageForIntake } from "./triage.js";
+import { recommendAndAssignPROMs } from "../../../../../_lib/prom_intake_orchestrator.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -97,6 +98,42 @@ export async function onRequestPost(ctx) {
         details: mh_flag ? { mental_health_flag: mh_flag } : null,
     });
 
+    // Phase 9 — mark patient as dirty for app-side context pulls. The
+    // MountZaraMedicalTranscription app polls /api/v1/sync/transcription/patients
+    // ?since=<cursor> and will see this patient surface on the next pull,
+    // pre-loaded with the freshly-submitted intake answers. Best-effort;
+    // a write failure here MUST NOT fail the intake submit.
+    try {
+        await env.DB.prepare(`
+            INSERT INTO patient_dirty_flag (patient_id, dirty_since, dirty_reason, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(patient_id) DO UPDATE SET
+                dirty_since = excluded.dirty_since,
+                dirty_reason = excluded.dirty_reason,
+                updated_at = excluded.updated_at
+        `).bind(session.patient_id, now, "intake_submitted", now).run();
+    } catch (e) {
+        console.warn("intake submit dirty-flag write warn", { error: String(e) });
+    }
+
+    // Phase 9.5 — surface intake submission on the case-view "what's new"
+    // panel. Mental-health flag elevates severity to warning so the
+    // clinician sees PHQ-2 ≥ 3 / surgical anxiety positives at a glance.
+    try {
+        const { recordEncounterEvent } = await import("../../../../../_lib/encounters.js");
+        await recordEncounterEvent(env, {
+            patient_id: session.patient_id,
+            event_type: "intake_submitted",
+            event_summary: mh_flag
+                ? `Intake submitted with mental-health flag (PHQ-2=${mh_flag.phq2_total}${mh_flag.surgical_anxiety ? `, anxiety=${mh_flag.surgical_anxiety}` : ""})`
+                : `Intake submitted — ready for clinician review`,
+            severity: mh_flag ? "warning" : "info",
+            ref_kind: "intake",
+            ref_id: intake_id,
+            details: { mental_health_flag: mh_flag }
+        });
+    } catch {}
+
     // Chain auto-triage (§11.7 Phase 2.5). Failure inside triage MUST NOT
     // fail the submit response — the intake was successfully captured;
     // triage is a downstream enrichment. The triage helper handles its
@@ -108,6 +145,18 @@ export async function onRequestPost(ctx) {
         triage = await triageForIntake(ctx, intake_id);
     } catch (e) {
         console.error("intake submit auto-triage threw", { error: String(e), intake_id });
+    }
+
+    // Phase 10 Round A — AI-driven PROM assignment from the same intake.
+    // Tier 1 universal panels (PHQ-2, GAD-2) plus condition-triggered Tier 2
+    // (BPI-SF, EHP-5, ...) per the validated-questionnaire library. Failure
+    // here MUST NOT fail the intake submit — the patient can still be
+    // hand-assigned PROMs from the admin side if this enrichment fails.
+    let prom_assignments = null;
+    try {
+        prom_assignments = await recommendAndAssignPROMs(ctx, intake_id);
+    } catch (e) {
+        console.error("intake submit PROM recommend threw", { error: String(e), intake_id });
     }
 
     return new Response(JSON.stringify({

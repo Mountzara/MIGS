@@ -151,6 +151,21 @@ export async function onRequestPost(ctx) {
             },
         });
 
+        // Phase 9.5 — record encounter event so the case-view "what's new"
+        // panel surfaces a freshly synced surgical case. Best-effort.
+        try {
+            const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id,
+                event_type: "surgical_case_synced",
+                event_summary: `New surgical case synced: ${procedure_name.slice(0, 120)} (${visit_date})`,
+                severity: "info",
+                ref_kind: "encounter",
+                ref_id: encounter_id,
+                details: { procedure_name, visit_date, photo_count: document_ids.length, app_session_id: session_id }
+            });
+        } catch {}
+
         return syncJson({ ok: true, encounter_id, document_ids }, { status: 201 });
     });
 }

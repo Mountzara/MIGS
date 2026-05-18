@@ -237,6 +237,25 @@ export async function onRequestPost(ctx) {
         },
     });
 
+    // Phase 9.5 — record an encounter event so the clinician's "what's new
+    // since you last looked" panel surfaces newly booked appointments and
+    // the patient is marked dirty for snapshot regeneration. Best-effort.
+    try {
+        const startsDate = new Date(starts_at);
+        const summary = `Appointment booked: ${vt?.display_name || visit_type}`
+            + ` on ${startsDate.toISOString().slice(0, 10)} (${modality})`;
+        const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+        await recordEncounterEvent(env, {
+            patient_id: session.patient_id,
+            event_type: "appointment_booked",
+            event_summary: summary,
+            severity: "info",
+            ref_kind: "appointment",
+            ref_id: id,
+            details: { triage_id, visit_type, duration_min, modality, starts_at, ends_at }
+        });
+    } catch {}
+
     return new Response(JSON.stringify({
         ok: true,
         appointment: {

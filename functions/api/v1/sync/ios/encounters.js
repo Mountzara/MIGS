@@ -143,6 +143,21 @@ export async function onRequestPost(ctx) {
             },
         });
 
+        // Phase 9.5 — record encounter event so the case-view "what's new"
+        // panel surfaces a freshly-captured iOS encounter. Best-effort.
+        try {
+            const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id,
+                event_type: "ios_encounter_synced",
+                event_summary: `New mobile encounter captured (${visit_date}${visit_type_actual ? `, ${visit_type_actual}` : ""})`,
+                severity: "info",
+                ref_kind: "encounter",
+                ref_id: encounter_id,
+                details: { visit_date, visit_type_actual, photo_count: document_ids.length, app_session_id: session_id }
+            });
+        } catch {}
+
         return syncJson({ ok: true, encounter_id, document_ids }, { status: 201 });
     });
 }

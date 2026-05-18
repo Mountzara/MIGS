@@ -207,6 +207,22 @@ export async function onRequestPost(ctx) {
         details: { kind, mime, size_bytes: sizeBytes },
     });
 
+    // Phase 9.5 — record encounter event so the case-view "what's new"
+    // panel surfaces patient-uploaded documents (imaging discs, records,
+    // pre-op forms). Best-effort.
+    try {
+        const { recordEncounterEvent } = await import("../../../_lib/encounters.js");
+        await recordEncounterEvent(env, {
+            patient_id: session.patient_id,
+            event_type: "document_uploaded",
+            event_summary: `Patient uploaded ${kind === "intake_attachment" ? "an intake attachment" : "a document"}: ${String(filename || "untitled").slice(0, 80)}`,
+            severity: "info",
+            ref_kind: "document",
+            ref_id: doc_id,
+            details: { kind, mime, size_bytes: sizeBytes, filename }
+        });
+    } catch {}
+
     return new Response(JSON.stringify({
         ok: true,
         id: doc_id,

@@ -195,6 +195,21 @@ export async function onRequestPost(ctx) {
             },
         });
 
+        // Phase 9.5 — record encounter event so the case-view "what's new"
+        // panel surfaces a freshly synced Clinical AI analysis. Best-effort.
+        try {
+            const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id,
+                event_type: "clinical_ai_synced",
+                event_summary: `New ${case_kind.replace(/_/g, " ")} from MountZaraClinicalAI (visit ${visit_date})`,
+                severity: "info",
+                ref_kind: "document",
+                ref_id: document_ids[0],
+                details: { case_kind, app_session_id: session_id, visit_date, document_count: document_ids.length }
+            });
+        } catch {}
+
         return syncJson({ ok: true, document_ids, primary_document_id: document_ids[0] }, { status: 201 });
     });
 }

@@ -214,6 +214,58 @@ export async function onRequestPut(ctx) {
         },
     });
 
+    // Phase 9.5 — record an encounter event when the diary entry crosses
+    // a clinically meaningful threshold. Three tiers:
+    //   - any 0-10 scale value >= 9            -> urgent
+    //   - any 0-10 scale value >= 8            -> warning
+    //   - heavy bleeding flags / floods / etc. -> warning
+    //   - routine entries                       -> info (single per-day event)
+    // Best-effort: never blocks the diary upsert.
+    try {
+        const triggers = [];
+        let topSeverity = "info";
+        for (const [k, v] of Object.entries(cleanValues)) {
+            const def = catalog.get(k);
+            if (!def) continue;
+            if ((def.kind === "numeric_0_10") && typeof v === "number") {
+                if (v >= 9) { triggers.push({ key: k, value: v, threshold: 9 }); topSeverity = "urgent"; }
+                else if (v >= 8) {
+                    triggers.push({ key: k, value: v, threshold: 8 });
+                    if (topSeverity === "info") topSeverity = "warning";
+                }
+            }
+            // Bleeding-specific high-flow indicators
+            if ((k === "bleeding_pad_hour" || k === "bleeding_flooding" || k === "bleeding_clots_quarter") && (v === true || (typeof v === "number" && v > 0))) {
+                triggers.push({ key: k, value: v, kind: "bleeding_high_flow" });
+                if (topSeverity === "info") topSeverity = "warning";
+            }
+            // PHQ-2 / depression items at threshold
+            if ((k === "mood_phq_q1" || k === "mood_phq_q2") && typeof v === "number" && v >= 3) {
+                triggers.push({ key: k, value: v, kind: "phq2_threshold" });
+                if (topSeverity === "info") topSeverity = "warning";
+            }
+        }
+
+        // Only emit an event if either (a) a clinically meaningful threshold
+        // was crossed, or (b) this is the first diary entry of the day
+        // (existing was null). Avoids cluttering the panel with every save.
+        if (triggers.length > 0 || !existing) {
+            const summary = triggers.length > 0
+                ? `Patient symptom log flagged: ${triggers.map(t => `${t.key}=${t.value}`).join(", ")}`
+                : `Patient logged symptom diary for ${entry_date}`;
+            const { recordEncounterEvent } = await import("../../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id: session.patient_id,
+                event_type: "symptom_log",
+                event_summary: summary,
+                severity: topSeverity,
+                ref_kind: "symptom_diary",
+                ref_id: id,
+                details: { entry_date, triggers, keys_set: Object.keys(cleanValues) }
+            });
+        }
+    } catch {}
+
     return new Response(JSON.stringify({
         ok: true,
         entry: {

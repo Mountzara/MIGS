@@ -210,6 +210,21 @@ export async function onRequestPost(ctx) {
             },
         });
 
+        // Phase 9.5 — record encounter event so the case-view "what's new"
+        // panel surfaces a fresh transcription note. Best-effort.
+        try {
+            const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
+            await recordEncounterEvent(env, {
+                patient_id,
+                event_type: "transcription_note_synced",
+                event_summary: `New transcription note from visit on ${visit_date}${visit_type_actual ? ` (${visit_type_actual})` : ""}`,
+                severity: "info",
+                ref_kind: "encounter",
+                ref_id: encounter_id,
+                details: { visit_date, visit_type_actual, has_ai_summary: !!ai_summary_id, chief_complaint: chief_complaint }
+            });
+        } catch {}
+
         return syncJson({
             ok: true,
             encounter_id,
