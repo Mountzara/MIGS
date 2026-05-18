@@ -5291,8 +5291,8 @@
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
-                            <source src="/media/rpoc-golden-hysteroscope.mp4#t=0,10" type="video/mp4">
+                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
+                            <source src="/media/rpoc-golden-hysteroscope-reel.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
@@ -5315,8 +5315,8 @@
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
-                            <source src="/media/myomectomy-gel-port.mp4#t=0,10" type="video/mp4">
+                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
+                            <source src="/media/myomectomy-gel-port-reel.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
@@ -5339,8 +5339,8 @@
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
-                            <source src="/media/isthmocele-ashermans.mp4#t=0,10" type="video/mp4">
+                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
+                            <source src="/media/isthmocele-ashermans-reel.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
@@ -5362,8 +5362,8 @@
                     <p class="research-card-journal">AAGL Global Congress · Surgical Video Library</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="metadata" aria-hidden="true">
-                            <source src="/media/rpoc-arcuate-preview.mp4#t=0,10" type="video/mp4">
+                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
+                            <source src="/media/rpoc-arcuate-reel.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
@@ -7266,6 +7266,74 @@
             }
         });
         window.toggleFeatureSound = toggleFeatureSound;
+
+        // ============================================================
+        // Research-card preview autoplay guard
+        // ------------------------------------------------------------
+        // Chrome's autoplay heuristics can quietly refuse to play
+        // multiple muted videos that are below the fold on first paint.
+        // We watch each <video.video-preview> with an IntersectionObserver
+        // and call .play() explicitly when ≥25% of the card enters the
+        // viewport.
+        //
+        // The <source> files are pre-cut 30-second "reels" (three 10-second
+        // segments concatenated at 2:00/4:00/5:00 of each master video, or
+        // 0:20/1:00/1:40 for the shorter arcuate case). They start at 0,
+        // so no seeking is needed — just trigger playback.
+        // ============================================================
+        (function () {
+            const previews = document.querySelectorAll('video.video-preview');
+            if (!previews.length || !('IntersectionObserver' in window)) return;
+
+            function tryPlay(v) {
+                const p = v.play();
+                if (p && typeof p.catch === 'function') p.catch(() => { /* user gesture required; we'll retry on next intersection */ });
+            }
+
+            const io = new IntersectionObserver((entries) => {
+                for (const e of entries) {
+                    if (e.isIntersecting && e.target.paused) tryPlay(e.target);
+                }
+            }, { threshold: 0.25 });
+
+            previews.forEach((v) => {
+                io.observe(v);
+                // Try once on DOM ready too — handles the case where the user lands
+                // already scrolled into the research section (e.g. via #anchor).
+                if (v.getBoundingClientRect().top < window.innerHeight) tryPlay(v);
+            });
+        })();
     </script>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "§0.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "homepage OMT modal — six-pillar framework, standard-of-care backbone, 8-week trajectory, care-path cards (Who/Services/What to Expect/FAQ/Literature)",
+  "page": "/index.html (#omtModal)",
+  "user_docx_sources": [
+    "OMT_Integrated_Pelvic_Pain_Protocol_v4.1_MAGAZINE_with_Internal_Techniques.docx — Section 1 (six-pillar framework), Section 2 (osteopathic structural exam), Section 3 (diagnosis→technique mapping), Section 5 (patient instructions), Section 6 (verbatim patient-facing scripts), Section 7 (5 SOAP variants), Section 8 (bibliography + outcomes), Section 9 (internal pelvic manual techniques addendum)"
+  ],
+  "kb_documents_referenced_for_adjacent_claims": [
+    {"topic": "Chronic Pelvic Pain", "kb_topic_synthesis": "Chronic Pelvic Pain", "purpose": "Standard-of-care framing for CPP — ACOG PB 218 adjacent"},
+    {"topic": "Endometriosis", "kb_topic_synthesis": "Endometriosis", "purpose": "OMT-adjacent endometriosis pillar — supplements user docx with KB-grounded surgical/medical context"}
+  ],
+  "pmids_efetched_in_session": [
+    "37176750",
+    "24666560",
+    "22503015",
+    "37997320",
+    "32080045",
+    "39037764"
+  ],
+  "pmid_provenance_note": "RCT and Cochrane PMIDs referenced inside the OMT modal narrative (Muñoz-Gómez 2023, Molins-Cubero 2014, FitzGerald 2012, Alboni 2024, ACOG PB 218 CPP, Han 2024 TENS) all came from the user's OMT v4.1 §8 bibliography and were verified via NCBI E-Utils efetch in this session.",
+  "not_in_kb_claims": [
+    "OMT-specific technique mechanisms (T12–L1 HVLA, sacral parasympathetic modulation, broad ligament mobilization, pelvic diaphragm release) — sourced entirely from the user's OMT v4.1 Sections 2 and 3. Not in the JSON KB. User-authored source-of-truth per §0.8.1.",
+    "Six-pillar framework architecture — entirely user-authored in OMT v4.1 Section 1. Not in the JSON KB by design (the user authored it for this practice)."
+  ],
+  "generated_at_utc": "2026-05-16T21:30:00Z",
+  "note": "The OMT modal is primarily a user-authored clinical asset (Dr. Mabini's OMT v4.1 Protocol). Per §0.8.1 user-authored docx sources are acceptable anchors. Where the modal references endometriosis or chronic pelvic pain standard-of-care (e.g., the Pillar 2 medical-suppression layer for endo), those claims are KB-adjacent and trace back to the Endometriosis + Chronic Pelvic Pain topic syntheses already used by /education/endometriosis/."
+}
+-->
+
 </body>
 </html>
