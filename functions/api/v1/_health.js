@@ -112,7 +112,19 @@ export async function onRequestGet(ctx) {
         report.bindings.MZ_MAGIC_LINKS = { ok: false, error: String(e?.message || e) };
     }
 
-    // 4. R2 PHI bucket (write + read + delete a small probe object)
+    // 4. R2 PHI bucket — write + read a small probe object.
+    //
+    // We do NOT attempt to delete the probe object: per Phase 7 task #166,
+    // the PHI bucket has a 7-year object-retention policy enforced by R2,
+    // and any delete call returns "The object is locked by the bucket
+    // policy. (10069)" — which is the correct, intended behavior, not a
+    // failure. Probe keys go under the `_health_probe/` prefix; they will
+    // age out via R2 lifecycle once the retention window expires.
+    //
+    // (Earlier versions of this endpoint included an env.PHI.delete() call
+    // that worked when the bucket was unlocked, then started failing —
+    // making _health falsely report ok:false — after the retention lock
+    // landed. Don't put delete back in here.)
     try {
         if (!env.PHI) {
             report.bindings.PHI = "missing";
@@ -123,7 +135,6 @@ export async function onRequestGet(ctx) {
             });
             const got = await env.PHI.get(probeKey);
             const body = got ? await got.text() : null;
-            await env.PHI.delete(probeKey);
             report.bindings.PHI = { ok: body === "ok" };
         }
     } catch (e) {
