@@ -1,0 +1,149 @@
+{
+  "slug": "operative-hysteroscopy",
+  "title": "Operative Hysteroscopy",
+  "tag": "Golden Hysteroscope Award",
+  "topic_syntheses_used": [
+    "Hysteroscopy",
+    "Hysteroscopic Myomectomy",
+    "Endometrial Polyps"
+  ],
+  "kb_documents_loaded": [
+    {
+      "id": "113fb181-9346-4124-af99-010e30b199f7",
+      "title": "Office Operative Hysteroscopy: An Update",
+      "documentType": "Clinical Document",
+      "publicationYear": null
+    },
+    {
+      "id": "f0d3c462-6798-4bf8-ba35-5a9e3f676dfc",
+      "title": "Hysteroscopy for Abnormal Uterine Bleeding and Fibroids",
+      "documentType": "Clinical Document",
+      "publicationYear": null
+    },
+    {
+      "id": "3eca4d20-d24f-43ac-bb65-03af95104ef8",
+      "title": "Cochrane Review Hysteroscopy for treating subfertility associated with suspected major uterine cavity abnormalities",
+      "documentType": "Clinical Document",
+      "publicationYear": null
+    },
+    {
+      "id": "ef0bf971-9a2a-4aa7-85bc-7b3abdbd3a95",
+      "title": "Uterine fibroids (leiomyomas): Hysteroscopic myomectomy",
+      "documentType": "Clinical Document",
+      "publicationYear": null
+    },
+    {
+      "id": "5e222d3a-ea80-4fcf-be5d-e2285aca28c5",
+      "title": "Approach to the patient with postmenopausal uterine bleeding",
+      "documentType": "Clinical Document",
+      "publicationYear": null
+    }
+  ],
+  "patientCounselingPoints": [
+    "See full document for counseling - see document for guidance",
+    "See full document for counseling - see document for specific guidance"
+  ],
+  "keyPoints": [
+    "Hysteroscopy is the gold standard for evaluation of intracavitary pathology in both premenopausal and postmenopausal patients",
+    "Office-based operative hysteroscopy allows immediate return to normal activities when NSAIDs alone are used for analgesia",
+    "Optimal timing for hysteroscopic procedures is early proliferative phase (menstrual days 4-11) when endometrium is thinnest",
+    "Office hysteroscopy is cost-effective, enhances physician productivity, and improves patient satisfaction",
+    "Cervical stenosis in premenopausal women may require cervical priming with misoprostol before hysteroscopy",
+    "Indications include evaluation and treatment of endometrial polyps, submucous myomas, uterine septa, and adhesions",
+    "Miniature hysteroscopes (3-5 mm) enable office procedures without cervical dilation in most patients",
+    "Fluid management monitoring is essential to prevent distension media complications during operative hysteroscopy",
+    "Nearly 450,000 US women undergo hysterectomy by age 60; only 10-15% are for gynecologic malignancy",
+    "Operative hysteroscopy is a safe and effective minimally invasive treatment for submucosal and intramural leiomyomas",
+    "FIGO classifies submucosal fibroids into type 0 (pedunculated), type 1 (<50% intramural), and type 2 (>=50% intramural)",
+    "Hysteroscopic myomectomy is most successful for type 0 and type 1 fibroids less than 4-5 cm",
+    "Fluid deficit monitoring is critical; maximum deficit threshold varies by distension media (isotonic vs hypotonic)",
+    "Preoperative GnRH agonist therapy for 2-3 months can reduce fibroid size and facilitate hysteroscopic resection",
+    "Two-stage procedures may be necessary for large type 2 fibroids to reduce perforation and fluid overload risk",
+    "Hysteroscopic myomectomy should be leveraged to reduce unnecessary hysterectomies in women with intracavitary fibroids",
+    "Intracavitary abnormalities (polyps, submucous fibroids, septa, adhesions) are present in 10-15% of subfertile women",
+    "Observational studies suggest higher pregnancy rates after hysteroscopic removal of intracavitary pathology",
+    "Cochrane review found insufficient high-quality RCT evidence to confirm hysteroscopic treatment improves live birth rates",
+    "Hysteroscopic removal of endometrial polyps before IUI may improve pregnancy outcomes based on limited evidence",
+    "Hysteroscopic metroplasty for uterine septum is widely performed but supported only by observational data",
+    "Adhesiolysis for intrauterine adhesions (Asherman syndrome) may restore fertility but lacks RCT evidence",
+    "More high-quality randomized trials are needed to establish the true fertility benefit of operative hysteroscopy",
+    "section editor: Tommaso Falcone, MD, FRCSC, FACOG deputy editor: Alana Chakrabarti, MD",
+    "All topics are updated as new evidence becomes available and our peer review process is complete.",
+    "Uterine fibroids (leiomyomas) are the most common pelvic tumor in females [1,2]. Abnormal",
+    "uterine bleeding, the most common symptom associated with fibroids, is most frequent in",
+    "patients with tumors that abut the endometrium (lining of the uterine cavity), including",
+    "submucosal and some intramural fibroids [3-5]. This is likely due to distortion of the uterine",
+    "cavity and an increase in the bleeding surface of the endometrium [6]. Submucosal",
+    "leiomyomas, which derive from myometrial cells just below the endometrium, account for",
+    "leiomyomas. This has been largely replaced by hysteroscopic myomectomy, a minimally",
+    "invasive surgical procedure that effectively and safely removes these lesions [4,7].",
+    "Hysteroscopic myomectomy is reviewed here. General principles of hysteroscopy and",
+    "abdominal approaches to myomectomy are discussed separately. (See \"Hysteroscopy",
+    "Instruments and procedure\" and \"Uterine fibroids (leiomyomas): Prolapsed fibroids\" and",
+    "Hysteroscopic myomectomy is performed to remove intracavitary fibroids, a term that refers",
+    "to submucosal leiomyomas and some intramural leiomyomas for which most of the",
+    "\u00ae Approach to the patient with postmenopausal uterine bleeding author: Annekathryn Goodman, MD, MPH, MS section editor: Robert L Barbieri, MD deputy editor: Alana Chakrabarti, MD All topics are updated as new evidence becomes available and our peer review process is complete.",
+    "INTRODUCTION Postmenopausal bleeding (PMB) refers to any uterine bleeding in a menopausal patient (other than the expected cyclic bleeding that occurs in patients taking combined [ie, estrogen-progestin], cyclic, postmenopausal hormone therapy).",
+    "As PMB is the cardinal sign of endometrial carcinoma, all postmenopausal patients with unanticipated PMB should be evaluated for endometrial hyperplasia/carcinoma.",
+    "More Per this document, however, the cause of bleeding in such patients is the result of a benign condition, such as endometrial polyps or atrophy.",
+    "The etiologies and evaluation of postmenopausal patients with uterine bleeding, as well as patients near the end of the perimenopausal transition with abnormal uterine bleeding (AUB), will be reviewed here.",
+    "The evaluation and management of postmenopausal patients with a nonuterine source of vaginal bleeding, as well as premenopausal patients with AUB, are discussed separately.",
+    "ETIOLOGY The differential diagnosis of bleeding in postmenopausal patients is less broad than that for abnormal bleeding in premenopausal patients since the various causes of anovulation are not relevant.",
+    "In two studies including gynecologically asymptomatic breast cancer patients prior to administration of adjuvant therapy, the baseline risk of an endometrial abnormality was 17 to 18 percent [7,8].",
+    "As with postmenopausal patients with bleeding, the most common abnormalities were atrophy and polyps."
+  ],
+  "clinicalPearls": [
+    "Of\ufb01ce-based operative hysteroscopy allows patients to resume activities immediately and successfully integrates clinical practice into a \u201csee and treat\u201d modality, avoiding the added risks of anesthesia and the inconvenience of the operating room.",
+    "Keywords: Endometrial polyp; Intrauterine adhesions; Of\ufb01ce hysteroscopy; Of\ufb01ce procedural complications; Operative hysteroscopy; Pain management; Reimbursement; Submucous myoma; Uterine septum Hysteroscopy is considered the gold standard for endo- scopic evaluation of the uterine cavity [1].",
+    "Those who do not offer this proce- dure to their patients may believe that their patient population would not bene\ufb01t from the procedure, or that of\ufb01ce hyster- oscopy requires special expertise.",
+    "We discuss preoperative evaluation, fluid management, postop- erative complications, preventative measures, and hysteroscopic outcomes.",
+    "In addition, hysterectomy may permanently alter a women\u2019s pelvic floor anatomy, fertility, and for some their psyche, and is associ- ated with greater morbidity, higher health care costs, and other downstream impacts on patient health and quality of life.",
+    "Fortunately, for women who have symp- tomatic intracavitary and some submucosal leiomyomas, the field of gynecology, increas- ingly is embracing hysteroscopic myomec- tomy, as a minimally invasive procedure for the treatment for some submucosal and intramural leiomyomas.",
+    "15% of women seeking treatment for subfertility",
+    "Hysteroscopy for treating subfertility associated with suspected major uterine cavity abnormalities (Review)",
+    "Bosteels J, van Wessel S, Weyers S, Broekmans FJ, D'Hooghe TM, Bongers MY, Mol BWJ",
+    "Hysteroscopy for treating subfertility associated with suspected major uterine cavity abnormalities",
+    "Abnormal uterine bleeding, the most common symptom associated with fibroids, is most frequent in patients with tumors that abut the endometrium (lining of the uterine cavity), including submucosal and some intramural fibroids [3-5].",
+    "Appropriate candidates for hysteroscopic myomectomy are patients with the following characteristics: \u25cf \u25cf Symptomatic uterine fibroid(s).",
+    "In these patients, hysteroscopic myomectomy is performed when other therapies have failed or it is reasonable to attribute symptoms to an intracavitary fibroid.",
+    "As PMB is the cardinal sign of endometrial carcinoma, all postmenopausal patients with unanticipated PMB should be evaluated for endometrial hyperplasia/carcinoma.",
+    "More Per published data, however, the cause of bleeding in such patients is the result of a benign condition, such as endometrial polyps or atrophy."
+  ],
+  "teachingPoints": [],
+  "criticalThresholds": [
+    "See full document for thresholds"
+  ],
+  "drugProtocols": [
+    "See full document for drug protocols"
+  ],
+  "complicationsManagement": [],
+  "safetyConsiderations": [],
+  "decisionPoints": [],
+  "references_with_pmids": [],
+  "pmids_in_kb": [
+    "30083701",
+    "38153958",
+    "26253336",
+    "17516956",
+    "36422203",
+    "26797202",
+    "40914965",
+    "31982584",
+    "38302947",
+    "37899034",
+    "35435818",
+    "38493418",
+    "33053612",
+    "33065260",
+    "26748390",
+    "14550365",
+    "32570188",
+    "35466496",
+    "35014923",
+    "40073921",
+    "40590436",
+    "32008795",
+    "26794422",
+    "29653718"
+  ]
+}

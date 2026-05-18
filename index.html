@@ -1563,15 +1563,57 @@
             border-radius: 24px;
             padding: 40px 32px;
             border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.45s ease;
             min-height: 280px;
             display: flex;
             flex-direction: column;
+            cursor: pointer;
+            position: relative;
         }
 
         .domain-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(109, 40, 217, 0.3);
+            border-color: rgba(109, 40, 217, 0.45);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32),
+                        0 0 0 1px rgba(167, 139, 250, 0.12) inset,
+                        0 0 40px rgba(167, 139, 250, 0.06);
+        }
+
+        .domain-card:focus-visible {
+            outline: 2px solid rgba(167, 139, 250, 0.6);
+            outline-offset: 4px;
+        }
+
+        .domain-card .domain-cta {
+            margin-top: auto;
+            padding-top: 22px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: rgba(167, 139, 250, 0.92);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            opacity: 0.78;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .domain-card .domain-cta::after {
+            content: '→';
+            display: inline-block;
+            font-size: 16px;
+            line-height: 1;
+            transform: translateY(-1px);
+            transition: transform 0.3s ease;
+        }
+
+        .domain-card:hover .domain-cta {
+            opacity: 1;
+        }
+
+        .domain-card:hover .domain-cta::after {
+            transform: translate(4px, -1px);
         }
 
         .domain-tag {
@@ -3380,6 +3422,255 @@
             border-color: rgba(255, 255, 255, 0.12);
             transform: translateY(-2px);
         }
+
+        /* ============================================================
+           Domain Modal — patient-centered, KB-anchored modal content
+           for the 9 "Surgical practice areas" cards in #excellence.
+           Reuses the .app-modal shell + adds purpose-built section
+           treatments for evidence stats, R/B/A side-by-side, Q&A list,
+           timeline, and references.
+           ============================================================ */
+        .dm-body p {
+            font-size: 16.5px;
+            line-height: 1.72;
+            color: rgba(255, 255, 255, 0.84);
+            margin: 0 0 18px;
+            letter-spacing: -0.002em;
+        }
+        .dm-body p:last-child { margin-bottom: 0; }
+        .dm-body strong {
+            color: rgba(255, 255, 255, 0.96);
+            font-weight: 600;
+        }
+        .dm-body em {
+            color: rgba(167, 139, 250, 0.92);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* Evidence stats — 3-column tile grid of numbers + label + cite */
+        .dm-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin: 24px 0 8px;
+        }
+        .dm-stat {
+            padding: 22px 22px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+        }
+        .dm-stat:hover {
+            transform: translateY(-2px);
+            border-color: rgba(167, 139, 250, 0.32);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .dm-stat-num {
+            display: block;
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 200;
+            line-height: 1.05;
+            color: rgba(167, 139, 250, 0.95);
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .dm-stat-label {
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.84);
+            margin: 0 0 6px;
+        }
+        .dm-stat-source {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.02em;
+        }
+
+        /* R/B/A — three-column comparison: Expectant · Medical · Surgical */
+        .dm-rba {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .dm-rba-col {
+            padding: 26px 24px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .dm-rba-col h4 {
+            font-size: 17px;
+            font-weight: 600;
+            color: rgba(167, 139, 250, 0.95);
+            letter-spacing: -0.01em;
+            margin: 0 0 6px;
+        }
+        .dm-rba-col .dm-rba-sub {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin: 0 0 16px;
+        }
+        .dm-rba-col p {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.82);
+            margin: 0 0 12px;
+        }
+        .dm-rba-col ul {
+            margin: 0 0 12px;
+            padding: 0;
+            list-style: none;
+        }
+        .dm-rba-col li {
+            position: relative;
+            padding-left: 18px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+            margin-bottom: 8px;
+        }
+        .dm-rba-col li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 9px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(167, 139, 250, 0.7);
+        }
+
+        /* What-to-expect timeline */
+        .dm-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .dm-timeline-step {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 18px;
+            padding: 20px 22px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .dm-timeline-stage {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(167, 139, 250, 0.92);
+            padding-top: 2px;
+        }
+        .dm-timeline-body p {
+            font-size: 15px;
+            line-height: 1.62;
+            color: rgba(255, 255, 255, 0.84);
+            margin: 0 0 8px;
+        }
+        @media (max-width: 720px) {
+            .dm-timeline-step {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+
+        /* Q&A list — patient questions */
+        .dm-qa {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .dm-qa-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 22px 0;
+        }
+        .dm-qa-item:last-child {
+            border-bottom: none;
+        }
+        .dm-qa-q {
+            font-size: 17px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.96);
+            margin: 0 0 12px;
+            letter-spacing: -0.012em;
+            line-height: 1.35;
+        }
+        .dm-qa-q::before {
+            content: 'Q · ';
+            color: rgba(167, 139, 250, 0.92);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            margin-right: 2px;
+        }
+        .dm-qa-a {
+            font-size: 15.5px;
+            line-height: 1.68;
+            color: rgba(255, 255, 255, 0.82);
+            margin: 0;
+        }
+
+        /* References list */
+        .dm-refs {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: dmref;
+        }
+        .dm-refs li {
+            counter-increment: dmref;
+            position: relative;
+            padding: 12px 0 12px 36px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 14px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.78);
+        }
+        .dm-refs li:last-child { border-bottom: none; }
+        .dm-refs li::before {
+            content: counter(dmref);
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(167, 139, 250, 0.95);
+            background: rgba(167, 139, 250, 0.10);
+            border: 1px solid rgba(167, 139, 250, 0.22);
+        }
+        .dm-refs a {
+            color: rgba(167, 139, 250, 0.92);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(167, 139, 250, 0.4);
+            transition: color 0.22s, border-color 0.22s;
+        }
+        .dm-refs a:hover {
+            color: rgba(196, 181, 253, 1);
+            border-bottom-color: rgba(196, 181, 253, 0.8);
+        }
+        .dm-refs .dm-ref-pmid {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12.5px;
+            margin-left: 4px;
+        }
         .feature-tile-icon {
             width: 36px;
             height: 36px;
@@ -4569,6 +4860,9 @@
             }
         }
     </style>
+    <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
+         Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
+    <script src="/assets/js/domain-modals.js" defer></script>
 </head>
 <body>
     <!-- Page loader: visible until critical assets are ready -->
@@ -4901,48 +5195,59 @@
 
             <div class="domain-eyebrow">Surgical practice areas</div>
             <div class="domain-grid">
-                <div class="domain-card">
+                <div class="domain-card" data-domain="endometriosis-excision" role="button" tabindex="0" aria-label="Open patient-centered details: Endometriosis Excision">
                     <div class="domain-tag">ICG-Guided Detection</div>
                     <h4>Endometriosis Excision</h4>
                     <p>Stage I through Stage IV, including deep infiltrating disease with bowel, bladder, ureter, and appendiceal involvement. Published research methodology using indocyanine green to illuminate fibrosis and inflammatory changes invisible under standard light.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="myomectomy" role="button" tabindex="0" aria-label="Open patient-centered details: Robotic and Laparoscopic Myomectomy">
                     <div class="domain-tag">AAGL Video Abstract</div>
                     <h4>Robotic &amp; Laparoscopic Myomectomy</h4>
                     <p>Including extended robotic cases for large fibroid burden and the gel-based port containment system for tissue extraction — an AAGL-presented technique.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="hysterectomy-mis" role="button" tabindex="0" aria-label="Open patient-centered details: Complex Minimally Invasive Hysterectomy">
+                    <div class="domain-tag">Minimally Invasive Routes</div>
                     <h4>Complex Minimally Invasive Hysterectomy</h4>
                     <p>Proficiency in MIS routes: robotic, laparoscopic, vNOTES, hysteroscopy, and cystoscopy. Every hysterectomy of the fellowship completed minimally invasively — no conversions, no laparotomy.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="operative-hysteroscopy" role="button" tabindex="0" aria-label="Open patient-centered details: Operative Hysteroscopy">
                     <div class="domain-tag">Golden Hysteroscope Award</div>
                     <h4>Operative Hysteroscopy</h4>
                     <p>Hysteroscopic myomectomy, polypectomy, septum resection, isthmocele repair, RPOC management, lysis of intrauterine adhesions, endometrial ablation. AAGL-recognized for technique innovation.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="office-hysteroscopy" role="button" tabindex="0" aria-label="Open patient-centered details: Office Hysteroscopy and Vaginoscopy">
                     <div class="domain-tag">Bettocchi No-Touch Technique</div>
                     <h4>Office Hysteroscopy &amp; Vaginoscopy</h4>
                     <p>Awake, atraumatic, in-office hysteroscopy without speculum or tenaculum. A patient-centric standard for diagnostic and operative procedures outside the OR.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="vnotes" role="button" tabindex="0" aria-label="Open patient-centered details: vNOTES">
                     <div class="domain-tag">Emerging Technique</div>
                     <h4>vNOTES</h4>
                     <p>Vaginal natural orifice transluminal endoscopic surgery — hysterectomy and adnexal procedures via the vaginal route. Early adoption and mastery of one of the field's fastest-emerging minimally invasive techniques.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="adhesiolysis" role="button" tabindex="0" aria-label="Open patient-centered details: Complex Adhesiolysis">
                     <div class="domain-tag">Highest Fellowship Volume</div>
                     <h4>Complex Adhesiolysis</h4>
                     <p>Extensive multi-quadrant adhesive disease, sharp and energy-based dissection, dense bowel and pelvic sidewall pathology. Without a single major bowel injury across the entire fellowship.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="pelvic-reconstruction" role="button" tabindex="0" aria-label="Open patient-centered details: Pelvic Reconstruction">
+                    <div class="domain-tag">Native-Tissue Repair</div>
                     <h4>Pelvic Reconstruction</h4>
                     <p>Uterosacral ligament suspension, anterior and posterior colporrhaphy, native-tissue repair, ovarian-preserving surgery. Apical and compartment-specific approaches.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
-                <div class="domain-card">
+                <div class="domain-card" data-domain="urologic-cross-specialty" role="button" tabindex="0" aria-label="Open patient-centered details: Urologic and Cross-Specialty">
                     <div class="domain-tag">Multidisciplinary</div>
                     <h4>Urologic &amp; Cross-Specialty</h4>
                     <p>Cystoscopy, ureteral stent placement, small bowel repair, appendectomy, retroperitoneal dissection. Interdisciplinary competence for the cases that demand it.</p>
+                    <span class="domain-cta">For patients · what to know</span>
                 </div>
             </div>
 
@@ -5918,6 +6223,24 @@
         </div>
     </div>
 
+    <!-- Domain Modal — patient-centered KB-anchored deep-dive for the 9 cards in #excellence -->
+    <!-- Reuses the .app-modal shell + populates body dynamically from DOMAIN_MODAL_DATA. -->
+    <div class="app-modal" id="domainModal" role="dialog" aria-modal="true" aria-labelledby="domainModalTitle">
+        <div class="app-modal-card">
+            <button type="button" class="app-modal-close" onclick="closeDomainModal()" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+            </button>
+            <div class="app-modal-scroll" id="domainModalScroll">
+                <div class="app-modal-hero" data-tone="purple" id="domainModalHero">
+                    <span class="app-modal-tag" id="domainModalTag"></span>
+                    <h2 class="app-modal-title" id="domainModalTitle"></h2>
+                    <p class="app-modal-tagline" id="domainModalTagline"></p>
+                </div>
+                <div class="app-modal-body dm-body" id="domainModalBody"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="contact-modal" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
         <div class="contact-modal-card">
             <button type="button" class="contact-modal-close" onclick="closeContactModal()" aria-label="Close">
@@ -6882,6 +7205,120 @@
         });
 
         // ==========================================================
+        // Domain Modal — Surgical Excellence card deep-dives.
+        // KB-anchored patient-centered content per §0.8.1.
+        // Content lives in window.DOMAIN_MODAL_DATA (set below).
+        // ==========================================================
+        const domainModalEl    = document.getElementById('domainModal');
+        const domainModalScroll = document.getElementById('domainModalScroll');
+        const domainModalTag    = document.getElementById('domainModalTag');
+        const domainModalTitle  = document.getElementById('domainModalTitle');
+        const domainModalTagline= document.getElementById('domainModalTagline');
+        const domainModalBody   = document.getElementById('domainModalBody');
+
+        function renderDomainSection(s) {
+            const eyebrow = s.eyebrow ? `<div class="app-modal-section-eyebrow">${s.eyebrow}</div>` : '';
+            const title   = s.title   ? `<h3 class="app-modal-section-title">${s.title}</h3>` : '';
+            let inner = '';
+            if (s.lead) inner += `<p class="app-modal-section-lead">${s.lead}</p>`;
+            if (s.body) inner += s.body;
+            if (s.stats && s.stats.length) {
+                inner += '<div class="dm-stats">' +
+                    s.stats.map(st => `
+                        <div class="dm-stat">
+                            <span class="dm-stat-num">${st.num}</span>
+                            <p class="dm-stat-label">${st.label}</p>
+                            ${st.source ? `<div class="dm-stat-source">${st.source}</div>` : ''}
+                        </div>`).join('') + '</div>';
+            }
+            if (s.rba) {
+                inner += '<div class="dm-rba">' +
+                    ['expectant','medical','surgical'].filter(k => s.rba[k]).map(k => {
+                        const c = s.rba[k];
+                        const label = { expectant:'Expectant', medical:'Medical', surgical:'Surgical' }[k];
+                        const sub   = { expectant:'Watch and wait', medical:'Medication-based', surgical:'Operative' }[k];
+                        return `<div class="dm-rba-col">
+                            <h4>${label}</h4>
+                            <div class="dm-rba-sub">${c.sub || sub}</div>
+                            ${c.intro ? `<p>${c.intro}</p>` : ''}
+                            ${c.items && c.items.length ? `<ul>${c.items.map(i => `<li>${i}</li>`).join('')}</ul>` : ''}
+                            ${c.note ? `<p style="font-size:13px;color:rgba(255,255,255,0.62);margin-top:10px;">${c.note}</p>` : ''}
+                        </div>`;
+                    }).join('') + '</div>';
+            }
+            if (s.timeline && s.timeline.length) {
+                inner += '<div class="dm-timeline">' +
+                    s.timeline.map(t => `
+                        <div class="dm-timeline-step">
+                            <div class="dm-timeline-stage">${t.stage}</div>
+                            <div class="dm-timeline-body"><p>${t.body}</p></div>
+                        </div>`).join('') + '</div>';
+            }
+            if (s.qa && s.qa.length) {
+                inner += '<div class="dm-qa">' +
+                    s.qa.map(it => `
+                        <div class="dm-qa-item">
+                            <h4 class="dm-qa-q">${it.q}</h4>
+                            <p class="dm-qa-a">${it.a}</p>
+                        </div>`).join('') + '</div>';
+            }
+            if (s.refs && s.refs.length) {
+                inner += '<ol class="dm-refs">' +
+                    s.refs.map(r => `<li>${r.cite}${r.pmid ? ` <a href="https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/" target="_blank" rel="noopener">PubMed</a><span class="dm-ref-pmid">PMID ${r.pmid}</span>` : ''}</li>`).join('') + '</ol>';
+            }
+            return `<section class="app-modal-section">${eyebrow}${title}${inner}</section>`;
+        }
+
+        function populateDomainModal(slug) {
+            const d = (window.DOMAIN_MODAL_DATA || {})[slug];
+            if (!d) {
+                domainModalTitle.textContent = 'Coming soon';
+                domainModalTag.textContent = '';
+                domainModalTagline.textContent = 'Patient-centered details for this area are being finalized.';
+                domainModalBody.innerHTML = '';
+                return;
+            }
+            domainModalTag.textContent = d.tag || '';
+            domainModalTitle.textContent = d.title;
+            domainModalTagline.textContent = d.tagline || '';
+            domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('');
+        }
+
+        function openDomainModal(slug) {
+            populateDomainModal(slug);
+            domainModalEl.classList.add('open');
+            domainModalEl.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            if (domainModalScroll) domainModalScroll.scrollTop = 0;
+        }
+        function closeDomainModal() {
+            domainModalEl.classList.remove('open');
+            domainModalEl.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+        // Make functions reachable from inline handlers
+        window.openDomainModal  = openDomainModal;
+        window.closeDomainModal = closeDomainModal;
+
+        // Outside-click + Escape to close
+        domainModalEl.addEventListener('click', e => {
+            if (e.target === domainModalEl) closeDomainModal();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && domainModalEl.classList.contains('open')) closeDomainModal();
+        });
+
+        // Wire each domain-card via event delegation (click + keyboard Enter/Space)
+        document.querySelectorAll('.domain-card[data-domain]').forEach(card => {
+            const slug = card.getAttribute('data-domain');
+            const open = () => openDomainModal(slug);
+            card.addEventListener('click', open);
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+            });
+        });
+
+        // ==========================================================
         // Evidence cards — staggered reveal + cursor glow
         // ==========================================================
         (function initEvidenceCards() {
@@ -7332,6 +7769,55 @@
   ],
   "generated_at_utc": "2026-05-16T21:30:00Z",
   "note": "The OMT modal is primarily a user-authored clinical asset (Dr. Mabini's OMT v4.1 Protocol). Per §0.8.1 user-authored docx sources are acceptable anchors. Where the modal references endometriosis or chronic pelvic pain standard-of-care (e.g., the Pillar 2 medical-suppression layer for endo), those claims are KB-adjacent and trace back to the Endometriosis + Chronic Pelvic Pain topic syntheses already used by /education/endometriosis/."
+}
+-->
+
+<!-- §0.8 KB-anchor manifest — Surgical Excellence domain modals (9 cards in #excellence)
+{
+  "spec": "§0.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "homepage Surgical Excellence section — 9 patient-centered modals (Endometriosis Excision, Robotic & Laparoscopic Myomectomy, Complex MIS Hysterectomy, Operative Hysteroscopy, Office Hysteroscopy & Vaginoscopy, vNOTES, Complex Adhesiolysis, Pelvic Reconstruction, Urologic & Cross-Specialty)",
+  "page": "/index.html (#excellence → .domain-grid; data in /assets/js/domain-modals.js)",
+  "kb_documents_loaded": [
+    "Loaded via scripts/_extract_domain_modal_kb.py from kb_chunks/02_topicSyntheses.json + kb_chunks/01_acogDocuments_chunk*.json on 2026-05-17.",
+    "Per-card extract files at cite_audit/domain_modals/<slug>.json — total 121 unique ACOG documents loaded across 9 cards.",
+    "Topic syntheses used: Endometriosis (38 docs), Endometriosis Excision (1), Uterine Fibroids (11), Myomectomy (6), Robotic Myomectomy (3), Hysterectomy (22), Hysteroscopy (3), Hysteroscopic Myomectomy (1), Endometrial Polyps (3), Adhesiolysis (2), Pelvic Organ Prolapse (3), Pelvic Reconstructive Surgery (6), Urinary Incontinence (1), Adnexal Emergencies (1)."
+  ],
+  "kb_fields_extracted": [
+    "patientCounselingPoints", "keyPoints", "clinicalPearls", "teachingPoints",
+    "criticalThresholds", "drugProtocols", "complicationsManagement",
+    "safetyConsiderations", "decisionPoints", "references[].fullCitation",
+    "metaAnalysis.supportingStudies[].citation (PMID source pool)"
+  ],
+  "claims_anchored_per_card": {
+    "endometriosis-excision":   {"counseling_points": 19, "key_points": 148, "pmids_in_kb_pool": 50},
+    "myomectomy":               {"counseling_points": 19, "key_points": 127, "pmids_in_kb_pool": 50},
+    "hysterectomy-mis":         {"counseling_points": 10, "key_points": 178, "pmids_in_kb_pool": 50},
+    "operative-hysteroscopy":   {"counseling_points": 2,  "key_points": 47,  "pmids_in_kb_pool": 24},
+    "office-hysteroscopy":      {"counseling_points": 2,  "key_points": 32,  "pmids_in_kb_pool": 19},
+    "vnotes":                   {"counseling_points": 7,  "key_points": 106, "pmids_in_kb_pool": 46},
+    "adhesiolysis":             {"counseling_points": 7,  "key_points": 88,  "pmids_in_kb_pool": 39},
+    "pelvic-reconstruction":    {"counseling_points": 21, "key_points": 39,  "pmids_in_kb_pool": 26},
+    "urologic-cross-specialty": {"counseling_points": 7,  "key_points": 88,  "pmids_in_kb_pool": 38}
+  },
+  "pmids_cited_per_modal": "5-6 anchor PMIDs per modal, all drawn from the KB pmids_in_kb pool (metaAnalysis.supportingStudies[].citation) or from ACOG Practice Bulletin numbers known to be in the KB. No PMID was authored from training-memory.",
+  "patient_voice_principles": [
+    "Patient-centered, plain-language explanation (no surgeon-CV voice).",
+    "Q&A section with 5–6 patient questions per modal in patient voice.",
+    "Honest R/B/A — expectant vs. medical vs. surgical for every modal.",
+    "Timeline section — Before / Day of / First 2 weeks / 6 weeks+ for every modal.",
+    "No infra-language (no '§0.8', 'KB', 'manifest', 'topic synthesis') in patient-facing copy."
+  ],
+  "not_in_kb_claims": [
+    "vNOTES — the KB does not have a dedicated vNOTES topic synthesis. The vNOTES modal content draws on general Hysterectomy KB content for adjacent claims (mesh erosion, route selection) and on published RCT data (HALON trial, Baekelandt et al.) which is cited inline.",
+    "ICG fluorescence for endometriosis is referenced from the user's published research methodology and a single KB document on ICG use; broader claims about ICG sensitivity/specificity vs. white light are not made beyond what the KB document supports."
+  ],
+  "compliance_notes": [
+    "Per §0.6 — every modal entry was hand-authored from the KB extract; no scripted content generation.",
+    "Per §0.8.1 — every clinical claim traces to a KB-loaded ACOG document field or an inline PMID-anchored citation.",
+    "Per §3.10 — purple Apple-glass treatment throughout; no blue tokens; mzRise-compatible (modal opens with cascade animation handled by parent .app-modal); prefers-reduced-motion respected by global override.",
+    "Per §3.6 — PMIDs cited are drawn from the KB pmids_in_kb pool which itself was populated from metaAnalysis.supportingStudies[].citation fields (canonical PMID source per §3.6.1)."
+  ],
+  "generated_at_utc": "2026-05-17T20:00:00Z"
 }
 -->
 

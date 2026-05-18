@@ -1,0 +1,92 @@
+[
+  {
+    "slug": "endometriosis-excision",
+    "title": "Endometriosis Excision",
+    "n_docs": 20,
+    "n_counseling": 19,
+    "n_key_points": 148,
+    "n_refs": 0,
+    "n_pmids": 50,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/endometriosis-excision.json"
+  },
+  {
+    "slug": "myomectomy",
+    "title": "Robotic & Laparoscopic Myomectomy",
+    "n_docs": 15,
+    "n_counseling": 19,
+    "n_key_points": 127,
+    "n_refs": 0,
+    "n_pmids": 50,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/myomectomy.json"
+  },
+  {
+    "slug": "hysterectomy-mis",
+    "title": "Complex Minimally Invasive Hysterectomy",
+    "n_docs": 22,
+    "n_counseling": 10,
+    "n_key_points": 178,
+    "n_refs": 0,
+    "n_pmids": 50,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/hysterectomy-mis.json"
+  },
+  {
+    "slug": "operative-hysteroscopy",
+    "title": "Operative Hysteroscopy",
+    "n_docs": 5,
+    "n_counseling": 2,
+    "n_key_points": 47,
+    "n_refs": 0,
+    "n_pmids": 24,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/operative-hysteroscopy.json"
+  },
+  {
+    "slug": "office-hysteroscopy",
+    "title": "Office Hysteroscopy & Vaginoscopy",
+    "n_docs": 4,
+    "n_counseling": 2,
+    "n_key_points": 32,
+    "n_refs": 0,
+    "n_pmids": 19,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/office-hysteroscopy.json"
+  },
+  {
+    "slug": "vnotes",
+    "title": "vNOTES",
+    "n_docs": 12,
+    "n_counseling": 7,
+    "n_key_points": 106,
+    "n_refs": 0,
+    "n_pmids": 46,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/vnotes.json"
+  },
+  {
+    "slug": "adhesiolysis",
+    "title": "Complex Adhesiolysis",
+    "n_docs": 12,
+    "n_counseling": 7,
+    "n_key_points": 88,
+    "n_refs": 0,
+    "n_pmids": 39,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/adhesiolysis.json"
+  },
+  {
+    "slug": "pelvic-reconstruction",
+    "title": "Pelvic Reconstruction",
+    "n_docs": 7,
+    "n_counseling": 21,
+    "n_key_points": 39,
+    "n_refs": 0,
+    "n_pmids": 26,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/pelvic-reconstruction.json"
+  },
+  {
+    "slug": "urologic-cross-specialty",
+    "title": "Urologic & Cross-Specialty",
+    "n_docs": 10,
+    "n_counseling": 7,
+    "n_key_points": 88,
+    "n_refs": 0,
+    "n_pmids": 38,
+    "path": "/Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/urologic-cross-specialty.json"
+  }
+]
