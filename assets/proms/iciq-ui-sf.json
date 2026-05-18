@@ -1,0 +1,85 @@
+{
+  "slug": "iciq-ui-sf",
+  "title": "Urinary incontinence check-in (ICIQ-UI SF)",
+  "short_name": "ICIQ-UI SF",
+  "tier": 2,
+  "domain": "urinary_incontinence",
+  "description": "The 4-item International Consultation on Incontinence Questionnaire — Short Form. Validated scale of urinary incontinence frequency, severity, impact on daily life, and circumstance of leakage. Used at baseline for any patient reporting urinary leakage and at 3-month follow-up after pelvic-floor or urogynecologic intervention.",
+  "estimated_minutes": 2,
+  "items": [
+    {
+      "id": "uiq_frequency",
+      "text": "How often do you leak urine?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "About once a week or less often" },
+        { "value": 2, "label": "Two or three times a week" },
+        { "value": 3, "label": "About once a day" },
+        { "value": 4, "label": "Several times a day" },
+        { "value": 5, "label": "All the time" }
+      ]
+    },
+    {
+      "id": "uiq_amount",
+      "text": "How much urine do you usually leak (whether you wear protection or not)?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "None" },
+        { "value": 2, "label": "A small amount" },
+        { "value": 4, "label": "A moderate amount" },
+        { "value": 6, "label": "A large amount" }
+      ]
+    },
+    {
+      "id": "uiq_impact",
+      "text": "Overall, how much does leaking urine interfere with your everyday life?",
+      "type": "scale_0_10",
+      "required": true,
+      "scale": {
+        "min": 0, "max": 10,
+        "min_label": "Not at all",
+        "max_label": "A great deal"
+      }
+    },
+    {
+      "id": "uiq_when",
+      "text": "When does urine leak? (Select all that apply.)",
+      "type": "multi_choice",
+      "required": true,
+      "scoring_excluded": true,
+      "options": [
+        { "value": "never",                  "label": "Never — urine does not leak" },
+        { "value": "before_reaching_toilet", "label": "Leaks before you can get to the toilet" },
+        { "value": "cough_or_sneeze",        "label": "Leaks when you cough or sneeze" },
+        { "value": "asleep",                 "label": "Leaks when you are asleep" },
+        { "value": "physical_activity",      "label": "Leaks when you are physically active / exercising" },
+        { "value": "finished_urinating",     "label": "Leaks when you have finished urinating and are dressed" },
+        { "value": "for_no_obvious_reason",  "label": "Leaks for no obvious reason" },
+        { "value": "all_the_time",           "label": "Leaks all the time" }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "sum",
+    "note": "Sum the numeric values from the first three items (frequency 0–5, amount 0–6, impact 0–10). Range 0–21. The fourth item (when does it leak) is descriptive only and is NOT summed.",
+    "items": ["uiq_frequency", "uiq_amount", "uiq_impact"],
+    "range": [0, 21],
+    "lower_is_better": true,
+    "interpretation_bands": [
+      { "min": 0,  "max": 0,  "label": "no_incontinence", "patient_label": "No urinary incontinence reported." },
+      { "min": 1,  "max": 5,  "label": "slight",          "patient_label": "Slight incontinence." },
+      { "min": 6,  "max": 12, "label": "moderate",        "patient_label": "Moderate incontinence — meaningful daily impact." },
+      { "min": 13, "max": 18, "label": "severe",          "patient_label": "Severe incontinence." },
+      { "min": 19, "max": 21, "label": "very_severe",     "patient_label": "Very severe incontinence." }
+    ]
+  },
+  "thresholds": [
+    { "rule": "total >= 13",         "flag_type": "iciq_severe_incontinence", "severity": "warning", "message": "ICIQ-UI SF total ≥13 (severe range). Pelvic-floor evaluation, urodynamic workup, or surgical-management discussion warranted.", "follow_up_action": "clinician_alert" },
+    { "rule": "delta_vs_baseline >= 5","flag_type": "iciq_worsening",           "severity": "warning", "message": "ICIQ-UI SF score has worsened by ≥5 points compared to baseline. Recommend earlier follow-up.",                                "follow_up_action": "clinician_alert" }
+  ],
+  "citation": "Avery K, Donovan J, Peters TJ, Shaw C, Gotoh M, Abrams P. ICIQ: a brief and robust measure for evaluating the symptoms and impact of urinary incontinence. Neurourol Urodyn 2004;23(4):322-30. PMID: 15227649",
+  "license_note": "Free for academic and not-for-profit clinical use; available via the ICIQ project (www.iciq.net). Translation/derivative rights reserved by the ICIQ project."
+}

@@ -1,0 +1,74 @@
+{
+  "slug": "ehp-30",
+  "title": "Endometriosis quality-of-life check-in (EHP-30 core)",
+  "short_name": "EHP-30",
+  "tier": 2,
+  "domain": "endometriosis",
+  "description": "The 30-item core scale of the Endometriosis Health Profile (EHP-30), the validated gold-standard endometriosis health-related quality-of-life instrument. Five dimensions: pain (11 items), control & powerlessness (6 items), emotional well-being (6 items), social support (4 items), and self-image (3 items). Used at baseline and at every 3-month follow-up.",
+  "estimated_minutes": 7,
+  "items": [
+    { "id": "pain_01",  "text": "Have you had pelvic pain?",                                                "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_02",  "text": "Have you had severe pain during your period (or, if you don't have periods, pelvic pain that comes and goes)?", "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_03",  "text": "Has the pain stopped you from doing the things you would normally have done?",       "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_04",  "text": "Has the pain made you walk with a stoop because of it?",                              "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_05",  "text": "Has the pain stopped you from doing jobs around the house?",                          "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_06",  "text": "Have you found it difficult to stand because of the pain?",                            "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_07",  "text": "Have you found it difficult to sit because of the pain?",                              "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_08",  "text": "Have you lost your appetite because of the pain?",                                     "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_09",  "text": "Has the pain made you feel sick (nauseous)?",                                          "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_10",  "text": "Has the pain affected your sleep?",                                                    "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "pain_11",  "text": "Have you felt tired or worn out because of the pain?",                                 "type": "choice", "required": true, "subscale": "pain", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+
+    { "id": "ctrl_01",  "text": "Have you felt unable to tell people how you feel?",                                    "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "ctrl_02",  "text": "Have you felt unable to control your symptoms?",                                       "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "ctrl_03",  "text": "Have you felt that the symptoms are taking over your life?",                           "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "ctrl_04",  "text": "Have you been unable to make plans because of your symptoms?",                         "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "ctrl_05",  "text": "Have you felt that life is a struggle?",                                               "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "ctrl_06",  "text": "Have you felt powerless to change things?",                                            "type": "choice", "required": true, "subscale": "control", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+
+    { "id": "emo_01",   "text": "Have you felt fed up or miserable?",                                                   "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "emo_02",   "text": "Have you cried or felt like crying?",                                                  "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "emo_03",   "text": "Have you felt depressed?",                                                             "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "emo_04",   "text": "Have you had bad mood swings?",                                                        "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "emo_05",   "text": "Have you felt aggressive or violent?",                                                 "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "emo_06",   "text": "Have you felt that you can't be bothered to do anything?",                             "type": "choice", "required": true, "subscale": "emotional", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+
+    { "id": "soc_01",   "text": "Have you felt that other people don't understand what you are going through?",          "type": "choice", "required": true, "subscale": "social", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "soc_02",   "text": "Have you felt that you can't tell people how you really feel?",                         "type": "choice", "required": true, "subscale": "social", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "soc_03",   "text": "Have you felt that you have lost your friends because of your symptoms?",               "type": "choice", "required": true, "subscale": "social", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "soc_04",   "text": "Have you felt unable to socialize because of your symptoms?",                           "type": "choice", "required": true, "subscale": "social", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+
+    { "id": "self_01",  "text": "Have you felt that your appearance has been affected?",                                  "type": "choice", "required": true, "subscale": "self_image", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "self_02",  "text": "Have you felt lacking in confidence in yourself?",                                       "type": "choice", "required": true, "subscale": "self_image", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] },
+    { "id": "self_03",  "text": "Have you felt that the symptoms have made you feel less of a woman?",                    "type": "choice", "required": true, "subscale": "self_image", "options": [{ "value": 0, "label": "Never" },{ "value": 1, "label": "Rarely" },{ "value": 2, "label": "Sometimes" },{ "value": 3, "label": "Often" },{ "value": 4, "label": "Always" }] }
+  ],
+  "scoring": {
+    "method": "subscale_mean",
+    "note": "Each item is scored 0–4 (Never→Always). Within each subscale, sum of items × 100 / (4 × n_items) gives a 0–100 transformed subscale score (lower = better QoL). The overall 'total' is the mean of the 5 transformed subscale scores; not a sum of all items.",
+    "subscales": {
+      "pain":       { "items": ["pain_01","pain_02","pain_03","pain_04","pain_05","pain_06","pain_07","pain_08","pain_09","pain_10","pain_11"] },
+      "control":    { "items": ["ctrl_01","ctrl_02","ctrl_03","ctrl_04","ctrl_05","ctrl_06"] },
+      "emotional":  { "items": ["emo_01","emo_02","emo_03","emo_04","emo_05","emo_06"] },
+      "social":     { "items": ["soc_01","soc_02","soc_03","soc_04"] },
+      "self_image": { "items": ["self_01","self_02","self_03"] }
+    },
+    "transform": "(sum_of_items * 100) / (4 * n_items)",
+    "aggregate": "mean_of_subscale_scores",
+    "range": [0, 100],
+    "lower_is_better": true,
+    "interpretation_bands": [
+      { "min": 0,  "max": 24,  "label": "minimal_impact",     "patient_label": "Endometriosis is having minimal impact on your life right now." },
+      { "min": 25, "max": 49,  "label": "moderate_impact",    "patient_label": "Endometriosis is having a moderate impact on your life." },
+      { "min": 50, "max": 74,  "label": "substantial_impact", "patient_label": "Endometriosis is substantially affecting your day-to-day life." },
+      { "min": 75, "max": 100, "label": "severe_impact",      "patient_label": "Endometriosis is severely affecting your quality of life." }
+    ]
+  },
+  "thresholds": [
+    { "rule": "total >= 50",                  "flag_type": "ehp30_substantial_impact", "severity": "warning", "message": "EHP-30 total in the substantial-impact range (≥50). Consider escalating treatment plan or scheduling visit.", "follow_up_action": "clinician_alert" },
+    { "rule": "subscale.pain >= 60",          "flag_type": "ehp30_pain_high",          "severity": "warning", "message": "EHP-30 pain subscale ≥60 — pain is dominating quality of life.",                                          "follow_up_action": "clinician_alert" },
+    { "rule": "subscale.emotional >= 60",     "flag_type": "ehp30_emotional_high",     "severity": "warning", "message": "EHP-30 emotional subscale ≥60 — consider PHQ-9 follow-up.",                                              "follow_up_action": "clinician_alert" },
+    { "rule": "delta_vs_baseline >= 20",      "flag_type": "ehp30_worsening",          "severity": "warning", "message": "EHP-30 total has worsened by ≥20 points compared to baseline. Recommend earlier follow-up visit.",      "follow_up_action": "clinician_alert" }
+  ],
+  "citation": "Jones G, Kennedy S, Barnard A, Wong J, Jenkinson C. Development of an endometriosis quality-of-life instrument: The Endometriosis Health Profile-30. Obstet Gynecol 2001;98(2):258-64. PMID: 11506842",
+  "license_note": "Free for academic and not-for-profit clinical use. Commercial use requires license through Oxford University Innovation / Mapi Research Trust."
+}

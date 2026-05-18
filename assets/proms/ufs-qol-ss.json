@@ -1,0 +1,41 @@
+{
+  "slug": "ufs-qol-ss",
+  "title": "Uterine-fibroid symptom severity check-in (UFS-QoL Symptom Severity)",
+  "short_name": "UFS-QoL SS",
+  "tier": 2,
+  "domain": "fibroids",
+  "description": "The 8-item Symptom Severity subscale of the Uterine Fibroid Symptom and Health-Related Quality of Life Questionnaire (UFS-QoL). The full UFS-QoL also includes a 29-item HRQL subscale; this is the validated short form clinicians use to track fibroid-related bleeding, pressure, and bulk-symptom severity over time. Used at baseline and at 3-month follow-up for patients with confirmed or suspected fibroids.",
+  "estimated_minutes": 3,
+  "items": [
+    { "id": "ss_heavy_bleeding",     "text": "In the past 3 months, how distressed were you by heavy bleeding during your menstrual period?",                                            "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_passing_clots",      "text": "In the past 3 months, how distressed were you by passing blood clots during your menstrual period?",                                       "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_unpredictable",      "text": "In the past 3 months, how distressed were you by the irregular or unpredictable timing of your periods?",                                  "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_duration",           "text": "In the past 3 months, how distressed were you by the length (number of days) of your menstrual period?",                                    "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_pressure",           "text": "In the past 3 months, how distressed were you by feeling tightness or pressure in your pelvic area?",                                       "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_frequency",          "text": "In the past 3 months, how distressed were you by frequent urination during the daytime hours?",                                              "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_nocturia",           "text": "In the past 3 months, how distressed were you by getting up at night to urinate?",                                                            "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] },
+    { "id": "ss_fatigue",            "text": "In the past 3 months, how distressed were you by feeling fatigued or worn out from fibroid-related symptoms?",                              "type": "choice", "required": true, "options": [{ "value": 1, "label": "Not at all" },{ "value": 2, "label": "A little bit" },{ "value": 3, "label": "Moderately" },{ "value": 4, "label": "Quite a bit" },{ "value": 5, "label": "A very great deal" }] }
+  ],
+  "scoring": {
+    "method": "weighted_transformed",
+    "note": "Sum the eight item values (range 8–40). Transform to 0–100: (raw − 8) × 100 / 32. Higher = more severe symptoms.",
+    "items": ["ss_heavy_bleeding","ss_passing_clots","ss_unpredictable","ss_duration","ss_pressure","ss_frequency","ss_nocturia","ss_fatigue"],
+    "transform": "(sum - 8) * 100 / 32",
+    "aggregate": "transformed_total",
+    "range": [0, 100],
+    "lower_is_better": true,
+    "interpretation_bands": [
+      { "min": 0,  "max": 24,  "label": "minimal",      "patient_label": "Fibroid-related symptoms are minimal right now." },
+      { "min": 25, "max": 49,  "label": "moderate",     "patient_label": "Fibroid-related symptoms are moderate." },
+      { "min": 50, "max": 74,  "label": "substantial",  "patient_label": "Fibroid-related symptoms are substantially affecting your daily life." },
+      { "min": 75, "max": 100, "label": "severe",       "patient_label": "Fibroid-related symptoms are severely affecting your quality of life." }
+    ]
+  },
+  "thresholds": [
+    { "rule": "total >= 50",          "flag_type": "ufsqol_substantial",         "severity": "warning", "message": "UFS-QoL Symptom Severity ≥50 — fibroid symptoms substantially affecting life. Consider escalating to definitive management discussion.", "follow_up_action": "clinician_alert" },
+    { "rule": "total >= 75",          "flag_type": "ufsqol_severe",              "severity": "urgent",  "message": "UFS-QoL Symptom Severity ≥75 — severe symptom burden. Same-week visit or escalation recommended.",                                          "follow_up_action": "clinician_alert" },
+    { "rule": "delta_vs_baseline >= 25","flag_type": "ufsqol_worsening",          "severity": "warning", "message": "UFS-QoL has worsened by ≥25 points compared to baseline. Earlier follow-up advisable.",                                                  "follow_up_action": "clinician_alert" }
+  ],
+  "citation": "Spies JB, Coyne K, Guaou N, Boyle D, Skyrnarz-Murphy K, Gonzalves SM. The UFS-QOL, a new disease-specific symptom and health-related quality of life questionnaire for leiomyomata. Obstet Gynecol 2002;99(2):290-300. PMID: 11814511",
+  "license_note": "Free for academic and not-for-profit clinical use. Commercial use requires license through The Society of Interventional Radiology."
+}

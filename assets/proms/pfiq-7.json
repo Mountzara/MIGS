@@ -1,0 +1,62 @@
+{
+  "slug": "pfiq-7",
+  "title": "Pelvic-floor impact check-in (PFIQ-7)",
+  "short_name": "PFIQ-7",
+  "tier": 2,
+  "domain": "pelvic_floor",
+  "description": "The 7-item short-form Pelvic Floor Impact Questionnaire. Each of seven life-impact prompts is asked separately for the bladder, the bowel, and the vagina/pelvis, producing three subscales (UIQ-7, CRAIQ-7, POPIQ-7). Used at baseline and at 3-month follow-up for patients with prolapse, urinary incontinence, or anorectal symptoms.",
+  "estimated_minutes": 4,
+  "items": [
+    { "id": "uiq_household",       "text": "How much do bladder or urine symptoms affect your household chores (cooking, housecleaning, laundry)?",                       "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_recreation",      "text": "How much do bladder or urine symptoms affect your physical recreation such as walking, swimming, or other exercise?",          "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_entertainment",   "text": "How much do bladder or urine symptoms affect your entertainment activities (movies, concerts, etc.)?",                          "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_travel",          "text": "How much do bladder or urine symptoms affect your ability to travel by car or bus more than 30 minutes from home?",             "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_social",          "text": "How much do bladder or urine symptoms affect your participating in social activities outside your home?",                       "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_emotional",       "text": "How much do bladder or urine symptoms affect your emotional health (nervousness, depression, etc.)?",                            "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "uiq_frustrated",      "text": "How much do bladder or urine symptoms make you feel frustrated?",                                                                "type": "choice", "required": true, "subscale": "uiq",   "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+
+    { "id": "craiq_household",     "text": "How much do bowel or rectal symptoms affect your household chores (cooking, housecleaning, laundry)?",                            "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_recreation",    "text": "How much do bowel or rectal symptoms affect your physical recreation such as walking, swimming, or other exercise?",            "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_entertainment", "text": "How much do bowel or rectal symptoms affect your entertainment activities (movies, concerts, etc.)?",                            "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_travel",        "text": "How much do bowel or rectal symptoms affect your ability to travel by car or bus more than 30 minutes from home?",               "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_social",        "text": "How much do bowel or rectal symptoms affect your participating in social activities outside your home?",                        "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_emotional",     "text": "How much do bowel or rectal symptoms affect your emotional health (nervousness, depression, etc.)?",                              "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "craiq_frustrated",    "text": "How much do bowel or rectal symptoms make you feel frustrated?",                                                                  "type": "choice", "required": true, "subscale": "craiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+
+    { "id": "popiq_household",     "text": "How much does feeling pressure, bulging, or fullness in the vagina or pelvis affect your household chores?",                      "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_recreation",    "text": "How much does pelvic pressure/bulging affect your physical recreation such as walking, swimming, or other exercise?",            "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_entertainment", "text": "How much does pelvic pressure/bulging affect your entertainment activities (movies, concerts, etc.)?",                            "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_travel",        "text": "How much does pelvic pressure/bulging affect your ability to travel by car or bus more than 30 minutes from home?",               "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_social",        "text": "How much does pelvic pressure/bulging affect your participating in social activities outside your home?",                         "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_emotional",     "text": "How much does pelvic pressure/bulging affect your emotional health (nervousness, depression, etc.)?",                              "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] },
+    { "id": "popiq_frustrated",    "text": "How much does pelvic pressure/bulging make you feel frustrated?",                                                                  "type": "choice", "required": true, "subscale": "popiq", "options": [{ "value": 0, "label": "Not at all" },{ "value": 1, "label": "Somewhat" },{ "value": 2, "label": "Moderately" },{ "value": 3, "label": "Quite a bit" }] }
+  ],
+  "scoring": {
+    "method": "subscale_mean",
+    "note": "Each subscale (UIQ-7, CRAIQ-7, POPIQ-7) is scored as the mean of its 7 items × (100/3) to produce a 0–100 subscale score. PFIQ-7 total = sum of the three subscale scores (range 0–300). Lower = better.",
+    "subscales": {
+      "uiq":   { "items": ["uiq_household","uiq_recreation","uiq_entertainment","uiq_travel","uiq_social","uiq_emotional","uiq_frustrated"] },
+      "craiq": { "items": ["craiq_household","craiq_recreation","craiq_entertainment","craiq_travel","craiq_social","craiq_emotional","craiq_frustrated"] },
+      "popiq": { "items": ["popiq_household","popiq_recreation","popiq_entertainment","popiq_travel","popiq_social","popiq_emotional","popiq_frustrated"] }
+    },
+    "transform": "(mean_of_items) * (100/3)",
+    "aggregate": "sum_of_subscale_scores",
+    "range": [0, 300],
+    "lower_is_better": true,
+    "interpretation_bands": [
+      { "min": 0,   "max": 49,  "label": "minimal_impact",     "patient_label": "Pelvic-floor symptoms are having a minimal impact on your life right now." },
+      { "min": 50,  "max": 124, "label": "moderate_impact",    "patient_label": "Pelvic-floor symptoms are having a moderate impact on your life." },
+      { "min": 125, "max": 199, "label": "substantial_impact", "patient_label": "Pelvic-floor symptoms are substantially affecting your daily life." },
+      { "min": 200, "max": 300, "label": "severe_impact",      "patient_label": "Pelvic-floor symptoms are severely affecting your quality of life." }
+    ]
+  },
+  "thresholds": [
+    { "rule": "total >= 125",          "flag_type": "pfiq7_substantial_impact", "severity": "warning", "message": "PFIQ-7 total ≥125 — pelvic-floor symptoms substantially affecting life. Evaluation for prolapse / urogyn intervention warranted.", "follow_up_action": "clinician_alert" },
+    { "rule": "subscale.popiq >= 80",  "flag_type": "pfiq7_pop_dominant",       "severity": "warning", "message": "POPIQ-7 subscale ≥80 — pelvic-organ-prolapse symptoms dominant.",                                                                "follow_up_action": "clinician_alert" },
+    { "rule": "subscale.uiq >= 80",    "flag_type": "pfiq7_ui_dominant",        "severity": "warning", "message": "UIQ-7 subscale ≥80 — urinary symptoms dominant.",                                                                                "follow_up_action": "clinician_alert" },
+    { "rule": "subscale.craiq >= 80",  "flag_type": "pfiq7_anorectal_dominant", "severity": "warning", "message": "CRAIQ-7 subscale ≥80 — anorectal symptoms dominant; colorectal coordination may be needed.",                                    "follow_up_action": "clinician_alert" },
+    { "rule": "delta_vs_baseline >= 30","flag_type": "pfiq7_worsening",          "severity": "warning", "message": "PFIQ-7 total has worsened by ≥30 points compared to baseline. Recommend earlier follow-up.",                                  "follow_up_action": "clinician_alert" }
+  ],
+  "citation": "Barber MD, Walters MD, Bump RC. Short forms of two condition-specific quality-of-life questionnaires for women with pelvic floor disorders (PFDI-20 and PFIQ-7). Am J Obstet Gynecol 2005;193(1):103-13. PMID: 16021067",
+  "license_note": "Free for academic and not-for-profit clinical use. Commercial use requires permission from the Pelvic Floor Disorders Network."
+}
