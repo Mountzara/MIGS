@@ -150,6 +150,97 @@
             </dl>
         </div>
 
+        <!-- Phase 14 Round D — patient self-edit: photo + nickname -->
+        <div class="card" id="photoCard">
+            <h2>Your photo &amp; what we call you</h2>
+            <p class="hint" style="color: var(--ink-mute); font-size: 13px; margin: 0 0 14px;">
+                Add a profile photo and the name you'd like us to use when we greet you. The photo is stored
+                encrypted and only Dr. Mabini's team can see it.
+            </p>
+            <div style="display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;">
+                <div id="photoPreviewWrap" style="width: 96px; height: 96px; border-radius: 50%;
+                     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+                     display: flex; align-items: center; justify-content: center;
+                     overflow: hidden; flex-shrink: 0; font-size: 38px; font-weight: 300;
+                     color: rgba(167,139,250,0.95);">
+                    <span id="photoInitial">?</span>
+                    <img id="photoPreview" alt="" style="display:none; width:100%; height:100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1 1 220px; min-width: 220px;">
+                    <label style="display:block; margin-bottom: 8px;">Nickname (greeting name)
+                        <input type="text" id="nickname" name="nickname" maxlength="60"
+                            placeholder="e.g. JD, Janie, Doc, …">
+                    </label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <label class="primary"
+                            style="cursor:pointer; padding: 8px 14px; border-radius: 10px;
+                                   background: rgba(167,139,250,0.10); color: rgba(167,139,250,0.95);
+                                   border: 1px solid rgba(167,139,250,0.40); font-size: 13px; font-weight: 600;">
+                            Upload photo
+                            <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp,image/heic"
+                                   style="display:none">
+                        </label>
+                        <button type="button" id="photoDeleteBtn"
+                            style="display:none; padding: 8px 14px; border-radius: 10px;
+                                   background: rgba(239,68,68,0.08); color: #ef4444;
+                                   border: 1px solid rgba(239,68,68,0.40); font-size: 13px; font-weight: 600; cursor: pointer;">
+                            Remove photo
+                        </button>
+                        <button type="button" id="nicknameSaveBtn"
+                            style="padding: 8px 14px; border-radius: 10px;
+                                   background: rgba(255,255,255,0.04); color: var(--ink);
+                                   border: 1px solid rgba(255,255,255,0.10); font-size: 13px; font-weight: 600; cursor: pointer;">
+                            Save nickname
+                        </button>
+                    </div>
+                    <div id="photoMsg" class="msg" role="status" aria-live="polite"
+                         style="margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 14 Round D — patient self-edit: care goals + preferences -->
+        <div class="card" id="careGoalsCard">
+            <h2>Your goals &amp; preferences for care</h2>
+            <p class="hint" style="color: var(--ink-mute); font-size: 13px; margin: 0 0 14px;">
+                Tell us what matters most to you. We'll pull these into every pre-visit briefing so they shape
+                each conversation. Add one per line.
+            </p>
+            <div class="grid-2">
+                <label>Goals (what you'd like out of care)
+                    <textarea id="cg_goals" rows="5"
+                        placeholder="One per line — e.g.&#10;Avoid hysterectomy if possible&#10;Return to running by 12 weeks post-op"
+                        style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
+                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
+                </label>
+                <label>Preferences (how you'd like care to feel)
+                    <textarea id="cg_preferences" rows="5"
+                        placeholder="One per line — e.g.&#10;Telehealth-first when feasible&#10;Morning visits"
+                        style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
+                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
+                </label>
+                <label>Things to avoid
+                    <textarea id="cg_avoid" rows="4"
+                        placeholder="One per line — e.g.&#10;Opioids unless absolutely necessary"
+                        style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
+                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
+                </label>
+                <label>Anything else we should know
+                    <textarea id="cg_notes" rows="4" maxlength="1200"
+                        placeholder="Schedule constraints, life context, what helps you feel heard…"
+                        style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
+                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
+                </label>
+            </div>
+            <button class="primary" type="button" id="careGoalsSaveBtn"
+                style="margin-top: 14px;">Save goals &amp; preferences</button>
+            <div id="careGoalsMsg" class="msg" role="status" aria-live="polite"></div>
+        </div>
+
         <div class="card">
             <h2>Editable</h2>
             <form id="profileForm" autocomplete="on">
@@ -211,10 +302,40 @@
                 $('phone').value = p.phone || '';
                 $('preferred_language').value = p.preferred_language || 'en';
                 $('timezone').value = p.timezone || 'America/Chicago';
+
+                // Phase 14 Round D — Photo / nickname / care_goals
+                $('nickname').value = p.nickname || '';
+                renderPhoto(p);
+                const cg = p.care_goals || {};
+                $('cg_goals').value = (cg.goals || []).join('\n');
+                $('cg_preferences').value = (cg.preferences || []).join('\n');
+                $('cg_avoid').value = (cg.avoid || []).join('\n');
+                $('cg_notes').value = cg.notes || '';
             } catch (err) {
                 showMsg('Network error loading profile.', 'error');
             }
         }
+
+        function renderPhoto(p) {
+            const initial = ($('nickname').value || p.preferred_name || p.first_name || 'P')
+                .trim().charAt(0).toUpperCase();
+            $('photoInitial').textContent = initial || '?';
+            const img = $('photoPreview');
+            if (p.photo_url) {
+                // Cache-bust on uploaded_at so the preview always reflects the latest write.
+                const v = p.photo_uploaded_at || Date.now();
+                img.src = `${p.photo_url}?v=${v}`;
+                img.style.display = '';
+                $('photoInitial').style.display = 'none';
+                $('photoDeleteBtn').style.display = '';
+            } else {
+                img.style.display = 'none';
+                img.removeAttribute('src');
+                $('photoInitial').style.display = '';
+                $('photoDeleteBtn').style.display = 'none';
+            }
+        }
+
         loadProfile();
 
         $('profileForm').addEventListener('submit', async (e) => {
@@ -247,6 +368,116 @@
         $('logoutBtn').addEventListener('click', async () => {
             await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
             location.href = '/portal/';
+        });
+
+        // ===== Phase 14 Round D handlers =====
+
+        const photoMsg = $('photoMsg');
+        function showPhotoMsg(text, cls) { photoMsg.textContent = text; photoMsg.className = 'msg ' + cls; }
+
+        $('photoFile').addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            // The patient endpoint accepts multipart; FormData is simplest.
+            showPhotoMsg('Uploading…', '');
+            const form = new FormData();
+            form.append('photo', file, file.name);
+            try {
+                const r = await fetch('/api/v1/patient/photo', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: form,
+                });
+                if (r.status === 201 || r.ok) {
+                    showPhotoMsg('Photo saved.', 'ok');
+                    await loadProfile();
+                } else {
+                    const j = await r.json().catch(() => ({}));
+                    showPhotoMsg(j.message || `Upload failed (HTTP ${r.status}).`, 'error');
+                }
+            } catch (err) {
+                showPhotoMsg('Network error uploading.', 'error');
+            } finally {
+                e.target.value = '';
+            }
+        });
+
+        $('photoDeleteBtn').addEventListener('click', async () => {
+            if (!confirm('Remove your profile photo?')) return;
+            showPhotoMsg('Removing…', '');
+            try {
+                const r = await fetch('/api/v1/patient/photo', {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                });
+                if (r.ok) {
+                    showPhotoMsg('Photo removed.', 'ok');
+                    await loadProfile();
+                } else {
+                    showPhotoMsg('Could not remove photo.', 'error');
+                }
+            } catch (err) {
+                showPhotoMsg('Network error removing.', 'error');
+            }
+        });
+
+        $('nicknameSaveBtn').addEventListener('click', async () => {
+            showPhotoMsg('Saving…', '');
+            try {
+                const r = await fetch('/api/v1/patient/profile', {
+                    method: 'PATCH',
+                    credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ nickname: $('nickname').value.trim() }),
+                });
+                if (r.ok) {
+                    showPhotoMsg('Nickname saved.', 'ok');
+                    // Update the initial in case there's no photo yet.
+                    const p = { nickname: $('nickname').value.trim() };
+                    renderPhoto(p);
+                } else {
+                    const j = await r.json().catch(() => ({}));
+                    showPhotoMsg(j.message || 'Save failed.', 'error');
+                }
+            } catch (err) {
+                showPhotoMsg('Network error.', 'error');
+            }
+        });
+
+        const careGoalsMsg = $('careGoalsMsg');
+        function showCgMsg(text, cls) { careGoalsMsg.textContent = text; careGoalsMsg.className = 'msg ' + cls; }
+        function splitLines(s) {
+            return (s || '')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .slice(0, 20);
+        }
+
+        $('careGoalsSaveBtn').addEventListener('click', async () => {
+            showCgMsg('Saving…', '');
+            const cg = {
+                goals:       splitLines($('cg_goals').value),
+                preferences: splitLines($('cg_preferences').value),
+                avoid:       splitLines($('cg_avoid').value),
+                notes:       ($('cg_notes').value || '').trim().slice(0, 1200),
+            };
+            try {
+                const r = await fetch('/api/v1/patient/profile', {
+                    method: 'PATCH',
+                    credentials: 'same-origin',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ care_goals: cg }),
+                });
+                if (r.ok) {
+                    showCgMsg('Saved. These will shape every pre-visit briefing.', 'ok');
+                } else {
+                    const j = await r.json().catch(() => ({}));
+                    showCgMsg(j.message || 'Save failed.', 'error');
+                }
+            } catch (err) {
+                showCgMsg('Network error.', 'error');
+            }
         });
     </script>
 </body>
