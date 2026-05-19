@@ -3,20 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>FMIGS Curriculum — Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) — Curriculum and Instructional Design · Mount Zara</title>
-    <meta name="description" content="Full curriculum design for the Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) at PRIME Illinois Saint Francis Hospital. Context analysis, stakeholders, needs assessment, goals, monthly didactic plan, clinical rotations across 5 sites, assessment design. By Christopher Z. Mabini, DO, MSAEd.">
+    <title>FMIGS Fellowship Curriculum — Case Study · Mount Zara</title>
+    <meta name="description" content="A complete fellowship curriculum in Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery. Designed end-to-end against adult learning theory, ACGME competencies, and a 5-hospital multi-site rotation. Case study by Christopher Z. Mabini, DO, MSAEd.">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="canonical" href="https://mountzara.com/curriculum/cbg-migs/">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
     <style>
 :root {
     --bg-base: #07070a;
-    --bg-card: rgba(255, 255, 255, 0.04);
-    --border: rgba(255, 255, 255, 0.10);
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
     --fg-strong: #ffffff;
-    --fg-mid: rgba(245, 245, 247, 0.84);
-    --fg-soft: rgba(245, 245, 247, 0.62);
-    --fg-dim: rgba(245, 245, 247, 0.42);
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
     --accent: #6d28d9;
     --accent-soft: #a78bfa;
     --glow-purple: 167, 139, 250;
@@ -26,125 +26,203 @@ html { scroll-behavior: smooth; }
 html, body {
     margin: 0; padding: 0;
     background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(var(--glow-purple), 0.16), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 30%, rgba(var(--glow-purple), 0.08), transparent 70%),
         var(--bg-base);
     color: var(--fg-mid);
-    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    font-feature-settings: "ss01", "cv11";
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.6;
+    font-family: 'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    font-feature-settings: "ss01","cv11";
+    -webkit-font-smoothing: antialiased; line-height: 1.6;
 }
 a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--fg-strong); }
 
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(7, 7, 10, 0.86);
-    backdrop-filter: blur(22px) saturate(165%);
-    -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(7,7,10,0.86);
+    backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     padding: 10px clamp(16px, 4vw, 32px);
 }
-.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1180px; margin: 0 auto; }
 .site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
-.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
-.site-nav .right-actions a:hover { color: var(--fg-strong); }
-.site-nav .cta {
-    background: rgba(var(--glow-purple), 0.16);
-    border: 1px solid rgba(var(--glow-purple), 0.55);
-    color: var(--accent-soft) !important;
-    padding: 5px 14px; border-radius: 999px;
-    font-weight: 500; transition: all 0.2s;
-}
+.site-nav .crumb a { color: inherit; }
+.site-nav .right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .cta { background: rgba(var(--glow-purple), 0.16); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--accent-soft) !important; padding: 5px 14px; border-radius: 999px; font-weight: 500; transition: all 0.2s; }
 .site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
 
-.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
-@keyframes mzRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.wrap { max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
 
-.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 14px; }
-.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.hero h1 { font-weight: 200; font-size: clamp(30px, 5vw, 46px); letter-spacing: -0.022em; line-height: 1.08; color: var(--fg-strong); margin: 0 0 18px 0; max-width: 28ch; }
-.hero .author-line { font-size: 14px; color: var(--fg-soft); margin-bottom: 22px; }
-.hero .author-line strong { color: var(--fg-strong); font-weight: 500; }
+@keyframes mzRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mzPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    .reveal { opacity: 1; transform: none; }
+}
 
-.abstract-block { padding: 26px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); }
-.abstract-block .lbl { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
-.abstract-block p { font-size: 15.5px; line-height: 1.7; color: var(--fg-mid); margin: 0; }
+.hero { padding-top: clamp(40px, 8vw, 80px); padding-bottom: clamp(40px, 8vw, 64px); animation: mzRise 0.7s both; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 18px; }
+.hero h1 { font-weight: 200; font-size: clamp(34px, 6vw, 60px); letter-spacing: -0.022em; line-height: 1.04; color: var(--fg-strong); margin: 0 0 22px 0; max-width: 22ch; }
+.hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent-soft), rgba(var(--glow-purple), 0.7)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.hero .lede { font-size: clamp(16px, 2.2vw, 19px); line-height: 1.6; color: var(--fg-mid); max-width: 64ch; margin: 0 0 30px 0; }
+.hero .byline { font-size: 13.5px; color: var(--fg-soft); }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
 
-.download-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 8px 0; }
-.dl-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(var(--glow-purple), 0.14); border: 1px solid rgba(var(--glow-purple), 0.45); color: var(--accent-soft); padding: 9px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 500; transition: all 0.22s ease; }
-.dl-btn:hover { background: rgba(var(--glow-purple), 0.24); color: #fff; transform: translateY(-2px); }
+.counter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 36px 0 0 0; }
+.counter {
+    padding: 22px 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.counter:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.05); }
+.counter .num { font-size: 38px; font-weight: 200; color: var(--fg-strong); letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; }
+.counter .num .unit { font-size: 16px; color: var(--accent-soft); margin-left: 4px; font-weight: 400; }
+.counter .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-soft); }
 
-.toc { margin: 36px 0; padding: 24px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
-.toc h2 { margin: 0 0 14px 0; font-size: 16px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
-.toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px; }
-.toc-item { display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border-radius: 10px; color: var(--fg-soft); transition: all 0.18s ease; font-size: 13.5px; }
-.toc-item:hover { background: rgba(var(--glow-purple), 0.08); color: var(--fg-strong); }
-.toc-num { font-size: 11px; font-weight: 600; color: var(--accent-soft); min-width: 22px; letter-spacing: 0.04em; }
-.toc-title { flex: 1; }
+section.block { margin: clamp(56px, 9vw, 96px) 0; }
+section.block .eyebrow { margin-bottom: 14px; }
+section.block h2 { font-weight: 300; font-size: clamp(24px, 3.4vw, 34px); letter-spacing: -0.018em; line-height: 1.15; color: var(--fg-strong); margin: 0 0 14px 0; max-width: 28ch; }
+section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 36px 0; line-height: 1.6; }
 
-.ch { margin: clamp(36px, 6vw, 56px) 0; animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.ch-num { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px; }
-.ch h3 { font-weight: 300; font-size: clamp(22px, 3.2vw, 30px); letter-spacing: -0.014em; line-height: 1.18; color: var(--fg-strong); margin: 0 0 18px 0; }
-.ch-lead { font-size: 16px; line-height: 1.65; color: var(--fg-mid); margin: 0 0 16px 0; max-width: 70ch; }
-.ch h4 { margin: 28px 0 8px 0; color: var(--fg-strong); font-weight: 500; font-size: 16.5px; letter-spacing: -0.005em; }
-.ch p { font-size: 14.5px; line-height: 1.65; color: var(--fg-mid); margin: 0 0 12px 0; max-width: 72ch; }
-.ch ul { margin: 0 0 14px 0; padding-left: 22px; }
-.ch li { font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); margin-bottom: 6px; }
+.synthesis { padding: 32px clamp(20px, 4vw, 36px); background: rgba(var(--glow-purple), 0.05); border: 1px solid rgba(var(--glow-purple), 0.22); border-radius: 18px; }
+.synthesis p { font-size: 16.5px; line-height: 1.72; color: var(--fg-mid); margin: 0 0 16px 0; max-width: 70ch; }
+.synthesis p:last-child { margin-bottom: 0; }
+.synthesis p strong { color: var(--fg-strong); font-weight: 500; }
+.key-decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(var(--glow-purple), 0.2); }
+.kd-pill { padding: 12px 16px; background: rgba(0,0,0,0.16); border: 1px solid rgba(var(--glow-purple), 0.18); border-radius: 10px; font-size: 13.5px; line-height: 1.5; color: var(--fg-mid); }
+.kd-pill strong { color: var(--accent-soft); font-weight: 500; display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 4px; }
 
-.sec { margin: 18px 0; padding: 20px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; transition: border-color 0.22s ease, background 0.22s ease; }
-.sec:hover { border-color: rgba(var(--glow-purple), 0.32); background: rgba(var(--glow-purple), 0.03); }
-.sec h4 { margin-top: 0; }
+.arch-phases { display: grid; gap: 14px; }
+.arch-phase {
+    padding: 22px clamp(18px, 3vw, 28px);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+}
+.arch-phase .ph-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 4px; }
+.arch-phase h3 { margin: 0 0 16px 0; color: var(--fg-strong); font-weight: 400; font-size: 18px; letter-spacing: -0.005em; }
+.arch-chapters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.arch-chip {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-size: 13px;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+}
+.arch-chip:hover, .arch-chip:focus-visible { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.4); transform: translateY(-2px); outline: none; }
+.arch-chip .ch-num { font-size: 10px; font-weight: 700; color: rgba(var(--glow-purple), 0.95); flex-shrink: 0; letter-spacing: 0.05em; }
+.arch-chip .ch-title { color: var(--fg-mid); flex: 1; }
 
-.ch-expand { margin-top: 14px; padding: 16px 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
-.ch-expand summary { cursor: pointer; color: var(--accent-soft); font-weight: 500; font-size: 14px; padding: 4px 0; outline: none; }
-.ch-expand summary:hover { color: var(--fg-strong); }
-.sec-compact { padding: 10px 0; font-size: 14px; line-height: 1.55; color: var(--fg-mid); border-top: 1px solid rgba(255,255,255,0.05); }
-.sec-compact:first-of-type { border-top: none; padding-top: 14px; }
-.sec-compact strong { color: var(--fg-strong); font-weight: 500; }
-.sec-snippet { color: var(--fg-soft); font-size: 13.5px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(7,7,10,0.74); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-backdrop.open { display: flex; animation: mzRise 0.22s ease both; }
+.modal-body {
+    background: rgba(20,20,28,0.96);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    backdrop-filter: blur(40px) saturate(165%); -webkit-backdrop-filter: blur(40px) saturate(165%);
+    width: 100%; max-width: 720px; padding: 32px; max-height: 86vh; overflow-y: auto;
+}
+.modal-body .mn { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px; }
+.modal-body h3 { margin: 0 0 18px 0; color: var(--fg-strong); font-weight: 300; font-size: 26px; letter-spacing: -0.012em; }
+.modal-body p { font-size: 14.5px; line-height: 1.65; color: var(--fg-mid); margin: 0 0 14px 0; }
+.modal-close { float: right; background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--fg-mid); padding: 6px 14px; border-radius: 999px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.modal-close:hover { background: rgba(255,255,255,0.05); color: var(--fg-strong); }
+.modal-body ul { padding-left: 22px; margin: 0 0 14px 0; }
+.modal-body li { font-size: 14px; color: var(--fg-mid); margin-bottom: 6px; }
 
-.site-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0; }
-.site-card { padding: 16px; background: rgba(var(--glow-purple), 0.05); border: 1px solid rgba(var(--glow-purple), 0.22); border-radius: 12px; }
-.site-card strong { display: block; color: var(--fg-strong); font-weight: 500; font-size: 14.5px; margin-bottom: 6px; }
-.site-card p { font-size: 13px; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-wrap { position: relative; }
+.timeline-year { margin-bottom: 24px; }
+.timeline-year .yr-label { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px; padding-left: 4px; }
+.timeline-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; }
+@media (max-width: 760px) { .timeline-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (max-width: 480px) { .timeline-grid { grid-template-columns: repeat(3, 1fr); } }
+.month-tile {
+    padding: 12px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 9px;
+    transition: all 0.22s ease;
+    text-align: center;
+    min-height: 86px;
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.month-tile:hover { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.4); transform: translateY(-2px); }
+.month-tile .mo { font-size: 10px; font-weight: 700; letter-spacing: 0.10em; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px; }
+.month-tile .topic { font-size: 11.5px; color: var(--fg-mid); line-height: 1.35; }
 
-.month-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-top: 12px; }
-.month-tile { padding: 12px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; display: flex; align-items: baseline; gap: 8px; transition: all 0.22s ease; }
-.month-tile:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); }
-.month-tile.y2 { background: rgba(var(--glow-purple), 0.06); border-color: rgba(var(--glow-purple), 0.28); }
-.month-year { font-size: 10px; font-weight: 700; color: var(--accent-soft); letter-spacing: 0.08em; }
-.month-name { font-size: 13px; color: var(--fg-strong); }
+.stakeholder-svg { width: 100%; max-width: 760px; margin: 0 auto; display: block; }
+.stake-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 36px; }
+.stake-card { padding: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
+.stake-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 14.5px; }
+.stake-card .role { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
+.stake-card p { margin: 0; font-size: 13px; color: var(--fg-soft); line-height: 1.55; }
 
-.module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 14px; }
-.module-card { padding: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; }
-.module-card strong { display: block; color: var(--fg-strong); font-weight: 500; font-size: 15px; margin-bottom: 6px; }
-.module-card p { font-size: 13px; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.competency-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
+.comp-card { padding: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); transition: all 0.22s ease; }
+.comp-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.4); }
+.comp-card .ck { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.comp-card .ck-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(var(--glow-purple), 0.18); color: var(--accent-soft); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.comp-card h4 { margin: 0; color: var(--fg-strong); font-weight: 500; font-size: 15.5px; letter-spacing: -0.005em; }
+.comp-card .acro { font-size: 11px; color: var(--fg-soft); font-weight: 500; letter-spacing: 0.08em; margin-top: 2px; }
+.comp-card p { margin: 0; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
 
-.ch-note { font-size: 13px; color: var(--fg-soft); font-style: italic; margin: 4px 0 14px 0; }
+.sites-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.site {
+    padding: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: all 0.22s ease;
+}
+.site:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.4); }
+.site.in-progress { background: rgba(var(--glow-purple), 0.04); border: 1px dashed rgba(var(--glow-purple), 0.32); }
+.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: var(--accent-soft); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
+.site h4 { margin: 0 0 4px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.25; }
+.site .city { font-size: 12px; color: var(--fg-soft); margin-bottom: 12px; }
+.site .focus { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
 
-.cta-block { margin-top: clamp(48px, 7vw, 72px); padding: clamp(28px, 4vw, 40px); background: linear-gradient(135deg, rgba(var(--glow-purple), 0.08), rgba(var(--glow-purple), 0.04)); border: 1px solid rgba(var(--glow-purple), 0.32); border-radius: 18px; backdrop-filter: blur(28px) saturate(165%); text-align: center; }
-.cta-block h3 { margin: 0 0 10px 0; color: var(--fg-strong); font-weight: 300; font-size: clamp(20px, 2.8vw, 26px); letter-spacing: -0.012em; }
-.cta-block p { margin: 0 0 22px 0; color: var(--fg-mid); font-size: 15px; max-width: 56ch; margin-left: auto; margin-right: auto; }
-.cta-block a.btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(var(--glow-purple), 0.22); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--fg-strong); padding: 12px 26px; border-radius: 999px; font-weight: 500; font-size: 14.5px; transition: all 0.22s ease; }
+.grad-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.grad-item { padding: 14px 18px; background: rgba(255,255,255,0.03); border-left: 2px solid rgba(var(--glow-purple), 0.5); border-radius: 8px; font-size: 14px; color: var(--fg-mid); line-height: 1.55; }
+.grad-item strong { color: var(--fg-strong); font-weight: 500; }
+
+.archive {
+    margin-top: 80px;
+    padding: 28px clamp(20px, 4vw, 32px);
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between;
+}
+.archive .arch-text h4 { margin: 0 0 4px 0; color: var(--fg-mid); font-weight: 500; font-size: 13.5px; letter-spacing: 0.04em; }
+.archive .arch-text p { margin: 0; font-size: 12px; color: var(--fg-dim); }
+.archive .arch-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.archive .arch-links a { padding: 7px 14px; background: rgba(var(--glow-purple), 0.08); border: 1px solid rgba(var(--glow-purple), 0.25); color: var(--accent-soft); border-radius: 999px; font-size: 12px; }
+.archive .arch-links a:hover { background: rgba(var(--glow-purple), 0.18); color: #fff; }
+
+.cta-block { margin-top: clamp(48px, 8vw, 80px); padding: clamp(28px, 4vw, 44px); background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10), rgba(var(--glow-purple), 0.04)); border: 1px solid rgba(var(--glow-purple), 0.32); border-radius: 18px; text-align: center; }
+.cta-block h3 { margin: 0 0 10px 0; color: var(--fg-strong); font-weight: 300; font-size: clamp(22px, 3vw, 28px); letter-spacing: -0.012em; }
+.cta-block p { margin: 0 0 22px 0; color: var(--fg-mid); font-size: 15.5px; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-block a.btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(var(--glow-purple), 0.22); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--fg-strong); padding: 12px 28px; border-radius: 999px; font-weight: 500; font-size: 14.5px; transition: all 0.22s ease; }
 .cta-block a.btn:hover { background: rgba(var(--glow-purple), 0.34); transform: translateY(-2px); }
 
-.foot { margin-top: 56px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; color: var(--fg-dim); }
-.foot a { color: var(--fg-soft); }
-
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        transition-duration: 0.001ms !important;
-    }
-}
-a:focus-visible, .dl-btn:focus-visible, .toc-item:focus-visible, .ch-expand summary:focus-visible, .cta-block a.btn:focus-visible {
-    outline: 2px solid rgba(var(--glow-purple), 0.75); outline-offset: 2px; border-radius: 8px;
-}
 .skip-link { position: absolute; left: -9999px; top: 8px; background: rgba(var(--glow-purple), 0.95); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 200; }
 .skip-link:focus { left: 16px; }
+:focus-visible { outline: 2px solid rgba(var(--glow-purple), 0.75); outline-offset: 2px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -153,9 +231,9 @@ a:focus-visible, .dl-btn:focus-visible, .toc-item:focus-visible, .ch-expand summ
     <nav class="site-nav" aria-label="Primary">
         <div class="inner">
             <a href="/" class="brand">Mount Zara</a>
-            <span class="crumb">· <a href="/curriculum/" style="color: inherit;">Curriculum Consulting</a> · CBG/MIGS Fellowship</span>
-            <div class="right-actions">
-                <a href="/curriculum/">All Curricula</a>
+            <span class="crumb">· <a href="/curriculum/">Curriculum Consulting</a> · CBG/MIGS Fellowship</span>
+            <div class="right">
+                <a href="/curriculum/">All curricula</a>
                 <a href="mailto:info@mountzara.com" class="cta">Engage</a>
             </div>
         </div>
@@ -165,1117 +243,358 @@ a:focus-visible, .dl-btn:focus-visible, .toc-item:focus-visible, .ch-expand summ
 
         <header class="hero">
             <div class="eyebrow">Curriculum Design Case Study · Fellowship · 2-year</div>
-            <h1>Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) — Curriculum and Instructional Design</h1>
-            <p class="author-line">
-                <strong>Christopher Z. Mabini, DO, MSAEd — Inaugural MIGS Fellow</strong> · PRIME Illinois St. Francis Hospital, Evanston, IL · v3 (2025-07-24) · 16 chapters, 333 sections
+            <h1>A fellowship, <em>designed end-to-end.</em></h1>
+            <p class="lede">
+                The CBG/MIGS curriculum at PRIME Illinois Saint Francis Hospital — built before the first fellow walked in the door,
+                across five hospital sites, twenty-four months of monthly didactic structure, six ACGME competencies, and a formal
+                stakeholder + needs-assessment framework rare in surgical fellowships.
             </p>
-            <div class="download-row">
-                <a class="dl-btn" href="/assets/curriculum/fmigs-curriculum-2024-v3.doc" download>
-                    Download source .doc (1.2 MB)
-                </a>
-                <a class="dl-btn" href="/assets/curriculum/fmigs-cbg-migs.json" target="_blank" rel="noopener">
-                    View structured JSON outline
-                </a>
+            <p class="byline"><strong>Christopher Z. Mabini, DO, MSAEd</strong> — Inaugural Fellow &amp; Curriculum Architect · v3, July 2025 · 400+ pages</p>
+
+            <div class="counter-row" id="counter-row">
+                <div class="counter"><div class="num" data-target="16">0</div><div class="lbl">Chapters</div></div>
+                <div class="counter"><div class="num" data-target="333">0</div><div class="lbl">Sub-sections</div></div>
+                <div class="counter"><div class="num" data-target="24"><span class="num-val">0</span><span class="unit">mo</span></div><div class="lbl">Didactic plan</div></div>
+                <div class="counter"><div class="num" data-target="5">0</div><div class="lbl">Hospital sites</div></div>
+                <div class="counter"><div class="num" data-target="6">0</div><div class="lbl">ACGME competencies</div></div>
+                <div class="counter"><div class="num" data-target="8">0</div><div class="lbl">Stakeholder groups</div></div>
             </div>
         </header>
 
-        <div class="abstract-block">
-            <div class="lbl">Abstract</div>
-            <p>This curriculum design presents a comprehensive curriculum for the Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) program at PRIME Illinois St Francis Hospital in Evanston Illinois and Metro Chicagoland area. The curriculum aligns with the program requirements set forth by the FMIGS Board and incorporates evidence-based approaches to ensure that fellows acquire advanced knowledge and surgical skills in minimally invasive gynecologic surgery (MIGS) per AAGL FMIGS program requirements and learning objectives. The curriculum integrates principles of adult learning theory using an instructional design and curriculum approach to enhance educational effectiveness, ensuring that learning experiences are self-directed, experiential, goal-oriented, and relevant to the fellows&#x27; professional practice (Knowles, Holton, &amp; Swanson, 2015; Dick and Carey 2011). Detailed components such as context analysis, needs assessment, instructional plans, and evaluation strategies are provided to prepare fellows to serve as independent specialists and leaders in MIGS, addressing the healthcare needs, health equity and disparities impacting underserved populations and advancing the field through excellence in complex surgical management.</p>
-        </div>
+        <section class="block reveal" aria-labelledby="synth-h">
+            <div class="eyebrow">Executive Synthesis</div>
+            <h2 id="synth-h">Why this curriculum is different.</h2>
+            <p class="sub">Every accredited FMIGS program teaches the same surgical content. What sets this one apart is the design discipline behind it &mdash; and that discipline is what an institution actually engages a curriculum-design consultant for.</p>
 
-        <nav class="toc" aria-labelledby="toc-heading">
-            <h2 id="toc-heading">Architecture — full 16-chapter outline</h2>
-            <div class="toc-grid">
-                <a href="#ch-1" class="toc-item"><span class="toc-num">01</span><span class="toc-title">Abstract</span></a>
-<a href="#ch-2" class="toc-item"><span class="toc-num">02</span><span class="toc-title">Introduction</span></a>
-<a href="#ch-3" class="toc-item"><span class="toc-num">03</span><span class="toc-title">Formal Context Analysis</span></a>
-<a href="#ch-4" class="toc-item"><span class="toc-num">04</span><span class="toc-title">Stakeholders</span></a>
-<a href="#ch-5" class="toc-item"><span class="toc-num">05</span><span class="toc-title">Needs Assessment</span></a>
-<a href="#ch-6" class="toc-item"><span class="toc-num">06</span><span class="toc-title">Barriers to Transfer of Learning</span></a>
-<a href="#ch-7" class="toc-item"><span class="toc-num">07</span><span class="toc-title">Strategies to Improve Transfer of Learning</span></a>
-<a href="#ch-8" class="toc-item"><span class="toc-num">08</span><span class="toc-title">Program Mission Statement, Goals and Objectives</span></a>
-<a href="#ch-9" class="toc-item"><span class="toc-num">09</span><span class="toc-title">Core Educational Objectives</span></a>
-<a href="#ch-10" class="toc-item"><span class="toc-num">10</span><span class="toc-title">Curriculum Structure</span></a>
-<a href="#ch-11" class="toc-item"><span class="toc-num">11</span><span class="toc-title">Clinical Rotations</span></a>
-<a href="#ch-12" class="toc-item"><span class="toc-num">12</span><span class="toc-title">Didactics and Learning Activities</span></a>
-<a href="#ch-13" class="toc-item"><span class="toc-num">13</span><span class="toc-title">Research Training</span></a>
-<a href="#ch-14" class="toc-item"><span class="toc-num">14</span><span class="toc-title">Fellow Evaluation and Case Log</span></a>
-<a href="#ch-15" class="toc-item"><span class="toc-num">15</span><span class="toc-title">Graduation Requirements</span></a>
-<a href="#ch-16" class="toc-item"><span class="toc-num">16</span><span class="toc-title">Assessment Package</span></a>
+            <div class="synthesis">
+                <p>The MountZara FMIGS curriculum trains surgeons in Complex Benign Gynecology and Minimally Invasive Gynecologic Surgery across a two-year fellowship at PRIME Illinois Saint Francis Hospital, with clinical rotations spanning <strong>five hospital sites</strong> in the Chicago metro area. It is the curriculum that trained the inaugural fellow in this program &mdash; and it was architected, written, and operationalized <strong>before that fellow walked in the door.</strong></p>
+                <p>What sets it apart isn't the surgical content; every accredited FMIGS program teaches those procedures. It is the <strong>design discipline behind the content</strong> &mdash; a formal context analysis of the institution and the community it serves, a needs assessment that names health disparities in MIGS access explicitly, instructional design grounded in Knowles's adult learning theory and Kolb's experiential cycle, twenty-four months of monthly didactic structure with paired reading lists and simulation training, and assessment systematically mapped to the ACGME six core competencies.</p>
+                <p>For an institution considering a new fellowship &mdash; or refreshing one that has drifted into "we've always done it this way" by year three &mdash; this is the level of architecture an end-to-end curriculum-design engagement produces. Sixteen chapters, three hundred and thirty-three sub-sections, four hundred-plus pages. Not a marketing document; <strong>a working program manual</strong> the program directorship runs against every day.</p>
+
+                <div class="key-decisions">
+                    <div class="kd-pill"><strong>Multi-site by design</strong>5 hospitals, calibrated case mix per site, coordinated competencies across all.</div>
+                    <div class="kd-pill"><strong>Equity-anchored</strong>Health disparities in MIGS access named in the needs assessment as a curriculum driver.</div>
+                    <div class="kd-pill"><strong>Adult learning theory throughout</strong>Self-directed, experiential, problem-centered &mdash; not lecture-and-test.</div>
+                    <div class="kd-pill"><strong>Monthly didactic spine</strong>Each of 24 months: focused topic + reading + simulation + assessment.</div>
+                    <div class="kd-pill"><strong>ACGME-aligned milestones</strong>Six core competencies mapped to milestones, mapped to learning activities.</div>
+                    <div class="kd-pill"><strong>AI &amp; surgical-intelligence integration</strong>Modern tooling embedded as instructional design &mdash; not gadgetry.</div>
+                </div>
             </div>
-        </nav>
+        </section>
 
-        
-<section class="ch" id="ch-2">
-<div class="ch-num">Chapter 2</div>
-<h3>Introduction</h3>
-<p class="ch-lead">Minimally invasive gynecologic surgery (MIGS) has transformed women’s healthcare by offering surgical solutions that reduce patient morbidity, improve recovery times, and enhance overall quality of life (Nieboer et al., 2009). However, disparities in access to such advanced surgical care persist, particularly among low-income and underserved communities (Jacoby et al., 2011). Recent studies underscore the ongoing challenges in achieving diversity within MIGS fellowships and highlight systemic barriers that contribute to unequal access to minimally invasive surgical services (Hamilton et al., 2024; Isa et al., 2024; Sweterlitsch et al., 2024; Delara et al., 2020).</p>
-<p class="ch-lead">This FMIGS curriculum is specifically designed to train gynecologic surgeons who are committed to community-based care and the equitable healthcare delivery of MIGS and benign-complex disease management. By emphasizing the unique challenges and needs of low-income populations, the program aims to reduce healthcare disparities and improve outcomes for these communities (Williams et al., 2010).</p>
-<p class="ch-lead">Studies have shown that racial and ethnic minorities often experience higher rates of complications and readmissions after gynecologic surgery. For instance, Black women have been found to have a 30% higher risk of complications compared to White women in some studies. Minority women are less likely to receive minimally invasive procedures, which are associated with shorter hospital stays and faster recovery times. For example, Black and Hispanic women are up to 40% less likely to receive minimally invasive hysterectomies compared to their White counterparts. Some data suggest that Black women have a higher mortality rate following gynecologic surgery, which can be attributed to a combination of factors, including later-stage diagnosis and limited access to high-quality care.</p>
-<p class="ch-lead">The curriculum addresses these disparities by fostering a diverse cohort of fellows and promoting inclusive referral practices, as highlighted by recent literature identifying the importance of diversity and equitable training environments (Hamilton et al., 2024; Delara et al., 2020).</p>
-<p class="ch-lead">Research shows that women from low-income backgrounds have less access to MIGS. This disparity often leads to delayed care, progression of gynecologic conditions, and poorer outcomes compared to those with greater means. Black and Hispanic women face additional barriers, such as lower referral rates for MIGS and limited insurance coverage. Implicit biases within the healthcare system can also impact the quality of care and the surgical options offered to these women, resulting in fewer minimally invasive procedures and more complications.</p>
-<p class="ch-lead">To address these inequities, some low-income or community-based areas have developed targeted initiatives. These include expanding community health programs, enhancing the training of local healthcare providers in MIGS, and utilizing telemedicine to reach underserved populations. However, challenges such as limited funding and infrastructure persist, requiring continued advocacy and innovation.</p>
-<p class="ch-lead">Simultaneously, the fellowship is dedicated to advancing the field of MIGS by fostering and mentoring leaders with specialized knowledge in complex benign pathology and diseases, and expertise in the minimally invasive surgical management of these conditions (Advincula &amp; Wang, 2009). Evidence from recent studies demonstrates that specialized MIGS training is associated with improved surgical outcomes and reduced complications, reinforcing the value of advanced training programs (Meyer et al., 2024; Gupta et al., 2022; Pfeuti et al., 2023).</p>
-<p class="ch-lead">The curriculum incorporates adult learning principles to ensure that educational experiences are relevant, practical, and engaging for adult learners (Knowles et al., 2015). By promoting self-directed learning, leveraging fellows’ prior experiences, and focusing on problem-solving and application, the program enhances the effectiveness of the learning process (Taylor &amp; Hamdy, 2013). Furthermore, the program integrates simulation-based training and surgical intelligence tools, aligning with current trends in MIGS education that emphasize hands-on, technology-enhanced learning to improve surgical proficiency and patient outcomes (Hamilton et al., 2024; Pando et al., [year]; Levin et al., 2024).</p>
-<p class="ch-lead">Additionally, the curriculum addresses compensation trends and career development, ensuring that graduates are well-prepared for sustainable careers in MIGS. By understanding current compensation structures and addressing barriers to fellowship pursuit, the program supports fellows in achieving professional and financial success (Adedayo et al., 2024; Dassel et al., 2015; Traylor et al., 2019).</p>
-<p class="ch-lead">By addressing both the educational needs of fellows and the broader systemic issues within MIGS, the FMIGS curriculum strives to produce competent, compassionate, and socially responsible gynecologic surgeons. These surgeons are equipped to lead advancements in minimally invasive surgery, promote health equity, and improve patient outcomes across diverse communities.</p>
-</section>
-<section class="ch" id="ch-3">
-<div class="ch-num">Chapter 3</div>
-<h3>Formal Context Analysis</h3>
-<p class="ch-lead">A formal context analysis within the FMIGS curriculum ensures alignment with the needs of fellows, faculty, patients, and the healthcare institution. This analysis facilitates a tailored, competency-based approach that maximizes learning outcomes while being cost-effective and resource-conscious. By addressing the unique health needs of the community, available institutional resources, and adult learning principles, the curriculum becomes more relevant, impactful, and designed to produce highly skilled, well-rounded, and compassionate minimally invasive gynecologic surgeons.</p>
-<p class="ch-lead">Curriculum Context Analysis</p>
-<div class="sec">
-<h4>Tailored Learning for Fellows</h4>
-<p>Focus on Learners: Builds on fellows&#x27; existing skills and knowledge by incorporating adult learning principles such as self-direction and hands-on experiences.</p>
-<p>Skill Development: Identifies gaps and strengths to target the development of complex surgical skills and decision-making abilities.</p>
-</div>
-<div class="sec">
-<h4>Alignment with Institutional Resources</h4>
-<p>Facilities and Technology: Evaluates available surgical platforms (robotic, laparoscopic, radiofrequency ablation, etc.) to ensure curriculum feasibility and efficient resource use.</p>
-<p>Faculty Expertise: Matches teaching responsibilities with faculty expertise to optimize learning experiences.</p>
-</div>
-<div class="sec">
-<h4>Relevance to Patient and Community Needs</h4>
-<p>Health Disparities: Aligns the curriculum with local community conditions, such as fibroids and endometriosis, emphasizing care tailored to social determinants of health.</p>
-<p>Social Determinants: Enables individualized patient care plans that consider broader health factors, improving outcomes for underserved populations.</p>
-<p>Competency-Based Training</p>
-</div>
-<div class="sec">
-<h4>ACGME and FMIGS Alignment</h4>
-<p>Ensures the curriculum meets required competencies, including medical knowledge, professionalism, and patient care.</p>
-<p>Customized Learning: Tailors activities like simulations and case-based learning to specific competency needs.</p>
-<p>Stakeholder Engagement</p>
-</div>
-<div class="sec">
-<h4>Faculty and Mentor Input</h4>
-<p>Involves stakeholders in curriculum development, aligning faculty goals with educational outcomes.</p>
-</div>
-<div class="sec">
-<h4>Patient-Centered Care</h4>
-<p>Enhances focus on communication, cultural competence, and compassionate care by understanding patient needs.</p>
-<p>Systems-Based Practice</p>
-</div>
-<div class="sec">
-<h4>Navigating Healthcare Systems</h4>
-<p>Helps fellows understand local healthcare systems, enhancing their ability to provide cost-effective, quality care.</p>
-</div>
-<div class="sec">
-<h4>Community Collaboration</h4>
-<p>Encourages partnerships with local resources to improve patient care coordination.</p>
-<p>Continuous Improvement</p>
-</div>
-<div class="sec">
-<h4>Feedback-Driven Refinement</h4>
-<p>Establishes a baseline for evaluating curriculum effectiveness, enabling ongoing improvements based on performance.</p>
-</div>
-<div class="sec">
-<h4>Quality Improvement</h4>
-<p>Aligns with institutional quality goals to help fellows identify and optimize areas of clinical practice.</p>
-<p>Cost-Effectiveness</p>
-</div>
-<div class="sec">
-<h4>Efficient Resource Use</h4>
-<p>Ensures resources are used effectively, minimizing costs while enhancing learning opportunities.</p>
-</div>
-<div class="sec">
-<h4>Financial Considerations</h4>
-<p>Identifies cost-saving measures, such as simulation-based training, to reduce the need for live cases.</p>
-<p>Institutional Context</p>
-</div>
-<div class="sec">
-<h4>Institution: St. Francis Hospital, Chicago, Illinois</h4>
-<p>Affiliation: Applying for accreditation by the American Association of Gynecologic Laparoscopists (AAGL).</p>
-<p>Resources: Access to state-of-the-art surgical facilities, simulation labs, and a diverse patient population.</p>
-<p>Faculty Expertise: Renowned surgeons and educators specializing in MIGS, committed to mentorship and advancing the field.</p>
-<p>Community Context: The fellowship program operates in diverse communities within the Chicago area, each presenting unique demographic and healthcare challenges.</p>
-</div>
-<div class="sec">
-<h4>PRIME Saint Francis Hospital (SFH), Evanston, IL</h4>
-<p>Demographics:</p>
-<p>Population: Approximately 74,587 residents (U.S. Census Bureau, 2020).</p>
-<p>Ethnic Composition: White (59%), African American (16%), Hispanic or Latino (12%), Asian (9%).</p>
-<p>Median Household Income: $80,896 (U.S. Census Bureau, 2020).</p>
-<p>Socioeconomic Status: Diverse backgrounds with areas of affluence and economic need. Approximately 8% live below the poverty line.</p>
-<p>Health Disparities: Higher rates of chronic conditions among minority populations (Evanston Health &amp; Human Services Department, 2019). Disparities in access to specialized healthcare services.</p>
-<p>Prevalent Gynecologic Conditions: Elevated incidence of uterine fibroids among African American women (Stewart et al., 2017). Barriers to accessing advanced surgical care due to insurance and socioeconomic factors.</p>
-</div>
-<div class="sec">
-<h4>Ascension Saint Joseph Hospital (SJH), Chicago, IL</h4>
-<p>Demographics:</p>
-<p>Location: Lincoln Park neighborhood.</p>
-<p>Population: Approximately 68,000 residents.</p>
-<p>Ethnic Composition: White (77%), Hispanic or Latino (8%), Asian (9%), African American (5%).</p>
-<p>Median Household Income: $98,426 (U.S. Census Bureau, 2020).</p>
-<p>Socioeconomic Status: Generally affluent area but serves patients from adjacent lower-income neighborhoods. Presence of uninsured and underinsured patients.</p>
-<p>Health Disparities: Gaps in preventative care utilization among minority populations (Illinois Department of Public Health [IDPH], 2019). Higher prevalence of sexually transmitted infections in underserved groups (Centers for Disease Control and Prevention [CDC], 2020).</p>
-<p>Prevalent Gynecologic Conditions: Increased rates of abnormal uterine bleeding and polycystic ovary syndrome (PCOS) (Goodman et al., 2015).</p>
-</div>
-<div class="sec">
-<h4>PRIME Saint Mary Hospital (SMH), Chicago, IL</h4>
-<p>Demographics:</p>
-<p>Location: West Town area.</p>
-<p>Population: Approximately 85,000 residents.</p>
-<p>Ethnic Composition: Hispanic or Latino (53%), White (35%), African American (7%), Asian (3%).</p>
-<p>Median Household Income: $65,000.</p>
-<p>Socioeconomic Status: Significant immigrant population with language barriers. Approximately 16% living below the poverty line.</p>
-<p>Health Disparities: Limited access to healthcare services due to economic and language barriers (Chicago Department of Public Health [CDPH], 2019). Lower rates of cervical cancer screening and higher rates of late-stage diagnosis.</p>
-<p>Prevalent Gynecologic Conditions: Increased incidence of cervical cancer and human papillomavirus (HPV) infections (Benard et al., 2017).</p>
-</div>
-<div class="sec">
-<h4>Thorek Memorial Hospital (TMH), Chicago, IL</h4>
-<p>Demographics:</p>
-<p>Location: Uptown neighborhood.</p>
-<p>Population: Approximately 58,000 residents.</p>
-<p>Ethnic Composition: White (47%), African American (21%), Asian (19%), Hispanic or Latino (10%).</p>
-<p>Median Household Income: $42,000.</p>
-<p>Socioeconomic Status: High poverty rate with over 22% living below the poverty line. Significant homeless population and refugee communities.</p>
-<p>Health Disparities: Limited access to primary and specialized care. High rates of mental health issues and substance abuse affecting women&#x27;s health (Lipari &amp; Van Horn, 2017).</p>
-<p>Prevalent Gynecologic Conditions: Increased prevalence of pelvic inflammatory disease (PID) and associated infertility (Tsevat et al., 2017).</p>
-</div>
-<div class="sec">
-<h4>MIGS/Gynecology Clinic at TMH</h4>
-<p>Clinic Operation: Operates 2-4 times a month.</p>
-<p>Patient Population: Mainly serves immigrant Chinese/Asian population.</p>
-<p>Healthcare Needs: Addresses unique cultural and language barriers, providing culturally sensitive care to this underserved community.</p>
-</div>
-<div class="sec">
-<h4>University of Illinois, Chicago (UIC) – In Progress</h4>
-<p>Resources: UIC boasts state-of-the-art surgical facilities, including advanced robotic surgery capabilities. The Robotic Surgery Program at UI Health is recognized as a worldwide leader in providing advanced surgical treatments for complex diseases and cancers.</p>
-<p>Faculty Expertise: The faculty at UIC includes renowned surgeons and educators specializing in minimally invasive and robotic surgery. Notably, Dr. Pier Cristoforo Giulianotti, a pioneer in robotic surgery, serves as the Chief of the Division of General, Minimally Invasive, and Robotic Surgery.</p>
-<p>Community Context: UIC serves a diverse patient population in the Chicago area, providing care to communities with varied demographic and healthcare needs. The university is recognized as one of the most ethnically rich and culturally diverse campuses in the nation.</p>
-<p>Demographics:</p>
-<p>Population: Chicago, Illinois, has a population of approximately 2.7 million residents.</p>
-<p>Ethnic Composition: The student body at UIC is diverse, with 36% Hispanic, 23% White, 21% Asian, and 8% Black students.</p>
-<p>Median Household Income: The median household income in Chicago is approximately $61,811.</p>
-<p>Socioeconomic Status: Chicago comprises diverse socioeconomic backgrounds, with areas of both affluence and economic need. Approximately 18.4% of the city’s population lives below the poverty line.</p>
-<p>Health Disparities: There are notable health disparities among minority populations in Chicago, including higher rates of chronic conditions and barriers to accessing specialized healthcare services.</p>
-<p>Prevalent Gynecologic Conditions: Conditions such as uterine fibroids and endometriosis are prevalent among the patient population. Barriers to accessing advanced surgical care due to insurance and socioeconomic factors are also observed.</p>
-<p>Educational Context</p>
-</div>
-<div class="sec">
-<h4>Learners</h4>
-<p>Fellows who have completed an obstetrics and gynecology residency and seek specialized training in MIGS.</p>
-</div>
-<div class="sec">
-<h4>Learning Environment</h4>
-<p>Supportive atmosphere encouraging inquiry, innovation, and collaboration.</p>
-</div>
-<div class="sec">
-<h4>Educational Resources</h4>
-<p>Access to comprehensive libraries and online resources. Opportunities for interprofessional education.</p>
-</div>
-<div class="sec">
-<h4>Challenges</h4>
-<p>Balancing clinical responsibilities with educational activities. Addressing diverse learning needs of adult learners.</p>
-</div>
-</section>
-<section class="ch" id="ch-4">
-<div class="ch-num">Chapter 4</div>
-<h3>Stakeholders</h3>
-<p class="ch-lead">Each stakeholder plays a pivotal role in the success and growth of the FMIGS program. Fellows benefit from advanced training, while faculty ensure educational quality. Patients receive cutting-edge care, and community partnerships broaden fellows&#x27; exposure to diverse populations. Accreditation bodies and healthcare institutions provide the structural framework, while residents and medical students gain from peer learning. Policy makers and advocates, on the other hand, push for systemic changes, promoting equitable access to healthcare. Acknowledging the contributions and needs of each stakeholder ensures the program&#x27;s alignment with broader healthcare goals, leading to continuous improvement in both education and patient outcomes.</p>
-<p class="ch-lead">Fellows: Primary Beneficiaries Seeking Advanced Training</p>
-<details class="ch-expand"><summary>Expand the 26 sub-sections</summary>
-<div class="sec-compact"><strong>Skill Development</strong>
- — <span class="sec-snippet">Fellows are the core beneficiaries of the FMIGS program. They seek specialized training in minimally invasive gynecologic procedures, such as laparoscopic and robotic surgeries, complex hysteroscopy, and endometriosis excision.</span>
-</div>
-<div class="sec-compact"><strong>Learning Experience</strong>
- — <span class="sec-snippet">Fellows drive the need for cutting-edge simulation-based training, research opportunities, and exposure to a wide range of clinical cases.</span>
-</div>
-<div class="sec-compact"><strong>Professional Growth</strong>
- — <span class="sec-snippet">The fellowship equips them with leadership, teaching, and research skills, preparing them for roles in academic medicine or leadership positions in clinical practice.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">The curriculum must prioritize fellows’ learning, offer exposure to complex surgical cases, provide simulation opportunities, and allow autonomy as fellows progress through the program. Fellow evaluations will shape program modifications, ensuring the program remains responsive t…</span>
-</div>
-<div class="sec-compact"><strong>Teaching and Mentorship</strong>
- — <span class="sec-snippet">Faculty are responsible for delivering didactic content, overseeing clinical training, and serving as mentors. They guide fellows in developing advanced surgical skills, clinical decision-making, and research capabilities.</span>
-</div>
-<div class="sec-compact"><strong>Quality Assurance</strong>
- — <span class="sec-snippet">Faculty ensure the program meets the educational objectives and accreditation standards. Their input is critical for curriculum development and modification based on ongoing evaluation.</span>
-</div>
-<div class="sec-compact"><strong>Role Models</strong>
- — <span class="sec-snippet">Faculty members set the example for professionalism, patient-centered care, and lifelong learning, shaping fellows&#x27; approach to clinical practice and academic development.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">Faculty development programs may be necessary to keep teaching methods current, particularly with advancements in surgical techniques and education technology. Faculty involvement in fellows&#x27; research projects, case-based learning, and surgical assessments is essential for m…</span>
-</div>
-<div class="sec-compact"><strong>Improved Outcomes</strong>
- — <span class="sec-snippet">Patients benefit directly from the advanced training that fellows receive, particularly in areas like minimally invasive gynecology, which offers faster recovery times and lower complication rates.</span>
-</div>
-<div class="sec-compact"><strong>Educational Impact</strong>
- — <span class="sec-snippet">Patients also play a role in the educational process, as fellows learn from real-world clinical experiences. Ethical considerations such as patient safety and informed consent are essential in training environments.</span>
-</div>
-<div class="sec-compact"><strong>Access to Expertise</strong>
- — <span class="sec-snippet">Fellowship programs expand access to specialized surgical care in the community by increasing the number of highly trained gynecologic surgeons.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">The program must ensure patient safety through structured supervision of fellows and evidence-based clinical guidelines. Patient feedback can be integrated into fellow evaluations, ensuring care quality is maintained and improved.</span>
-</div>
-<div class="sec-compact"><strong>Community Engagement</strong>
- — <span class="sec-snippet">FMIGS programs often engage with community organizations for outreach, providing care in underserved areas and educating patients about gynecologic health.</span>
-</div>
-<div class="sec-compact"><strong>Health Disparities</strong>
- — <span class="sec-snippet">Collaborations with community organizations allow fellows to participate in initiatives aimed at reducing health disparities, particularly in access to minimally invasive surgery.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">These partnerships enrich the fellowship experience by exposing fellows to diverse patient populations and healthcare challenges. Community involvement also fosters leadership development, as fellows may take part in organizing health education programs or leading public health i…</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">The program must remain flexible and responsive to the requirements set forth by accreditation bodies. Compliance involves maintaining a robust curriculum, proper documentation, and quality assurance measures. Feedback from accreditation bodies may necessitate curriculum changes,…</span>
-</div>
-<div class="sec-compact"><strong>Institutional Support</strong>
- — <span class="sec-snippet">The hospital or healthcare institution housing the FMIGS program provides resources such as surgical facilities, simulation labs, and clinical rotations. Institutional backing is crucial for the sustainability of the program.</span>
-</div>
-<div class="sec-compact"><strong>Financial and Administrative Resources</strong>
- — <span class="sec-snippet">The institution also plays a role in securing funding, managing faculty appointments, and maintaining compliance with legal and accreditation standards.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">The program’s success is dependent on the institution’s commitment to investing in new technologies (e.g., robotic systems, simulation platforms) and ensuring the availability of diverse clinical experiences. Strong collaboration between the FMIGS leadership and the institution e…</span>
-</div>
-<div class="sec-compact"><strong>Peer Learning</strong>
- — <span class="sec-snippet">Residents and medical students benefit from the expertise of FMIGS fellows through teaching, mentorship, and hands-on learning in clinical settings.</span>
-</div>
-<div class="sec-compact"><strong>Skill Development</strong>
- — <span class="sec-snippet">Exposure to advanced minimally invasive techniques during rotations or elective periods enhances the surgical skills of residents and informs their career decisions.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">FMIGS fellows are integral to resident education, particularly in mentoring junior trainees during surgeries and providing lectures or case presentations. Interaction between fellows and residents promotes a collaborative learning environment, benefiting both groups and contribut…</span>
-</div>
-<div class="sec-compact"><strong>Healthcare Policy Influence</strong>
- — <span class="sec-snippet">Policy makers and health advocates may use the program&#x27;s success in providing advanced surgical care and outreach to underserved populations as a model for addressing health disparities.</span>
-</div>
-<div class="sec-compact"><strong>Advocacy for Minimally Invasive Techniques</strong>
- — <span class="sec-snippet">Advocates for women’s health may push for policies that promote wider access to minimally invasive gynecologic surgeries, supported by data from fellowship-trained specialists.</span>
-</div>
-<div class="sec-compact"><strong>Program Impact</strong>
- — <span class="sec-snippet">Policy changes influenced by the outcomes of fellowship programs could impact the future structure of training programs, funding for advanced surgical techniques, or patient access to minimally invasive surgeries. Fellow involvement in community outreach and advocacy initiatives …</span>
-</div>
-</details>
-</section>
-<section class="ch" id="ch-5">
-<div class="ch-num">Chapter 5</div>
-<h3>Needs Assessment</h3>
-<p class="ch-lead">A comprehensive needs assessment was conducted using data from local health departments, community health surveys, and national health statistics to identify gaps in gynecologic surgical care and the educational needs of the fellows.</p>
-<p class="ch-lead">Community Needs</p>
-<p class="ch-lead">The FMIGS fellowship program is dedicated to addressing the unique health needs and disparities present within the diverse communities of Evanston and the urban Chicago-land area. This commitment is underscored by the high prevalence of gynecologic conditions, limited access to advanced surgical care, cultural and language barriers, and health disparities that necessitate specialized training and targeted interventions. Incorporating specific demographic and diagnostic data from reliable sources emphasizes the program’s relevance and necessity.</p>
-<div class="sec">
-<h4>High Prevalence of Gynecologic Conditions</h4>
-<p>Uterine Fibroids: In Evanston, African American women experience a higher prevalence of uterine fibroids compared to other ethnic groups, leading to increased morbidity and a greater need for surgical intervention (Baird et al., 2003). Studies have shown that Black women are three times more likely to develop fibroids than White women, often at a younger age and with more severe symptoms (Stewart et al., 2013). The FMIGS curriculum must equip fellows with specialized surgical approaches, including minimally invasive hysterectomies and myomectomies, to manage these complex cases effectively.</p>
-<ul>
-<li>In Chicago, Hispanic women also exhibit a significant prevalence of fibroids, necessitating specialized surgical approaches to manage larger and more symptomatic fibroids effectively (Stewart et al., 2017). This underscores the importance of advanced MIGS training to address these challenges and improve patient outcomes in these communities.</li>
-</ul>
-<p>Endometriosis and Chronic Pelvic Pain: In both Evanston and Chicago, up to 10% of women of reproductive age are affected by endometriosis and chronic pelvic pain—conditions that often require advanced surgical management to alleviate symptoms and improve quality of life (Bulun, 2009). Effective treatment of these conditions is essential for reducing long-term health complications and enhancing patient well-being. Advanced laparoscopic techniques taught in the FMIGS program are crucial for accurate diagnosis and effective management (Falcone &amp; Flyckt, 2018).</p>
-</div>
-<div class="sec">
-<h4>Limited Access to Advanced Surgical Care</h4>
-<p>Underutilization of Minimally Invasive Surgery (MIS): Women from low-income and minority backgrounds in Evanston and Chicago are less likely to receive MIS procedures such as laparoscopic hysterectomies compared to their higher-income and White counterparts (Anderson et al., 2013). This underutilization results in longer recovery times, higher complication rates, and increased healthcare costs. A study by Johnson et al. (2017) found that minority women were 40% less likely to undergo minimally invasive hysterectomies. The FMIGS fellowship aims to bridge this gap by training surgeons in advanced MIS techniques and promoting their adoption within local healthcare facilities.</p>
-<p>Insurance and Financial Barriers: St. Francis Hospital serves as one of the few safety-net hospitals in Chicago, catering to a substantial population of uninsured (30%) and underinsured (50%) patients (Illinois Department of Healthcare and Family Services, 2019). These patients face significant obstacles in accessing specialized surgical care, including MIS procedures, due to financial constraints and limited insurance coverage. Financial barriers often delay necessary treatments, leading to worsened health outcomes and exacerbating healthcare disparities (Artiga et al., 2019). The FMIGS fellowship program incorporates comprehensive training on navigating insurance complexities and advocating for policy reforms that expand coverage for minimally invasive procedures.</p>
-</div>
-<div class="sec">
-<h4>Cultural and Language Barriers</h4>
-<p>Health Literacy Issues: Approximately 25% of patients in Evanston and Chicago communities have limited health literacy, contributing to misunderstandings about gynecologic conditions and treatments (McCaffery et al., 2016). This barrier impedes effective communication between patients and healthcare providers, leading to decreased adherence to treatment plans and poorer health outcomes. Enhancing health literacy is essential for empowering patients to make informed healthcare decisions. The FMIGS curriculum includes training on communicating complex medical information in understandable ways to improve patient engagement and outcomes.</p>
-<p>Language Barriers: Over 40% of the patient population in Chicago’s underserved communities are non-English speakers, primarily immigrants from Hispanic and Asian backgrounds (U.S. Census Bureau, 2020). These language barriers negatively impact the quality of care, as patients may struggle to communicate symptoms, understand treatment plans, and follow postoperative instructions (Flores, 2006). Providing language-appropriate resources, including trained medical interpreters and translated educational materials, is critical for ensuring equitable access to healthcare. The fellowship program incorporates training on cultural competence and the effective use of interpreter services to overcome these barriers (Betancourt et al., 2016).</p>
-</div>
-<div class="sec">
-<h4>Health Disparities and Outcomes</h4>
-<p>Disparities in Cancer Screening: Minority women in Evanston and Chicago have lower rates of cervical cancer screening and higher mortality rates due to late-stage diagnosis (Benard et al., 2014). African American and Hispanic women are more likely to be diagnosed with advanced-stage cervical cancer, resulting in poorer prognoses (Rositch et al., 2014). This disparity highlights the need for outreach and education programs to improve screening rates. The FMIGS curriculum emphasizes the importance of proactive screening and early detection, training fellows to implement and advocate for community-based screening initiatives.</p>
-<p>Delayed Care Seeking: Cultural beliefs and mistrust in the healthcare system contribute to delays in seeking care, especially among underserved populations in Evanston and Chicago (Jacobs et al., 2014). Historical injustices and ongoing discrimination have led to skepticism towards medical institutions (Scharff et al., 2010). Addressing these factors through community engagement, culturally sensitive care, and building trust can improve timely access to necessary treatments. The fellowship program includes training on culturally sensitive communication, community outreach strategies, and methods to build trust with patients.</p>
-<p>Fellows’ Needs</p>
-<p>To effectively address the community needs outlined above, the FMIGS curriculum must cater to the comprehensive training requirements of its fellows, including advanced surgical skills, cultural competence, research capabilities, and professional development.</p>
-</div>
-<div class="sec">
-<h4>Proficiency in MIGS Techniques</h4>
-<p>Fellows require extensive training in advanced laparoscopic and robotic surgeries to manage complex gynecologic cases effectively (Advincula &amp; Wang, 2009). Mastery of these techniques is essential for minimizing surgical complications and improving patient outcomes, particularly in cases involving uterine fibroids and endometriosis prevalent in the communities served.</p>
-</div>
-<div class="sec">
-<h4>Exposure to a Diverse Case Mix</h4>
-<p>Training across various clinical settings with a wide range of gynecologic conditions enhances surgical competence and prepares fellows to handle diverse patient populations (Azziz et al., 2009). Exposure to different case types fosters adaptability and comprehensive clinical expertise.</p>
-</div>
-<div class="sec">
-<h4>Cultural Competence Training</h4>
-<p>Effective Communication Skills: The ability to communicate effectively with patients from diverse cultural backgrounds improves patient satisfaction and adherence to treatment plans (Betancourt et al., 2016). Training in cultural competence ensures that fellows can provide respectful and individualized care, addressing the unique cultural and linguistic needs of patients in Evanston and Chicago.</p>
-<p>Understanding Social Determinants of Health: Recognizing the impact of socioeconomic factors on health outcomes allows fellows to develop more comprehensive patient care plans (Artiga &amp; Hinton, 2018). This understanding is crucial for addressing the broader context of patients’ health and improving overall care quality, particularly in underserved communities.</p>
-</div>
-<div class="sec">
-<h4>Research Skills</h4>
-<p>Evidence-Based Practice: Training in research methodologies enables fellows to contribute to advancements in MIGS and address health disparities through evidence-based interventions (Sullivan, 2011). Engaging in research fosters critical thinking and continuous improvement in clinical practices.</p>
-<p>Focus on Health Disparities: Encouraging fellows to engage in research that explores and seeks to reduce disparities can lead to improved care for underserved populations (Braveman et al., 2011). This focus aligns with the program’s commitment to health equity and social responsibility.</p>
-</div>
-<div class="sec">
-<h4>Professional Development</h4>
-<p>Leadership Training: Developing leadership skills prepares fellows to advocate for patients and influence healthcare policies effectively (Blumenthal et al., 2012). Leadership training empowers fellows to drive positive changes within their institutions and the broader healthcare system.</p>
-<p>Teaching Skills: The ability to educate residents, medical students, and patients fosters the next generation of healthcare providers and promotes informed communities (Skeff et al., 2010). Teaching skills are essential for fellows to disseminate knowledge and best practices in MIGS.</p>
-</div>
-</section>
-<section class="ch" id="ch-6">
-<div class="ch-num">Chapter 6</div>
-<h3>Barriers to Transfer of Learning</h3>
-<p class="ch-lead">Identifying barriers to the transfer of learning from educational settings to clinical practice is essential for developing effective strategies to overcome them. Within the context of urban, diverse, and underserved healthcare environments, these barriers can be categorized into individual, organizational, and cultural/language-related challenges. Understanding and addressing these barriers will enhance the effectiveness of the FMIGS fellowship program and ensure that fellows can seamlessly integrate their acquired skills into clinical practice.</p>
-<p class="ch-lead">Individual Barriers</p>
-<div class="sec">
-<h4>Time Constraints</h4>
-<p>Heavy Clinical Workload: Fellows often juggle demanding clinical responsibilities alongside their educational activities. This dual burden can limit opportunities for focused learning and skill development, hindering the acquisition of advanced MIGS techniques (Lefebvre et al., 2016). Implementing structured scheduling and prioritizing educational activities within the fellowship program are necessary to mitigate this barrier. The FMIGS program adheres to the ACGME guideline that state “clinical and educational work hours must be limited to no more than 80 hours per week, averaged over a four-week period, inclusive of all in-house clinical and educational activities, clinical work done from home, and all moonlighting.</p>
-<p>Risk of Burnout: High levels of stress and fatigue are prevalent among fellows due to the intense nature of clinical duties combined with rigorous training requirements. Burnout can impair learning, reduce performance, and negatively impact overall well-being (Dyrbye et al., 2017). Incorporating wellness programs and providing mental health support can help alleviate burnout risks.</p>
-</div>
-<div class="sec">
-<h4>Skill Acquisition Challenges</h4>
-<p>Steep Learning Curve: Advanced MIGS techniques require significant practice and repetition. Inadequate exposure to these techniques within clinical rotations can hinder skill mastery (Donnellan et al., 2017). The FMIGS curriculum must ensure ample hands-on training opportunities through simulation labs and supervised surgical procedures to support skill acquisition.</p>
-<p>Confidence Levels: Fellows may experience a lack of confidence in applying new skills in real-world clinical settings, especially when dealing with complex cases prevalent in diverse and underserved communities (Bandura, 1997). Building confidence through incremental learning, mentorship, and supportive feedback is crucial for effective skill transfer.</p>
-<p>Organizational Barriers</p>
-</div>
-<div class="sec">
-<h4>Resource Limitations</h4>
-<p>Limited Access to Simulation, Cadaver Labs, Facilities: Although some institutions provide state-of-the-art surgical facilities, there may still be limitations in simulation resources specific to MIGS training (Stefanidis et al., 2013). Enhancing simulation-based training infrastructure is essential to provide fellows with the necessary environment to practice and refine their surgical skills.</p>
-<p>Financial Constraints: Budget limitations in community hospital programs can restrict access to essential educational materials, conferences, and advanced training opportunities (Curet et al., 2017). Securing funding through grants, partnerships, and institutional support is vital to ensure that fellows have access to comprehensive educational resources.</p>
-</div>
-<div class="sec">
-<h4>Systemic Challenges</h4>
-<p>Complex Healthcare Systems: Navigating intricate healthcare systems can pose challenges for fellows in implementing learned practices effectively (Woolf et al., 2015). Training on healthcare system navigation, including understanding referral processes and interdisciplinary collaboration, can enhance fellows&#x27; ability to apply their skills efficiently.</p>
-<p>Resistance to Change: Institutional culture and established practices may resist the adoption of new approaches or technologies, impeding the integration of advanced MIGS techniques (Grol et al., 2013). Promoting a culture of continuous improvement and encouraging innovation within healthcare settings can help overcome resistance to change.</p>
-<p>Cultural and Language Barriers</p>
-</div>
-<div class="sec">
-<h4>Communication Gaps</h4>
-<p>Language Differences: In underserved urban communities, a significant portion of patients are non-English speakers, primarily immigrants from diverse backgrounds. Communication difficulties can impede effective care delivery, making it challenging for fellows to apply their MIGS skills in a culturally competent manner (Diamond et al., 2019). Providing comprehensive language support services, including trained medical interpreters and multilingual educational materials, is essential for ensuring equitable care.</p>
-<p>Cultural Misunderstandings: Lack of cultural awareness among fellows may lead to misinterpretation of patient needs and preferences, affecting the quality of care (Betancourt et al., 2016). Incorporating cultural competence training into the FMIGS curriculum will enable fellows to better understand and respect the diverse cultural backgrounds of their patients, fostering more effective patient-provider interactions.</p>
-</div>
-<div class="sec">
-<h4>Patient Trust and Engagement</h4>
-<p>Mistrust in Healthcare Providers: Historical injustices and perceived discrimination contribute to mistrust among minority populations in urban settings (Cuevas et al., 2016). This mistrust can lead to reluctance in seeking care and adhering to treatment plans. Training fellows in building trust through compassionate, respectful, and transparent communication is crucial for improving patient engagement and outcomes.</p>
-<p>Health Literacy: Low health literacy affects patient understanding and adherence to treatment plans, especially in communities with diverse educational backgrounds (McCaffery et al., 2016). Fellows must be trained to assess and address health literacy levels, utilizing clear communication strategies and educational tools to enhance patient comprehension and involvement in their care. Fellows will begin to integrate social determinants of health (SDH) interviewing to assess for these barriers during history and intake.</p>
-</div>
-</section>
-<section class="ch" id="ch-7">
-<div class="ch-num">Chapter 7</div>
-<h3>Strategies to Improve Transfer of Learning</h3>
-<p class="ch-lead">The FMIGS fellowship curriculum has been specifically designed to address barriers to the transfer of learning from educational settings to clinical practice. By integrating evidence-based strategies targeting individual, organizational, and cultural challenges within diverse and underserved urban healthcare environments, the program ensures that fellows are equipped to effectively apply their knowledge and skills in clinical practice. This approach aims to improve patient outcomes and reduce health disparities (Wong et al., 2018).</p>
-<p class="ch-lead">Enhancing Individual Learning</p>
-<div class="sec">
-<h4>Dedicated Educational Blocks</h4>
-<p>Dedicated time blocks for education are built into the weekly schedule, ensuring that learning activities such as lectures, workshops, and case discussions are prioritized without interference from clinical duties. Structuring these sessions into rotation schedules allows for consistent and predictable learning opportunities. An annual educational calendar is distributed to fellows, outlining all scheduled activities to facilitate advanced planning alongside clinical responsibilities (Owen et al., 2018).</p>
-</div>
-<div class="sec">
-<h4>Enforcement of Work-Hour Policies</h4>
-<p>The program adheres strictly to duty-hour regulations to ensure that fellows have adequate rest and do not experience excessive workloads. Mandatory rest periods and time-off policies are enforced to mitigate burnout and enhance learning capacity. Studies have shown that compliance with duty-hour policies improves resident well-being without compromising patient care (Bolster &amp; Rourke, 2015). Flexible scheduling options, including adjusted shifts and part-time rotations, are available to accommodate individual needs and promote a healthy work-life balance (Goitein et al., 2015).</p>
-<p>Simulation-Based Training</p>
-</div>
-<div class="sec">
-<h4>High-Fidelity Simulation Technology</h4>
-<p>The curriculum incorporates advanced high-fidelity simulation training, providing fellows with access to state-of-the-art simulators that replicate real-life surgical scenarios. Regular simulation sessions allow fellows to continuously practice and refine their minimally invasive gynecologic surgery (MIGS) techniques in a controlled environment. Simulation-based education has been shown to enhance surgical skills and improve patient safety outcomes (Cook et al., 2011).</p>
-</div>
-<div class="sec">
-<h4>Structured Practice Sessions</h4>
-<p>Structured practice sessions are embedded in the curriculum, enabling fellows to perform specific surgical tasks under direct faculty supervision with immediate feedback. These sessions include hands-on workshops and cadaver dissections seminars offered nationally, offering practical, supported settings for skill development. Deliberate practice with feedback is essential for acquiring expert performance in surgical skills (Ericsson, 2004). Attendance of at least one specialized workshops over course of fellowship, such as those offered at national conferences, is required to ensure comprehensive skill acquisition.</p>
-<p>Mentorship and Coaching</p>
-</div>
-<div class="sec">
-<h4>Personalized Faculty Mentorship</h4>
-<p>Each fellow is paired with a dedicated faculty mentor who provides personalized guidance and support throughout the fellowship. Regular one-on-one mentorship meetings are scheduled, allowing mentors to offer feedback, discuss progress, and help fellows navigate clinical and personal challenges. Effective mentorship has been linked to increased job satisfaction, career advancement, and reduced burnout among medical trainees (Sambunjak et al., 2006).</p>
-</div>
-<div class="sec">
-<h4>Peer Learning and Collaboration</h4>
-<p>The curriculum emphasizes peer learning, encouraging collaboration among fellows through structured group study sessions and collaborative research projects. Fellows engage in peer feedback systems to review each other’s performance and share insights, fostering a supportive, team-based learning environment. Peer-assisted learning enhances knowledge acquisition and promotes critical thinking skills (Henning et al., 2008).</p>
-<p>Organizational Support</p>
-</div>
-<div class="sec">
-<h4>Resource Allocation</h4>
-<p>Investment in Educational Resources: The fellowship provides access to comprehensive educational materials, including textbooks, online courses, and surgical manuals. Simulation labs are fully equipped with essential MIGS equipment such as laparoscopic trainers and instruments, and the program will aim to continually invest in upgrading surgical equipment and educational technologies when able. Access to high-quality educational resources is crucial for effective learning and skill development (Leung et al., 2010).</p>
-<p>Funding for Professional Development: Financial support is provided to fellows for attending regional and national conferences and specialized training opportunities suchas Global Congress of the AAGL, Bootcamp and attendance at the FMIGS webinars. Research associated costs (e.g., IRB, equipment,</p>
-<ul>
-<li>publication) will also be funded by the fellowship. Aligning continuing education opportunities with fellows’ career goals ensures they have the resources needed to excel (Straus et al., 2013).</li>
-</ul>
-<p>Curriculum Design</p>
-</div>
-<div class="sec">
-<h4>Incorporation of Self-Directed Learning</h4>
-<p>The curriculum incorporates self-directed learning modules, allowing fellows to pursue topics of interest at their own pace. Autonomy in learning fosters independent, lifelong learning and has been associated with improved educational outcomes (Murad et al., 2010).</p>
-</div>
-<div class="sec">
-<h4>Problem-Based Learning Approaches</h4>
-<p>Problem-based learning is a core component of the curriculum. Fellows engage in case-based discussions and simulations that mirror real-world clinical problems, facilitating active learning and critical thinking. This approach enhances retention and application of new knowledge (Dolmans et al., 2005).</p>
-</div>
-<div class="sec">
-<h4>Interprofessional Education</h4>
-<p>The program incorporates interprofessional education sessions where fellows collaborate with healthcare professionals from other disciplines, such as anesthesiology, nursing, and radiology. Joint training exercises simulate multidisciplinary care scenarios, promoting teamwork and improving patient care outcomes. Interprofessional education has been shown to improve collaborative practice and patient outcomes (Reeves et al., 2016).</p>
-<p>Addressing Cultural and Language Barriers</p>
-</div>
-<div class="sec">
-<h4>Cultural Awareness Workshops</h4>
-<p>The curriculum encourages attendance to any hospital-sponsored workshops focused on cultural competence, addressing unconscious bias, and promoting sensitivity to patients’ diverse backgrounds. Fellows are encouraged to receive formal training in culturally tailored communication strategies, equipping them to effectively engage with patients from various cultural backgrounds. Cultural competence training improves patient satisfaction and healthcare outcomes (Lie et al., 2011).</p>
-</div>
-<div class="sec">
-<h4>Enhanced Language Services</h4>
-<p>Language services are available to support communication with non-English-speaking patients. Multilingual educational materials ensure patients have access to accurate, understandable information regarding their care. Fellows are encouraged to participate in language training relevant to the patient populations they serve, enhancing their communication abilities. Providing interpreter services improves clinical care for patients with limited English proficiency (Karliner et al., 2007).</p>
-</div>
-<div class="sec">
-<h4>Community Engagement</h4>
-<p>Partnerships with Community Organizations: The program will invest effort and resources in establishing partnerships with local cultural centers, advocacy groups, and public health agencies to support community-based initiatives. These partnerships provide fellows with opportunities to engage in outreach activities, including health education and preventive screenings within underserved communities. Community engagement is essential for addressing health disparities and promoting public health (Wallerstein &amp; Duran, 2010).</p>
-<p>Patient Education Programs: Culturally tailored patient education materials are integrated into the clinical setting to address health literacy barriers. Fellows are trained in delivering patient counseling and education focusing on gynecologic conditions, treatment options, and prevention strategies. Improving health literacy is linked to better health outcomes and patient empowerment (Paasche-Orlow &amp; Wolf, 2007).</p>
-</div>
-<div class="sec">
-<h4>Evidence-Based Communication Strategies</h4>
-<p>Teach-Back Method Implementation: The program trains fellows in the teach-back method, ensuring patients understand their diagnoses and treatment plans. Fellows apply this method during patient encounters, with faculty observation and feedback to ensure proper execution. The teach-back method improves patient comprehension and adherence to treatment (Ha Dinh et al., 2016).</p>
-<p>Motivational Interviewing Techniques: Motivational interviewing is integrated into the curriculum to enhance patient engagement and adherence to treatment plans. Fellows are encouraged to participate in role-playing exercises with faculty, residents, and/or allied health professionals to practice these techniques and receive performance feedback. These skills are applied during patient consultations to foster effective, patient-centered communication. Motivational interviewing has been effective in eliciting behavior change and improving health outcomes (Lundahl et al., 2013).</p>
-<p>System-Level Interventions</p>
-<p>Development of Quality Improvement and Clinical Pathways and Protocols</p>
-<p>The curriculum includes standardized clinical pathways and protocols for common gynecologic procedures and conditions. Fellows are trained in applying these pathways through workshops and hands-on practice sessions, ensuring they implement evidence-based practices in clinical care. Standardized protocols reduce variability in care and improve patient outcomes (Panella et al., 2003). Outcomes are monitored using key performance indicators such as complication rates, procedure times, and patient satisfaction, with regular evaluations for continuous improvement.</p>
-</div>
-<div class="sec">
-<h4>Data-Driven Decision Making</h4>
-<p>Data collection systems are in place to capture relevant clinical and operational data. Fellows participate in regular data review meetings to analyze trends, identify gaps, and apply insights to improve clinical outcomes. This continuous feedback loop between data analysis and clinical practice enhances quality of care (Berwick, 2008).</p>
-<p>Policy Advocacy</p>
-</div>
-<div class="sec">
-<h4>Social Determinants of Health Advocacy</h4>
-<p>The program integrates advocacy training focusing on addressing social determinants of health. Fellows actively participate in projects aimed at reducing health disparities in their communities. They engage with policymakers at local and state levels, presenting data-driven proposals to improve healthcare access and outcomes for underserved populations. Physician advocacy is vital for advancing public health and promoting equitable healthcare (Gruen et al., 2006).</p>
-</div>
-<div class="sec">
-<h4>Implementation of Health Equity Initiatives</h4>
-<p>Health equity initiatives are embedded throughout the fellowship curriculum. Fellows work on projects focused on equitable resource allocation, addressing bias in healthcare, and improving access to specialized surgical care for underserved populations. Monitoring these initiatives through key performance indicators ensures the program meets its goals in reducing health disparities (Braveman et al., 2011).</p>
-</div>
-</section>
-<section class="ch" id="ch-8">
-<div class="ch-num">Chapter 8</div>
-<h3>Program Mission Statement, Goals and Objectives</h3>
-<p class="ch-lead">Mission Statement</p>
-<p class="ch-lead">The mission of the Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) at PRIME Saint Francis Hospital is to provide an advanced, competency-based educational experience that prepares gynecologic surgeons to become leaders in complex benign gynecologic surgery, surgical innovation, research, and community health advocacy. The fellowship emphasizes equity-driven care, ensuring that trainees develop expertise in addressing disparities in gynecologic healthcare, implementing evidence-based minimally invasive surgical techniques, and engaging in high-quality research that advances the field.</p>
-<p class="ch-lead">Through a combination of didactic learning, hands-on surgical training, and scholarly research, FMIGS fellows will be prepared to:</p>
-<p class="ch-lead">Enhance patient care by implementing cutting-edge surgical techniques in minimally invasive gynecologic surgery.</p>
-<p class="ch-lead">Serve as clinical experts and consultants in the medical and surgical management of complex benign gynecologic conditions.</p>
-<p class="ch-lead">Contribute to the field through research and innovation, advancing the scientific knowledge of minimally invasive gynecologic procedures.</p>
-<p class="ch-lead">Train and mentor future generations of gynecologic surgeons through academic and professional development initiatives.</p>
-<p class="ch-lead">Overall Program Goals</p>
-<p class="ch-lead">The FMIGS program is structured to ensure that fellows achieve the highest standards in surgical proficiency, clinical excellence, research, and leadership. The program actively integrates evidence-based practices and relevant literature to address disparities in gynecologic health, particularly in underserved communities. Each of these goals is actively supported by evidence-based practices and relevant literature to ensure that FMIGS fellows are equipped to address the multifaceted challenges in gynecologic health, particularly within underserved communities.</p>
-<div class="sec">
-<h4>Clinical Excellence</h4>
-<p>Proficiency in Advanced MIGS Techniques: Fellows will attain proficiency in advanced minimally invasive gynecologic surgical techniques, including laparoscopic hysterectomy, laparoscopic myomectomy, advanced hysteroscopic procedures, and excision of deep infiltrating endometriosis (Donnellan et al., 2017). Fellows will develop expertise in robotic surgery and retroperitoneal dissection, applying best practices for nerve-sparing and fertility-preserving approaches.</p>
-<p>High-Quality Patient Care: Fellows will implement evidence-based protocols to optimize perioperative care, postoperative recovery, and surgical outcomes. Standardized clinical pathways and continuous quality improvement initiatives will enhance patient safety and satisfaction (Rotter et al., 2010). Fellows will train as consultants and collaborate with interdisciplinary teams, including urogyn, colorectal, bariatric, and gyn oncology specialists, to manage complex benign gynecologic cases.</p>
-</div>
-<div class="sec">
-<h4>Community Impact</h4>
-<p>Resource for Underserved Patients: FMIGS fellows serve as specialized providers in community clinics, increasing access to advanced gynecologic care for underserved populations and reducing health disparities (Braveman et al., 2011).</p>
-<p>Community Outreach: Participation in health fairs, screening events, and educational workshops enhances community health literacy and preventive care, fostering stronger community relationships (Anderson et al., 2015).</p>
-<p>Health Education and Advocacy: Fellows will integrate health education and advocacy training to empower patients, addressing specific health literacy needs within communities (Ha Dinh et al., 2016).</p>
-<p>Collaboration with Community Organizations: Fellows will partner with local cultural centers and public health agencies to facilitate targeted health initiatives, including preventive screenings and educational campaigns to improve women’s health outcomes (Koh et al., 2012).</p>
-</div>
-<div class="sec">
-<h4>Professional Development</h4>
-<p>Leadership and Ethical Practice: Leadership training modules and ethical decision-making workshops will cultivate leadership skills, preparing fellows to lead multidisciplinary teams effectively (Betancourt et al., 2016).</p>
-<p>Educators and Mentors: Fellows will engage in structured teaching roles with medical students, residents, and allied health professionals to develop mentorship skills and foster a culture of continuous learning within the program (Blumenthal et al., 2012).</p>
-</div>
-<div class="sec">
-<h4>Research</h4>
-<p>Advancing Health Disparities and MIGS Techniques: The program encourages fellows to conduct research focused on health disparities and innovative MIGS techniques, when able, contributing valuable insights and advancements to the field (Sullivan, 2011).</p>
-<p>Scholarly Dissemination Fellows are required to submit their research findings for presentation at a national meeting and aim for publication in a peer-reviewed journal. Fellows are supported in publishing their research and presenting at conferences, enhancing their professional profiles and disseminating knowledge to broader audiences (Goldman et al., 2015).</p>
-</div>
-</section>
-<section class="ch" id="ch-9">
-<div class="ch-num">Chapter 9</div>
-<h3>Core Educational Objectives</h3>
-<p class="ch-lead">The FMIGS program is committed to providing fellows with a comprehensive educational experience that emphasizes:</p>
-<p class="ch-lead">1. Medical Knowledge</p>
-<p class="ch-lead">Develop a thorough understanding of pelvic anatomy, physiology, and pathology relevant to benign gynecologic conditions.</p>
-<p class="ch-lead">Master the principles and applications of energy sources, instrumentation, and emerging surgical technologies in minimally invasive surgery.</p>
-<p class="ch-lead">Gain expertise in diagnosing and managing complex surgical complications, including ureteral injury, bladder injury, bowel injury, and massive hemorrhage.</p>
-<p class="ch-lead">2. Patient Care</p>
-<p class="ch-lead">Conduct comprehensive preoperative evaluations, optimizing patient selection and surgical planning.</p>
-<p class="ch-lead">Demonstrate proficiency in robotic-assisted laparoscopic procedures, hysteroscopic interventions, and advanced excisional techniques.</p>
-<p class="ch-lead">Implement enhanced recovery after surgery (ERAS) protocols, optimizing perioperative management to improve patient outcomes.</p>
-<p class="ch-lead">3. Research and Evidence-Based Practice</p>
-<p class="ch-lead">Develop critical appraisal skills to evaluate scientific literature and integrate evidence-based practice into clinical decision-making.</p>
-<p class="ch-lead">Complete at least one IRB-approved research project, with the expectation of submission to a peer-reviewed journal.</p>
-<p class="ch-lead">Engage in quality improvement initiatives, contributing to advancements in MIGS surgical techniques and patient care.</p>
-<p class="ch-lead">4. Teaching and Professional Development</p>
-<p class="ch-lead">Participate in resident, medical student education, and allied-health partners delivering structured didactic sessions, surgical mentorship, and skills-based workshops.</p>
-<p class="ch-lead">Gain experience in academic writing, oral presentations, and peer collaboration, preparing for leadership roles in medical education, hospital administration, and research.</p>
-<p class="ch-lead">5. Professionalism and Ethical Practice</p>
-<p class="ch-lead">Uphold the highest standards of ethical patient care, emphasizing informed consent, shared decision-making, and patient advocacy.</p>
-<p class="ch-lead">Demonstrate collegiality, integrity, and accountability in all professional interactions.</p>
-<p class="ch-lead">Maintain compliance with FMIGS accreditation requirements, institutional policies, and AAGL guidelines.</p>
-</section>
-<section class="ch" id="ch-10">
-<div class="ch-num">Chapter 10</div>
-<h3>Curriculum Structure</h3>
-<p class="ch-lead">The FMIGS fellowship curriculum is structured to provide comprehensive education and training over two years following the completion of an obstetrics and gynecology residency (AAGL, 2020). The curriculum integrates clinical training, research, and innovative educational strategies to ensure fellows achieve clinical excellence, make meaningful community impacts, develop professionally, contribute to research, and engage in educational outreach. Each component is designed to ensure fellows gain proficiency in advanced minimally invasive gynecologic procedures, technological advancements, and evidence-based patient care.</p>
-<p class="ch-lead">Duration</p>
-<div class="sec">
-<h4>Total Duration</h4>
-<p>Two years of continuous education and training post-residency with at least 20 months of unrestricted clinical training dedicated to minimally invasive gynecologic surgery (MIGS), encompassing diverse clinical rotations. All fellows will be required to start on August 1st. If an alternate start date is needed for administrative or personal reasons, FMIGS Board must be notified and requested for final approval which may incur an administrative fee.</p>
-<p>Research:</p>
-<p>Protected time for conducting research projects and engaging in scholarly activities that address community health needs and advance the field of MIGS. Each fellow is expected to complete a research project aimed at addressing health disparities, improving surgical outcomes, or other related topics relevant to the field of MIGS.</p>
-<p>Curriculum components</p>
-<p>The FMIGS fellowship curriculum integrates modern educational innovations rooted in adult learning theory, competency-based education, and surgical teaching practices. By emphasizing hands-on simulation, technology-enhanced learning, evidence-based strategies, personalized coaching, and competency-based assessments, the program ensures fellows develop the technical and professional skills necessary for excellence in minimally invasive gynecologic surgery. Each curriculum component is meticulously aligned with FMIGS educational objectives, supported by relevant literature, and designed for seamless implementation by educators and fellows.</p>
-</div>
-<div class="sec">
-<h4>Clinical Rotations</h4>
-<p>Hands-on experience in diverse clinical settings under faculty supervision. Rotations will include specialized experiences in colorectal, urology, and reproductive surgery to enhance multidisciplinary collaboration</p>
-</div>
-<div class="sec">
-<h4>Diverse Experiences</h4>
-<p>Fellows undergo rotations at core sites, exposing them to a wide range of cases and patient populations in multiple surgical specialties, thereby enhancing clinical versatility and adaptability (Braveman et al., 2011).</p>
-</div>
-<div class="sec">
-<h4>Didactic Learning</h4>
-<p>Utilization of AAGL/SGS/ACOG/ETC online resources for formal lecture-based learning, allowing integration of knowledge from national experts through weekly online lectures. Fellows will actively engage in journal clubs, case discussions, and live-streamed surgical education sessions.</p>
-</div>
-<div class="sec">
-<h4>Structured Educational Sessions</h4>
-<p>Regular lectures, workshops, case-based learning, and seminars covering essential MIGS topics and related fields. Advanced topics such as complex retroperitoneal dissections, robotic-assisted techniques, and interdisciplinary surgical management will be emphasized.</p>
-</div>
-<div class="sec">
-<h4>Simulation Training</h4>
-<p>Use of laparoscopic box trainers, AI-based models, and 3D printing for scenario-based surgical simulations. New additions include virtual reality-based surgical training modules and tele-mentoring/recorded surgeries for enhanced remote learning opportunities.</p>
-</div>
-<div class="sec">
-<h4>Technology and Innovation</h4>
-<p>Integration and application of emerging technologies such as AI and 3D surgical simulations to enhance technical skill proficiency where appropriate (Higgins et al., 2021). Integration of augmented reality (AR) platforms will allow fellows to practice advanced surgical approaches before live patient procedures. Knowledge and skills in development of 3D printing in SIM training, patient education, and preoperative planning will be encouraged during the fellowship.</p>
-</div>
-<div class="sec">
-<h4>Research and Scholarly Activity</h4>
-<p>Emphasis on health disparities and innovative MIGS techniques, contributing to the advancement of the field (Sullivan, 2011). Fellows will participate in multi-institutional research collaborations and quality improvement initiatives targeting enhanced surgical safety.</p>
-</div>
-<div class="sec">
-<h4>Mentorship</h4>
-<p>Structured mentorship with faculty advisors for continuous guidance and professional growth. Dedicated research and clinical mentors will ensure fellows achieve competency in independent surgical practice and scholarly contributions.</p>
-</div>
-<div class="sec">
-<h4>Formative Assessments</h4>
-<p>Periodic assessments through case evaluations, surgical performance reviews, and competency-based evaluations (Ahmed et al., 2021). Competency tracking will be enhanced through standardized assessments and surgical video reviews.</p>
-</div>
-<div class="sec">
-<h4>Professional Development</h4>
-<p>Fellows will engage in leadership, teaching, and advocacy training through workshops, national conferences, and mentorship programs. Fellows will develop public speaking and communication skills essential for academic leadership and professional advocacy through lectures and grand rounds with sponsored OBGYN residency program and affiliates.</p>
-</div>
-<div class="sec">
-<h4>Community Engagement and Outreach</h4>
-<p>Active participation in health education initiatives, screenings, and partnerships with underserved communities (Anderson et al., 2015). Expanded partnerships with public health organizations will ensure fellows contribute to initiatives aimed at reducing gynecologic health disparities.</p>
-<p>ACGME Curriculum Core Competencies</p>
-<p>The curriculum objectives outlined align with the ACGME Core Competencies and FMIGS Educational Objectives, which are critical in ensuring that fellows in the FMIGS program develop the necessary skills to become competent, ethical, and effective minimally invasive gynecologic surgeons.</p>
-</div>
-<div class="sec">
-<h4>1. Medical Knowledge (MK)</h4>
-<p>MK1: Demonstrate in-depth understanding of pelvic anatomy and pathophysiology</p>
-<p>Deep knowledge of pelvic anatomy and related pathophysiology is essential for the safe and effective performance of minimally invasive gynecologic surgeries. This understanding allows fellows to navigate complex anatomical areas, such as those involved in endometriosis or pelvic organ prolapse surgeries.</p>
-<p>MK2: Stay current with advancements in MIGS and apply evidence-based practices.</p>
-<p>The field of Minimally Invasive Gynecologic Surgery (MIGS) is constantly evolving with new techniques and technologies, such as robotics and laparoscopy. Staying updated on advancements allows fellows to incorporate the latest, evidence-based practices into patient care, leading to better outcomes.</p>
-<p>MK3: Understand the epidemiology and management of gynecologic conditions prevalent in the communities served.</p>
-<p>Understanding the epidemiology of gynecologic conditions in specific populations ensures that care is tailored to the patient population, addressing prevalent conditions like fibroids, ovarian cysts, and endometriosis. This is key to providing effective, population-specific healthcare.</p>
-</div>
-<div class="sec">
-<h4>2. Patient Care (PC)</h4>
-<p>PC1: Provide compassionate, appropriate, and effective patient care.</p>
-<p>Compassion and appropriateness in care are essential to developing trusting relationships with patients. Patient-centered care improves patient satisfaction and adherence to treatment plans, leading to better outcomes</p>
-<p>PC2: Perform advanced MIGS procedures with proficiency and safety</p>
-<p>Surgical proficiency ensures that fellows are able to perform advanced procedures such as laparoscopic hysterectomies, myomectomies, and endometriosis excision with minimal complications. Safety is paramount to reduce morbidity and mortality associated with surgeries.</p>
-<p>PC3: Develop individualized patient care plans addressing social determinants of health.</p>
-<p>Recognizing and addressing social determinants of health, such as socioeconomic status, access to care, and education, allows for a more holistic approach to patient care. This leads to personalized treatment plans that can improve health outcomes, especially for underserved populations.</p>
-</div>
-<div class="sec">
-<h4>3. Practice-Based Learning and Improvement (PBLI)</h4>
-<p>PBLI1: Engage in continuous self-assessment and reflective practice</p>
-<p>Reflective practice encourages fellows to assess their own performance and seek continuous improvement, which is crucial for lifelong learning. This skill helps surgeons stay adaptable and improve their techniques over time.</p>
-<p>PBLI2: Utilize quality improvement methodologies to enhance patient care</p>
-<p>Incorporating quality improvement methodologies (like Plan-Do-Study-Act cycles) enables fellows to systematically assess and enhance the care they provide, leading to higher standards of clinical care and improved patient outcomes.</p>
-<p>PBLI3: Incorporate feedback to improve clinical performance</p>
-<p>Actively seeking and using feedback from mentors, peers, and patients fosters an environment of growth and improvement. This is crucial in refining surgical techniques and communication skills.</p>
-</div>
-<div class="sec">
-<h4>4. Interpersonal and Communication Skills (ICS)</h4>
-<p>ICS1: Communicate effectively with patients, families, and healthcare teams</p>
-<p>Strong communication skills are essential for ensuring that patients fully understand their diagnoses, treatment options, and postoperative care instructions. Effective team communication is also critical for safe and coordinated care, especially during surgeries</p>
-<p>ICS2: Demonstrate cultural competence in interactions with diverse populations</p>
-<p>Cultural competence helps fellows navigate cultural differences and language barriers, improving trust and rapport with patients from diverse backgrounds. It is critical in reducing health disparities and ensuring equitable care.</p>
-<p>ICS3: Educate patients and communities about gynecologic health</p>
-<p>Patient education empowers individuals to take an active role in their health, leading to better preventive care and adherence to treatment plans. Public education also helps raise awareness of important issues like cancer screening and reproductive health.</p>
-</div>
-<div class="sec">
-<h4>5. Professionalism (PROF)</h4>
-<p>PROF1: Uphold ethical principles and professional responsibilities</p>
-<p>Ethical practice is the foundation of trust between healthcare providers and patients. Upholding ethical principles, such as confidentiality, informed consent, and patient autonomy, ensures that care is patient-centered and ethically sound.</p>
-<p>PROF2: Demonstrate respect, compassion, and integrity</p>
-<p>Respect, compassion, and integrity are essential for building strong therapeutic relationships with patients. These qualities also foster a positive work environment and are necessary for team-based care.</p>
-<p>PROF3: Advocate for patient access, equity, and quality care</p>
-<p>Fellows must be advocates for their patients, ensuring they receive high-quality care regardless of their background. This includes advocating for better access to care for underserved populations, addressing inequities, and ensuring patients have the necessary resources to receive appropriate treatment.</p>
-</div>
-<div class="sec">
-<h4>6. Systems-Based Practice (SBP)</h4>
-<p>SBP1: Understand and navigate healthcare systems to optimize patient care</p>
-<p>Knowledge of healthcare systems (insurance, hospital systems, care coordination) allows fellows to navigate these structures efficiently, ensuring that patients receive timely, cost-effective care without unnecessary delays or barriers.</p>
-<p>SBP2: Collaborate with community resources to address patient needs</p>
-<p>Working with community organizations helps address non-medical factors that impact health, such as housing, nutrition, and social support. This collaboration is particularly important for vulnerable populations that may face significant barriers to care.</p>
-<p>SBP3: Recognize and address health disparities and social determinants of health</p>
-<p>Fellows need to be aware of health disparities that affect different populations and work to minimize these disparities through individualized care, outreach, and advocacy. Addressing social determinants of health leads to more comprehensive, equitable care.</p>
-<ul>
-<li>10. Instructional Plan Model</li>
-</ul>
-<p>Learning Strategies:</p>
-</div>
-<div class="sec">
-<h4>Self-Directed Learning</h4>
-<p>Fellows create personalized learning plans, engage with the FMIGS Core Reading List, and attend relevant conferences to address individual knowledge gaps (Knowles et al., 2015). E-learning platforms, including SurgeryU and interactive self-assessment quizzes, will supplement traditional learning strategies.</p>
-</div>
-<div class="sec">
-<h4>Experiential Learning</h4>
-<p>Hands-on clinical rotations and simulation-based environments facilitate real-time learning and skill application, following Kolb’s experiential learning model (Kolb, 2014). Fellows are encouraged to engage in structured self-reflective debriefing sessions after surgical cases to reinforce skill acquisition and clinical decision-making.</p>
-</div>
-<div class="sec">
-<h4>Collaborative Learning</h4>
-<p>Monthly case conferences, journal clubs, and research meetings promote peer collaboration and collective problem-solving (Johnson &amp; Johnson, 2009). Multi-institutional collaboration will be encouraged to broaden exposure to advanced surgical techniques.</p>
-</div>
-<div class="sec">
-<h4>Relevance and Practicality</h4>
-<p>Curriculum alignment with clinical practice through problem-based learning and case studies ensures practical application of knowledge (Merriam &amp; Bierema, 2013). Fellows are encouraged to integrate case-based studies to be associated with fellows&#x27; actual operative experiences, integrating real-world applications.</p>
-</div>
-<div class="sec">
-<h4>Leveraging Prior Experience</h4>
-<p>Building on residency training with peer teaching and customized teaching approaches tailored to fellows&#x27; backgrounds (Knowles et al., 2015).</p>
-</div>
-<div class="sec">
-<h4>Goal-Oriented Learning</h4>
-<p>Clear, measurable learning objectives and outcome-based assessments ensure focused and effective learning (Knowles et al., 2015). Competency-based progression ensures that fellows advance at an appropriate pace based on demonstrated mastery of skills. The FMIGS Milestones assessment (Appendix) will ensure learning objectives align with the fellows’ evolving competency levels. These milestones aim to provide a framework for assessment of the essential skills and knowledge expected of a participant graduating from the fellowship and aid in the identification of any surgical or educational deficiencies with ample time for remediation. These milestones are not designed to cover all aspects of benign gynecologic surgery, but rather to help ensure that fellows graduating from each program will achieve competency with key surgical and clinical skills.</p>
-</div>
-<div class="sec">
-<h4>Collaborative Learning Environment</h4>
-<p>Promotes teamwork through interdisciplinary collaboration and group learning activities, fostering a supportive educational atmosphere (Johnson &amp; Johnson, 2009). Integration of interprofessional learning sessions with nursing, anesthesiology, and surgical subspecialties will enhance collaborative care models.</p>
-<p>Key Adult Learning Theories Integrated into the Curriculum:</p>
-</div>
-<div class="sec">
-<h4>Adult Learning Theory (Andragogy)</h4>
-<p>This theory emphasizes that adults learn best when they are involved in planning their learning and when the learning is relevant to their experiences and needs. According to Knowles (1984), adult learning is characterized by self-directed learning, where learners take the initiative in diagnosing their learning needs, formulating goals, identifying resources, and evaluating outcomes. Knowles (1984) also emphasizes that adults bring a wealth of life experience that they integrate into their learning process, using these experiences as a foundation for absorbing new knowledge. Moreover, adults tend to be motivated by the practical application of knowledge, especially when it relates directly to solving real-life problems or improving their personal and professional lives (Knowles, 1984). The FMIGS curriculum incorporates self-directed learning, problem-solving exercises, and interactive case-based teaching strategies to optimize adult learning outcomes.</p>
-</div>
-<div class="sec">
-<h4>Experiential Learning Theory (Kolb)</h4>
-<p>This theory posits that learning occurs through experience and reflection. In medical education, this would manifest in case-based learning, simulation activities, and hands-on clinical practice. Kolb’s (1984) experiential learning theory argues that learning is a continuous process grounded in experience. Kolb (1984) outlines a four-stage learning cycle: concrete experience, reflective observation, abstract conceptualization, and active experimentation. Learners move through these stages by first having a direct experience, reflecting on it, conceptualizing what they have learned, and then applying this new knowledge in practical scenarios. According to Kolb (1984), this process is iterative and builds upon the learner’s previous experiences. Simulation training, surgical video review, and post-operative debriefing sessions follow this model, reinforcing skill acquisition through direct experience and reflection.</p>
-</div>
-<div class="sec">
-<h4>Constructivism</h4>
-<p>This theory focuses on learners constructing their own understanding and knowledge of the world through experiences and reflecting on those experiences. Constructivist learning theory posits that individuals actively construct knowledge by interacting with their environment and building on prior knowledge. Piaget (1972) and Vygotsky (1978) both contributed to the understanding of constructivism, emphasizing that learners actively create their understanding based on personal experiences and that learning is a social process influenced by interactions with others. This theory encourages learners to become active participants in their learning rather than passive recipients of information (Piaget, 1972; Vygotsky, 1978). The FMIGS program applies this by integrating problem-based learning, surgical case discussions, and research-focused inquiry to encourage critical thinking.</p>
-</div>
-<div class="sec">
-<h4>Transformational Learning</h4>
-<p>This theory explains how critical reflection on one’s beliefs and experiences can lead to a profound change in perspective, which is important in fields like palliative care where end-of-life considerations challenge many existing beliefs. Mezirow’s (1991) theory of transformational learning describes how adults can experience deep shifts in their worldview through critical reflection. According to Mezirow (1991), transformational learning occurs when individuals critically examine their assumptions and beliefs, leading to a fundamental change in their perspectives and behaviors. This theory highlights the importance of discourse and reflection in fostering transformative learning experiences that can significantly alter an individual’s approach to life and work (Mezirow, 1991). This is applied in structured feedback sessions, ethical decision-making workshops, and patient-centered care discussions.</p>
-</div>
-<div class="sec">
-<h4>Social Learning Theory</h4>
-<p>Emphasizing learning through observation and interaction with others, this theory may be used in settings like interdisciplinary team-based care in hospice education. Bandura’s (1977) social learning theory emphasizes the role of observational learning, imitation, and modeling in behavior acquisition. According to Bandura (1977), individuals learn by observing the actions of others and the consequences that follow, integrating these observations into their behavior. This theory underscores the significance of social interaction and environmental factors in shaping an individual’s learning processes and behaviors. Fellows will participate in interdisciplinary surgical teams, observational learning through mentor shadowing, and peer-assisted learning models.</p>
-<p>Innovations in Surgical Fellowship Teaching</p>
-</div>
-<div class="sec">
-<h4>Advanced Simulators (Pending funding)</h4>
-<p>Incorporation of AI ‘assistants’ to create a conversational and interactive learning tool that is aimed at enhancing problem solving, reference, research, technical skills and procedural retention (Higgins et al., 2021; Ahmed et al., 2021).</p>
-</div>
-<div class="sec">
-<h4>3D Imaging and printing and AI (Pending funding)</h4>
-<p>Utilization of 3D printing and AR tools provides immersive learning experiences, reducing patient risk during training (Ahmed et al., 2021).</p>
-</div>
-<div class="sec">
-<h4>Technology-Enhanced Learning (TEL)</h4>
-<p>E-Learning Platforms: Secure platforms like SurgeryU host surgical videos, interactive case reviews, and self-assessment quizzes, facilitating flexible, self-paced learning (Frontiers in Surgery, 2024; Knowles, 1984).</p>
-<p>Video-Assisted Surgeries: Access to recorded procedures allows fellows to review and learn at their convenience, aligning with adult learning theories emphasizing autonomy (Frontiers in Surgery, 2024). Real-time telementoring will be integrated into surgical education, allowing faculty oversight during procedures remotely.</p>
-<p>Evidence-Based Learning Strategies</p>
-</div>
-<div class="sec">
-<h4>Retrieval and Interleaved Practice</h4>
-<p>Implementation of retrieval practice and interleaved practice sessions enhances long-term knowledge retention and adaptability in surgical decision-making (Roediger &amp; Karpicke, 2006; Rohrer et al., 2020).</p>
-<p>Coaching and Mentorship Models</p>
-</div>
-<div class="sec">
-<h4>Academic Coaching</h4>
-<p>Personalized coaching improves performance by providing individualized feedback and fostering self-directed learning, aligning with adult learning principles (Richards et al., 2022).</p>
-<p>Competency-Based Education (CBE)</p>
-</div>
-<div class="sec">
-<h4>Tailored Learning Pathways</h4>
-<p>Focus on skill mastery through competency checklists and proficiency assessments ensures fellows achieve essential surgical competencies before advancing (Ahmed et al., 2021). FMIGS milestones tracking (Appendix) ensures objective evaluation of fellow progression.</p>
-<p>Adult Learning Theory and Zone of Proximal Development (ZPD)</p>
-</div>
-<div class="sec">
-<h4>Guided Skill Development</h4>
-<p>Training within the ZPD framework ensures fellows perform procedures under structured supervision, gradually achieving independent proficiency (Richards et al., 2022). Progression from observation to active participation is tailored to each fellow’s competency level.</p>
-</div>
-<div class="sec">
-<h4>Learning Resources</h4>
-<p>FMIGS Core Reading List: Essential readings mandated by FMIGS Board integrated into the curriculum structure and topics (See Appendix)</p>
-<p>Online Resources: Framework for structuring learning goals and assessments. (See Appendix)</p>
-<p>Online Databases and Journals: Access to current research and evidence-based guidelines.</p>
-<p>Simulation Labs: Equipped with laparoscopic box trainers, 3D printing (in progress), and imaging modalities.</p>
-<p>Education Technology: Use of learning management systems and online modules with integration of AI-enhanced training tools.</p>
-<p>Research Initiatives: Use of RedCap, eIRB for data collection and clinical trial participation.</p>
-</div>
-</section>
-<section class="ch" id="ch-11">
-<div class="ch-num">Chapter 11</div>
-<h3>Clinical Rotations</h3>
-<p class="ch-lead">Core Sites:</p>
-<p class="ch-lead">SFH (St. Francis Hospital)</p>
-<p class="ch-lead">SJH (St. Joseph Hospital)</p>
-<p class="ch-lead">SMH (Saint Mary Hospital)</p>
-<div class="sec">
-<h4>Rotation Highlights</h4>
-<p>Research / MIGS Rotation (Year 1): Develop MIGS skills and engage in research projects under Dr. Tam and Dr. Lloyd.</p>
-<p>Urogynecology / MIGS Rotation (Years 1 &amp; 2): Gain comprehensive experience in pelvic floor procedures with Dr. Siddique and Dr. Tomezsko, alongside MIGS training with Dr. Tam.</p>
-<p>Multidisciplinary Rotation (Year 1 at SMH): Exposure to Colorectal Surgery, Urology, and Gynecologic Oncology with specialists in each field.</p>
-<p>MIGS Clinic (Year 1): Focus on outpatient MIGS procedures and patient management with Dr. Tam at TMH.</p>
-<p>MIS / Bariatric / Urogynecology Rotation (Year 2): Advanced surgical training in MIS and Bariatrics with Dr. Giannotti and Dr. Zhu.</p>
-<p>Elective / MIGS Rotation (Year 2): Opportunity to tailor your fellowship experience, focusing on specific interests within MIGS.</p>
-<p>Gynecologic Oncology Rotation (Year 2 at SMH): In-depth training in Gynecologic Oncology and related surgeries with Dr. Munns and team.</p>
-</div>
-<div class="sec">
-<h4>Rotation Guidelines</h4>
-<p>Core Specialties Priority: Focus on rotations with preceptors whose specialties align with the rotation headline.</p>
-<p>Hospital Affiliations: Preceptors are scheduled only at hospitals where they practice.</p>
-<p>Flexibility: If core rotation cases are unavailable, MIGS Fellow may work with other preceptors at the same hospital, ensuring continued learning and adequate exposure to surgical procedures.</p>
-<p>Communication: Coordinate with preceptors and the program coordinator to optimize your rotation experience.</p>
-<p>Clinical Rotation Timeline</p>
-</div>
-<div class="sec">
-<h4>Year 1</h4>
-<p>August: MIGS Clinic at TMH with Dr. Tam</p>
-<p>August &amp; September; May &amp; June: Research / MIGS at SFH, SJH, SMH with Dr. Tam and Dr. Lloyd</p>
-<p>October to April: Urogynecology / MIGS at SFH, SJH, SMH with Dr. Siddique, Dr. Tam, Dr. Tomezsko</p>
-<p>October to April: Multidisciplinary rotation at SMH with Dr. Siddique, Dr. Tam, Dr. Giannotti, Dr. Malvar, Dr. Munns</p>
-</div>
-<div class="sec">
-<h4>Year 2</h4>
-<p>August to May: Urogynecology / MIGS at SFH, SJH, TMH with Dr. Siddique, Dr. Tam, Dr. Tomezsko</p>
-<p>April to June: MIS / Bariatric / Urogynecology at SJH with Dr. Giannotti, Dr. Zhu, Dr. Tam, Dr. Siddique</p>
-<p>June to July: Elective / MIGS at SFH with Dr. Tam and Dr. Lloyd</p>
-<p>August to December: Gynecologic Oncology rotation at SMH with Dr. Munns, Dr. Giannotti, Dr. Malvar</p>
-<p>FMIGS Schedule by Rotation</p>
-</div>
-<div class="sec">
-<h4>Urogyn/MIGS</h4>
-<p>Location: SFH, SJH, TMH</p>
-<p>Preceptors: Dr. Siddique, Dr. Tomezsko, Dr. Lloyd, Dr. Tam</p>
-<p>Months: August, September, October, November, December, January, February, March</p>
-</div>
-<h4>Hospital sites</h4>
-<div class="site-grid">
-<div class="site-card"><strong>Saint Francis Hospital (SFH)</strong>
-<p>August &amp; September: Research/MIGS…</p>
-</div>
-<div class="site-card"><strong>Saint Joseph Hospital (SJH)</strong>
-<p>August &amp; September: Research/MIGS…</p>
-</div>
-<div class="site-card"><strong>Saint Mary Hospital (SMH)</strong>
-<p>August &amp; September: Research/MIGS…</p>
-</div>
-<div class="site-card"><strong>Thorek Memorial Hospital (TMH)</strong>
-<p>July: MIGS/Clinic…</p>
-</div>
-<div class="site-card"><strong>St. Francis Hospital (SFH)</strong>
-<p>August to April: Urogynecology/MIGS…</p>
-</div>
-<div class="site-card"><strong>St. Joseph Hospital (SJH)</strong>
-<p>August to April: MIGS/Urogynecology…</p>
-</div>
-<div class="site-card"><strong>Saint Mary Hospital (SMH)</strong>
-<p>August to February: GynOnc/MIGS…</p>
-</div>
-<div class="site-card"><strong>Thorek Memorial Hospital (TMH)</strong>
-<p>August to July: MIGS Clinic…</p>
-</div>
-</div>
-</section>
-<section class="ch" id="ch-12">
-<div class="ch-num">Chapter 12</div>
-<h3>Didactics and Learning Activities</h3>
-<p class="ch-lead">This comprehensive structure includes all educational objectives, case-based learning, and simulation activities. The FMIGS readings have been integrated into their appropriate categories, ensuring that each is referenced once in its relevant section. This ensures full compliance with FMIGS requirements, while providing fellows with a robust educational experience.</p>
-<p class="ch-lead">List of ongoing didactics and learning activities:</p>
-<div class="sec">
-<h4>Resident MIGS Didactics and Skills Labs</h4>
-<p>Schedule: Last Monday of every month (7:30 AM 11:00 AM), except Holidays.</p>
-<p>Activities:</p>
-<p>Lectures on core topics</p>
-<p>Simulation labs focusing on surgical techniques</p>
-<p>Skills assessments</p>
-</div>
-<div class="sec">
-<h4>Case Conferences</h4>
-<p>Frequency: Quarterly</p>
-<p>Activities:</p>
-<p>Review preoperative planning, surgical technique, prevention of complications, and patient outcomes of complex gynecology cases</p>
-<p>Multidisciplinary discussions including ethics and systems-based considerations.</p>
-</div>
-<div class="sec">
-<h4>Simulation Labs</h4>
-<p>Schedule: Integrated into monthly didactics and skills Labs.</p>
-<p>Activities:</p>
-<p>Independent practice of advanced procedures using laparoscopic box trainers.</p>
-<p>Management of emergency scenarios.</p>
-</div>
-<div class="sec">
-<h4>Journal Clubs and Research Meetings</h4>
-<p>Journal Club:</p>
-<p>Frequency: Monthly-Quarterly</p>
-<p>Activities: Critical appraisal of recent literature related to MIGS</p>
-<p>Research Meetings:</p>
-<p>Frequency: Quarterly-Semiannually</p>
-<p>Activities: Updates on research progress, troubleshooting, and collaboration.</p>
-</div>
-<div class="sec">
-<h4>Conferences and Continuing Medical Education (CME)</h4>
-<p>Integration: Attendance at conferences is scheduled to meet educational and procedural requirements. Participation in cadaver courses and specialized training.</p>
-<p>Advanced Laparoscopic/Hysteroscopic/Surgical Conferences:</p>
-<p>SGS Winter Course: Focus on advanced laparoscopic techniques.</p>
-<p>CALMS Florida Cadaver Course: Hands-on dissection and surgical anatomy.</p>
-<p>AAGL Annual Conference: Latest research and innovations in MIGS.</p>
-<p>FMIGS Year 1: Independent Didactic Plan</p>
-</div>
-</section>
-<section class="ch" id="ch-13">
-<div class="ch-num">Chapter 13</div>
-<h3>Research Training</h3>
-<p class="ch-lead">I. Module Overview and Objectives</p>
-<p class="ch-lead">This module ensures that fellows not only gain theoretical knowledge but also practical skills essential for modern clinical research. By mandating the completion of these peer-reviewed and internationally recognized online courses, the fellowship program fosters a culture of excellence, critical thinking, and evidence-based practice—key elements for future leaders in the field.</p>
-<h4>Research training modules</h4>
-<div class="module-grid">
-<div class="module-card"><strong>Module Title: Research Methodology and Scholarly Communication</strong>
-<p>Overall Objectives:…</p>
-</div>
-<div class="module-card"><strong>1. Scientific Writing Module</strong>
-<p>Course: Stanford Online Course: &quot;Writing in the Sciences&quot;…</p>
-</div>
-<div class="module-card"><strong>2. Systematic Reviews and Meta-Analyses Module</strong>
-<p>Course: John Hopkins Online Course: &quot;Introduction to Systematic Review and Meta-Analysis&quot;…</p>
-</div>
-<div class="module-card"><strong>3. Clinical Trials Design Module</strong>
-<p>Course: John Hopkins Online Course: &quot;Design and Interpretation of Clinical Trials&quot;…</p>
-</div>
-<div class="module-card"><strong>4. Clinical Data Management Module</strong>
-<p>Course: Vanderbilt Online Course: &quot;Data Management for Clinical Research&quot;…</p>
-</div>
-</div>
-</section>
-<section class="ch" id="ch-14">
-<div class="ch-num">Chapter 14</div>
-<h3>Fellow Evaluation and Case Log</h3>
-<p class="ch-lead">Surgical Skill Assessments</p>
-<p class="ch-lead">Direct observation and formal assessment of core procedural competencies, including hysterectomy, myomectomy, and endometriosis excision.</p>
-<p class="ch-lead">HYPERLINK &quot;https://docs.google.com/forms/d/e/1FAIpQLScbLniJuwy0pecMGqj4SShpBb_GZZXCaFxFSMLY2pvS5ScVow/viewform?usp=header&quot;Urogynecology Case Evaluations</p>
-<p class="ch-lead">HYPERLINK &quot;https://docs.google.com/forms/d/e/1FAIpQLScu8H79C_2uZLqBBrlzqi9OnNduHm8lt30Sl5_k6S0-rWNw8w/viewform?usp=header&quot;MIGS Gynecology Case Evaluation</p>
-<p class="ch-lead">HYPERLINK &quot;https://docs.google.com/forms/d/e/1FAIpQLSeoJ0tupwJd4dpHWYi2lQjyBBaT3zAuGGAoGkQaJ4Qf321VlA/viewform?usp=header&quot;Hysteroscopy Case Evaluation</p>
-<p class="ch-lead">Semiannual and Annual Fellow Evaluation</p>
-<p class="ch-lead">Fellows will be formally evaluated at least every six months on clinical competency, surgical skills, and research progress, incorporating feedback from multiple sources (e.g., faculty, peers, and patients) using the SemiAnnual FMIGS Milestones Evaluation Rubric.</p>
-<p class="ch-lead">HYPERLINK &quot;https://forms.gle/fGBZ6e2hvMXDB3zdA&quot;Annual Formal FMIGS Fellow Evaluation</p>
-<p class="ch-lead">Fellow Case Log</p>
-<p class="ch-lead">Fellows will be required to log all surgical cases and meet FMIGS surgical case volume requirements.</p>
-<p class="ch-lead">HYPERLINK &quot;https://docs.google.com.mcas.ms/forms/d/e/1FAIpQLSeuhVSuHei6rSk7veNqbNo6W25uRYx-AVUtB8D7GJ0li857lQ/viewform&quot;Fellow Case Logs</p>
-</section>
-<section class="ch" id="ch-15">
-<div class="ch-num">Chapter 15</div>
-<h3>Graduation Requirements</h3>
-<div class="sec">
-<h4>Completion of Core Surgical Competencies</h4>
-<p>Fellows must demonstrate proficiency in all required procedures, including hysteroscopy, laparoscopy, and robotic surgery.</p>
-</div>
-<div class="sec">
-<h4>Research Contribution</h4>
-<p>Completion of a research project and presentation of findings at a national meeting.</p>
-<p>Case Volume:</p>
-<p>Fellows must meet the minimum case volume requirements set by FMIGS Board(See Appendix)</p>
-</div>
-<div class="sec">
-<h4>Hysteroscopy (Non-Global Endometrial Ablation)</h4>
-<p>Minimum Cases: 25</p>
-<p>Myomectomy</p>
-<p>Polypectomy</p>
-<p>Lysis of adhesions</p>
-<p>Septum/isthmocele resection</p>
-<p>Office-Based: 15</p>
-</div>
-<div class="sec">
-<h4>Laparoscopy</h4>
-<p>Myomectomy: 15</p>
-<p>Adnexal Surgery: 35</p>
-<p>Retroperitoneal Dissection: 35</p>
-<p>Adhesiolysis: 30</p>
-<p>Endometriosis Surgery (Stage III and IV): 35</p>
-</div>
-<div class="sec">
-<h4>Minimally Invasive Hysterectomy</h4>
-<p>Total Minimum Cases: 110</p>
-<p>Laparoscopic Hysterectomy +/- BSO</p>
-<p>Robotic Hysterectomy +/- BSO</p>
-<p>LAVH +/- BSO</p>
-<p>Vaginal Hysterectomy +/- BSO (Note: While no minimum number is required for vaginal hysterectomy, programs must ensure competency)</p>
-</div>
-<div class="sec">
-<h4>Cystoscopy (Diagnostic or Operative)</h4>
-<p>Minimum Cases: 15</p>
-</div>
-</section>
-<section class="ch" id="ch-16">
-<div class="ch-num">Chapter 16</div>
-<h3>Assessment Package</h3>
-<p class="ch-lead">Overview</p>
-<p class="ch-lead">This assessment package is designed to provide a comprehensive framework for evaluating FMIGS fellows throughout their training program. It aligns with the Adult Learning/Instructional Systems Design (ISD) model proposed by Dick and Carey (2015) and adheres to the program, educational, and procedural requirements set by the FMIGS board. The package includes both formative and summative assessments, utilizing a variety of evaluation tools to ensure fellows achieve competency in all required areas.</p>
-<details class="ch-expand"><summary>Expand the 41 sub-sections</summary>
-<div class="sec-compact"><strong>Direct Observation</strong>
- — <span class="sec-snippet">Methodology: Faculty observe fellows in real-time during clinical activities.</span>
-</div>
-<div class="sec-compact"><strong>Simulation Performance</strong>
- — <span class="sec-snippet">Methodology: Fellows participate in simulated surgical scenarios.</span>
-</div>
-<div class="sec-compact"><strong>Self-Assessments</strong>
- — <span class="sec-snippet">Methodology: Fellows maintain reflective journals and learning portfolios.</span>
-</div>
-<div class="sec-compact"><strong>Semiannual Evaluations</strong>
- — <span class="sec-snippet">Methodology: Comprehensive reviews conducted every six months.</span>
-</div>
-<div class="sec-compact"><strong>Final Assessment</strong>
- — <span class="sec-snippet">Methodology: Comprehensive evaluation at the end of the fellowship.</span>
-</div>
-<div class="sec-compact"><strong>Evaluation Forms</strong>
- — <span class="sec-snippet">Description: Standardized forms aligned with FMIGS competencies.</span>
-</div>
-<div class="sec-compact"><strong>Feedback Sessions</strong>
- — <span class="sec-snippet">Description: Regular meetings between fellows and mentors.</span>
-</div>
-<div class="sec-compact"><strong>Direct Observation</strong>
- — <span class="sec-snippet">Method</span>
-</div>
-<div class="sec-compact"><strong>Simulation Performance</strong>
- — <span class="sec-snippet">Method</span>
-</div>
-<div class="sec-compact"><strong>Surveys</strong>
- — <span class="sec-snippet">Surveys are a key tool in gathering comprehensive feedback from three core groups: fellows, faculty, and patients. These surveys provide insights into both the educational experience and the impact of the fellowship program on patient care.</span>
-</div>
-<div class="sec-compact"><strong>Personnel</strong>
- — <span class="sec-snippet">Faculty salaries and stipends for fellows.</span>
-</div>
-<div class="sec-compact"><strong>Educational Resources</strong>
- — <span class="sec-snippet">Simulation lab equipment maintenance.</span>
-</div>
-<div class="sec-compact"><strong>Travel and Conferences</strong>
- — <span class="sec-snippet">Funding for attendance at required conferences and courses.</span>
-</div>
-<div class="sec-compact"><strong>Operational Costs</strong>
- — <span class="sec-snippet">Administrative support.</span>
-</div>
-<div class="sec-compact"><strong>Funding Sources</strong>
-</div>
-<div class="sec-compact"><strong>Institutional Support</strong>
- — <span class="sec-snippet">Allocated funds from the healthcare institution.</span>
-</div>
-<div class="sec-compact"><strong>Grants and Donations</strong>
- — <span class="sec-snippet">Seek external funding for research and educational initiatives.</span>
-</div>
-<div class="sec-compact"><strong>Program Fees</strong>
- — <span class="sec-snippet">Tuition or fees associated with fellowship participation.</span>
-</div>
-<div class="sec-compact"><strong>Fellowship Program Director Requirements</strong>
- — <span class="sec-snippet">Have surgical training and clinical experience</span>
-</div>
-<div class="sec-compact"><strong>The APD Requirements</strong>
- — <span class="sec-snippet">Be an AAGL member in good standing</span>
-</div>
-<div class="sec-compact"><strong>Anti-Harrassment</strong>
- — <span class="sec-snippet">All faculty involved with fellowship training must be in compliance with AAGL’s</span>
-</div>
-<div class="sec-compact"><strong>FMIGS Grievance Policy (other than anti-harassment)</strong>
- — <span class="sec-snippet">Fellows that are concerned about their training experience may contact the</span>
-</div>
-<div class="sec-compact"><strong>Evaluation and feedback</strong>
- — <span class="sec-snippet">The fellow must be advised about deficiencies and the expectations for</span>
-</div>
-<div class="sec-compact"><strong>Warning</strong>
- — <span class="sec-snippet">When a trainee has been advised about deficiencies but fails to make sufficient</span>
-</div>
-<div class="sec-compact"><strong>Probation</strong>
- — <span class="sec-snippet">Clearly suboptimal academic and/or clinical performance may warrant probation.</span>
-</div>
-<div class="sec-compact"><strong>Non-reappointment/Termination</strong>
- — <span class="sec-snippet">A trainee’s failure to remediate suboptimal academic and/or clinical performance</span>
-</div>
-<div class="sec-compact"><strong>Timing issues</strong>
- — <span class="sec-snippet">A probationary period must be long enough to permit a thorough evaluation of</span>
-</div>
-<div class="sec-compact"><strong>Minimally Invasive Gynecologic Surgery (MIGS) - 2023-2024 Schedule</strong>
- — <span class="sec-snippet">Ascension St. Joseph Hospital OB/GYN Program</span>
-</div>
-<div class="sec-compact"><strong>Minimally Invasive Gynecologic Surgery (MIGS) - 2024-2025 Schedule</strong>
- — <span class="sec-snippet">Ascension St. Joseph Hospital OB/GYN Program</span>
-</div>
-<div class="sec-compact"><strong>1. Pre-Program Tasks (Before Fellowship Start)</strong>
- — <span class="sec-snippet">Select Fellows for the Program:</span>
-</div>
-<div class="sec-compact"><strong>2. First Quarter: August – October</strong>
- — <span class="sec-snippet">Onboarding and Orientation:</span>
-</div>
-<div class="sec-compact"><strong>3. Second Quarter: November – January</strong>
- — <span class="sec-snippet">Research Project Initiation:</span>
-</div>
-<div class="sec-compact"><strong>4. Third Quarter: February – April</strong>
- — <span class="sec-snippet">Continue Surgical Training and Case Log Review:</span>
-</div>
-<div class="sec-compact"><strong>5. Fourth Quarter: May – July</strong>
- — <span class="sec-snippet">Prepare for Annual Report Submission (Due July 1st):</span>
-</div>
-<div class="sec-compact"><strong>6. Ongoing Tasks Throughout the Year</strong>
- — <span class="sec-snippet">Duty Hours Monitoring:</span>
-</div>
-<div class="sec-compact"><strong>7. Graduation Requirements (End of Year 2)</strong>
- — <span class="sec-snippet">Completion of Surgical Competency Requirements:</span>
-</div>
-<div class="sec-compact"><strong>Teresa Tam, MD – Program Director</strong>
-</div>
-<div class="sec-compact"><strong>Sohail Siddique, MD – Associate Program Director</strong>
-</div>
-<div class="sec-compact"><strong>Farheen Syeda – Program Coordinator</strong>
-</div>
-<div class="sec-compact"><strong>Christopher Mabini, DO, MSAEd – Inaugural MIGS Fellow</strong>
-</div>
-</details>
-</section>
+        <section class="block reveal" aria-labelledby="arch-h">
+            <div class="eyebrow">Curriculum Architecture</div>
+            <h2 id="arch-h">Sixteen chapters across four design phases.</h2>
+            <p class="sub">Built bottom-up: ground the program in its context and stakeholders, set the strategic intent, structure the experience, then build assessment. Click any chapter to see its substance.</p>
+
+            <div class="arch-phases">
+                <div class="arch-phase">
+                    <div class="ph-label">Phase 1 · Ground</div>
+                    <h3>Establish context, stakeholders, and need</h3>
+                    <div class="arch-chapters">
+                        <button class="arch-chip" data-ch="1"><span class="ch-num">01</span><span class="ch-title">Abstract</span></button>
+                        <button class="arch-chip" data-ch="2"><span class="ch-num">02</span><span class="ch-title">Introduction</span></button>
+                        <button class="arch-chip" data-ch="3"><span class="ch-num">03</span><span class="ch-title">Formal Context Analysis</span></button>
+                        <button class="arch-chip" data-ch="4"><span class="ch-num">04</span><span class="ch-title">Stakeholders</span></button>
+                        <button class="arch-chip" data-ch="5"><span class="ch-num">05</span><span class="ch-title">Needs Assessment</span></button>
+                    </div>
+                </div>
+                <div class="arch-phase">
+                    <div class="ph-label">Phase 2 · Strategy</div>
+                    <h3>Set mission, address barriers, define objectives</h3>
+                    <div class="arch-chapters">
+                        <button class="arch-chip" data-ch="6"><span class="ch-num">06</span><span class="ch-title">Barriers to Transfer of Learning</span></button>
+                        <button class="arch-chip" data-ch="7"><span class="ch-num">07</span><span class="ch-title">Strategies to Improve Transfer</span></button>
+                        <button class="arch-chip" data-ch="8"><span class="ch-num">08</span><span class="ch-title">Mission, Goals &amp; Objectives</span></button>
+                        <button class="arch-chip" data-ch="9"><span class="ch-num">09</span><span class="ch-title">Core Educational Objectives</span></button>
+                    </div>
+                </div>
+                <div class="arch-phase">
+                    <div class="ph-label">Phase 3 · Structure</div>
+                    <h3>Build the lived experience of the fellowship</h3>
+                    <div class="arch-chapters">
+                        <button class="arch-chip" data-ch="10"><span class="ch-num">10</span><span class="ch-title">Curriculum Structure</span></button>
+                        <button class="arch-chip" data-ch="11"><span class="ch-num">11</span><span class="ch-title">Clinical Rotations</span></button>
+                        <button class="arch-chip" data-ch="12"><span class="ch-num">12</span><span class="ch-title">Didactics &amp; Learning Activities</span></button>
+                        <button class="arch-chip" data-ch="13"><span class="ch-num">13</span><span class="ch-title">Research Training</span></button>
+                    </div>
+                </div>
+                <div class="arch-phase">
+                    <div class="ph-label">Phase 4 · Assessment &amp; Evaluation</div>
+                    <h3>Measure learning, gate graduation, evaluate the program</h3>
+                    <div class="arch-chapters">
+                        <button class="arch-chip" data-ch="14"><span class="ch-num">14</span><span class="ch-title">Fellow Evaluation &amp; Case Log</span></button>
+                        <button class="arch-chip" data-ch="15"><span class="ch-num">15</span><span class="ch-title">Graduation Requirements</span></button>
+                        <button class="arch-chip" data-ch="16"><span class="ch-num">16</span><span class="ch-title">Assessment Package</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="tl-h">
+            <div class="eyebrow">The Didactic Spine</div>
+            <h2 id="tl-h">Twenty-four months, twenty-four focused topics.</h2>
+            <p class="sub">Each month carries its own educational objectives, FMIGS reading list, SurgeryU video assignments, simulation training, case-based learning, and end-of-month assessment. The progression is intentional: anatomy &amp; foundations in Y1; complex disease, special populations, and emerging topics in Y2.</p>
+
+            <div class="timeline-wrap">
+                <div class="timeline-year">
+                    <div class="yr-label">Year 1 — Foundations</div>
+                    <div class="timeline-grid">
+                        <div class="month-tile"><div class="mo">AUG · Y1</div><div class="topic">Pelvic anatomy + retroperitoneal dissection + research</div></div>
+                        <div class="month-tile"><div class="mo">SEP · Y1</div><div class="topic">Menstrual cycle physiology &amp; AUB</div></div>
+                        <div class="month-tile"><div class="mo">OCT · Y1</div><div class="topic">Perioperative management</div></div>
+                        <div class="month-tile"><div class="mo">NOV · Y1</div><div class="topic">Principles of energy sources</div></div>
+                        <div class="month-tile"><div class="mo">DEC · Y1</div><div class="topic">Hysteroscopy essentials &amp; complications</div></div>
+                        <div class="month-tile"><div class="mo">JAN · Y1</div><div class="topic">Laparoscopy &amp; robotic surgery essentials</div></div>
+                        <div class="month-tile"><div class="mo">FEB · Y1</div><div class="topic">Vaginal surgery essentials</div></div>
+                        <div class="month-tile"><div class="mo">MAR · Y1</div><div class="topic">Fundamentals of hysterectomy</div></div>
+                        <div class="month-tile"><div class="mo">APR · Y1</div><div class="topic">Surgical complications I &mdash; general, infectious, neuropathic</div></div>
+                        <div class="month-tile"><div class="mo">MAY · Y1</div><div class="topic">Specialty topics &amp; quality improvement</div></div>
+                        <div class="month-tile"><div class="mo">JUN · Y1</div><div class="topic">Surgical complications II &mdash; urologic, bowel</div></div>
+                        <div class="month-tile"><div class="mo">JUL · Y1</div><div class="topic">Uterine leiomyoma &amp; myomectomy</div></div>
+                    </div>
+                </div>
+                <div class="timeline-year">
+                    <div class="yr-label">Year 2 — Complex disease &amp; advanced topics</div>
+                    <div class="timeline-grid">
+                        <div class="month-tile"><div class="mo">AUG · Y2</div><div class="topic">Tissue retrieval &amp; extraction</div></div>
+                        <div class="month-tile"><div class="mo">SEP · Y2</div><div class="topic">Endometriosis I</div></div>
+                        <div class="month-tile"><div class="mo">OCT · Y2</div><div class="topic">Endometriosis II &mdash; deep infiltrating</div></div>
+                        <div class="month-tile"><div class="mo">NOV · Y2</div><div class="topic">Adenomyosis</div></div>
+                        <div class="month-tile"><div class="mo">DEC · Y2</div><div class="topic">Acute pelvic pain</div></div>
+                        <div class="month-tile"><div class="mo">JAN · Y2</div><div class="topic">Chronic pelvic pain</div></div>
+                        <div class="month-tile"><div class="mo">FEB · Y2</div><div class="topic">Adnexal pathology &amp; surgery</div></div>
+                        <div class="month-tile"><div class="mo">MAR · Y2</div><div class="topic">Congenital anomalies of urogenital tract</div></div>
+                        <div class="month-tile"><div class="mo">APR · Y2</div><div class="topic">Cesarean scar / isthmocele</div></div>
+                        <div class="month-tile"><div class="mo">MAY · Y2</div><div class="topic">Surgery in special populations</div></div>
+                        <div class="month-tile"><div class="mo">JUN · Y2</div><div class="topic">Pelvic floor disorders</div></div>
+                        <div class="month-tile"><div class="mo">JUL · Y2</div><div class="topic">Professionalism &amp; emerging topics</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="stake-h">
+            <div class="eyebrow">Stakeholder Architecture</div>
+            <h2 id="stake-h">Eight stakeholder groups, mapped explicitly.</h2>
+            <p class="sub">Most curricula treat stakeholders as an afterthought. This one names eight groups, defines what each needs from the program and what each gives to it, and uses that map to guide every subsequent design decision.</p>
+
+            <svg class="stakeholder-svg" viewBox="0 0 760 500" role="img" aria-label="Stakeholder web diagram">
+                <defs>
+                    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="rgba(167,139,250,0.6)"/>
+                        <stop offset="100%" stop-color="rgba(167,139,250,0)"/>
+                    </radialGradient>
+                </defs>
+                <circle cx="380" cy="250" r="80" fill="url(#centerGlow)"/>
+                <circle cx="380" cy="250" r="46" fill="rgba(109,40,217,0.32)" stroke="rgba(167,139,250,0.7)" stroke-width="1.5"/>
+                <text x="380" y="245" text-anchor="middle" fill="#ffffff" font-family="Avenir Next, system-ui" font-size="12" font-weight="500">FMIGS</text>
+                <text x="380" y="260" text-anchor="middle" fill="rgba(245,245,247,0.84)" font-family="Avenir Next, system-ui" font-size="11">Program</text>
+                <g stroke="rgba(167,139,250,0.4)" stroke-width="1" stroke-dasharray="3,4" fill="none">
+                    <line x1="380" y1="250" x2="380" y2="60"/>
+                    <line x1="380" y1="250" x2="540" y2="120"/>
+                    <line x1="380" y1="250" x2="640" y2="250"/>
+                    <line x1="380" y1="250" x2="540" y2="380"/>
+                    <line x1="380" y1="250" x2="380" y2="440"/>
+                    <line x1="380" y1="250" x2="220" y2="380"/>
+                    <line x1="380" y1="250" x2="120" y2="250"/>
+                    <line x1="380" y1="250" x2="220" y2="120"/>
+                </g>
+                <g font-family="Avenir Next, system-ui" font-size="11">
+                    <g><circle cx="380" cy="60" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="380" y="58" text-anchor="middle" fill="#ffffff" font-weight="500">Fellows</text><text x="380" y="74" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Primary learner</text></g>
+                    <g><circle cx="540" cy="120" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="540" y="118" text-anchor="middle" fill="#ffffff" font-weight="500">Faculty</text><text x="540" y="134" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Mentors</text></g>
+                    <g><circle cx="640" cy="250" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="640" y="248" text-anchor="middle" fill="#ffffff" font-weight="500">Patients</text><text x="640" y="264" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Care recipients</text></g>
+                    <g><circle cx="540" cy="380" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="540" y="376" text-anchor="middle" fill="#ffffff" font-weight="500">Community</text><text x="540" y="390" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Outreach</text></g>
+                    <g><circle cx="380" cy="440" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="380" y="436" text-anchor="middle" fill="#ffffff" font-weight="500">ACGME</text><text x="380" y="452" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Accreditors</text></g>
+                    <g><circle cx="220" cy="380" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="220" y="376" text-anchor="middle" fill="#ffffff" font-weight="500">Institution</text><text x="220" y="392" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Hospitals</text></g>
+                    <g><circle cx="120" cy="250" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="120" y="248" text-anchor="middle" fill="#ffffff" font-weight="500">Residents</text><text x="120" y="264" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Peer learners</text></g>
+                    <g><circle cx="220" cy="120" r="36" fill="rgba(255,255,255,0.04)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/><text x="220" y="118" text-anchor="middle" fill="#ffffff" font-weight="500">Policy</text><text x="220" y="132" text-anchor="middle" fill="rgba(245,245,247,0.6)" font-size="9">Advocates</text></g>
+                </g>
+            </svg>
+
+            <div class="stake-list">
+                <div class="stake-card"><div class="role">Primary beneficiary</div><h4>Fellows</h4><p>The two-year fellow seeking advanced MIGS training. The curriculum exists for their skill acquisition and clinical-reasoning development.</p></div>
+                <div class="stake-card"><div class="role">Educators</div><h4>Faculty &amp; mentors</h4><p>Deliver instruction, supervise procedures, calibrate assessment. Quality of mentorship is the largest predictor of fellowship outcomes.</p></div>
+                <div class="stake-card"><div class="role">Care recipients</div><h4>Patients</h4><p>Receive improved access to advanced surgical care. Underserved populations explicitly named in the needs assessment.</p></div>
+                <div class="stake-card"><div class="role">Outreach</div><h4>Community organizations</h4><p>Partner in addressing health disparities through MIGS access. Curriculum integrates community health needs into clinical exposure.</p></div>
+                <div class="stake-card"><div class="role">Compliance</div><h4>Accreditation bodies</h4><p>ACGME + AAGL FMIGS Board. Curriculum is aligned to their published requirements and competencies.</p></div>
+                <div class="stake-card"><div class="role">Sponsor</div><h4>Healthcare institution</h4><p>Five hospital sites (SFH, SJH, SMH, TMH, UIC) provide infrastructure, faculty time, and patient volume.</p></div>
+                <div class="stake-card"><div class="role">Peer learning</div><h4>Residents &amp; medical students</h4><p>Benefit from teaching interactions with the fellow. The fellow simultaneously develops their own teaching skill.</p></div>
+                <div class="stake-card"><div class="role">Influence</div><h4>Policy makers &amp; advocates</h4><p>Healthcare-policy stakeholders interested in reducing MIGS-access disparities. Curriculum produces evidence-of-impact for that goal.</p></div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="acgme-h">
+            <div class="eyebrow">ACGME-Aligned Competencies</div>
+            <h2 id="acgme-h">Six core competencies, mapped to milestones.</h2>
+            <p class="sub">Every learning activity in the program is mapped to one or more of ACGME's six core competencies, and every competency is mapped to specific milestones the fellow advances through. Without this mapping, "do more cases" replaces deliberate competency development.</p>
+
+            <div class="competency-grid">
+                <div class="comp-card"><div class="ck"><div class="ck-num">1</div><div><h4>Medical Knowledge</h4><div class="acro">MK</div></div></div><p>Anatomy, physiology, surgical principles, energy sources, complications. Driven by the monthly didactic spine, assigned readings, and literature analysis.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">2</div><div><h4>Patient Care</h4><div class="acro">PC</div></div></div><p>Clinical decision-making, surgical skill, perioperative management. Built through graduated autonomy across five hospital sites.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">3</div><div><h4>Practice-Based Learning &amp; Improvement</h4><div class="acro">PBLI</div></div></div><p>Self-directed learning, evidence appraisal, deliberate practice. Reinforced through journal club, surgical video review, and the scientific writing module.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">4</div><div><h4>Interpersonal &amp; Communication Skills</h4><div class="acro">ICS</div></div></div><p>Patient communication, family meetings, interdisciplinary team collaboration. Practiced in clinic, OR, and tumor-board settings.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">5</div><div><h4>Professionalism</h4><div class="acro">PROF</div></div></div><p>Ethical reasoning, equity-anchored care, professional growth. Surfaces explicitly in Y2 July module and in continuous reflective practice.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">6</div><div><h4>Systems-Based Practice</h4><div class="acro">SBP</div></div></div><p>Multi-site healthcare-systems navigation, cost-conscious care, community-resource integration. Built through the five-hospital rotation design.</p></div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="sites-h">
+            <div class="eyebrow">Five-Site Clinical Architecture</div>
+            <h2 id="sites-h">One fellow, five hospitals, calibrated case mix.</h2>
+            <p class="sub">Each site is selected for what it teaches uniquely. The same competencies are pursued at every site; the case mix and patient population vary deliberately to build breadth.</p>
+
+            <div class="sites-row">
+                <div class="site"><div class="abbrev">SFH</div><h4>PRIME Saint Francis Hospital</h4><div class="city">Evanston, IL · Primary site</div><div class="focus">Home base for FMIGS didactics, primary OR experience, faculty-led MIGS volume. Where the curriculum operates from.</div></div>
+                <div class="site"><div class="abbrev">SJH</div><h4>Ascension Saint Joseph Hospital</h4><div class="city">Chicago, IL</div><div class="focus">Urban tertiary care exposure. Complex pathology, urogynecology cross-pollination, diverse patient population.</div></div>
+                <div class="site"><div class="abbrev">SMH</div><h4>PRIME Saint Mary Hospital</h4><div class="city">Chicago, IL</div><div class="focus">Community-hospital MIGS exposure. Patient-volume + procedural breadth. Health-equity case mix.</div></div>
+                <div class="site"><div class="abbrev">TMH</div><h4>Thorek Memorial Hospital</h4><div class="city">Chicago, IL · Clinic + OR</div><div class="focus">MIGS / Gynecology clinic + OR. Patient continuity, longitudinal follow-up, ambulatory-procedure development.</div></div>
+                <div class="site in-progress"><div class="abbrev">UIC</div><h4>University of Illinois Chicago</h4><div class="city">In progress</div><div class="focus">Academic-center collaboration in development. Research training and tertiary-referral pathway integration.</div></div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="meth-h">
+            <div class="eyebrow">The Design Cycle</div>
+            <h2 id="meth-h">Six stages — not optional.</h2>
+            <p class="sub">This is the cycle the FMIGS curriculum was built against, and the same cycle every curriculum consulting engagement at Mount Zara runs through. Skipping any stage is how curricula drift into "we've always done it this way" by year three.</p>
+
+            <div class="competency-grid">
+                <div class="comp-card"><div class="ck"><div class="ck-num">1</div><div><h4>Context Analysis</h4><div class="acro">Chapter 3</div></div></div><p>Institutional resources, faculty expertise, learner profile, patient population, community needs.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">2</div><div><h4>Needs Assessment</h4><div class="acro">Chapter 5</div></div></div><p>Community + fellow needs, ACGME gaps, equity priorities. Named in chapter 5, explicitly.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">3</div><div><h4>Goals &amp; Objectives</h4><div class="acro">Chapters 8–9</div></div></div><p>Mission, competency-aligned objectives, measurable outcomes. Set after context, not before.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">4</div><div><h4>Instructional Design</h4><div class="acro">Chapters 10–13</div></div></div><p>Didactics, simulation, case-based learning, reflective practice, research training, multi-site rotation.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">5</div><div><h4>Assessment</h4><div class="acro">Chapters 14, 16</div></div></div><p>Formative + summative + competency milestones + case-log validation.</p></div>
+                <div class="comp-card"><div class="ck"><div class="ck-num">6</div><div><h4>Program Evaluation</h4><div class="acro">Chapter 15</div></div></div><p>Graduate-profile gate, outcomes tracking, continuous improvement, faculty + program feedback.</p></div>
+            </div>
+        </section>
+
+        <section class="block reveal" aria-labelledby="grad-h">
+            <div class="eyebrow">Graduate Profile</div>
+            <h2 id="grad-h">By graduation, the fellow can —</h2>
+            <p class="sub">The outcomes the curriculum was designed to produce. These are the questions the assessment package (chapter 16) and graduation requirements (chapter 15) are built to answer about every fellow before they leave the program.</p>
+
+            <div class="grad-list">
+                <div class="grad-item"><strong>Independently manage</strong> complex benign gynecologic pathology across the full surgical spectrum (laparoscopic, robotic, vaginal, hysteroscopic).</div>
+                <div class="grad-item"><strong>Lead an interdisciplinary MIGS team</strong> through pre-, intra-, and post-operative phases of care with confidence and clinical judgment.</div>
+                <div class="grad-item"><strong>Apply evidence-based decision-making</strong> at the point of care, including critical appraisal of new literature and emerging technology.</div>
+                <div class="grad-item"><strong>Recognize, manage, and prevent</strong> the full range of MIGS surgical complications &mdash; vascular, urologic, bowel, infectious, neuropathic.</div>
+                <div class="grad-item"><strong>Address health-equity gaps</strong> in MIGS access through community-aware practice and culturally-competent communication.</div>
+                <div class="grad-item"><strong>Teach the next generation</strong> &mdash; residents, students, peers &mdash; through faculty-development practice woven into the fellowship.</div>
+                <div class="grad-item"><strong>Conduct scholarly work</strong> &mdash; design, execute, present, and publish research; contribute to MIGS literature; participate in QI.</div>
+                <div class="grad-item"><strong>Navigate complex healthcare systems</strong> with cost-conscious, value-based decision-making and systems-based practice fluency.</div>
+            </div>
+        </section>
 
         <div class="cta-block">
-            <h3>This is what a complete curriculum design package looks like.</h3>
-            <p>If your fellowship, residency, or training program needs this level of architecture — built from the same end-to-end instructional-design methodology — let's talk about scope.</p>
+            <h3>This is what end-to-end curriculum design produces.</h3>
+            <p>If your fellowship, residency, or training program needs this level of architecture &mdash; or your existing program needs an audit against current ACGME milestones &mdash; that's the engagement.</p>
             <a href="mailto:info@mountzara.com?subject=Curriculum%20design%20consult%20(FMIGS%20reference)" class="btn">Email info@mountzara.com →</a>
         </div>
 
-        <div class="foot">
-            <p>
-                Christopher Z. Mabini, DO, MSAEd — Inaugural FMIGS Fellow at PRIME Illinois Saint Francis Hospital.
-                Source document: <code>FMIGS Curriculum 2024 V3 7-24-25.doc</code> (v3, July 2025).
-                <a href="/curriculum/">All curricula</a> · <a href="/about/">About</a> · <a href="/cv/#curriculum">CV</a>
-            </p>
+        <div class="archive">
+            <div class="arch-text">
+                <h4>Source archive</h4>
+                <p>The full 400+ page curriculum design document is preserved for institutional reference and reproducibility.</p>
+            </div>
+            <div class="arch-links">
+                <a href="/assets/curriculum/fmigs-curriculum-2024-v3.doc" download>Download source (.doc)</a>
+                <a href="/assets/curriculum/fmigs-cbg-migs.json" target="_blank" rel="noopener">Structured outline (.json)</a>
+                <a href="/curriculum/">← All curricula</a>
+            </div>
         </div>
 
     </main>
 
-    <!-- curriculum source manifest -->
-<!-- {
+    <div id="ch-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="ch-modal-title">
+        <div class="modal-body">
+            <button class="modal-close" id="ch-modal-close" aria-label="Close">Close</button>
+            <div class="mn" id="ch-modal-num">Chapter</div>
+            <h3 id="ch-modal-title">—</h3>
+            <div id="ch-modal-content"></div>
+        </div>
+    </div>
+
+<script>
+function animateCounters() {
+    document.querySelectorAll('.counter .num').forEach(el => {
+        const target = parseInt(el.dataset.target, 10) || 0;
+        const dur = 1400;
+        const start = performance.now();
+        const isUnit = !!el.querySelector('.unit');
+        function step(now) {
+            const t = Math.min(1, (now - start) / dur);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const val = Math.round(target * eased);
+            if (isUnit) {
+                el.querySelector('.num-val').textContent = val;
+            } else {
+                el.textContent = val;
+            }
+            if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    });
+}
+
+const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+const heroIo = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) { animateCounters(); heroIo.disconnect(); }
+});
+heroIo.observe(document.querySelector('.counter-row'));
+
+const CHAPTER_DATA = {
+    1: { title: "Abstract", body: `<p>Comprehensive curriculum for the FMIGS program at PRIME Illinois Saint Francis Hospital in Evanston and the Metro Chicago area. Aligns with FMIGS Board program requirements and AAGL FMIGS learning objectives. Integrates adult learning theory (Knowles, Holton &amp; Swanson) using instructional design and curriculum frameworks (Dick &amp; Carey) to enhance educational effectiveness &mdash; self-directed, experiential, goal-oriented, professionally relevant.</p><p>Components: context analysis, needs assessment, instructional plans, evaluation strategies. Outcome: independent MIGS specialists and leaders who serve underserved populations and advance the field through excellence in complex surgical management.</p>` },
+    2: { title: "Introduction", body: `<p>MIGS has transformed women's healthcare &mdash; reduced morbidity, faster recovery, better quality of life. Yet disparities in access persist, particularly among low-income and underserved communities.</p><p>Recent literature underscores: Black women experience up to 30% higher complication rates after gynecologic surgery, and Black and Hispanic women are up to 40% less likely to receive minimally invasive hysterectomies than White counterparts. Drivers include implicit bias, lower referral rates, limited insurance coverage, and structural under-access.</p><p>The FMIGS curriculum addresses these gaps explicitly &mdash; fostering diversity in the fellow cohort, integrating community-based care, and equipping graduates to lead community-aware MIGS practice. Specialized MIGS training is associated with improved outcomes (Meyer, Gupta, Pfeuti studies); this program is designed to compound that effect through equity-anchored design.</p>` },
+    3: { title: "Formal Context Analysis", body: `<p>Maps the curriculum to institutional resources, faculty expertise, available technology, ACGME alignment, and community needs. Drives curriculum context: tailored learning for fellows, alignment with institutional resources, relevance to patient and community needs.</p><ul><li>Tailored learning &mdash; builds on fellows' existing skills, identifies gaps, targets complex surgical skill and decision-making.</li><li>Institutional alignment &mdash; evaluates surgical platforms (robotic, laparoscopic, RFA, etc.), matches teaching responsibilities to faculty expertise.</li><li>Patient + community relevance &mdash; endometriosis, fibroids, AUB, pelvic floor &mdash; calibrated to local community presentations and social determinants of health.</li><li>Competency-based &mdash; ACGME six core competencies + FMIGS Board requirements drive design.</li><li>Stakeholder engagement &mdash; faculty/mentor input, patient-centered care, systems-based practice navigation, continuous QI, cost-effectiveness.</li></ul>` },
+    4: { title: "Stakeholders", body: `<p>Names eight stakeholder groups and defines their relationship to the program. The stakeholder map drives every subsequent design decision &mdash; what objectives matter to whom, what assessments demonstrate value to which stakeholder, what feedback loops close.</p><p>The eight: Fellows (primary beneficiaries), Faculty &amp; Mentors (educators), Patients (care recipients), Community Organizations (outreach partners), Accreditation Bodies (ACGME / AAGL FMIGS Board), Healthcare Institution (5-site infrastructure), Residents &amp; Medical Students (peer learners), Policy Makers &amp; Advocates (systemic influence).</p>` },
+    5: { title: "Needs Assessment", body: `<p>Community needs: high prevalence of gynecologic conditions; limited access to advanced surgical care; cultural and language barriers; health disparities and outcomes.</p><p>Fellow needs: structured progression from foundational anatomy through complex disease; deliberate practice in technically demanding procedures; mentored exposure to the full case spectrum; protected research and scholarly time.</p><p>The needs assessment isn't generic &mdash; it's specific to the Metro Chicago patient population at the program's five sites, and to the existing FMIGS-fellow cohort profile.</p>` },
+    6: { title: "Barriers to Transfer of Learning", body: `<p>Identifies the obstacles between classroom/simulation learning and independent OR practice: time constraints, skill-acquisition challenges, resource limitations, systemic challenges. Each barrier is named so chapter 7's strategies can target it directly.</p>` },
+    7: { title: "Strategies to Improve Transfer of Learning", body: `<p>Each strategy is tied to a barrier from chapter 6:</p><ul><li>Dedicated educational blocks &mdash; protected time for the didactic spine.</li><li>Enforcement of work-hour policies &mdash; fatigue-managed learning.</li><li>High-fidelity simulation &mdash; repeated practice without patient risk.</li><li>Structured practice sessions &mdash; deliberate-practice frameworks for technical skill.</li><li>Multiple additional strategies covering mentorship, faculty calibration, video review, and reflective practice.</li></ul>` },
+    8: { title: "Mission, Goals &amp; Objectives", body: `<p>The mission statement frames the program's intent: train MIGS surgeons committed to clinical excellence, community impact, professional development, and research. Goals and objectives translate the mission into measurable targets.</p>` },
+    9: { title: "Core Educational Objectives", body: `<p>Twenty-plus specific objectives the program commits to, organized around the ACGME six core competencies. Each is observable, assessable, and tied to specific learning activities later in the curriculum.</p>` },
+    10: { title: "Curriculum Structure", body: `<p>The curriculum architecture as experienced by the fellow: 2-year duration; clinical rotations across five hospital sites; the monthly didactic spine; diverse case exposure; integrated research training; structured assessment touchpoints. Maps each structural choice to an ACGME competency.</p>` },
+    11: { title: "Clinical Rotations", body: `<p>Two-year clinical rotation plan across SFH, SJH, SMH, TMH, and (in progress) UIC. Each site rotation has its own educational plan, case-mix expectations, faculty pairings, and assessment touchpoints. Rotation guidelines + highlights ensure the fellow's experience builds intentionally rather than accidentally.</p>` },
+    12: { title: "Didactics &amp; Learning Activities", body: `<p>The 24-month didactic spine &mdash; each month a focused topic, with: educational objectives, FMIGS reading references, SurgeryU video assignments, simulation training, case-based learning, end-of-month assessment.</p><p>Ongoing activities running across all months: Resident MIGS didactics &amp; skills labs, case conferences, simulation labs, journal clubs and research meetings, conferences and CME.</p>` },
+    13: { title: "Research Training", body: `<p>Structured research training across the fellowship. Modules covered: scientific writing, systematic reviews and meta-analyses, clinical trials design, plus longitudinal mentored scholarly work. Outputs: at least one published paper, conference presentations, contribution to MIGS literature.</p>` },
+    14: { title: "Fellow Evaluation &amp; Case Log", body: `<p>Continuous fellow evaluation: faculty observation forms, 360° feedback, milestone-based assessment, case-log validation against AAGL FMIGS Board requirements, end-of-rotation evaluations. The case log is the primary data source for milestone advancement.</p>` },
+    15: { title: "Graduation Requirements", body: `<p>The bar for fellowship completion: case-log volume thresholds, demonstrated competency in all six ACGME domains, completion of scholarly project, faculty endorsement, passing of assessment package components. Not optional &mdash; these are gate requirements.</p>` },
+    16: { title: "Assessment Package", body: `<p>The most extensive chapter in the curriculum &mdash; formal assessment tools, rubrics, OSCEs, written examinations, simulation-based assessments, 360° instruments, milestone tracking forms, and program-level evaluation frameworks (Kirkpatrick + Stufflebeam CIPP). Forty-one sub-sections + 2,000+ data points of assessment infrastructure.</p>` },
+};
+
+document.querySelectorAll('.arch-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const n = parseInt(btn.dataset.ch, 10);
+        const d = CHAPTER_DATA[n];
+        if (!d) return;
+        document.getElementById('ch-modal-num').textContent = 'Chapter ' + String(n).padStart(2, '0');
+        document.getElementById('ch-modal-title').innerHTML = d.title;
+        document.getElementById('ch-modal-content').innerHTML = d.body;
+        document.getElementById('ch-modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    });
+});
+document.getElementById('ch-modal-close').addEventListener('click', closeChModal);
+document.getElementById('ch-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('ch-modal')) closeChModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChModal(); });
+function closeChModal() { document.getElementById('ch-modal').classList.remove('open'); document.body.style.overflow = ''; }
+</script>
+
+<!-- curriculum source manifest -->
+<!--
+{
   "source_doc": "FMIGS Curriculum 2024 V3 7-24-25.doc",
-  "source_path": "docs/curriculum/sources/fmigs-curriculum-2024-v3.doc",
-  "title": "Fellowship in Minimally Invasive Gynecologic Surgery (FMIGS) \u2014 Curriculum and Instructional Design",
+  "source_path_in_repo": "docs/curriculum/sources/fmigs-curriculum-2024-v3.doc",
+  "rendered_as": "interactive AI-narrated presentation",
   "version": "v3 (2025-07-24)",
-  "extracted_chapters": [
-    "Abstract",
-    "Introduction",
-    "Formal Context Analysis",
-    "Stakeholders",
-    "Needs Assessment",
-    "Barriers to Transfer of Learning",
-    "Strategies to Improve Transfer of Learning",
-    "Program Mission Statement, Goals and Objectives",
-    "Core Educational Objectives",
-    "Curriculum Structure",
-    "Clinical Rotations",
-    "Didactics and Learning Activities",
-    "Research Training",
-    "Fellow Evaluation and Case Log",
-    "Graduation Requirements",
-    "Assessment Package"
-  ],
-  "stats": {
-    "chapters": 16,
-    "sections": 333,
-    "blocks": 3606
-  }
-} -->
+  "chapters": 16,
+  "page_design_version": "v2 — interactive, animated, narrated",
+  "regenerated_at": "2026-05-18T22:30:00Z"
+}
+-->
+
 </body>
 </html>
