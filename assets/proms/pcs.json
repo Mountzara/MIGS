@@ -1,0 +1,84 @@
+{
+  "slug": "pcs",
+  "title": "How you experience pain (Pain Catastrophizing Scale)",
+  "short_name": "PCS",
+  "tier": 2,
+  "domain": "pain_psychology",
+  "description": "A 13-item measure of how pain affects thoughts and feelings — rumination, magnification, and helplessness. Higher scores predict worse surgical outcomes; ≥30 indicates clinically relevant catastrophizing and supports adding pain-psychology and pelvic-floor PT to the plan.",
+  "estimated_minutes": 4,
+  "items": [
+    { "id": "pcs_worry", "text": "When I'm in pain... I worry all the time about whether the pain will end.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_cant_go_on", "text": "When I'm in pain... I feel I can't go on.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_terrible", "text": "When I'm in pain... it's terrible and I think it's never going to get any better.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_awful", "text": "When I'm in pain... it's awful and I feel that it overwhelms me.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_cant_stand", "text": "When I'm in pain... I feel I can't stand it anymore.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_become_afraid", "text": "When I'm in pain... I become afraid that the pain will get worse.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_other_events", "text": "When I'm in pain... I keep thinking of other painful events.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_anxiously_want", "text": "When I'm in pain... I anxiously want the pain to go away.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_cant_keep_out", "text": "When I'm in pain... I can't seem to keep it out of my mind.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_other_painful_sensations", "text": "When I'm in pain... I keep thinking about how much it hurts.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_keep_thinking_stop", "text": "When I'm in pain... I keep thinking about how much I want the pain to stop.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_nothing_reduce", "text": "When I'm in pain... there's nothing I can do to reduce the intensity of the pain.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] },
+    { "id": "pcs_wonder_serious", "text": "When I'm in pain... I wonder whether something serious may happen.", "type": "choice", "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" }, { "value": 1, "label": "To a slight degree" }, { "value": 2, "label": "To a moderate degree" },
+        { "value": 3, "label": "To a great degree" }, { "value": 4, "label": "All the time" } ] }
+  ],
+  "scoring": {
+    "method": "sum",
+    "items": ["pcs_worry","pcs_cant_go_on","pcs_terrible","pcs_awful","pcs_cant_stand","pcs_become_afraid","pcs_other_events","pcs_anxiously_want","pcs_cant_keep_out","pcs_other_painful_sensations","pcs_keep_thinking_stop","pcs_nothing_reduce","pcs_wonder_serious"],
+    "range": [0, 52],
+    "interpretation_bands": [
+      { "min": 0,  "max": 19, "label": "low",                 "patient_label": "Low catastrophizing — pain isn't dominating your thinking." },
+      { "min": 20, "max": 29, "label": "moderate",            "patient_label": "Moderate range — some pain-related worry is present." },
+      { "min": 30, "max": 52, "label": "clinically_relevant", "patient_label": "Clinically relevant range — pain psychology and pelvic floor PT often help substantially here." }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "total >= 30",
+      "flag_type": "pcs_clinically_relevant",
+      "severity": "warning",
+      "message": "Pain Catastrophizing Scale ≥30 — central-sensitization features present. Recommend pain psychology referral and adding pelvic floor PT + neuromodulator to the plan.",
+      "follow_up_action": "clinician_alert"
+    }
+  ],
+  "citation": "Sullivan MJL, Bishop SR, Pivik J. The Pain Catastrophizing Scale: development and validation. Psychol Assess 1995;7:524-32.",
+  "license_note": "Free for clinical and research use."
+}

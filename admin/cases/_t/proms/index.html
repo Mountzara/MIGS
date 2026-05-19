@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PROMs · Case · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: rgba(167, 139, 250, 0.95);
+            --glow-purple: 167, 139, 250;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --green: #10b981;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: var(--bg-base); color: var(--fg-mid); font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: rgba(196, 181, 253, 1); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 70px 28px 80px; }
+        .crumbs { font-size: 12.5px; color: var(--fg-dim); margin-bottom: 18px; }
+        .crumbs a { color: var(--accent-soft); }
+        .crumbs .sep { padding: 0 6px; color: var(--fg-dim); }
+        h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 200; letter-spacing: -0.022em; color: var(--fg-strong); margin: 0 0 6px; line-height: 1.06; }
+        .subtitle { font-size: 15px; color: var(--fg-soft); margin: 0 0 24px; }
+        .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+        .stat-pill {
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            min-width: 130px;
+            backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .stat-pill .label { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); }
+        .stat-pill .value { font-size: 22px; font-weight: 200; color: var(--fg-strong); margin-top: 4px; }
+        .stat-pill[data-tone="urgent"] .value { color: rgba(252, 165, 165, 0.95); }
+        .stat-pill[data-tone="warning"] .value { color: rgba(253, 224, 71, 0.95); }
+        .stat-pill[data-tone="purple"] .value { color: var(--accent-soft); }
+        .section { margin-bottom: 36px; }
+        .section h2 { font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-soft); margin: 0 0 12px; }
+        .row {
+            padding: 16px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .row .hd { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+        .row .title { font-size: 16px; font-weight: 600; color: var(--fg-strong); margin: 0; }
+        .row .meta { font-size: 12px; color: var(--fg-dim); }
+        .row .body { font-size: 14px; color: var(--fg-soft); line-height: 1.55; margin-top: 6px; }
+        .row .body strong { color: var(--fg-mid); }
+        .badge { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
+        .b-purple { background: rgba(167, 139, 250, 0.10); border-color: rgba(167, 139, 250, 0.30); color: var(--accent-soft); }
+        .b-amber  { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.34); color: rgba(252, 211, 77, 0.95); }
+        .b-red    { background: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.36); color: rgba(252, 165, 165, 0.95); }
+        .b-green  { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.30); color: rgba(110, 231, 183, 0.95); }
+        .b-gray   { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); color: var(--fg-soft); }
+        .empty { padding: 22px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; color: var(--fg-dim); font-size: 14px; text-align: center; }
+        /* Score trend mini-chart */
+        .trend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .trend {
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .trend .t-slug { font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 4px; }
+        .trend .t-points { font-size: 12.5px; color: var(--fg-dim); }
+        .trend svg { display: block; width: 100%; height: 60px; margin-top: 6px; }
+        .trend svg path { fill: none; stroke: var(--accent-soft); stroke-width: 2; stroke-linejoin: round; }
+        .trend svg circle { fill: var(--accent-soft); }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <p class="crumbs"><a href="/admin/">Admin</a><span class="sep">›</span><a href="/admin/patients/">Patients</a><span class="sep">›</span><a id="link-case" href="#">Case</a><span class="sep">›</span>PROMs</p>
+        <h1 id="header-name">Loading…</h1>
+        <p class="subtitle" id="header-sub">Validated patient-reported outcome measures, AI-assigned from intake and updated as care evolves.</p>
+
+        <div class="stat-row" id="stats"></div>
+
+        <div class="section" id="flags-section">
+            <h2>Open clinical flags</h2>
+            <div id="flags"></div>
+        </div>
+
+        <div class="section">
+            <h2>Score trends</h2>
+            <div id="trends" class="trend-grid"></div>
+        </div>
+
+        <div class="section">
+            <h2>Assignment history</h2>
+            <div id="assignments"></div>
+        </div>
+
+        <div class="section">
+            <h2>All submitted responses</h2>
+            <div id="responses"></div>
+        </div>
+    </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+        function fmtDate(iso){try{return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}catch{return iso||'';}}
+        function severityBadge(s){const c=s==='urgent'?'b-red':s==='warning'?'b-amber':'b-gray';return `<span class="badge ${c}">${escapeHtml((s||'info').toUpperCase())}</span>`;}
+        function statusBadge(s){const c=s==='completed'?'b-green':s==='pending'?'b-purple':s==='in_progress'?'b-amber':'b-gray';return `<span class="badge ${c}">${escapeHtml(s||'')}</span>`;}
+
+        // Pull patient_id from /admin/cases/<patient_id>/proms[/]
+        const m = window.location.pathname.match(/^\/admin\/cases\/([^/]+)\/proms\/?$/);
+        const patient_id = m ? decodeURIComponent(m[1]) : null;
+        if (!patient_id) {
+            document.body.innerHTML = '<p style="padding:40px;color:#888;">Invalid case URL.</p>';
+            throw new Error('no patient_id');
+        }
+        $('link-case').href = `/admin/cases/${encodeURIComponent(patient_id)}/`;
+
+        async function load() {
+            const r = await fetch(`/api/v1/admin/patients/${encodeURIComponent(patient_id)}/proms`, { credentials: 'include' });
+            if (!r.ok) {
+                document.body.innerHTML = `<p style="padding:40px;color:#888;">Could not load PROMs (HTTP ${r.status}).</p>`;
+                return;
+            }
+            const data = await r.json();
+            render(data);
+        }
+
+        function render(d) {
+            // Header
+            $('header-name').textContent = `${d.patient.name || '—'} · PROM history`;
+            $('header-sub').textContent = `Email ${d.patient.email || '—'} · status ${d.patient.status || '—'}`;
+            $('link-case').textContent = d.patient.name || 'Case';
+
+            // Stat pills
+            const stats = d.counts || {};
+            $('stats').innerHTML = [
+                {label:'Assigned', value: stats.assignments || 0},
+                {label:'Pending',  value: stats.pending || 0, tone:'purple'},
+                {label:'Completed',value: stats.completed || 0},
+                {label:'Open flags', value: stats.open_flags || 0, tone: stats.open_flags ? 'warning' : null},
+                {label:'Flags (90d)', value: stats.total_flags_90d || 0},
+            ].map(p => `<div class="stat-pill" data-tone="${p.tone||''}"><div class="label">${p.label}</div><div class="value">${p.value}</div></div>`).join('');
+
+            // Flags
+            const openFlags = (d.flags || []).filter(f => !f.acknowledged_at);
+            const ackFlags  = (d.flags || []).filter(f =>  f.acknowledged_at);
+            if (openFlags.length === 0 && ackFlags.length === 0) {
+                $('flags').innerHTML = `<div class="empty">No threshold flags fired in the last 90 days.</div>`;
+            } else {
+                let html = '';
+                if (openFlags.length) {
+                    html += openFlags.map(f => `
+                        <div class="row">
+                            <div class="hd">
+                                <h3 class="title">${escapeHtml(f.message || f.flag_type)}</h3>
+                                <div>${severityBadge(f.severity)}</div>
+                            </div>
+                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(f.flag_type)} · fired ${fmtDate(f.created_at)}</div>
+                        </div>`).join('');
+                }
+                if (ackFlags.length) {
+                    html += `<details style="margin-top:14px;"><summary style="font-size:13px;color:var(--fg-dim);cursor:pointer;">Show ${ackFlags.length} acknowledged flag${ackFlags.length===1?'':'s'}</summary>`;
+                    html += ackFlags.map(f => `
+                        <div class="row" style="opacity:0.62;">
+                            <div class="hd">
+                                <h3 class="title">${escapeHtml(f.message || f.flag_type)}</h3>
+                                <div>${severityBadge(f.severity)} <span class="badge b-green">ack'd</span></div>
+                            </div>
+                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(f.flag_type)} · fired ${fmtDate(f.created_at)} · ack ${fmtDate(f.acknowledged_at)}</div>
+                            ${f.acknowledged_note ? `<div class="body">${escapeHtml(f.acknowledged_note)}</div>` : ''}
+                        </div>`).join('');
+                    html += `</details>`;
+                }
+                $('flags').innerHTML = html;
+            }
+
+            // Trends
+            const trends = d.trends || {};
+            const trendSlugs = Object.keys(trends);
+            if (trendSlugs.length === 0) {
+                $('trends').innerHTML = `<div class="empty" style="grid-column:1/-1;">No completed responses yet — score trends will appear here once the first assignments are submitted.</div>`;
+            } else {
+                $('trends').innerHTML = trendSlugs.map(slug => {
+                    const pts = trends[slug] || [];
+                    if (!pts.length) return '';
+                    const w = 280, h = 60, pad = 6;
+                    const xs = pts.map((_, i) => pad + (i * ((w - 2*pad) / Math.max(1, pts.length - 1))));
+                    const minV = Math.min(...pts.map(p => p.total));
+                    const maxV = Math.max(...pts.map(p => p.total));
+                    const range = (maxV - minV) || 1;
+                    const ys = pts.map(p => h - pad - ((p.total - minV) / range) * (h - 2*pad));
+                    const path = pts.map((_, i) => (i===0?'M':'L') + xs[i].toFixed(1) + ',' + ys[i].toFixed(1)).join(' ');
+                    const circles = pts.map((_, i) => `<circle cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="2.5"/>`).join('');
+                    const latest = pts[pts.length - 1];
+                    return `<div class="trend">
+                        <div class="t-slug">${escapeHtml(slug.toUpperCase())}</div>
+                        <div class="t-points">${pts.length} response${pts.length===1?'':'s'} · latest ${latest.total.toFixed(latest.total % 1 ? 1 : 0)} on ${fmtDate(latest.submitted_at)}</div>
+                        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="${escapeHtml(slug)} score trend"><path d="${path}"/>${circles}</svg>
+                    </div>`;
+                }).join('');
+            }
+
+            // Assignments
+            const assignments = d.assignments || [];
+            if (!assignments.length) {
+                $('assignments').innerHTML = `<div class="empty">No PROMs have been assigned to this patient yet.</div>`;
+            } else {
+                $('assignments').innerHTML = assignments.map(a => `
+                    <div class="row">
+                        <div class="hd">
+                            <h3 class="title">${escapeHtml(a.title || a.prom_slug)} <span class="badge b-purple" style="margin-left:8px;">${escapeHtml((a.short_name||'').toUpperCase())}</span></h3>
+                            <div>${statusBadge(a.status)}</div>
+                        </div>
+                        <div class="meta">Assigned by <strong>${escapeHtml(a.assigned_by_kind)}</strong> · ${escapeHtml(a.period_label||'')} · ${fmtDate(a.assigned_at)}${a.completed_at ? ' · completed '+fmtDate(a.completed_at) : ''}${a.due_at ? ' · due '+fmtDate(a.due_at) : ''}</div>
+                        ${a.trigger_reason ? `<div class="body">${escapeHtml(a.trigger_reason)}</div>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Responses
+            const responses = d.responses || [];
+            if (!responses.length) {
+                $('responses').innerHTML = `<div class="empty">No completed responses yet.</div>`;
+            } else {
+                $('responses').innerHTML = responses.map(r => {
+                    const cs = r.computed_scores || {};
+                    const tf = r.threshold_flags || [];
+                    const totalLine = (typeof cs.total === 'number') ? `Total <strong>${cs.total.toFixed(cs.total % 1 ? 1 : 0)}</strong>` : '';
+                    const subscaleLine = (cs.subscales && Object.keys(cs.subscales).length)
+                        ? Object.entries(cs.subscales).filter(([,v]) => typeof v === 'number').map(([k,v]) => `${escapeHtml(k)} <strong>${v.toFixed(v % 1 ? 1 : 0)}</strong>`).join(' · ')
+                        : '';
+                    const interp = cs.interpretation && cs.interpretation.patient_label
+                        ? `<div class="body">${escapeHtml(cs.interpretation.patient_label)}</div>`
+                        : '';
+                    const flagsHtml = tf.length
+                        ? `<div class="body" style="margin-top:6px;">${tf.map(f => severityBadge(f.severity)+' '+escapeHtml(f.message||f.flag_type)).join('<br>')}</div>`
+                        : '';
+                    return `
+                        <div class="row">
+                            <div class="hd">
+                                <h3 class="title">${escapeHtml((r.prom_slug||'').toUpperCase())} · ${fmtDate(r.submitted_at)}</h3>
+                                <div>${tf.length ? `<span class="badge b-amber">${tf.length} flag${tf.length===1?'':'s'}</span>` : '<span class="badge b-green">clean</span>'}</div>
+                            </div>
+                            <div class="meta">${totalLine}${totalLine&&subscaleLine?' · ':''}${subscaleLine}</div>
+                            ${interp}
+                            ${flagsHtml}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        load();
+    </script>
+
+    <script src="/admin/_nav.js"></script>
+</body>
+</html>

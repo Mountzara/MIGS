@@ -1,0 +1,54 @@
+{
+  "slug": "pgi-i",
+  "title": "Overall impression after treatment (PGI-I)",
+  "short_name": "PGI-I",
+  "tier": 2,
+  "domain": "treatment_response",
+  "description": "A single-question measure of overall patient-perceived change after a treatment, procedure, or surgery. The FDA-endorsed responder definition: scores of 1 or 2 (\"much better\" or \"very much better\") indicate a treatment responder.",
+  "estimated_minutes": 1,
+  "items": [
+    {
+      "id": "pgi_i_overall",
+      "text": "Compared with how you felt before your treatment, how would you describe your condition now?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 1, "label": "Very much better" },
+        { "value": 2, "label": "Much better" },
+        { "value": 3, "label": "A little better" },
+        { "value": 4, "label": "No change" },
+        { "value": 5, "label": "A little worse" },
+        { "value": 6, "label": "Much worse" },
+        { "value": 7, "label": "Very much worse" }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "sum",
+    "items": ["pgi_i_overall"],
+    "range": [1, 7],
+    "interpretation_bands": [
+      { "min": 1, "max": 2, "label": "responder",        "patient_label": "Substantially better — treatment is working." },
+      { "min": 3, "max": 3, "label": "mild_improvement", "patient_label": "Slight improvement — worth continuing to track." },
+      { "min": 4, "max": 4, "label": "no_change",        "patient_label": "No change since treatment." },
+      { "min": 5, "max": 7, "label": "worse",            "patient_label": "Worse than before — worth a closer look at the plan." }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "total <= 2",
+      "flag_type": "pgi_responder",
+      "severity": "info",
+      "message": "Treatment responder (PGI-I ≤2). Outcome recorded for the registry."
+    },
+    {
+      "rule": "total >= 6",
+      "flag_type": "pgi_worse",
+      "severity": "urgent",
+      "message": "Patient reports being much worse or very much worse after treatment. Recommend prompt clinician outreach.",
+      "follow_up_action": "urgent_clinician_alert"
+    }
+  ],
+  "citation": "Yalcin I, Bump RC. Validation of two global impression questionnaires for incontinence. Am J Obstet Gynecol 2003;189:98-101. PMID: 12861145",
+  "license_note": "Free for clinical use. Widely used as a regulatory endpoint."
+}

@@ -1,0 +1,135 @@
+{
+  "slug": "bpi-sf",
+  "title": "Pain & impact check-in (Brief Pain Inventory — Short Form)",
+  "short_name": "BPI-SF",
+  "tier": 1,
+  "domain": "pain",
+  "description": "A 9-question measure of pain severity over the last 24 hours and how much pain has interfered with everyday life. Administered whenever pain is part of the chief complaint. Repeated at every periodic check-in to track change over time.",
+  "estimated_minutes": 4,
+  "items": [
+    {
+      "id": "pain_worst",
+      "text": "Please rate your pain by selecting the number that best describes your pain at its WORST in the last 24 hours.",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "No pain", "max_label": "Pain as bad as you can imagine" }
+    },
+    {
+      "id": "pain_least",
+      "text": "Please rate your pain by selecting the number that best describes your pain at its LEAST in the last 24 hours.",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "No pain", "max_label": "Pain as bad as you can imagine" }
+    },
+    {
+      "id": "pain_average",
+      "text": "Please rate your pain by selecting the number that best describes your pain on the AVERAGE.",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "No pain", "max_label": "Pain as bad as you can imagine" }
+    },
+    {
+      "id": "pain_now",
+      "text": "Please rate your pain by selecting the number that tells how much pain you have RIGHT NOW.",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "No pain", "max_label": "Pain as bad as you can imagine" }
+    },
+    {
+      "id": "interfere_general_activity",
+      "text": "In the last 24 hours, how much has pain interfered with your General Activity?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_mood",
+      "text": "In the last 24 hours, how much has pain interfered with your Mood?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_walking",
+      "text": "In the last 24 hours, how much has pain interfered with your Walking Ability?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_work",
+      "text": "In the last 24 hours, how much has pain interfered with your Normal Work (including both work outside the home and housework)?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_relations",
+      "text": "In the last 24 hours, how much has pain interfered with your Relations with Other People?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_sleep",
+      "text": "In the last 24 hours, how much has pain interfered with your Sleep?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    },
+    {
+      "id": "interfere_enjoyment",
+      "text": "In the last 24 hours, how much has pain interfered with your Enjoyment of Life?",
+      "type": "scale",
+      "required": true,
+      "scale": { "min": 0, "max": 10, "min_label": "Does not interfere", "max_label": "Completely interferes" }
+    }
+  ],
+  "scoring": {
+    "method": "subscale_mean",
+    "subscales": {
+      "pain_severity": {
+        "items": ["pain_worst", "pain_least", "pain_average", "pain_now"],
+        "method": "mean",
+        "range": [0, 10]
+      },
+      "pain_interference": {
+        "items": [
+          "interfere_general_activity", "interfere_mood", "interfere_walking",
+          "interfere_work", "interfere_relations", "interfere_sleep", "interfere_enjoyment"
+        ],
+        "method": "mean",
+        "range": [0, 10]
+      }
+    },
+    "interpretation_bands": [
+      { "subscale": "pain_severity", "min": 0,   "max": 3.9, "label": "mild",     "patient_label": "Mild pain range" },
+      { "subscale": "pain_severity", "min": 4.0, "max": 6.9, "label": "moderate", "patient_label": "Moderate pain range" },
+      { "subscale": "pain_severity", "min": 7.0, "max": 10,  "label": "severe",   "patient_label": "Severe pain range" }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "subscale.pain_severity >= 7",
+      "flag_type": "bpi_severity_high",
+      "severity": "warning",
+      "message": "Pain severity in the severe range (BPI ≥7). Consider clinician outreach within 1–2 days.",
+      "follow_up_action": "clinician_alert"
+    },
+    {
+      "rule": "subscale.pain_severity >= 9",
+      "flag_type": "bpi_severity_urgent",
+      "severity": "urgent",
+      "message": "Pain severity ≥9/10. Recommend same-day clinician contact.",
+      "follow_up_action": "urgent_clinician_alert"
+    },
+    {
+      "rule": "subscale.pain_interference >= 7",
+      "flag_type": "bpi_interference_high",
+      "severity": "warning",
+      "message": "Pain is substantially interfering with daily life (BPI interference ≥7). Consider multimodal pain plan including pelvic floor PT and neuromodulator evaluation."
+    }
+  ],
+  "citation": "Cleeland CS, Ryan KM. Pain assessment: global use of the Brief Pain Inventory. Ann Acad Med Singapore 1994;23:129-38. PMID: 8080219",
+  "license_note": "Free for clinical use. Permission required for translations from MD Anderson Cancer Center."
+}

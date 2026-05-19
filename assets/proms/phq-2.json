@@ -1,0 +1,55 @@
+{
+  "slug": "phq-2",
+  "title": "Quick mood check-in (PHQ-2)",
+  "short_name": "PHQ-2",
+  "tier": 1,
+  "domain": "depression",
+  "description": "A 2-question screen for depression over the past 2 weeks. Used universally because depression coexists with chronic pelvic pain in 12–33% of patients (ACOG PB 218). A positive screen escalates to the full PHQ-9.",
+  "estimated_minutes": 1,
+  "items": [
+    {
+      "id": "anhedonia",
+      "text": "Over the last 2 weeks, how often have you been bothered by little interest or pleasure in doing things?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" },
+        { "value": 1, "label": "Several days" },
+        { "value": 2, "label": "More than half the days" },
+        { "value": 3, "label": "Nearly every day" }
+      ]
+    },
+    {
+      "id": "depressed_mood",
+      "text": "Over the last 2 weeks, how often have you been bothered by feeling down, depressed, or hopeless?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" },
+        { "value": 1, "label": "Several days" },
+        { "value": 2, "label": "More than half the days" },
+        { "value": 3, "label": "Nearly every day" }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "sum",
+    "items": ["anhedonia", "depressed_mood"],
+    "range": [0, 6],
+    "interpretation_bands": [
+      { "min": 0, "max": 2, "label": "negative_screen", "patient_label": "Within normal range" },
+      { "min": 3, "max": 6, "label": "positive_screen", "patient_label": "Worth a closer look" }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "total >= 3",
+      "flag_type": "phq2_positive",
+      "severity": "warning",
+      "message": "Positive depression screen (PHQ-2 ≥3). Recommend escalation to PHQ-9 and clinician follow-up.",
+      "follow_up_action": "assign_phq9"
+    }
+  ],
+  "citation": "Kroenke K, Spitzer RL, Williams JBW. The Patient Health Questionnaire-2: validity of a two-item depression screener. Med Care 2003;41(11):1284-92. PMID: 14583691",
+  "license_note": "Public domain (Pfizer, originally; no copyright restriction)."
+}

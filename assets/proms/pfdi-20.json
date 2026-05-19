@@ -1,0 +1,66 @@
+{
+  "slug": "pfdi-20",
+  "title": "Pelvic floor symptoms (PFDI-20)",
+  "short_name": "PFDI-20",
+  "tier": 2,
+  "domain": "pelvic_floor",
+  "description": "A 20-item measure of pelvic floor symptom distress across three compartments: pelvic organ prolapse (POPDI-6), bowel/colorectal-anal (CRADI-8), and urinary (UDI-6). AUGS- and IUGA-endorsed; the standard PROM for prolapse and pelvic floor surgical decision-making and outcome tracking.",
+  "estimated_minutes": 6,
+  "items": [
+    { "id": "popdi_bulge",        "text": "Do you usually feel pressure in the lower abdomen?",                                                                       "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "popdi_heaviness",    "text": "Do you usually feel heaviness or dullness in the pelvic area?",                                                                "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "popdi_protrude",     "text": "Do you usually have a bulge or something falling out that you can see or feel in the vaginal area?",                          "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "popdi_push_void",    "text": "Do you usually have to push on the vagina or around the rectum to have or complete a bowel movement?",                         "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "popdi_incomplete",   "text": "Do you usually experience a feeling of incomplete bladder emptying?",                                                          "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "popdi_push_replace", "text": "Do you ever have to push up on a bulge in the vaginal area with your fingers to start or complete urination?",                 "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+
+    { "id": "cradi_constipation", "text": "Do you feel you need to strain too hard to have a bowel movement?",                                                            "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_incomplete",   "text": "Do you feel you have not completely emptied your bowels at the end of a bowel movement?",                                       "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_stool_loss",   "text": "Do you usually lose stool beyond your control if your stool is well-formed?",                                                    "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_loose_loss",   "text": "Do you usually lose stool beyond your control if your stool is loose or liquid?",                                                "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_gas_loss",     "text": "Do you usually lose gas from the rectum beyond your control?",                                                                  "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_pain_bm",      "text": "Do you usually have pain when you pass your stool?",                                                                            "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_urgent_bm",    "text": "Do you experience a strong sense of urgency and have to rush to the bathroom to have a bowel movement?",                       "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "cradi_part_protrude","text": "Does part of your bowel ever pass through the rectum and bulge outside during or after a bowel movement?",                     "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+
+    { "id": "udi_frequent_void",  "text": "Do you usually experience frequent urination?",                                                                                 "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "udi_urge_leak",      "text": "Do you usually experience urine leakage associated with a feeling of urgency?",                                                  "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "udi_stress_leak",    "text": "Do you usually experience urine leakage related to coughing, sneezing, or laughing?",                                            "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "udi_drops",          "text": "Do you usually experience small amounts of urine leakage (i.e. drops)?",                                                         "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "udi_difficulty",     "text": "Do you usually experience difficulty emptying your bladder?",                                                                    "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] },
+    { "id": "udi_pain_lower",     "text": "Do you usually experience pain or discomfort in the lower abdomen or genital area?",                                             "type": "choice", "required": true, "options": [{"value":0,"label":"No"},{"value":1,"label":"Yes — not at all bothered"},{"value":2,"label":"Yes — somewhat bothered"},{"value":3,"label":"Yes — moderately bothered"},{"value":4,"label":"Yes — quite a bit bothered"}] }
+  ],
+  "scoring": {
+    "method": "subscale_mean",
+    "note": "Each subscale = mean of constituent items × 25 (giving 0–100 per subscale). Total = sum of three subscales (range 0–300). Higher = more distress.",
+    "subscales": {
+      "popdi_6": {
+        "items": ["popdi_bulge","popdi_heaviness","popdi_protrude","popdi_push_void","popdi_incomplete","popdi_push_replace"],
+        "method": "mean", "range": [0, 4]
+      },
+      "cradi_8": {
+        "items": ["cradi_constipation","cradi_incomplete","cradi_stool_loss","cradi_loose_loss","cradi_gas_loss","cradi_pain_bm","cradi_urgent_bm","cradi_part_protrude"],
+        "method": "mean", "range": [0, 4]
+      },
+      "udi_6": {
+        "items": ["udi_frequent_void","udi_urge_leak","udi_stress_leak","udi_drops","udi_difficulty","udi_pain_lower"],
+        "method": "mean", "range": [0, 4]
+      }
+    },
+    "interpretation_bands": [
+      { "subscale": "popdi_6", "min": 0,   "max": 1.0, "label": "minimal_prolapse_distress",  "patient_label": "Minimal prolapse symptoms" },
+      { "subscale": "popdi_6", "min": 1.1, "max": 4,   "label": "notable_prolapse_distress",  "patient_label": "Notable prolapse symptoms — worth evaluating" },
+      { "subscale": "cradi_8", "min": 0,   "max": 1.0, "label": "minimal_bowel_distress",     "patient_label": "Minimal bowel symptoms" },
+      { "subscale": "cradi_8", "min": 1.1, "max": 4,   "label": "notable_bowel_distress",     "patient_label": "Notable bowel symptoms" },
+      { "subscale": "udi_6",   "min": 0,   "max": 1.0, "label": "minimal_urinary_distress",   "patient_label": "Minimal urinary symptoms" },
+      { "subscale": "udi_6",   "min": 1.1, "max": 4,   "label": "notable_urinary_distress",   "patient_label": "Notable urinary symptoms" }
+    ]
+  },
+  "thresholds": [
+    { "rule": "subscale.popdi_6 >= 2.0", "flag_type": "pfdi_prolapse_substantial", "severity": "warning", "message": "Substantial prolapse-related distress (POPDI-6 ≥ 2.0). Consider urogyn evaluation / POP-Q exam." },
+    { "rule": "subscale.cradi_8 >= 2.0", "flag_type": "pfdi_bowel_substantial",    "severity": "warning", "message": "Substantial bowel symptoms (CRADI-8 ≥ 2.0). Consider colorectal referral if rectal prolapse or fecal incontinence features." },
+    { "rule": "subscale.udi_6 >= 2.0",   "flag_type": "pfdi_urinary_substantial",  "severity": "warning", "message": "Substantial urinary symptoms (UDI-6 ≥ 2.0). Consider urodynamics + urogyn evaluation." }
+  ],
+  "citation": "Barber MD, Walters MD, Bump RC. Short forms of two condition-specific quality-of-life questionnaires for women with pelvic floor disorders (PFDI-20 and PFIQ-7). Am J Obstet Gynecol 2005;193:103-13. PMID: 16021067",
+  "license_note": "Free; AUGS- and IUGA-endorsed for clinical and research use."
+}

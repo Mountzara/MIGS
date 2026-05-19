@@ -1,0 +1,55 @@
+{
+  "slug": "gad-2",
+  "title": "Quick anxiety check-in (GAD-2)",
+  "short_name": "GAD-2",
+  "tier": 1,
+  "domain": "anxiety",
+  "description": "A 2-question screen for generalized anxiety over the past 2 weeks. A positive screen escalates to the full GAD-7. Pre-operative anxiety is a known predictor of worse postoperative recovery.",
+  "estimated_minutes": 1,
+  "items": [
+    {
+      "id": "nervous",
+      "text": "Over the last 2 weeks, how often have you been bothered by feeling nervous, anxious, or on edge?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" },
+        { "value": 1, "label": "Several days" },
+        { "value": 2, "label": "More than half the days" },
+        { "value": 3, "label": "Nearly every day" }
+      ]
+    },
+    {
+      "id": "cant_stop_worrying",
+      "text": "Over the last 2 weeks, how often have you been bothered by not being able to stop or control worrying?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Not at all" },
+        { "value": 1, "label": "Several days" },
+        { "value": 2, "label": "More than half the days" },
+        { "value": 3, "label": "Nearly every day" }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "sum",
+    "items": ["nervous", "cant_stop_worrying"],
+    "range": [0, 6],
+    "interpretation_bands": [
+      { "min": 0, "max": 2, "label": "negative_screen", "patient_label": "Within normal range" },
+      { "min": 3, "max": 6, "label": "positive_screen", "patient_label": "Worth a closer look" }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "total >= 3",
+      "flag_type": "gad2_positive",
+      "severity": "warning",
+      "message": "Positive anxiety screen (GAD-2 ≥3). Recommend escalation to GAD-7 and clinician follow-up.",
+      "follow_up_action": "assign_gad7"
+    }
+  ],
+  "citation": "Kroenke K, Spitzer RL, Williams JBW, Monahan PO, Löwe B. Anxiety disorders in primary care: prevalence, impairment, comorbidity, and detection. Ann Intern Med 2007;146:317-25. PMID: 17339617",
+  "license_note": "Public domain (no copyright restriction)."
+}

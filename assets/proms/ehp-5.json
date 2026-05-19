@@ -1,0 +1,109 @@
+{
+  "slug": "ehp-5",
+  "title": "Endometriosis quality-of-life check-in (EHP-5)",
+  "short_name": "EHP-5",
+  "tier": 2,
+  "domain": "endometriosis",
+  "description": "A 5-question version of the gold-standard Endometriosis Health Profile (EHP-30), covering pain, control, emotional well-being, social support, and self-image. Used at baseline and at every 3-month follow-up for patients with suspected or confirmed endometriosis.",
+  "estimated_minutes": 2,
+  "items": [
+    {
+      "id": "pain_during_period",
+      "text": "Have you experienced pain during your period (or, if you don't have periods, pelvic pain that comes and goes)?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "Rarely" },
+        { "value": 2, "label": "Sometimes" },
+        { "value": 3, "label": "Often" },
+        { "value": 4, "label": "Always" }
+      ]
+    },
+    {
+      "id": "control_powerlessness",
+      "text": "Have you felt unable to do things that you would have liked to do because of endometriosis or pelvic pain?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "Rarely" },
+        { "value": 2, "label": "Sometimes" },
+        { "value": 3, "label": "Often" },
+        { "value": 4, "label": "Always" }
+      ]
+    },
+    {
+      "id": "emotional_wellbeing",
+      "text": "Have you felt frustrated or low because of your symptoms?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "Rarely" },
+        { "value": 2, "label": "Sometimes" },
+        { "value": 3, "label": "Often" },
+        { "value": 4, "label": "Always" }
+      ]
+    },
+    {
+      "id": "social_support",
+      "text": "Have you felt that other people didn't understand what you were going through?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "Rarely" },
+        { "value": 2, "label": "Sometimes" },
+        { "value": 3, "label": "Often" },
+        { "value": 4, "label": "Always" }
+      ]
+    },
+    {
+      "id": "self_image",
+      "text": "Have you felt unhappy with your appearance (because of bloating, weight, or feeling unwell)?",
+      "type": "choice",
+      "required": true,
+      "options": [
+        { "value": 0, "label": "Never" },
+        { "value": 1, "label": "Rarely" },
+        { "value": 2, "label": "Sometimes" },
+        { "value": 3, "label": "Often" },
+        { "value": 4, "label": "Always" }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "weighted_transformed",
+    "note": "Standard EHP-5 scoring: sum of items × 25 / 4 = score 0–100 per item; total = mean of the 5 transformed values. Lower = better QoL.",
+    "items": ["pain_during_period", "control_powerlessness", "emotional_wellbeing", "social_support", "self_image"],
+    "transform": "value * 25",
+    "aggregate": "mean",
+    "range": [0, 100],
+    "lower_is_better": true,
+    "interpretation_bands": [
+      { "min": 0,  "max": 24,  "label": "minimal_impact",   "patient_label": "Endometriosis is having a minimal impact on your life right now." },
+      { "min": 25, "max": 49,  "label": "moderate_impact",  "patient_label": "Endometriosis is having a moderate impact on your life." },
+      { "min": 50, "max": 74,  "label": "substantial_impact", "patient_label": "Endometriosis is substantially affecting your day-to-day life." },
+      { "min": 75, "max": 100, "label": "severe_impact",    "patient_label": "Endometriosis is severely affecting your quality of life." }
+    ]
+  },
+  "thresholds": [
+    {
+      "rule": "total >= 50",
+      "flag_type": "ehp5_substantial_impact",
+      "severity": "warning",
+      "message": "EHP-5 score in the substantial-impact range (≥50). Consider escalating treatment plan or scheduling visit.",
+      "follow_up_action": "clinician_alert"
+    },
+    {
+      "rule": "delta_vs_baseline >= 25",
+      "flag_type": "ehp5_worsening",
+      "severity": "warning",
+      "message": "EHP-5 score has worsened by ≥25 points compared to baseline. Recommend earlier follow-up visit.",
+      "follow_up_action": "clinician_alert"
+    }
+  ],
+  "citation": "Jones G, Jenkinson C, Kennedy S. Evaluating the responsiveness of the Endometriosis Health Profile Questionnaire: the EHP-30. Qual Life Res 2004;13:705-13. PMID: 15130030",
+  "license_note": "Free for academic and not-for-profit clinical use. Commercial use requires license through Oxford University / Mapi Research Trust."
+}

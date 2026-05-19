@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Health check-ins · Member Portal · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.10);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.42);
+            --accent: #6d28d9;
+            --accent-soft: rgba(167, 139, 250, 0.95);
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; background: var(--bg-base); color: var(--fg-mid); font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+        a { color: var(--accent-soft); text-decoration: none; }
+        a:hover { color: rgba(196, 181, 253, 1); }
+        .wrap { max-width: 920px; margin: 0 auto; padding: 24px 22px 80px; }
+        .top-row { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom: 24px; }
+        .brand { display:flex; align-items:center; gap:10px; color: var(--fg-strong); font-weight: 500; letter-spacing: 0.04em; font-size: 13px; }
+        .brand a { color: inherit; }
+        .session-actions { display:flex; gap:18px; font-size: 13px; }
+        .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-soft); margin: 18px 0 6px; }
+        h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 200; letter-spacing: -0.022em; color: var(--fg-strong); margin: 0 0 8px; line-height: 1.08; }
+        .greeting-sub { font-size: 16.5px; line-height: 1.62; color: var(--fg-soft); max-width: 720px; margin: 0 0 28px; }
+        .empty-state { padding: 28px 22px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; color: var(--fg-soft); text-align: center; font-size: 15px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); }
+        /* Assignment cards */
+        .assignment-list { display: flex; flex-direction: column; gap: 12px; }
+        .assignment {
+            padding: 18px 22px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            cursor: pointer;
+        }
+        .assignment:hover {
+            transform: translateY(-2px);
+            border-color: rgba(167, 139, 250, 0.32);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .assignment .row { display:flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+        .assignment h3 { margin: 0; font-size: 17px; font-weight: 600; color: var(--fg-strong); letter-spacing: -0.012em; }
+        .assignment .meta { font-size: 12.5px; color: var(--fg-dim); letter-spacing: 0.02em; }
+        .assignment .why { font-size: 13.5px; color: var(--fg-soft); margin: 0; line-height: 1.55; }
+        .badge { display:inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+        .badge-pending { background: rgba(167, 139, 250, 0.18); color: var(--accent-soft); border: 1px solid rgba(167, 139, 250, 0.32); }
+        .badge-in-progress { background: rgba(245, 158, 11, 0.18); color: rgba(252, 211, 77, 0.95); border: 1px solid rgba(245, 158, 11, 0.32); }
+        .badge-completed { background: rgba(110, 231, 183, 0.14); color: rgba(110, 231, 183, 0.95); border: 1px solid rgba(110, 231, 183, 0.28); }
+        .badge-tier1 { background: rgba(255, 255, 255, 0.06); color: var(--fg-soft); border: 1px solid rgba(255, 255, 255, 0.10); }
+        .badge-tier2 { background: rgba(167, 139, 250, 0.10); color: var(--accent-soft); border: 1px solid rgba(167, 139, 250, 0.22); }
+        /* Administration view */
+        .admin-view { display: none; }
+        .admin-view.open { display: block; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--accent-soft); margin-bottom: 14px; cursor: pointer; background: transparent; border: none; padding: 0; }
+        .question {
+            padding: 22px 22px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            margin-bottom: 14px;
+        }
+        .question h3 { margin: 0 0 14px; font-size: 16.5px; font-weight: 500; color: var(--fg-strong); line-height: 1.45; letter-spacing: -0.008em; }
+        .options { display: flex; flex-direction: column; gap: 8px; }
+        .option {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s;
+            font-size: 14.5px;
+            color: var(--fg-mid);
+        }
+        .option:hover { background: rgba(167, 139, 250, 0.06); border-color: rgba(167, 139, 250, 0.22); }
+        .option input[type=radio] { accent-color: var(--accent); width: 18px; height: 18px; }
+        .option.selected { background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.45); color: var(--fg-strong); }
+        .scale-row { display: flex; flex-direction: column; gap: 8px; }
+        .scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-dim); }
+        .scale-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+        .scale-btn {
+            flex: 1;
+            min-width: 32px;
+            padding: 10px 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 8px;
+            color: var(--fg-mid);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .scale-btn:hover { background: rgba(167, 139, 250, 0.08); border-color: rgba(167, 139, 250, 0.28); }
+        .scale-btn.selected { background: rgba(167, 139, 250, 0.20); border-color: var(--accent-soft); color: var(--fg-strong); }
+        .submit-row { margin-top: 22px; display: flex; gap: 12px; align-items: center; }
+        .btn {
+            padding: 12px 22px;
+            background: rgba(167, 139, 250, 0.20);
+            border: 1px solid rgba(167, 139, 250, 0.45);
+            color: var(--fg-strong);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14.5px; font-weight: 600;
+            transition: background 0.18s, transform 0.18s;
+        }
+        .btn:hover { background: rgba(167, 139, 250, 0.30); transform: translateY(-1px); }
+        .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost { background: transparent; border-color: rgba(255, 255, 255, 0.14); color: var(--fg-mid); }
+        /* Confirmation panel */
+        .confirmation {
+            padding: 24px;
+            background: rgba(110, 231, 183, 0.08);
+            border: 1px solid rgba(110, 231, 183, 0.32);
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+        .confirmation h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; color: rgba(167, 243, 208, 0.96); }
+        .confirmation p { margin: 0 0 6px; font-size: 14.5px; line-height: 1.5; color: rgba(167, 243, 208, 0.86); }
+        .flag-alert {
+            margin-top: 12px;
+            padding: 14px 16px;
+            background: rgba(245, 158, 11, 0.10);
+            border: 1px solid rgba(245, 158, 11, 0.32);
+            border-radius: 10px;
+            font-size: 13.5px;
+            color: rgba(252, 211, 77, 0.95);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .assignment, .scale-btn, .option, .btn { transition: none !important; transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="top-row">
+            <div class="brand">
+                <img src="/assets/images/monogram.svg" alt="" width="20" height="20" style="opacity:0.9" onerror="this.remove()">
+                <span><a href="/portal/">Mount Zara · Member Portal</a></span>
+            </div>
+            <div class="session-actions">
+                <a href="/portal/profile/">Profile</a>
+                <a href="#" id="link-logout">Sign out</a>
+            </div>
+        </div>
+
+        <!-- LIST VIEW -->
+        <section id="list-view">
+            <p class="eyebrow">Member portal · Health check-ins</p>
+            <h1 id="list-title">Your check-ins</h1>
+            <p class="greeting-sub" id="list-subtitle">Short, validated questionnaires Dr. Mabini and the care team use to track how you're doing between visits. Each takes 1–4 minutes.</p>
+            <div id="list-container">
+                <div class="empty-state">Loading your check-ins…</div>
+            </div>
+        </section>
+
+        <!-- ADMINISTRATION VIEW -->
+        <section id="admin-view" class="admin-view">
+            <button type="button" class="back-link" id="back-to-list">← Back to all check-ins</button>
+            <p class="eyebrow" id="admin-eyebrow"></p>
+            <h1 id="admin-title"></h1>
+            <p class="greeting-sub" id="admin-description"></p>
+            <div id="admin-questions"></div>
+            <div class="submit-row">
+                <button type="button" class="btn" id="btn-submit" disabled>Submit</button>
+                <button type="button" class="btn btn-ghost" id="btn-cancel">Save for later</button>
+            </div>
+        </section>
+
+        <!-- CONFIRMATION VIEW -->
+        <section id="confirm-view" class="admin-view">
+            <button type="button" class="back-link" id="confirm-back">← Back to all check-ins</button>
+            <div class="confirmation">
+                <h2>Thanks — your responses are saved.</h2>
+                <p id="confirm-score-line"></p>
+                <p id="confirm-interpretation-line"></p>
+                <div id="confirm-flags"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const state = {
+            assignments: [],
+            current: null,           // current full {assignment, definition}
+            responses: {},           // {item_id: value}
+        };
+
+        // -- Routing helpers -----------------------------------------------
+        function showList()    { $('list-view').style.display = ''; $('admin-view').classList.remove('open'); $('confirm-view').classList.remove('open'); }
+        function showAdmin()   { $('list-view').style.display = 'none'; $('admin-view').classList.add('open');    $('confirm-view').classList.remove('open'); }
+        function showConfirm() { $('list-view').style.display = 'none'; $('admin-view').classList.remove('open'); $('confirm-view').classList.add('open'); }
+
+        // -- API helpers ---------------------------------------------------
+        async function api(path, opts = {}) {
+            const r = await fetch(path, Object.assign({ credentials: 'include', headers: { 'content-type': 'application/json' } }, opts));
+            if (r.status === 401) { window.location.href = '/portal/login?next=/portal/proms/'; return null; }
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+            return data;
+        }
+
+        // -- List view -----------------------------------------------------
+        async function loadList() {
+            try {
+                const data = await api('/api/v1/patient/proms');
+                state.assignments = data?.assignments || [];
+                renderList();
+            } catch (e) {
+                $('list-container').innerHTML = `<div class="empty-state">Couldn't load your check-ins: ${escapeHtml(String(e.message || e))}</div>`;
+            }
+        }
+
+        function renderList() {
+            const a = state.assignments;
+            if (!a.length) {
+                $('list-container').innerHTML = `<div class="empty-state">No check-ins assigned yet. Once you finish your intake, your care team will send the relevant questionnaires here.</div>`;
+                return;
+            }
+            const pending = a.filter(x => x.status === 'pending' || x.status === 'in_progress');
+            const completed = a.filter(x => x.status === 'completed');
+
+            const renderItem = (x) => {
+                const tierBadge = x.tier === 1 ? '<span class="badge badge-tier1">Universal</span>' : '<span class="badge badge-tier2">For your situation</span>';
+                const statusBadge = x.status === 'completed'
+                    ? '<span class="badge badge-completed">Done</span>'
+                    : x.status === 'in_progress' ? '<span class="badge badge-in-progress">In progress</span>'
+                    : '<span class="badge badge-pending">New</span>';
+                const why = x.trigger_reason ? `<p class="why">${escapeHtml(x.trigger_reason)}</p>` : '';
+                const mins = x.estimated_minutes ? ` · ~${x.estimated_minutes} min` : '';
+                return `
+                    <div class="assignment" data-id="${escapeHtml(x.id)}">
+                        <div class="row">
+                            <h3>${escapeHtml(x.title || x.prom_slug)}</h3>
+                            <div>${tierBadge} ${statusBadge}</div>
+                        </div>
+                        <div class="meta">${escapeHtml((x.short_name || '').toUpperCase())}${mins}</div>
+                        ${why}
+                    </div>
+                `;
+            };
+
+            let html = '';
+            if (pending.length) {
+                html += `<div class="eyebrow" style="margin-top: 8px;">Pending — ${pending.length}</div>`;
+                html += `<div class="assignment-list">${pending.map(renderItem).join('')}</div>`;
+            }
+            if (completed.length) {
+                html += `<div class="eyebrow" style="margin-top: 22px;">Completed</div>`;
+                html += `<div class="assignment-list">${completed.map(renderItem).join('')}</div>`;
+            }
+            $('list-container').innerHTML = html;
+            $('list-container').querySelectorAll('.assignment').forEach(el => {
+                el.addEventListener('click', () => openAssignment(el.getAttribute('data-id')));
+            });
+        }
+
+        // -- Administration view -------------------------------------------
+        async function openAssignment(id) {
+            try {
+                const data = await api(`/api/v1/patient/proms/${encodeURIComponent(id)}`);
+                state.current = data;
+                state.responses = {};
+                renderAdmin();
+                showAdmin();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (e) {
+                alert('Could not open: ' + (e.message || e));
+            }
+        }
+
+        function renderAdmin() {
+            const { assignment, definition } = state.current;
+            $('admin-eyebrow').textContent = (definition.short_name || '').toUpperCase() + (assignment.period_label ? ' · ' + assignment.period_label : '');
+            $('admin-title').textContent = definition.title || definition.slug;
+            $('admin-description').textContent = definition.description || '';
+            const html = (definition.items || []).map(renderItem).join('');
+            $('admin-questions').innerHTML = html;
+            attachItemHandlers();
+            updateSubmitButton();
+        }
+
+        function renderItem(item) {
+            if (item.type === 'choice') {
+                return `
+                    <div class="question" data-item-id="${escapeHtml(item.id)}">
+                        <h3>${escapeHtml(item.text)}</h3>
+                        <div class="options">
+                            ${(item.options || []).map(o => `
+                                <label class="option" data-value="${o.value}">
+                                    <input type="radio" name="opt_${escapeHtml(item.id)}" value="${o.value}">
+                                    <span>${escapeHtml(o.label)}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            if (item.type === 'scale') {
+                const min = item.scale?.min ?? 0;
+                const max = item.scale?.max ?? 10;
+                const buttons = [];
+                for (let i = min; i <= max; i++) {
+                    buttons.push(`<button type="button" class="scale-btn" data-value="${i}">${i}</button>`);
+                }
+                return `
+                    <div class="question" data-item-id="${escapeHtml(item.id)}">
+                        <h3>${escapeHtml(item.text)}</h3>
+                        <div class="scale-row">
+                            <div class="scale-buttons">${buttons.join('')}</div>
+                            <div class="scale-labels">
+                                <span>${escapeHtml(item.scale?.min_label || min)}</span>
+                                <span>${escapeHtml(item.scale?.max_label || max)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        function attachItemHandlers() {
+            // choice rows
+            $('admin-questions').querySelectorAll('.question .options .option').forEach(el => {
+                el.addEventListener('click', () => {
+                    const q = el.closest('.question');
+                    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    el.classList.add('selected');
+                    const radio = el.querySelector('input[type=radio]');
+                    if (radio) radio.checked = true;
+                    state.responses[q.getAttribute('data-item-id')] = Number(el.getAttribute('data-value'));
+                    updateSubmitButton();
+                });
+            });
+            // scale buttons
+            $('admin-questions').querySelectorAll('.question .scale-buttons').forEach(group => {
+                const q = group.closest('.question');
+                group.querySelectorAll('.scale-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        group.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        state.responses[q.getAttribute('data-item-id')] = Number(btn.getAttribute('data-value'));
+                        updateSubmitButton();
+                    });
+                });
+            });
+        }
+
+        function updateSubmitButton() {
+            const items = state.current?.definition?.items || [];
+            const required = items.filter(i => i.required !== false);
+            const filled = required.every(i => typeof state.responses[i.id] === 'number');
+            $('btn-submit').disabled = !filled;
+        }
+
+        async function submit() {
+            if (!state.current) return;
+            const id = state.current.assignment.id;
+            try {
+                const data = await api(`/api/v1/patient/proms/${encodeURIComponent(id)}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ response_data: state.responses })
+                });
+                renderConfirmation(data);
+                showConfirm();
+            } catch (e) {
+                alert('Submit failed: ' + (e.message || e));
+            }
+        }
+
+        function renderConfirmation(result) {
+            const def = state.current?.definition;
+            const scores = result?.computed_scores || {};
+            let scoreLine = '';
+            if (typeof scores.total === 'number') {
+                scoreLine = `Your ${def.short_name || def.slug} score is <strong>${scores.total.toFixed(scores.total % 1 ? 1 : 0)}</strong>.`;
+            }
+            const band = scores.interpretation?.patient_label || '';
+            $('confirm-score-line').innerHTML = scoreLine;
+            $('confirm-interpretation-line').textContent = band || 'Your responses are now on Dr. Mabini’s case dashboard. They will be reviewed at your next visit — or sooner if anything needs attention.';
+            const flags = result?.threshold_flags || [];
+            if (flags.length) {
+                $('confirm-flags').innerHTML = flags.map(f =>
+                    `<div class="flag-alert">${escapeHtml(f.message || f.flag_type)}</div>`
+                ).join('');
+            } else {
+                $('confirm-flags').innerHTML = '';
+            }
+            // Reload list silently so this assignment shows as completed
+            loadList();
+        }
+
+        // -- Misc -----------------------------------------------------------
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        $('back-to-list').addEventListener('click', () => { showList(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        $('confirm-back').addEventListener('click', () => { showList(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        $('btn-cancel').addEventListener('click', () => { showList(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        $('btn-submit').addEventListener('click', submit);
+        $('link-logout').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try { await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+            window.location.href = '/portal/login';
+        });
+
+        loadList();
+    </script>
+</body>
+</html>
