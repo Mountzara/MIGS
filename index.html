@@ -3881,7 +3881,37 @@
            Reuses the .app-modal shell + adds purpose-built section
            treatments for evidence stats, R/B/A side-by-side, Q&A list,
            timeline, and references.
+           Tighter than the global .app-modal spacing — these modals
+           are dense reference content meant to be scannable.
            ============================================================ */
+        .dm-body.app-modal-body {
+            padding: 40px 44px;
+        }
+        .dm-body .app-modal-section {
+            margin-bottom: 32px;
+        }
+        .dm-body .app-modal-section-eyebrow {
+            margin-bottom: 8px;
+        }
+        .dm-body .app-modal-section-title {
+            font-size: clamp(20px, 2vw, 26px);
+            margin: 0 0 14px;
+            line-height: 1.18;
+        }
+        .dm-body .app-modal-section-lead {
+            font-size: 16.5px;
+            line-height: 1.62;
+            margin: 0 0 18px;
+            max-width: 720px;
+        }
+        @media (max-width: 720px) {
+            .dm-body.app-modal-body {
+                padding: 28px 22px;
+            }
+            .dm-body .app-modal-section {
+                margin-bottom: 24px;
+            }
+        }
         .dm-body p {
             font-size: 16.5px;
             line-height: 1.72;
@@ -3903,15 +3933,15 @@
         /* Evidence stats — 3-column tile grid of numbers + label + cite */
         .dm-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin: 24px 0 8px;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 12px;
+            margin: 14px 0 4px;
         }
         .dm-stat {
-            padding: 22px 22px 20px;
+            padding: 16px 18px 14px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.10);
-            border-radius: 14px;
+            border-radius: 12px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
             transition: transform 0.22s, border-color 0.22s, background 0.22s;
@@ -3945,14 +3975,14 @@
         /* R/B/A — three-column comparison: Expectant · Medical · Surgical */
         .dm-rba {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 12px;
         }
         .dm-rba-col {
-            padding: 26px 24px;
+            padding: 18px 18px 16px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.10);
-            border-radius: 18px;
+            border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
         }
@@ -4005,16 +4035,16 @@
         .dm-timeline {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 8px;
         }
         .dm-timeline-step {
             display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 18px;
-            padding: 20px 22px;
+            grid-template-columns: 130px 1fr;
+            gap: 14px;
+            padding: 14px 16px 12px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.10);
-            border-radius: 14px;
+            border-radius: 12px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
         }
@@ -4047,16 +4077,20 @@
         }
         .dm-qa-item {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 22px 0;
+            padding: 14px 0;
         }
         .dm-qa-item:last-child {
             border-bottom: none;
+            padding-bottom: 0;
+        }
+        .dm-qa-item:first-child {
+            padding-top: 0;
         }
         .dm-qa-q {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.96);
-            margin: 0 0 12px;
+            margin: 0 0 6px;
             letter-spacing: -0.012em;
             line-height: 1.35;
         }
@@ -4405,7 +4439,7 @@
         }
 
         /* ============================================================
-           Patient Portal nav link with "Coming Soon" badge.
+           Member Portal nav link with "Coming Soon" badge.
            Public visitors see this in both the main nav and footer; the
            link target /portal/ is gated by functions/portal/_middleware.js
            which serves a designed Coming Soon page until launch.
@@ -5465,9 +5499,10 @@
                 <li><a href="#apps">Apps</a></li>
                 <li><a href="#research">Research</a></li>
                 <li><a href="#awards">Awards</a></li>
+                <li><a href="/curriculum/">Curriculum</a></li>
                 <li><a href="/evidence/">Evidence</a></li>
                 <li><a href="/trending/">Trending</a></li>
-                <li><a href="/portal/" class="nav-portal-link">Patient Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
+                <li><a href="/portal/" class="nav-portal-link">Member Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
                 <li><a href="/about/">Bio</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
@@ -6608,6 +6643,7 @@
                     <h4>Hospice Pilot Rotation Curriculum</h4>
                     <p class="curriculum-institution">Alabama College of Osteopathic Medicine</p>
                     <p>Designed and launched a hospice and palliative care rotation for medical students — the first of its kind at ACOM. Integrated Adult Learning principles (Knowles), experiential learning frameworks (Kolb), and reflective practice models to build competency in end-of-life care, family communication, and symptom management. Rotation included clinical immersion, debriefing sessions, and narrative medicine components.</p>
+                    <p style="margin-top: 14px; font-size: 13px;"><a href="/curriculum/hospice-clerkship/" style="color: rgba(167, 139, 250, 0.95); font-weight: 500;">Read the case study →</a></p>
                 </div>
 
                 <div class="curriculum-card">
@@ -6620,6 +6656,7 @@
                     <h4>CBG/MIGS Fellowship Curriculum</h4>
                     <p class="curriculum-institution">PRIME Saint Francis Hospital, Evanston</p>
                     <p>Architected the educational framework for a Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery fellowship — structured around graduated autonomy, competency-based milestones, and deliberate practice principles. Curriculum design emphasized surgical video review, case-based learning, simulation integration, and reflective journaling to accelerate skill acquisition and clinical reasoning in advanced minimally invasive procedures.</p>
+                    <p style="margin-top: 14px; font-size: 13px;"><a href="/curriculum/cbg-migs/" style="color: rgba(167, 139, 250, 0.95); font-weight: 500;">Read the full curriculum →</a></p>
                 </div>
 
                 <div class="curriculum-card">
@@ -6633,13 +6670,15 @@
                     <h4>Hospice Care Training Program</h4>
                     <p class="curriculum-institution">Community Hospice, Dothan</p>
                     <p>Developed a comprehensive training curriculum for hospice care providers — spanning symptom management, family-centered communication, ethical decision-making, and team-based interdisciplinary rounds. Applied andragogy frameworks and transformative learning theory to address the unique learning needs of adult healthcare professionals transitioning into palliative care. Program included simulated family meetings, reflective case discussions, and mentored clinical experiences.</p>
+                    <p style="margin-top: 14px; font-size: 13px;"><a href="/curriculum/hospice-training/" style="color: rgba(167, 139, 250, 0.95); font-weight: 500;">Read the case study →</a></p>
                 </div>
             </div>
 
             <div class="curriculum-cta">
                 <div class="curriculum-cta-inner">
-                    <h3>Adult Education Expertise</h3>
-                    <p>Curriculum design grounded in Malcolm Knowles' Adult Learning Theory, David Kolb's Experiential Learning Cycle, and Robert Gagné's Nine Events of Instruction. Skilled in backward design, competency mapping, assessment development, and program evaluation. Available for curriculum consulting, instructional design projects, and medical education leadership.</p>
+                    <h3>Curriculum design consulting available.</h3>
+                    <p>Curriculum design grounded in Malcolm Knowles' Adult Learning Theory, David Kolb's Experiential Learning Cycle, Robert Gagné's Nine Events of Instruction, and Dick & Carey's systems approach. Engagements range from a curriculum audit to a full multi-year fellowship build — for fellowships, residencies, and clinician training programs.</p>
+                    <p style="margin-top: 18px;"><a href="/curriculum/" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: rgba(167, 139, 250, 0.22); border: 1px solid rgba(167, 139, 250, 0.55); color: #fff; border-radius: 999px; font-weight: 500; font-size: 14px; text-decoration: none; transition: all 0.22s ease;">Explore curriculum consulting →</a></p>
                 </div>
             </div>
         </div>
@@ -6727,9 +6766,10 @@
                 <a href="#apps">Apps</a>
                 <a href="#research">Research</a>
                 <a href="#awards">Awards</a>
+                <a href="/curriculum/">Curriculum</a>
                 <a href="/evidence/">Evidence</a>
                 <a href="/trending/">Trending</a>
-                <a href="/portal/">Patient Portal <span class="nav-portal-badge-footer">soon</span></a>
+                <a href="/portal/">Member Portal <span class="nav-portal-badge-footer">soon</span></a>
                 <a href="/about/">Bio</a>
             </div>
             <div class="footer-social">
@@ -8659,7 +8699,7 @@
     "metaAnalysis.supportingStudies[].citation (PMID source pool)"
   ],
   "claims_anchored_per_card": {
-    "endometriosis-excision":   {"counseling_points": 19, "key_points": 148, "pmids_in_kb_pool": 50},
+    "endometriosis-excision":   {"counseling_points": 19, "key_points": 148, "pmids_in_kb_pool": 50, "primary_anchor": "ACOG Clinical Practice Guideline No. 11 — Management of Endometriosis (kb_chunks/01_acogDocuments_chunk04.json doc id e010f4126035) — used for Level A/B recommendations driving the modal narrative (TVUS imaging, excision > ablation, surgical management improves pregnancy rates, OCs/GnRH agonists ineffective for infertility, medical+surgical pain control with high recurrence)"},
     "myomectomy":               {"counseling_points": 19, "key_points": 127, "pmids_in_kb_pool": 50},
     "hysterectomy-mis":         {"counseling_points": 10, "key_points": 178, "pmids_in_kb_pool": 50},
     "operative-hysteroscopy":   {"counseling_points": 2,  "key_points": 47,  "pmids_in_kb_pool": 24},

@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Curriculum Design Consulting — Christopher Z. Mabini, DO, MSAEd · Mount Zara</title>
+    <meta name="description" content="Curriculum design and instructional design consulting for fellowships, residencies, and clinical training programs. Adult Learning Theory (Knowles, Kolb, Gagné, Dick & Carey) applied to ACGME-aligned, competency-based, equity-anchored medical education. By Christopher Z. Mabini, DO, MSAEd — Inaugural MIGS Fellow.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="canonical" href="https://mountzara.com/curriculum/">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <style>
+/* ============================================================
+   /curriculum/ — Consulting overview page
+   Visual grammar matches /education/*/ pages exactly:
+   purple Apple-glass, Avenir Next / Nunito Sans, no blue,
+   mzRise cascade animations, prefers-reduced-motion override.
+   §3.10 design principles enforced.
+   ============================================================ */
+
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245, 245, 247, 0.84);
+    --fg-soft: rgba(245, 245, 247, 0.62);
+    --fg-dim: rgba(245, 245, 247, 0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --amber: #f59e0b; --amber-soft: rgba(252, 211, 77, 0.92);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav — matches /education/ */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== HERO ===== */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 18px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; }
+
+/* ===== Credentials strip ===== */
+.creds {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin: 24px 0 0 0;
+}
+.creds .pill {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    color: var(--accent-soft);
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 12.5px; letter-spacing: 0.04em;
+}
+
+/* ===== Section scaffolding ===== */
+section.block { margin: clamp(36px, 6vw, 64px) 0; animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 0.05s; }
+section.block h2 {
+    font-weight: 300; font-size: clamp(22px, 3.2vw, 30px);
+    letter-spacing: -0.014em; line-height: 1.15;
+    color: var(--fg-strong); margin: 0 0 8px 0;
+}
+section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 28px 0; line-height: 1.55; }
+
+/* ===== Methodology grid (Knowles / Kolb / Gagné / Dick & Carey) ===== */
+.framework-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+}
+.framework-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    padding: 22px;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.framework-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.05);
+}
+.framework-card .label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px;
+}
+.framework-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 17px; letter-spacing: -0.005em; }
+.framework-card p { margin: 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
+
+/* ===== Case-study cards ===== */
+.case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+.case-card {
+    display: block;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 16px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    padding: 26px 24px;
+    text-decoration: none; color: inherit;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.case-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.55);
+    background: rgba(var(--glow-purple), 0.06);
+}
+.case-card .program-type {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px;
+}
+.case-card h3 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 19px; letter-spacing: -0.008em; line-height: 1.2; }
+.case-card .institution { color: var(--fg-soft); font-size: 13.5px; margin: 0 0 14px 0; }
+.case-card p { margin: 0 0 16px 0; font-size: 14.5px; color: var(--fg-mid); line-height: 1.6; }
+.case-card .read-more {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--accent-soft); font-weight: 500;
+}
+.case-card:hover .read-more { color: var(--fg-strong); }
+.case-card.coming-soon { opacity: 0.62; cursor: default; }
+.case-card.coming-soon:hover { transform: none; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.10); }
+.case-card .badge {
+    display: inline-block;
+    background: rgba(245, 158, 11, 0.16);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: var(--amber-soft);
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em;
+    margin-left: 8px;
+}
+
+/* ===== Services list ===== */
+.services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+.service-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    padding: 20px;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.service-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.05);
+}
+.service-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16px; }
+.service-card p { margin: 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
+
+/* ===== Methodology cycle (visual diagram) ===== */
+.cycle {
+    margin: 28px 0 4px 0;
+    padding: 26px;
+    background: rgba(var(--glow-purple), 0.04);
+    border: 1px solid rgba(var(--glow-purple), 0.22);
+    border-radius: 16px;
+}
+.cycle-stages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+.cycle-stage {
+    text-align: center;
+    padding: 14px 10px;
+    background: rgba(7, 7, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    position: relative;
+}
+.cycle-stage .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.18);
+    color: var(--accent-soft);
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 6px;
+}
+.cycle-stage .name { display: block; color: var(--fg-strong); font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; }
+.cycle-stage .desc { display: block; color: var(--fg-soft); font-size: 11.5px; margin-top: 3px; line-height: 1.35; }
+
+/* ===== Engagement section ===== */
+.engage {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+}
+.engage-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    padding: 22px;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.engage-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.45);
+}
+.engage-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 17px; }
+.engage-card p { margin: 0 0 8px 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
+.engage-card .scope { display: inline-block; font-size: 11.5px; color: var(--accent-soft); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ===== CTA ===== */
+.cta-block {
+    margin-top: clamp(40px, 6vw, 64px);
+    padding: clamp(28px, 4vw, 44px);
+    background: linear-gradient(135deg, rgba(var(--glow-purple), 0.08), rgba(var(--glow-purple), 0.04));
+    border: 1px solid rgba(var(--glow-purple), 0.32);
+    border-radius: 18px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    text-align: center;
+}
+.cta-block h3 { margin: 0 0 10px 0; color: var(--fg-strong); font-weight: 300; font-size: clamp(22px, 3vw, 28px); letter-spacing: -0.012em; }
+.cta-block p { margin: 0 0 22px 0; color: var(--fg-mid); font-size: 15.5px; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-block a.btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(var(--glow-purple), 0.22);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--fg-strong);
+    padding: 12px 28px; border-radius: 999px;
+    font-weight: 500; font-size: 14.5px; letter-spacing: 0.04em;
+    transition: all 0.22s ease;
+}
+.cta-block a.btn:hover {
+    background: rgba(var(--glow-purple), 0.34);
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.85);
+}
+
+/* ===== Footer note ===== */
+.foot { margin-top: 64px; padding-top: 28px; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 12.5px; color: var(--fg-dim); }
+.foot a { color: var(--fg-soft); }
+.foot a:hover { color: var(--fg-strong); }
+
+/* ===== Accessibility: prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ===== Focus-visible (a11y) ===== */
+a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
+.service-card:focus-visible, .engage-card:focus-visible, .cta-block a.btn:focus-visible {
+    outline: 2px solid rgba(var(--glow-purple), 0.75);
+    outline-offset: 2px;
+    border-radius: 14px;
+}
+
+/* ===== Skip link ===== */
+.skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    background: rgba(var(--glow-purple), 0.95);
+    color: #fff; padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; z-index: 200;
+}
+.skip-link:focus { left: 16px; }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <nav class="site-nav" aria-label="Primary">
+        <div class="inner">
+            <a href="/" class="brand">Mount Zara</a>
+            <span class="crumb">· Curriculum Design Consulting</span>
+            <div class="right-actions">
+                <a href="/about/">About</a>
+                <a href="/cv/">CV</a>
+                <a href="mailto:info@mountzara.com" class="cta">Engage</a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main" class="wrap">
+
+        <!-- HERO -->
+        <header class="hero">
+            <div class="eyebrow">Medical Education · Curriculum Design Consulting</div>
+            <h1>Curriculum design grounded in Adult Learning Theory.</h1>
+            <p class="lede">
+                Fellowships, residencies, and clinical training programs are best served by curriculum that is
+                <strong style="color: var(--fg-strong); font-weight: 500;">designed, not assembled</strong> — grounded in evidence-based instructional design, anchored to
+                ACGME and accreditation requirements, and built around the way adult learners actually learn.
+                That is the work. This page is what it looks like, and how to engage on it.
+            </p>
+            <div class="creds">
+                <span class="pill">DO · MSAEd</span>
+                <span class="pill">Curriculum Development & Instructional Design</span>
+                <span class="pill">CBG/MIGS Fellowship Architect</span>
+                <span class="pill">ACGME-aligned</span>
+                <span class="pill">Adult Learning Theory</span>
+            </div>
+        </header>
+
+        <!-- WHAT CURRICULUM DESIGN ACTUALLY MEANS -->
+        <section class="block" aria-labelledby="methodology">
+            <div class="eyebrow">Methodology</div>
+            <h2 id="methodology">A curriculum is a designed system, not a syllabus.</h2>
+            <p class="sub">
+                Every program below was built using the same end-to-end instructional-design cycle. Each phase
+                produces a deliverable. None of the phases are optional. Skipping context analysis or assessment
+                design is how curricula drift into "we've always done it that way" by year three.
+            </p>
+
+            <div class="cycle">
+                <div class="cycle-stages">
+                    <div class="cycle-stage">
+                        <span class="num">1</span>
+                        <span class="name">Context Analysis</span>
+                        <span class="desc">Institutional resources, learner profile, patient & community needs</span>
+                    </div>
+                    <div class="cycle-stage">
+                        <span class="num">2</span>
+                        <span class="name">Needs Assessment</span>
+                        <span class="desc">Community + fellow needs, ACGME gaps, equity priorities</span>
+                    </div>
+                    <div class="cycle-stage">
+                        <span class="num">3</span>
+                        <span class="name">Goals & Objectives</span>
+                        <span class="desc">Mission, competency-aligned objectives, measurable outcomes</span>
+                    </div>
+                    <div class="cycle-stage">
+                        <span class="num">4</span>
+                        <span class="name">Instructional Design</span>
+                        <span class="desc">Didactics, simulation, case-based learning, reflective practice</span>
+                    </div>
+                    <div class="cycle-stage">
+                        <span class="num">5</span>
+                        <span class="name">Assessment</span>
+                        <span class="desc">Formative + summative + competency milestones + case logs</span>
+                    </div>
+                    <div class="cycle-stage">
+                        <span class="num">6</span>
+                        <span class="name">Evaluation</span>
+                        <span class="desc">Program-level evaluation, continuous improvement, feedback loops</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="framework-grid" style="margin-top: 28px;">
+                <div class="framework-card">
+                    <div class="label">Andragogy</div>
+                    <h4>Malcolm Knowles</h4>
+                    <p>Adult Learning Theory: self-direction, prior experience, readiness to learn, problem-centered orientation, intrinsic motivation. The foundation for every adult-focused training program.</p>
+                </div>
+                <div class="framework-card">
+                    <div class="label">Experiential</div>
+                    <h4>David Kolb</h4>
+                    <p>Experiential Learning Cycle: concrete experience → reflective observation → abstract conceptualization → active experimentation. Especially powerful for surgical and procedural training.</p>
+                </div>
+                <div class="framework-card">
+                    <div class="label">Instructional events</div>
+                    <h4>Robert Gagné</h4>
+                    <p>Nine Events of Instruction: gain attention, inform objectives, recall prior knowledge, present content, provide guidance, elicit performance, give feedback, assess, enhance retention and transfer.</p>
+                </div>
+                <div class="framework-card">
+                    <div class="label">Systematic design</div>
+                    <h4>Dick & Carey</h4>
+                    <p>Systems-approach model: instructional goals, learner/context analysis, performance objectives, criterion-referenced assessment, instructional strategy, materials, formative + summative evaluation.</p>
+                </div>
+                <div class="framework-card">
+                    <div class="label">Compliance backbone</div>
+                    <h4>ACGME Core Competencies</h4>
+                    <p>Six competencies (Medical Knowledge, Patient Care, PBLI, ICS, Professionalism, Systems-Based Practice) mapped to milestones — the compliance and assessment backbone for every accredited program.</p>
+                </div>
+                <div class="framework-card">
+                    <div class="label">Transfer to practice</div>
+                    <h4>Transfer of Learning</h4>
+                    <p>Identifying and removing barriers to translating training into independent practice — institutional, cognitive, motivational. The piece most curricula skip and most graduates feel.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CASE STUDIES -->
+        <section class="block" aria-labelledby="case-studies">
+            <div class="eyebrow">Built and Delivered</div>
+            <h2 id="case-studies">Three curricula in production.</h2>
+            <p class="sub">
+                Each was designed end-to-end against the methodology above and is currently in use at the host
+                institution. Click into each for the full architecture: context analysis, stakeholder map, needs
+                assessment, monthly didactic plan, assessment design, and the original source document for download.
+            </p>
+
+            <div class="case-grid">
+                <a href="/curriculum/cbg-migs/" class="case-card">
+                    <div class="program-type">Fellowship · 2-year</div>
+                    <h3>CBG/MIGS Fellowship Curriculum</h3>
+                    <p class="institution">PRIME Illinois Saint Francis Hospital, Evanston · 2024 · 5-site rotation</p>
+                    <p>
+                        Comprehensive curriculum for Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery
+                        fellowship — multi-hospital architecture across SFH, SJH, SMH, TMH, and UIC. Monthly didactic
+                        plan, simulation integration, surgical-video review, AI-enhanced learning, equity-anchored
+                        needs assessment, competency-based milestones aligned to AAGL FMIGS program requirements.
+                    </p>
+                    <span class="read-more">Read the full curriculum →</span>
+                </a>
+
+                <a href="/curriculum/hospice-clerkship/" class="case-card">
+                    <div class="program-type">Medical Student Pilot Clerkship</div>
+                    <h3>Hospice Pilot Rotation Curriculum</h3>
+                    <p class="institution">Alabama College of Osteopathic Medicine · 2018</p>
+                    <p>
+                        First-of-its-kind hospice and palliative care rotation at ACOM. Integrated Knowles' Adult
+                        Learning Theory, Kolb's experiential cycle, and reflective practice models. End-of-life care,
+                        family communication, symptom management. Clinical immersion, debriefing sessions, narrative
+                        medicine components, competency-based assessment.
+                    </p>
+                    <span class="read-more">Read the full curriculum →</span>
+                </a>
+
+                <a href="/curriculum/hospice-training/" class="case-card">
+                    <div class="program-type">Clinician Training Program</div>
+                    <h3>Hospice Care Training Program</h3>
+                    <p class="institution">Community Hospice, Dothan AL</p>
+                    <p>
+                        Comprehensive training curriculum for hospice care providers transitioning into palliative
+                        care. Symptom management, family-centered communication, ethical decision-making, team-based
+                        interdisciplinary rounds. Andragogy + transformative learning theory frameworks. Simulated
+                        family meetings, reflective case discussions, mentored clinical experiences.
+                    </p>
+                    <span class="read-more">Read the full curriculum →</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- SERVICES -->
+        <section class="block" aria-labelledby="services">
+            <div class="eyebrow">Consulting Services</div>
+            <h2 id="services">What an institution can engage me to build.</h2>
+            <p class="sub">
+                Whether starting a new fellowship from scratch, refreshing a stalled program, or auditing an
+                existing curriculum against current accreditation standards — these are the deliverables I
+                produce. Engagements scope to your institution's needs.
+            </p>
+
+            <div class="services">
+                <div class="service-card">
+                    <h4>Needs assessment</h4>
+                    <p>Community-level, patient-level, learner-level, and faculty-level needs assessment. Surveys, focus groups, gap analysis, equity audits. The foundation every other deliverable rests on.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Context analysis & stakeholder mapping</h4>
+                    <p>Institutional resources, faculty expertise, technology inventory, patient population, community partnerships, accreditation context, regulatory alignment. Mapped against your specific program model.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Competency-based curriculum architecture</h4>
+                    <p>ACGME / AAGL / ABOG / society-aligned competency milestones, learning objectives mapped to ACGME six core competencies, multi-year rotation structure across one or many sites.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Instructional design</h4>
+                    <p>Didactic curricula, simulation integration, case-based learning, structured surgical-video review, scientific writing modules, journal clubs, conference frameworks, deliberate-practice protocols.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Assessment design</h4>
+                    <p>Formative and summative assessment frameworks, milestone-based evaluation, OSCEs, simulation-based assessment, case log validation, 360° evaluation, narrative feedback structures.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Program evaluation</h4>
+                    <p>Program-level evaluation and continuous improvement frameworks — Kirkpatrick four levels, Stufflebeam CIPP, AAMC outcome metrics. Feedback loops that actually inform iteration.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Multi-site rotation design</h4>
+                    <p>Coordinated curricula across multiple hospital sites with different patient populations, faculty profiles, and surgical case volumes. Same competencies, calibrated experience per site.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Faculty development</h4>
+                    <p>Faculty-as-educator training, mentorship structures, "teaching the teacher" workshops, evaluation calibration, feedback skill-building. Sustains the curriculum after launch.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Equity-anchored design</h4>
+                    <p>Curricula built with health equity, social determinants of health, and community needs explicitly central — not as an add-on module. Outcomes that close gaps, not perpetuate them.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Transfer-of-learning strategy</h4>
+                    <p>Identifying and removing barriers that block graduates from translating fellowship training into independent practice — institutional, cognitive, motivational, structural.</p>
+                </div>
+                <div class="service-card">
+                    <h4>AI & advanced-technology integration</h4>
+                    <p>Embedding AI tools, surgical-intelligence platforms, video-analysis workflows, and simulation technology into a coherent learning experience — not as gadgetry, as instructional design.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Curriculum audit & refresh</h4>
+                    <p>Diagnostic audit of an existing program: alignment to current ACGME milestones, completeness of context analysis, assessment validity, faculty satisfaction, learner outcomes. Refresh recommendations with phased implementation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENGAGEMENT OPTIONS -->
+        <section class="block" aria-labelledby="engagement">
+            <div class="eyebrow">Engagement Options</div>
+            <h2 id="engagement">Four ways to work together.</h2>
+            <p class="sub">
+                Engagements range from a single-workshop audit to a full multi-year curriculum build. Scope is set
+                during a 30-minute scoping call. Pricing is transparent and scoped per engagement.
+            </p>
+
+            <div class="engage">
+                <div class="engage-card">
+                    <span class="scope">Single deliverable</span>
+                    <h4>Curriculum audit</h4>
+                    <p>Diagnostic review of an existing fellowship or residency curriculum against ACGME, AAGL, or society standards. Written report + 90-minute findings session + prioritized refresh roadmap.</p>
+                </div>
+                <div class="engage-card">
+                    <span class="scope">Full build</span>
+                    <h4>End-to-end curriculum design</h4>
+                    <p>Multi-month engagement producing the full curriculum package: context analysis, needs assessment, goals/objectives, instructional plan, assessment design, evaluation framework, faculty-development materials, case log templates.</p>
+                </div>
+                <div class="engage-card">
+                    <span class="scope">Workshop</span>
+                    <h4>Faculty development workshop</h4>
+                    <p>1-2 day workshop for clinical faculty on instructional design, adult learning theory, feedback skills, and milestone-based assessment. Customized to your program's stage.</p>
+                </div>
+                <div class="engage-card">
+                    <span class="scope">Ongoing advisory</span>
+                    <h4>Program-development advisory</h4>
+                    <p>Quarterly advisory engagement for new or rebuilding programs — strategic guidance, accreditation-readiness review, faculty coaching, program evaluation oversight.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <div class="cta-block">
+            <h3>Let's talk about what your program needs.</h3>
+            <p>
+                30-minute scoping call. Bring the program model you're considering — new fellowship, residency
+                track, clinician training program, refresh — and we'll talk through what curriculum design would
+                produce, how it would land at your institution, and what an engagement could look like.
+            </p>
+            <a href="mailto:info@mountzara.com?subject=Curriculum%20design%20consult" class="btn">
+                Email info@mountzara.com →
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="foot">
+            <p>
+                Christopher Z. Mabini, DO, MSAEd — Complex Benign Gynecology & Minimally Invasive Gynecologic
+                Surgery · Master of Adult Education with concentration in Curriculum Development &amp;
+                Instructional Design · Inaugural MIGS Fellow at PRIME Illinois Saint Francis Hospital.
+                <a href="/about/">About</a> · <a href="/cv/#curriculum">CV — Curriculum Design</a> ·
+                <a href="/">Mount Zara home</a>
+            </p>
+        </div>
+
+    </main>
+
+</body>
+</html>
