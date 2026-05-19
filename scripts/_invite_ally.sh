@@ -32,19 +32,68 @@ set -e
 
 EMAIL="${EMAIL:-aeoflinn@gmail.com}"
 LABEL="${LABEL:-ally}"
-FULL_NAME="${FULL_NAME:-Ally O'Flinn}"
+FULL_NAME="${FULL_NAME:-Ally OFlinn}"
 TTL_DAYS="${TTL_DAYS:-14}"
 COOKIE_DAYS="${COOKIE_DAYS:-90}"
 NOTES="${NOTES:-First external test member — full new-member flow walkthrough (signup → intake → scheduling → portal modules) with session_trace pairing per §4.4.}"
 BASE_URL="${BASE_URL:-https://mountzara.com}"
-ADMIN_USER="${ADMIN_USER:-admin}"
 
-# Read admin password from macOS Keychain (per §10.3 ritual).
-if ! ADMIN_PASS=$(security find-generic-password -s mountzara-admin-password -w 2>/dev/null); then
-    echo "ERROR: macOS Keychain entry 'mountzara-admin-password' not found." >&2
-    echo "  Add it once:" >&2
-    echo "    security add-generic-password -s mountzara-admin-password -a admin -w 'YOUR_ADMIN_PASSWORD'" >&2
+# Per CLAUDE.md §10.3 (and scripts/_reset_admin_password_node.sh line 61):
+# the ADMIN_USER Pages secret is set to chris.mabini@gmail.com, NOT "admin".
+# Hardcoded so no future session re-hits the username-mismatch failure mode.
+ADMIN_USER="${ADMIN_USER:-chris.mabini@gmail.com}"
+
+# Resolve admin password with a deterministic fallback chain so the
+# "Keychain empty" / "Keychain stale" failure mode can never re-trigger
+# the "ask the user for the password" loop the user has explicitly
+# flagged as a recurring waste of time:
+#   1. macOS Keychain entry 'mountzara-admin-password'
+#   2. pbpaste (clipboard — per §9.8.1 ritual for ad-hoc paste)
+#   3. ADMIN_PASS env var (CI / explicit override)
+# After resolving via 2 or 3, we self-heal Keychain so the next call hits
+# the fast path.
+ADMIN_PASS="$(security find-generic-password -s mountzara-admin-password -w 2>/dev/null || true)"
+ADMIN_PASS_SOURCE="keychain"
+
+if [ -z "$ADMIN_PASS" ]; then
+    ADMIN_PASS="$(pbpaste 2>/dev/null || true)"
+    ADMIN_PASS_SOURCE="pbpaste"
+fi
+if [ -z "$ADMIN_PASS" ] && [ -n "${ADMIN_PASS_ENV:-}" ]; then
+    ADMIN_PASS="$ADMIN_PASS_ENV"
+    ADMIN_PASS_SOURCE="env"
+fi
+if [ -z "$ADMIN_PASS" ]; then
+    echo "ERROR: could not resolve admin password from Keychain, clipboard, or env." >&2
+    echo "  Either copy the password to the clipboard and re-run, or:" >&2
+    echo "    security add-generic-password -s mountzara-admin-password -a '$ADMIN_USER' -w 'YOUR_PW' -U" >&2
     exit 1
+fi
+
+# Quick pre-flight: verify the resolved password actually works against
+# the production admin endpoint. If it doesn't, fail loudly with the
+# specific diagnostic the user needs, not a 401 from the invite endpoint.
+echo "  pre-flight: checking admin auth (source=$ADMIN_PASS_SOURCE, user=$ADMIN_USER)..."
+HTTP=$(curl -sS -o /dev/null -u "$ADMIN_USER:$ADMIN_PASS" -w '%{http_code}' \
+    "$BASE_URL/api/posts/_admin?kind=blog")
+if [ "$HTTP" != "200" ]; then
+    echo "ERROR: admin auth failed (HTTP $HTTP) against $BASE_URL/api/posts/_admin" >&2
+    echo "  Username: $ADMIN_USER" >&2
+    echo "  Password source: $ADMIN_PASS_SOURCE (length ${#ADMIN_PASS})" >&2
+    echo "  Likely cause: ADMIN_PASS_HASH on Cloudflare Pages was rotated and neither" >&2
+    echo "  Keychain nor clipboard has the current password." >&2
+    echo "  Run: bash scripts/_reset_admin_password_node.sh   (mints fresh + syncs all 3 places)" >&2
+    exit 2
+fi
+echo "  ✓ admin auth OK"
+
+# Self-heal: if we got the password from pbpaste or env (not Keychain),
+# write it into Keychain now so the next session hits the fast path.
+if [ "$ADMIN_PASS_SOURCE" != "keychain" ]; then
+    security add-generic-password -s mountzara-admin-password \
+        -a "$ADMIN_USER" -w "$ADMIN_PASS" \
+        -j "MountZara admin password (auto-cached from $ADMIN_PASS_SOURCE)" -U 2>/dev/null || true
+    echo "  ✓ self-healed: cached password into Keychain for future sessions"
 fi
 
 echo "==============================================================="
