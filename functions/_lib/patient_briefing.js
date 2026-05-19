@@ -26,6 +26,7 @@
 // =====================================================================
 
 import { getPhiObject } from "./phi.js";
+import { buildMedicationWatch } from "./drug_ae_engine.js";
 
 const RECENT_ENCOUNTER_LIMIT = 5;
 const RECENT_PROM_WINDOW_MS = 1000 * 60 * 60 * 24 * 365;   // 12 months
@@ -800,6 +801,11 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
     const header = await loadPatientHeader(env, patientId);
     if (!header) return null;
 
+    // Phase 15 — med AE check is expensive (one openFDA fetch per drug).
+    // Default ON for the single-patient endpoint, OFF for batch day-window
+    // briefings (caller passes include_med_watch=false).
+    const includeMedWatch = opts.include_med_watch !== false;
+
     const [intake, encounters, prom_trends, snapshot, personal_notes, appts, documents] =
         await Promise.all([
             loadLatestIntake(env, patientId),
@@ -826,7 +832,7 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
 
     const focused = appts.focused || null;
 
-    return {
+    const out = {
         patient: header,
         appointment_focus: focused,
         appointments_context: {
@@ -857,6 +863,35 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
         suggested_questions: composeSuggestedQuestions(snapshot, triage, prom_trends, header.care_goals, focused),
         generated_at: Date.now(),
     };
+
+    // Phase 15 — medication AE / SE watch via openFDA (§3.6).
+    // Runs last because it needs the rest of the briefing to tokenize
+    // patient symptoms. Failure NEVER fails the briefing.
+    if (includeMedWatch) {
+        try {
+            const aeReport = await buildMedicationWatch(env, out);
+            out.medication_watch = aeReport.watch;
+            out.medication_watch_manifest = aeReport.manifest;
+            // Surface high-confidence matches into the executive lede when
+            // any drug has at least one high-confidence symptom match.
+            const hot = (aeReport.watch || []).filter((w) => w.high_confidence_count > 0);
+            if (hot.length) {
+                const labels = hot.map((w) =>
+                    `${w.drug} (${w.matches[0].matched_tokens[0]})`
+                ).slice(0, 3).join(", ");
+                out.executive_lede +=
+                    ` Med-AE candidate match: ${labels}.`;
+            }
+        } catch (e) {
+            out.medication_watch = [];
+            out.medication_watch_manifest = {
+                error: String(e.message || e).slice(0, 200),
+                generated_at: Date.now(),
+            };
+        }
+    }
+
+    return out;
 }
 
 
@@ -900,6 +935,9 @@ export async function buildScheduleBriefings(env, opts) {
         seen.add(a.patient_id);
         const briefing = await buildPatientBriefing(env, a.patient_id, {
             appointment_id: a.appointment_id,
+            // Day-window briefings skip the med watch by default — too many
+            // openFDA calls per render. The single-patient endpoint runs it.
+            include_med_watch: opts.include_med_watch === true,
         });
         if (briefing) briefings.push(briefing);
     }
