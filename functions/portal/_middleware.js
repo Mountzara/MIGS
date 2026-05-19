@@ -19,12 +19,39 @@
 
 import { previewAccess } from "../_lib/preview_gate.js";
 
+// HTMLRewriter that appends <script async src="/portal/_feedback.js">
+// just before </body>. Runs only on HTML responses from /portal/* SPAs
+// so every portal page gets the feedback widget without a per-SPA edit.
+class FeedbackScriptInjector {
+    element(element) {
+        // Wait for the </body> close — but Cloudflare's HTMLRewriter sees
+        // OPEN tags. So we attach to <body> and append to its content via
+        // element.append(html, {html:true}). The script tag becomes the
+        // last child of <body>.
+        element.append(
+            `\n<!-- Phase QB beta-tester feedback widget — see /portal/_feedback.js -->\n` +
+            `<script async src="/portal/_feedback.js"></script>\n`,
+            { html: true }
+        );
+    }
+}
+
 export async function onRequest(ctx) {
     const { request, env, next } = ctx;
     const { allow } = await previewAccess(request, env);
     if (allow) {
-        // Admin (or launched) — pass through to the real /portal/* asset.
-        return next();
+        // Admin (or launched) — pass through to the real /portal/* asset,
+        // and rewrite the HTML response to inject the feedback widget.
+        const resp = await next();
+        const ct = (resp.headers.get("content-type") || "").toLowerCase();
+        if (!ct.startsWith("text/html")) return resp;
+        // Don't inject into the preview-grant landing page or coming-soon
+        // (those are already self-contained and we want a clean handoff).
+        const path = new URL(request.url).pathname;
+        if (path.startsWith("/portal/preview-grant")) return resp;
+        return new HTMLRewriter()
+            .on("body", new FeedbackScriptInjector())
+            .transform(resp);
     }
     // Public, pre-launch — serve the Coming Soon HTML.
     return new Response(COMING_SOON_HTML, {

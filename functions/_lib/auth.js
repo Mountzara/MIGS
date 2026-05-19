@@ -499,6 +499,32 @@ export async function requireRole(ctx, allowedRoles) {
     return session;
 }
 
+/**
+ * Soft-resolve a session WITHOUT throwing if absent. Returns the session
+ * object when an mz_session cookie is present + valid AND (if allowedRoles
+ * is given) the role matches; returns null otherwise.
+ *
+ * Use this for endpoints that should work for both authenticated patients
+ * AND anonymous-with-preview-cookie users (e.g., beta-tester feedback
+ * submitted before the patient has signed up). The endpoint can branch on
+ * the return value rather than catching the requireRole-thrown Response.
+ *
+ * The token is exposed on the returned session so the caller can pass it
+ * into session_trace's recordTrace() for correlation.
+ */
+export async function requireRoleOptional(ctx, allowedRoles) {
+    const { request, env } = ctx;
+    const cookie = request.headers.get("Cookie") || "";
+    const m = cookie.match(/(?:^|;\s*)mz_session=([^;]+)/);
+    if (!m) return null;
+    const token = decodeURIComponent(m[1]);
+    const session = await getSession({ env, token, request });
+    if (!session) return null;
+    if (allowedRoles && !allowedRoles.includes(session.role)) return null;
+    // Surface the raw token so recordTrace() can hash + correlate it.
+    return { ...session, token };
+}
+
 function unauthorized() {
     return new Response(JSON.stringify({ error: "authentication_required" }), {
         status: 401,

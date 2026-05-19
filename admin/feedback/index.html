@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feedback Queue · Mount Zara Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="/admin/_nav.js"></script>
+<style>
+:root {
+    --bg-base: #07070a;
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245, 245, 247, 0.88);
+    --fg-soft: rgba(245, 245, 247, 0.62);
+    --fg-faint: rgba(245, 245, 247, 0.38);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --glass: rgba(255, 255, 255, 0.04);
+    --ok: rgba(74, 222, 128, 0.95);
+    --warn: rgba(251, 191, 36, 0.95);
+    --err: rgba(248, 113, 113, 0.95);
+    --blocker: rgba(248, 113, 113, 0.95);
+    --annoying: rgba(251, 191, 36, 0.95);
+    --nice: rgba(125, 211, 252, 0.95);
+}
+* { box-sizing: border-box; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.10), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1280px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 36px) 80px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 16px; margin: 6px 0 26px; }
+.page-head h1 { margin: 0; font-size: clamp(24px, 2.6vw, 30px); font-weight: 300; letter-spacing: -0.015em; color: var(--fg-strong); }
+.page-head .eyebrow {
+    display: block;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.92);
+    margin-bottom: 6px;
+}
+.page-head p.lede { margin: 6px 0 0; font-size: 14px; color: var(--fg-soft); max-width: 64ch; }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.chip {
+    background: var(--glass); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 12px 14px;
+    transition: transform 0.18s, border-color 0.18s;
+    cursor: pointer;
+}
+.chip:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.4); }
+.chip.active { border-color: rgba(var(--glow-purple), 0.7); background: rgba(var(--glow-purple), 0.07); }
+.chip .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.85); }
+.chip .nums { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: var(--fg-strong); margin-top: 4px; }
+
+.bar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    background: var(--glass); border: 1px solid var(--hairline);
+    backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-radius: 14px; padding: 12px 16px; margin-bottom: 22px;
+}
+.bar label { font-size: 11px; color: var(--fg-soft); text-transform: uppercase; letter-spacing: 0.12em; }
+.bar input, .bar select, .bar button {
+    font: inherit;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--hairline);
+    border-radius: 8px; color: var(--fg-mid); padding: 7px 12px; font-size: 13px;
+}
+.bar input:focus, .bar select:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+.bar button {
+    cursor: pointer;
+    background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+    color: #fff; font-weight: 500; border: none;
+    transition: transform 0.18s;
+}
+.bar button:hover { transform: translateY(-1px); }
+
+.cards { display: grid; gap: 14px; }
+.card {
+    background: var(--glass);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+    overflow: hidden;
+    transition: transform 0.18s, border-color 0.18s;
+}
+.card:hover { border-color: rgba(var(--glow-purple), 0.30); }
+.card header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.02);
+}
+.badge {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06); border: 1px solid var(--hairline);
+    color: var(--fg-soft);
+}
+.badge.type-bug        { background: rgba(248, 113, 113, 0.12); color: var(--err); border-color: rgba(248, 113, 113, 0.35); }
+.badge.type-confusing  { background: rgba(251, 191, 36, 0.12); color: var(--warn); border-color: rgba(251, 191, 36, 0.35); }
+.badge.type-suggestion { background: rgba(125, 211, 252, 0.12); color: var(--nice); border-color: rgba(125, 211, 252, 0.35); }
+.badge.type-praise     { background: rgba(74, 222, 128, 0.12); color: var(--ok); border-color: rgba(74, 222, 128, 0.35); }
+.badge.sev-blocker     { background: rgba(248, 113, 113, 0.15); color: var(--blocker); border-color: rgba(248, 113, 113, 0.45); }
+.badge.sev-annoying    { background: rgba(251, 191, 36, 0.10); color: var(--annoying); border-color: rgba(251, 191, 36, 0.35); }
+.badge.sev-nice_to_have{ background: rgba(125, 211, 252, 0.08); color: var(--nice); border-color: rgba(125, 211, 252, 0.30); }
+.badge.status-new          { background: rgba(var(--glow-purple), 0.15); color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
+.badge.status-ai_analyzed  { background: rgba(125, 211, 252, 0.10); color: var(--nice); border-color: rgba(125, 211, 252, 0.35); }
+.badge.status-approved     { background: rgba(74, 222, 128, 0.12); color: var(--ok); border-color: rgba(74, 222, 128, 0.45); }
+.badge.status-rejected,
+.badge.status-wont_fix     { background: rgba(255, 255, 255, 0.04); color: var(--fg-faint); }
+.badge.status-implemented  { background: rgba(74, 222, 128, 0.15); color: var(--ok); border-color: rgba(74, 222, 128, 0.5); }
+
+.label-chip {
+    font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(var(--glow-purple), 0.10); color: var(--accent-soft);
+    font-family: 'JetBrains Mono', monospace;
+}
+.route-chip {
+    font-size: 11.5px; color: var(--fg-soft);
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--hairline);
+    padding: 2px 8px; border-radius: 6px;
+}
+.spacer { flex: 1; }
+.time { font-size: 11.5px; color: var(--fg-faint); font-family: 'JetBrains Mono', monospace; }
+
+.body { padding: 16px 18px; display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 880px) {
+    .body { grid-template-columns: 1fr 1fr; }
+}
+.box {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+.box h3 {
+    margin: 0 0 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--fg-soft);
+}
+.box .comment { font-size: 14px; line-height: 1.55; color: var(--fg-mid); white-space: pre-wrap; }
+.box .meta { font-size: 11.5px; color: var(--fg-faint); margin-top: 10px; font-family: 'JetBrains Mono', monospace; }
+.box .shot {
+    margin-top: 10px;
+    max-width: 100%; max-height: 240px; border-radius: 8px;
+    border: 1px solid var(--hairline);
+    cursor: zoom-in;
+}
+.rec-empty { color: var(--fg-faint); font-style: italic; font-size: 13px; }
+.rec dl { margin: 0; }
+.rec dt {
+    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--fg-soft); margin-top: 10px;
+}
+.rec dt:first-child { margin-top: 0; }
+.rec dd { margin: 4px 0 0; font-size: 13px; line-height: 1.55; }
+.rec code {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    background: rgba(var(--glow-purple), 0.07); padding: 1px 5px; border-radius: 4px;
+    color: var(--accent-soft);
+}
+
+.actions {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 12px 18px; border-top: 1px solid var(--hairline);
+    background: rgba(7, 7, 10, 0.36);
+}
+.btn {
+    font: inherit; font-size: 12.5px; font-weight: 500;
+    padding: 7px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.04); color: var(--fg-mid);
+    transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+}
+.btn:hover { transform: translateY(-1px); color: #fff; border-color: rgba(var(--glow-purple), 0.45); }
+.btn.approve { background: linear-gradient(180deg, rgba(74, 222, 128, 0.32), rgba(34, 197, 94, 0.32)); border-color: rgba(74, 222, 128, 0.45); color: #fff; }
+.btn.approve:hover { background: linear-gradient(180deg, rgba(74, 222, 128, 0.55), rgba(34, 197, 94, 0.55)); }
+.btn.reject { background: rgba(248, 113, 113, 0.10); border-color: rgba(248, 113, 113, 0.35); color: rgba(248, 113, 113, 0.95); }
+.btn.reject:hover { background: rgba(248, 113, 113, 0.20); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.empty-state {
+    padding: 80px 20px; text-align: center; color: var(--fg-soft);
+    background: var(--glass); border: 1px dashed var(--hairline); border-radius: 16px;
+}
+.empty-state h2 { color: var(--fg-strong); font-weight: 300; font-size: 22px; margin: 0 0 10px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+    <header class="page-head">
+        <div>
+            <span class="eyebrow">Feedback &middot; Beta-tester pipeline</span>
+            <h1>Feedback queue + AI recommendations</h1>
+            <p class="lede">Every submission from a portal beta tester. AI analysis runs during my Cowork sessions: I read the queue, propose a structured change, and write it back here. You review + approve. Approved items enter my implementation queue for the next session.</p>
+        </div>
+    </header>
+
+    <section class="summary" id="summary"></section>
+
+    <div class="bar">
+        <label for="f-status">Status</label>
+        <select id="f-status" style="width:170px;">
+            <option value="new,ai_analyzed,approved" selected>Actionable (default)</option>
+            <option value="new">New</option>
+            <option value="ai_analyzed">AI analyzed</option>
+            <option value="approved">Approved</option>
+            <option value="implemented">Implemented</option>
+            <option value="rejected,wont_fix">Closed</option>
+        </select>
+        <label for="f-type">Type</label>
+        <select id="f-type" style="width:140px;">
+            <option value="">any</option>
+            <option value="bug">Bug</option>
+            <option value="confusing">Confusing</option>
+            <option value="suggestion">Suggestion</option>
+            <option value="praise">Praise</option>
+            <option value="other">Other</option>
+        </select>
+        <label for="f-label">Label</label>
+        <input id="f-label" type="text" placeholder="ally / anon ..." autocomplete="off" style="width:140px;">
+        <button id="refreshBtn" type="button">Refresh</button>
+        <span class="spacer"></span>
+        <span id="lastUpdate" style="font-size:11.5px; color:var(--fg-soft); font-family:'JetBrains Mono', monospace;"></span>
+    </div>
+
+    <section id="cards" class="cards"></section>
+</main>
+
+<script>
+(function () {
+    'use strict';
+
+    const cardsEl = document.getElementById('cards');
+    const summaryEl = document.getElementById('summary');
+    const fStatus = document.getElementById('f-status');
+    const fType   = document.getElementById('f-type');
+    const fLabel  = document.getElementById('f-label');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const lastUpdate = document.getElementById('lastUpdate');
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function fmtTime(ms) {
+        if (!ms) return '';
+        const d = new Date(ms);
+        return d.toLocaleString();
+    }
+
+    function renderSummary(s) {
+        const order = ['new', 'ai_analyzed', 'approved', 'implemented', 'rejected', 'wont_fix'];
+        const items = order.filter((k) => s[k]).map((k) => `
+            <div class="chip" data-status="${k}">
+                <div class="label">${k.replace(/_/g, ' ')}</div>
+                <div class="nums">${s[k]}</div>
+            </div>
+        `).join('');
+        summaryEl.innerHTML = items || '<div style="color:var(--fg-soft);font-size:13px;padding:8px;">No feedback yet.</div>';
+        summaryEl.querySelectorAll('.chip').forEach((c) => {
+            c.addEventListener('click', () => {
+                fStatus.value = c.getAttribute('data-status');
+                loadCards();
+            });
+        });
+    }
+
+    function renderRec(rec) {
+        if (!rec) return '<p class="rec-empty">Not analyzed yet. I&rsquo;ll process this the next time you open a Cowork session and ask me to "run the feedback queue".</p>';
+        return `
+            <dl class="rec">
+                ${rec.summary       ? `<dt>Summary</dt><dd>${esc(rec.summary)}</dd>` : ''}
+                ${rec.root_cause    ? `<dt>Root cause</dt><dd>${esc(rec.root_cause)}</dd>` : ''}
+                ${rec.proposed_change ? `<dt>Proposed change</dt><dd>${esc(rec.proposed_change)}</dd>` : ''}
+                ${rec.files_to_edit && rec.files_to_edit.length
+                    ? `<dt>Files to touch</dt><dd>${rec.files_to_edit.map((f) => `<code>${esc(f)}</code>`).join(' ')}</dd>` : ''}
+                ${rec.severity      ? `<dt>Severity</dt><dd>${esc(rec.severity)}</dd>` : ''}
+                ${rec.effort        ? `<dt>Effort estimate</dt><dd>${esc(rec.effort)}</dd>` : ''}
+                ${rec.confidence != null ? `<dt>Confidence</dt><dd>${esc(rec.confidence)}</dd>` : ''}
+                ${rec.rationale     ? `<dt>Why</dt><dd>${esc(rec.rationale)}</dd>` : ''}
+                ${rec.generated_at  ? `<dt>Generated</dt><dd style="color:var(--fg-faint); font-size:11.5px;">${esc(fmtTime(rec.generated_at))}${rec.ai_model ? ' &middot; ' + esc(rec.ai_model) : ''}</dd>` : ''}
+            </dl>
+        `;
+    }
+
+    function buildCard(f) {
+        const isClosed = (f.status === 'rejected' || f.status === 'wont_fix' || f.status === 'implemented');
+        const canApprove = f.status === 'ai_analyzed' && f.ai_recommendation;
+        return `
+            <article class="card" data-id="${esc(f.id)}">
+                <header>
+                    <span class="badge type-${esc(f.feedback_type)}">${esc(f.feedback_type)}</span>
+                    ${f.severity ? `<span class="badge sev-${esc(f.severity)}">${esc(f.severity.replace(/_/g, ' '))}</span>` : ''}
+                    <span class="badge status-${esc(f.status)}">${esc(f.status.replace(/_/g, ' '))}</span>
+                    <span class="label-chip">${esc(f.invite_label || 'anon')}</span>
+                    <span class="route-chip">${esc(f.route)}</span>
+                    <span class="spacer"></span>
+                    <span class="time">${esc(fmtTime(f.created_at))}</span>
+                </header>
+                <div class="body">
+                    <div class="box">
+                        <h3>What the tester said</h3>
+                        <div class="comment">${esc(f.comment_text)}</div>
+                        ${f.has_screenshot ? `<img class="shot" src="/api/v1/admin/feedback/${esc(f.id)}/screenshot" alt="Screenshot from the tester" loading="lazy" onclick="window.open(this.src,'_blank')">` : ''}
+                        <p class="meta">
+                            viewport ${f.viewport_width || '?'}&times;${f.viewport_height || '?'}
+                            ${f.patient_id ? ' &middot; patient ' + esc(f.patient_id.slice(0, 8)) + '...' : ''}
+                            ${f.detail && f.detail.scroll_pct != null ? ' &middot; scrolled ' + f.detail.scroll_pct + '%' : ''}
+                        </p>
+                    </div>
+                    <div class="box">
+                        <h3>AI recommendation</h3>
+                        ${renderRec(f.ai_recommendation)}
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn approve" data-action="approve" ${!canApprove ? 'disabled' : ''}>Approve recommendation</button>
+                    <button class="btn reject" data-action="reject" ${isClosed ? 'disabled' : ''}>Reject</button>
+                    <button class="btn" data-action="wont_fix" ${isClosed ? 'disabled' : ''}>Won&rsquo;t fix</button>
+                    <span class="spacer"></span>
+                    ${f.status_reason ? `<span style="font-size:11.5px; color:var(--fg-faint);">note: ${esc(f.status_reason)}</span>` : ''}
+                </div>
+            </article>
+        `;
+    }
+
+    async function loadCards() {
+        const params = new URLSearchParams();
+        if (fStatus.value) params.set('status', fStatus.value);
+        if (fType.value) params.set('feedback_type', fType.value);
+        if (fLabel.value.trim()) params.set('invite_label', fLabel.value.trim().toLowerCase());
+        params.set('limit', '60');
+        try {
+            const r = await fetch('/api/v1/admin/feedback?' + params.toString(), { credentials: 'include' });
+            if (!r.ok) { lastUpdate.textContent = 'fetch failed: ' + r.status; return; }
+            const data = await r.json();
+            renderSummary(data.summary || {});
+            if (!data.feedback || data.feedback.length === 0) {
+                cardsEl.innerHTML = `
+                    <div class="empty-state">
+                        <h2>Nothing in this bucket yet</h2>
+                        <p>Once a beta tester (Ally or anyone with a preview-grant cookie) clicks the Feedback button on a portal page, it lands here within seconds.</p>
+                    </div>
+                `;
+            } else {
+                cardsEl.innerHTML = data.feedback.map(buildCard).join('');
+                cardsEl.querySelectorAll('button[data-action]').forEach((btn) => {
+                    btn.addEventListener('click', () => handleAction(btn));
+                });
+            }
+            lastUpdate.textContent = 'updated ' + new Date().toLocaleTimeString();
+        } catch (e) {
+            lastUpdate.textContent = 'error: ' + String(e);
+        }
+    }
+
+    async function handleAction(btn) {
+        const card = btn.closest('.card');
+        const id = card.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        let url = '', method = 'POST', body = {};
+        let confirmText = '';
+        if (action === 'approve') {
+            const note = prompt('Optional note before approving (or leave blank):');
+            if (note === null) return; // cancelled
+            url = `/api/v1/admin/feedback/${id}/approve`;
+            body.note = note || '';
+        } else if (action === 'reject' || action === 'wont_fix') {
+            const reason = prompt(`Reason for ${action.replace(/_/g, ' ')} (will be shown in the audit trail):`);
+            if (reason === null) return;
+            url = `/api/v1/admin/feedback/${id}/reject`;
+            body.reason = reason;
+            body.kind = action;
+        }
+        btn.disabled = true;
+        try {
+            const r = await fetch(url, {
+                method, credentials: 'include',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (!r.ok) {
+                const j = await r.json().catch(() => ({}));
+                alert(`Action failed: HTTP ${r.status} ${j.error || ''}\n${j.message || ''}`);
+                btn.disabled = false;
+                return;
+            }
+            loadCards();
+        } catch (e) {
+            alert('Network error: ' + String(e));
+            btn.disabled = false;
+        }
+    }
+
+    refreshBtn.addEventListener('click', loadCards);
+    fStatus.addEventListener('change', loadCards);
+    fType.addEventListener('change', loadCards);
+    fLabel.addEventListener('input', debounce(loadCards, 350));
+
+    function debounce(fn, ms) { let t = null; return function () { clearTimeout(t); t = setTimeout(fn, ms); }; }
+
+    loadCards();
+    setInterval(loadCards, 30000); // auto-refresh every 30s
+})();
+</script>
+</body>
+</html>
