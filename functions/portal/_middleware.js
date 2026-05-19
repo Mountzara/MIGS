@@ -19,18 +19,17 @@
 
 import { previewAccess } from "../_lib/preview_gate.js";
 
-// HTMLRewriter that appends <script async src="/portal/_feedback.js">
-// just before </body>. Runs only on HTML responses from /portal/* SPAs
-// so every portal page gets the feedback widget without a per-SPA edit.
-class FeedbackScriptInjector {
+// HTMLRewriter that appends the Phase QB feedback widget AND the Phase
+// QC onboarding wizard scripts before </body>. Single point of control:
+// any new portal SPA gets both widgets without a per-SPA <script> tag.
+class PortalScriptInjector {
     element(element) {
-        // Wait for the </body> close — but Cloudflare's HTMLRewriter sees
-        // OPEN tags. So we attach to <body> and append to its content via
-        // element.append(html, {html:true}). The script tag becomes the
-        // last child of <body>.
+        // The script tags become the last children of <body>.
         element.append(
             `\n<!-- Phase QB beta-tester feedback widget — see /portal/_feedback.js -->\n` +
-            `<script async src="/portal/_feedback.js"></script>\n`,
+            `<script async src="/portal/_feedback.js"></script>\n` +
+            `<!-- Phase QC onboarding wizard — see /portal/_wizard.js -->\n` +
+            `<script async src="/portal/_wizard.js"></script>\n`,
             { html: true }
         );
     }
@@ -50,7 +49,7 @@ export async function onRequest(ctx) {
         const path = new URL(request.url).pathname;
         if (path.startsWith("/portal/preview-grant")) return resp;
         return new HTMLRewriter()
-            .on("body", new FeedbackScriptInjector())
+            .on("body", new PortalScriptInjector())
             .transform(resp);
     }
     // Public, pre-launch — serve the Coming Soon HTML.
