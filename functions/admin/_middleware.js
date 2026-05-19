@@ -104,6 +104,15 @@ async function rlImport() {
     return import("../_lib/rate_limit.js");
 }
 
+// MFA imports are also lazy — only loaded once Basic Auth succeeds, so the
+// hot 401-loop path stays minimal.
+async function mfaImport() {
+    return import("../_lib/mfa_cookie.js");
+}
+async function mfaPromptImport() {
+    return import("./_mfa.js");
+}
+
 // Per HIPAA risk register row 6. Same policy as patient login: 10 failures
 // per 15-min window triggers soft-lockout.
 const ADMIN_RL_THRESHOLD = 10;
@@ -227,6 +236,39 @@ export async function onRequest({ request, env, next }) {
         if (rl) {
             try { await rl.clearLockout({ env, prefix: "admin_login", identifier: rlIdentifier }); } catch {}
         }
+
+        // ----- Second factor (TOTP). -----
+        // MFA is opt-in by env: enabled when ADMIN_TOTP_SECRET is set. When
+        // enabled, the operator MUST present either (a) a fresh signed
+        // mz_admin_mfa cookie issued by /admin/_mfa after a successful TOTP
+        // verification, or (b) submit a TOTP code via /admin/_mfa. The
+        // /admin/_mfa endpoint itself bypasses this check (the request method
+        // is POST + the path matches) — otherwise it would be unreachable.
+        if (env.ADMIN_TOTP_SECRET) {
+            const url = new URL(request.url);
+            const isMfaEndpoint = url.pathname === "/admin/_mfa" || url.pathname === "/admin/_mfa/";
+            if (!isMfaEndpoint) {
+                const mfa = await mfaImport();
+                const cookieOk = await mfa.verifyMfaCookie(request, env);
+                if (!cookieOk) {
+                    // Serve the MFA prompt with a `next=` param so the
+                    // operator returns to wherever they were trying to go.
+                    const prompt = await mfaPromptImport();
+                    const nextUrl = url.pathname + url.search;
+                    return new Response(
+                        prompt.mfaPromptHtml({ next: nextUrl }),
+                        {
+                            status: 200,
+                            headers: {
+                                "Content-Type": "text/html; charset=utf-8",
+                                "Cache-Control": "no-store",
+                            },
+                        }
+                    );
+                }
+            }
+        }
+
         return next();
     } catch (e) {
         // Last-resort safety net for ANY unanticipated throw above.
