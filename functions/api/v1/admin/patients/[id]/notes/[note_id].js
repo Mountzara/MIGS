@@ -55,18 +55,25 @@ export async function onRequestPatch(ctx) {
             updates.push("is_pinned = ?"); binds.push(body.is_pinned ? 1 : 0);
         }
 
-        // Body re-encrypt: we re-wrap so a key rotation interleaved with this
-        // update doesn't strand the row on the prior key. We also reuse the
-        // existing r2_key so previous bodies aren't orphaned (R2 versioning
-        // preserves history if enabled).
+        // Body re-encrypt — mountzara-phi has the 7-year retention lock
+        // (§11 Tier 2), so we cannot put-over the existing R2 key. Write
+        // a NEW versioned key and update the row pointer. The old object
+        // remains in R2 until the retention period expires + R2 lifecycle
+        // policy reclaims it (intended HIPAA behaviour — historical PHI
+        // is preserved through immutability).
         if (body.body !== undefined) {
             const bodyText = String(body.body || "").slice(0, MAX_BODY);
             const aad = aadFor(patientId, noteId);
-            const envelope = await putPhiObject(env, row.body_r2_key, bodyText, aad);
+            const versionedKey = `patient-personal-notes/${patientId}/${noteId}__${Date.now()}.bin`;
+            const envelope = await putPhiObject(env, versionedKey, bodyText, aad);
             updates.push(
+                "body_r2_key = ?",
                 "body_wrapped_dek = ?", "body_iv_data = ?", "body_iv_dek = ?", "body_size_bytes = ?"
             );
-            binds.push(envelope.wrapped_dek, envelope.iv_data, envelope.iv_dek, envelope.size_bytes);
+            binds.push(
+                envelope.r2_key,
+                envelope.wrapped_dek, envelope.iv_data, envelope.iv_dek, envelope.size_bytes
+            );
         }
 
         if (!updates.length) return jsonError("nothing to update", 400);
