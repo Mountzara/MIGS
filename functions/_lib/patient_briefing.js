@@ -88,7 +88,7 @@ async function loadPatientHeader(env, patientId) {
 
 async function loadLatestIntake(env, patientId) {
     const intake = await env.DB.prepare(`
-        SELECT id, status, submitted_at, triage_id, current_section, completion_pct, sections_complete_count
+        SELECT id, status, submitted_at, updated_at, completion_pct
         FROM intake_responses
         WHERE patient_id = ?
         ORDER BY (submitted_at IS NOT NULL) DESC, COALESCE(submitted_at, updated_at) DESC
@@ -100,35 +100,39 @@ async function loadLatestIntake(env, patientId) {
         status: intake.status,
         submitted_at: intake.submitted_at,
         completion_pct: intake.completion_pct,
-        sections_complete_count: intake.sections_complete_count || 0,
-        current_section: intake.current_section || null,
-        triage_id: intake.triage_id || null,
     };
 }
 
 
-async function loadIntakeTriage(env, triageId) {
-    if (!triageId) return null;
+async function loadIntakeTriage(env, intakeId) {
+    if (!intakeId) return null;
     const t = await env.DB.prepare(`
-        SELECT id, visit_type, estimated_duration_min, urgency, in_person_required,
-               preferred_time_of_day, rationale, secondary_concerns_json,
-               clinician_override_visit_type, status, created_at
+        SELECT id, ai_visit_type, ai_duration_min, ai_urgency,
+               ai_in_person_required, ai_preferred_time_of_day, ai_rationale,
+               ai_secondary_concerns_json,
+               clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_reason, clinician_reviewed_at,
+               final_visit_type, final_duration_min, appointment_id, created_at
         FROM appointment_triage
-        WHERE id = ?
-    `).bind(triageId).first();
+        WHERE intake_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    `).bind(intakeId).first();
     if (!t) return null;
     return {
         id: t.id,
-        visit_type: t.clinician_override_visit_type || t.visit_type,
-        ai_visit_type: t.visit_type,
+        visit_type: t.final_visit_type || t.clinician_override_visit_type || t.ai_visit_type,
+        ai_visit_type: t.ai_visit_type,
         clinician_override_visit_type: t.clinician_override_visit_type || null,
-        estimated_duration_min: t.estimated_duration_min || null,
-        urgency: t.urgency || null,
-        in_person_required: !!t.in_person_required,
-        preferred_time_of_day: t.preferred_time_of_day || null,
-        rationale: t.rationale || null,
-        secondary_concerns: safeJson(t.secondary_concerns_json) || [],
-        status: t.status || null,
+        clinician_override_reason: t.clinician_override_reason || null,
+        clinician_reviewed_at: t.clinician_reviewed_at || null,
+        estimated_duration_min: t.final_duration_min || t.clinician_override_duration_min || t.ai_duration_min || null,
+        urgency: t.ai_urgency || null,
+        in_person_required: !!t.ai_in_person_required,
+        preferred_time_of_day: t.ai_preferred_time_of_day || null,
+        rationale: t.ai_rationale || null,
+        secondary_concerns: safeJson(t.ai_secondary_concerns_json) || [],
+        appointment_id: t.appointment_id || null,
     };
 }
 
@@ -155,35 +159,48 @@ async function loadRecentEncounters(env, patientId) {
 
 
 async function loadPROMTrends(env, patientId) {
-    // Pull most-recent two scores per assignment, grouped by prom_slug,
-    // limited to the last 12 months. We surface trend direction + delta.
-    const cutoff = Date.now() - RECENT_PROM_WINDOW_MS;
+    // Pull every response in the last 12 months, group by prom_slug,
+    // surface latest + previous + direction.
+    //
+    // prom_responses.submitted_at is a TEXT timestamp (ISO 8601 from
+    // SQLite's datetime('now')). Compute a string cutoff to compare.
+    const cutoffMs = Date.now() - RECENT_PROM_WINDOW_MS;
+    const cutoffISO = new Date(cutoffMs).toISOString()
+        .replace("T", " ").replace(/\..*/, "");   // → "YYYY-MM-DD HH:MM:SS"
     const { results } = await env.DB.prepare(`
         SELECT pr.id AS response_id, pr.assignment_id, pr.prom_slug,
-               pr.score_total, pr.score_interpretation, pr.completed_at,
+               pr.computed_scores, pr.threshold_flags, pr.submitted_at,
                pa.period_label, pa.assigned_by_kind,
                pd.short_name, pd.title, pd.tier, pd.domain
         FROM prom_responses pr
         JOIN prom_assignments pa ON pa.id = pr.assignment_id
         LEFT JOIN prom_definitions pd ON pd.slug = pr.prom_slug
-        WHERE pr.patient_id = ? AND pr.completed_at >= ?
-        ORDER BY pr.prom_slug, pr.completed_at DESC
-    `).bind(patientId, cutoff).all();
+        WHERE pr.patient_id = ? AND pr.submitted_at >= ?
+        ORDER BY pr.prom_slug, pr.submitted_at DESC
+    `).bind(patientId, cutoffISO).all();
     const rows = results || [];
 
     // Group by prom_slug
     const groups = new Map();
     for (const r of rows) {
         if (!groups.has(r.prom_slug)) groups.set(r.prom_slug, []);
-        groups.get(r.prom_slug).push(r);
+        // Hydrate computed_scores JSON now so the comparison below is simple.
+        const scores = safeJson(r.computed_scores) || {};
+        groups.get(r.prom_slug).push({
+            ...r,
+            total_score: Number.isFinite(scores.total) ? scores.total : null,
+            interpretation: scores.interpretation || null,
+            subscales: scores.subscales || null,
+            flags: safeJson(r.threshold_flags) || [],
+        });
     }
 
     const trends = [];
     for (const [slug, list] of groups.entries()) {
         const latest = list[0];
         const previous = list[1] || null;
-        const delta = (latest && previous && Number.isFinite(latest.score_total) && Number.isFinite(previous.score_total))
-            ? latest.score_total - previous.score_total
+        const delta = (latest && previous && Number.isFinite(latest.total_score) && Number.isFinite(previous.total_score))
+            ? latest.total_score - previous.total_score
             : null;
         trends.push({
             slug,
@@ -191,36 +208,41 @@ async function loadPROMTrends(env, patientId) {
             title: latest.title || slug,
             tier: latest.tier,
             domain: latest.domain,
-            latest_score: latest.score_total,
-            latest_interpretation: latest.score_interpretation,
-            latest_completed_at: latest.completed_at,
+            latest_score: latest.total_score,
+            latest_interpretation: latest.interpretation,
+            latest_subscales: latest.subscales,
+            latest_flags: latest.flags,
+            latest_submitted_at: latest.submitted_at,
             latest_period: latest.period_label,
-            previous_score: previous ? previous.score_total : null,
-            previous_completed_at: previous ? previous.completed_at : null,
+            previous_score: previous ? previous.total_score : null,
+            previous_submitted_at: previous ? previous.submitted_at : null,
             delta,
             direction: delta == null ? null : (delta < 0 ? "improved" : delta > 0 ? "worsened" : "stable"),
             total_completions: list.length,
         });
     }
-    // Sort PHQ-2 / GAD-2 / BPI-SF first (tier 1), then by latest_completed_at desc.
+    // Tier 1 (universal) first, then most-recent first.
     trends.sort((a, b) => {
         if ((a.tier || 9) !== (b.tier || 9)) return (a.tier || 9) - (b.tier || 9);
-        return (b.latest_completed_at || 0) - (a.latest_completed_at || 0);
+        const at = a.latest_submitted_at || "";
+        const bt = b.latest_submitted_at || "";
+        return bt.localeCompare(at);
     });
     return trends;
 }
 
 
 async function loadCurrentSnapshot(env, patientId) {
-    // Returns the most-recent is_current=1 snapshot's executive_summary +
+    // Returns the most-recent is_current=1 snapshot's clinical_overview +
     // problem list + action items. We do NOT re-decrypt the full snapshot
     // body here — the briefing widget can deep-link to /admin/snapshots/<id>
     // for the full document.
     const snapshot = await env.DB.prepare(`
         SELECT id, version_number, is_current,
-               executive_summary, narrative_summary,
-               problem_count, action_item_count,
-               generated_at, last_event_id_seen
+               clinical_overview, chief_complaint, cc_history,
+               narrative_patient_story, dominant_category,
+               patient_goals_json, surgical_history_json, ai_recommendations_json,
+               generated_at, change_notes
         FROM patient_snapshots
         WHERE patient_id = ? AND is_current = 1
         ORDER BY version_number DESC
@@ -230,14 +252,14 @@ async function loadCurrentSnapshot(env, patientId) {
 
     const [pR, aR] = await Promise.all([
         env.DB.prepare(`
-            SELECT label, status, severity, seq
+            SELECT problem, status, last_visit_plan, seq
             FROM snapshot_problem_list
             WHERE snapshot_id = ?
             ORDER BY seq ASC
             LIMIT 12
         `).bind(snapshot.id).all(),
         env.DB.prepare(`
-            SELECT label, due_at, priority, status, seq
+            SELECT description, due_date, priority, rationale, is_accepted, seq
             FROM snapshot_action_items
             WHERE snapshot_id = ?
             ORDER BY seq ASC
@@ -245,16 +267,37 @@ async function loadCurrentSnapshot(env, patientId) {
         `).bind(snapshot.id).all(),
     ]);
 
+    const problems = pR.results || [];
+    const actions = aR.results || [];
+
     return {
         id: snapshot.id,
         version_number: snapshot.version_number,
-        executive_summary: snapshot.executive_summary || null,
-        narrative_summary: snapshot.narrative_summary || null,
-        problem_count: snapshot.problem_count || 0,
-        action_item_count: snapshot.action_item_count || 0,
+        executive_summary: snapshot.clinical_overview || null,
+        narrative_summary: snapshot.narrative_patient_story || null,
+        chief_complaint: snapshot.chief_complaint || null,
+        cc_history: snapshot.cc_history || null,
+        dominant_category: snapshot.dominant_category || null,
+        patient_goals: safeJson(snapshot.patient_goals_json) || [],
+        surgical_history: safeJson(snapshot.surgical_history_json) || [],
+        ai_recommendations: safeJson(snapshot.ai_recommendations_json) || [],
+        problem_count: problems.length,
+        action_item_count: actions.length,
         generated_at: snapshot.generated_at,
-        problems_preview: pR.results || [],
-        action_items_preview: aR.results || [],
+        problems_preview: problems.map((p) => ({
+            label: p.problem,
+            status: p.status,
+            last_visit_plan: p.last_visit_plan,
+            seq: p.seq,
+        })),
+        action_items_preview: actions.map((a) => ({
+            label: a.description,
+            due_date: a.due_date,
+            priority: a.priority,
+            rationale: a.rationale,
+            is_accepted: !!a.is_accepted,
+            seq: a.seq,
+        })),
     };
 }
 
@@ -393,7 +436,9 @@ function composeSuggestedQuestions(snapshot, triage, prom_trends, care_goals) {
     // From the snapshot's open action items
     if (snapshot && snapshot.action_items_preview) {
         for (const a of snapshot.action_items_preview.slice(0, 3)) {
-            if (a.status && a.status !== "completed") {
+            // Action items don't have a status column; we surface anything
+            // accepted by the clinician that isn't trivially resolved.
+            if (a.is_accepted) {
                 out.push(`Follow up on: ${a.label}`);
             }
         }
@@ -433,15 +478,15 @@ function composeWatchFor(prom_trends, snapshot, care_goals) {
             });
         }
     }
-    // Snapshot high-severity problems
+    // Snapshot problems flagged as active (snapshot schema doesn't have a
+    // severity column — we use status === 'active' as the surface signal).
     if (snapshot && snapshot.problems_preview) {
         for (const pr of snapshot.problems_preview) {
-            if (String(pr.severity || "").toLowerCase().includes("severe")
-                || String(pr.severity || "").toLowerCase().includes("high")) {
+            if (String(pr.status || "").toLowerCase() === "active") {
                 items.push({
                     kind: "active_problem",
                     label: pr.label,
-                    severity: "high",
+                    severity: "active",
                 });
             }
         }
@@ -481,7 +526,8 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
             loadPersonalNotes(env, patientId),
             loadAppointmentContext(env, patientId, opts.appointment_id || null),
         ]);
-    const triage = intake ? await loadIntakeTriage(env, intake.triage_id) : null;
+    // Triage is reverse-linked: appointment_triage.intake_id → intake_responses.id
+    const triage = intake ? await loadIntakeTriage(env, intake.id) : null;
 
     const focused = appts.focused || null;
 
