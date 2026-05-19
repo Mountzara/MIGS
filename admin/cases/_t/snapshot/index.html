@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Patient Snapshot · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+
+        .wrap { max-width: 1400px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 28px) 80px; }
+
+        header.bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+            font-size: 13px; color: var(--fg-soft); flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+
+        @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mzGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+
+        /* HERO — patient header */
+        .hero {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 22px 28px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            margin-bottom: 18px;
+            animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+        }
+        .hero .name {
+            font-weight: 200; font-size: clamp(28px, 4vw, 38px);
+            letter-spacing: -0.02em; color: var(--fg-strong); margin: 0;
+        }
+        .hero .pronouns { font-size: 14px; color: var(--accent-soft); margin-left: 10px; font-weight: 400; }
+        .hero .demo-line {
+            font-size: 13.5px; color: var(--fg-soft); margin-top: 6px;
+            display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+        }
+        .hero .demo-line .sep { color: var(--fg-dim); }
+        .hero .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .hero .pill-action {
+            background: rgba(var(--glow-purple), 0.12);
+            border: 1px solid rgba(var(--glow-purple), 0.40);
+            color: var(--accent-soft);
+            font-size: 12px; font-weight: 500;
+            padding: 7px 14px; border-radius: 999px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .hero .pill-action:hover {
+            background: rgba(var(--glow-purple), 0.22);
+            color: var(--fg-strong);
+            transform: translateY(-1px);
+        }
+
+        /* SNAPSHOT META strip */
+        .meta-strip {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .meta-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 14px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: border-color 0.22s, transform 0.22s;
+            animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .meta-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.30); }
+        .meta-card .lbl {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--fg-dim); margin-bottom: 4px;
+        }
+        .meta-card .val { font-size: 17px; color: var(--fg-strong); font-weight: 300; line-height: 1.2; }
+        .meta-card .sub { font-size: 11px; color: var(--fg-soft); margin-top: 3px; }
+
+        /* MAIN GRID */
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 18px;
+        }
+        @media (max-width: 980px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        section.panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            margin-bottom: 18px;
+            animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            transition: border-color 0.25s;
+        }
+        section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+        section.panel h2 {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+            color: var(--accent-soft); margin: 0 0 14px 0;
+            display: flex; align-items: baseline; gap: 10px;
+        }
+        section.panel h2 .count {
+            font-size: 11px; color: var(--fg-dim); font-weight: 500; letter-spacing: 0.05em; text-transform: none;
+        }
+        section.panel .lede { font-size: 14.5px; color: var(--fg-mid); line-height: 1.6; }
+
+        /* NARRATIVE — patient story */
+        .narrative { font-size: 14.5px; line-height: 1.65; color: var(--fg-mid); }
+        .narrative p { margin: 0 0 12px 0; }
+        .narrative p:last-child { margin-bottom: 0; }
+        .clinical-overview {
+            font-size: 13.5px; color: var(--fg-mid); line-height: 1.6;
+            border-left: 3px solid rgba(var(--glow-purple), 0.55);
+            padding: 4px 0 4px 14px;
+            margin-bottom: 16px;
+        }
+
+        /* PROBLEM LIST */
+        .problem-row {
+            display: grid; grid-template-columns: 90px 1fr; gap: 14px;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: start;
+        }
+        .problem-row:last-child { border-bottom: none; }
+        .problem-status {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px; text-align: center;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            color: var(--fg-soft);
+            align-self: center;
+        }
+        .problem-status[data-status="Active"]      { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
+        .problem-status[data-status="Resolving"]   { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45); }
+        .problem-status[data-status="Resolved"]    { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
+        .problem-status[data-status="Monitoring"]  { color: var(--fg-soft); border-color: rgba(255,255,255,0.20); }
+        .problem-name { font-size: 14px; font-weight: 500; color: var(--fg-strong); }
+        .problem-plan { font-size: 12.5px; color: var(--fg-soft); line-height: 1.5; margin-top: 3px; }
+
+        /* DIAGNOSTIC TRENDS w/ sparklines */
+        .dx-trend {
+            padding: 12px 14px; border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 10px;
+            transition: border-color 0.22s, background 0.22s;
+        }
+        .dx-trend:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .dx-trend-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
+        }
+        .dx-trend-name { font-size: 13.5px; font-weight: 500; color: var(--fg-strong); }
+        .dx-trend-cat {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+        }
+        .dx-trend-summary { font-size: 12.5px; color: var(--fg-soft); line-height: 1.5; margin-bottom: 8px; }
+        .dx-entries-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .dx-entries-table th, .dx-entries-table td {
+            padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.04);
+            text-align: left;
+        }
+        .dx-entries-table th {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim);
+        }
+        .dx-entries-table td { color: var(--fg-mid); font-variant-numeric: tabular-nums; }
+        .dx-entries-table td.interp { color: var(--fg-soft); font-size: 11px; }
+        .dx-entries-table td.interp.abnormal { color: rgba(252, 211, 77, 0.95); }
+        .dx-entries-table td.interp.critical { color: rgba(252, 165, 165, 0.95); }
+
+        .sparkline-wrap {
+            margin: 8px 0; padding: 6px 0;
+        }
+        .sparkline-wrap svg { display: block; }
+
+        /* IMAGING */
+        .imaging-row {
+            display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline;
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .imaging-row:last-child { border-bottom: none; }
+        .imaging-organ { font-size: 13.5px; font-weight: 500; color: var(--fg-strong); }
+        .imaging-dim { font-family: 'SF Mono', 'Menlo', monospace; font-size: 12.5px; color: var(--accent-soft); }
+        .imaging-impression { font-size: 12px; color: var(--fg-soft); margin-top: 3px; }
+        .imaging-prior {
+            display: inline-block;
+            font-size: 11px; color: var(--fg-dim);
+            margin-left: 8px;
+        }
+        .imaging-delta {
+            font-size: 11px; font-weight: 500; padding: 2px 7px;
+            border-radius: 999px; background: rgba(255,255,255,0.04);
+        }
+        .imaging-delta.up   { color: rgba(252, 165, 165, 0.95); }
+        .imaging-delta.down { color: rgba(110, 231, 183, 0.95); }
+
+        /* TIMELINE */
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 5px; top: 4px; bottom: 4px;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.08));
+        }
+        .timeline-event {
+            position: relative; margin-bottom: 14px; padding-left: 4px;
+        }
+        .timeline-event::before {
+            content: ''; position: absolute; left: -19px; top: 6px;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(var(--glow-purple), 0.95);
+            box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
+        }
+        .timeline-event:last-child { margin-bottom: 0; }
+        .timeline-date {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--accent-soft); margin-bottom: 2px;
+        }
+        .timeline-title { font-size: 13.5px; font-weight: 500; color: var(--fg-strong); }
+        .timeline-detail { font-size: 12.5px; color: var(--fg-soft); margin-top: 3px; line-height: 1.5; }
+        .timeline-type {
+            display: inline-block;
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 1px 7px; border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.08);
+            border: 1px solid rgba(var(--glow-purple), 0.30);
+            color: var(--accent-soft);
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        /* AI RECOMMENDATIONS */
+        .recs { display: flex; flex-direction: column; gap: 8px; }
+        .rec {
+            padding: 10px 12px; border-radius: 10px;
+            background: rgba(var(--glow-purple), 0.06);
+            border: 1px solid rgba(var(--glow-purple), 0.28);
+            font-size: 13px; color: var(--fg-mid); line-height: 1.5;
+            display: grid; grid-template-columns: 22px 1fr; gap: 10px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .rec:hover { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.45); }
+        .rec-num {
+            font-size: 11px; font-weight: 700; color: var(--accent-soft);
+            text-align: center;
+        }
+
+        /* GOALS + SURGICAL */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 11px;
+            font-size: 12px;
+            color: var(--fg-mid);
+            transition: border-color 0.18s, color 0.18s;
+        }
+        .chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+
+        /* ACTION ITEMS */
+        .action-item {
+            padding: 10px 12px; border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 8px;
+        }
+        .action-item.high   { border-color: rgba(245, 158, 11, 0.50); background: rgba(245, 158, 11, 0.04); }
+        .action-item.medium { border-color: rgba(var(--glow-purple), 0.40); }
+        .action-item-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 8px; margin-bottom: 4px;
+        }
+        .action-priority {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        .action-priority.high   { color: rgba(252, 211, 77, 0.95); }
+        .action-priority.medium { color: var(--accent-soft); }
+        .action-priority.low    { color: var(--fg-dim); }
+        .action-desc { font-size: 13px; color: var(--fg-strong); line-height: 1.5; }
+        .action-rationale { font-size: 11.5px; color: var(--fg-soft); margin-top: 4px; line-height: 1.5; }
+
+        /* SYMPTOM DIARY SPARKLINES */
+        .symptom-sparks {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+        }
+        .symptom-spark {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px 12px;
+            transition: border-color 0.22s;
+        }
+        .symptom-spark:hover { border-color: rgba(var(--glow-purple), 0.40); }
+        .symptom-spark .name {
+            font-size: 11.5px; color: var(--fg-mid); margin-bottom: 4px;
+            display: flex; justify-content: space-between; align-items: baseline;
+        }
+        .symptom-spark .latest {
+            font-size: 18px; color: var(--fg-strong); font-weight: 300;
+        }
+        .symptom-spark svg { width: 100%; height: 36px; display: block; }
+
+        /* EMPTY STATES */
+        .empty {
+            padding: 28px 16px; text-align: center;
+            color: var(--fg-soft); font-size: 13.5px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px; border: 1px dashed var(--border);
+        }
+        .empty.snapshot-empty {
+            padding: 60px 20px;
+            background: rgba(var(--glow-purple), 0.04);
+            border: 1px dashed rgba(var(--glow-purple), 0.30);
+        }
+        .empty .empty-title {
+            font-size: 16px; color: var(--fg-strong); margin-bottom: 6px; font-weight: 400;
+        }
+        .empty .empty-sub { font-size: 13px; color: var(--fg-soft); max-width: 56ch; margin: 0 auto; line-height: 1.55; }
+
+        /* History switcher */
+        .history-switcher {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--fg-soft);
+            padding: 4px 12px; border-radius: 999px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            margin-left: 8px;
+        }
+        .history-switcher select {
+            font: inherit; font-size: 12px;
+            background: transparent; border: none; color: var(--fg-strong);
+            cursor: pointer; padding: 2px 4px;
+        }
+        .history-switcher select:focus { outline: none; }
+        .history-switcher option { background: #07070a; color: var(--fg-strong); }
+        .history-switcher .compare-btn {
+            font: inherit; font-size: 11.5px;
+            background: rgba(var(--glow-purple), 0.14);
+            border: 1px solid rgba(var(--glow-purple), 0.40);
+            color: var(--accent-soft);
+            padding: 2px 10px; border-radius: 999px;
+            cursor: pointer; transition: all 0.18s;
+        }
+        .history-switcher .compare-btn:hover { background: rgba(var(--glow-purple), 0.24); color: #fff; }
+
+        /* Diff modal */
+        .modal-bg {
+            position: fixed; inset: 0; z-index: 999;
+            background: rgba(0,0,0,0.62);
+            backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .modal-bg.open { display: flex; }
+        .modal {
+            width: 100%; max-width: 720px;
+            max-height: 88vh; overflow: auto;
+            background: rgba(7,7,10,0.95);
+            border: 1px solid rgba(var(--glow-purple), 0.50);
+            border-radius: 16px;
+            padding: 28px 32px;
+            backdrop-filter: blur(40px);
+            animation: mzRise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .modal h2 {
+            font-weight: 200; font-size: 24px; letter-spacing: -0.018em;
+            color: var(--fg-strong); margin: 0 0 4px 0;
+        }
+        .modal .modal-sub { font-size: 12.5px; color: var(--fg-soft); margin-bottom: 18px; }
+        .diff-section { margin-bottom: 18px; }
+        .diff-section h3 {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase;
+            color: var(--accent-soft); margin: 0 0 8px 0;
+        }
+        .diff-row {
+            padding: 8px 12px; border-radius: 8px; font-size: 13px;
+            margin-bottom: 5px; border: 1px solid transparent;
+        }
+        .diff-row.added    { background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.35); color: var(--fg-mid); }
+        .diff-row.resolved { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.45); color: var(--fg-mid); }
+        .diff-row.removed  { background: rgba(239, 68, 68, 0.06);  border-color: rgba(239, 68, 68, 0.35);  color: var(--fg-mid); }
+        .diff-row.changed  { background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.35); color: var(--fg-mid); }
+        .diff-row strong { color: var(--fg-strong); font-weight: 500; }
+        .diff-row em { font-style: normal; color: var(--accent-soft); }
+        .diff-empty { font-size: 12.5px; color: var(--fg-dim); padding: 4px 0 12px; }
+        .modal-close {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--fg-soft); font: inherit; font-size: 12.5px;
+            padding: 6px 14px; border-radius: 999px; cursor: pointer;
+            transition: all 0.18s;
+        }
+        .modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+        .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 14px; }
+
+        /* SUPPLEMENTARY: summary cards in right column */
+        .right-stack > section.panel { margin-bottom: 16px; }
+
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: baseline;
+            padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12.5px;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row .k { color: var(--fg-soft); }
+        .summary-row .v { color: var(--fg-strong); font-variant-numeric: tabular-nums; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero, .meta-card, section.panel { animation: none !important; }
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> · <a href="/admin/patients/">Patients</a> · <a href="" id="case-link">Case</a> · Snapshot</span>
+        </header>
+
+        <div id="root">
+            <div class="empty"><div class="empty-title">Loading patient snapshot…</div></div>
+        </div>
+    </div>
+
+    <!-- Diff modal -->
+    <div class="modal-bg" id="diff-modal-bg">
+        <div class="modal" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // ---- helpers ----
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+            }[c]));
+        }
+        function fmtDate(d) {
+            if (!d) return '—';
+            // Accept either YYYY-MM-DD strings or epoch-ms.
+            if (/^\d{4}-\d{2}-\d{2}/.test(String(d))) {
+                const dt = new Date(d + 'T00:00:00');
+                if (!isNaN(dt)) return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return d;
+            }
+            const n = Number(d);
+            if (Number.isFinite(n) && n > 0) {
+                return new Date(n).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+            return String(d);
+        }
+        function fmtAge(dob) {
+            if (!dob) return '—';
+            try {
+                const b = new Date(dob);
+                const now = new Date();
+                let age = now.getFullYear() - b.getFullYear();
+                const m = now.getMonth() - b.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+                return age + 'y';
+            } catch { return '—'; }
+        }
+        function nlToParagraphs(text) {
+            if (!text) return '';
+            return text.split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('');
+        }
+        function parseDimensionToMaxAxisCm(dim) {
+            // Best-effort parse of "8.2 x 4.1 x 3.8 cm" → 8.2 (or whatever is biggest)
+            if (!dim || typeof dim !== 'string') return null;
+            const nums = (dim.match(/\d+(?:\.\d+)?/g) || []).map(Number).filter(n => Number.isFinite(n));
+            if (nums.length === 0) return null;
+            return Math.max(...nums);
+        }
+        function getQueryParam(name) {
+            const m = window.location.pathname.match(/\/admin\/cases\/([^/]+)\/snapshot/);
+            if (m) return decodeURIComponent(m[1]);
+            return new URLSearchParams(window.location.search).get(name);
+        }
+
+        // ---- sparkline renderer ----
+        function sparkline(values, opts) {
+            opts = opts || {};
+            const w = opts.width || 220;
+            const h = opts.height || 36;
+            const pad = 2;
+            if (!values || values.length === 0) {
+                return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><text x="${w/2}" y="${h/2 + 4}" text-anchor="middle" fill="rgba(245,245,247,0.42)" font-size="10">no data</text></svg>`;
+            }
+            const min = Math.min.apply(null, values);
+            const max = Math.max.apply(null, values);
+            const range = Math.max(0.0001, max - min);
+            const stepX = (w - pad * 2) / Math.max(1, values.length - 1);
+            const pts = values.map((v, i) => {
+                const x = pad + i * stepX;
+                const y = h - pad - ((v - min) / range) * (h - pad * 2);
+                return [x, y];
+            });
+            const pathD = pts.map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`)).join(' ');
+            const areaD = pathD + ` L${pts[pts.length-1][0].toFixed(1)},${h - pad} L${pts[0][0].toFixed(1)},${h - pad} Z`;
+            const last = pts[pts.length - 1];
+            return `
+                <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(${'167, 139, 250'}, 0.35)"/>
+                            <stop offset="100%" stop-color="rgba(${'167, 139, 250'}, 0.02)"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="${areaD}" fill="url(#spark-grad)"/>
+                    <path d="${pathD}" fill="none" stroke="rgba(${'167, 139, 250'}, 0.95)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="rgba(255,255,255,0.95)"/>
+                </svg>
+            `;
+        }
+
+        function fetchSnapshot(patientId, version) {
+            const url = '/api/v1/admin/snapshots/' + encodeURIComponent(patientId)
+                + (version ? '?version=' + encodeURIComponent(version) : '');
+            return fetch(url, { credentials: 'include' })
+                .then(r => {
+                    if (r.status === 401) throw new Error('admin-auth-required');
+                    if (!r.ok) throw new Error('http-' + r.status);
+                    return r.json();
+                });
+        }
+
+        function fetchHistory(patientId) {
+            return fetch('/api/v1/admin/snapshots/' + encodeURIComponent(patientId) + '/history', { credentials: 'include' })
+                .then(r => r.ok ? r.json() : { versions: [] })
+                .catch(() => ({ versions: [] }));
+        }
+
+        function fetchDiff(patientId, fromV, toV) {
+            return fetch(`/api/v1/admin/snapshots/${encodeURIComponent(patientId)}/diff?from=${fromV}&to=${toV}`,
+                         { credentials: 'include' })
+                .then(r => r.json());
+        }
+
+        function render(data) {
+            const root = document.getElementById('root');
+            const p = data.patient;
+            const snap = data.snapshot;
+            const problems = data.problems || [];
+            const trends = data.diagnostic_trends || [];
+            const imaging = data.imaging_measurements || [];
+            const timeline = data.timeline_events || [];
+            const actions = data.action_items || [];
+            const sup = data.supplementary || {};
+
+            const fullName = ((p.first_name || '') + ' ' + (p.last_name || '')).trim() || p.email || '(unnamed)';
+            document.getElementById('case-link').href = '/admin/cases/' + encodeURIComponent(p.id) + '/';
+
+            // Hero.
+            const heroHtml = `
+                <section class="hero">
+                    <div>
+                        <h1 class="name">${escapeHtml(fullName)}${p.pronouns ? `<span class="pronouns">(${escapeHtml(p.pronouns)})</span>` : ''}</h1>
+                        <div class="demo-line">
+                            <span>${escapeHtml(fmtAge(p.date_of_birth))} · DOB ${escapeHtml(p.date_of_birth || '—')}</span>
+                            <span class="sep">·</span>
+                            <span>${escapeHtml(p.email || '—')}</span>
+                            ${p.phone ? `<span class="sep">·</span><span>${escapeHtml(p.phone)}</span>` : ''}
+                            ${snap ? `<span class="sep">·</span><span id="version-anchor">Snapshot v${snap.version_number} · ${escapeHtml(snap.dominant_category || 'general')}</span>` : ''}
+                            ${snap ? `<span class="history-switcher" id="history-switcher" style="display:none;">
+                                <span style="color:var(--fg-dim);">Version</span>
+                                <select id="version-select" aria-label="Switch snapshot version"></select>
+                                <button class="compare-btn" id="compare-btn">Compare ↔</button>
+                            </span>` : ''}
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <a class="pill-action" href="/admin/cases/${encodeURIComponent(p.id)}/">Full case</a>
+                        <a class="pill-action" href="/admin/messages/?patient=${encodeURIComponent(p.id)}">Messages</a>
+                        <a class="pill-action" href="/admin/billing/?patient_id=${encodeURIComponent(p.id)}">Billing</a>
+                    </div>
+                </section>
+            `;
+
+            // Empty-state shortcut.
+            if (!snap) {
+                root.innerHTML = heroHtml + `
+                    <div class="empty snapshot-empty">
+                        <div class="empty-title">No AI snapshot on file yet.</div>
+                        <div class="empty-sub">When the MountZara Transcription app pushes a <code>PatientProgressSummary</code> for this patient — typically after the first encounter post-intake — it will appear here as an interactive EMR-style snapshot with problem list, diagnostic trends, imaging, timeline, AI recommendations, and action items, fused with website-side data (symptom diary trends, education, appointment summary).</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Meta strip.
+            const lastSync = (sup.sync_state || []).find(s => s.app === 'transcription');
+            const metaStrip = `
+                <div class="meta-strip">
+                    <div class="meta-card">
+                        <div class="lbl">Snapshot</div>
+                        <div class="val">v${escapeHtml(String(snap.version_number))}</div>
+                        <div class="sub">${escapeHtml(fmtDate(snap.generated_at))} · ${escapeHtml(snap.encounter_count + ' encounters')}</div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="lbl">Active problems</div>
+                        <div class="val">${problems.filter(p => p.status === 'Active').length}</div>
+                        <div class="sub">${problems.length} total on list</div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="lbl">AI recommendations</div>
+                        <div class="val">${(snap.ai_recommendations || []).length}</div>
+                        <div class="sub">${actions.length} action items</div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="lbl">Imaging</div>
+                        <div class="val">${imaging.length}</div>
+                        <div class="sub">structures tracked</div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="lbl">Source</div>
+                        <div class="val" style="font-size:13px;">${escapeHtml(snap.source_app)}</div>
+                        <div class="sub">${snap.ai_model ? escapeHtml(snap.ai_model) : 'no model recorded'}</div>
+                    </div>
+                </div>
+            `;
+
+            // Narrative + clinical overview.
+            const narrativeHtml = `
+                <section class="panel">
+                    <h2>Clinical overview</h2>
+                    ${snap.clinical_overview ? `<div class="clinical-overview">${escapeHtml(snap.clinical_overview)}</div>` : ''}
+                    ${snap.chief_complaint ? `<div style="margin-bottom:12px"><strong style="color:var(--fg-strong);font-weight:500;">Chief complaint.</strong> ${escapeHtml(snap.chief_complaint)}</div>` : ''}
+                    ${snap.cc_history ? `<div style="margin-bottom:12px;font-size:13.5px;color:var(--fg-mid);line-height:1.6;"><strong style="color:var(--fg-strong);font-weight:500;">History of presenting complaint.</strong> ${escapeHtml(snap.cc_history)}</div>` : ''}
+                    ${snap.narrative_patient_story ? `<div class="narrative" style="margin-top:14px;">${nlToParagraphs(snap.narrative_patient_story)}</div>` : ''}
+                </section>
+            `;
+
+            // Goals + surgical history.
+            const goals = snap.patient_goals || [];
+            const surgicals = snap.surgical_history || [];
+            const goalsHtml = goals.length === 0 ? '' : `
+                <section class="panel">
+                    <h2>Patient goals</h2>
+                    <div class="chips">
+                        ${goals.map(g => `<span class="chip">${escapeHtml(g)}</span>`).join('')}
+                    </div>
+                </section>
+            `;
+            const surgicalsHtml = surgicals.length === 0 ? '' : `
+                <section class="panel">
+                    <h2>Surgical history <span class="count">${surgicals.length}</span></h2>
+                    <div class="chips">
+                        ${surgicals.map(s => `<span class="chip">${escapeHtml(s)}</span>`).join('')}
+                    </div>
+                </section>
+            `;
+
+            // Problem list.
+            const problemsHtml = `
+                <section class="panel">
+                    <h2>Problem list <span class="count">${problems.length}</span></h2>
+                    ${problems.length === 0 ? '<div class="empty">No structured problems on this snapshot.</div>' : problems.map(p => `
+                        <div class="problem-row">
+                            <span class="problem-status" data-status="${escapeHtml(p.status)}">${escapeHtml(p.status)}</span>
+                            <div>
+                                <div class="problem-name">${escapeHtml(p.problem)}</div>
+                                ${p.last_visit_plan ? `<div class="problem-plan">${escapeHtml(p.last_visit_plan)}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </section>
+            `;
+
+            // Diagnostic trends w/ sparklines (numeric extraction from value).
+            const trendsHtml = `
+                <section class="panel">
+                    <h2>Diagnostic trends <span class="count">${trends.length}</span></h2>
+                    ${trends.length === 0 ? '<div class="empty">No diagnostic trend data on this snapshot.</div>' : trends.map(t => {
+                        const entries = (t.entries || []).slice();
+                        const numeric = entries.map(e => {
+                            // Pull first numeric token from "value"
+                            const m = String(e.value || '').match(/-?\d+(?:\.\d+)?/);
+                            return m ? Number(m[0]) : null;
+                        });
+                        const hasNumbers = numeric.some(n => n != null);
+                        const numericClean = numeric.filter(n => n != null);
+                        return `
+                            <div class="dx-trend">
+                                <div class="dx-trend-head">
+                                    <span class="dx-trend-name">${escapeHtml(t.test_name)}</span>
+                                    <span class="dx-trend-cat">${escapeHtml(t.category || '')}</span>
+                                </div>
+                                ${t.trend_summary ? `<div class="dx-trend-summary">${escapeHtml(t.trend_summary)}</div>` : ''}
+                                ${hasNumbers && numericClean.length > 1 ? `<div class="sparkline-wrap">${sparkline(numericClean, { width: 320, height: 36 })}</div>` : ''}
+                                ${entries.length > 0 ? `
+                                    <table class="dx-entries-table">
+                                        <thead><tr><th>Date</th><th>Value</th><th>Interpretation</th></tr></thead>
+                                        <tbody>
+                                            ${entries.map(e => `<tr>
+                                                <td>${escapeHtml(e.date || '')}</td>
+                                                <td>${escapeHtml(e.value || '')}</td>
+                                                <td class="interp ${escapeHtml((e.interpretation || '').toLowerCase())}">${escapeHtml(e.interpretation || '')}</td>
+                                            </tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </section>
+            `;
+
+            // Imaging.
+            const imagingHtml = `
+                <section class="panel">
+                    <h2>Imaging measurements <span class="count">${imaging.length}</span></h2>
+                    ${imaging.length === 0 ? '<div class="empty">No imaging measurements on this snapshot.</div>' : imaging.map(m => {
+                        const current = parseDimensionToMaxAxisCm(m.dimension);
+                        const prior = parseDimensionToMaxAxisCm(m.prior_dimension);
+                        let deltaHtml = '';
+                        if (current != null && prior != null && prior > 0) {
+                            const delta = current - prior;
+                            const pct = (delta / prior) * 100;
+                            const dir = delta > 0 ? 'up' : (delta < 0 ? 'down' : '');
+                            const sign = delta > 0 ? '+' : '';
+                            if (Math.abs(delta) > 0.05) deltaHtml = `<span class="imaging-delta ${dir}">${sign}${delta.toFixed(1)} cm (${sign}${pct.toFixed(0)}%)</span>`;
+                        }
+                        return `
+                            <div class="imaging-row">
+                                <div>
+                                    <div class="imaging-organ">${escapeHtml(m.organ_name)}</div>
+                                    ${m.impression ? `<div class="imaging-impression">${escapeHtml(m.impression)}</div>` : ''}
+                                </div>
+                                <div style="text-align:right">
+                                    <div><span class="imaging-dim">${escapeHtml(m.dimension)}</span>${deltaHtml ? ' ' + deltaHtml : ''}</div>
+                                    <div style="font-size:11px;color:var(--fg-dim);margin-top:2px">${escapeHtml(m.measurement_date || '')}${m.prior_dimension ? `<span class="imaging-prior"> · prior ${escapeHtml(m.prior_dimension)}</span>` : ''}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </section>
+            `;
+
+            // Timeline.
+            const timelineHtml = `
+                <section class="panel">
+                    <h2>Treatment timeline <span class="count">${timeline.length}</span></h2>
+                    ${timeline.length === 0 ? '<div class="empty">No timeline events on this snapshot.</div>' : `
+                        <div class="timeline">
+                            ${timeline.map(ev => `
+                                <div class="timeline-event">
+                                    <div class="timeline-date">${escapeHtml(fmtDate(ev.event_date))}${ev.event_type ? `<span class="timeline-type">${escapeHtml(ev.event_type)}</span>` : ''}</div>
+                                    <div class="timeline-title">${escapeHtml(ev.event_title)}</div>
+                                    ${ev.event_detail ? `<div class="timeline-detail">${escapeHtml(ev.event_detail)}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </section>
+            `;
+
+            // AI recommendations.
+            const recsArr = snap.ai_recommendations || [];
+            const recsHtml = recsArr.length === 0 ? '' : `
+                <section class="panel">
+                    <h2>AI recommendations <span class="count">${recsArr.length}</span></h2>
+                    <div class="recs">
+                        ${recsArr.map((r, i) => `<div class="rec"><span class="rec-num">${i+1}</span><span>${escapeHtml(r)}</span></div>`).join('')}
+                    </div>
+                </section>
+            `;
+
+            // Action items.
+            const actionsHtml = actions.length === 0 ? '' : `
+                <section class="panel">
+                    <h2>Action items <span class="count">${actions.length}</span></h2>
+                    ${actions.map(a => `
+                        <div class="action-item ${escapeHtml(a.priority || 'medium')}">
+                            <div class="action-item-head">
+                                <span class="action-priority ${escapeHtml(a.priority || 'medium')}">${escapeHtml(a.priority || 'medium')} priority</span>
+                                ${a.due_date ? `<span style="font-size:11px;color:var(--fg-soft)">due ${escapeHtml(a.due_date)}</span>` : ''}
+                            </div>
+                            <div class="action-desc">${escapeHtml(a.description)}</div>
+                            ${a.rationale ? `<div class="action-rationale">${escapeHtml(a.rationale)}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </section>
+            `;
+
+            // --- Right column (supplementary website-side data) ---
+
+            // Symptom diary 30-day — flatten into per-symptom series.
+            const symptomBySym = {};
+            (sup.symptom_diary_30d || []).forEach(entry => {
+                if (!entry.symptoms) return;
+                if (typeof entry.symptoms === 'object') {
+                    Object.entries(entry.symptoms).forEach(([key, val]) => {
+                        // Coerce val to number if possible
+                        let num = null;
+                        if (typeof val === 'number') num = val;
+                        else if (typeof val === 'string') {
+                            const m = val.match(/-?\d+(?:\.\d+)?/);
+                            if (m) num = Number(m[0]);
+                        }
+                        if (num == null) return;
+                        if (!symptomBySym[key]) symptomBySym[key] = [];
+                        symptomBySym[key].push({ date: entry.entry_date, value: num });
+                    });
+                }
+            });
+            const symptomKeys = Object.keys(symptomBySym).sort();
+            const symptomHtml = symptomKeys.length === 0 ? '' : `
+                <section class="panel">
+                    <h2>Symptom diary · last 30 days <span class="count">${symptomKeys.length} tracked</span></h2>
+                    <div class="symptom-sparks">
+                        ${symptomKeys.map(k => {
+                            const series = symptomBySym[k];
+                            const values = series.map(s => s.value);
+                            const latest = values[values.length - 1];
+                            return `
+                                <div class="symptom-spark">
+                                    <div class="name"><span>${escapeHtml(k.replace(/_/g, ' '))}</span><span class="latest">${latest != null ? latest : '—'}</span></div>
+                                    ${sparkline(values, { width: 220, height: 36 })}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </section>
+            `;
+
+            // Education + appointments + claims + encounters summary cards.
+            const edu = sup.education_progress || { assigned: 0, viewed: 0 };
+            const appt = sup.appointments_summary || {};
+            const claims = sup.recent_claims || [];
+            const encs = sup.recent_encounters || [];
+
+            const supplementaryHtml = `
+                <section class="panel">
+                    <h2>Engagement</h2>
+                    <div class="summary-row"><span class="k">Education assigned</span><span class="v">${edu.assigned || 0}</span></div>
+                    <div class="summary-row"><span class="k">Education viewed</span><span class="v">${edu.viewed || 0}</span></div>
+                    <div class="summary-row"><span class="k">Symptom days logged (30d)</span><span class="v">${(sup.symptom_diary_30d || []).length}</span></div>
+                </section>
+                <section class="panel">
+                    <h2>Appointments</h2>
+                    <div class="summary-row"><span class="k">Total scheduled</span><span class="v">${(appt && appt.total) || 0}</span></div>
+                    <div class="summary-row"><span class="k">Past visits</span><span class="v">${(appt && appt.past) || 0}</span></div>
+                    <div class="summary-row"><span class="k">Upcoming</span><span class="v">${(appt && appt.upcoming) || 0}</span></div>
+                    ${(appt && appt.last_visit_at) ? `<div class="summary-row"><span class="k">Last visit</span><span class="v">${fmtDate(appt.last_visit_at)}</span></div>` : ''}
+                    ${(appt && appt.next_visit_at) ? `<div class="summary-row"><span class="k">Next visit</span><span class="v">${fmtDate(appt.next_visit_at)}</span></div>` : ''}
+                </section>
+                ${encs.length > 0 ? `
+                    <section class="panel">
+                        <h2>Recent encounters <span class="count">${encs.length}</span></h2>
+                        ${encs.map(e => `
+                            <div class="summary-row">
+                                <span class="k">${escapeHtml(fmtDate(e.visit_date))} · ${escapeHtml(e.visit_type_actual || '—')}</span>
+                                <span class="v" style="font-size:11.5px;color:var(--fg-soft);">${escapeHtml((e.chief_complaint || '').slice(0, 38))}</span>
+                            </div>
+                        `).join('')}
+                    </section>
+                ` : ''}
+                ${claims.length > 0 ? `
+                    <section class="panel">
+                        <h2>Recent billing</h2>
+                        ${claims.map(c => `
+                            <div class="summary-row">
+                                <span class="k">${escapeHtml(fmtDate(c.visit_date))} · <span style="font-family:'SF Mono',monospace;color:var(--accent-soft)">${escapeHtml(c.em_code || '—')}</span></span>
+                                <span class="v">${escapeHtml(c.status)}</span>
+                            </div>
+                        `).join('')}
+                        <div style="text-align:right;margin-top:8px;font-size:12px;"><a href="/admin/billing/?patient_id=${encodeURIComponent(p.id)}">Open billing →</a></div>
+                    </section>
+                ` : ''}
+                ${lastSync ? `
+                    <section class="panel">
+                        <h2>Sync state · ${escapeHtml(lastSync.app)}</h2>
+                        ${lastSync.last_pulled_at ? `<div class="summary-row"><span class="k">App last pulled</span><span class="v">${fmtDate(lastSync.last_pulled_at)}</span></div>` : ''}
+                        ${lastSync.last_pushed_at ? `<div class="summary-row"><span class="k">App last pushed</span><span class="v">${fmtDate(lastSync.last_pushed_at)}</span></div>` : ''}
+                    </section>
+                ` : ''}
+            `;
+
+            // Compose. Apply stagger by setting --i custom prop on each panel for animation-delay.
+            const leftPanels = narrativeHtml + problemsHtml + trendsHtml + imagingHtml + timelineHtml;
+            const rightPanels = recsHtml + actionsHtml + symptomHtml + supplementaryHtml;
+
+            root.innerHTML = heroHtml + metaStrip + goalsHtml + surgicalsHtml + `
+                <div class="main-grid">
+                    <div>${leftPanels}</div>
+                    <div class="right-stack">${rightPanels}</div>
+                </div>
+            `;
+
+            // Stagger panel entrances.
+            Array.from(root.querySelectorAll('section.panel, .meta-card')).forEach((el, i) => {
+                el.style.animationDelay = (Math.min(i, 16) * 35) + 'ms';
+            });
+        }
+
+        function renderError(msg) {
+            const root = document.getElementById('root');
+            root.innerHTML = `
+                <div class="empty snapshot-empty">
+                    <div class="empty-title">${escapeHtml(msg)}</div>
+                    <div class="empty-sub">If the patient was just created, this is expected — snapshots arrive after the first encounter synced from the Transcription app. Use the Full case button to inspect what's already on file.</div>
+                </div>
+            `;
+        }
+
+        // ---- history switcher + diff modal ----
+        let historyVersions = [];
+
+        async function populateHistory(patientId, currentVersion) {
+            const data = await fetchHistory(patientId);
+            historyVersions = data.versions || [];
+            const $sw = document.getElementById('history-switcher');
+            const $sel = document.getElementById('version-select');
+            if (!$sw || !$sel) return;
+            if (historyVersions.length <= 1) {
+                $sw.style.display = 'none';
+                return;
+            }
+            $sw.style.display = 'inline-flex';
+            $sel.innerHTML = historyVersions.map(v => {
+                const label = `v${v.version_number} · ${new Date(v.generated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} (${v.encounter_count} enc)${v.is_current ? ' · current' : ''}`;
+                return `<option value="${v.version_number}" ${v.version_number === currentVersion ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+            }).join('');
+            $sel.onchange = async () => {
+                const v = parseInt($sel.value, 10);
+                try {
+                    const newData = await fetchSnapshot(patientId, v);
+                    render(newData);
+                    populateHistory(patientId, v);
+                } catch {
+                    renderError('Failed to load that version.');
+                }
+            };
+            const $cb = document.getElementById('compare-btn');
+            if ($cb) $cb.onclick = () => openDiffModal(patientId, currentVersion);
+        }
+
+        function openDiffModal(patientId, currentVersion) {
+            // Find a sensible "previous" default — the version right
+            // before currentVersion.
+            const sorted = historyVersions.slice().sort((a, b) => a.version_number - b.version_number);
+            const idx = sorted.findIndex(v => v.version_number === currentVersion);
+            const defaultFrom = idx > 0 ? sorted[idx - 1].version_number : sorted[0].version_number;
+            const $bg = document.getElementById('diff-modal-bg');
+            const $modal = $bg.querySelector('.modal');
+            $modal.innerHTML = `
+                <h2>Compare snapshot versions</h2>
+                <div class="modal-sub">
+                    Showing what changed between snapshot versions for this patient.
+                    The "from" version is the older one; "to" is the newer.
+                </div>
+                <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:end; margin-bottom:18px;">
+                    <div class="field" style="flex:1; min-width:200px;">
+                        <label style="font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--fg-dim);">From</label>
+                        <select id="diff-from" style="font:inherit;font-size:13px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--fg-strong);">
+                            ${sorted.map(v => `<option value="${v.version_number}" ${v.version_number === defaultFrom ? 'selected' : ''}>v${v.version_number} · ${new Date(v.generated_at).toLocaleDateString()}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="field" style="flex:1; min-width:200px;">
+                        <label style="font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--fg-dim);">To</label>
+                        <select id="diff-to" style="font:inherit;font-size:13px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--fg-strong);">
+                            ${sorted.map(v => `<option value="${v.version_number}" ${v.version_number === currentVersion ? 'selected' : ''}>v${v.version_number} · ${new Date(v.generated_at).toLocaleDateString()}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button class="compare-btn" id="diff-run">Compute diff</button>
+                </div>
+                <div id="diff-result"><div class="diff-empty">Pick two versions and click Compute diff.</div></div>
+                <div class="modal-actions">
+                    <button class="modal-close" id="diff-close">Close</button>
+                </div>
+            `;
+            $bg.classList.add('open');
+
+            document.getElementById('diff-close').onclick = () => $bg.classList.remove('open');
+            document.getElementById('diff-run').onclick = async () => {
+                const fromV = parseInt(document.getElementById('diff-from').value, 10);
+                const toV   = parseInt(document.getElementById('diff-to').value, 10);
+                const $r = document.getElementById('diff-result');
+                $r.innerHTML = '<div class="diff-empty">Computing…</div>';
+                if (fromV === toV) { $r.innerHTML = '<div class="diff-empty">Pick two DIFFERENT versions.</div>'; return; }
+                try {
+                    const diff = await fetchDiff(patientId, fromV, toV);
+                    if (!diff.ok) { $r.innerHTML = `<div class="diff-empty">Error: ${escapeHtml(diff.error || 'unknown')}.</div>`; return; }
+                    renderDiff($r, diff);
+                } catch (e) {
+                    $r.innerHTML = '<div class="diff-empty">Network error.</div>';
+                }
+            };
+        }
+
+        function renderDiff(host, diff) {
+            const s = diff.summary || {};
+            const blocks = [];
+            blocks.push(`
+                <div class="diff-section">
+                    <h3>Summary</h3>
+                    <div class="diff-row" style="background:rgba(var(--glow-purple), 0.08);border-color:rgba(var(--glow-purple), 0.35);">
+                        Comparing <strong>v${s.from_version}</strong> (${new Date(s.from_generated_at).toLocaleDateString()})
+                        → <strong>v${s.to_version}</strong> (${new Date(s.to_generated_at).toLocaleDateString()})
+                        — ${s.days_between} day${s.days_between === 1 ? '' : 's'}, ${s.encounter_delta >= 0 ? '+' : ''}${s.encounter_delta} encounters.
+                        ${s.dominant_category_change ? `<br>Dominant category changed: <em>${escapeHtml(s.dominant_category_change.from)}</em> → <em>${escapeHtml(s.dominant_category_change.to)}</em>.` : ''}
+                    </div>
+                </div>
+            `);
+
+            function section(title, rows, rowKind, renderer) {
+                if (!rows || rows.length === 0) return;
+                blocks.push(`
+                    <div class="diff-section">
+                        <h3>${escapeHtml(title)} · ${rows.length}</h3>
+                        ${rows.map(r => `<div class="diff-row ${rowKind}">${renderer(r)}</div>`).join('')}
+                    </div>
+                `);
+            }
+
+            section('New problems', diff.newProblems, 'added',
+                (p) => `<strong>${escapeHtml(p.problem)}</strong> · ${escapeHtml(p.status)}${p.last_visit_plan ? ` — ${escapeHtml(p.last_visit_plan)}` : ''}`);
+            section('Resolved problems', diff.resolvedProblems, 'resolved',
+                (p) => `<strong>${escapeHtml(p.problem)}</strong> · <em>${escapeHtml(p.prior_status)} → ${escapeHtml(p.new_status)}</em>`);
+            section('Status changes', diff.changedStatuses, 'changed',
+                (p) => `<strong>${escapeHtml(p.problem)}</strong> · ${escapeHtml(p.prior_status)} → <em>${escapeHtml(p.new_status)}</em>`);
+            section('Removed problems', diff.removedProblems, 'removed',
+                (p) => `<strong>${escapeHtml(p.problem)}</strong> (was ${escapeHtml(p.status)})`);
+            section('New recommendations', diff.newRecommendations, 'added',
+                (r) => escapeHtml(r));
+            section('Removed recommendations', diff.removedRecommendations, 'removed',
+                (r) => escapeHtml(r));
+            section('New action items', diff.newActionItems, 'added',
+                (a) => `<strong>${escapeHtml(a.description)}</strong>${a.priority ? ` · ${escapeHtml(a.priority)}` : ''}${a.due_date ? ` · due ${escapeHtml(a.due_date)}` : ''}`);
+            section('Imaging changes', diff.imagingDeltas, 'changed',
+                (m) => `<strong>${escapeHtml(m.organ_name)}</strong> — ${escapeHtml(m.prior_dimension || '—')} → <em>${escapeHtml(m.new_dimension)}</em>${m.max_axis_delta_cm != null ? ` (${m.max_axis_delta_cm > 0 ? '+' : ''}${m.max_axis_delta_cm.toFixed(1)} cm)` : ''}`);
+
+            const totalChanges = (diff.newProblems || []).length + (diff.resolvedProblems || []).length
+                + (diff.changedStatuses || []).length + (diff.removedProblems || []).length
+                + (diff.newRecommendations || []).length + (diff.removedRecommendations || []).length
+                + (diff.newActionItems || []).length + (diff.imagingDeltas || []).length;
+            if (totalChanges === 0) {
+                blocks.push(`<div class="diff-empty">No material differences between these two versions.</div>`);
+            }
+            host.innerHTML = blocks.join('');
+        }
+
+        // ---- bootstrap ----
+        const patientId = getQueryParam('id');
+        if (!patientId) {
+            renderError('Missing patient id in URL.');
+            return;
+        }
+        fetchSnapshot(patientId)
+            .then(data => {
+                render(data);
+                if (data.snapshot) populateHistory(patientId, data.snapshot.version_number);
+            })
+            .catch(err => {
+                if (err.message === 'admin-auth-required') {
+                    renderError('Admin authentication required — refresh the page.');
+                } else if (err.message === 'http-404') {
+                    renderError('Patient not found.');
+                } else {
+                    renderError('Could not load snapshot.');
+                }
+            });
+    })();
+    </script>
+</body>
+</html>
