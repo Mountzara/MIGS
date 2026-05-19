@@ -1,0 +1,106 @@
+[22:16:17Z] Loading PMID pool from /Users/beans/Developer/MountZara/MIGS/cite_audit/per_page_kb_pmid_pools.json
+[22:16:17Z] Unique PMIDs to verify: 533
+[22:16:17Z] Page slugs covered: ['abnormal-uterine-bleeding', 'adenomyosis', 'chronic-pelvic-pain', 'contraception', 'dysmenorrhea', 'endometriosis', 'fibroids', 'menopause', 'ovarian-masses', 'pcos', 'postoperative-recovery', 'pregnancy-loss']
+[22:16:17Z] Remaining to verify: 533
+[22:16:17Z] ============================================================
+[22:16:17Z] PHASE 1: esummary batches (validates PMID + gets bibliographic metadata)
+[22:16:17Z] ============================================================
+[22:16:17Z]   batch 1/27: PMIDs ['1161345', '1348995', '7438754']...(20 total)
+[22:16:18Z]   batch 2/27: PMIDs ['20713583', '20869187', '22314083']...(20 total)
+[22:16:19Z]   batch 3/27: PMIDs ['24909191', '25103301', '25673413']...(20 total)
+[22:16:20Z]   batch 4/27: PMIDs ['26897642', '26919512', '27091008']...(20 total)
+[22:16:21Z]   batch 5/27: PMIDs ['27818118', '27823942', '27844480']...(20 total)
+[22:16:22Z]   batch 6/27: PMIDs ['28911925', '28923465', '28952185']...(20 total)
+[22:16:23Z]   batch 7/27: PMIDs ['30129999', '30142667', '30182804']...(20 total)
+[22:16:24Z]   batch 8/27: PMIDs ['31009859', '31124209', '31127621']...(20 total)
+[22:16:25Z]   batch 9/27: PMIDs ['31785468', '31836678', '31914080']...(20 total)
+[22:16:26Z]   batch 10/27: PMIDs ['32459343', '32527307', '32558987']...(20 total)
+[22:16:27Z]   batch 11/27: PMIDs ['32954927', '32961953', '33004253']...(20 total)
+[22:16:28Z]   batch 12/27: PMIDs ['33428320', '33503342', '33515746']...(20 total)
+[22:16:29Z]   batch 13/27: PMIDs ['34098177', '34101713', '34114643']...(20 total)
+[22:16:30Z]   batch 14/27: PMIDs ['34695601', '34732196', '34740602']...(20 total)
+[22:16:32Z]   batch 15/27: PMIDs ['35128434', '35147170', '35181041']...(20 total)
+[22:16:33Z]   batch 16/27: PMIDs ['35716805', '35726765', '35744056']...(20 total)
+[22:16:34Z]   batch 17/27: PMIDs ['36283862', '36303958', '36309174']...(20 total)
+[22:16:35Z]   batch 18/27: PMIDs ['36730180', '36730710', '36734148']...(20 total)
+[22:16:36Z]   batch 19/27: PMIDs ['37192832', '37192834', '37211045']...(20 total)
+[22:16:37Z]   batch 20/27: PMIDs ['37593349', '37610988', '37642285']...(20 total)
+[22:16:38Z]   batch 21/27: PMIDs ['38122842', '38140841', '38153958']...(20 total)
+[22:16:39Z]   batch 22/27: PMIDs ['38699387', '38705225', '38710995']...(20 total)
+[22:16:40Z]   batch 23/27: PMIDs ['38935105', '38935974', '38944177']...(20 total)
+[22:16:41Z]   batch 24/27: PMIDs ['39259620', '39277104', '39286255']...(20 total)
+[22:16:42Z]   batch 25/27: PMIDs ['39675346', '39724904', '39733851']...(20 total)
+[22:16:43Z]   batch 26/27: PMIDs ['40107451', '40120733', '40125760']...(20 total)
+[22:16:44Z]   batch 27/27: PMIDs ['40693846', '40693905', '40768027']...(13 total)
+[22:16:45Z] esummary complete: 533/533 PMIDs returned bibliographic data
+[22:16:45Z] ============================================================
+[22:16:45Z] PHASE 2: efetch per-PMID for verbatim structured abstract
+[22:16:45Z] ============================================================
+[22:17:00Z]   [  19/533] PMID 20027071: ⚠️  no abstract returned (ACOG Practice Bulletin No. 110: noncontraceptive uses of hor)
+[22:17:06Z]       [checkpoint: 25 saved]
+[22:17:09Z]   [  29/533] PMID 22914421: ⚠️  no abstract returned (Practice bulletin no. 128: diagnosis of abnormal uterine ble)
+[22:17:26Z]   [  48/533] PMID 26253336: URLError HTTP Error 429: Too Many Requests — retry once
+[22:17:30Z]       [checkpoint: 50 saved]
+[22:17:34Z]   [  54/533] PMID 26603969: ⚠️  no abstract returned (Guidelines for pre- and intra-operative care in gynecologic/)
+[22:17:34Z]   [  55/533] PMID 26644543: URLError HTTP Error 429: Too Many Requests — retry once
+[22:17:52Z]   [  72/533] PMID 27527655: URLError HTTP Error 429: Too Many Requests — retry once
+[22:17:57Z]       [checkpoint: 75 saved]
+[22:18:01Z]   [  80/533] PMID 27802832: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:04Z]   [  81/533] PMID 27818118: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:09Z]   [  84/533] PMID 27875472: ⚠️  no abstract returned (Practice Bulletin No. 175: Ultrasound in Pregnancy.)
+[22:18:22Z]       [checkpoint: 100 saved]
+[22:18:27Z]   [ 106/533] PMID 29073928: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:33Z]   [ 111/533] PMID 29357317: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:37Z]   [ 112/533] PMID 29377058: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:51Z]   [ 125/533] PMID 30342631: URLError HTTP Error 429: Too Many Requests — retry once
+[22:18:54Z]       [checkpoint: 125 saved]
+[22:19:08Z]   [ 142/533] PMID 31124209: URLError HTTP Error 429: Too Many Requests — retry once
+[22:19:12Z]   [ 144/533] PMID 31135757: ⚠️  no abstract returned (ACOG Practice Bulletin No. 206: Use of Hormonal Contraceptio)
+[22:19:18Z]       [checkpoint: 150 saved]
+[22:19:43Z]       [checkpoint: 175 saved]
+[22:20:07Z]       [checkpoint: 200 saved]
+[22:20:10Z]   [ 203/533] PMID 33004253: URLError HTTP Error 429: Too Many Requests — retry once
+[22:20:21Z]   [ 212/533] PMID 33198948: URLError HTTP Error 429: Too Many Requests — retry once
+[22:20:24Z]   [ 213/533] PMID 33202017: URLError HTTP Error 429: Too Many Requests — retry once
+[22:20:27Z]   [ 214/533] PMID 33206374: URLError HTTP Error 429: Too Many Requests — retry once
+[22:20:40Z]       [checkpoint: 225 saved]
+[22:20:49Z]   [ 235/533] PMID 34036845: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:02Z]   [ 246/533] PMID 34148122: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:08Z]       [checkpoint: 250 saved]
+[22:21:10Z]   [ 252/533] PMID 34390864: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:20Z]   [ 261/533] PMID 34695601: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:23Z]   [ 262/533] PMID 34732196: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:32Z]   [ 269/533] PMID 34966066: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:35Z]   [ 270/533] PMID 34967848: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:42Z]   [ 274/533] PMID 35007153: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:45Z]       [checkpoint: 275 saved]
+[22:21:53Z]   [ 285/533] PMID 35220429: URLError HTTP Error 429: Too Many Requests — retry once
+[22:21:59Z]   [ 289/533] PMID 35357369: URLError HTTP Error 429: Too Many Requests — retry once
+[22:22:14Z]       [checkpoint: 300 saved]
+[22:22:24Z]   [ 311/533] PMID 36030627: URLError HTTP Error 429: Too Many Requests — retry once
+[22:22:34Z]   [ 319/533] PMID 36233703: URLError HTTP Error 429: Too Many Requests — retry once
+[22:22:38Z]   [ 321/533] PMID 36283862: URLError HTTP Error 429: Too Many Requests — retry once
+[22:22:45Z]       [checkpoint: 325 saved]
+[22:22:45Z]   [ 326/533] PMID 36357974: URLError HTTP Error 429: Too Many Requests — retry once
+[22:22:53Z]   [ 331/533] PMID 36511801: URLError HTTP Error 429: Too Many Requests — retry once
+[22:23:11Z]   [ 348/533] PMID 36893897: ⚠️  no abstract returned (The 2021 AAGL Endometriosis Classification Is a Fundamental )
+[22:23:13Z]       [checkpoint: 350 saved]
+[22:23:18Z]   [ 356/533] PMID 37024393: ⚠️  no abstract returned (Enhanced recovery after cesarean delivery meta-analysis outc)
+[22:23:19Z]   [ 357/533] PMID 37026972: URLError HTTP Error 429: Too Many Requests — retry once
+[22:23:24Z]   [ 361/533] PMID 37192832: URLError HTTP Error 429: Too Many Requests — retry once
+[22:23:40Z]       [checkpoint: 375 saved]
+[22:23:41Z]   [ 376/533] PMID 37534878: URLError HTTP Error 429: Too Many Requests — retry once
+[22:23:48Z]   [ 382/533] PMID 37610988: URLError HTTP Error 429: Too Many Requests — retry once
+[22:23:51Z]   [ 383/533] PMID 37642285: URLError HTTP Error 429: Too Many Requests — retry once
+[22:24:00Z]   [ 390/533] PMID 37863195: URLError HTTP Error 429: Too Many Requests — retry once
+[22:24:06Z]   [ 394/533] PMID 37944155: URLError HTTP Error 429: Too Many Requests — retry once
+[22:24:14Z]       [checkpoint: 400 saved]
+[22:24:27Z]   [ 415/533] PMID 38481031: URLError HTTP Error 429: Too Many Requests — retry once
+[22:24:32Z]   [ 418/533] PMID 38669625: URLError HTTP Error 429: Too Many Requests — retry once
+[22:24:41Z]       [checkpoint: 425 saved]
+[22:24:42Z]   [ 426/533] PMID 38749550: URLError HTTP Error 429: Too Many Requests — retry once
+[22:25:07Z]       [checkpoint: 450 saved]
+[22:25:18Z]   [ 462/533] PMID 39277104: URLError HTTP Error 429: Too Many Requests — retry once
+[22:25:32Z]       [checkpoint: 475 saved]
+[22:25:55Z]       [checkpoint: 500 saved]
+[22:26:17Z]       [checkpoint: 525 saved]

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Education · Patient Portal · Mount Zara</title>
+    <title>Education · Member Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -248,14 +248,14 @@
 <body>
     <div class="wrap">
         <div class="top-row">
-            <a href="/portal/">&larr; Patient portal</a>
+            <a href="/portal/">&larr; Member portal</a>
             <span style="color: var(--fg-dim);">/portal/education</span>
         </div>
 
         <div id="list-view">
-            <p class="eyebrow">Patient portal · Learn</p>
-            <h1>Primers from Dr. Mabini</h1>
-            <p class="lede">Plain-language explainers on the conditions, procedures, and recovery topics that come up most often in MIGS care. Anything Dr. Mabini has assigned to you sits at the top.</p>
+            <p class="eyebrow">Member portal · Learn</p>
+            <h1>Patient primers</h1>
+            <p class="lede">Plain-language explainers on the conditions, procedures, and recovery topics that come up most often in MIGS care. Anything assigned to you sits at the top.</p>
 
             <div class="filter-bar" id="tag-filter">
                 <button class="filter-chip active" data-tag="">All</button>
@@ -435,11 +435,115 @@
             const matches = state.filterTag
                 ? state.materials.filter(m => (m.topic_tags || []).includes(state.filterTag))
                 : state.materials;
-            if (matches.length === 0) {
-                $('grid').innerHTML = '<div class="empty-state">No primers in this view yet. Dr. Mabini is building the library.</div>';
-                return;
-            }
-            $('grid').innerHTML = matches.map(m => {
+            // NOTE: FEATURED deep guides (the 12 §0.8.1 KB-anchored static
+            // pages at /portal/education/<slug>/) always render. The D1
+            // matches list appends below — empty is fine, that just means
+            // there are no clinician-published custom primers yet.
+            // Featured static "deep guide" pages — full peer-reviewed
+            // patient education, KB-anchored per §0.8.1. These live as
+            // standalone routes alongside the API-driven materials list.
+            const FEATURED = [
+                {
+                    slug: 'endometriosis',
+                    href: '/portal/education/endometriosis/',
+                    title: 'Endometriosis — what it is, why it hurts, what we can do',
+                    summary: 'The full guide: every treatment option from NSAIDs to laparoscopic excision, how osteopathic care fits in, and the most common patient questions — with peer-reviewed citations and verbatim PubMed abstracts.',
+                    topic_tags: ['Endometriosis', 'CPP', 'OMT'],
+                },
+                {
+                    slug: 'chronic-pelvic-pain',
+                    href: '/portal/education/chronic-pelvic-pain/',
+                    title: 'Chronic pelvic pain — why it&rsquo;s rarely one thing',
+                    summary: 'The four overlapping layers of CPP (organs, pelvic floor, nerves, fascia), how each is worked up, and the multi-modal treatment ladder — medical, pelvic-floor PT, osteopathic, surgical — that gets most women better. Every claim cited, every abstract included.',
+                    topic_tags: ['CPP', 'OMT', 'Pelvic Floor PT'],
+                },
+                {
+                    slug: 'abnormal-uterine-bleeding',
+                    href: '/portal/education/abnormal-uterine-bleeding/',
+                    title: 'Abnormal uterine bleeding — what&rsquo;s normal, what isn&rsquo;t, what to do',
+                    summary: 'The PALM&ndash;COEIN framework, the layered workup (TVUS, sonohysterography, biopsy, hysteroscopy), and the full medical and procedural treatment ladder — NSAIDs, tranexamic acid, hormones, LNG-IUD, hysteroscopic polypectomy or myomectomy, endometrial ablation. With every claim cited and every abstract included.',
+                    topic_tags: ['AUB', 'HMB', 'Fibroids'],
+                },
+                {
+                    slug: 'menopause',
+                    href: '/portal/education/menopause/',
+                    title: 'Menopause — what&rsquo;s happening, what&rsquo;s normal, what we can do',
+                    summary: 'Stages, symptoms (vasomotor, GSM, mood, bone, cardiovascular), and the modern evidence on hormone therapy in 2026 &mdash; including fezolinetant, paroxetine, vaginal estrogen, and bisphosphonates. The WHI story re-told with 18-year follow-up. Cited and abstract-linked throughout.',
+                    topic_tags: ['Menopause', 'MHT', 'GSM', 'Bone'],
+                },
+                {
+                    slug: 'fibroids',
+                    href: '/portal/education/fibroids/',
+                    title: 'Uterine fibroids — what they are, what they do, what we can do about them',
+                    summary: 'The FIGO Types 0&ndash;8 system, what each type does, and how it shapes treatment. Medical, hysteroscopic, laparoscopic myomectomy, UAE, hysterectomy &mdash; the full uterus-preserving and definitive menu. Fertility, sarcoma risk, and the disparities in fibroid care for Black women, addressed honestly.',
+                    topic_tags: ['Fibroids', 'HMB', 'Myomectomy'],
+                },
+                {
+                    slug: 'dysmenorrhea',
+                    href: '/portal/education/dysmenorrhea/',
+                    title: 'Painful periods — what&rsquo;s normal, what isn&rsquo;t, what to do',
+                    summary: 'Primary vs secondary dysmenorrhea, the workup, and the full ladder &mdash; NSAIDs, hormonal suppression, pelvic-floor PT, osteopathic care, GnRH antagonists, surgery. When to suspect endometriosis or adenomyosis as the underlying cause.',
+                    topic_tags: ['Dysmenorrhea', 'CPP', 'Endometriosis'],
+                },
+                {
+                    slug: 'adenomyosis',
+                    href: '/portal/education/adenomyosis/',
+                    title: 'Adenomyosis — the often-missed cause of heavy painful periods',
+                    summary: 'Diffuse vs focal disease, imaging-based diagnosis (TVUS MUSA + MRI junctional zone), and the full medical and surgical treatment ladder &mdash; LNG-IUD, GnRH antagonists, focal adenomyomectomy with delivery planning, hysterectomy when needed.',
+                    topic_tags: ['Adenomyosis', 'HMB', 'Dysmenorrhea'],
+                },
+                {
+                    slug: 'pcos',
+                    href: '/portal/education/pcos/',
+                    title: 'PCOS — what it is, what it does, what changes the trajectory',
+                    summary: 'Rotterdam diagnostic criteria, phenotypes A&ndash;D, and the full management menu &mdash; lifestyle, metformin, GLP-1 agonists, COC, spironolactone, letrozole for ovulation induction. Plus the lifespan surveillance for diabetes, cardiovascular risk, and endometrial cancer.',
+                    topic_tags: ['PCOS', 'Metabolic', 'Fertility'],
+                },
+                {
+                    slug: 'ovarian-masses',
+                    href: '/portal/education/ovarian-masses/',
+                    title: 'Ovarian cysts &amp; adnexal masses — when to watch, when to operate',
+                    summary: 'Types (functional, dermoid, endometrioma, cystadenoma, malignant), the modern workup (TVUS + IOTA risk-stratification, selective CA-125), watch vs operate decision-tree, cystectomy vs oophorectomy, BRCA / hereditary risk and risk-reducing surgery.',
+                    topic_tags: ['Ovarian cysts', 'BRCA', 'Surgery'],
+                },
+                {
+                    slug: 'postoperative-recovery',
+                    href: '/portal/education/postoperative-recovery/',
+                    title: 'After your surgery — what to expect, what to do, what to watch for',
+                    summary: 'ERAS-based recovery timeline (week before, day of, days 1&ndash;7, weeks 2&ndash;6), opioid-sparing pain control, medication holds (GLP-1s, anticoagulants, herbs), and the four things that drive most post-op calls &mdash; constipation, pain, urinary, bleeding.',
+                    topic_tags: ['Post-op', 'ERAS', 'Recovery'],
+                },
+                {
+                    slug: 'contraception',
+                    href: '/portal/education/contraception/',
+                    title: 'Contraception — the full menu, what fits your life',
+                    summary: 'The full effectiveness tier hierarchy &mdash; LARC, hormonal short-acting, barriers, behavioral, emergency contraception, permanent contraception. US MEC 2024 for medical conditions, life-stage considerations, shared-decision-making framing.',
+                    topic_tags: ['Contraception', 'LARC', 'EC'],
+                },
+                {
+                    slug: 'pregnancy-loss',
+                    href: '/portal/education/pregnancy-loss/',
+                    title: 'Pregnancy loss — what&rsquo;s happening, what&rsquo;s normal, what comes next',
+                    summary: 'A trauma-informed walkthrough of early pregnancy loss &mdash; diagnosis, the three management options (expectant, medical mife+miso, surgical), ectopic pregnancy, recurrent loss workup, and the emotional and mental-health support that matters as much as the medical care.',
+                    topic_tags: ['Pregnancy loss', 'Grief', 'Recurrent loss'],
+                },
+            ];
+            // Respect the active tag filter for FEATURED too.
+            const featuredFiltered = state.filterTag
+                ? FEATURED.filter(f => f.topic_tags.includes(state.filterTag))
+                : FEATURED;
+            const featuredHtml = featuredFiltered.map(f => {
+                const tagChips = f.topic_tags.map(t => `<span class="ed-tag">${escapeHtml(t)}</span>`).join('');
+                return `
+                    <a class="ed-card ed-featured" href="${escapeHtml(f.href)}" style="border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.06);">
+                        <div class="ed-badge-row"><span class="badge badge-new" style="background: rgba(var(--glow-purple), 0.20); color: var(--accent-soft);">Deep Guide</span></div>
+                        <h3>${escapeHtml(f.title)}</h3>
+                        <p class="ed-summary">${escapeHtml(f.summary)}</p>
+                        <div class="ed-meta">${tagChips}</div>
+                    </a>
+                `;
+            }).join('');
+            $('grid').innerHTML = featuredHtml + matches.map(m => {
                 const completed = m.view && m.view.completed;
                 const seen = m.view && m.view.view_count > 0;
                 const badges = [];
@@ -456,12 +560,19 @@
                     </a>
                 `;
             }).join('');
-            $('grid').querySelectorAll('.ed-card').forEach(el => {
+            // Only the D1 cards (with data-slug) call openMaterial.
+            // FEATURED cards have a real href and route by normal navigation.
+            $('grid').querySelectorAll('.ed-card[data-slug]').forEach(el => {
                 el.addEventListener('click', (e) => {
                     e.preventDefault();
                     openMaterial(el.getAttribute('data-slug'));
                 });
             });
+            // Empty-state message ONLY when both FEATURED and D1 returned nothing
+            // (which can only happen if the tag filter excludes every guide).
+            if (!featuredFiltered.length && !matches.length) {
+                $('grid').innerHTML = '<div class="empty-state">No primers in this view yet. Try clearing the topic filter.</div>';
+            }
         }
 
         async function openMaterial(slug) {
@@ -472,7 +583,7 @@
                 $('r-title').textContent = data.material.title;
                 $('r-summary').textContent = data.material.summary || '';
                 const tagsHtml = (data.material.topic_tags || []).map(t => `<span class="ed-tag">${escapeHtml(t)}</span>`).join('');
-                $('r-meta').innerHTML = tagsHtml + (data.assignment ? ' · <span style="color:rgba(252,211,77,0.92);">Assigned by Dr. Mabini</span>' : '');
+                $('r-meta').innerHTML = tagsHtml + (data.assignment ? ' · <span style="color:rgba(252,211,77,0.92);">Assigned to you</span>' : '');
                 $('r-prose').innerHTML = renderMarkdown(data.material.body_md || '');
                 // Completion state
                 const inList = state.materials.find(m => m.slug === slug);
@@ -490,7 +601,7 @@
             $('btn-incomplete').style.display = completed ? 'inline-block' : 'none';
             $('complete-status').textContent = completed
                 ? "Marked complete. Tap Mark not done to clear."
-                : "Once you've read this through, tap Mark complete so Dr. Mabini sees you finished it.";
+                : "Once you've read this through, tap Mark complete so your clinician sees you finished it.";
         }
         async function setComplete(completed) {
             try {

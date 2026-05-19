@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Abnormal uterine bleeding &mdash; what to know &middot; Mount Zara</title>
+    <meta name="description" content="A patient guide to abnormal uterine bleeding (AUB): the PALM-COEIN framework, the workup, and the full medical and procedural treatment ladder. KB-anchored, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    text-decoration: none;
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
+
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* HERO */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero .eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 16px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+
+/* KEY FACTS */
+.facts {
+    display: grid; gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s, border-color 0.22s, background 0.22s;
+    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
+.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
+.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
+
+/* SECTIONS */
+section.panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(22px, 4vw, 36px);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    transition: border-color 0.25s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel .section-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 10px;
+}
+section.panel h2 {
+    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.012em; color: var(--fg-strong);
+    margin: 0 0 18px 0; line-height: 1.15;
+}
+section.panel p {
+    font-size: 16.5px; line-height: 1.7;
+    color: var(--fg-mid); margin: 0 0 14px 0;
+}
+section.panel p:last-child { margin-bottom: 0; }
+section.panel p strong { color: var(--fg-strong); font-weight: 500; }
+section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
+
+/* INLINE CITATION SUP + POPOUT */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref a {
+    color: var(--accent-soft);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover a,
+sup.mz-ref.mz-open a,
+sup.mz-ref:focus a {
+    background: rgba(var(--glow-purple), 0.20);
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden; opacity: 0;
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translate(-50%, -6px);
+    width: 320px; max-width: 92vw;
+    padding: 10px 14px;
+    background: rgba(7,7,10,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: var(--fg-mid);
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 400;
+    z-index: 200;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    white-space: normal;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
+   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
+   problem. Each modifier locks the row size so cards stay even at every
+   breakpoint. */
+.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) {
+    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Symptoms grid — 8 items, want 1/2/4 columns */
+.symptoms {
+    display: grid; gap: 10px; margin-top: 18px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
+
+/* Featured banner card — used for the lone FitzGerald PFPT RCT below
+   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
+   internal layout. */
+.featured-card {
+    display: grid; gap: 18px;
+    grid-template-columns: 1fr;
+    background: rgba(var(--glow-purple), 0.07);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+    align-items: center;
+    position: relative;
+}
+.featured-card:hover, .featured-card:focus {
+    border-color: rgba(var(--glow-purple), 0.65);
+    background: rgba(var(--glow-purple), 0.12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.featured-card h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--fg-strong); margin: 0 0 4px 0;
+    padding-right: 80px;
+}
+.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+.featured-card .open-hint {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    letter-spacing: 0.08em;
+}
+.featured-card .stat-badge {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    background: rgba(var(--glow-purple), 0.18);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 8px;
+}
+.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+@media (min-width: 720px) {
+    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card:hover, .card:focus {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    outline: none;
+}
+.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
+.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.card .card-corner {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.card .open-hint {
+    position: absolute; bottom: 12px; right: 14px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+}
+.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
+
+/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
+.symptom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px 12px 44px;
+    position: relative;
+    font-size: 14px; color: var(--fg-mid);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom::before {
+    content: ""; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.08);
+}
+.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
+.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
+.timeline::before {
+    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
+}
+.timeline-item {
+    position: relative; margin-bottom: 16px;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    padding: 12px 14px;
+    transition: border-color 0.22s, background 0.22s;
+}
+.timeline-item:hover, .timeline-item:focus {
+    border-color: rgba(var(--glow-purple), 0.40);
+    background: rgba(var(--glow-purple), 0.06);
+    outline: none;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.95);
+    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
+}
+.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
+.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-item .open-hint {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    letter-spacing: 0.08em;
+}
+
+/* TREATMENT LADDER */
+.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+.rung {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px; align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+}
+.rung:hover, .rung:focus {
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
+.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
+.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
+.rung-tag {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    align-self: center;
+}
+
+/* OMT block */
+.omt-block {
+    background: rgba(var(--glow-purple), 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    margin-top: 18px;
+}
+.omt-block .quote-frame {
+    border-left: 3px solid rgba(var(--glow-purple), 0.60);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0;
+    color: var(--fg-mid);
+    font-size: 16px; line-height: 1.7;
+    position: relative;
+}
+.omt-block .quote-frame::before {
+    content: '\201C';
+    position: absolute;
+    left: 6px; top: -4px;
+    font-family: Georgia, serif;
+    color: rgba(var(--glow-purple), 0.40);
+    font-size: 26px; line-height: 1;
+}
+
+/* Q&A accordion */
+.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+details.qa {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.22s, background 0.22s;
+    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
+details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 50px 14px 18px;
+    font-size: 15.5px; font-weight: 500;
+    color: var(--fg-strong); position: relative; line-height: 1.4;
+}
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after {
+    content: '+';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 22px; color: var(--accent-soft);
+    font-weight: 200; line-height: 1;
+    transition: transform 0.2s;
+}
+details.qa[open] summary::after { content: '\2212'; }
+details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
+details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
+details.qa .qa-answer p:last-child { margin: 0; }
+
+/* Red flags */
+.red-flags {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
+.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
+.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
+
+/* CTA */
+.cta-strip {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.45);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    text-align: center;
+    margin-top: clamp(20px, 4vw, 32px);
+}
+.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-strip a.btn {
+    display: inline-block;
+    background: rgba(var(--glow-purple), 0.20);
+    border: 1px solid rgba(var(--glow-purple), 0.65);
+    color: #fff;
+    padding: 10px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin: 4px;
+}
+.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
+.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+
+/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
+.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
+.refs-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    counter-increment: ref;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.refs-list .ref-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
+.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
+.refs-list .pmid {
+    display: inline-block;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11.5px; color: var(--accent-soft);
+    background: rgba(var(--glow-purple), 0.10);
+    padding: 1px 6px; border-radius: 4px;
+    white-space: nowrap;
+}
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
+details.mz-abstract {
+    margin-top: 10px;
+    margin-left: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+details.mz-abstract summary {
+    list-style: none; cursor: pointer;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    position: relative;
+}
+details.mz-abstract summary::-webkit-details-marker { display: none; }
+details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
+details.mz-abstract[open] summary::before { content: '\2212 '; }
+details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract .abstract-body {
+    padding: 4px 16px 14px 28px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
+details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
+.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
+
+/* MODAL system */
+.mz-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.66);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: mzFadeIn 0.18s ease both;
+}
+.mz-modal-bg.open { display: flex; }
+.mz-modal {
+    width: 100%; max-width: 700px;
+    max-height: 88vh; overflow-y: auto;
+    background: rgba(12,12,16,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.50);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    position: relative;
+    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mz-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--fg-soft);
+    font-size: 20px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal h2 {
+    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.015em; color: var(--fg-strong);
+    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
+}
+.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
+.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
+.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+
+/* Footer note */
+.footer-note {
+    margin-top: 40px; padding: 20px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12.5px; color: var(--fg-dim);
+    line-height: 1.6;
+}
+.footer-note strong { color: var(--fg-soft); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    section.panel { padding: 22px 18px; }
+    .site-nav .crumb { display: none; }
+    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
+    details.mz-abstract { margin-left: 0; }
+}
+
+
+    .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
+    @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
+    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+    .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; letter-spacing: -0.012em; }
+    .cause-card.cause-palm h3::before { content: "PALM "; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.08em; font-size: 11px; padding-right: 6px; text-transform: uppercase; }
+    .cause-card.cause-coein h3::before { content: "COEIN "; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.08em; font-size: 11px; padding-right: 6px; text-transform: uppercase; }
+    .cause-card ul { padding-left: 20px; margin: 0; }
+    .cause-card li { font-size: 14px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 8px; }
+    .cause-card li strong { color: var(--fg-strong); font-weight: 500; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav" aria-label="Site navigation">
+    <div class="inner">
+        <a class="brand" href="/">Mount Zara</a>
+        <span class="crumb">&middot;  Patient Education  &middot;  Abnormal Uterine Bleeding</span>
+        <div class="right-actions">
+            <a href="/about/">About</a>
+            <a class="cta" href="/portal/">Member portal</a>
+        </div>
+    </div>
+</nav>
+
+<div class="wrap">
+
+
+    <header class="hero">
+        <div class="eyebrow">Patient Education &middot; Abnormal Uterine Bleeding</div>
+        <h1>Abnormal uterine bleeding &mdash; what&rsquo;s normal, what isn&rsquo;t, and what to do.</h1>
+        <p class="lede">
+            Heavy periods, bleeding between cycles, bleeding after sex, bleeding after menopause &mdash; these are
+            some of the most common reasons women see a gynecologist, and most of the time there&rsquo;s a clear, treatable
+            cause<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Munro et al., FIGO classification system (PALM-COEIN) for causes of abnormal uter..., Int J Gynaecol Obstet 2011 &middot; PMID 21345435</span></sup><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Munro et al., The two FIGO systems for normal and abnormal uterine bleeding sympt..., Int J Gynaecol Obstet 2018 &middot; PMID 30198563</span></sup>. This guide walks through how AUB is classified using the modern
+            PALM&ndash;COEIN framework, the layered work-up<!-- §0.8 anchor: kb_doc_id=cfcb9ca7-3cde-44fd-a007-8205485689f3; field=keyPoints; idx=3 -->, and the full range of medical and procedural
+            treatments &mdash; from the first NSAID and a levonorgestrel IUD all the way to hysteroscopic and laparoscopic
+            surgery when it&rsquo;s indicated<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>. Every clinical claim has an inline citation; verbatim PubMed
+            abstracts are at the bottom.
+        </p>
+    </header>
+
+    <section class="key-facts" aria-label="At a glance">
+        <div class="fact"><div class="stat">1 in 3<span class="unit"></span></div><div class="label">of all gynecologic outpatient visits involve AUB<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup>.</div></div>
+        <div class="fact"><div class="stat">90<span class="unit">%</span></div><div class="label">reduction in menstrual blood loss with the levonorgestrel IUD<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup> &mdash; the most effective medical therapy.</div></div>
+        <div class="fact"><div class="stat">20<span class="unit">%</span></div><div class="label">of women with heavy menstrual bleeding have an underlying bleeding disorder<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=4 -->.</div></div>
+    </section>
+    
+
+
+    <section class="section">
+        <h2>What counts as &ldquo;abnormal&rdquo;?</h2>
+        <p>A normal menstrual cycle, by current consensus, has a frequency of 24&ndash;38 days, a duration of 4.5&ndash;8 days, and a per-cycle blood loss of 5&ndash;80&nbsp;mL<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Munro et al., The two FIGO systems for normal and abnormal uterine bleeding sympt..., Int J Gynaecol Obstet 2018 &middot; PMID 30198563</span></sup><!-- §0.8 anchor: kb_doc_id=a5c88593-bba4-4373-bdce-059ea41ef1a4; field=keyPoints; idx=2 -->. Anything outside those ranges &mdash; or any bleeding between cycles, after intercourse, or after menopause &mdash; counts as abnormal and deserves an evaluation.</p>
+        <p>In practical terms, the patterns that bring most women in are:</p>
+        <ul class="bullets">
+            <li><strong>Heavy menstrual bleeding (HMB)</strong> &mdash; soaking through a pad or tampon every 1&ndash;2 hours, passing clots larger than a quarter, flooding through clothes or bedding, requiring double protection, or bleeding for more than 7 days. <strong>10&ndash;30%</strong> of reproductive-age women experience HMB at some point<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>.</li>
+            <li><strong>Bleeding between periods (intermenstrual)</strong> &mdash; any spotting or bleeding outside the expected window. Added to the formal definition in 2018<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Munro et al., The two FIGO systems for normal and abnormal uterine bleeding sympt..., Int J Gynaecol Obstet 2018 &middot; PMID 30198563</span></sup><!-- §0.8 anchor: kb_doc_id=a5c88593-bba4-4373-bdce-059ea41ef1a4; field=keyPoints; idx=2 -->.</li>
+            <li><strong>Bleeding after sex (postcoital)</strong> &mdash; needs evaluation for cervical pathology (polyp, ectropion, infection, dysplasia, rarely cancer).</li>
+            <li><strong>Postmenopausal bleeding</strong> &mdash; any bleeding after 12&nbsp;months of amenorrhea in a menopausal woman. <strong>Every episode is evaluated</strong>, because PMB is the cardinal sign of endometrial cancer<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=5e222d3a-ea80-4fcf-be5d-e2285aca28c5; field=keyPoints; idx=9 -->.</li>
+            <li><strong>Acute heavy bleeding</strong> &mdash; bleeding heavy enough to cause hemodynamic concerns, anemia, or require ER evaluation. Different workup, different speed.</li>
+        </ul>
+        <p>The first thing every workup confirms is whether the patient is pregnant &mdash; pregnancy-related bleeding (miscarriage, ectopic, retained products, placental abnormalities) has its own pathway and must be excluded before any other workup proceeds<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=cfcb9ca7-3cde-44fd-a007-8205485689f3; field=keyPoints; idx=3 -->.</p>
+    </section>
+    
+
+
+    <section class="section">
+        <h2>The 8 causes &mdash; PALM&ndash;COEIN</h2>
+        <p>Since 2011, the worldwide standard for classifying causes of AUB has been the FIGO PALM&ndash;COEIN system<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Munro et al., FIGO classification system (PALM-COEIN) for causes of abnormal uter..., Int J Gynaecol Obstet 2011 &middot; PMID 21345435</span></sup><!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=1 -->. The two halves of the acronym separate the <em>structural</em> causes (things you can see on imaging or biopsy) from the <em>non-structural</em> causes (things you can&rsquo;t):</p>
+        <div class="palm-coein-grid">
+            <div class="cause-card cause-palm">
+                <h3>PALM &mdash; structural</h3>
+                <ul>
+                    <li><strong>P</strong>olyp &mdash; endometrial or endocervical, often a focal cause of intermenstrual or postmenopausal bleeding.</li>
+                    <li><strong>A</strong>denomyosis &mdash; endometrial glands within the myometrium; causes heavy, painful periods and a globally enlarged uterus.</li>
+                    <li><strong>L</strong>eiomyoma (fibroid) &mdash; benign smooth-muscle tumors. Submucosal fibroids cause the most bleeding for their size.</li>
+                    <li><strong>M</strong>alignancy &amp; hyperplasia &mdash; endometrial intraepithelial neoplasia (EIN), endometrial cancer, cervical cancer.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-coein">
+                <h3>COEIN &mdash; non-structural</h3>
+                <ul>
+                    <li><strong>C</strong>oagulopathy &mdash; von Willebrand disease, platelet dysfunction, anticoagulant use. Up to 20% of HMB.</li>
+                    <li><strong>O</strong>vulatory dysfunction &mdash; the leading non-structural cause; common in adolescents, perimenopause, PCOS, thyroid disease.</li>
+                    <li><strong>E</strong>ndometrial &mdash; primary endometrial-hemostasis issue, often a diagnosis of exclusion once other causes are ruled out.</li>
+                    <li><strong>I</strong>atrogenic &mdash; bleeding caused by hormones, IUDs, anticoagulants, antiplatelet agents, missed doses.</li>
+                    <li><strong>N</strong>ot otherwise classified &mdash; rare causes (arteriovenous malformation, scar pregnancy) that don&rsquo;t fit anywhere else.</li>
+                </ul>
+            </div>
+        </div>
+        <p>The reason this matters: <strong>treatment depends on the cause</strong>. A submucosal fibroid in the middle of the cavity is fixed in 20 minutes hysteroscopically; an ovulatory dysfunction in a perimenopausal woman is fixed by hormonal regulation; a coagulopathy gets the woman to a hematologist alongside management of the bleeding. Without the framework, &ldquo;heavy periods&rdquo; gets a blunt-instrument hysterectomy that may not have been needed.</p>
+    </section>
+    
+
+
+    <section class="section">
+        <h2>The workup</h2>
+        <p>The evaluation is layered &mdash; cheapest and least invasive first, escalating only as needed:</p>
+        <ol class="ladder">
+            <li><strong>History.</strong> Pattern (cyclic / irregular / continuous / postcoital / postmenopausal), duration, severity (pads-per-hour, clots, flooding, work/school missed), age, medications including anticoagulants and hormones, family bleeding history, prior pregnancies and procedures, weight changes, hair changes (suggesting PCOS), galactorrhea (prolactinoma).</li>
+            <li><strong>Exam.</strong> Speculum to visualize the cervix and vagina (rule out polyp, ectropion, dysplasia, trauma, infection); bimanual to assess uterine size, shape, mobility, and tenderness.</li>
+            <li><strong>Labs.</strong> Pregnancy test (always)<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=cfcb9ca7-3cde-44fd-a007-8205485689f3; field=keyPoints; idx=3 -->. CBC for anemia. TSH and prolactin for ovulatory dysfunction. von Willebrand panel + PT/PTT/platelets if a personal or family bleeding history, an adolescent with severe HMB, or HMB since menarche<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=4 -->.</li>
+            <li><strong>Transvaginal ultrasound.</strong> The first-line imaging study &mdash; cheap, fast, identifies fibroids, polyps, adenomyosis, endometrial thickness, ovarian pathology<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=cfcb9ca7-3cde-44fd-a007-8205485689f3; field=keyPoints; idx=3 -->.</li>
+            <li><strong>Saline-infusion sonohysterography (SIS).</strong> If TVUS suggests a focal cavity finding, SIS distends the cavity with saline so polyps, submucosal fibroids, and synechiae become unmistakable<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=D99A9BD9-4E1A-43C8-8788-E1F728695552; field=keyPoints; idx=7 -->. More sensitive than TVUS alone for intracavitary lesions.</li>
+            <li><strong>Endometrial biopsy.</strong> Required in every woman aged 45 or older with AUB, and in younger women with risk factors for hyperplasia or cancer (chronic anovulation, obesity, tamoxifen, Lynch syndrome). Postmenopausal bleeding always gets a biopsy<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup>.</li>
+            <li><strong>Hysteroscopy.</strong> The gold standard for cavity visualization &mdash; if SIS shows a focal lesion, diagnostic hysteroscopy can be combined with operative removal in the same setting.</li>
+        </ol>
+    </section>
+    
+
+
+    <section class="section">
+        <h2>The treatment ladder</h2>
+        <p>Once the cause is identified, treatment usually starts with the least invasive option that fits and escalates only if needed. Each rung is clickable for the full discussion.</p>
+        <div class="ladder-cards">
+            <article class="ladder-card" data-modal="treatment-medical">
+                <div class="rung-num">1</div>
+                <h3>Medical therapy</h3>
+                <p>NSAIDs, tranexamic acid, combined hormonal contraceptives, oral progestins, and the levonorgestrel IUD &mdash; reduces blood loss up to 90%<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup><sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Matteson et al., Nonsurgical management of heavy menstrual bleeding: a systematic re..., Obstet Gynecol 2013 &middot; PMID 23635628</span></sup><!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=5 --><!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=6 -->.</p>
+            </article>
+            <article class="ladder-card" data-modal="treatment-procedural">
+                <div class="rung-num">2</div>
+                <h3>Procedural &amp; surgical</h3>
+                <p>Hysteroscopic polypectomy or myomectomy for focal causes<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">van Dongen et al., Diagnostic hysteroscopy in abnormal uterine bleeding: a systematic ..., BJOG 2007 &middot; PMID 17516956</span></sup>, endometrial ablation for refractory ovulatory bleeding<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Middleton et al., Hysterectomy, endometrial destruction, and levonorgestrel releasing..., BMJ 2010 &middot; PMID 20713583</span></sup>, and laparoscopic options when the uterus is the problem.</p>
+            </article>
+            <article class="ladder-card" data-modal="acute-bleeding-deep">
+                <div class="rung-num">!</div>
+                <h3>Acute bleeding</h3>
+                <p>Heavy enough to cause anemia or hemodynamic concern &mdash; expedited stabilization, high-dose hormonal management, and sometimes intrauterine tamponade<!-- §0.8 anchor: kb_doc_id=5c2b0636-5d45-4f17-9f29-5f1226d16286; field=keyPoints; idx=8 -->.</p>
+            </article>
+            <article class="ladder-card" data-modal="pmb-deep">
+                <div class="rung-num">PM</div>
+                <h3>Postmenopausal bleeding</h3>
+                <p>A different workup &mdash; every PMB is evaluated for endometrial cancer with TVUS for endometrial thickness, biopsy, and hysteroscopy as indicated<!-- §0.8 anchor: kb_doc_id=5e222d3a-ea80-4fcf-be5d-e2285aca28c5; field=keyPoints; idx=9 -->.</p>
+            </article>
+        </div>
+    </section>
+    
+
+
+    <section class="section">
+        <h2>Most common patient questions</h2>
+        <div class="qa-grid">
+            <details class="qa"><summary>How heavy is &ldquo;too heavy&rdquo;?</summary>
+                <div class="qa-answer"><p>The medical definition is more than 80&nbsp;mL of blood loss per cycle, but nobody measures that. In real life: soaking through a pad or tampon every 1&ndash;2 hours, passing clots larger than a quarter, flooding through clothes or bedding overnight, needing double protection, or bleeding for more than 7 days &mdash; any of those qualifies as heavy menstrual bleeding and is worth a workup<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>.</p></div>
+            </details>
+            <details class="qa"><summary>Do I need to be evaluated if I bleed between periods?</summary>
+                <div class="qa-answer"><p>Yes. Intermenstrual bleeding was added to the formal definition of AUB in 2018<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Munro et al., The two FIGO systems for normal and abnormal uterine bleeding sympt..., Int J Gynaecol Obstet 2018 &middot; PMID 30198563</span></sup><!-- §0.8 anchor: kb_doc_id=a5c88593-bba4-4373-bdce-059ea41ef1a4; field=keyPoints; idx=2 --> because it often points to a focal cause (endometrial polyp, submucosal fibroid, cervical lesion) that&rsquo;s easy to identify and fix.</p></div>
+            </details>
+            <details class="qa"><summary>Is the levonorgestrel IUD really that effective?</summary>
+                <div class="qa-answer"><p>Yes &mdash; Cochrane data show menstrual blood loss reductions of 71&ndash;95% versus placebo, more effective than oral progestogens, and roughly equivalent at 1 year to endometrial ablation for satisfaction without the procedural risk<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup><!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=5 -->. For most women with HMB and no contraindication, it&rsquo;s the first medical option offered.</p></div>
+            </details>
+            <details class="qa"><summary>Can I just take birth control pills?</summary>
+                <div class="qa-answer"><p>Yes, and they work well &mdash; combined oral contraceptives reduce menstrual blood loss by 40&ndash;50% and regulate cycle pattern<!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=6 -->. Continuous use (skipping the placebo week) eliminates withdrawal bleeding altogether. The catch is the safety profile must fit &mdash; smokers over 35, women with migraine with aura, and certain clotting-risk profiles need to use a different option.</p></div>
+            </details>
+            <details class="qa"><summary>What is tranexamic acid?</summary>
+                <div class="qa-answer"><p>A non-hormonal medication that helps blood clot inside the uterus during a heavy period. Taken only during the bleeding days (typically 1300&nbsp;mg three times daily for up to 5 days), it reduces menstrual blood loss by about 40%<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Matteson et al., Nonsurgical management of heavy menstrual bleeding: a systematic re..., Obstet Gynecol 2013 &middot; PMID 23635628</span></sup> without affecting cycle pattern, ovulation, or fertility. A great fit for women who can&rsquo;t or don&rsquo;t want hormones, or who only need help on the heaviest days.</p></div>
+            </details>
+            <details class="qa"><summary>Is bleeding after menopause always cancer?</summary>
+                <div class="qa-answer"><p>No &mdash; most postmenopausal bleeding is due to a benign cause like endometrial atrophy or a polyp. But because PMB is the cardinal sign of endometrial cancer<!-- §0.8 anchor: kb_doc_id=5e222d3a-ea80-4fcf-be5d-e2285aca28c5; field=keyPoints; idx=9 -->, every episode must be evaluated, even if it&rsquo;s a single drop of blood on one day. The workup is straightforward: pelvic exam, TVUS for endometrial thickness, and an endometrial biopsy if indicated.</p></div>
+            </details>
+            <details class="qa"><summary>Will I need a hysterectomy?</summary>
+                <div class="qa-answer"><p>Almost never. The modern AUB toolkit &mdash; LNG-IUD, tranexamic acid, hysteroscopic polypectomy or myomectomy, endometrial ablation &mdash; resolves the bleeding for the great majority of women without removing the uterus. Hysterectomy is reserved for cases where conservative options have failed, the uterus itself is the structural problem (large symptomatic fibroids, adenomyosis with severe pain), or there&rsquo;s confirmed precancer or cancer.</p></div>
+            </details>
+        </div>
+    </section>
+    
+
+<section class="section references-section" id="references">
+<h2>References</h2>
+<p class="ref-intro">Every clinical claim above ties to one of these peer-reviewed sources. Click any abstract to expand the verbatim PubMed record retrieved via NCBI E-Utilities.</p>
+<ol class="ref-list">
+<li id="ref-1">
+<div class="ref-label"><strong>Munro et al., FIGO classification system (PALM-COEIN) for causes of abnormal uterine bleeding in nongravid women of reproductive age, <em>Int J Gynaecol Obstet</em> 2011</strong></div>
+<div class="ref-what">FIGO PALM-COEIN classification system — the 2011 framework that replaced 'dysfunctional uterine bleeding' with eight structured causes (Polyp, Adenomyosis, Leiomyoma, Malignancy, Coagulopathy, Ovulatory, Endometrial, Iatrogenic).</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/21345435/" target="_blank" rel="noopener">21345435</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">There is general inconsistency in the nomenclature used to describe abnormal uterine bleeding (AUB), in addition to a plethora of potential causes-several of which may coexist in a given individual. It seems clear that the development of consistent and universally accepted nomenclature is a step toward rectifying this unsatisfactory circumstance. Another requirement is the development of a classification system, on several levels, for the causes of AUB, which can be used by clinicians, investigators, and even patients to facilitate communication, clinical care, and research. This manuscript describes an ongoing process designed to achieve these goals, and presents for consideration the PALM-COEIN (polyp; adenomyosis; leiomyoma; malignancy and hyperplasia; coagulopathy; ovulatory dysfunction; endometrial; iatrogenic; and not yet classified) classification system for AUB, which has been approved by the International Federation of Gynecology and Obstetrics (FIGO) Executive Board as a FIGO classification system.</div></details>
+</li>
+<li id="ref-2">
+<div class="ref-label"><strong>Munro et al., The two FIGO systems for normal and abnormal uterine bleeding symptoms and classification of causes of abnormal uterine bleeding in the reproductive years: 2018 revisions, <em>Int J Gynaecol Obstet</em> 2018</strong></div>
+<div class="ref-what">2018 FIGO revision — adds intermenstrual bleeding to the formal definition and updates normal-cycle parameters (frequency 24–38 days, duration 4.5–8 days, volume 5–80 mL).</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30198563/" target="_blank" rel="noopener">30198563</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The International Federation of Gynecology and Obstetrics (FIGO) systems for nomenclature of symptoms of normal and abnormal uterine bleeding (AUB) in the reproductive years (FIGO AUB System 1) and for classification of causes of AUB (FIGO AUB System 2; PALM-COEIN) were first published together in 2011. The purpose was to harmonize the definitions of normal and abnormal bleeding symptoms and to classify and subclassify underlying potential causes of AUB in the reproductive years to facilitate research, education, and clinical care. The systems were designed to be flexible and to be periodically reviewed and modified as appropriate.<br><br>OBJECTIVES: To review, clarify, and, where appropriate, revise the previously published systems.<br><br>METHODOLOGY AND OUTCOME: To a large extent, the process has been an iterative one involving the FIGO Menstrual Disorders Committee, as well as a number of invited contributions from epidemiologists, gynecologists, and other experts in the field from around the world between 2012 and 2017. Face-to-face meetings have been held in Rome, Vancouver, and Singapore, and have been augmented by a number of teleconferences and other communications designed to evaluate various aspects of the systems. Where substantial change was considered, anonymous voting, in some instances using a modified RAND Delphi technique, was utilized.</div></details>
+</li>
+<li id="ref-3">
+<div class="ref-label"><strong>Narice et al., Endometrial sampling in low-risk patients with abnormal uterine bleeding: a systematic review and meta-synthesis, <em>BMC Fam Pract</em> 2018</strong></div>
+<div class="ref-what">Endometrial sampling in low-risk AUB — establishes who needs a biopsy and supports Pipelle as the first-line outpatient device.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30060741/" target="_blank" rel="noopener">30060741</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: One million women per year seek medical advice for abnormal uterine bleeding (AUB) in the United Kingdom. Many low-risk patients who could be managed exclusively in primary care are referred to hospital based gynaecology services. Performing endometrial sampling (ES) in the community may improve care, reduce the rate of referrals and minimise costs. We aimed to search and synthesise the literature on the effectiveness of ES (Pipelle versus other devices) in managing AUB in low-risk patients.<br><br>METHODS: We undertook an electronic literature search in MEDLINE via OvidSP, Scopus, and Web of Science for relevant English-language articles from 1984 to 2016 using a combination of MeSH and keywords. Two reviewers independently pre-selected 317 articles and agreed on 60 articles reporting data from over 7300 patients. Five themes were identified: sample adequacy, test performance, pain and discomfort, cost-effectiveness, and barriers and complications of office ES.<br><br>RESULTS: Pipelle seems to perform as well as dilation and curettage and, as well or better than other ES devices in terms of sampling adequacy and sensitivity. It also seems to be better regarding pain/discomfort and costs. However, Pipelle can disrupt the sonographic appearance of the endometrium and may be limited by cervical stenosis, pelvic organ prolapse and endometrial atrophy.<br><br>CONCLUSIONS: The current evidence supports the use of Pipelle in the management of low-risk women presenting in the outpatient setting with symptomatic AUB when combined with clinical assessment and ultrasound scanning. However, the implications of its widespread use in primary care are uncertain and more research is required.</div></details>
+</li>
+<li id="ref-4">
+<div class="ref-label"><strong>Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the Treatment of Abnormal Uterine Bleeding and Dysmenorrhea: A Narrative Review, <em>J Clin Med</em> 2022</strong></div>
+<div class="ref-what">Levonorgestrel-IUS for AUB and dysmenorrhea — reduces menstrual blood loss by 71–95% versus baseline; more effective than oral progestogens and equivalent to ablation at 1 year.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36233703/" target="_blank" rel="noopener">36233703</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: We undertook a literature review of the use of levonorgestrel-releasing intrauterine devices when utilized for heavy menstrual bleeding and/or dysmenorrhea.<br><br>METHODS: A narrative review of articles in the Scopus and Medline databases was conducted.<br><br>RESULTS: A number of options exist for the management of both abnormal uterine bleeding (AUB) and dysmenorrhea, and evidence is accumulating that the insertion of a levonorgestrel-releasing intrauterine system (LNG-IUS) represents a useful option for their long-term treatment. The idea of using a progestogen released in utero was initially conceived to achieve long-term contraception, but it was quickly found that these systems could be utilized for a number of therapeutic applications. The first device to be made commercially available, Progestasert, was withdrawn from the market because, in the event of contraceptive failure, it caused a disproportionate percentage of extrauterine pregnancies. On the other hand, the LNG-IUS continues to be successfully utilized in its various variants, releasing 20, 13, or 8 μg/day. These devices have a respective duration of action of 7 (possibly 8), 5, and 3 years, and there exist versions of frameless systems affixed to the myometrium of the uterine fundus. In the present review, following a brief description of the major causes of AUB and dysmenorrhea, the molecular bases for the use of the LNG-IUS are summarized. This is followed by a compendium of its use in AUB and dysmenorrhea, concluding that the insertion of the system improves the quality of life, reduces menstrual blood loss better than other medical therapies, and decreases the extent of dysmenorrhea and pelvic pain. In addition, there is no evidence of a significant difference in these outcomes when the use of the LNG-IUS was compared with improvements offered by endometrial ablation or hysterectomy. Possibly, the most important mechanism of action of the system consists of its ability to induce amenorrhea, which effectively eliminates heavy bleeding and dysmenorrhea. However, no method is ideal for every woman, and, in the case of the LNG-IUS, younger age and severe dysmenorrhea seem to be associated with a higher risk of discontinuation.<br><br>CONCLUSION: The higher-dose LNG-IUS is a useful tool for HMB and dysmenorrhea in women of all ages. The low cost and ease of use make the LNG-IUS an attractive option, especially when contraception is also desired.</div></details>
+</li>
+<li id="ref-5">
+<div class="ref-label"><strong>Middleton et al., Hysterectomy, endometrial destruction, and levonorgestrel releasing intrauterine system (Mirena) for heavy menstrual bleeding: systematic review and meta-analysis of data from individual patients, <em>BMJ</em> 2010</strong></div>
+<div class="ref-what">Hysterectomy vs endometrial destruction vs LNG-IUS for heavy menstrual bleeding — individual-patient meta-analysis from 17 RCTs establishing the conservative-first ladder.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/20713583/" target="_blank" rel="noopener">20713583</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the relative effectiveness of hysterectomy, endometrial destruction (both &quot;first generation&quot; hysteroscopic and &quot;second generation&quot; non-hysteroscopic techniques), and the levonorgestrel releasing intrauterine system (Mirena) in the treatment of heavy menstrual bleeding.<br><br>DESIGN: Meta-analysis of data from individual patients, with direct and indirect comparisons made on the primary outcome measure of patients&#x27; dissatisfaction.<br><br>DATA SOURCES: Data were sought from the 30 randomised controlled trials identified after a comprehensive search of the Cochrane Library, Medline, Embase, and CINAHL databases, reference lists, and contact with experts. Raw data were available from 2814 women randomised into 17 trials (seven trials including 1359 women for first v second generation endometrial destruction; six trials including 1042 women for hysterectomy v first generation endometrial destruction; one trial including 236 women for hysterectomy v Mirena; three trials including 177 women for second generation endometrial destruction v Mirena). Eligibility criteria for selecting studies Randomised controlled trials comparing hysterectomy, first and second generation endometrial destruction, and Mirena for women with heavy menstrual bleeding unresponsive to other medical treatment.<br><br>RESULTS: At around 12 months, more women were dissatisfied with outcome with first generation hysteroscopic techniques than with hysterectomy (13% v 5%; odds ratio 2.46, 95% confidence interval 1.54 to 3.9, P&lt;0.001), but hospital stay (weighted mean difference 3.0 days, 2.9 to 3.1 days, P&lt;0.001) and time to resumption of normal activities (5.2 days, 4.7 to 5.7 days, P&lt;0.001) were longer for hysterectomy. Unsatisfactory outcomes were comparable with first and second generation techniques (odds ratio 1.2, 0.9 to 1.6, P=0.2), although second generation techniques were quicker (weighted mean difference 14.5 minutes, 13.7 to 15.3 minutes, P&lt;0.001) and women recovered sooner (0.48 days, 0.20 to 0.75 days, P&lt;0.001), with fewer procedural complications. Indirect comparison suggested more unsatisfactory outcomes with second generation techniques than with hysterectomy (11% v 5%; odds ratio 2.3, 1.3 to 4.2, P=0.006). Similar estimates were seen when Mirena was indirectly compared with hysterectomy (17% v 5%; odds ratio 2.2, 0.9 to 5.3, P=0.07), although this comparison lacked power because of the limited amount of data available for analysis.<br><br>CONCLUSIONS: More women are dissatisfied after endometrial destruction than after hysterectomy. Dissatisfaction rates are low after all treatments, and hysterectomy is associated with increased length of stay in hospital and a longer recovery period. Definitive evidence on effectiveness of Mirena compared with more invasive procedures is lacking.</div></details>
+</li>
+<li id="ref-6">
+<div class="ref-label"><strong>Matteson et al., Nonsurgical management of heavy menstrual bleeding: a systematic review, <em>Obstet Gynecol</em> 2013</strong></div>
+<div class="ref-what">Nonsurgical management of heavy menstrual bleeding — head-to-head systematic review of tranexamic acid, NSAIDs, combined OCPs, and progestin regimens.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/23635628/" target="_blank" rel="noopener">23635628</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To compare the effectiveness of nonsurgical abnormal uterine bleeding treatments for bleeding control, quality of life (QOL), pain, sexual health, patient satisfaction, additional treatments needed, and adverse events.<br><br>DATA SOURCES: MEDLINE, Cochrane databases, and Clinicaltrials.gov were searched from inception to May 2012. We included randomized controlled trials of nonsurgical treatments for abnormal uterine bleeding presumed secondary to endometrial dysfunction and abnormal uterine bleeding presumed secondary to ovulatory dysfunction. Interventions included the levonorgestrel intrauterine system, combined oral contraceptive pills (OCPs), progestins, nonsteroidal anti-inflammatory drugs (NSAIDs), and antifibrinolytics. Gonadotropin-releasing hormone agonists, danazol, and placebo were allowed as comparators.<br><br>METHODS OF STUDY SELECTION: Two reviewers independently screened 5,848 citations and extracted eligible trials. Studies were assessed for quality and strength of evidence.<br><br>TABULATION, INTEGRATION, AND RESULTS: Twenty-six articles met inclusion criteria. For reduction of menstrual bleeding in women with abnormal uterine bleeding presumed secondary to endometrial dysfunction, the levonorgestrel intrauterine system (71-95% reduction), combined OCPs (35-69% reduction), extended cycle oral progestins (87% reduction), tranexamic acid (26-54% reduction), and NSAIDs (10-52% reduction) were all effective treatments. The levonorgestrel intrauterine system, combined OCPs, and antifibrinolytics were all superior to luteal-phase progestins (20% increase in bleeding to 67% reduction). The levonorgestrel intrauterine system was superior to combined OCPs and NSAIDs. Antifibrinolytics were superior to NSAIDs for menstrual bleeding reduction. Data were limited on other important outcomes such as QOL for women with abnormal uterine bleeding presumed secondary to endometrial dysfunction and for all outcomes for women with abnormal uterine bleeding presumed secondary to ovulatory dysfunction.<br><br>CONCLUSION: For the reduction in mean blood loss in women with heavy menstrual bleeding presumed secondary to abnormal uterine bleeding presumed secondary to endometrial dysfunction, we recommend the use of the levonorgestrel intrauterine system over OCPs, luteal-phase progestins, and NSAIDs. For other outcomes (QOL, pain, sexual health, patient satisfaction, additional treatments needed, and adverse events) and for treatment of abnormal uterine bleeding presumed secondary to ovulatory dysfunction, we were unable to make recommendations based on the limited available data.</div></details>
+</li>
+<li id="ref-7">
+<div class="ref-label"><strong>van Dongen et al., Diagnostic hysteroscopy in abnormal uterine bleeding: a systematic review and meta-analysis, <em>BJOG</em> 2007</strong></div>
+<div class="ref-what">Diagnostic hysteroscopy in AUB workup — sensitivity 94% and specificity 89% for intracavitary lesions when transvaginal ultrasound is equivocal.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/17516956/" target="_blank" rel="noopener">17516956</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: This study was conducted to assess the accuracy and feasibility of diagnostic hysteroscopy in the evaluation of intrauterine abnormalities in women with abnormal uterine bleeding.<br><br>SEARCH STRATEGY: Electronic databases were searched from 1 January 1965 to 1 January 2006 without language selection. The medical subject heading (MeSH) and textwords for the following terms were used: hysteroscopy, diagnosis, histology, histopathology, hysterectomy, biopsy, sensitivity and specificity.<br><br>SETTING: University Hospital.<br><br>SELECTION CRITERIA: The inclusion criteria were report on accuracy of diagnostic hysteroscopy in women with abnormal uterine bleeding compared to histology collected with guided biopsy during hysteroscopy, operative hysteroscopy or hysterectomy.<br><br>DATA COLLECTION AND ANALYSIS: Electronic databases were searched for relevant studies and references were cross-checked. Validity was assessed and data were extracted independently by two authors. Heterogeneity was calculated and data were pooled. Subgroup analysis was performed according to validity criteria, study quality, menopausal state, time, setting and performance of the procedure. The pooled sensitivity, specificity, likelihood ratios, post-test probabilities and feasibility of diagnostic hysteroscopy on the prediction of uterine cavity abnormalities. Post-test probabilities were derived from the likelihood ratios and prevalence of intrauterine abnormalities among included studies. Feasibility included technical success rate and complication rate.<br><br>MAIN RESULTS: One population of homogeneous data could be identified, consisting of patients with postmenopausal bleeding. In this subgroup the positive and negative likelihood ratios were 7.9 (95% CI 4.79-13.10) and 0.04 (95% CI 0.02-0.09), raising the pre-test probability from 0.61 to a post-test probability of 0.93 (95% CI 0.88-0.95) for positive results and reducing it to 0.06 (95% CI 0.03-0.13) for negative results. The pooled likelihood ratios of all studies included, calculated with the random effects model, were 6.5 (95% CI 4.1-10.4) and 0.08 (95% CI 0.07-0.10), changing the pre-test probability of 0.46 to post-test probabilities of 0.85 (95% CI 0.78-0.90) and 0.07 (0.06-0.08) for positive and negative results respectively. Subgroup analyses gave similar results. The overall success rate of diagnostic hysteroscopy was estimated at 96.9% (SD 5.2%, range 83-100%).<br><br>CONCLUSIONS: This systematic review and meta-analysis shows that diagnostic hysteroscopy is both accurate and feasible in the diagnosis of intrauterine abnormalities.</div></details>
+</li>
+<li id="ref-8">
+<div class="ref-label"><strong>Chen et al., Radiofrequency Ablation for the Treatment of Uterine Fibroids: A Systematic Review and Meta-Analysis by the AAGL Practice Committee, <em>J Minim Invasive Gynecol</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39277104/" target="_blank" rel="noopener">39277104</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To systematically review clinical and patient-reported outcomes after radiofrequency ablation (RFA) for the treatment of uterine fibroids.<br><br>DATA SOURCES: We searched Medline, EMBASE, Cochrane Registry of Controlled Trials (CENTRAL) on September 8, 2023, and requested additional data from industry sources. We included published, peer-reviewed studies of patient-centered outcomes of RFA when used for symptomatic fibroids. Abstracts and potentially relevant full-text articles were screened and data were extracted regarding study characteristics, arms, outcomes, and results, together with risk of bias assessment.<br><br>METHODS OF STUDY SELECTION: We included 30 studies published in 49 articles (3 randomized controlled trials, 1 nonrandomized comparative study, and 26 single-group studies, as well as 4 publications from the TRUST Study) with variable risks of bias.<br><br>TABULATION, INTEGRATION, AND RESULTS: The study populations were demographically diverse and clinically heterogeneous. Across studies, RFA treatment was associated with fibroid volume reduction of 46.0% (95% confidence interval [CI] 52.1, 40.0; 11 studies) at 3 months and 65.4% (95% CI 74.7, 56.1; 10 studies) at 12 months. All studies reported a decrease in proportion of patients experiencing abnormal, heavy, or prolonged menstrual bleeding, with the most substantial improvement within the first 3 months. Meta-analyses of health-related quality of life scores demonstrated significant improvements in scores from baseline for Uterine Fibroid Symptoms and Quality of Life (53.4, 95% CI 48.2, 58.5; 19 studies), EuroQol-5 dimension (71.6, 95% CI 65.0, 78.1; 4 studies), and Symptom Severity Score (52.2, 95% CI 46.4, 58.1; 17 studies), with a peak at 6 months on the Uterine Fibroid Symptoms and Quality of Life scale (88.0, 95% CI 83.0, 92.9; 11 studies), a peak at 24 months on the EuroQol-5 dimension scale (88.3, 95% CI 86.0, 90.6; 2 studies), and a trough at 12 months for Symptom Severity Score (12.8, 95% CI 7.0, 18.6; 11 studies). Studies mostly demonstrated return to work and normal activities within 2 weeks. Reported unplanned hospitalizations were infrequent, and durations of hospital stay were generally short. Postprocedure complications were inconsistently reported but assessed overall to be infrequent. Long-term need for medical and surgical re-intervention varied. Post-RFA hysterectomy rates ranged from 2/205 (1.0%) to 15/62 (24.1%) with variable follow-up periods ranging from 45 days to 74 months. Most studies did not include patients who desired to maintain fertility; thus, reproductive data are insufficient for interpretation.<br><br>CONCLUSION: There is a paucity of comparative studies, and the small number of RCTs are limited by lack of blinding. Few studies had the long-term follow-up time required to draw definitive conclusions regarding the durability of symptom relief. However, despite these limitations, there is overall agreement on several important clinical measures following RFA, such as decreased fibroid volume, improved uterine bleeding, and improved quality of life. Future high-quality randomized controlled trials with standardized outcomes measures are required to better characterize the use of RFA among fibroid patients.</div></details>
+</li>
+<li id="ref-9">
+<div class="ref-label"><strong>Masood et al., How should abnormal uterine bleeding be managed in people with bleeding disorders: a systematic review of the literature and thematic synthesis, <em>Res Pract Thromb Haemost</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/41050634/" target="_blank" rel="noopener">41050634</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Abnormal uterine bleeding (AUB) describes any bleeding from the uterus that deviates from the norm in terms of regularity, duration, or volume. AUB is a common condition that can significantly affect quality of life. Although inherited bleeding disorders (IBDs) can cause heavy menstrual bleeding, there is no clear consensus on how AUB is best managed in those patients. This study aimed to address this knowledge gap using evidence based on clinical findings to define the best management of AUB in patients with IBD by conducting a systematic review of the literature. Searches were conducted for articles published from January 1, 2000, until May 6, 2024 in the Embase (PubMed), Medline, Scopus, Cochrane library, Google Scholar, and Cumulative Index to Nursing and Allied Health Literature complete via the Elton B. Stephens Company databases. In total, 244 studies were assessed for eligibility based on inclusion and exclusion criteria. Included studies were appraised for risk of bias and quality assurance using the Newcastle Ottawa Scale, after which data was systematically coded to generate descriptive and analytical themes. Thirteen studies were included in the thematic synthesis, encompassing over 893 participants. Thematic synthesis identified hormonal treatments, such as the levonorgestrel-releasing intrauterine system (LNG-IUS), to be largely effective in the symptom management of AUB in IBDs. Treatment of AUB patients with LNG-IUS, followed by tranexamic acid or 1-deamino-8-d-arginine vasopressin (DDAVP) commonly led to amenorrhea. The use of LNG-IUS as first-line therapy is recommended for those with AUB, followed by the use of combination therapy such as tranexamic acid and desmopressin. We identified the need to strengthen communication between specialists involved in the care of those with AUB and IBDs.</div></details>
+</li>
+<li id="ref-10">
+<div class="ref-label"><strong>Sánchez Martín et al., Efficacy of GnRH antagonists in the treatment of uterine fibroids: a meta-analysis, <em>Arch Gynecol Obstet</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39821450/" target="_blank" rel="noopener">39821450</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Uterine fibroids are the most common pelvic tumors in women, representing the primary indication of hysterectomy. Gonadotropin-releasing hormone (GnRH) antagonists represent a new therapeutic option for premenopausal women. The aim of this review is to evaluate the efficacy and safety of GnRH antagonists in the treatment of uterine fibroids (size reduction and symptom control).<br><br>METHODS: A review of studies from electronic databases (PubMed and Cochrane Central) published up to December 2023 was performed. Eleven randomized clinical trials with a total of 4164 patients were included in the review, which evaluated GnRH antagonists (Relugolix, Elagolix, Linzagolix and Cetrorelix) against placebo or GnRH agonists in premenopausal women with uterine fibroids and heavy menstrual bleeding.<br><br>RESULTS: The results of the measures evaluated to determine the efficacy and safety of GnRH antagonists versus placebo are favorable for the variables of control of uterine bleeding (Relative risk (RR) = 5.09; 95% CI 3.19 to 8.14), percentage reduction of fibroid volume (Mean difference (MD) = -27.36; 95% CI -38.89 to -15.83) and lower reduction of bone density (MD -0.35; 95% CI -0.47 to -0.24). The results do not allow us to conclude whether there are differences between the alternatives compared in the control of vasomotor symptoms.<br><br>CONCLUSIONS: GnRH antagonists represent an effective alternative for uterine fibroids treatment as they allow a superior reduction in menstrual bleeding and uterine fibroid volume compared to the placebo group.</div></details>
+</li>
+<li id="ref-11">
+<div class="ref-label"><strong>Xu et al., Association of caesarean scar defect with risk of abnormal uterine bleeding: results from meta-analysis, <em>BMC Womens Health</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39075427/" target="_blank" rel="noopener">39075427</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To investigate the association between caesarean scar defects and abnormal uterine bleeding through systematic literature review.<br><br>METHODS: PubMed, Web of Science, Cochrane Library and Embase databases were searched based on PRISMA 2020 to include studies exploring abnormal uterine bleeding in women with caesarean scar defects. The combined relative risk (RR) of uterine bleeding, combined prevalence of abnormal uterine bleeding and combined RR of intermenstrual uterine bleeding were calculated using a fixed- or random-effects model.<br><br>RESULTS: Ten studies involving 1,183 women with caesarean scar defects met the inclusion criteria for this study. Compared with women without caesarean scar defects, those with caesarean scar defects had a higher risk of abnormal uterine bleeding (RR: 3.22, 95% CI: 1.83-5.66) and intermenstrual bleeding (RR: 2.93, 95% CI: 1.91-4.50). The prevalence of abnormal uterine bleeding was approximately 0.46 (95% CI: 0.27-0.64), and across populations, women with a previous caesarean section who had undergone imaging specifically for gynaecological disease had a significantly higher prevalence of abnormal uterine bleeding (0.77, 95% CI: 0.65-0.89) than those with at least one caesarean Sect. (0.25, 95% CI: 0.10-0.39).<br><br>CONCLUSION: A significant association was observed between caesarean scar defects and abnormal uterine bleeding, with the former being a risk factor for the latter. However, previous studies have differed in the definition of caesarean scar defects and abnormal uterine bleeding, and more high-quality studies are needed to further investigate the relevant definitions and study results in the future.</div></details>
+</li>
+<li id="ref-12">
+<div class="ref-label"><strong>Rahmioglu et al., The genetic basis of endometriosis and comorbidity with other pain and inflammatory conditions, <em>Nat Genet</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36914876/" target="_blank" rel="noopener">36914876</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Endometriosis is a common condition associated with debilitating pelvic pain and infertility. A genome-wide association study meta-analysis, including 60,674 cases and 701,926 controls of European and East Asian descent, identified 42 genome-wide significant loci comprising 49 distinct association signals. Effect sizes were largest for stage 3/4 disease, driven by ovarian endometriosis. Identified signals explained up to 5.01% of disease variance and regulated expression or methylation of genes in endometrium and blood, many of which were associated with pain perception/maintenance (SRP14/BMF, GDAP1, MLLT10, BSN and NGF). We observed significant genetic correlations between endometriosis and 11 pain conditions, including migraine, back and multisite chronic pain (MCP), as well as inflammatory conditions, including asthma and osteoarthritis. Multitrait genetic analyses identified substantial sharing of variants associated with endometriosis and MCP/migraine. Targeted investigations of genetically regulated mechanisms shared between endometriosis and other pain conditions are needed to aid the development of new treatments and facilitate early symptomatic intervention.</div></details>
+</li>
+<li id="ref-13">
+<div class="ref-label"><strong>Sirkeci et al., Effects on heavy menstrual bleeding and pregnancy of uterine artery embolization (UAE) or myomectomy for women with uterine fibroids wishing to avoid hysterectomy: The FEMME randomized controlled trial, <em>Int J Gynaecol Obstet</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36511801/" target="_blank" rel="noopener">36511801</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To determine treatment options (myomectomy vs. uterine artery embolization (UAE)) for women wishing to avoid hysterectomy.<br><br>METHODS: A multicenter randomized controlled trial was conducted on 254 women and data were collected on fibroid-specific quality of life (UFS-QOL), loss of menstrual blood, and pregnancy.<br><br>RESULTS: At 4 years, the mean difference in the UFS-QOL was 5.0 points (95% confidence interval (CI) -1.4 to 11.5; P = 0.13) in favor of myomectomy. This was not statistically significant as it was at 2 years. There were no differences in bleeding scores, rates of amenorrhea, or heavy bleeding. Of those who were still menstruating, the majority reported regular or fairly regular periods: 36 of 48 (75%) in the UAE group and 30 of 39 (77%) in the myomectomy group. Twelve women after UAE and six women after myomectomy became pregnant (4 years) with seven and five live births, respectively (hazard ratio 0.48, 95% CI 0.18-1.28). There was no difference between the levels of hormones associated with the uterine reserve in each group.<br><br>CONCLUSION: Leiomyoma are common in reproductive-aged women, causing heavy menses and subfertility. Among women with uterine fibroids, myomectomy resulted in better fibroid-related quality of life at 4 years, compared with UAE but the treatments decreased menstrual bleeding equally. There was also no significant difference in the impact of treatment on ovarian reserve.</div></details>
+</li>
+<li id="ref-14">
+<div class="ref-label"><strong>Vitale et al., Efficacy of Hysteroscopy in Improving Fertility Outcomes in Women Undergoing Assisted Reproductive Technique: A Systematic Review and Meta-Analysis of Randomized Controlled Trials, <em>Gynecol Obstet Invest</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37899034/" target="_blank" rel="noopener">37899034</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Usefulness of hysteroscopy before assisted reproductive technique (ART) was considered debatable. However, over the last decade, several new trials have been added to available literature. We aimed to assess the impact of diagnostic and operative hysteroscopy on reproductive outcomes of infertile women with and without intrauterine abnormalities.<br><br>MATERIALS AND METHODS: MEDLINE, Scopus, SciELO, Embase, Cochrane Library at CENTRAL, PROSPERO, CINAHL, grey literature, conference proceedings, and international controlled trials registries were searched without temporal, geographical, or language restrictions. Randomized controlled trials (RCTs) of infertile women comparing hysteroscopy versus no hysteroscopy prior to the first ART or after at least one failed attempt were included. RCTs of infertile women with intrauterine pathology comparing diagnostic versus operative hysteroscopy were included in separate analysis. Random-effect meta-analysis was conducted according to Preferred Reporting Items for Systematic Reviews and Meta-Analyses guidelines. Grading of Recommendations, Assessment, Development and Evaluation and Cochrane criteria were used for quality of evidence and risk of bias assessment. Primary outcome was live birth rate (LBR). Secondary outcomes were clinical pregnancy (CPR) and pregnancy loss rate.<br><br>RESULTS: Fifteen studies (5,038 women) were included. Compared to no hysteroscopy before first or after failed ART attempts, moderate-quality evidence showed that hysteroscopy increased the LBR (relative risk [RR] 1.24, 95% confidence interval [CI] 1.09-1.43, I2 = 21%), confirmed by subgroup analysis for women with failure after one or more ART cycles (RR 1.43, 95% CI: 1.19-1.72, I2 = 0%) but not before the first ART. Moderate-quality evidence showed that it increased the CPR (RR 1.36, 95% CI: 1.18-1.57; I2 = 51%), confirmed in subgroup analysis for both implantation failure (RR 1.40, 95% CI: 1.12-1.74, I2 = 52%) and before first ART (RR 1.32, 95% CI: 1.11-1.57, I2 = 42%). Low-quality data suggest that operative hysteroscopy increases CPR when used to treat intrauterine pathologies (RR 2.13, 95% CI: 1.56-2.92, I2 = 0%).<br><br>CONCLUSIONS: Although moderate-quality evidence supports performing hysteroscopy before ART in women with history of implantation failure, hysteroscopic evaluation of uterine cavity should be considered a first-line technique in all infertile women undergoing ART. Additional high-quality RCTs are still needed, particularly to assess yield during couple&#x27;s initial evaluation even before ART is considered.</div></details>
+</li>
+<li id="ref-15">
+<div class="ref-label"><strong>Daniels et al., Uterine artery embolisation versus myomectomy for premenopausal women with uterine fibroids wishing to avoid hysterectomy: the FEMME RCT, <em>Health Technol Assess</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35435818/" target="_blank" rel="noopener">35435818</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Uterine fibroids are the most common tumour in women of reproductive age and are associated with heavy menstrual bleeding, abdominal discomfort, subfertility and reduced quality of life. For women wishing to retain their uterus and who do not respond to medical treatment, myomectomy and uterine artery embolisation are therapeutic options.<br><br>OBJECTIVES: We examined the clinical effectiveness and cost-effectiveness of uterine artery embolisation compared with myomectomy in the treatment of symptomatic fibroids.<br><br>DESIGN: A multicentre, open, randomised trial with a parallel economic evaluation.<br><br>SETTING: Twenty-nine UK hospitals.<br><br>PARTICIPANTS: Premenopausal women who had symptomatic uterine fibroids amenable to myomectomy or uterine artery embolisation were recruited. Women were excluded if they had significant adenomyosis, any malignancy or pelvic inflammatory disease or if they had already had a previous open myomectomy or uterine artery embolisation.<br><br>INTERVENTIONS: Participants were randomised to myomectomy or embolisation in a 1 : 1 ratio using a minimisation algorithm. Myomectomy could be open abdominal, laparoscopic or hysteroscopic. Embolisation of the uterine arteries was performed under fluoroscopic guidance.<br><br>MAIN OUTCOME MEASURES: The primary outcome was the Uterine Fibroid Symptom Quality of Life questionnaire (with scores ranging from 0 to 100 and a higher score indicating better quality of life) at 2 years, adjusted for baseline score. The economic evaluation estimated quality-adjusted life-years (derived from EuroQol-5 Dimensions, three-level version, and costs from the NHS perspective).<br><br>RESULTS: A total of 254 women were randomised - 127 to myomectomy (105 underwent myomectomy) and 127 to uterine artery embolisation (98 underwent embolisation). Information on the primary outcome at 2 years was available for 81% (n = 206) of women. Primary outcome scores at 2 years were 84.6 (standard deviation 21.5) in the myomectomy group and 80.0 (standard deviation 22.0) in the uterine artery embolisation group (intention-to-treat complete-case analysis mean adjusted difference 8.0, 95% confidence interval 1.8 to 14.1, p = 0.01; mean adjusted difference using multiple imputation for missing responses 6.5, 95% confidence interval 1.1 to 11.9). The mean difference in the primary outcome at the 4-year follow-up time point was 5.0 (95% CI -1.4 to 11.5; p = 0.13) in favour of myomectomy. Perioperative and postoperative complications from all initial procedures occurred in similar percentages of women in both groups (29% in the myomectomy group vs. 24% in the UAE group). Twelve women in the uterine embolisation group and six women in the myomectomy group reported pregnancies over 4 years, resulting in seven and five live births, respectively (hazard ratio 0.48, 95% confidence interval 0.18 to 1.28). Over a 2-year time horizon, uterine artery embolisation was associated with higher costs than myomectomy (mean cost £7958, 95% confidence interval £6304 to £9612, vs. mean cost £7314, 95% confidence interval £5854 to £8773), but with fewer quality-adjusted life-years gained (0.74, 95% confidence interval 0.70 to 0.78, vs. 0.83, 95% confidence interval 0.79 to 0.87). The differences in costs (difference £645, 95% confidence interval -£1381 to £2580) and quality-adjusted life-years (difference -0.09, 95% confidence interval -0.11 to -0.04) were small. Similar results were observed over the 4-year time horizon. At a threshold of willingness to pay for a gain of 1 QALY of £20,000, the probability of myomectomy being cost-effective is 98% at 2 years and 96% at 4 years.<br><br>LIMITATIONS: There were a substantial number of women who were not recruited because of their preference for a particular treatment option.<br><br>CONCLUSIONS: Among women with symptomatic uterine fibroids, myomectomy resulted in greater improvement in quality of life than did uterine artery embolisation. The differences in costs and quality-adjusted life-years are very small. Future research should involve women who are desiring pregnancy.<br><br>TRIAL REGISTRATION: This trial is registered as ISRCTN70772394.<br><br>FUNDING: This study was funded by the National Institute for Health and Care Research (NIHR) Health Technology Assessment programme, and will be published in full in Health Technology Assessment; Vol. 26, No. 22. See the NIHR Journals Library website for further project information.</div></details>
+</li>
+<li id="ref-16">
+<div class="ref-label"><strong>Donnez et al., Linzagolix with and without hormonal add-back therapy for the treatment of symptomatic uterine fibroids: two randomised, placebo-controlled, phase 3 trials, <em>Lancet</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36116480/" target="_blank" rel="noopener">36116480</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Uterine fibroids are common non-cancerous neoplasm that cause heavy menstrual bleeding and other signs. Linzagolix is an oral gonadotropin-releasing hormone receptor antagonist taken once per day that dose-dependently suppresses gonadal steroids and might reduce uterine-fibroid-associated signs. Two phase 3 trials were conducted to confirm the efficacy and safety of linzagolix at full-suppression (200 mg) and partial-suppression (100 mg) doses with or without hormonal add-back therapy (1 mg oestradiol and 0·5 mg norethisterone acetate) compared with placebo for the treatment of symptomatic uterine fibroids.<br><br>METHODS: PRIMROSE 1 and PRIMROSE 2 were identical 52-week, randomised, parallel, double-blind, placebo-controlled, phase 3 trials conducted at clinics in the USA (PRIMROSE 1) and Europe and the USA (PRIMROSE 2). Eligible women with uterine fibroid-associated heavy menstrual bleeding (menstrual blood loss &gt;80 mL per cycle) were randomly assigned in a 1:1:1:1:1 ratio to one of five masked treatments: (1) placebo, (2) 100 mg linzagolix per day alone, (3) 100 mg linzagolix per day with once-per-day hormonal add-back therapy (1 mg oestradiol and 0·5 mg norethisterone acetate), (4) 200 mg linzagolix per day alone, or (5) 200 mg linzagolix per day with once-per-day hormonal add-back therapy (1 mg oestradiol and 0·5 mg norethisterone acetate). The primary endpoint was a response (menstrual blood loss ≤80 mL and ≥50% reduction from baseline) at 24 weeks in women who received at least one dose of treatment and did not meet any exclusion criteria based on predosing assessments. These trials are registered with ClinicalTrials.gov (NCT03070899 and NCT03070951). The trials have been completed.<br><br>FINDINGS: Between May, 2017, and October, 2020, in PRIMROSE 1, 574 women were enrolled, of which 48 discontinued and 15 were excluded; therefore, 511 women were included in the full analysis set; and in PRIMROSE 2, 535 women were enrolled, of which 24 did not receive the study drug and ten women were excluded from the study, resulting in 501 women being included in the full analysis set. In both trials, a significantly higher proportion of women had a reduction in heavy menstrual bleeding in all linzagolix (with or without add-back therapy) treatment groups compared with the placebo group (p≤0·003). In PRIMROSE 1, the response rates were 56·4% (95% CI 45·8-66·6%) in the 100 mg group, 66·4% (56·6-75·2%) in the 100 mg plus add-back therapy group, 71·4% (61·8-79·8%) in the 200 mg group, and 75·5% (66·0-83·5%) in the 200 mg plus add-back therapy group, compared with 35·0% (25·8-45·0%) in the placebo group. In PRIMROSE 2, the response rates were 56·7% (46·3-66·7%) in the 100 mg group, 77·2% (67·8-85·0%) in the 100 mg plus add-back therapy group, 77·7% (68·4-85·3%) in the 200 mg group, and 93·9% (87·1-97·7%) in the 200 mg plus add-back therapy group, compared with 29·4% (20·8-39·3%) with placebo. The most common adverse events up to 24 weeks were hot flushes (35% of participants in PRIMROSE 1 and 32% in PRIMROSE 2 with linzagolix [200 mg] alone and 3-14% in all other groups).<br><br>INTERPRETATION: Linzagolix (100 mg or 200 mg) with or without add-back therapy significantly reduced heavy menstrual bleeding. Partial suppression with once-per-day linzagolix (100 mg) without add-back therapy potentially provides a unique option for the chronic treatment of symptomatic uterine fibroids in women who cannot or do not want to take concomitant hormonal add-back therapy.<br><br>FUNDING: ObsEva.</div></details>
+</li>
+<li id="ref-17">
+<div class="ref-label"><strong>Jaripur et al., The effects of magnesium supplementation on abnormal uterine bleeding, alopecia, quality of life, and acne in women with polycystic ovary syndrome: a randomized clinical trial, <em>Reprod Biol Endocrinol</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35918728/" target="_blank" rel="noopener">35918728</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Abnormal uterine bleeding (AUB), alopecia, low quality of life, and acne are considered as complications of polycystic ovary syndrome (PCOS). We hypothesized that magnesium supplementation would yield beneficial effects on PCOS related complications.<br><br>OBJECTIVE: To examine the effects of magnesium supplementation on AUB, alopecia, quality of life, and acne.<br><br>METHODS: In this parallel randomized clinical trial, we randomly assigned 64 women with PCOS to the magnesium group (n = 32) or placebo group (n = 32) for 10 weeks. AUB, alopecia, quality of life, and acne were assessed by the International Federation of Gynecology and Obstetrics criterion, the Sinclair Scale, the Health Survey Quality of Life Questionnaire, and the Global Acne Grading System, respectively. This randomized clinical trial was registered at IRCT.ir (IRCT20130903014551N9).<br><br>RESULTS: Magnesium supplementation significantly improved the components of quality of life including physical functioning (p = 0.011), role limitations due to physical health (p = 0.012), role limitations due to emotional problems (p &lt; 0.001), energy/fatigue (p = 0.005), emotional wellbeing (p &lt; 0.001), social functioning (p = 0.002), general health (p = 0.013), and total quality of life (p &lt; 0.001), compared with placebo. No significant effect was observed on acne, alopecia, and AUB.<br><br>CONCLUSION: Magnesium supplementation in women with PCOS had a significant positive effect on improving total quality of life.<br><br>TRIAL REGISTRATION: This randomized clinical trial was registered at IRCT.ir on 2020-10-18 (Registration Code: IRCT20130903014551N9 ).</div></details>
+</li>
+<li id="ref-18">
+<div class="ref-label"><strong>Murji et al., Cesarean scar defects and abnormal uterine bleeding: a systematic review and meta-analysis, <em>Fertil Steril</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35985862/" target="_blank" rel="noopener">35985862</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To synthesize the published literature to better understand the association between cesarean scar defects (CSDs) and abnormal uterine bleeding (AUB). In particular, we aimed to evaluate the risk and pattern(s) of CSD-associated AUB in addition to exploring the relationship between defect morphology with bleeding symptoms.<br><br>DESIGN: Systematic review and meta-analysis.<br><br>SETTING: Not applicable.<br><br>PATIENTS: Patients with CSD and reports of uterine bleeding as an outcome were identified in 60 studies from database searches.<br><br>INTERVENTIONS: Studies that investigated CSD (as defined by investigators) and reported uterine bleeding, menstrual bleeding, or AUB as an outcome were included.<br><br>MAIN OUTCOME MEASURES: The prevalence and risk of AUB (intermenstrual, postmenstrual, and unscheduled bleeding) in patients with confirmed CSD.<br><br>RESULTS: Nine studies reported on the prevalence of AUB in patients with a confirmed CSD. Patients with CSD were more likely to experience AUB, compared with those without CSD (relative risk, 3.47; 95% confidence interval [CI], 2.02-5.97; 6 studies, 1,385 patients; I2 = 67%). In a population of patients with at least 1 cesarean delivery, the prevalence of AUB in those with CSD was 25.5% (95% CI, 14.7-40.5; 6 studies, 667 patients, I2 = 93%). However, symptom prevalence was much higher in patients presenting for imaging for a gynecologic indication where the prevalence of AUB in the presence of a CSD was 76.4% (95% CI, 67.8-83.3; 5 studies, 505 patients; I2 = 71%). The mean menstrual duration in symptomatic patients with CSD was 13.4 days (95% CI, 12.6-14.2; 19 studies, 2,095 patients; I2 = 96%), and the mean duration of early-cycle intermenstrual bleeding was 6.8 days (95% CI, 5.7-7.8 days; 9 studies, 759 patients; I2 = 93%). The most common descriptor of CSD-associated AUB was &quot;brown discharge&quot;. Patients with larger CSD experienced more bleeding symptoms.<br><br>CONCLUSION: There is a strong and consistent association between patients with CSD and AUB. These patients experience a unique bleeding pattern, namely prolonged menstruation and early-cycle intermenstrual bleeding. These data should provide impetus for including CSD as a distinct entity in AUB classification systems. High heterogeneity in our results calls for standardization of nomenclature and outcome reporting for this condition.</div></details>
+</li>
+<li id="ref-19">
+<div class="ref-label"><strong>Ring et al., Endometrial Hyperplasia, <em>Obstet Gynecol</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36357974/" target="_blank" rel="noopener">36357974</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The objectives of this Clinical Expert Series on endometrial hyperplasia are to review the etiology and risk factors, histologic classification and subtypes, malignant progression risks, prevention options, and to outline both surgical and nonsurgical treatment options. Abnormal uterine and postmenopausal bleeding remain the hallmark of endometrial pathology, and up to 10-20% of postmenopausal bleeding will be either hyperplasia or cancer; thus, immediate evaluation of any abnormal bleeding with either tissue procurement for pathology or imaging should be undertaken. Although anyone with a uterus may develop atypical hyperplasia, also known as endometrial intraepithelial neoplasia (EIN), genetic predispositions (eg, Lynch syndrome), obesity, chronic anovulation, and polycystic ovarian syndrome all markedly increase these risks, whereas use of oral contraceptive pills or progesterone-containing intrauterine devices will decrease the risk. An EIN diagnosis carries a high risk of concomitant endometrial cancer or eventual progression to cancer in the absence of treatment. The definitive and curative treatment for EIN remains hysterectomy; however, the obesity epidemic, the potential desire for fertility-sparing treatments, the recognition of varying rates of malignant transformation, medical comorbidities, and an aging population all may factor into decisions to employ nonsurgical treatment modalities.</div></details>
+</li>
+<li id="ref-20">
+<div class="ref-label"><strong>Vitale et al., Quality of Life, Anxiety and Depression in Women Treated with Hysteroscopic Endometrial Resection or Ablation for Heavy Menstrual Bleeding: Systematic Review and Meta-Analysis of Randomized Controlled Trials, <em>Medicina (Kaunas)</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36422203/" target="_blank" rel="noopener">36422203</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Background and Objectives: Hysteroscopic endometrial resection (ER) or global endometrial ablation (GEA) are feasible methods to treat heavy menstrual bleeding (HMB). The aim of this systematic review and meta-analysis of randomized controlled trials (RCTs) was to assess patient&#x27;s quality of life (QoL) in women treated with ER/GEA compared to hysterectomy. Materials and Methods: Electronic searches in MEDLINE Scopus, ClinicalTrials.gov, EMBASE, PROSPERO and Cochrane CENTRAL were conducted from their inception to July 2022. Inclusion criteria were RCTs of premenopausal women with HMB randomized to conservative surgical treatment (ER/GEA) or hysterectomy. The primary outcome was the evaluation of QoL using the SF-36 score. Results: Twelve RCTs (2773 women) were included in the analysis. Women treated with hysteroscopic ER/GEA showed significantly lower scores for the SF-36 general health perception (mean difference (MD) -8.56 [95% CI -11.75 to -5.36]; I2 = 0%), social function (MD -12.90 [95% CI -23.90 to -1.68]; I2 = 91%), emotional role limitation (MD -4.64 [95% CI -8.43 to -0.85]; I2 = 0%) and vitality (MD -8.01 [95% CI -14.73 to -1.30]; I2 = 74%) domains relative to hysterectomy. Anxiety, depression scores and complication rates were similar between treatments. Relative to uterine balloon therapy, amenorrhea was more common with EA/GER (relative risk 1.51 [95% CI 1.03 to 1.20] I2 = 28%), but posttreatment satisfaction was similar. Conclusions: Women&#x27;s perception of QoL might be seen to be less improved after hysteroscopic ER/GEA rather than hysterectomy. However, such findings need to be confirmed by additional trials due to the high number of outdated studies and recent improvements in hysteroscopic instrumentation and techniques.</div></details>
+</li>
+<li id="ref-21">
+<div class="ref-label"><strong>Vrijdaghs et al., Hysteroscopic management of caesarean scar defects, <em>J Obstet Gynaecol</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35014923/" target="_blank" rel="noopener">35014923</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">A caesarean section may lead to a defect of the myometrium at the site of the uterine scar. The association with abnormal uterine bleeding or impaired fertility has been demonstrated. Hysteroscopic remodelling reportedly reduces the symptoms. To review the available literature reporting on hysteroscopic treatment of these defects in symptomatic women with abnormal uterine bleeding or impaired fertility. A systematic search of PubMed and Cochrane databases has been performed until January 2021, including 27 articles. Hysteroscopic remodelling relieved symptoms of abnormal uterine bleeding in 60-100% and 25-100% of women with impaired fertility conceived within the follow up period. No major complications were reported. Hysteroscopic remodelling seems a treatment option in the management of symptomatic caesarean scar defects. Long-term follow-up and larger studies are needed to evaluate the effect on abnormal uterine bleeding as well as on reproductive outcomes.</div></details>
+</li>
+<li id="ref-22">
+<div class="ref-label"><strong>Yan et al., High-intensity focused ultrasound treatment for symptomatic uterine fibroids: a systematic review and meta-analysis, <em>Int J Hyperthermia</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35094613/" target="_blank" rel="noopener">35094613</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: This study was aimed at comparing the outcomes of high-intensity focused ultrasound (HIFU) with those of uterine artery embolization (UAE) and traditional surgeries for treating symptomatic uterine fibroids.<br><br>MATERIALS AND METHODS: We searched the following databases from their beginning to 5 November 2021: PubMed, Medline, Embase and Cochrane Library.<br><br>RESULTS: Overall, 21 studies were included in this meta-analysis. The results revealed that HIFU had a higher re-intervention rate than UAE (relative risk [RR] = 4.06, 95% confidence interval [CI]: 2.47-6.69) and offered no significant advantages in reducing the symptom severity score (SSS) (mean difference [MD] = 17.01, 95% CI: 10.25-23.77) and improving the health-related quality of life (HRQoL) score (MD= -18.32, 95% CI: -24.87 to -11.78) in the treatment of symptomatic uterine fibroids. However, compared with UAE, HIFU may be associated with a higher pregnancy rate (RR = 17.44, 95% CI: 2.40-126.50) and may have a significant advantage in shortening pregnancy interval and preserving ovarian function. Moreover, upon comparing HIFU with traditional surgical treatments, the HIFU group showed significantly improved HRQoL score (MD = 2.25, 95% CI: 1.15-3.35), but the re-intervention rate (RR = 1.65, 95% CI: 0.59-4.57), pregnancy rate (RR = 1.01, 95% CI: 0.90-1.13), SSS and ovarian function did not significantly differ between the two groups.<br><br>CONCLUSIONS: Although HIFU has relatively high re-intervention rate, it may offer a higher pregnancy rate and shorter pregnancy interval with little influence on ovarian function, thus making it an attractive option for treating symptomatic fibroids in young women who wish to plan a pregnancy in the future.</div></details>
+</li>
+<li id="ref-23">
+<div class="ref-label"><strong>Long et al., Ultrasound detection of endometrial cancer in women with postmenopausal bleeding: Systematic review and meta-analysis, <em>Gynecol Oncol</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32008795/" target="_blank" rel="noopener">32008795</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To assess the performance of endometrial thickness (ET) cut-offs for detecting endometrial cancer (EC) in women with postmenopausal bleeding (PMB) and evaluate the clinical utility of additional ultrasound measures such as endometrial volume (EV), vascular flow index (VFI), vascularization index (VI), and uterine artery flow index (FI).<br><br>METHODS: Clinicaltrials.gov and MEDLINE database via PubMed were queried for studies published between 1/1990 and 3/2016 using specific MeSH terms. Original, peer-reviewed cohort studies reporting EC outcomes and specific ultrasound findings by PMB status were included.<br><br>RESULTS: Study design, country, clinical setting inclusion/exclusion criteria, aggregate study-level demographic and clinical data were extracted from 44 studies including 17,339 women with PMB and 1341 cases of EC (7.7%). In women with PMB and EC (n = 417), pooled mean ET was 16.4 mm (95% CI, 14.8-18.1 mm). In women with PMB without EC, pooled mean ET was 4.1 mm. 31 studies reported outcomes using different ET cut-off values ranging from 3 to 20 mm. Compared to ≥3 or 4 mm, a cutoff of ≥5 mm had similar sensitivity (96.2, 95%CI 92.3, 98.1) with improved specificity for EC (51.5, 95%CI 42.3-60.7), allowing to reduce the rate of invasive workup for PMB by 17%. EV, VI, VFI, and FI were significantly correlated with EC, but performance of specific cut-offs was not analyzed due to limited data.<br><br>CONCLUSION: Among women with PMB mean ET is substantially higher in women with EC compared to those without EC. An ET cutoff of ≥5 mm shows an acceptable tradeoff between sensitivity and specificity for diagnosis of EC.</div></details>
+</li>
+<li id="ref-24">
+<div class="ref-label"><strong>Mittermeier et al., Levonorgestrel-releasing intrauterine system for endometrial hyperplasia, <em>Cochrane Database Syst Rev</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32909630/" target="_blank" rel="noopener">32909630</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: In the absence of treatment, endometrial hyperplasia (EH) can progress to endometrial cancer, particularly in the presence of histologic nuclear atypia. The development of EH results from exposure of the endometrium to oestrogen unopposed by progesterone. Oral progestogens have been used as treatment for EH without atypia, and in some cases of EH with atypia in women who wish to preserve fertility or who cannot tolerate surgery. EH without atypia is associated with a low risk of progression to atypia and cancer; EH with atypia is where the cells are structurally abnormal, and has a higher risk of developing cancer. Oral progestogen is not always effective at reversing the hyperplasia, can be associated with side effects, and depends on patient adherence. The levonorgestrel-intrauterine system (LNG-IUS) is an alternative method of administration of progestogen and may have some advantages over non-intrauterine progestogens.<br><br>OBJECTIVES: To evaluate the effectiveness and safety of the levonorgestrel intrauterine system (LNG-IUS) in women with endometrial hyperplasia (EH) with or without atypia compared to medical treatment with non-intrauterine progestogens, placebo, surgery or no treatment.<br><br>SEARCH METHODS: We searched the following databases: the Cochrane Gynaecology and Fertility Group (CGF) Specialised Register, CENTRAL, MEDLINE, Embase, CINAHL and PsycINFO, and conference proceedings of 10 relevant organisations. We handsearched references in relevant published studies. We also searched ongoing trials in ClinicalTrials.gov, the World Health Organization International Clinical Trials Registry, and other trial registries. We performed the final search in May 2020.<br><br>SELECTION CRITERIA: Randomised controlled trials (RCTs) and cross-over trials of women with a histological diagnosis of endometrial hyperplasia with or without atypia comparing LNG-IUS with non-intrauterine progestogens, placebo, surgery or no treatment.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently performed study selection, risk of bias assessment and data extraction. Our primary outcome measures were regression of EH and adverse effects associated with the LNG-IUS device (such as pelvic inflammatory disease, device expulsion, uterine perforation) when compared to treatment with non-intrauterine progestogens, placebo, surgery or no treatment. Secondary outcomes included hysterectomy, hormone-related adverse effects (such as bleeding/spotting, pelvic pain, breast tenderness, ovarian cysts, weight gain, acne), withdrawal from treatment due to adverse effects, satisfaction with treatment, and cost or resource use. We rated the overall quality of evidence using GRADE methods.<br><br>MAIN RESULTS: Thirteen RCTs (1657 women aged 22 to 75 years) met the inclusion criteria. Two studies had insufficient data for meta-analysis, thus the quantitative analysis included 11 RCTs. All trials evaluated treatment duration of six months or less. The evidence ranged from very low to moderate quality: the main limitations were risk of bias (associated with lack of blinding and poor reporting of study methods), inconsistency and imprecision. LNG-IUS versus non-intrauterine progestogens Primary outcomes Regression of endometrial hyperplasia The LNG-IUS probably improves regression of EH compared with non-intrauterine progestogens at short-term follow-up (up to six months) (OR 2.94, 95% CI 2.10 to 4.13; I² = 0%; 10 RCTs, 1108 participants; moderate-quality evidence). This suggests that if regression of EH following treatment with a non-intrauterine progestogen is assumed to be 72%, regression of EH following treatment with LNG-IUS would be between 85% and 92%. Regression of EH may be improved by LNG-IUS compared with non-intrauterine progestogens at long-term follow-up (12 months) (OR 3.80, 95% CI 1.75 to 8.23; 1 RCT, 138 participants; low-quality evidence), Adverse effects associated with LNG-IUS There was insufficient evidence to determine device-related adverse effects; only one study reported on expulsion with insufficient data for analysis. Secondary outcomes The LNG-IUS may be associated with fewer hysterectomies (OR 0.26, 95% CI 0.15 to 0.46; I² = 19%; 4 RCTs, 452 participants; low-quality evidence), fewer withdrawals from treatment due to hormone-related adverse effects (OR 0.41, 95% CI 0.12 to 1.35; I² = 0%; 4 RCTs, 360 participants; low-quality evidence) and improved patient satisfaction with treatment (OR 5.28, 95% CI 2.51 to 11.10; I² = 0%; 2 RCTs, 202 participants; very low-quality evidence) compared to non-intrauterine progestogens. The LNG-IUS may be associated with more bleeding/spotting (OR 2.13, 95% CI 1.33 to 3.43; I² = 78%; 3 RCTs, 428 participants) and less nausea (OR 0.52, 95% CI 0.28 to 0.95; I² = 0%; 3 RCTs, 428 participants) compared to non-intrauterine progestogens. Data from single trials for mood swings and fatigue had a similar direction of effect as for bleeding/spotting, nausea and weight gain. There was insufficient evidence to determine cost or resource use. LNG-IUS versus no treatment Regression of endometrial hyperplasia One study demonstrated that the LNG-IUS is associated with regression of EH without atypia (OR 78.41, 95% CI 22.86 to 268.97; I² = 0%; 1 RCT, 190 participants; moderate-quality evidence) compared with no treatment. This study did not report on any other review outcome.<br><br>AUTHORS&#x27; CONCLUSIONS: There is moderate-quality evidence that treatment with LNG-IUS used for three to six months is probably more effective than non-intrauterine progestogens at reversing EH in the short term (up to six months) and long term (up to two years). Adverse effects (device-related and hormone-related) were poorly and incompletely reported across studies. Very low quality to low-quality evidence suggests the LNG-IUS may reduce the risk of hysterectomy, and may be associated with more bleeding/spotting, less nausea, less withdrawal from treatment due to adverse effects, and increased satisfaction with treatment, compared to non-intrauterine progestogens. There was insufficient evidence to reach conclusions regarding device-related adverse effects, or cost or resource use.</div></details>
+</li>
+<li id="ref-25">
+<div class="ref-label"><strong>Sanin-Ramirez et al., Two-dimensional transvaginal sonography vs saline contrast sonohysterography for diagnosing endometrial polyps: systematic review and meta-analysis, <em>Ultrasound Obstet Gynecol</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32730635/" target="_blank" rel="noopener">32730635</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To compare the diagnostic performance of two-dimensional transvaginal sonography (TVS) and saline contrast sonohysterography (SCSH) for the diagnosis of endometrial polyps in studies that used both tests in the same group of patients.<br><br>METHODS: This was a systematic review and meta-analysis. An extensive search was conducted of Medline (PubMed), Cochrane Library and Web of Science, for studies comparing the diagnostic performance of TVS and SCSH for identifying endometrial polyps, published between January 1990 and December 2019, that reported a definition of endometrial polyp on TVS and SCSH and used pathologic analysis as the reference standard. Quality of the included studies was assessed using the Quality Assessment of Diagnostic Accuracy Studies-2 (QUADAS-2) tool. A random-effects model was used to determine pooled sensitivity, specificity and positive and negative likelihood ratios of TVS and SCSH in the detection of endometrial polyps. Subanalysis according to menopausal status was performed.<br><br>RESULTS: In total, 1278 citations were identified; after exclusions, 25 studies were included in the meta-analysis. In the included studies, the risk of bias evaluated using QUADAS-2 was low for most of the four domains, except for flow and timing, which had an unclear risk of bias in 13 studies. Pooled sensitivity, specificity and positive and negative likelihood ratios for TVS in the detection of endometrial polyps were 55.0% (95% CI, 46.0-64.0%), 91.0% (95% CI, 86.0-94.0%), 5.8 (95% CI, 3.9-8.7) and 0.5 (95% CI, 0.41-0.61), respectively. The corresponding values for SCSH were 92.0% (95% CI, 87.0-95.0%), 93.0% (95% CI, 91.0-95.0%), 13.9 (95% CI, 9.9-19.5) and 0.08 (95% CI, 0.05-0.14), respectively. Significant differences were found when comparing the methods in terms of sensitivity (P &lt; 0.001), but not for specificity (P = 0.0918). Heterogeneity was high for TVS and moderate for SCSH. On subanalysis according to menopausal status, SCSH was found to have higher diagnostic accuracy in both pre- and postmenopausal women; sensitivity and specificity did not differ significantly between the groups for either TVS or SCSH.<br><br>CONCLUSION: Given that SCSH has better diagnostic positive and negative likelihood ratios than does TVS in both pre- and postmenopausal women, those with clinical suspicion of endometrial polyps should undergo SCSH if TVS findings are inconclusive. © 2020 International Society of Ultrasound in Obstetrics and Gynecology.</div></details>
+</li>
+<li id="ref-26">
+<div class="ref-label"><strong>Ghonim et al., A systematic review and meta-analysis of ulipristal acetate for symptomatic uterine fibroids, <em>Int J Gynaecol Obstet</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31127621/" target="_blank" rel="noopener">31127621</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Uterine fibroids cause menorrhagia and adversely affect quality of life. Ulipristal acetate (UPA) can improve fibroid symptoms.<br><br>OBJECTIVES: To assess the effectiveness of UPA in women with symptomatic uterine fibroids.<br><br>SEARCH STRATEGY: We searched CENTRAL, MEDLINE, Embase, and CINHAL on December 31, 2018, using relevant search terms. Clinical trials registries were searched for ongoing trials and there were no language restrictions.<br><br>SELECTION CRITERIA: We included randomized controlled trials (RCTs) comparing UPA with placebo/no treatment/any pharmacological intervention for symptomatic uterine fibroids.<br><br>DATA COLLECTION AND ANALYSIS: Two authors independently screened trials, extracted data, and assessed the risk of bias in included studies. We used risk ratio (RR) for dichotomous outcomes and mean difference (MD) for continuous outcomes, plus their 95% confidence intervals (CIs).<br><br>MAIN RESULTS: We identified six RCTs (1121 participants). Five studies (882 participants) compared UPA with placebo. UPA significantly achieved amenorrhea (RR 24.54; 95% CI, 10.82-55.64), reduced blood loss, and improved quality of life with insufficient evidence from RCTs for adverse events. There was insufficient evidence for improved outcomes when UPA was compared with leuprolide acetate.<br><br>CONCLUSION: Compared with placebo, oral UPA significantly induces amenorrhea, reduces heavy menses, and improves quality-of-life in women with uterine fibroids.</div></details>
+</li>
+<li id="ref-27">
+<div class="ref-label"><strong>Maki et al., Guidelines for the Evaluation and Treatment of Perimenopausal Depression: Summary and Recommendations, <em>J Womens Health (Larchmt)</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30182804/" target="_blank" rel="noopener">30182804</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">There is a new appreciation of the perimenopause-defined as the early and late menopause transition stages as well as the early postmenopause-as a window of vulnerability for the development of both depressive symptoms and major depressive episodes. However, clinical recommendations on how to identify, characterize and treat clinical depression are lacking. To address this gap, an expert panel was convened to systematically review the published literature and develop guidelines on the evaluation and management of perimenopausal depression. The areas addressed included: (1) epidemiology; (2) clinical presentation; (3) therapeutic effects of antidepressants; (4) effects of hormone therapy; and (5) efficacy of other therapies (e.g., psychotherapy, exercise, and natural health products). Overall, evidence generally suggests that most midlife women who experience a major depressive episode during the perimenopause have experienced a prior episode of depression. Midlife depression presents with classic depressive symptoms commonly in combination with menopause symptoms (i.e., vasomotor symptoms, sleep disturbance), and psychosocial challenges. Menopause symptoms complicate, co-occur, and overlap with the presentation of depression. Diagnosis involves identification of menopausal stage, assessment of co-occurring psychiatric and menopause symptoms, appreciation of the psychosocial factors common in midlife, differential diagnoses, and the use of validated screening instruments. Proven therapeutic options for depression (i.e., antidepressants, psychotherapy) are the front-line treatments for perimenopausal depression. Although estrogen therapy is not approved to treat perimenopausal depression, there is evidence that it has antidepressant effects in perimenopausal women, particularly those with concomitant vasomotor symptoms. Data on estrogen plus progestin are sparse and inconclusive.</div></details>
+</li>
+<li id="ref-28">
+<div class="ref-label"><strong>Uglietti et al., The risk of malignancy in uterine polyps: A systematic review and meta-analysis, <em>Eur J Obstet Gynecol Reprod Biol</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31009859/" target="_blank" rel="noopener">31009859</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Endometrial polyps are a common condition. The risk of malignancy has often led to an overtreatment with high health care costs and huge psychological distress.<br><br>OBJECTIVE: We conducted a systematic review and a meta-analysis in order to estimate the prevalence of premalignant and malignant lesions in women undergoing hysteroscopic polypectomy.<br><br>DATA SOURCE: We developed the search using PubMed/MEDLINE and EMBASE databases to identify papers published between 2000- January 2019. The research strategy used on Pubmed was: (&quot;polyps&quot; (MESH) OR &quot;endometrial polyp*&quot;) AND (&quot;malignancy&quot; OR &quot;cancer&quot; OR &quot;histopathology&quot; OR &quot;hysteroscopy&quot; OR &quot;ultrasound&quot;, OR &quot;sonohysterography&quot;). The same search was modified for EMBASE.<br><br>STUDY ELIGIBILITY: We included all observational retrospective and prospective studies and studies were selected for the review if they met following inclusion criteria: pre-operative diagnosis of benign-looking endometrial polyps at ultrasound examination or at hysteroscopy, excision of endometrial polyps via surgical hysteroscopy, histopathological diagnosis of benign polyps, or hyperplasia without atypia, or premalignancy (atypical hyperplasia) or malignancy (endometrial cancer). Moreover, studies were included if number or percentage of subjects with and without malignancy was provided and if they reported data about menopausal and/or bleeding status. We excluded data presented exclusively as abstracts in national and international meetings, or case report or review articles that did not include original data and papers published in other than English language. Our primary outcome was the prevalence of endometrial premalignant or malignant polyps in the total series, among premenopausal and postmenopausal women and among women with or without abnormal bleeding and then in subgroup analysis according to study design, diagnostic method, study region and calendar year of publication.<br><br>RESULTS: A total of 51 studies reporting data on 35,345 women were included in this review. The prevalence of malignant polyps was 2.73% (95% CI 2.57-2.91) with very high heterogeneity among studies. The rates were lower for premenopausal women (1.12%) than post-menopausal ones (4.93%) and the difference was statistically significant (chi-square = 397.21. p &lt; .0001). The risk of malignancy was higher among symptomatic (5.14%) than asymptomatic ones (1.89%) (chi-square = 133.13 p &lt; .001). We observed higher rate of malignant polyps in prospective studies. In the meta-analysis selecting 10 prospective studies the random pooled estimate was 5.88 (95% CI: 4.06-7.97) with heterogeneity among studies (heterogeneity chi square = 17.55 P = .025) whereas in retrospective studies the random pooled estimate was 2.94 (95% CI:2.24-3.71) with high heterogeneity among studies (P &lt; .001). This finding can be due to more strict diagnostic criteria in prospective studies.<br><br>CONCLUSION: Symptomatic vaginal bleeding and postmenopausal status in women with endometrial polyps increased the risk of malignancy. This finding could be an useful evidence to select patients who need to undergo hysteroscopic resection of endometrial polyps and women to whom, instead, an expectant management can be offer.</div></details>
+</li>
+<li id="ref-29">
+<div class="ref-label"><strong>Vroom et al., Diagnostic accuracy of saline contrast sonohysterography in detecting endometrial polyps in women with postmenopausal bleeding: systematic review and meta-analysis, <em>Ultrasound Obstet Gynecol</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30693579/" target="_blank" rel="noopener">30693579</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: In women with postmenopausal bleeding, endometrial polyps are a frequent finding and the risk of a focal (pre)malignancy in a polyp is up to 6%. Because of this reported risk, the detection of polyps in these women, preferably by a minimally invasive method, is important. The aim of this systematic review was to assess the accuracy of saline contrast sonohysterography (SCSH) for diagnosis of endometrial polyps in women with postmenopausal bleeding.<br><br>METHODS: In August 2018, an electronic search was performed of MEDLINE, EMBASE and Web of Science databases to identify all diagnostic studies in which SCSH was used to detect endometrial polyps in postmenopausal women. Studies were included if SCSH was performed to detect endometrial polyps in women with postmenopausal bleeding and if detection of a polyp on hysteroscopy or diagnosis on histopathology was used as a reference standard. Two reviewers assessed methodological quality using the quality assessment of diagnostic accuracy studies (QUADAS-2) tool. Two separate analyses were performed for each reference standard. Pooled sensitivity and specificity were calculated using the hierarchical summary receiver-operating characteristics (HSROC) model and HSROC curves were plotted.<br><br>RESULTS: After selection and quality assessment, five studies were included. Using &#x27;polyps diagnosed with histopathology&#x27; as the reference standard, the pooled sensitivity of SCSH was 86.5% (95% CI, 63.6-100%) and the pooled specificity was 91.1% (95% CI, 63.2-100%). Using &#x27;polyps seen on hysteroscopy&#x27; as the reference standard, the pooled sensitivity of SCSH was 85.1% (95% CI, 66.9-100%) and the pooled specificity was 84.5% (95% CI, 68.1-100%). Excluding the one study that included women in whom the SCSH examination was reported to be suboptimal, the pooled sensitivity increased to 90.7% (95% CI, 72.8-100%) using hysteroscopy as the reference standard. The sensitivity of hysteroscopy to detect polyps, as reported in two studies, was 81-98%.<br><br>CONCLUSIONS: Provided that the SCSH examination is of optimal quality, it can be considered as a method to stratify women with postmenopausal bleeding for further diagnostic workup and treatment with hysteroscopy. In women without suspicion of a polypoid lesion on SCSH, and with a benign endometrial sample, expectant management should be considered. Copyright © 2019 ISUOG. Published by John Wiley &amp; Sons Ltd.</div></details>
+</li>
+<li id="ref-30">
+<div class="ref-label"><strong>Clarke et al., Association of Endometrial Cancer Risk With Postmenopausal Bleeding in Women: A Systematic Review and Meta-analysis, <em>JAMA Intern Med</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30083701/" target="_blank" rel="noopener">30083701</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">IMPORTANCE: As the worldwide burden of endometrial cancer continues to rise, interest is growing in the evaluation of early detection and prevention strategies among women at increased risk. Focusing efforts on women with postmenopausal bleeding (PMB), a common symptom of endometrial cancer, may be a useful strategy; however, PMB is not specific for endometrial cancer and is often caused by benign conditions.<br><br>OBJECTIVE: To provide a reference of the prevalence of PMB in endometrial cancers and the risk of endometrial cancer in women with PMB.<br><br>DATA SOURCES: For this systematic review and meta-analysis, PubMed and Embase were searched for English-language studies published January 1, 1977, through January 31, 2017.<br><br>STUDY SELECTION: Observational studies reporting the prevalence of PMB in women with endometrial cancer and the risk of endometrial cancer in women with PMB in unselected populations were selected.<br><br>DATA EXTRACTION AND SYNTHESIS: Two independent reviewers evaluated study quality and risk of bias using items from the Newcastle-Ottawa Quality Assessment Scale and the Quality Assessment of Diagnostic Accuracy Studies tool. Studies that included highly selected populations, lacked detailed inclusion criteria, and/or included 25 or fewer women were excluded.<br><br>MAIN OUTCOMES AND MEASURES: The pooled prevalence of PMB in women with endometrial cancer and the risk of endometrial cancer in women with PMB.<br><br>RESULTS: A total of 129 unique studies, including 34 432 unique patients with PMB and 6358 with endometrial cancer (40 790 women), were analyzed. The pooled prevalence of PMB among women with endometrial cancer was 91% (95% CI, 87%-93%), irrespective of tumor stage. The pooled risk of endometrial cancer among women with PMB was 9% (95% CI, 8%-11%), with estimates varying by use of hormone therapy (range, 7% [95% CI, 6%-9%] to 12% [95% CI, 9%-15%]; P &lt; .001 for heterogeneity) and geographic region (range, 5% [95% CI, 3%-11%] in North America to 13% [95% CI, 9%-19%] in Western Europe; P = .09 for heterogeneity).<br><br>CONCLUSIONS AND RELEVANCE: Early detection strategies focused on women with PMB have the potential to capture as many as 90% of endometrial cancers; however, most women with PMB will not be diagnosed with endometrial cancer. These results can aid in the assessment of the potential clinical value of new early detection markers and clinical management strategies for endometrial cancer and will help to inform clinical and epidemiologic risk prediction models to support decision making.</div></details>
+</li>
+<li id="ref-31">
+<div class="ref-label"><strong>Kohn et al., Pregnancy after endometrial ablation: a systematic review, <em>BJOG</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28952185/" target="_blank" rel="noopener">28952185</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Pregnancies have been reported after endometrial ablation but there is little data regarding subsequent pregnancy outcomes.<br><br>OBJECTIVE: To review systematically the available evidence regarding pregnancy outcomes after endometrial ablation, in order to equip physicians effectively to counsel women considering endometrial ablation.<br><br>SEARCH STRATEGY: MEDLINE, Embase, Cochrane, and ClinicalTrials.gov were searched through January 2017.<br><br>SELECTION CRITERIA: Published and unpublished literature in any language describing pregnancy after endometrial ablation or resection was eligible.<br><br>DATA COLLECTION AND ANALYSIS: Data about preconception characteristics and pregnancy outcomes were extracted and analysed according to study design of source and pregnancy viability.<br><br>MAIN RESULTS: We identified 274 pregnancies from 99 sources; 78 sources were case reports. Women aged 26-50 years (mean 37.5 ± 5 years) conceived a median of 1.5 years after ablation (range: 3 weeks prior to 13 years after). When reported, 80-90% had not used contraception. In all, 85% of pregnancies from trial/observational studies ended in termination, miscarriage or ectopic pregnancy. Pregnancies that continued (case report and non-case report sources) had high rates of preterm delivery, caesarean delivery, caesarean hysterectomy, and morbidly adherent placenta. Case reports also frequently described preterm premature rupture of membranes, intrauterine growth restriction, intrauterine fetal demise, uterine rupture, and neonatal demise.<br><br>CONCLUSIONS: An unexpectedly high rate of pregnancy complications is reported in the available literature (which may reflect publication bias) and high-quality evidence is lacking. However, based on the existing evidence, women undergoing endometrial ablation should be informed that subsequent pregnancy may have serious complications and should be counselled to use reliable contraception after the procedure.<br><br>TWEETABLE ABSTRACT: Systematic review - pregnancies reported after endometrial ablation have an increased risk of adverse outcomes.</div></details>
+</li>
+<li id="ref-32">
+<div class="ref-label"><strong>Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, <em>J Minim Invasive Gynecol</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28739414/" target="_blank" rel="noopener">28739414</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The traditional treatment for women with symptomatic adenomyosis is hysterectomy. However, reproductive-aged women should be managed with less invasive treatments including medical treatment. For patients who are refractory or unsuitable to long-term medical treatment or those with focal adenomyoma, conservative surgeries could be offered. The objective of our study was to review available conservative surgeries for the treatment of adenomyosis, their complications, and the rates of success and recurrence. In this systematic review we evaluated 27 studies; 10 prospective and 17 retrospective studies including a total of 1398 patients. The results showed that excision of adenomyosis is effective for symptom control such as menorrhagia and dysmenorrhea and most probably for adenomyosis-related infertility. For preserving fertility and relieving symptoms, medical treatment is usually the first choice, whereas excisional surgery could be performed for refractory adenomyosis. The results show that over three-fourths of women will experience symptom relief after conservative surgery. The pregnancy rates after conservative surgical treatment vary widely. However, three-fourths of them conceived after surgery with or without adjuvant medical treatment. Depending on the duration of follow-up, recurrence rates differ from no recurrence to almost one-half of patients. Conservative surgery for adenomyosis improves pelvic pain, abnormal uterine bleeding, and possibly fertility. The best method of surgery is yet to be seen.</div></details>
+</li>
+<li id="ref-33">
+<div class="ref-label"><strong>Frost et al., Lymphadenectomy for the management of endometrial cancer, <em>Cochrane Database Syst Rev</em> 2017</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28968482/" target="_blank" rel="noopener">28968482</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: This is an update of a previous Cochrane review published in Issue 1, 2010 and updated in Issue 9, 2015. The role of lymphadenectomy in surgical management of endometrial cancer remains controversial. Lymph node metastases can be found in approximately 10% of women who before surgery are thought to have cancer confined to the womb. Removal of all pelvic and para-aortic lymph nodes (lymphadenectomy) at initial surgery has been widely advocated, and pelvic and para-aortic lymphadenectomy remains part of the FIGO (International Federation of Gynaecology and Obstetrics) staging system for endometrial cancer. This recommendation is based on data from studies that suggested improvement in survival following pelvic and para-aortic lymphadenectomy. However, these studies were not randomised controlled trials (RCTs), and treatment of pelvic lymph nodes may not confer a direct therapeutic benefit, other than allocating women to poorer prognosis groups. Furthermore, the Cochrane review and meta-analysis of RCTs of routine adjuvant radiotherapy to treat possible lymph node metastases in women with early-stage endometrial cancer found no survival advantage. Surgical removal of pelvic and para-aortic lymph nodes has serious potential short-term and long-term sequelae. Therefore, it is important to investigate the clinical value of this treatment.<br><br>OBJECTIVES: To evaluate the effectiveness and safety of lymphadenectomy for the management of endometrial cancer.<br><br>SEARCH METHODS: We searched the Cochrane Central Register of Controlled Trials (CENTRAL), MEDLINE and Embase to June 2009 for the original review, updated the search to June 2015 for the last updated version and further extended the search to March 2017 for this version of the review. We also searched registers of clinical trials, abstracts of scientific meetings, and reference lists of included studies, and we contacted experts in the field.<br><br>SELECTION CRITERIA: RCTs and quasi-RCTs that compared lymphadenectomy versus no lymphadenectomy in adult women diagnosed with endometrial cancer.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently extracted data and assessed risk of bias. Hazard ratios (HRs) for overall and progression-free survival and risk ratios (RRs) comparing adverse events in women who received lymphadenectomy versus those with no lymphadenectomy were pooled in random-effects meta-analyses. We assessed the quality of the evidence using the GRADE (Grades of Recommendation, Assessment, Development and Evaluation) approach.<br><br>MAIN RESULTS: 978 unique references were identified via the search strategy. All but 50 were excluded by title and abstract screening. Three RCTs met the inclusion criteria; for one small RCT, data were insufficient for inclusion in the meta-analysis. The two RCTs included in the analysis randomly assigned 1945 women, reported HRs for survival adjusted for prognostic factors and based on 1851 women and had an overall low risk of bias, as they satisfied four of the assessment criteria. The third study had an overall unclear risk of bias, as information provided was not adequate concerning random sequence generation, allocation concealment, blinding, or completeness of outcome reporting.Results of the meta-analysis remained unchanged from the previous versions of this review and indicated no differences in overall and recurrence-free survival between women who underwent lymphadenectomy and those who did not undergo lymphadenectomy (pooled hazard ratio (HR) 1.07, 95% confidence interval (CI) 0.81 to 1.43; HR 1.23, 95% CI 0.96 to 1.58 for overall and recurrence-free survival, respectively) (1851 participants, two studies; moderate-quality evidence).We found no difference in risk of direct surgical morbidity between women who underwent lymphadenectomy and those who did not undergo lymphadenectomy. However, women who underwent lymphadenectomy had a significantly higher risk of surgery-related systemic morbidity and lymphoedema/lymphocyst formation than those who did not undergo lymphadenectomy (RR 3.72, 95% CI 1.04 to 13.27; RR 8.39, 95% CI 4.06 to 17.33 for risk of surgery-related systemic morbidity and lymphoedema/lymphocyst formation, respectively) (1922 participants, two studies; high-quality evidence).<br><br>AUTHORS&#x27; CONCLUSIONS: This review found no evidence that lymphadenectomy decreases risk of death or disease recurrence compared with no lymphadenectomy in women with presumed stage I disease. Evidence on serious adverse events suggests that women who undergo lymphadenectomy are more likely to experience surgery-related systemic morbidity or lymphoedema/lymphocyst formation. Currently, no RCT evidence shows the impact of lymphadenectomy in women with higher-stage disease and in those at high risk of disease recurrence.</div></details>
+</li>
+<li id="ref-34">
+<div class="ref-label"><strong>van Hanegem et al., The accuracy of endometrial sampling in women with postmenopausal bleeding: a systematic review and meta-analysis, <em>Eur J Obstet Gynecol Reprod Biol</em> 2016</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26748390/" target="_blank" rel="noopener">26748390</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Postmenopausal bleeding (PMB) can be the first sign of endometrial cancer. In case of thickened endometrium, endometrial sampling is often used in these women. In this systematic review, we studied the accuracy of endometrial sampling for the diagnoses of endometrial cancer, atypical hyperplasia and endometrial disease (endometrial pathology, including benign polyps). We systematically searched the literature for studies comparing the results of endometrial sampling in women with postmenopausal bleeding with two different reference standards: blind dilatation and curettage (D&amp;C) and hysteroscopy with histology. We assessed the quality of the detected studies by the QUADAS-2 tool. For each included study, we calculated the fraction of women in whom endometrial sampling failed. Furthermore, we extracted numbers of cases of endometrial cancer, atypical hyperplasia and endometrial disease that were identified or missed by endometrial sampling. We detected 12 studies reporting on 1029 women with postmenopausal bleeding: five studies with dilatation and curettage (D&amp;C) and seven studies with hysteroscopy as a reference test. The weighted sensitivity of endometrial sampling with D&amp;C as a reference for the diagnosis of endometrial cancer was 100% (range 100-100%) and 92% (71-100) for the diagnosis of atypical hyperplasia. Only one study reported sensitivity for endometrial disease, which was 76%. When hysteroscopy was used as a reference, weighted sensitivities of endometrial sampling were 90% (range 50-100), 82% (range 56-94) and 39% (21-69) for the diagnosis of endometrial cancer, atypical hyperplasia and endometrial disease, respectively. For all diagnosis studied and the reference test used, specificity was 98-100%. The weighted failure rate of endometrial sampling was 11% (range 1-53%), while insufficient samples were found in 31% (range 7-76%). In these women with insufficient or failed samples, an endometrial (pre) cancer was found in 7% (range 0-18%). In women with postmenopausal bleeding, the sensitivity of endometrial sampling to detect endometrial cancer and especially atypical hyperplasia and endometrial disease, including endometrial polyps, is lower than previously thought. Therefore, further diagnostic work-up for focal pathology is warranted, after a benign result of endometrial sampling.</div></details>
+</li>
+<li id="ref-35">
+<div class="ref-label"><strong>Frost et al., Lymphadenectomy for the management of endometrial cancer, <em>Cochrane Database Syst Rev</em> 2015</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26387863/" target="_blank" rel="noopener">26387863</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: This is an update of a previous Cochrane review published in Issue 1, 2010. The role of lymphadenectomy in surgical management of endometrial cancer remains controversial. Lymph node metastases can be found in approximately 10% of women who clinically before surgery have cancer confined to the womb. Removal of all pelvic and para-aortic lymph nodes (lymphadenectomy) at initial surgery has been widely advocated, and pelvic and para-aortic lymphadenectomy remains part of the FIGO (International Federation of Gynaecology and Obstetrics) staging system for endometrial cancer. This recommendation is based on data from studies that suggested improvement in survival following pelvic and para-aortic lymphadenectomy. However, these studies were not randomised controlled trials (RCTs), and treatment of pelvic lymph nodes may not confer a direct therapeutic benefit, other than allocating women to poorer prognosis groups. Furthermore, the Cochrane review and meta-analysis of RCTs of routine adjuvant radiotherapy to treat possible lymph node metastases in women with early-stage endometrial cancer found no survival advantage. Surgical removal of pelvic and para-aortic lymph nodes has serious potential short-term and long-term sequelae. Therefore it is important to investigate the clinical value of this treatment.<br><br>OBJECTIVES: To evaluate the effectiveness and safety of lymphadenectomy for the management of endometrial cancer.<br><br>SEARCH METHODS: We searched the Cochrane Central Register of Controlled Trials (CENTRAL), the Cochrane Gynaecological Cancer Review Group Trials Register, MEDLINE and EMBASE to June 2009 for the original review and extended the search to June 2015 for this version of the review. We also searched registers of clinical trials, abstracts of scientific meetings and reference lists of included studies, and we contacted experts in the field.<br><br>SELECTION CRITERIA: RCTs and quasi-RCTs that compared lymphadenectomy versus no lymphadenectomy in adult women diagnosed with endometrial cancer.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently extracted data and assessed risk of bias. Hazard ratios (HRs) for overall and progression-free survival and risk ratios (RRs) comparing adverse events in women who received lymphadenectomy versus those with no lymphadenectomy were pooled in random-effects meta-analyses. We assessed the quality of the evidence using the GRADE (Grades of Recommendation, Assessment, Development and Evaluation) approach.<br><br>MAIN RESULTS: Three RCTs met the inclusion criteria; for one small RCT, data were insufficient for inclusion in the meta-analysis. The two RCTs included in the analysis randomly assigned 1945 women, reported HRs for survival adjusted for prognostic factors and based on 1851 women and had an overall low risk of bias, as they satisfied four of the assessment criteria. The third study had an overall unclear risk of bias, as information provided was not adequate concerning random sequence generation, allocation concealment, blinding or completeness of outcome reporting.Results of the meta-analysis remain unchanged from the previous version of this review and indicate no differences in overall and recurrence-free survival between women who underwent lymphadenectomy and those who did not undergo lymphadenectomy (pooled HR 1.07, 95% CI 0.81 to 1.43; HR 1.23, 95% CI 0.96 to 1.58 for overall and recurrence-free survival, respectively) (1851 participants, two studies; moderate-quality evidence).We found no difference in risk of direct surgical morbidity between women who underwent lymphadenectomy and those who did not undergo lymphadenectomy. However, women who underwent lymphadenectomy had a significantly higher risk of surgery-related systemic morbidity and lymphoedema/lymphocyst formation than those who did not undergo lymphadenectomy (RR 3.72, 95% CI 1.04 to 13.27; RR 8.39, 95% CI 4.06 to 17.33 for risk of surgery-related systemic morbidity and lymphoedema/lymphocyst formation, respectively) (1922 participants, two studies; high-quality evidence).<br><br>AUTHORS&#x27; CONCLUSIONS: This review found no evidence that lymphadenectomy decreases risk of death or disease recurrence compared with no lymphadenectomy in women with presumed stage I disease. Evidence on serious adverse events suggests that women who undergo lymphadenectomy are more likely to experience surgery-related systemic morbidity or lymphoedema/lymphocyst formation. Currently, no RCT evidence shows the impact of lymphadenectomy in women with higher-stage disease and in those at high risk of disease recurrence.</div></details>
+</li>
+<li id="ref-36">
+<div class="ref-label"><strong>Farquhar et al., A systematic review of transvaginal ultrasonography, sonohysterography and hysteroscopy for the investigation of abnormal uterine bleeding in premenopausal women, <em>Acta Obstet Gynecol Scand</em> 2003</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/12780419/" target="_blank" rel="noopener">12780419</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: To determine the accuracy of transvaginal ultrasonography, sonohysterography and diagnostic hysteroscopy for the investigation of abnormal uterine bleeding in premenopausal women.<br><br>DESIGN: Systematic review of common diagnostic imaging tests.<br><br>DATA SOURCES: Relevant papers were identified through electronic searching of MEDLINE (1980 to July 2001) and EMBASE (1980 to July 2001) and manual searching of a bibliography of primary and review articles.<br><br>REVIEW METHODS: Studies were selected if accuracy of transvaginal ultrasonography, sonohysterography and diagnostic hysteroscopy was compared with a reference standard and included data that could be abstracted into a two-by-two table in order to calculate sensitivity and specificity. Quality assessment and data extraction were performed by at least two independent reviewers. Diagnostic accuracy was determined by calculating positive and negative likelihood ratios for all intrauterine pathologies, submucous fibroids and endometrial hyperplasia.<br><br>RESULTS: Nineteen studies met the inclusion criteria. Statistically significant heterogeneity was present between the likelihood ratios for studies of transvaginal ultrasound. A positive test result with sonohysterography diagnosed submucous fibroids with a pooled likelihood ratio of 29.7 (17.8, 49.6). A positive test result with hysteroscopy diagnosed submucous fibroids with a pooled likelihood ratio of 29.4 (13.4, 65.3), and any intrauterine pathology with a pooled likelihood ratio of 7.7 (4.3, 13.7). A negative test result with hysteroscopy for diagnosing any intrauterine pathology had a pooled likelihood ratio of 0.07 (0.04, 0.15).<br><br>CONCLUSION: Although there was considerable variability present between the studies, all three diagnostic tests were moderately accurate in detecting intrauterine pathology. However, sonohysterography and hysteroscopy performed better than transvaginal ultrasound in detecting submucous fibroids.</div></details>
+</li>
+<li id="ref-37">
+<div class="ref-label"><strong>de Kroon et al., Saline contrast hysterosonography in abnormal uterine bleeding: a systematic review and meta-analysis, <em>BJOG</em> 2003</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/14550365/" target="_blank" rel="noopener">14550365</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To assess the diagnostic accuracy of saline contrast hysterosonography in the evaluation of the uterine cavity in women complaining of abnormal uterine bleeding.<br><br>DESIGN: A systematic review and meta-analysis of diagnostic studies that compared saline contrast hysterosonography to a gold standard diagnosis based on either hysteroscopy with or without histological sampling or to hysterectomy.<br><br>SETTING: University Hospital.<br><br>SAMPLE: Twenty-four studies (including 2278 procedures).<br><br>METHODS: Electronic databases were searched for relevant studies and references were cross checked. Validity was assessed and data were extracted independently by two authors. Heterogeneity was calculated, studies were plotted in an ROC area and data were pooled. Subgroup analysis was performed according to the validity area.<br><br>MAIN OUTCOME MEASURES: The success rate of saline contrast hysterosonography. The pooled sensitivity, specificity, likelihood ratio&#x27;s and post-test probabilities of saline contrast hysterosonography on the prediction of uterine cavity abnormality.<br><br>RESULTS: The largest population of homogeneous data were the studies with complete verification. In these studies, the pooled sensitivity and pooled specificity of saline contrast hysterosonography in uterine cavity evaluation were respectively 0.95 (95% CI 0.93 to 0.97) and 0.88 (95% CI 0.85 to 0.92), the likelihood ratios were respectively 8.23 (95% CI 6.2 to 11) and 0.06 (95% CI 0.04 to 0.09) and the post-test probabilities were respectively 0.91 (95% CI 0.89 to 0.94) and 0.07 (95% CI 0.04 to 0.10). The overall success rate of saline contrast hysterosonography was 93% (95% CI 92% to 94%). The feasibility of saline contrast hysterosonography in postmenopausal women (success rate 86.5%, 95% CI 83.2 to 89.8) is significantly lower (P &lt; 0.01) compared with premenopausal women (success rate 95%, 95% CI 94% to 96%).<br><br>CONCLUSION: Saline contrast hysterosonography is accurate in the evaluation of the uterine cavity in pre- and postmenopausal women suffering from abnormal uterine bleeding. The feasibility of saline contrast hysterosonography is high, although significantly better in premenopausal women compared with postmenopausal women. We conclude that saline contrast hysterosonography, in combination with an endometrium aspiration if necessary, can become the standard diagnostic procedure in women with abnormal uterine bleeding.</div></details>
+</li>
+<li id="ref-38">
+<div class="ref-label"><strong>Fender et al., Randomised controlled trial of educational package on management of menorrhagia in primary care: the Anglia menorrhagia education study, <em>BMJ</em> 1999</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/10231255/" target="_blank" rel="noopener">10231255</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To determine whether an educational package could influence the management of menorrhagia, increase the appropriateness of choice of non-hormonal treatment, and reduce referral rates from primary to secondary care.<br><br>DESIGN: Randomised controlled trial.<br><br>SETTING: General practices in East Anglia.<br><br>SUBJECTS: 100 practices (348 doctors) in primary care were recruited and randomised to intervention (54) and control (46).<br><br>INTERVENTIONS: An educational package based on principles of &quot;academic detailing&quot; with independent academics was given in small practice based interactive groups with a visual presentation, a printed evidence based summary, a graphic management flow chart, and a follow up meeting at 6 months.<br><br>OUTCOME MEASURES: All practices recorded consultation details, treatments offered, and outcomes for women with regular heavy menstrual loss (menorrhagia) over 1 year.<br><br>RESULTS: 1001 consultation data sheets for menorrhagia were returned. There were significantly fewer referrals (20% v 29%; odds ratio 0. 64; 95% confidence interval 0.41 to 0.99) and a significantly higher use of tranexamic acid (odds ratio 2.38; 1.61 to 3.49) in the intervention group but no overall difference in norethisterone treatment compared with controls. There were more referrals when tranexamic acid was given with norethisterone than when it was given alone. Those practices reporting fewer than 10 cases showed the highest increase in prescribing of tranexamic acid.<br><br>CONCLUSIONS: The educational package positively influenced referral for menorrhagia and treatment with appropriate non-hormonal drugs.</div></details>
+</li>
+</ol>
+</section>
+
+</div>
+
+<div id="modal-root" class="modal-root" aria-hidden="true">
+<div class="modal-backdrop" data-close></div>
+<article class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal-close" data-close aria-label="Close">&times;</button>
+<h2 id="modal-title" class="modal-title"></h2>
+<div id="modal-body" class="modal-body"></div>
+</article>
+</div>
+<template id="tpl-what-is-aub" data-title="What counts as abnormal uterine bleeding?">
+        <p>The five patterns above all fall under the AUB umbrella, but they get different evaluations and different treatments because they usually point to different causes.</p>
+        <p><strong>Heavy menstrual bleeding</strong> (HMB) is the most common &mdash; affecting <strong>10&ndash;30%</strong> of reproductive-age women at some point<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>. The threshold is &gt;80&nbsp;mL/cycle, which in real terms means soaking through pads every 1&ndash;2 hours, passing clots larger than a quarter, flooding through to bedding overnight, or missing work or school for bleeding. HMB causes iron-deficiency anemia, fatigue, and a real hit to quality of life &mdash; it&rsquo;s not just a nuisance.</p>
+        <p><strong>Intermenstrual bleeding</strong> is bleeding outside the expected cycle window. Added to the formal AUB definition in 2018<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Munro et al., The two FIGO systems for normal and abnormal uterine bleeding sympt..., Int J Gynaecol Obstet 2018 &middot; PMID 30198563</span></sup><!-- §0.8 anchor: kb_doc_id=a5c88593-bba4-4373-bdce-059ea41ef1a4; field=keyPoints; idx=2 -->, it points to focal pathology &mdash; endometrial polyp, submucosal fibroid, cervical lesion &mdash; that&rsquo;s usually easy to identify and easy to fix.</p>
+        <p><strong>Postcoital bleeding</strong> (after intercourse) goes straight to the cervix &mdash; polyp, ectropion, cervicitis, dysplasia, or rarely cervical cancer. Speculum exam + Pap if not already current + biopsy of any visible lesion.</p>
+        <p><strong>Postmenopausal bleeding</strong> is its own category &mdash; any bleeding after 12 months of amenorrhea in a menopausal patient. The cardinal sign of endometrial cancer<!-- §0.8 anchor: kb_doc_id=5e222d3a-ea80-4fcf-be5d-e2285aca28c5; field=keyPoints; idx=9 -->, so even a single drop on a single day gets a full workup. Most PMB is benign (endometrial atrophy, polyp), but the workup is non-negotiable.</p>
+        <p><strong>Acute heavy bleeding</strong> is bleeding heavy enough to make you hemodynamically unstable or severely anemic &mdash; ER-level concern. The pathway is different: stabilize first (IV fluids, transfusion if needed, possibly intrauterine tamponade), then high-dose hormonal management to stop the bleeding, then standard workup once stable<!-- §0.8 anchor: kb_doc_id=5c2b0636-5d45-4f17-9f29-5f1226d16286; field=keyPoints; idx=8 -->.</p>
+    </template>
+<template id="tpl-palm-coein-deep" data-title="PALM-COEIN — the 8 causes we look for">
+        <p>The PALM&ndash;COEIN framework<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Munro et al., FIGO classification system (PALM-COEIN) for causes of abnormal uter..., Int J Gynaecol Obstet 2011 &middot; PMID 21345435</span></sup><!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=1 --> is the global standard for classifying causes of AUB because it ties terminology directly to treatment.</p>
+        <h3 style="font-size:18px; margin: 18px 0 8px;">PALM &mdash; structural causes</h3>
+        <p><strong>Polyps.</strong> Focal overgrowth of endometrial or endocervical tissue. Most are benign (&lt;1% become malignant), but they cause classic intermenstrual or postmenopausal bleeding. Diagnosis: SIS or hysteroscopy. Treatment: hysteroscopic polypectomy.</p>
+        <p><strong>Adenomyosis.</strong> Endometrial glands embedded within the muscle wall of the uterus. Causes heavy painful periods, a globally enlarged tender uterus on exam, and characteristic findings on transvaginal ultrasound or MRI. Treatment: LNG-IUD for many, GnRH antagonist for hormonal suppression, hysterectomy for definitive management.</p>
+        <p><strong>Leiomyoma (fibroid).</strong> Benign smooth-muscle tumors. The FIGO sub-classification matters for treatment: <strong>submucosal</strong> (types 0&ndash;2) bleed the most for their size and are removable hysteroscopically; <strong>intramural</strong> (types 3&ndash;4) cause bulk symptoms and contribute to bleeding; <strong>subserosal</strong> (types 5&ndash;7) usually cause pressure but little bleeding.</p>
+        <p><strong>Malignancy &amp; hyperplasia.</strong> Endometrial intraepithelial neoplasia (EIN, the precursor), endometrial cancer, cervical cancer. Most likely in women aged 45+, after menopause, or with risk factors (chronic anovulation, obesity, Lynch syndrome, tamoxifen). Endometrial biopsy is the workhorse.</p>
+        <h3 style="font-size:18px; margin: 18px 0 8px;">COEIN &mdash; non-structural causes</h3>
+        <p><strong>Coagulopathy.</strong> Up to <strong>20%</strong> of women with HMB have an underlying bleeding disorder<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=4 --> &mdash; most commonly von Willebrand disease. Screen with bleeding history (epistaxis, easy bruising, postpartum hemorrhage, family history), then send von Willebrand panel + PT/PTT/platelets.</p>
+        <p><strong>Ovulatory dysfunction.</strong> The single most common COEIN cause. Bleeding is unpredictable in timing, varies in volume, and lacks the premenstrual symptoms (mastodynia, cramping, mood changes) of an ovulatory cycle. Common at the extremes of reproductive life (adolescence and perimenopause)<!-- §0.8 anchor: kb_doc_id=a5c88593-bba4-4373-bdce-059ea41ef1a4; field=keyPoints; idx=2 --> and in PCOS, thyroid disease, and hyperprolactinemia.</p>
+        <p><strong>Endometrial.</strong> Primary endometrial-hemostasis problem &mdash; a diagnosis of exclusion. Treatment: tranexamic acid, NSAIDs, hormonal regulation.</p>
+        <p><strong>Iatrogenic.</strong> Bleeding caused by the patient&rsquo;s own medications &mdash; missed birth control pills, copper IUD, anticoagulants, antiplatelet agents, antipsychotics. Sometimes the fix is to adjust the regimen rather than add new therapy.</p>
+        <p><strong>Not otherwise classified.</strong> Rare structural causes that don&rsquo;t fit the above &mdash; uterine arteriovenous malformations, cesarean-scar pregnancies, isthmocele. Specialist workup.</p>
+    </template>
+<template id="tpl-workup-deep" data-title="The AUB workup, step by step">
+        <p>The workup follows a deliberate sequence so it&rsquo;s efficient: every step adds information that changes the next step.</p>
+        <p><strong>1. History &amp; pattern recognition.</strong> Most of the diagnosis is in the history. Cyclic heavy bleeding suggests structural (fibroid, adenomyosis) or coagulopathy. Irregular unpredictable bleeding suggests ovulatory dysfunction. Intermenstrual bleeding suggests focal cavity pathology (polyp). Postcoital bleeding directs attention to the cervix. Postmenopausal bleeding has its own pathway.</p>
+        <p><strong>2. Exam.</strong> Speculum exam visualizes the cervix and vaginal walls &mdash; many AUB causes are visible (polyp protruding from the os, cervical ectropion, prolapsing submucosal fibroid). Bimanual exam assesses uterine size (a 14-week-sized uterus on bimanual usually has fibroids), tenderness (adenomyosis), and adnexal pathology.</p>
+        <p><strong>3. Labs.</strong> Pregnancy test in every reproductive-age woman regardless of contraception history<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Narice et al., Endometrial sampling in low-risk patients with abnormal uterine ble..., BMC Fam Pract 2018 &middot; PMID 30060741</span></sup><!-- §0.8 anchor: kb_doc_id=cfcb9ca7-3cde-44fd-a007-8205485689f3; field=keyPoints; idx=3 -->. CBC for anemia (and to track response to therapy). TSH and prolactin for ovulatory dysfunction. Coagulopathy screen if the history suggests it<!-- §0.8 anchor: kb_doc_id=E9408BD4-EA09-4453-A97B-16BA7E4C5169; field=keyPoints; idx=4 -->: von Willebrand panel (VWF antigen, VWF activity, factor VIII), PT/PTT, platelet count, and consider a platelet function assay.</p>
+        <p><strong>4. Transvaginal ultrasound.</strong> The first-line imaging study &mdash; fast, cheap, no radiation, identifies most structural causes (fibroids, polyps, adenomyosis, endometrial thickness, adnexal masses). Best timed in the early follicular phase (days 4&ndash;6) when the endometrium is thinnest.</p>
+        <p><strong>5. Saline infusion sonohysterography.</strong> When TVUS suggests a focal finding (thickened endometrium, suspected polyp, suspected submucosal fibroid), SIS distends the cavity with saline so focal lesions stand out<!-- §0.8 anchor: kb_doc_id=D99A9BD9-4E1A-43C8-8788-E1F728695552; field=keyPoints; idx=7 -->. More sensitive than TVUS alone and avoids the upfront cost of operative hysteroscopy.</p>
+        <p><strong>6. Endometrial biopsy.</strong> Required in every woman aged 45+ with AUB; required in younger women with risk factors for hyperplasia (chronic anovulation, obesity, Lynch syndrome, tamoxifen); required in every postmenopausal bleeding episode. Done in the office with a Pipelle, takes 60 seconds, mild cramping.</p>
+        <p><strong>7. Hysteroscopy.</strong> The gold standard. Diagnostic hysteroscopy directly visualizes the cavity and can be combined with operative removal of polyps, submucosal fibroids, and synechiae in the same setting.</p>
+    </template>
+<template id="tpl-treatment-medical" data-title="First-line medical treatment options">
+        <p>Medical management is first-line when structural causes are excluded or when the structural cause is small enough that medical suppression makes more sense than surgery.</p>
+        <p><strong>NSAIDs.</strong> Naproxen 500&nbsp;mg twice daily or ibuprofen 600&ndash;800&nbsp;mg three times daily, started the day before menses and continued for the heaviest 2&ndash;3 days. Reduces blood loss by 20&ndash;40% and helps cramping. Best for women who only need help on the heaviest days.</p>
+        <p><strong>Tranexamic acid.</strong> An antifibrinolytic taken during the bleeding days only &mdash; 1300&nbsp;mg three times daily for up to 5 days. Reduces blood loss by ~40%<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Matteson et al., Nonsurgical management of heavy menstrual bleeding: a systematic re..., Obstet Gynecol 2013 &middot; PMID 23635628</span></sup> without hormones, without affecting cycle pattern or ovulation. Excellent for women who can&rsquo;t or don&rsquo;t want hormones, or who have predictable heavy days. Caution in women at high baseline thrombosis risk.</p>
+        <p><strong>Combined hormonal contraceptives.</strong> Pills, patch, or ring. Reduces blood loss 40&ndash;50% and regulates cycle<!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=6 -->. Continuous use (skipping placebo week) eliminates withdrawal bleeding entirely. Contraindicated in smokers over 35, migraine with aura, uncontrolled hypertension, or high VTE risk.</p>
+        <p><strong>Oral progestins.</strong> Norethindrone or medroxyprogesterone given continuously suppresses the endometrium and reduces blood loss. Often used as a bridge while waiting for an LNG-IUD insertion, or in women who can&rsquo;t take estrogen.</p>
+        <p><strong>Levonorgestrel IUD (LNG-IUD).</strong> The most effective medical therapy for HMB &mdash; reduces blood loss by 71&ndash;95% and many women become amenorrheic by 6&ndash;12 months<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup><!-- §0.8 anchor: kb_doc_id=035c5492-a2da-458b-9f88-630f69b3af23; field=keyPoints; idx=5 -->. Lasts 5&ndash;8 years depending on the device. Avoids the daily-pill compliance issue. Equivalent to endometrial ablation at 1 year for satisfaction without the procedural risk.</p>
+        <p><strong>GnRH agonists or antagonists.</strong> Reserved for severe HMB (often with large fibroids or adenomyosis) when first-line options have failed or as a 3&ndash;6 month bridge to surgery. Add-back therapy reduces hot flash and bone-density concerns.</p>
+    </template>
+<template id="tpl-treatment-procedural" data-title="When a procedure is the right answer">
+        <p>When medical therapy isn&rsquo;t enough, or when the cause is focal (a polyp, a submucosal fibroid), the right answer is often a brief outpatient procedure.</p>
+        <p><strong>Hysteroscopic polypectomy.</strong> Outpatient, 20 minutes, no incisions. The hysteroscope enters through the cervix, the polyp is identified and removed with a tissue-cutting handpiece, the cavity is verified clear. Recovery is hours, not days. For an intermenstrual-bleeding patient with a confirmed endometrial polyp, this is often the entire treatment.</p>
+        <p><strong>Hysteroscopic myomectomy.</strong> Same approach for submucosal fibroids (FIGO type 0&ndash;2). Type 0 fibroids (entirely inside the cavity) are usually one-procedure cures. Type 2 fibroids (mostly in the wall, slightly into the cavity) may need staged procedures depending on size<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">van Dongen et al., Diagnostic hysteroscopy in abnormal uterine bleeding: a systematic ..., BJOG 2007 &middot; PMID 17516956</span></sup>.</p>
+        <p><strong>Endometrial ablation.</strong> A 10-minute outpatient procedure that destroys the endometrial lining using radiofrequency, thermal balloon, or cryothermy. <strong>Cochrane data show high satisfaction with lower morbidity than hysterectomy at 1 year</strong><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Middleton et al., Hysterectomy, endometrial destruction, and levonorgestrel releasing..., BMJ 2010 &middot; PMID 20713583</span></sup>, with re-intervention rates of 19&ndash;38% over 5 years. Best for women who have completed childbearing (future pregnancy is contraindicated and unsafe) and whose bleeding is ovulatory or hormonally refractory.</p>
+        <p><strong>Laparoscopic myomectomy.</strong> For larger intramural or subserosal fibroids causing bleeding and bulk symptoms in a woman who wants to preserve her uterus or fertility. Outpatient or one-night stay, 4&ndash;6 week recovery.</p>
+        <p><strong>Uterine artery embolization (UAE).</strong> Interventional-radiology alternative to surgery for symptomatic fibroids in select patients. Reduces fibroid volume by 40&ndash;60% over 6&ndash;12 months. Not ideal for women planning future pregnancy.</p>
+        <p><strong>Hysterectomy.</strong> Definitive treatment, reserved for cases where uterine preservation isn&rsquo;t the goal, conservative options have failed, or pathology requires it (confirmed cancer or large symptomatic fibroids that aren&rsquo;t amenable to less-invasive removal). When indicated, the approach is laparoscopic or vaginal whenever feasible &mdash; faster recovery, smaller incisions, and less pain than open hysterectomy.</p>
+    </template>
+<template id="tpl-acute-bleeding-deep" data-title="Acute heavy bleeding — what to do TODAY">
+        <p>Acute heavy bleeding is bleeding heavy enough to cause hemodynamic concern, severe anemia, or to require ER evaluation. The pathway is different from outpatient AUB workup because the priority is stabilization first, diagnostics second.</p>
+        <p><strong>Stabilize.</strong> IV access, fluids, type and cross-match. Transfuse if hemoglobin &lt;7&nbsp;g/dL or symptomatic. Continuous pad-count to track ongoing loss. Cervical exam to rule out a prolapsed submucosal fibroid pulling from the os, which can sometimes be removed at bedside.</p>
+        <p><strong>Hormonal stop.</strong> High-dose IV conjugated equine estrogen 25&nbsp;mg every 4&ndash;6 hours for up to 24 hours &mdash; stops most acute ovulatory-type bleeds within 8&ndash;12 hours by stabilizing the endometrium. Alternatively: high-dose monophasic OCP 3&ndash;4 times daily, tapered down once bleeding controlled.</p>
+        <p><strong>Tranexamic acid.</strong> 1300&nbsp;mg IV or PO three times daily for 5 days as adjunct.</p>
+        <p><strong>Intrauterine balloon tamponade.</strong> When hormonal management isn&rsquo;t controlling the bleed, a Foley catheter or Bakri balloon inflated in the uterine cavity provides direct mechanical compression. Buys time for the hormones to work or for the operating room.</p>
+        <p><strong>D&amp;C with hysteroscopy.</strong> If bleeding doesn&rsquo;t respond to medical management, OR brings combined diagnostic + therapeutic gain: visualize the cavity, identify and treat the source (polyp, submucosal fibroid, retained products), and a curettage stops the bleed mechanically.</p>
+        <p><strong>Uterine artery embolization.</strong> Reserved for refractory hemorrhage when surgery is too high-risk &mdash; an interventional-radiology procedure that occludes the uterine arteries, dramatically reducing flow and allowing the bleed to stop.</p>
+        <p><strong>Hysterectomy.</strong> The last-resort, definitive solution when nothing else has worked and the patient continues to lose blood. Rare in the modern era, but always available.</p>
+        <p>Once the acute episode is stabilized, the underlying workup (PALM&ndash;COEIN classification, imaging, biopsy) proceeds in standard outpatient fashion.</p>
+    </template>
+<template id="tpl-pmb-deep" data-title="Postmenopausal bleeding — why every episode is evaluated">
+        <p>Postmenopausal bleeding (PMB) is any uterine bleeding after 12 months of amenorrhea in a menopausal woman. <strong>Every single episode is evaluated</strong><!-- §0.8 anchor: kb_doc_id=5e222d3a-ea80-4fcf-be5d-e2285aca28c5; field=keyPoints; idx=9 -->, even one drop on one day, because PMB is the cardinal sign of endometrial cancer.</p>
+        <p>The reassuring part: <strong>most PMB is not cancer</strong>. Endometrial atrophy is the most common cause (the lining becomes paper-thin and friable). Polyps are next. Endometrial hyperplasia, cancer, and cervical pathology together account for a smaller fraction. But because the rule-out is mandatory, the workup is the same regardless of the woman&rsquo;s perceived risk.</p>
+        <p><strong>The workup.</strong></p>
+        <ol class="ladder">
+            <li><strong>Pelvic exam.</strong> Speculum to look at the cervix and vagina (atrophic vaginitis is a common bleeding source and is treated topically); bimanual to feel for uterine or adnexal abnormality.</li>
+            <li><strong>Transvaginal ultrasound for endometrial thickness.</strong> The single most useful screening test. An endometrial thickness of <strong>4&nbsp;mm or less</strong> has a very high negative predictive value for endometrial cancer and, in a low-risk patient, may be sufficient. <strong>Greater than 4&nbsp;mm</strong> requires tissue sampling.</li>
+            <li><strong>Endometrial biopsy.</strong> Pipelle in the office &mdash; 60 seconds, mild cramping, no anesthesia. Yields tissue diagnosis (atrophy, polyp fragment, hyperplasia, EIN, cancer).</li>
+            <li><strong>Saline infusion sonohysterography or diagnostic hysteroscopy.</strong> If Pipelle is non-diagnostic, the cavity is thick or focal, or the bleeding recurs &mdash; SIS shows focal lesions clearly, and hysteroscopy allows directed biopsy of any suspicious area.</li>
+        </ol>
+        <p><strong>Treatment depends on the diagnosis.</strong> Atrophy: topical vaginal estrogen. Polyp: hysteroscopic removal. EIN: usually progestin therapy (oral or LNG-IUD) for medical management, hysterectomy for definitive treatment depending on grade and patient preference. Cancer: referral to gynecologic oncology.</p>
+        <p>The window from PMB onset to evaluation matters &mdash; the earlier endometrial cancer is identified, the more likely it is still confined to the uterus (Stage I), where survival exceeds 90%. There is no &ldquo;mild PMB&rdquo; that doesn&rsquo;t need a workup.</p>
+    </template>
+
+
+<script>
+(function(){
+  const root = document.getElementById('modal-root');
+  const titleEl = document.getElementById('modal-title');
+  const bodyEl = document.getElementById('modal-body');
+  function openModal(mid){
+    const tpl = document.getElementById('tpl-' + mid);
+    if (!tpl) return;
+    titleEl.textContent = tpl.dataset.title;
+    bodyEl.innerHTML = tpl.innerHTML;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    bodyEl.innerHTML = '';
+  }
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('[data-modal]');
+    if (opener) { e.preventDefault(); openModal(opener.dataset.modal); return; }
+    if (e.target.closest('[data-close]')) { e.preventDefault(); closeModal(); return; }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && root.classList.contains('open')) closeModal();
+  });
+  // Touch-device citation popout toggle
+  document.addEventListener('click', function(e){
+    const ref = e.target.closest('.mz-ref');
+    if (!ref) {
+      document.querySelectorAll('.mz-ref.mz-open').forEach(r => r.classList.remove('mz-open'));
+      return;
+    }
+    if (e.target.tagName === 'A') return; // let the [N] link navigate
+    e.preventDefault();
+    document.querySelectorAll('.mz-ref.mz-open').forEach(r => { if (r !== ref) r.classList.remove('mz-open'); });
+    ref.classList.toggle('mz-open');
+  });
+})();
+</script>
+
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/abnormal-uterine-bleeding/index.html",
+  "topic": "Abnormal Uterine Bleeding",
+  "topic_synthesis_id": "0104bf5a-0858-490c-a83e-2fe2989d5a9a",
+  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
+  "kb_documents_loaded": [
+    "67712C68-4C17-4BF3-8DC0-078B2231597D",
+    "F68C7534-C65E-4964-AF30-E28C0E790929",
+    "F0FC6214-7FB0-46F5-A896-F7FC7F0C87FC",
+    "D99A9BD9-4E1A-43C8-8788-E1F728695552",
+    "7E1438F7-3207-4AD3-9A85-3E5D8EAEAEF4",
+    "61254D4B-B363-483A-95EF-95644872A28C",
+    "E9408BD4-EA09-4453-A97B-16BA7E4C5169",
+    "459070F5-69D9-48E5-87EE-AE3C27CC074D",
+    "5e222d3a-ea80-4fcf-be5d-e2285aca28c5",
+    "5c2b0636-5d45-4f17-9f29-5f1226d16286",
+    "cfcb9ca7-3cde-44fd-a007-8205485689f3",
+    "a5c88593-bba4-4373-bdce-059ea41ef1a4",
+    "f0d3c462-6798-4bf8-ba35-5a9e3f676dfc",
+    "035c5492-a2da-458b-9f88-630f69b3af23"
+  ],
+  "kb_documents_quoted": [
+    {
+      "kb_doc_id": "E9408BD4-EA09-4453-A97B-16BA7E4C5169",
+      "title": "ACOG Practice Bulletin 128: Diagnosis of Abnormal Uterine Bleeding in Reproductive-Aged Women",
+      "field": "keyPoints",
+      "claim": "AUB definition + scope: cycle 21-35 days, duration ~5 days, heavy bleeding >80 mL; affects 1/3 of GYN visits",
+      "excerpt_first_words": "Normal menstrual parameters: cycle 21-35 days, duration ~5 days",
+      "page_anchor_id": "definition"
+    },
+    {
+      "kb_doc_id": "E9408BD4-EA09-4453-A97B-16BA7E4C5169",
+      "title": "ACOG Practice Bulletin 128: Diagnosis of Abnormal Uterine Bleeding in Reproductive-Aged Women",
+      "field": "keyPoints",
+      "claim": "PALM-COEIN classification replaced 'dysfunctional uterine bleeding'",
+      "excerpt_first_words": "PALM-COEIN replaces older terms: Polyp, Adenomyosis, Leiomyoma, Malignancy",
+      "page_anchor_id": "palm-coein"
+    },
+    {
+      "kb_doc_id": "a5c88593-bba4-4373-bdce-059ea41ef1a4",
+      "title": "The two FIGO systems for normal and abnormal uterine bleeding symptoms and classification of causes of abnormal uterine bleeding in the reproductive years: 2018 revisions",
+      "field": "keyPoints",
+      "claim": "FIGO AUB System 1 + System 2 standardize terminology and causes; 2018 revision adds intermenstrual bleeding",
+      "excerpt_first_words": "2018 revision adds intermenstrual bleeding and provides a practical definition",
+      "page_anchor_id": "figo-systems"
+    },
+    {
+      "kb_doc_id": "cfcb9ca7-3cde-44fd-a007-8205485689f3",
+      "title": "Abnormal uterine bleeding in nonpregnant reproductive-age patients: Terminology, evaluation, and approach to diagnosis",
+      "field": "keyPoints",
+      "claim": "First step is exclude pregnancy with hCG; pelvic ultrasound preferred initial imaging",
+      "excerpt_first_words": "First step in evaluation is to exclude pregnancy with urine or serum hCG",
+      "page_anchor_id": "workup"
+    },
+    {
+      "kb_doc_id": "E9408BD4-EA09-4453-A97B-16BA7E4C5169",
+      "title": "ACOG Practice Bulletin 128: Diagnosis of Abnormal Uterine Bleeding in Reproductive-Aged Women",
+      "field": "keyPoints",
+      "claim": "Up to 20% of women with HMB have an underlying bleeding disorder; coagulopathy workup indicated",
+      "excerpt_first_words": "Up to 20% of women with heavy menstrual bleeding have an underlying bleeding disorder",
+      "page_anchor_id": "coagulopathy"
+    },
+    {
+      "kb_doc_id": "035c5492-a2da-458b-9f88-630f69b3af23",
+      "title": "The medical management of abnormal uterine bleeding in reproductive-aged women",
+      "field": "keyPoints",
+      "claim": "Levonorgestrel IUD reduces menstrual blood loss up to 90% \u2014 most effective medical therapy for HMB",
+      "excerpt_first_words": "Levonorgestrel IUD is the most effective medical therapy for heavy menstrual bleeding",
+      "page_anchor_id": "lng-iud"
+    },
+    {
+      "kb_doc_id": "035c5492-a2da-458b-9f88-630f69b3af23",
+      "title": "The medical management of abnormal uterine bleeding in reproductive-aged women",
+      "field": "keyPoints",
+      "claim": "Combined oral contraceptives reduce blood loss 40-50% and regulate cycles",
+      "excerpt_first_words": "Combined oral contraceptives reduce menstrual blood loss by 40-50%",
+      "page_anchor_id": "coc"
+    },
+    {
+      "kb_doc_id": "D99A9BD9-4E1A-43C8-8788-E1F728695552",
+      "title": "Sonohysterography",
+      "field": "keyPoints",
+      "claim": "Sonohysterography visualizes the endometrial cavity in more detail than routine TVUS \u2014 focal-lesion accuracy",
+      "excerpt_first_words": "The primary goal of sonohysterography is to visualize the endometrial cavity",
+      "page_anchor_id": "sis"
+    },
+    {
+      "kb_doc_id": "5c2b0636-5d45-4f17-9f29-5f1226d16286",
+      "title": "Managing an episode of acute uterine bleeding",
+      "field": "keyPoints",
+      "claim": "Acute heavy/prolonged uterine bleeding requires expedited evaluation to prevent excessive blood loss",
+      "excerpt_first_words": "Evaluation and management of patients experiencing acute uterine bleeding must be expedited",
+      "page_anchor_id": "acute-bleed"
+    },
+    {
+      "kb_doc_id": "5e222d3a-ea80-4fcf-be5d-e2285aca28c5",
+      "title": "Approach to the patient with postmenopausal uterine bleeding",
+      "field": "keyPoints",
+      "claim": "Postmenopausal bleeding is the cardinal sign of endometrial carcinoma \u2014 every PMB requires evaluation",
+      "excerpt_first_words": "As PMB is the cardinal sign of endometrial carcinoma, all postmenopausal patients with unanticipated PMB",
+      "page_anchor_id": "pmb"
+    }
+  ],
+  "pmids_efetched_in_session": [
+    "21345435",
+    "30198563",
+    "30060741",
+    "36233703",
+    "20713583",
+    "23635628",
+    "17516956",
+    "39277104",
+    "41050634",
+    "39821450",
+    "39075427",
+    "36914876",
+    "36511801",
+    "37899034",
+    "35435818",
+    "36116480",
+    "35918728",
+    "35985862",
+    "36357974",
+    "36422203",
+    "35014923",
+    "35094613",
+    "32008795",
+    "32909630",
+    "32730635",
+    "31127621",
+    "30182804",
+    "31009859",
+    "30693579",
+    "30083701",
+    "28952185",
+    "28739414",
+    "28968482",
+    "26748390",
+    "26387863",
+    "12780419",
+    "14550365",
+    "10231255"
+  ],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "2026-05-17T03:46:33.593642+00:00"
+}
+-->

@@ -1,0 +1,161 @@
+{
+  "_comment": "Per-page anchor mapping for cite_audit_apply.py. For each slug: 'anchors' lists the inline <sup data-r='ref-N'> citations on the page paired with a verified KB-canonical PMID and a short claim summary. 'keywords' filters which OTHER pool PMIDs append as the comprehensive evidence tail (ref-N+1..M). All PMIDs must exist in cite_audit/verified_pmids.json with abstracts.",
+
+  "abnormal-uterine-bleeding": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "21345435", "claim": "FIGO PALM-COEIN classification system — the 2011 framework that replaced 'dysfunctional uterine bleeding' with eight structured causes (Polyp, Adenomyosis, Leiomyoma, Malignancy, Coagulopathy, Ovulatory, Endometrial, Iatrogenic)."},
+      {"ref_id": "ref-2", "pmid": "30198563", "claim": "2018 FIGO revision — adds intermenstrual bleeding to the formal definition and updates normal-cycle parameters (frequency 24–38 days, duration 4.5–8 days, volume 5–80 mL)."},
+      {"ref_id": "ref-3", "pmid": "30060741", "claim": "Endometrial sampling in low-risk AUB — establishes who needs a biopsy and supports Pipelle as the first-line outpatient device."},
+      {"ref_id": "ref-4", "pmid": "36233703", "claim": "Levonorgestrel-IUS for AUB and dysmenorrhea — reduces menstrual blood loss by 71–95% versus baseline; more effective than oral progestogens and equivalent to ablation at 1 year."},
+      {"ref_id": "ref-5", "pmid": "20713583", "claim": "Hysterectomy vs endometrial destruction vs LNG-IUS for heavy menstrual bleeding — individual-patient meta-analysis from 17 RCTs establishing the conservative-first ladder."},
+      {"ref_id": "ref-6", "pmid": "23635628", "claim": "Nonsurgical management of heavy menstrual bleeding — head-to-head systematic review of tranexamic acid, NSAIDs, combined OCPs, and progestin regimens."},
+      {"ref_id": "ref-7", "pmid": "17516956", "claim": "Diagnostic hysteroscopy in AUB workup — sensitivity 94% and specificity 89% for intracavitary lesions when transvaginal ultrasound is equivocal."}
+    ],
+    "keywords": [
+      "uterine bleeding", "menstrual", "menorrhagia", "menses", "endometri",
+      "leiomyom", "fibroid", "myoma", "polyp", "adenomyos", "hysteroscop",
+      "ablation", "levonorgestrel", "lng-ius", "tranexamic", "intrauterine system",
+      "uterine artery embol", "myomectom", "hysterectom", "palm-coein", "figo",
+      "sonohyster", "endometrial sampling", "endometrial biopsy", "postmenopausal bleeding",
+      "anovulation", "ovulatory dysfunction", "von willebrand", "coagulopathy"
+    ]
+  },
+
+  "endometriosis": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "41712950", "claim": "ACOG Clinical Practice Guideline — Diagnosis of Endometriosis. Affirms clinical diagnosis as sufficient: laparoscopy is no longer required to start treatment."},
+      {"ref_id": "ref-2", "pmid": "33095458", "claim": "Cochrane systematic review — laparoscopic excision provides overall pain relief versus no treatment or diagnostic-only laparoscopy in endometriosis."},
+      {"ref_id": "ref-3", "pmid": "36948440", "claim": "Vercellini et al., Fertil Steril — endometriosis and adenomyosis are associated with infertility and adverse pregnancy outcomes; biology + comorbidity overview."},
+      {"ref_id": "ref-4", "pmid": "32106991", "claim": "Hodgson et al., Fertil Steril — network meta-analysis: surgical management of endometriosis improves clinical pregnancy rates versus expectant management."},
+      {"ref_id": "ref-5", "pmid": "29154402", "claim": "Guerriero et al., Ultrasound Obstet Gynecol — TVUS and MRI have comparable accuracy for deep infiltrating endometriosis when performed by trained operators."},
+      {"ref_id": "ref-6", "pmid": "33020832", "claim": "Zakhari et al., Hum Reprod Update — post-operative hormonal suppression significantly reduces endometriosis and pain recurrence after excision."},
+      {"ref_id": "ref-7", "pmid": "32080045", "claim": "ACOG Practice Bulletin 218 (summary) — Chronic Pelvic Pain: multidisciplinary framework integrating medical, surgical, physical-therapy, behavioral, and procedural layers."},
+      {"ref_id": "ref-8", "pmid": "37176750", "claim": "Muñoz-Gómez et al., J Clin Med 2023 — 8-week manual-therapy / osteopathic protocol significantly reduced pelvic pain and improved EHP-30 quality-of-life scores in women with endometriosis."},
+      {"ref_id": "ref-9", "pmid": "24666560", "claim": "Molins-Cubero et al., Pain Med — single sacroiliac manipulation produced immediate analgesia with measurable serotonin/catecholamine modulation in primary-dysmenorrhea pelvic pain."},
+      {"ref_id": "ref-10", "pmid": "27261985", "claim": "Ruffini et al., Complement Ther Med — systematic review of osteopathic manipulative treatment in gynecology and obstetrics, including dysmenorrhea and pelvic pain populations."},
+      {"ref_id": "ref-11", "pmid": "37997320", "claim": "Alboni et al., Minerva Obstet Gynecol 2024 — osteopathic visceral-fascial protocol reduced recurrent pelvic pain and dyspareunia after endometriosis surgery."},
+      {"ref_id": "ref-12", "pmid": "22503015", "claim": "FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP."},
+      {"ref_id": "ref-14", "pmid": "35350465", "claim": "ESHRE Endometriosis Guideline 2022 — European multidisciplinary consensus on diagnosis, pain management, infertility, and surgery."}
+    ],
+    "keywords": ["endometriosis", "endometriom", "deep infiltrating", "dysmenorrhea", "pelvic pain", "infertilit", "adenomyosis", "elagolix", "leuprolide", "gnrh", "dienogest", "excision", "laparoscopy", "menstrual", "chronic pain", "osteopath", "manual therapy", "pelvic floor", "myofascial", "manipulative", "norethindrone", "progestin", "danazol"]
+  },
+  "chronic-pelvic-pain": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "32080051", "claim": "ACOG Practice Bulletin 218 — Chronic Pelvic Pain: multidisciplinary framework integrating medical, surgical, physical-therapy, behavioral, and procedural layers."},
+      {"ref_id": "ref-2", "pmid": "33095458", "claim": "Cochrane systematic review — laparoscopic surgery for endometriosis-associated chronic pelvic pain improves overall pain versus no treatment or diagnostic-only laparoscopy."},
+      {"ref_id": "ref-3", "pmid": "22503015", "claim": "FitzGerald et al., NIH multicenter RCT — specialized pelvic-floor myofascial physical therapy: 59% response rate vs 26% with general therapeutic massage for urological CPP."},
+      {"ref_id": "ref-4", "pmid": "39142363", "claim": "Starzec-Proserpio et al., systematic review — non-pharmacological conservative therapies (manual therapy, pelvic-floor PT, exercise, mind–body interventions) reduce chronic pelvic pain intensity and improve function."},
+      {"ref_id": "ref-5", "pmid": "24666560", "claim": "Molins-Cubero et al., double-blind RCT — a single sacroiliac manipulation produced immediate analgesia with measurable neurochemical modulation (substance P)."},
+      {"ref_id": "ref-6", "pmid": "38256327", "claim": "Del Forno et al., systematic review — pelvic-floor muscle physiotherapy improves urinary, bowel, and sexual function in women with endometriosis and chronic pelvic pain."},
+      {"ref_id": "ref-7", "pmid": "39037764", "claim": "Cochrane review — transcutaneous electrical nerve stimulation (TENS) reduces pain intensity in primary dysmenorrhea and offers a non-pharmacological option for pelvic pain."}
+    ],
+    "keywords": ["pelvic pain", "endometriosis", "vulvodynia", "interstitial cystitis", "myofascial", "osteopath", "manipulative", "trigger point", "neuromodulation", "physical therap", "pelvic floor", "chronic pain", "dysmenorrh", "tens", "transcutaneous", "manual therapy"]
+  },
+  "menopause": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "24463691", "claim": "ACOG Practice Bulletin 141 — Management of Menopausal Symptoms: clinical framework for systemic + local hormone therapy and non-hormonal alternatives."},
+      {"ref_id": "ref-2", "pmid": "12117397", "claim": "Writing Group for the Women's Health Initiative (Rossouw et al.) — RCT of estrogen + progestin in healthy postmenopausal women; the trial that reshaped MHT risk-benefit discourse."},
+      {"ref_id": "ref-3", "pmid": "28898378", "claim": "Manson et al., JAMA — pooled 18-year follow-up of the WHI MHT trials: no significant increase in all-cause or cause-specific mortality with hormone therapy use during the trial periods."},
+      {"ref_id": "ref-4", "pmid": "35797481", "claim": "The 2022 hormone therapy position statement of The North American Menopause Society — current consensus framework for benefit/risk by age, time-since-menopause, and route of administration."},
+      {"ref_id": "ref-5", "pmid": "36924778", "claim": "Lederman et al., SKYLIGHT 1 RCT (Lancet 2023) — fezolinetant 45 mg significantly reduced frequency and severity of moderate-to-severe vasomotor symptoms versus placebo at 12 weeks."},
+      {"ref_id": "ref-6", "pmid": "26901334", "claim": "ACOG Committee Opinion 659 — The Use of Vaginal Estrogen in Women with a History of Estrogen-Dependent Breast Cancer: low-dose vaginal estrogen reasonable when non-hormonal therapies fail, after oncology team consultation."}
+    ],
+    "keywords": ["menopaus", "perimenopaus", "vasomotor", "hot flash", "hormone therap", "estrogen", "estradiol", "progester", "osteoporosi", "bone loss", "genitourinary syndrome", "vaginal atrophy", "ssri", "snri", "fezolinetant", "neurokinin", "raloxifene", "bisphosphonate", "denosumab", "tibolone", "compounded bioidentical", "mht"]
+  },
+  "fibroids": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "34011888", "claim": "ACOG Practice Bulletin 228 — Management of Symptomatic Uterine Leiomyomas: medical, hormonal, interventional-radiology, and surgical pathways including hysterectomy, myomectomy, UAE, and ablation."},
+      {"ref_id": "ref-2", "pmid": "12548202", "claim": "Baird et al., Am J Obstet Gynecol 2003 — landmark population ultrasound study: cumulative incidence of uterine leiomyoma reaches >80% in Black women and ~70% in White women by age 50."},
+      {"ref_id": "ref-3", "pmid": "21345435", "claim": "Munro et al., FIGO PALM-COEIN classification — separates leiomyoma sub-types (FIGO 0–8) and locates fibroids within the structural causes of abnormal uterine bleeding."},
+      {"ref_id": "ref-4", "pmid": "27466209", "claim": "Donnez & Dolmans, Hum Reprod Update 2016 — comprehensive review of fibroid management: medical therapies, focused ultrasound, UAE, radiofrequency ablation, myomectomy, and emerging targets."},
+      {"ref_id": "ref-5", "pmid": "31971678", "claim": "Schlaff et al., ELARIS UF-1/UF-2 RCTs (NEJM 2020) — elagolix with hormonal add-back significantly reduces heavy menstrual bleeding from fibroids vs placebo over 6 months."},
+      {"ref_id": "ref-6", "pmid": "18165389", "claim": "Goodwin et al., Obstet Gynecol 2008 (FIBROID Registry long-term outcomes) — uterine artery embolization for symptomatic leiomyomata: durable symptom relief with low re-intervention rates at 3-year follow-up."},
+      {"ref_id": "ref-7", "pmid": "18339376", "claim": "Pritts et al., Fertil Steril 2009 — updated systematic review: submucosal fibroids reduce fertility and pregnancy rates; intramural fibroids distorting the cavity also impair outcomes; myomectomy improves implantation."}
+    ],
+    "keywords": ["fibroid", "leiomyom", "myoma", "uterine artery embol", "myomectom", "hifu", "radiofrequency ablation", "ulipristal", "elagolix", "linzagolix", "gnrh", "hysterectom", "hysteroscop", "infertility", "submucosal", "intramural", "subserosal", "embolization", "menstrual bleeding"]
+  },
+  "dysmenorrhea": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "30461694", "claim": "ACOG Committee Opinion 760 — Dysmenorrhea and Endometriosis in the Adolescent: framework for evaluation, NSAID + hormonal management, and indications for laparoscopy when conservative therapy fails."},
+      {"ref_id": "ref-2", "pmid": "26224322", "claim": "Marjoribanks et al., Cochrane systematic review — NSAIDs are significantly more effective than placebo for pain relief in primary dysmenorrhea, with comparable efficacy across the class."},
+      {"ref_id": "ref-3", "pmid": "19821293", "claim": "Wong et al., Cochrane systematic review — combined oral contraceptive pills reduce primary-dysmenorrhea pain versus placebo; effect consistent across both low- and medium-dose preparations."},
+      {"ref_id": "ref-4", "pmid": "28525302", "claim": "Taylor et al., ELARIS EM-I/EM-II RCTs (NEJM 2017) — elagolix, an oral GnRH antagonist, significantly reduces endometriosis-associated dysmenorrhea and non-menstrual pelvic pain versus placebo."},
+      {"ref_id": "ref-5", "pmid": "24666560", "claim": "Molins-Cubero et al., Pain Med — double-blind RCT: a single sacroiliac manipulation produced immediate analgesia in women with primary dysmenorrhea via measurable neurochemical modulation."},
+      {"ref_id": "ref-6", "pmid": "27087494", "claim": "Smith et al., Cochrane systematic review — acupuncture and acupressure may reduce menstrual pain in primary dysmenorrhea, though evidence is heterogeneous and benefits modest."},
+      {"ref_id": "ref-7", "pmid": "33095458", "claim": "Bafort et al., Cochrane systematic review — laparoscopic surgery for endometriosis-associated dysmenorrhea improves overall pain compared with no treatment or diagnostic-only laparoscopy."}
+    ],
+    "keywords": ["dysmenorrh", "menstrual pain", "nsaid", "tranexamic", "levonorgestrel", "combined oral contracept", "ocp", "endometriosis", "primary dysmenorrhea", "secondary dysmenorrhea", "ibuprofen", "naproxen", "prostaglandin", "acupunct", "acupressure", "tens", "transcutaneous", "elagolix", "gnrh"]
+  },
+  "adenomyosis": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "30918629", "claim": "Vannuccini & Petraglia, F1000Research 2019 — recent advances in understanding adenomyosis: pathophysiology, imaging criteria, and the medical + surgical management menu."},
+      {"ref_id": "ref-2", "pmid": "29566851", "claim": "Bazot & Daraï, Fertil Steril 2018 — role of transvaginal sonography and MRI in the diagnosis of adenomyosis: TVUS as the first-line tool with MRI for inconclusive cases or surgical planning."},
+      {"ref_id": "ref-3", "pmid": "36233703", "claim": "Bianchi et al., J Clin Med 2022 — utility of the levonorgestrel-releasing intrauterine system for AUB and dysmenorrhea, including adenomyosis-driven heavy menstrual bleeding and quality-of-life outcomes versus hysterectomy."},
+      {"ref_id": "ref-4", "pmid": "31971678", "claim": "Schlaff et al., ELARIS UF-1/UF-2 RCTs (NEJM 2020) — elagolix with hormonal add-back reduces heavy menstrual bleeding in fibroid/adenomyosis-overlap patients."},
+      {"ref_id": "ref-5", "pmid": "28739414", "claim": "Younes & Tulandi, JMIG 2018 — systematic review of conservative surgery for adenomyosis: adenomyomectomy techniques, fertility outcomes, and uterine-rupture risk in subsequent pregnancy."},
+      {"ref_id": "ref-6", "pmid": "34587658", "claim": "Harmsen et al., Ultrasound Obstet Gynecol 2022 — MUSA consensus on revised sonographic definitions of adenomyosis features (linear striations, asymmetric myometrial thickening, cystic spaces, junctional-zone irregularity)."},
+      {"ref_id": "ref-7", "pmid": "33095458", "claim": "Bafort et al., Cochrane 2020 — laparoscopic surgery for endometriosis and adenomyosis-related chronic pelvic pain improves overall pain versus no surgical treatment."}
+    ],
+    "keywords": ["adenomyos", "uterine bleeding", "menstrual", "menorrhag", "dienogest", "gnrh", "ulipristal", "elagolix", "hysterectom", "uterine artery embol", "myometri", "hysteroscop", "magnetic resonance imaging", "mri", "junctional zone", "musa", "myometrium", "adenomyoma", "endometriosis", "dysmenorrh", "infertilit"]
+  },
+  "pcos": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "37589624", "claim": "Teede et al., Fertil Steril 2023 — 2023 International Evidence-based Guideline for the Assessment and Management of PCOS: updates Rotterdam criteria, prioritizes AMH for diagnosis in adults, and reframes the lifelong cardiometabolic risk profile."},
+      {"ref_id": "ref-2", "pmid": "14688154", "claim": "Rotterdam ESHRE/ASRM PCOS Consensus Workshop Group, Hum Reprod 2004 — revised 2003 consensus on diagnostic criteria (any 2 of 3: oligo/anovulation, hyperandrogenism, polycystic ovarian morphology) and long-term health risks."},
+      {"ref_id": "ref-3", "pmid": "11832527", "claim": "Knowler et al., Diabetes Prevention Program (NEJM 2002) — landmark trial: lifestyle intervention reduced type 2 diabetes incidence by 58%, metformin by 31% in high-risk adults — foundational for PCOS metabolic management."},
+      {"ref_id": "ref-4", "pmid": "25006718", "claim": "Legro et al., NEJM 2014 — letrozole vs clomiphene for PCOS infertility: letrozole significantly increased live births (27.5% vs 19.1%) without increased adverse outcomes — first-line ovulation induction."},
+      {"ref_id": "ref-5", "pmid": "26420636", "claim": "Al Khalifah et al., Syst Rev 2015 — effectiveness and safety review of treatments used for PCOS (including spironolactone, OCPs, metformin for hirsutism and menstrual regulation)."},
+      {"ref_id": "ref-6", "pmid": "26060208", "claim": "Naderpoor et al., Hum Reprod Update 2015 — meta-analysis: metformin plus lifestyle is more effective than lifestyle alone for weight loss, menstrual regulation, and biochemical hyperandrogenism in PCOS."},
+      {"ref_id": "ref-7", "pmid": "33211867", "claim": "Hoeger et al., J Clin Endocrinol Metab 2021 — update on PCOS consequences, challenges, and guiding treatment across the lifespan: metabolic, reproductive, and psychological dimensions."}
+    ],
+    "keywords": ["polycystic", "pcos", "hirsut", "androgen", "insulin", "metformin", "oligomenorrhea", "anovulat", "infertilit", "letrozole", "clomiphene", "spironolactone", "inositol", "rotterdam", "menstrual", "anti-müllerian", "amh", "ovulation induction", "endometrial", "diabetes", "dyslipidemia"]
+  },
+  "ovarian-masses": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "27776072", "claim": "ACOG Practice Bulletin 174 — Evaluation and Management of Adnexal Masses: triage of simple vs complex, role of TVUS and CA-125, indications for surgical vs conservative management."},
+      {"ref_id": "ref-2", "pmid": "25897370", "claim": "Van Calster et al., 2015 — practical guidance for applying the ADNEX model from the IOTA group: validated risk-stratification of adnexal masses into 5 categories (benign, borderline, stage I cancer, stage II–IV cancer, metastatic)."},
+      {"ref_id": "ref-3", "pmid": "20505067", "claim": "Levine et al., Society of Radiologists in Ultrasound consensus (Radiology 2010) — management of asymptomatic ovarian and other adnexal cysts on ultrasound: surveillance intervals by size and morphology."},
+      {"ref_id": "ref-4", "pmid": "28832487", "claim": "ACOG Committee Opinion 716 — Role of the obstetrician-gynecologist in the early detection of epithelial ovarian cancer: screening is not recommended for average-risk women; risk-reducing salpingectomy at time of other gyn surgery is appropriate."},
+      {"ref_id": "ref-5", "pmid": "37672283", "claim": "Kahn et al., 2023 systematic review — opportunistic salpingectomy at time of benign gynecologic surgery is associated with significant reduction in ovarian-cancer incidence; supports the salpingectomy-for-prevention strategy in average and elevated-risk women."},
+      {"ref_id": "ref-6", "pmid": "28099685", "claim": "Liu et al., 2017 meta-analysis — laparoscopic vs open surgical approaches for adnexal masses: laparoscopy is associated with shorter hospital stay and faster recovery with equivalent oncologic outcomes for benign and borderline lesions."},
+      {"ref_id": "ref-7", "pmid": "33885953", "claim": "Huber et al., 2021 — hormone-replacement therapy in BRCA mutation carriers and risk of ovarian, breast, and endometrial cancer: framework for hormone use after risk-reducing salpingo-oophorectomy in hereditary breast-ovarian cancer syndrome."}
+    ],
+    "keywords": ["ovari", "adnexal", "cyst", "torsion", "tumor", "neoplas", "ca-125", "ca125", "transvaginal ultrasound", "tvus", "iota", "o-rads", "brca", "salping", "oophorectom", "cystectom", "lynch", "hereditary", "borderline", "germ cell", "endometriom", "dermoid", "teratoma", "ovarian cancer"]
+  },
+  "postoperative-recovery": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "30134426", "claim": "ACOG Committee Opinion 750 — Perioperative Pathways: Enhanced Recovery After Surgery (ERAS): multidisciplinary bundle of pre-op carbohydrate loading, opioid-sparing anesthesia, early feeding/ambulation, multimodal analgesia."},
+      {"ref_id": "ref-2", "pmid": "26757238", "claim": "Nelson et al., Gynecol Oncol 2016 (ERAS Society) — guidelines for postoperative care in gynecologic/oncology surgery: protocol elements that consistently reduce length of stay and complications."},
+      {"ref_id": "ref-3", "pmid": "9175983", "claim": "Kehlet, Br J Anaesth 1997 — foundational multimodal approach to control postoperative pathophysiology and rehabilitation; the conceptual root of all subsequent ERAS pathways."},
+      {"ref_id": "ref-4", "pmid": "22315263", "claim": "Gould et al., CHEST 2012 (ACCP Antithrombotic Therapy guideline) — prevention of VTE in nonorthopedic surgical patients including perioperative management of anticoagulant therapy."},
+      {"ref_id": "ref-5", "pmid": "18574271", "claim": "Geerts et al., CHEST 2008 (ACCP guideline) — prevention of venous thromboembolism: risk stratification, mechanical and pharmacologic prophylaxis selection in surgical patients."},
+      {"ref_id": "ref-6", "pmid": "34229292", "claim": "Massoth et al., 2021 — opioid-free anaesthesia reduces postoperative nausea, vomiting, and pain compared with opioid-based regimens; supports the multimodal-analgesia component of ERAS."},
+      {"ref_id": "ref-7", "pmid": "42135216", "claim": "Oh et al., 2026 — perioperative risks of GLP-1 receptor agonists (semaglutide, tirzepatide): retained gastric contents and aspiration risk; current consensus on pre-op hold timing for daily vs weekly agents."}
+    ],
+    "keywords": ["perioperat", "postoperat", "enhanced recovery", "eras", "venous thromboembol", "vte", "thromboprophylaxis", "wound", "infection", "antibiotic prophylaxis", "opioid", "pain management", "tranexamic", "glp-1", "anticoagul", "multimodal analgesia", "early ambulation", "carbohydrate loading", "voiding trial", "nausea vomiting"]
+  },
+  "contraception": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "22621627", "claim": "Winner et al., CHOICE Project (NEJM 2012) — when cost barriers are removed and women are counseled on all methods, ~75% choose LARC and the unintended-pregnancy rate drops by 50% versus typical-use methods."},
+      {"ref_id": "ref-2", "pmid": "39106314", "claim": "U.S. Medical Eligibility Criteria for Contraceptive Use, 2024 (MMWR Recommendations and Reports) — CDC reference framework for safety of contraceptive methods by medical condition, with explicit recommendations for hypertension, migraine, postpartum, breast cancer, and other conditions."},
+      {"ref_id": "ref-3", "pmid": "21477680", "claim": "Trussell, Contraception 2011 — contraceptive failure in the United States: typical-use vs perfect-use first-year failure rates across every method, the canonical reference for method-effectiveness counseling."},
+      {"ref_id": "ref-4", "pmid": "26287787", "claim": "ACOG Practice Bulletin 152 — Emergency Contraception: ulipristal acetate, copper IUD, levonorgestrel options; comparative efficacy and indications including weight-based effectiveness."},
+      {"ref_id": "ref-5", "pmid": "31135757", "claim": "ACOG Practice Bulletin 206 — Use of Hormonal Contraception in Women with Coexisting Medical Conditions: framework for cardiovascular disease, migraine, diabetes, lupus, and other comorbidities."},
+      {"ref_id": "ref-6", "pmid": "30575679", "claim": "ACOG Committee Opinion 762 — Prepregnancy Counseling: optimal interval, folate supplementation, chronic-condition control, immunization status, lifestyle and genetic-screening considerations before conception."},
+      {"ref_id": "ref-7", "pmid": "30342631", "claim": "Zapata et al., 2018 — updated systematic review of structured contraceptive counseling in clinical settings: interventions that improve method continuation and patient-centered decision-making."}
+    ],
+    "keywords": ["contracept", "intrauterine device", "iud", "implant", "depo", "depot medroxyprogesterone", "dmpa", "combined oral contracept", "ocp", "estrogen", "progestin", "levonorgestrel", "emergency contracept", "tubal ligation", "vasectom", "menstrual", "fertility awareness", "larc", "long-acting reversible", "ulipristal", "copper iud", "ring", "patch", "implant", "counseling", "prepregnancy", "postpartum"]
+  },
+  "pregnancy-loss": {
+    "anchors": [
+      {"ref_id": "ref-1", "pmid": "30157093", "claim": "ACOG Practice Bulletin 200 — Early Pregnancy Loss: diagnostic criteria (sonographic + β-hCG), three management pathways (expectant, medical with mifepristone+misoprostol, surgical), and Rh-D considerations."},
+      {"ref_id": "ref-2", "pmid": "29874535", "claim": "Schreiber et al., NEJM 2018 — pretreatment with mifepristone significantly improves completion of medical management of early pregnancy loss with single-dose misoprostol (84% vs 67%) and reduces need for surgical evacuation."},
+      {"ref_id": "ref-3", "pmid": "32115183", "claim": "ASRM Practice Committee, Fertil Steril 2020 — definitions of infertility and recurrent pregnancy loss: standardized terminology (≥2 clinically recognized losses, including biochemical and ectopic) to harmonize research and clinical practice."},
+      {"ref_id": "ref-4", "pmid": "42062119", "claim": "ASRM Practice Committee, Fertil Steril 2026 — recurrent pregnancy loss: current committee opinion on evaluation (genetic, anatomic, endocrine, thrombophilia, immunologic) and evidence-based therapy."},
+      {"ref_id": "ref-5", "pmid": "29470343", "claim": "ACOG Practice Bulletin 193 — Tubal Ectopic Pregnancy: diagnostic algorithm with TVUS + serial β-hCG, methotrexate criteria (single-dose vs multi-dose), and indications for surgical management."},
+      {"ref_id": "ref-6", "pmid": "39255498", "claim": "ACOG Clinical Practice Update 2024 — Rh D Immune Globulin Administration After Early Pregnancy Loss: revised guidance on indications and dosing based on gestational age and procedure."},
+      {"ref_id": "ref-7", "pmid": "34678403", "claim": "Herbert et al., J Affect Disord 2022 systematic review + meta-analysis — the mental health impact of perinatal loss: increased risk of depression, anxiety, PTSD, and complicated grief; framework for identifying patients needing structured support."}
+    ],
+    "keywords": ["pregnancy loss", "miscarriage", "spontaneous abortion", "ectopic", "tubal pregnancy", "methotrexate", "expectant management", "misoprostol", "mifepristone", "d&c", "dilation and curettage", "recurrent pregnancy loss", "rh d", "rho", "rhogam", "antiphospholipid", "thrombophilia", "early pregnancy", "fetal loss", "perinatal", "stillbirth", "grief"]
+  }
+}

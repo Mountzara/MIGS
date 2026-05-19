@@ -1,0 +1,1359 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Postoperative recovery &mdash; what to know &middot; Mount Zara</title>
+    <meta name="description" content="A patient guide to recovery after MIGS gynecologic surgery: ERAS principles, week-by-week expectations, opioid-sparing pain control, medication holds, red flags. KB-anchored, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    text-decoration: none;
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
+
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* HERO */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero .eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 16px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+
+/* KEY FACTS */
+.facts {
+    display: grid; gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s, border-color 0.22s, background 0.22s;
+    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
+.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
+.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
+
+/* SECTIONS */
+section.panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(22px, 4vw, 36px);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    transition: border-color 0.25s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel .section-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 10px;
+}
+section.panel h2 {
+    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.012em; color: var(--fg-strong);
+    margin: 0 0 18px 0; line-height: 1.15;
+}
+section.panel p {
+    font-size: 16.5px; line-height: 1.7;
+    color: var(--fg-mid); margin: 0 0 14px 0;
+}
+section.panel p:last-child { margin-bottom: 0; }
+section.panel p strong { color: var(--fg-strong); font-weight: 500; }
+section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
+
+/* INLINE CITATION SUP + POPOUT */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref a {
+    color: var(--accent-soft);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover a,
+sup.mz-ref.mz-open a,
+sup.mz-ref:focus a {
+    background: rgba(var(--glow-purple), 0.20);
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden; opacity: 0;
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translate(-50%, -6px);
+    width: 320px; max-width: 92vw;
+    padding: 10px 14px;
+    background: rgba(7,7,10,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: var(--fg-mid);
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 400;
+    z-index: 200;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    white-space: normal;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
+   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
+   problem. Each modifier locks the row size so cards stay even at every
+   breakpoint. */
+.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) {
+    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Symptoms grid — 8 items, want 1/2/4 columns */
+.symptoms {
+    display: grid; gap: 10px; margin-top: 18px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
+
+/* Featured banner card — used for the lone FitzGerald PFPT RCT below
+   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
+   internal layout. */
+.featured-card {
+    display: grid; gap: 18px;
+    grid-template-columns: 1fr;
+    background: rgba(var(--glow-purple), 0.07);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+    align-items: center;
+    position: relative;
+}
+.featured-card:hover, .featured-card:focus {
+    border-color: rgba(var(--glow-purple), 0.65);
+    background: rgba(var(--glow-purple), 0.12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.featured-card h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--fg-strong); margin: 0 0 4px 0;
+    padding-right: 80px;
+}
+.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+.featured-card .open-hint {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    letter-spacing: 0.08em;
+}
+.featured-card .stat-badge {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    background: rgba(var(--glow-purple), 0.18);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 8px;
+}
+.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+@media (min-width: 720px) {
+    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card:hover, .card:focus {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    outline: none;
+}
+.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
+.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.card .card-corner {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.card .open-hint {
+    position: absolute; bottom: 12px; right: 14px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+}
+.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
+
+/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
+.symptom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px 12px 44px;
+    position: relative;
+    font-size: 14px; color: var(--fg-mid);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom::before {
+    content: ""; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.08);
+}
+.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
+.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
+.timeline::before {
+    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
+}
+.timeline-item {
+    position: relative; margin-bottom: 16px;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    padding: 12px 14px;
+    transition: border-color 0.22s, background 0.22s;
+}
+.timeline-item:hover, .timeline-item:focus {
+    border-color: rgba(var(--glow-purple), 0.40);
+    background: rgba(var(--glow-purple), 0.06);
+    outline: none;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.95);
+    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
+}
+.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
+.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-item .open-hint {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    letter-spacing: 0.08em;
+}
+
+/* TREATMENT LADDER */
+.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+.rung {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px; align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+}
+.rung:hover, .rung:focus {
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
+.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
+.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
+.rung-tag {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    align-self: center;
+}
+
+/* OMT block */
+.omt-block {
+    background: rgba(var(--glow-purple), 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    margin-top: 18px;
+}
+.omt-block .quote-frame {
+    border-left: 3px solid rgba(var(--glow-purple), 0.60);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0;
+    color: var(--fg-mid);
+    font-size: 16px; line-height: 1.7;
+    position: relative;
+}
+.omt-block .quote-frame::before {
+    content: '\201C';
+    position: absolute;
+    left: 6px; top: -4px;
+    font-family: Georgia, serif;
+    color: rgba(var(--glow-purple), 0.40);
+    font-size: 26px; line-height: 1;
+}
+
+/* Q&A accordion */
+.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+details.qa {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.22s, background 0.22s;
+    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
+details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 50px 14px 18px;
+    font-size: 15.5px; font-weight: 500;
+    color: var(--fg-strong); position: relative; line-height: 1.4;
+}
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after {
+    content: '+';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 22px; color: var(--accent-soft);
+    font-weight: 200; line-height: 1;
+    transition: transform 0.2s;
+}
+details.qa[open] summary::after { content: '\2212'; }
+details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
+details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
+details.qa .qa-answer p:last-child { margin: 0; }
+
+/* Red flags */
+.red-flags {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
+.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
+.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
+
+/* CTA */
+.cta-strip {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.45);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    text-align: center;
+    margin-top: clamp(20px, 4vw, 32px);
+}
+.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-strip a.btn {
+    display: inline-block;
+    background: rgba(var(--glow-purple), 0.20);
+    border: 1px solid rgba(var(--glow-purple), 0.65);
+    color: #fff;
+    padding: 10px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin: 4px;
+}
+.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
+.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+
+/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
+.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
+.refs-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    counter-increment: ref;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.refs-list .ref-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
+.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
+.refs-list .pmid {
+    display: inline-block;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11.5px; color: var(--accent-soft);
+    background: rgba(var(--glow-purple), 0.10);
+    padding: 1px 6px; border-radius: 4px;
+    white-space: nowrap;
+}
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
+details.mz-abstract {
+    margin-top: 10px;
+    margin-left: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+details.mz-abstract summary {
+    list-style: none; cursor: pointer;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    position: relative;
+}
+details.mz-abstract summary::-webkit-details-marker { display: none; }
+details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
+details.mz-abstract[open] summary::before { content: '\2212 '; }
+details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract .abstract-body {
+    padding: 4px 16px 14px 28px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
+details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
+.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
+
+/* MODAL system */
+.mz-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.66);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: mzFadeIn 0.18s ease both;
+}
+.mz-modal-bg.open { display: flex; }
+.mz-modal {
+    width: 100%; max-width: 700px;
+    max-height: 88vh; overflow-y: auto;
+    background: rgba(12,12,16,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.50);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    position: relative;
+    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mz-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--fg-soft);
+    font-size: 20px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal h2 {
+    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.015em; color: var(--fg-strong);
+    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
+}
+.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
+.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
+.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+
+/* Footer note */
+.footer-note {
+    margin-top: 40px; padding: 20px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12.5px; color: var(--fg-dim);
+    line-height: 1.6;
+}
+.footer-note strong { color: var(--fg-soft); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    section.panel { padding: 22px 18px; }
+    .site-nav .crumb { display: none; }
+    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
+    details.mz-abstract { margin-left: 0; }
+}
+
+    .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
+    @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
+    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+    .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; }
+    .cause-card ul { padding-left: 20px; margin: 0; }
+    .cause-card li { font-size: 14px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 8px; }
+    .cause-card li strong { color: var(--fg-strong); font-weight: 500; }
+    </style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site navigation">
+    <div class="inner">
+        <a class="brand" href="/">Mount Zara</a>
+        <span class="crumb">&middot;  Patient Education  &middot;  Postoperative Recovery</span>
+        <div class="right-actions">
+            <a href="/about/">About</a>
+            <a class="cta" href="/portal/">Member portal</a>
+        </div>
+    </div>
+</nav>
+<div class="wrap">
+
+    <header class="hero">
+        <div class="eyebrow">Patient Education &middot; Postoperative Recovery</div>
+        <h1>After your surgery &mdash; what to expect, what to do, what to watch for.</h1>
+        <p class="lede">
+            Recovering from minimally-invasive gynecologic surgery is faster and more comfortable today than it was a decade ago,
+            because of <em>Enhanced Recovery After Surgery (ERAS)</em> protocols<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">?, ACOG Committee Opinion No. 750: Perioperative Pathways: Enhanced Re..., Obstet Gynecol 2018 &middot; PMID 30134426</span></sup><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Nelson et al., Guidelines for postoperative care in gynecologic/oncology surgery: ..., Gynecol Oncol 2016 &middot; PMID 26757238</span></sup><!-- §0.8 anchor: kb_doc_id=1ef4fe71-3efb-4045-a741-9cc7effb56c6; field=keyPoints; idx=0 --> that
+            integrate everything from how you prepare in the week before surgery, to how anesthesia is delivered, to how pain is
+            controlled afterwards without leaning on opioids<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Massoth et al., Impact of opioid-free anaesthesia on postoperative nausea, vomiting..., J Clin Anesth 2021 &middot; PMID 34229292</span></sup>. This guide walks through what to expect from your
+            Mount Zara surgery &mdash; the week before, the day of, the first week home, and the longer arc to full recovery &mdash;
+            with explicit attention to the four things that drive most postoperative phone calls: <strong>constipation, pain,
+            urinary issues, and vaginal bleeding</strong><!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=5 --><!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=6 -->.
+        </p>
+    </header>
+    <section class="key-facts" aria-label="At a glance">
+        <div class="fact"><div class="stat">2&ndash;6<span class="unit">wk</span></div><div class="label">typical recovery for minimally-invasive gynecologic surgery, depending on the procedure.</div></div>
+        <div class="fact"><div class="stat">&lt;5<span class="unit">%</span></div><div class="label">overall complication rate when ERAS protocols are followed correctly<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Nelson et al., Guidelines for postoperative care in gynecologic/oncology surgery: ..., Gynecol Oncol 2016 &middot; PMID 26757238</span></sup><!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=4 -->.</div></div>
+        <div class="fact"><div class="stat">4 things<span class="unit"></span></div><div class="label">drive most post-op calls &mdash; constipation, pain, catheter, bleeding<!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=5 -->.</div></div>
+    </section>
+    
+
+    <section class="section">
+        <h2>The recovery timeline</h2>
+        <p>Recovery is layered. The week before sets up how the day goes; the day of recovery sets up the first week; the first week sets up the longer return-to-everything. Each phase has its own focus, and there&rsquo;s a dedicated card below for each.</p>
+        <div class="ladder-cards">
+            <article class="ladder-card" data-modal="preop-deep">
+                <div class="rung-num">&minus;7</div>
+                <h3>Week before surgery</h3>
+                <p>Prehab, medication review (GLP-1s, anticoagulants, herbs to hold), pre-op fasting rules, contact for any new illness.</p>
+            </article>
+            <article class="ladder-card" data-modal="day-of-deep">
+                <div class="rung-num">0</div>
+                <h3>Day of surgery</h3>
+                <p>Carb loading, anti-emetic prep, multimodal anesthesia, early mobilization. Discharge same-day or 24 hours.</p>
+            </article>
+            <article class="ladder-card" data-modal="early-rec">
+                <div class="rung-num">1&ndash;7</div>
+                <h3>Days 1&ndash;7</h3>
+                <p>Rest, walking, fluids, scheduled non-opioid pain control, normalized eating, return of bowel function. Watch for red flags.</p>
+            </article>
+            <article class="ladder-card" data-modal="weeks-rec">
+                <div class="rung-num">2&ndash;6</div>
+                <h3>Weeks 2&ndash;6</h3>
+                <p>Gradual return to driving, work, exercise. Most people back to non-strenuous activity by week 2&ndash;3, full intensity by week 6.</p>
+            </article>
+            <article class="ladder-card" data-modal="pain-deep">
+                <div class="rung-num">Rx</div>
+                <h3>Pain management</h3>
+                <p>Scheduled acetaminophen + NSAID is the foundation<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Massoth et al., Impact of opioid-free anaesthesia on postoperative nausea, vomiting..., J Clin Anesth 2021 &middot; PMID 34229292</span></sup>. Opioids reserved for breakthrough pain only.</p>
+            </article>
+            <article class="ladder-card" data-modal="complications">
+                <div class="rung-num">!</div>
+                <h3>Red flags &mdash; call</h3>
+                <p>Fever, soaking pads, calf pain, shortness of breath, severe abdominal pain, inability to void, persistent vomiting.</p>
+            </article>
+        </div>
+    </section>
+    
+
+    <section class="section">
+        <h2>The four things that drive most post-op calls</h2>
+        <p>The KB has it codified clearly: most post-MIGS telephone calls are about <em>constipation, pain, urinary catheters, and vaginal bleeding</em><!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=5 -->. Knowing what&rsquo;s normal for each takes a lot of stress out of recovery.</p>
+        <div class="palm-coein-grid">
+            <div class="cause-card cause-palm">
+                <h3>Constipation</h3>
+                <ul>
+                    <li>Expected for 3&ndash;7 days after surgery from anesthesia, decreased activity, and any opioid use.</li>
+                    <li>Pre-empt it: start <strong>polyethylene glycol (Miralax) the day after surgery</strong>, plus stool softener (docusate). Adequate hydration and walking are non-negotiable.</li>
+                    <li>If no bowel movement by day 4: add a stimulant laxative (senna, bisacodyl).</li>
+                    <li>Call if no bowel movement by day 7 despite a full regimen, severe distension, or vomiting.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-coein">
+                <h3>Pain</h3>
+                <ul>
+                    <li>Predictable for the first 3&ndash;7 days. Worst at day 1&ndash;2, improving thereafter.</li>
+                    <li>Foundation: <strong>scheduled acetaminophen 1000&nbsp;mg every 8 hours + NSAID (ibuprofen 600&nbsp;mg every 6&ndash;8 hours)</strong> with food<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Massoth et al., Impact of opioid-free anaesthesia on postoperative nausea, vomiting..., J Clin Anesth 2021 &middot; PMID 34229292</span></sup>.</li>
+                    <li>Opioid (oxycodone or similar) only for breakthrough pain not relieved by the above.</li>
+                    <li>Call if pain is escalating despite scheduled regimen, severely sharp / localized, or new and different.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-palm">
+                <h3>Urinary issues</h3>
+                <ul>
+                    <li>Postoperative urinary retention (POUR)<!-- §0.8 anchor: kb_doc_id=1b915400-7869-4e68-8002-a98aff82fcbc; field=keyPoints; idx=7 --> can happen after pelvic surgery &mdash; impaired emptying despite a full bladder.</li>
+                    <li>If you had a catheter overnight: removed before discharge in most cases; some patients go home with one for 24&ndash;48 hours.</li>
+                    <li>Burning with urination (especially with concentrated urine from inadequate fluid intake) is common but warrants a urine culture if it persists.</li>
+                    <li>Call if you can&rsquo;t empty your bladder, have severe burning with cloudy or bloody urine, or develop fever.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-coein">
+                <h3>Vaginal bleeding</h3>
+                <ul>
+                    <li>Light spotting to light bleeding for 2&ndash;6 weeks after most gynecologic surgery is expected, depending on the procedure (hysterectomy, hysteroscopic surgery, vaginal procedures bleed more than purely laparoscopic).</li>
+                    <li>The pattern: heaviest in the first days, gradually transitioning to brown / dark discharge, then minimal by week 2&ndash;3.</li>
+                    <li>Use pads (not tampons) until cleared at your post-op visit.</li>
+                    <li>Call if you soak through a pad every 1&ndash;2 hours, pass large clots, or have new heavy bleeding after it had stopped.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+
+    <section class="section">
+        <h2>Most common patient questions</h2>
+        <div class="qa-grid">
+            <details class="qa"><summary>When can I drive again?</summary>
+                <div class="qa-answer"><p>When you are off opioid pain medication, can comfortably perform an emergency stop, and feel mentally sharp. For most laparoscopic gynecologic procedures, that&rsquo;s typically 5&ndash;7 days. After abdominal hysterectomy or larger open procedures, it can be 2&ndash;3 weeks. Use your judgment &mdash; if a sudden brake-slam would be a problem, you&rsquo;re not ready.</p></div>
+            </details>
+            <details class="qa"><summary>When can I exercise / lift?</summary>
+                <div class="qa-answer"><p>Light walking starts the day of surgery &mdash; it&rsquo;s part of ERAS. Most patients return to light non-strenuous activity (yoga, easy cardio, light weights) by week 2. Heavy lifting (more than ~10&ndash;15&nbsp;lb) is restricted for 4&ndash;6 weeks after laparoscopic surgery, longer after open abdominal procedures or extensive reconstruction. Full-intensity workouts at 6 weeks for most patients. Pelvic-floor and core work is often part of post-op recovery if you had vaginal or pelvic floor procedures.</p></div>
+            </details>
+            <details class="qa"><summary>When can I have sex?</summary>
+                <div class="qa-answer"><p>After most laparoscopic gynecologic surgery &mdash; 2&ndash;4 weeks when there&rsquo;s no vaginal cuff or vaginal repair to heal. After hysterectomy &mdash; <strong>nothing in the vagina (intercourse, tampons, douching) for 6 weeks</strong> to allow the vaginal cuff to heal. After vaginal reconstructive surgery &mdash; per the specific recommendation given at the post-op visit.</p></div>
+            </details>
+            <details class="qa"><summary>How do I know if I have an infection?</summary>
+                <div class="qa-answer"><p>Surgical site infection is the most common gyn-surgery complication<!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=1 --><!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=2 -->. Signs: fever &gt;38.0&deg;C (100.4&deg;F), spreading redness around an incision, increasing pain after day 2&ndash;3, purulent (yellow / green / foul-smelling) drainage from an incision or vagina, severe abdominal pain. Call same-day for any of these.</p></div>
+            </details>
+            <details class="qa"><summary>What about blood clots?</summary>
+                <div class="qa-answer"><p>Risk is elevated for several weeks after surgery and is mitigated by sequential compression devices intraop, walking starting day of surgery, and pharmacologic prophylaxis (heparin / LMWH) in higher-risk patients<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Geerts et al., Prevention of venous thromboembolism: American College of Chest Phy..., Chest 2008 &middot; PMID 18574271</span></sup>. Call <strong>immediately</strong> for: calf or thigh pain or swelling (DVT), sudden shortness of breath, chest pain, or fast heart rate (PE).</p></div>
+            </details>
+            <details class="qa"><summary>What about Ozempic / GLP-1 medications around surgery?</summary>
+                <div class="qa-answer"><p>The current anesthesia guidance<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Oh et al., Perioperative risks of glucagon-like peptide-1 receptor agonists an..., Anesth Pain Med (Seoul) 2026 &middot; PMID 42135216</span></sup>: hold daily GLP-1 preparations for at least <strong>1 day</strong> pre-op; hold weekly preparations for at least <strong>1 week</strong> pre-op (some societies recommend up to 2 weeks). The concern is delayed gastric emptying and aspiration risk under anesthesia. You will need to discuss timing with both your prescriber and your anesthesia team well in advance of surgery. Same applies if you&rsquo;re on tirzepatide (Mounjaro/Zepbound).</p></div>
+            </details>
+            <details class="qa"><summary>When is my follow-up?</summary>
+                <div class="qa-answer"><p>Typically 2 weeks after surgery for incision check, pathology review, removal of any vaginal packing or skin sutures, and review of activity restrictions. A second visit at 6 weeks is standard for hysterectomy or larger procedures. The portal will have your specific schedule.</p></div>
+            </details>
+        </div>
+    </section>
+    
+<section class="section references-section" id="references">
+<h2>References</h2>
+<p class="ref-intro">Every clinical claim above ties to one of these peer-reviewed sources. Click any abstract to expand the verbatim PubMed record retrieved via NCBI E-Utilities.</p>
+<ol class="ref-list">
+<li id="ref-1">
+<div class="ref-label"><strong>?, ACOG Committee Opinion No. 750: Perioperative Pathways: Enhanced Recovery After Surgery, <em>Obstet Gynecol</em> 2018</strong></div>
+<div class="ref-what">ACOG Committee Opinion 750 — Perioperative Pathways: Enhanced Recovery After Surgery (ERAS): multidisciplinary bundle of pre-op carbohydrate loading, opioid-sparing anesthesia, early feeding/ambulation, multimodal analgesia.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30134426/" target="_blank" rel="noopener">30134426</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Gynecologic surgery is very common: hysterectomy alone is one of the most frequently performed operating room procedures each year. It is well known that surgical stress induces a catabolic state that leads to increased cardiac demand, relative tissue hypoxia, increased insulin resistance, impaired coagulation profiles, and altered pulmonary and gastrointestinal function. Enhanced Recovery After Surgery (ERAS) pathways were developed with the goal of maintaining normal physiology in the perioperative period, thus optimizing patient outcomes without increasing postoperative complications or readmissions. The basic principles of ERAS include attention to the following: preoperative counseling and nutritional strategies, including avoidance of prolonged perioperative fasting; perioperative considerations, including a focus on regional anesthetic and nonopioid analgesic approaches, fluid balance, and maintenance of normothermia; and promotion of postoperative recovery strategies, including early mobilization and appropriate thromboprophylaxis. Benefits of ERAS pathways include shorter length of stay, decreased postoperative pain and need for analgesia, more rapid return of bowel function, decreased complication and readmission rates, and increased patient satisfaction. Implementation of ERAS protocols has not been shown to increase readmission, mortality, or reoperation rates. These benefits have been replicated across the spectrum of gynecologic surgeries, including open and minimally invasive approaches and benign and oncologic surgeries. The implementation of the ERAS program requires collaboration from all members of the surgical team. Enhanced Recovery After Surgery is a comprehensive program, and data demonstrate success when multiple components of the ERAS pathway are implemented together. Successful ERAS pathway implementation across the spectrum of gynecologic care has the potential to improve patient care and health care delivery systems.</div></details>
+</li>
+<li id="ref-2">
+<div class="ref-label"><strong>Nelson et al., Guidelines for postoperative care in gynecologic/oncology surgery: Enhanced Recovery After Surgery (ERAS®) Society recommendations--Part II, <em>Gynecol Oncol</em> 2016</strong></div>
+<div class="ref-what">Nelson et al., Gynecol Oncol 2016 (ERAS Society) — guidelines for postoperative care in gynecologic/oncology surgery: protocol elements that consistently reduce length of stay and complications.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26757238/" target="_blank" rel="noopener">26757238</a></div>
+</li>
+<li id="ref-3">
+<div class="ref-label"><strong>Kehlet, Multimodal approach to control postoperative pathophysiology and rehabilitation, <em>Br J Anaesth</em> 1997</strong></div>
+<div class="ref-what">Kehlet, Br J Anaesth 1997 — foundational multimodal approach to control postoperative pathophysiology and rehabilitation; the conceptual root of all subsequent ERAS pathways.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/9175983/" target="_blank" rel="noopener">9175983</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Major surgery is still associated with undesirable sequelae such as pain, cardiopulmonary, infective and thromboembolic complications, cerebral dysfunction, nausea and gastrointestinal paralysis, fatigue and prolonged convalescence. The key pathogenic factor in postoperative morbidity, excluding failures of surgical and anaesthetic technique, is the surgical stress response with subsequent increased demands on organ function. These changes in organ function are thought to be mediated by trauma-induced endocrine metabolic changes and activation of several biological cascade systems (cytokines, complement, arachidonic acid metabolites, nitric oxide, free oxygen radicals, etc). To understand postoperative morbidity it is therefore necessary to understand the pathophysiological role of the various components of the surgical stress response and to determine if modification of such responses may improve surgical outcome. While no single technique or drug regimen has been shown to eliminate postoperative morbidity and mortality, multimodal interventions may lead to a major reduction in the undesirable sequelae of surgical injury with improved recovery and reduction in postoperative morbidity and overall costs.</div></details>
+</li>
+<li id="ref-4">
+<div class="ref-label"><strong>Gould et al., Prevention of VTE in nonorthopedic surgical patients: Antithrombotic Therapy and Prevention of Thrombosis, 9th ed: American College of Chest Physicians Evidence-Based Clinical Practice Guidelines, <em>Chest</em> 2012</strong></div>
+<div class="ref-what">Gould et al., CHEST 2012 (ACCP Antithrombotic Therapy guideline) — prevention of VTE in nonorthopedic surgical patients including perioperative management of anticoagulant therapy.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/22315263/" target="_blank" rel="noopener">22315263</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: VTE is a common cause of preventable death in surgical patients.<br><br>METHODS: We developed recommendations for thromboprophylaxis in nonorthopedic surgical patients by using systematic methods as described in Methodology for the Development of Antithrombotic Therapy and Prevention of Thrombosis Guidelines. Antithrombotic Therapy and Prevention of Thrombosis, 9th ed: American College of Chest Physicians Evidence-Based Clinical Practice Guidelines in this supplement.<br><br>RESULTS: We describe several alternatives for stratifying the risk of VTE in general and abdominal-pelvic surgical patients. When the risk for VTE is very low (&lt; 0.5%), we recommend that no specific pharmacologic (Grade 1B) or mechanical (Grade 2C) prophylaxis be used other than early ambulation. For patients at low risk for VTE (∼1.5%), we suggest mechanical prophylaxis, preferably with intermittent pneumatic compression (IPC), over no prophylaxis (Grade 2C). For patients at moderate risk for VTE (∼3%) who are not at high risk for major bleeding complications, we suggest low-molecular-weight heparin (LMWH) (Grade 2B), low-dose unfractionated heparin (Grade 2B), or mechanical prophylaxis with IPC (Grade 2C) over no prophylaxis. For patients at high risk for VTE (∼6%) who are not at high risk for major bleeding complications, we recommend pharmacologic prophylaxis with LMWH (Grade 1B) or low-dose unfractionated heparin (Grade 1B) over no prophylaxis. In these patients, we suggest adding mechanical prophylaxis with elastic stockings or IPC to pharmacologic prophylaxis (Grade 2C). For patients at high risk for VTE undergoing abdominal or pelvic surgery for cancer, we recommend extended-duration, postoperative, pharmacologic prophylaxis (4 weeks) with LMWH over limited-duration prophylaxis (Grade 1B). For patients at moderate to high risk for VTE who are at high risk for major bleeding complications or those in whom the consequences of bleeding are believed to be particularly severe, we suggest use of mechanical prophylaxis, preferably with IPC, over no prophylaxis until the risk of bleeding diminishes and pharmacologic prophylaxis may be initiated (Grade 2C). For patients in all risk groups, we suggest that an inferior vena cava filter not be used for primary VTE prevention (Grade 2C) and that surveillance with venous compression ultrasonography should not be performed (Grade 2C). We developed similar recommendations for other nonorthopedic surgical populations.<br><br>CONCLUSIONS: Optimal thromboprophylaxis in nonorthopedic surgical patients will consider the risks of VTE and bleeding complications as well as the values and preferences of individual patients.</div></details>
+</li>
+<li id="ref-5">
+<div class="ref-label"><strong>Geerts et al., Prevention of venous thromboembolism: American College of Chest Physicians Evidence-Based Clinical Practice Guidelines (8th Edition), <em>Chest</em> 2008</strong></div>
+<div class="ref-what">Geerts et al., CHEST 2008 (ACCP guideline) — prevention of venous thromboembolism: risk stratification, mechanical and pharmacologic prophylaxis selection in surgical patients.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/18574271/" target="_blank" rel="noopener">18574271</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This article discusses the prevention of venous thromboembolism (VTE) and is part of the Antithrombotic and Thrombolytic Therapy: American College of Chest Physicians Evidence-Based Clinical Practice Guidelines (8th Edition). Grade 1 recommendations are strong and indicate that the benefits do or do not outweigh risks, burden, and costs. Grade 2 suggestions imply that individual patient values may lead to different choices (for a full discussion of the grading, see the &quot;Grades of Recommendation&quot; chapter by Guyatt et al). Among the key recommendations in this chapter are the following: we recommend that every hospital develop a formal strategy that addresses the prevention of VTE (Grade 1A). We recommend against the use of aspirin alone as thromboprophylaxis for any patient group (Grade 1A), and we recommend that mechanical methods of thromboprophylaxis be used primarily for patients at high bleeding risk (Grade 1A) or possibly as an adjunct to anticoagulant thromboprophylaxis (Grade 2A). For patients undergoing major general surgery, we recommend thromboprophylaxis with a low-molecular-weight heparin (LMWH), low-dose unfractionated heparin (LDUH), or fondaparinux (each Grade 1A). We recommend routine thromboprophylaxis for all patients undergoing major gynecologic surgery or major, open urologic procedures (Grade 1A for both groups), with LMWH, LDUH, fondaparinux, or intermittent pneumatic compression (IPC). For patients undergoing elective hip or knee arthroplasty, we recommend one of the following three anticoagulant agents: LMWH, fondaparinux, or a vitamin K antagonist (VKA); international normalized ratio (INR) target, 2.5; range, 2.0 to 3.0 (each Grade 1A). For patients undergoing hip fracture surgery (HFS), we recommend the routine use of fondaparinux (Grade 1A), LMWH (Grade 1B), a VKA (target INR, 2.5; range, 2.0 to 3.0) [Grade 1B], or LDUH (Grade 1B). We recommend that patients undergoing hip or knee arthroplasty or HFS receive thromboprophylaxis for a minimum of 10 days (Grade 1A); for hip arthroplasty and HFS, we recommend continuing thromboprophylaxis &gt; 10 days and up to 35 days (Grade 1A). We recommend that all major trauma and all spinal cord injury (SCI) patients receive thromboprophylaxis (Grade 1A). In patients admitted to hospital with an acute medical illness, we recommend thromboprophylaxis with LMWH, LDUH, or fondaparinux (each Grade 1A). We recommend that, on admission to the ICU, all patients be assessed for their risk of VTE, and that most receive thromboprophylaxis (Grade 1A).</div></details>
+</li>
+<li id="ref-6">
+<div class="ref-label"><strong>Massoth et al., Impact of opioid-free anaesthesia on postoperative nausea, vomiting and pain after gynaecological laparoscopy - A randomised controlled trial, <em>J Clin Anesth</em> 2021</strong></div>
+<div class="ref-what">Massoth et al., 2021 — opioid-free anaesthesia reduces postoperative nausea, vomiting, and pain compared with opioid-based regimens; supports the multimodal-analgesia component of ERAS.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34229292/" target="_blank" rel="noopener">34229292</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY OBJECTIVE: Opioid-free anaesthesia may enhance postoperative recovery by reducing opioid-related side effects such as nausea, hyperalgesia or tolerance. The objective was to investigate the impact of multimodal opioid-free general anaesthesia on postoperative nausea, vomiting, pain and morphine consumption compared to the traditional opioid-based approach.<br><br>DESIGN: This study was conducted as a prospective parallel-group randomised controlled trial.<br><br>SETTING: Perioperative Care.<br><br>PATIENTS: 152 adult women undergoing elective inpatient gynaecological laparoscopy.<br><br>INTERVENTIONS: Patients were randomly assigned for opioid-free anaesthesia (Group OF) with dexmedetomidine, esketamine and sevoflurane or to have opioid-based anaesthesia (Group C) with sufentanil and sevoflurane.<br><br>MEASUREMENTS: Primary outcome was the occurrence of nausea within 24 h after surgery. Patients were assessed for the incidence and severity of PONV, postoperative pain and morphine consumption and recovery characteristics.<br><br>MAIN RESULTS: Patients in both groups had comparable clinical and surgical data. 69.7% of patients in the control group and 68.4% of patients in the opioid-free group met the primary endpoint (OR 1.06, 95% Confidence Interval (CI) (0.53; 2.12) p = 0.86). The incidence of clinically important PONV defined by the PONV impact scale was 8.1% (Group C) vs 10.5% (OF); p = 0.57). Antiemetic requirements, pain scores and morphine consumption were equivalent in both groups. Postoperative sedation was significantly increased in group OF (p &lt; 0.001), and the median length of stay at the post-anaesthesia care unit was 69.0 min (46.5-113.0) vs 50.0 (35.3-77.0) minutes in the control group (p &lt; 0.001).<br><br>CONCLUSIONS: Opioid-free multimodal general anaesthesia is feasible but did not decrease the incidence of PONV, or reduce pain scores and morphine consumption compared to an opioid-containing anaesthetic regimen.</div></details>
+</li>
+<li id="ref-7">
+<div class="ref-label"><strong>Oh et al., Perioperative risks of glucagon-like peptide-1 receptor agonists and their implications in airway management using supraglottic airway devices, <em>Anesth Pain Med (Seoul)</em> 2026</strong></div>
+<div class="ref-what">Oh et al., 2026 — perioperative risks of GLP-1 receptor agonists (semaglutide, tirzepatide): retained gastric contents and aspiration risk; current consensus on pre-op hold timing for daily vs weekly agents.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/42135216/" target="_blank" rel="noopener">42135216</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Glucagon-like peptide-1 receptor agonists (GLP-1 RAs) are widely used for managing diabetes and obesity. The increasing prevalence of these conditions has necessitated new considerations in perioperative care. By delaying gastric emptying, these agents may challenge the traditional fasting-based assumptions of gastric emptiness before anesthesia. Residual gastric contents may persist despite adherence to standard fasting guidelines. Yet, a corresponding increase in aspiration-related complications has not been consistently observed. The clinical implications of this discrepancy remain a matter of ongoing discussion. These uncertainties have implications for airway management, particularly the use of supraglottic airway devices (SGAs), which are commonly used for elective anesthesia under the assumption of a low aspiration risk. In patients treated with GLP-1 RAs, airway decisions may require individualized risk assessment rather than reliance on fasting duration alone. This narrative review aimed to synthesize current evidence regarding the effects of GLP-1 RAs on gastric physiology and aspiration risk, and discuss their potential implications for SGAs in perioperative practice.</div></details>
+</li>
+<li id="ref-8">
+<div class="ref-label"><strong>Arseni et al., The Impact of Non-Radical Hysterectomy on Urinary Functions: Evaluation of Symptoms-A Systematic Review and Meta-Analysis, <em>BJOG</em> 2026</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/41103245/" target="_blank" rel="noopener">41103245</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Simple hysterectomy is one of the most common gynaecological surgical procedures worldwide; however, its association as a possible aetiological factor for urinary dysfunction remains controversial.<br><br>OBJECTIVE: To evaluate the clinical impact of different types of non-radical hysterectomy on lower urinary tract symptoms (LUTS).<br><br>SEARCH STRATEGY: A structured search was conducted across scientific sources through December 1989 to March 2025, using terms including: &#x27;urodynamics&#x27;, &#x27;urinary incontinence&#x27;, &#x27;stress incontinence&#x27;, &#x27;urge incontinence&#x27;, &#x27;urinary urgency&#x27;, &#x27;urinary frequency&#x27;, &#x27;urinary nocturia&#x27; and &#x27;urinary retention&#x27;, &#x27;lower urinary tract symptoms&#x27;, &#x27;hysterectomy&#x27;.<br><br>SELECTION CRITERIA: Randomised controlled trials and prospective observational studies assessing patients undergoing simple hysterectomy with pre- and post-operative evaluation by validated questionnaires. Exclusion criteria included case reports, reviews, editorials, short communications, radical hysterectomy, post-operative assessment only, non-English publications and studies on pelvic organ prolapse surgery.<br><br>DATA COLLECTION AND ANALYSIS: Ten studies, encompassing 1769 patients, were included in the analysis. Five outcomes were selected: changes in urinary frequency; occurrence of stress urinary incontinence; occurrence of urge urinary incontinence; changes in nocturia; changes in incomplete bladder emptying.<br><br>MAIN RESULTS: Changes from baseline to last follow-up available in urinary frequency (OR 0.48, 95% CI 0.36-0.66; p &lt; 0.00001); stress urinary incontinence (OR = 0.54, 95% CI 0.44-0.68; p &lt; 0.00001); urge urinary incontinence (OR = 0.76, 95% CI 0.72-0.94; p = 0.01); nocturia (OR 0.55, 95% CI 0.36-0.84; p = 0.005); incomplete bladder (OR = 0.95, 95% CI 0.66-1.36; p = 0.77).<br><br>CONCLUSION: The present meta-analysis suggests that simple hysterectomy is associated with a reduction in the prevalence of urinary symptoms postoperatively.<br><br>TRIAL REGISTRATION: PROSPERO: CRD42024575574.</div></details>
+</li>
+<li id="ref-9">
+<div class="ref-label"><strong>Gao et al., The effects of coffee versus gum chewing after cesarean on bowel functions: a systematic review and network meta-analysis, <em>Int J Surg</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40607963/" target="_blank" rel="noopener">40607963</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY OBJECTIVE: This systematic review and network meta-analysis aimed to compare the effects of coffee consumption and gum chewing on postoperative bowel function recovery in patients undergoing cesarean sections.<br><br>DESIGN: Systematic review and network meta-analysis of randomized controlled trials.<br><br>PATIENTS: Patients undergoing cesarean section.<br><br>INTERVENTIONS: Coffee consumption and gum chewing for postoperative bowel function recovery.<br><br>MEASUREMENTS: The primary outcomes included the time to first defecation, first flatus, and first bowel sound postoperatively. Secondary outcomes comprised the time to first feeling of hunger, time to first toleration of food, length of hospital stay, incidence of complications, and patient satisfaction.<br><br>MAIN RESULTS: Twenty studies involving 2876 patients were included. Four studies compared coffee consumption to a control group, while sixteen studies compared gum chewing to a control group. Compared to the control group, the coffee group demonstrated a significant reduction in the time to first defecation (mean difference [95% CI]: -4.4 [-5.97, -2.91]; I 2  = 39%; P &lt; 0.00001) and the time to first flatus (mean difference [95% CI]: -4.59 [-5.67, -3.51]; I 2  = 48%; P &lt; 0.00001). Similarly, the gum chewing group showed significant reductions compared to the control group in the time to first defecation (mean difference [95% CI]: -8.04 [-11.49, -4.58]; I 2  = 98%; P &lt; 0.00001), first flatus (mean difference [95% CI]: -7.52 [-10.14, -4.90]; I 2  = 98%; P &lt; 0.00001), and first bowel sound (mean difference [95% CI]: -4.67 [-7.29, -2.06]; I 2  = 99%; P &lt; 0.00001). However, network meta-analysis revealed no significant differences between the coffee and gum chewing groups in these three outcomes. Additionally, coffee consumption significantly reduced the time to first toleration of food, whereas gum chewing did not shorten the time to first feeling of hunger or first toleration of food. Compared to the control group, gum chewing, but not coffee consumption, was associated with a shorter postoperative hospital stay. Furthermore, gum chewing reduced the incidence of complications and improved patient satisfaction.<br><br>CONCLUSIONS: Gum chewing is more effective than coffee consumption in promoting postoperative bowel function recovery. However, both interventions are superior to the control group in reducing the time to first defecation and first flatus.</div></details>
+</li>
+<li id="ref-10">
+<div class="ref-label"><strong>Kulshrestha et al., Enhanced recovery after surgery (ERAS) protocol with multimodal analgesia incorporating transverse abdominis plane block after elective caesarean delivery: A randomised controlled trial, <em>J Gynecol Obstet Hum Reprod</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40107451/" target="_blank" rel="noopener">40107451</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate ERAS protocol with multimodal analgesia incorporating transverse abdominis plane(TAP) block compared to routine postoperative care for pain control in women undergoing elective caesarean delivery.<br><br>METHODS: This randomized study was conducted after ethical approval and CTRI registration (2020/10/028652). Total 140 women scheduled for elective caesarean were randomised into two groups. ERAS protocol was implemented in Group-1(n=70), and routine practice was followed in Group-2(n=70). Multimodal analgesia included TAP block after skin closure and intravenous paracetamol at shifting to recovery, followed by oral drugs as per analgesic clock. Outcomes were Pain Numerical Rating Scale(NRS) at rest and on movement at 6, 12, 24, 48 hours and at readiness for discharge, and need for rescue analgesics.<br><br>RESULTS: NRS was significantly less in group-1 at all time points at rest and movement. Mean±SD NRS at rest was 30.57±1.52 vs. 64.71±1.52 at 6 hours, 28.14±1.39 vs. 56.57±1.39 at 12 hours in group-1 vs. group-2 respectively; (P=0.001). NRS on mobilisation was 37.71±1.57 vs. 74.00±1.57 and 36.42±1.46 vs. 65.28±1.46 at 6 and 12 hours respectively, (P=0.001). Patients needing rescue analgesia were 30 % vs. 87.1 % within 6 hours(65 % reduction), in 24.3 % vs. 77.1 % between 6-12 hours, 4.3 % vs. 40 % between 12-24 hours in group-1 and 2 respectively; with no requirement after 48 hours in either group. The mean Likert score for satisfaction was 4.4±0.60 and 3.4±0.78 in group-1 and group-2, respectively, p&lt;0.001.<br><br>CONCLUSION: ERAS protocol incorporating TAP block was effective in reducing postoperative pain, with 65 % reduction in requirement of rescue analgesia within six hours.</div></details>
+</li>
+<li id="ref-11">
+<div class="ref-label"><strong>Li et al., The Effects of Gum Chewing in the Postoperative-Period: A Systematic Review and Meta-Analysis, <em>ANZ J Surg</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40689540/" target="_blank" rel="noopener">40689540</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: Postoperative ileus (POI) is a transient impairment of gastrointestinal motility occurring after surgery. Patients with POI can suffer from complications such as increased risk of nosocomial infections, overall mortality risk, and higher overall healthcare costs. This study aims to (a) evaluate the effectiveness of gum chewing on relieving POI symptoms (b) conduct meta-analysis on POI outcome variables to estimate overall effect size.<br><br>METHODS: We searched MEDLINE (Ovid), EMBASE, CINAHL, Web of Science, and Scopus for English language randomized controlled trials (RCTs), evaluating the postoperative effects of gum chewing in adult surgical patients. Two reviewers independently screened titles, abstracts, and full texts, resolving conflicts by discussion. Study quality was assessed using the GRADE system. Meta-analysis was conducted within two surgical specialty subgroups separately.<br><br>RESULTS: From 1925 citations, 714 duplicates were removed. After title/abstract screening, 128 proceeded to full text review, out of which 43 studies met the inclusion criteria. Among RCTs, 69.8% noted statistically significant improvement in at least one of the POI outcomes in the intervention cohort. Meta-analysis showed significant reductions in time to first flatus (-7.4 h; p = 0.0003) and defecation (-18.64 h; p &lt; 0.0001) in general and colorectal surgery. Similar reductions were also observed in the OBGYN and gynecology cohort: flatus (-6.52 h; p &lt; 0.0001) and defecation (-9.71 h; p = 0.003).<br><br>CONCLUSION: Chewing gum is a safe low-cost intervention that has the potential to significantly reduce POI symptoms and hospitalization times. Meta-analysis validated the clinical relevance of the intervention. Standardized protocols are still required to delineate true effect sizes and reduce heterogeneity.</div></details>
+</li>
+<li id="ref-12">
+<div class="ref-label"><strong>Xu et al., Enhancing Perioperative Recovery in Gestational Diabetes: Assessing the Effectiveness of an Enhanced Recovery after Surgery Protocol for Cesarean Section, <em>Tohoku J Exp Med</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39814403/" target="_blank" rel="noopener">39814403</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This study evaluated the effectiveness of implementing an Enhanced Recovery after Surgery (ERAS) protocol in enhancing recovery outcomes following cesarean section (CS) in 200 women with gestational diabetes mellitus (GDM). The patients were randomized into an ERAS group or a Control group. The ERAS protocol differed from routine care by reducing preoperative fasting times, using targeted medications, employing neuraxial anesthesia and warming measures, initiating early feeding and mobilization, goal-directed fluid management, and earlier catheter removal to enhance recovery and minimize complications. Various outcome measures, including postoperative length of hospital stay (LOS) and time to achieve postoperative milestones, were assessed. Postoperative pain relief was evaluated using the visual analogue scale (VAS), while quality of life was assessed through the EuroQoL (EQ-5D-5L) survey. Patient satisfaction with nursing care was determined using the Patient Satisfaction with Nursing Care Quality Questionnaire (PSNCQQ). The ERAS group demonstrated significantly shorter postoperative LOS and achieved recovery milestones faster than the Control group. Postoperative pain relief outcomes were significantly improved in the ERAS group, with lower VAS scores for pain during rest and breastfeeding compared to the Control group. The ERAS protocol also effectively improved specific health dimensions and overall QOL following CS in patients with GDM. Furthermore, the ERAS group exhibited higher levels of patient satisfaction with postpartum nursing care quality compared to the Control group. Implementation of an ERAS protocol in CS for women with GDM significantly enhances postoperative recovery outcomes, including shorter hospital stay, improved pain relief, enhanced QOL, and increased patient satisfaction.</div></details>
+</li>
+<li id="ref-13">
+<div class="ref-label"><strong>Yıldız Birden et al., Implementation of enhanced recovery in women undergoing cesarean delivery improves breastfeeding and maternal perioperative outcomes, <em>Z Geburtshilfe Neonatol</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39952278/" target="_blank" rel="noopener">39952278</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The study aimed to evaluate delivery outcomes after implementation of the Enhanced Recovery After Surgery (ERAS) protocol in patients delivered by cesarean section (CD).This randomized controlled prospective study was conducted on 78 pregnant women who underwent CD with the ERAS protocol and 78 pregnant women who under went standard perioperative care. We compared the time to first flatus, visual pain score (VAS), the success of breastfeeding, time to initiation of breastfeeding, time to return to daily activities, hemoglobin values, the incidence of postoperative nausea and vomiting, hospital readmission rates, postoperative wound infection rates, incidence of postpartum blues, and the need for blood transfusion between two groups.Time to first flatus, VAS score, time to initiation of breastfeeding, and time to return to activities of daily living were significantly lower in the ERAS group (p&lt;0.001 for all). The rate of successful breastfeeding was significantly higher in the ERAS group (p&lt;0.001). Both groups were similar in terms of other parameters.Implementation of ERAS after CD shortens the breastfeeding initiation time and increases rates of successful breastfeeding. ERAS protocols implemented in CD improve perioperative outcomes such as visual pain score and time to resume daily activities.</div></details>
+</li>
+<li id="ref-14">
+<div class="ref-label"><strong>Borrelli et al., A randomized controlled trial of spinal morphine with an enhanced recovery pathway and its effect on duration of analgesia after cesarean delivery, <em>Anaesth Crit Care Pain Med</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37863195/" target="_blank" rel="noopener">37863195</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Intrathecal morphine is frequently administered after cesarean delivery to provide pain relief lasting up to 24 h. An enhanced recovery after cesarean pathways reduces the amount of postoperative opioids needed. The ideal dose of intrathecal morphine when combined with a pathway has not been determined.<br><br>METHODS: This was a non-inferiority trial in 72 healthy women undergoing a scheduled cesarean delivery. Women were randomized to receive either 50 mcg, 150 mcg, or 250 mcg of intrathecal morphine during spinal anesthesia, with a standardized postoperative enhanced recovery pathway. The time to request supplemental opioids was the primary outcome. Secondary outcomes included pain scores, side effects, and quality of recovery at 24 h.<br><br>RESULTS: The duration of analgesia with 50 mcg of morphine (median 24.5 h [IQR: 3.5-34.4]) was inferior to 150 mcg (29.4 h [24.5-72]), and both doses were inferior to 250 mcg (32 h [30.5-72]). Women who received 50 mcg morphine had higher pain scores than the other doses, received more supplemental opioids, and had lower quality recovery scores. The secondary outcomes between 150 mcg and 250 mcg were similar. Side effects were similar among all groups. 63% of women who received 250 mcg remained opioid-free at 72 h, compared to 150 mcg (52%) and 50 mcg (30%).<br><br>CONCLUSIONS: The duration of analgesia using intrathecal morphine with an enhanced recovery pathway was longer with 250 mcg than with lower doses, and side effects were similar. 50 mcg provided inferior pain relief over 24 h. More than half of our patients avoided additional opioids for up to 72 h with either 150 mcg or 250 mcg doses.<br><br>REGISTRATION: Clinical trial number NCT05069012.</div></details>
+</li>
+<li id="ref-15">
+<div class="ref-label"><strong>Eksteen et al., Comparison of erector spinae plane and transversus abdominis plane block for postoperative analgesia after caesarean delivery under spinal anaesthesia: A randomised controlled trial, <em>Int J Obstet Anesth</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39307664/" target="_blank" rel="noopener">39307664</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Truncal blocks contribute to multimodal analgesia that enhances early recovery after caesarean delivery. The transversus abdominis plane (TAP) block is an established technique that offers somatic abdominal wall analgesia. The erector spinae plane (ESP) block is a fascial plane technique that may offer additional visceral analgesic effects. This study hypothesized that ESP block would offer superior analgesic efficacy to TAP block in women undergoing caesarean delivery under spinal anaesthesia.<br><br>METHODS: Sixty-six ASA physical status grade 1-3 (≥18 years) patients undergoing elective caesarean delivery under spinal anaesthesia were randomly allocated to receive either bilateral ultrasound-guided TAP (N = 33) or ESP blocks at the T9 vertebral level (N = 35). The primary outcome measure was 24-hour cumulative morphine consumption. The secondary outcomes included time to first analgesic request, duration of block placement, numeric rating scale (NRS) pain scores at rest and movement, effect of pain on activities of daily living (ADLs) and care for the infant, patient analgesic satisfaction, frequency and severity of opioid-related side effects.<br><br>RESULTS: There was no statistically significant difference in mean (95% CI) 24-hour cumulative morphine consumption between groups: 32.0 (27.0 to 37.0) mg with TAP versus 27.0 (19.9 to 34.0) mg with ESP (p = 0.16). The mean (SD) duration of block placement was longer for ESP than for TAP blocks (10.7 (2.2) minutes versus 9.0 (2.5) minutes; p = 0.004). There were no significant differences in the other secondary outcomes.<br><br>CONCLUSION: This study found similar postoperative opioid use and analgesic efficacy between ESP and TAP block after caesarean delivery performed under spinal anaesthesia.<br><br>TRIAL REGISTRATION: South African National Clinical Trial Registry (DOH-27-102022-5278): https://sanctr.samrc.ac.za/TrialDisplay.aspx?TrialID=8100, Pan African Clinical Trials Registry (PACTR202301645957324): https://pactr.samrc.ac.za/TrialDisplay.aspx?TrialID=24267.</div></details>
+</li>
+<li id="ref-16">
+<div class="ref-label"><strong>Hu et al., Impact of varied feeding protocols on gastrointestinal function recovery in the early postoperative period following repeat cesarean section: a randomized controlled trial, <em>BMC Pregnancy Childbirth</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39567916/" target="_blank" rel="noopener">39567916</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: With the adjustment of China&#x27;s birth policy, the repeat cesarean sections raises concerns about potential gastrointestinal mechanical injuries and disturbances in gastrointestinal neurohormonal regulation, affecting the postoperative recovery of gastrointestinal function. These affect maternal nutritional status, prolong recovery, extend hospitalization, increase medical costs, and lead to neonatal care challenges.This study is to examine the effects of different postoperative feeding protocols on the restoration of gastrointestinal function in women undergoing repeat cesarean section.<br><br>METHODS: A total of 103 women were randomly assigned to three groups: experimental group A (n = 35), experimental group B (n = 34), and a control group (n = 34). In group A, women without choking symptoms received a clear fluid diet postoperatively, followed by a pureed diet after 6 h, and a regular soft diet after passing flatus. In group B, women chewed gum postoperatively, followed by a clear fluid diet after 2 h, a pureed diet after 6 h, and a regular soft diet after passing flatus. The control group received a clear fluid diet, a pureed diet after passing flatus, and a regular soft diet after defecation. Outcomes measured included recovery of gastrointestinal function, blood biochemical markers, comfort level, exclusive breastfeeding rate, and newborn weight loss.<br><br>RESULTS: The baseline maternal data across the three groups demonstrated no significant differences (P &gt; 0.05). Both experimental groups A and B showed earlier recovery of postoperative gastrointestinal function compared to the control group, though there was no significant difference between the two experimental groups (P &gt; 0.05). Additionally, postoperative comfort levels were significantly higher in both experimental groups than in the control group (P &lt; 0.05).<br><br>CONCLUSIONS: Early feeding is safe and effective for women who underwent repeat cesarean sections.It has been shown to accelerate gastrointestinal recovery, significantly improve maternal comfort and satisfaction.In cases where immediate postoperative oral intake is not feasible, chewing gum demonstrates a comparable promotive effect, providing a viable substitute in facilitating recovery.<br><br>TRIAL REGISTRATION: This trial has been prospectively registered at Chinese Clinical Trial Registry (ChiCTR2200065825) and the first registration date was 11/16/2022.</div></details>
+</li>
+<li id="ref-17">
+<div class="ref-label"><strong>Pinho et al., Impact of enhanced recovery after surgery (ERAS) guidelines implementation in cesarean delivery: A systematic review and meta-analysis, <em>Eur J Obstet Gynecol Reprod Biol</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38042118/" target="_blank" rel="noopener">38042118</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Cesarean delivery rate is increasing, with no prediction of this rate to drop. Implementation of Early Recovery After Surgery (ERAS) program adapted to this high prevalent obstetrical surgical procedure proposes better peri-operative care achievement with improved maternal medical care, namely reduced morbidity, faster return to normal daily activities and improved impact on quality of life. Our aim was to analyze the outcomes of ERAS guidelines implementation in cesarean sections (CS).<br><br>MATERIAL AND METHODS: A systematic review was performed across 3 databases (MEDLINE (Pubmed), Scopus and Web of Science), with no time or language filters, for articles comparing outcomes on pregnant women who delivered via CS with ERAS guidelines implementation versus the traditional approach without ERAS implementation. Outcomes established: primary - hospital length of stay; secondary - opioid consumption, readmission rates and maternal complications (overall, surgical site infection and emetic morbidity). Statistical analyses were conducted using Review Manager 5.4 and its results were expressed as mean difference, standardized mean difference and odds ratio, with 95% of confidence intervals. This systematic review was reported according to the PRISMA statement.<br><br>RESULTS: This systematic review included 16 studies (3 randomized controlled trials (RCT), 4 prospective cohorts and 9 retrospective cohorts), with a pool analysis of 19,001 women (9752 with the traditional approach and 9249 following ERAS guidelines). Our results showed a significative decrease in length of hospital stay (MD: -13.78 h; CI 95 % -19.28 to -8.28; p &lt; 0.00001) and opioid consumption (SMD: -0.91; CI 95 % -1.51 to -0.32; p = 0.003), with similar readmission rates (OR: 0.85; CI 95 % 0.50 to 1.44; p = 0.53) and maternal complications, namely: overall (OR: 0.87; CI 95 % 0.56 to 1.35; p = 0.53); surgical site infection (OR: 1.13; CI 95 % 0.72 to 1.77; p = 0.60) and emetic morbidity (OR: 0.78; CI 95 % 0.31 to 1.96; p = 0.60).<br><br>CONCLUSIONS: ERAS guidelines applied at CS management are associated with decreased length of stay and opioid consumption, without negatively impact on readmission rates and overall maternal complications, including surgical site infection and emetic morbidity. The reduced number of RCT studies and the heterogeneity of the studies (heterogeneous inter-study protocols) constitutes the major limitation of the evidence found. Still, these findings may be a foremost help to confirm the beneficial impact of an ERAS approach during peri-cesarean management.</div></details>
+</li>
+<li id="ref-18">
+<div class="ref-label"><strong>Sauro et al., Enhanced Recovery After Surgery Guidelines and Hospital Length of Stay, Readmission, Complications, and Mortality: A Meta-Analysis of Randomized Clinical Trials, <em>JAMA Netw Open</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38888922/" target="_blank" rel="noopener">38888922</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">IMPORTANCE: A comprehensive review of the evidence exploring the outcomes of enhanced recovery after surgery (ERAS) guidelines has not been completed.<br><br>OBJECTIVE: To evaluate if ERAS guidelines are associated with improved hospital length of stay, hospital readmission, complications, and mortality compared with usual surgical care, and to understand differences in estimates based on study and patient factors.<br><br>DATA SOURCES: MEDLINE, Embase, Cumulative Index to Nursing and Allied Health Literature, and Cochrane Central were searched from inception until June 2021.<br><br>STUDY SELECTION: Titles, abstracts, and full-text articles were screened by 2 independent reviewers. Eligible studies were randomized clinical trials that examined ERAS-guided surgery compared with a control group and reported on at least 1 of the outcomes.<br><br>DATA EXTRACTION AND SYNTHESIS: Data were abstracted in duplicate using a standardized data abstraction form. The study followed the Preferred Reporting Items for Systematic Reviews and Meta-Analyses. Risk of bias was assessed in duplicate using the Cochrane Risk of Bias tool. Random-effects meta-analysis was used to pool estimates for each outcome, and meta-regression identified sources of heterogeneity within each outcome.<br><br>MAIN OUTCOME AND MEASURES: The primary outcomes were hospital length of stay, hospital readmission within 30 days of index discharge, 30-day postoperative complications, and 30-day postoperative mortality.<br><br>RESULTS: Of the 12 047 references identified, 1493 full texts were screened for eligibility, 495 were included in the systematic review, and 74 RCTs with 9076 participants were included in the meta-analysis. Included studies presented data from 21 countries and 9 ERAS-guided surgical procedures with 15 (20.3%) having a low risk of bias. The mean (SD) Reporting on ERAS Compliance, Outcomes, and Elements Research checklist score was 13.5 (2.3). Hospital length of stay decreased by 1.88 days (95% CI, 0.95-2.81 days; I2 = 86.5%; P &lt; .001) and the risk of complications decreased (risk ratio, 0.71; 95% CI, 0.59-0.87; I2 = 78.6%; P &lt; .001) in the ERAS group. Risk of readmission and mortality were not significant.<br><br>CONCLUSIONS AND RELEVANCE: In this meta-analysis, ERAS guidelines were associated with decreased hospital length of stay and complications. Future studies should aim to improve implementation of ERAS and increase the reach of the guidelines.</div></details>
+</li>
+<li id="ref-19">
+<div class="ref-label"><strong>Cao et al., Enhanced recovery after gynecological surgery: A meta-analysis of randomized controlled trials, <em>Nurs Health Sci</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36464803/" target="_blank" rel="noopener">36464803</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Enhanced recovery after surgery protocol is a multidisciplinary and multimodal approach designed to improve perioperative outcomes for patients. This meta-analysis aimed to identify and elaborate on the efficacy of this protocol in women undergoing gynecologic surgery. Four databases were searched for randomized controlled trials from inception to December 2021. A total of 14 studies met the inclusion criteria and were analyzed. There was a significant reduction in the length of stay, the time to first flatus and first defecation, complications, and readmission rates in patients undergoing enhanced recovery after surgery when compared to routine care. The rate of discharge on the first postoperative day significantly increased in patients from the enhanced recovery group. There was no significant difference in the surgery time and blood loss. In conclusion, the enhanced recovery after surgery protocol might have a positive effect on patients undergoing gynecologic surgery. However, there is still heterogeneity between the included studies, and we need more research to draw reliable conclusions that enhanced recovery after surgery is favorable.</div></details>
+</li>
+<li id="ref-20">
+<div class="ref-label"><strong>Dong et al., Methods of postoperative void trial management after urogynecologic surgery: a systematic review and meta-analysis, <em>Syst Rev</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37420310/" target="_blank" rel="noopener">37420310</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Voiding trials are used to identify women at risk for postoperative urinary retention while performing optimal voiding trial management with minimal burden to the patient and medical service team. We performed a systematic review and meta-analysis of postoperative void trials following urogynecologic surgery to investigate (1) the optimal postoperative void trial methodology and (2) the optimal criteria for assessing void trial.<br><br>METHOD: We searched PubMed, EMBASE, Cochrane Central Register of Controlled Trials, and relevant reference lists of eligible articles from inception to April 2022. We identified any randomized controlled trials (RCTs) in English that studied void trials in patients undergoing urogynecologic surgery. Study selection (title/abstract and full text), data extraction, and risk of bias assessment were conducted by two independent reviewers. Extracted study outcomes included the following: the correct passing rate, time to discharge, discharge rate without a catheter after the initial void trial, postoperative urinary tract infection, and patient satisfaction.<br><br>RESULTS: Void trial methodology included backfill-assisted and autofill studies (2 RCTs, n = 95). Backfill assistance was more likely to be successful than autofill (RR 2.12, 95% CI 1.29, 3.47, P = 0.00); however, no significant difference was found in the time to discharge (WMDs =  - 29.11 min, 95% CI - 57.45, 1.23, P = 0.06). The criteria for passing void trial included subjective assessment of the urinary force of stream and objective assessment of the standard voiding trial (3 RCTs, n = 377). No significant differences were found in the correct passing rate (RR 0.97, 95% CI 0.93, 1.01, P = 0.14) or void trial failure rate (RR 0.78, 95% CI 0.52, 1.18, P = 0.24). Moreover, no significant differences were found in the complication rates or patient satisfaction between the two criteria.<br><br>CONCLUSION: Bladder backfilling was associated with a lower rate of catheter discharge after urogynecologic surgery. The subjective assessment of FOS is a reliable and safe method for assessing postoperative voiding because it is less invasive.<br><br>SYSTEMATIC REVIEW REGISTRATION: PROSPERO CRD42022313397.</div></details>
+</li>
+<li id="ref-21">
+<div class="ref-label"><strong>El-Kefraoui et al., Impact of enhanced recovery pathways on patient-reported outcomes after abdominal surgery: a systematic review, <em>Surg Endosc</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37474828/" target="_blank" rel="noopener">37474828</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Evidence supports that enhanced recovery pathways (ERPs) reduce length of stay and complications; however, these measures may not reflect the perspective of patients who are the main stakeholders in the recovery process. This systematic review aimed to appraise the evidence regarding the impact of ERPs on patient-reported outcomes (PROs) after abdominal surgery.<br><br>METHODS: Five databases (Medline, Embase, Biosis, Cochrane, and Web of Science) were searched for randomized controlled trials (RCTs) addressing the impact of ERPs on PROs after abdominal surgery. We focused on distinct periods of recovery: early (within 7 days postoperatively) and late (beyond 7 days). Risk of bias was assessed using Cochrane&#x27;s RoB 2.0. Results were appraised descriptively as heterogeneity hindered meta-analysis. Certainty of evidence was evaluated using GRADE.<br><br>RESULTS: Fifty-six RCTs were identified [colorectal (n = 18), hepatopancreaticobiliary (HPB) (n = 11), upper gastrointestinal (UGI) (n = 10), gynecological (n = 7), urological (n = 7), general surgery (n = 3)]. Most trials had &#x27;some concerns&#x27; (n = 30) or &#x27;high&#x27; (n = 25) risk of bias. In the early postoperative period, ERPs improved patient-reported general health (colorectal, HPB, UGI, urological; very low to low certainty), physical health (colorectal, gynecological; very low to low certainty), mental health (colorectal, gynecological; very low certainty), pain (all specialties; very low to moderate certainty), and fatigue (colorectal; low certainty). In the late postoperative period, ERPs improved general health (HPB, UGI, urological; very low certainty), physical health (UGI, gynecological, urological; very low to low certainty), mental health (UGI, gynecological, urological; very low certainty), social health (gynecological; very low certainty), pain (gynecological, urological; very low certainty), and fatigue (gynecological; very low certainty).<br><br>CONCLUSION: This review supports that ERPs may have a positive impact on patient-reported postoperative health status (i.e., general, physical, mental, and social health) and symptom experience (i.e., pain and fatigue) after abdominal surgery; however, data were largely derived from low-quality trials. Although these findings contribute important knowledge to inform evidence-based ERP implementation, there remains a great need to improve PRO assessment in studies focused on postoperative recovery.</div></details>
+</li>
+<li id="ref-22">
+<div class="ref-label"><strong>Feng et al., The Application of Enhanced Recovery After Surgery for Gastrectomy and Colorectal Resection: A Systematic Review and Meta-Analysis, <em>J Laparoendosc Adv Surg Tech A</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37130316/" target="_blank" rel="noopener">37130316</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Purpose: Enhanced recovery after surgery (ERAS) protocols not only positively affect gastrointestinal surgery outcomes but may also increase the risk of some complications. This meta-analysis was conducted to assess the impact of ERAS on the recovery and complications following gastrointestinal surgery. Materials and Methods: Studies published before December 2022 were retrieved from the following databases, EMBASE, PubMed, Cochrane Library, and Web of Science, without limitations of language or race. The endpoints included lung infection, surgical site infection, postoperative ileus, length of hospitalization, urinary tract infection, readmission, anastomotic leakage, and C-reactive protein serum levels. Results: A total of 23 studies were included. The results of the meta-analysis revealed that there was a decrease in incidence of the lung infection (risk ratio = 0.46, 95% confidence interval 0.27-0.74, P = .002) and postoperative length of hospitalization (P &lt; .00001). However, ERAS protocol groups had higher readmission rates, nausea, and vomiting. There was no significant difference in the incidence of anastomotic leakage, ileus, surgical site infection, and urinary tract infection between the experimental and control groups. Conclusions: ERAS protocols can reduce the risk of postoperative lung infections, shorten hospital stays, and expedite patient recovery. Furthermore, ERAS protocols are not associated with serious complications following gastrointestinal surgeries.</div></details>
+</li>
+<li id="ref-23">
+<div class="ref-label"><strong>Liu et al., Moxibustion for Managing Postoperative Urinary Retention After Hemorrhoidectomy and Anorectal Surgeries: A Systematic Review and Meta-Analysis of Randomized Controlled Trials, <em>J Perianesth Nurs</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37589632/" target="_blank" rel="noopener">37589632</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Common surgical procedures for conditions affecting the anus and rectum such as hemorrhoidectomy are associated with high risks of postoperative urinary retention (POUR). Little is known about the efficacy of moxibustion in managing POUR after such surgical procedures. This systematic review and meta-analysis aimed to review the related literature and synthesize data on the effectiveness of moxibustion in managing POUR after common anorectal surgeries.<br><br>DESIGN: A systematic review and meta-analysis of randomized controlled trials (RCTs).<br><br>METHODS: PubMed, EMBASE, CENTRAL, Chinese National Knowledge Infrastructure (CNKI), VIP information, and Wanfang databases were searched to October 1, 2021 using the keywords urinary retention, moxibustion, and moxa. Randomized controlled trials (RCTs) investigating patients who had developed POUR after hemorrhoidectomy or other anorectal surgeries were eligible for inclusion. Patients receiving moxibustion formed the intervention group and the control group received usual care alone. Primary outcomes were markedly effective rate, defined as spontaneous voiding with complete symptom relief within 30 to 60 minutes after treatment; and total effective rate (ie, markedly effective rate plus effective rate, defined as spontaneous voiding with partial relief of symptoms within 60 minutes to 4 hours after treatment). Secondary outcome was time to first urination after treatment.<br><br>FINDINGS: Thirty-four RCTs met the eligibility criteria. Pooled analysis revealed that the markedly effective rate was significantly higher in the moxibustion group than that in the control group (pooled RR = 2.53, 95% CI = 2.17-2.95), and the total effective rate in the moxibustion group was also higher than that in the control group (pooled RR = 5.02, 95% CI = 4.01-6.28). The intervention group had significantly shorter times to first urination than controls (pooled effect = -2.81, 95% CI = -2.06 to -3.56).<br><br>CONCLUSIONS: Moxibustion appears superior to usual care in relieving POUR after common anorectal surgeries. Future studies are still warranted to confirm these findings.</div></details>
+</li>
+<li id="ref-24">
+<div class="ref-label"><strong>O'Neill et al., The impact of enhanced recovery after gynaecological surgery: A systematic review and meta-analysis, <em>Gynecol Oncol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36356373/" target="_blank" rel="noopener">36356373</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Enhanced Recovery After Surgery programs have become the gold standard of care in many surgical specialities.<br><br>OBJECTIVES: This updated systematic review and meta-analysis aims to evaluate how an ERAS program can impact outcomes across both benign and oncological gynaecological surgery to inform standard surgical practice.<br><br>SEARCH STRATEGY: An electronic search of the SCOPUS, Embase and PubMed Medline databases was performed for relevant studies assessing the use of ERAS in patients undergoing gynaecological surgery compared with those without ERAS.<br><br>SELECTION CRITERIA: The studies included were all trials using ERAS programs in gynaecological surgery with a clearly outlined protocol which included at least four items from the most recent guidelines and recorded one primary outcome.<br><br>DATA COLLECTION AND ANALYSIS: Meta-analysis was performed on two primary endpoints; post-operative length of stay and readmission rate and one secondary endpoint; rates of ileus. Further subgroup analyses was performed to compare benign and oncological surgeries.<br><br>MAIN RESULTS: Forty studies (7885 patients) were included in the meta-analysis; 15 randomised controlled trials and 25 cohort studies. 21 studies (4333 patients) were included in meta-analyses of length of stay. Patients in the ERAS group (2351 patients) had a shortened length of stay by 1.22 days (95% CI: -1.59 - -0.86, P &lt; 0.00001) compared to those in the control group (1982 patients). Evaluation of 27 studies (6051 patients) in meta-analysis of readmission rate demonstrated a 20% reduction in readmission rate (OR: 0.80, 95% CI: 0.65-0.97). Analysis of our secondary outcome, demonstrated a 47% reduction in rate of ileus compared to the control group.<br><br>CONCLUSIONS: ERAS pathways significantly reduce length of stay without increasing readmission rates or rates of ileus across benign and oncological gynaecological surgery.</div></details>
+</li>
+<li id="ref-25">
+<div class="ref-label"><strong>Sagi et al., Comparison between the modified French AmbUlatory Cesarean Section and standard cesarean technique-a randomized double-blind controlled trial, <em>Am J Obstet Gynecol MFM</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36828283/" target="_blank" rel="noopener">36828283</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The French AmbUlatory Cesarean Section is a cesarean delivery technique, which includes a vertical fascial incision to the left of the linea alba and an extraperitoneal approach to the uterus. The presumed benefits of this technique are decreased postoperative pain and accelerated recovery. However, evidence supporting these impressions is scarce.<br><br>OBJECTIVE: This study aimed to compare maternal recovery after French AmbUlatory Cesarean Section vs standard cesarean delivery technique.<br><br>STUDY DESIGN: In this double-blind randomized controlled trial, women undergoing elective cesarean delivery at term were allocated into French AmbUlatory Cesarean Section vs standard cesarean delivery technique. A modified French AmbUlatory Cesarean Section technique was used, adhering to all French AmbUlatory Cesarean Section operative steps except for the extraperitoneal approach. In both groups, the use of intravenous hydration, intrathecal morphine, and bladder catheter was avoided, and all women were encouraged to stand and walk 3 to 4 hours after the operation. The primary adverse composite outcome included either of the following: a visual analog scale score of &gt;6 at 3 to 4 hours after the operation, an inability to stand up and walk to the restroom 3 to 4 hours after the operation, and a 15-Item Quality of Recovery (QoR) questionnaire score of &lt;90 at 24 hours after the operation. The women were followed up for 6 weeks.<br><br>RESULTS: Overall, 116 women were included in the trial (58 in each group). The adverse composite outcome did not differ between the 2 groups (38.9% for the French AmbUlatory Cesarean Section group vs 53.8% for the regular cesarean delivery group; P=.172). In both groups, more than 90% of the women were able to get up and walk 3 to 4 hours after the operation. Compared with the standard cesarean delivery group, the French AmbUlatory Cesarean Section group had a longer duration of the operation (43.7±11.2 vs 54.4±11.3 minutes; P&lt;.001), a higher rate of intraoperative complications (0.0% vs 13.8%; P=.006), and a higher rate of umbilical cord pH level of &lt;7.2 (3.4% vs 17.2%; P=.029) were noted. Evaluation via phone call 1 week after the operation showed better quality of recovery scores in the French AmbUlatory Cesarean Section group than in the standard cesarean delivery group (27.1±8.4 vs 24.6±8.0; P=.043). Other secondary outcomes did not differ between the 2 groups.<br><br>CONCLUSION: As excellent maternal recovery was noted in both groups, we believe that the main factor affecting this recovery is the perioperative management (including avoidance of the use of intraoperative intravenous hydration, intrathecal morphine, and bladder catheter, with early postoperative mobilization). The maternal and neonatal safety outcomes of the French AmbUlatory Cesarean Section technique remain to be proven by larger-scale high-quality randomized controlled trials.</div></details>
+</li>
+<li id="ref-26">
+<div class="ref-label"><strong>Turaga, Enhanced Recovery After Surgery (ERAS) Protocols for Improving Outcomes for Patients Undergoing Major Colorectal Surgery, <em>Cureus</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37575751/" target="_blank" rel="noopener">37575751</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Enhanced Recovery After Surgery (ERAS) protocols have gained recognition as a perioperative care approach for patients undergoing major colorectal surgery. This systematic review aims to evaluate the effects of ERAS protocols on outcomes in this patient population. A systematic search was conducted in PubMed, Cochrane Library, and Embase databases for studies published between January 2010 and September 2021. Inclusion criteria encompassed studies assessing the impact of ERAS protocols on patients undergoing major colorectal surgery. Data were extracted, and a qualitative synthesis of the included studies was performed. A total of 18 studies met the inclusion criteria. The implementation of ERAS protocols was associated with several positive outcomes. Compared to traditional care, ERAS protocols significantly reduced the length of hospital stay (mean difference [MD]: -1.64 days, 95% confidence interval [CI]: -2.21 to -1.08, p&lt;0.00001), postoperative complications (odds ratio [OR]: 0.57, 95% CI: 0.46 to 0.71, p&lt;0.00001), and readmission rates (OR: 0.57, 95% CI: 0.38 to 0.85, p=0.006). ERAS protocols also led to a shorter time to return of bowel function (MD: -0.74 days, 95% CI: -1.03 to -0.45, p&lt;0.00001), time to first mobilization (MD: -0.55 days, 95% CI: -0.82 to -0.28, p&lt;0.0001), and time to first oral intake (MD: -0.62 days, 95% CI: -0.95 to -0.28, p=0.0003). Additionally, patients reported higher satisfaction levels with the implementation of ERAS protocols (MD: 1.02, 95% CI: 0.19 to 1.86, p=0.02). This systematic review demonstrates that the implementation of ERAS protocols in major colorectal surgery is associated with improved outcomes. ERAS protocols lead to reduced hospital stays, lower postoperative complications, and decreased readmission rates. Furthermore, they facilitate faster recovery of bowel function, mobilization, and oral intake. Patients also express higher satisfaction levels with ERAS implementation. Healthcare providers should consider adopting ERAS protocols to optimize perioperative care in patients undergoing major colorectal surgery.</div></details>
+</li>
+<li id="ref-27">
+<div class="ref-label"><strong>Hou et al., Effect of urinary catheter removal on different time after hysterectomy: a network meta-analysis, <em>Int Urogynecol J</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34978584/" target="_blank" rel="noopener">34978584</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION AND HYPOTHESIS: The optimal timing for removing urinary catheters is controversial for patients undergoing total hysterectomy. This study aimed to evaluate the optimal time for removing urinary catheters post-hysterectomy.<br><br>METHODS: We searched multiple databases from inception till December 31, 2020, for all randomized trials evaluating the timing of catheter removal following hysterectomy. All studies were evaluated by two investigators independently depending on inclusion and exclusion criteria. Network meta-analysis (NMA) was conducted on the data using Stata 14.0 software.<br><br>RESULTS: A total of 12 articles involving 1814 patients were ultimately included. This study showed removing urinary catheters 12.1 to 24 h (pooled OR = 2.67; 95% CI, 1.53‑4.67) and 36.1 to 48 h (pooled OR = 8.11;95% CI, 3.78‑17.36) post-hysterectomy increased the risk of urinary tract infection (UTI) compared with immediate catheter removal. Timing of catheter removal in other groups following hysterectomy accompanied a reduced risk of urinary retention (UR) versus immediate catheter removal (P &lt; 0.05). Removal of the urinary catheter from 36.1 to 48 h was most likely to lead to UTI. The maximum SUCRA value of immediate catheter removal after hysterectomy was 99.3% for UR. Catheter removal 24.1 to 36 h after hysterectomy was the best time for preventing UR.<br><br>CONCLUSION: Removal of the catheter immediately after hysterectomy may be the optimal time for preventing UTI with increased risk of UR, whereas removal time of the urinary catheters within 6 h post-hysterectomy combined with postoperative urination monitoring might be more beneficial than other removal times following hysterectomy.</div></details>
+</li>
+<li id="ref-28">
+<div class="ref-label"><strong>Liu et al., The effect of massage therapy on pain after surgery: A comprehensive meta-analysis, <em>Complement Ther Med</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36309174/" target="_blank" rel="noopener">36309174</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Findings on the usefulness of massage therapy (MT) in postoperative pain management are often inconsistent among studies.<br><br>OBJECTIVES: This study&#x27;s aim is to conduct a meta-analysis of randomized controlled trials (RCT) to clarify the effects of massage therapy in the treatment of postoperative pain.<br><br>METHODS: Three databases (PubMed, Embase, and Cochrane Central Register of Controlled Trials) were searched for RCTs published from database inception through January 26, 2021. The primary outcome was pain relief. The quality of RCTs was appraised with the Cochrane Collaboration risk of bias tool. The random-effect model was used to calculate the effect sizes and standardized mean difference (SMD) with 95 % confidential intervals (CIs) as a summary effect. The heterogeneity test was conducted through I2. Subgroup and sensitivity analyses were used to explore the source of heterogeneity. Possible publication bias was assessed using visual inspection of funnel plot asymmetry.<br><br>RESULTS: The analysis included 33 RCTs and showed that MT is effective in reducing postoperative pain (SMD, -1.32; 95 % CI, -2.01 to -0.63; p = 0.0002; I2 = 98.67 %). A similar significant effect was found for both short (immediate assessment) and long terms (assessment performed 4-6 weeks after the MT). Remarkably, we found neither the duration per session nor the dose had an impact on the effect of MT and there seemed to be no difference in the effects of different MT types. In addition, MT seemed to be more effective for adults. Furthermore, MT had better analgesic effects on cesarean section and heart surgery than orthopedic surgery.<br><br>LIMITATIONS: Publication bias is possible due to the inclusion of studies in English only. Additionally, the included studies were extremely heterogeneous. Double-blind research on MT is difficult to implement, and none of the included studies is double-blind. There was some heterogeneity and publication bias in the included studies. In addition, there is no uniform evaluation standard for the operation level of massage practitioners, which may lead to research implementation bias.<br><br>CONCLUSIONS: MT is effective in reducing postoperative pain in both short and long terms.</div></details>
+</li>
+<li id="ref-29">
+<div class="ref-label"><strong>Mattevi et al., Systematic review and meta-analysis of early removal of urinary catheter after colorectal surgery with infraperitoneal anastomosis, <em>Langenbecks Arch Surg</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34599682/" target="_blank" rel="noopener">34599682</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">AIM OF THE STUDY: To review and to analyse the feasibility of using no urinary catheter or a catheter for less than 24 h compared with longer post-operative catheter after colorectal surgery with infraperitoneal dissection.<br><br>METHODS: We performed a systematic review and meta-analysis of studies comparing no urinary catheter or a catheter for less than 24 h (early removal, ER) and urinary catheter drainage for 2 days or longer (late removal, LR) after colorectal surgery with infraperitoneal dissection. Primary endpoint was acute urinary retention (AUR) requiring a re-catheterization. Secondary endpoints were urinary tract infection (UTI), overall morbidity and hospital length of stay. Meta-analysis met the PRISMA criteria, with a random model.<br><br>RESULTS: Out of 3659 articles found, 82 comparative studies on catheter duration were selected, of which five were in colorectal surgery: three randomized trials, one retrospective and one prospective series. There were 396 ER and 410 LR patients. All had undergone surgery with infraperitoneal dissection. There was no significant difference regarding AUR (OR = 2.09 [95%CI 0.97-4.52]) but significantly less UTI (OR = 0.39 [95%CI 0.22-0.67]) for early urinary catheter removal. The number needed to harm was much higher for AUR than for UTI (23.3 vs. 8).<br><br>CONCLUSION: This meta-analysis suggests that, in terms of benefit/risk ratio, in colorectal surgery with infraperitoneal anastomosis, early removal (&lt; 24 h) of the urinary catheter would be beneficial (because of a more frequent UTI after LR than AUR after ER) and would reduce the occurrence of UTI if no AUR risk factors are present. However, these findings should be interpreted with caution because of the low quality of evidence.</div></details>
+</li>
+<li id="ref-30">
+<div class="ref-label"><strong>Bisch et al., Outcomes of enhanced recovery after surgery (ERAS) in gynecologic oncology - A systematic review and meta-analysis, <em>Gynecol Oncol</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33388155/" target="_blank" rel="noopener">33388155</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To assess the benefit of Enhanced Recovery After Surgery (ERAS) on length of stay (LOS), postoperative complications, 30-day readmission, and cost in gynecologic oncology.<br><br>METHODS: A systematic literature search was performed in MEDLINE, EMBASE, Cochrane Register of Controlled Trials, and Web of Science for all peer-reviewed cohort studies and controlled trials on ERAS involving gynecologic oncology patients. Abstracts, commentaries, non-controlled studies, and studies without specific data on gynecologic oncology patients were excluded. Meta-analysis was performed on the primary endpoint of LOS. Subgroup analyses were performed based on risk of bias of the studies included, number of ERAS elements, and ERAS compliance. Secondary endpoints were readmission rate, complications, and cost.<br><br>RESULTS: A total of 31 studies (6703 patients) were included: 5 randomized controlled trials, and 26 cohort studies. Meta-analysis of 27 studies (6345 patients) demonstrated a decrease in LOS of 1.6 days (95% confidence interval, CI 1.2-2.1) with ERAS implementation. Meta-analysis of 21 studies (4974 patients) demonstrated a 32% reduction in complications (OR 0.68, 95% CI 0.55-0.83) and a 20% reduction in readmission (OR 0.80, 95% CI 0.64-0.99) for ERAS patients. There was no difference in 30-day postoperative mortality (OR 0.61, 95% CI 0.23-1.6) for ERAS patients compared to controls. No difference in the odds of complications or reduction in LOS was observed based on number of included ERAS elements or reported compliance with ERAS interventions. The mean cost savings for ERAS patients was $2129 USD (95% CI $712 - $3544).<br><br>CONCLUSIONS: ERAS protocols decrease LOS, complications, and cost without increasing rates of readmission or mortality in gynecologic oncology surgery. This evidence supports implementation of ERAS as standard of care in gynecologic oncology.</div></details>
+</li>
+<li id="ref-31">
+<div class="ref-label"><strong>Sultan et al., Impact of enhanced recovery after cesarean delivery on maternal outcomes: A systematic review and meta-analysis, <em>Anaesth Crit Care Pain Med</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34390864/" target="_blank" rel="noopener">34390864</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: This meta-analysis explores the impact of enhanced recovery after cesarean delivery (ERAC) on maternal outcomes.<br><br>METHODS: We searched 4 databases (Web of Science, Embase, PubMed and CINAHL) in October 2020 without date limiters, for studies quantitatively comparing ERAC implementation to a control group. The primary outcome was length of hospital stay and secondary outcomes included time to mobilization and time to urinary catheter removal, opioid consumption, readmission rates and cost savings. Mean differences and odds ratios (MD and OR with 95% confidence intervals) were calculated. Levels of evidence were assessed using GRADE.<br><br>RESULTS: Twelve studies involving 17,607 patients (9693 without ERAC and 7914 with ERAC) were included. ERAC was associated with reduced: length of hospital stay (MD -0.51 days [-0.94, -0.09]; p = 0.018; I2 = 99%), time to first mobilization (MD -11.05 h [-18.64, -3.46]; p = 0.004; I2 = 98%), time to urinary catheter removal (MD -13.19 h [-17.59, -8.79]; p &lt; 0.001; I2 = 97%) and opioid consumption (MD -21.85 mg morphine equivalents [-33.19, -10.50]; p = &lt; 0.001; I2 = 91%), with no difference in maternal readmission rate (OR 1.23 [0.96, 1.57]; p = 0.10; I2 = 0%). Three studies reported cost savings associated with ERAC. The GRADE levels of evidence were rated as low or very low quality for all study outcomes.<br><br>CONCLUSION: ERAC is associated with reduction in length of stay, times to first mobilization and urinary catheter removal and opioid consumption. ERAC does not significantly affect maternal hospital readmission rates following discharge. Further studies are required to determine which ERAC interventions to implement and which outcomes best determine ERAC efficacy.</div></details>
+</li>
+<li id="ref-32">
+<div class="ref-label"><strong>Thiel et al., Retrograde Bladder Filling After Outpatient Gynecologic Surgery: A Systematic Review and Meta-analysis, <em>Obstet Gynecol</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34623077/" target="_blank" rel="noopener">34623077</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To systematically review and meta-analyze randomized controlled trials (RCTs) comparing postoperative bladder retrofilling to passive filling after outpatient gynecologic surgery to evaluate effects on postoperative outcomes.<br><br>DATA SOURCES: We searched MEDLINE, PubMed, Cochrane Central Register of Controlled Trials (CENTRAL), EMBASE, and ClinicalTrials.gov from 1947 to August 2020.<br><br>METHODS OF STUDY SELECTION: Two reviewers screened 1,465 articles. We included RCTs that compared postoperative bladder retrofilling to passive filling in patients who underwent outpatient gynecologic surgery by any approach. The primary outcome was the time to first void. Secondary outcomes included time to discharge, postoperative urinary retention, urinary tract infection, and patient satisfaction. Mean differences and relative risks (RRs) were calculated for the meta-analysis. Risk of bias was assessed using the Cochrane Risk of Bias Tool.<br><br>TABULATION, INTEGRATION, AND RESULTS: We included eight studies with 1,173 patients. Bladder retrofilling in the operating room resulted in a significant decrease in the time to first void (mean difference -33.5 minutes; 95% CI -49.1 to -17.9, 4 studies, 403 patients) and time to discharge (mean difference -32.0 minutes; 95% CI -51.5 to -12.6, eight studies, 1,164 patients). Bladder retrofilling did not shorten time to discharge when performed in the postanesthetic care unit (mean difference -14.8 min; 95% CI -62.6 to 32.9, three studies, 258 patients) or after laparoscopic hysterectomy (mean difference -26.0 min; 95% CI -56.5 to 4.5, five studies, 657 patients). There were no differences in postoperative urinary retention (RR 0.77; 95% CI 0.45-1.30, five studies, 910 patients) or risk of urinary tract infection between the retrofill and passive fill groups (RR 0.50; 95% CI 0.14-1.77, four studies, 387 patients). Patient satisfaction was comparable between groups.<br><br>CONCLUSION: Retrofilling the bladder in the operating room after outpatient gynecologic surgery modestly reduces the time to first void and discharge with no increase in adverse events.<br><br>SYSTEMATIC REVIEW REGISTRATION: PROSPERO, CRD42020203692.</div></details>
+</li>
+<li id="ref-33">
+<div class="ref-label"><strong>Huang et al., The timing of urinary catheter removal after gynecologic surgery: A meta-analysis of randomized controlled trials, <em>Medicine (Baltimore)</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31914080/" target="_blank" rel="noopener">31914080</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The present study aimed to assess the effect of removing an indwelling urinary catheter at different times on urinary retention and urinary infection in patients undergoing gynecologic surgery.Electronic databases including PubMed, EMbase, the Cochrane Central Register of Controlled Trials, and Ovid from inception to June 2018 were searched. Relevant randomized controlled trials (RCTs) of removal the indwelling urinary catheter in different time were included.Eight RCTs were included. Data were analyzed by RevMan 5.3 version. There was significant difference in urinary retention (relative risk [RR] 2.46, 95% confidence intervals [CIs] 1.10-5.53), P = .03) between the ≤6 hours and &gt;6 hours indwelling urinary catheter removal groups, while no significant differences were found in the gynecologic surgery excluded the vaginal surgery group and vaginal surgery group. When compared with &gt;6 hours indwelling urinary catheter removal group, the incidence of urinary infection was significantly reduced at the ≤6 hours removal group (RR = 0.66, 95% CI 0.48-0.89, P = .007). The urinary catheter removal time at ≤6 hours also significantly reduced the incidence of urinary retention (RR = 5.06, 95%CI 1.74-14.69, P = .003), and did not statistically increase the incidence of urinary infection (RR = 0.30, 95%CI 0.08 to 1.20, P = .09), compared with immediate urinary catheter removal after surgery.Removal time of the urinary catheter at ≤6 hours postoperatively seems to be more beneficial than immediate or &gt;6 hours for patients undergoing gynecologic surgery which excluded the vaginal surgery.</div></details>
+</li>
+<li id="ref-34">
+<div class="ref-label"><strong>Hübner et al., Guidelines for Perioperative Care in Cytoreductive Surgery (CRS) with or without hyperthermic IntraPEritoneal chemotherapy (HIPEC): Enhanced recovery after surgery (ERAS®) Society Recommendations - Part I: Preoperative and intraoperative management, <em>Eur J Surg Oncol</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32873454/" target="_blank" rel="noopener">32873454</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Enhanced recovery after surgery (ERAS) pathways have been shown to considerably reduce complications, length of stay and costs after most of surgical procedures by standardised application of best evidence-based perioperative care. The aim was to elaborate dedicated recommendations for cytoreductive surgery (CRS) ± hyperthermic intraperitoneal chemotherapy (HIPEC) in a two-part series of guidelines based on expert consensus. The present part I of the guidelines highlights preoperative and intraoperative management.<br><br>METHODS: The core group assembled a multidisciplinary panel of 24 experts involved in peritoneal surface malignancy surgery representing the fields of general surgery (n = 12), gynaecological surgery (n = 6), and anaesthesia (n = 6). Experts systematically reviewed and summarized the available evidence on 72 identified perioperative care items, following the GRADE (grading of recommendations, assessment, development, evaluation) system. Final consensus (defined as ≥50%, or ≥70% of weak/strong recommendations combined) was reached by a standardised 2-round Delphi process, regarding the strength of recommendations.<br><br>RESULTS: Response rates were 100% for both Delphi rounds. Quality of evidence was evaluated high, moderate low and very low, for 15 (21%), 26 (36%), 29 (40%) and 2 items, respectively. Consensus was reached for 71/72(98.6%) items. Strong recommendations were defined for 37 items, No consensus could be reached regarding the preemptive use of fresh frozen plasma.<br><br>CONCLUSION: The present ERAS recommendations for CRS±HIPEC are based on a standardised expert consensus process providing clinicians with valuable guidance. There is an urgent need to produce high quality studies for CRS±HIPEC and to prospectively evaluate recommendations in clinical practice.</div></details>
+</li>
+<li id="ref-35">
+<div class="ref-label"><strong>Koning et al., Intrathecal hydrophilic opioids for abdominal surgery: a meta-analysis, meta-regression, and trial sequential analysis, <em>Br J Anaesth</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32660719/" target="_blank" rel="noopener">32660719</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Intrathecal hydrophilic opioids decrease systemic opioid consumption after abdominal surgery and potentially facilitate enhanced recovery. A meta-analysis is needed to quantify associated risks and benefits.<br><br>METHODS: A systematic search was performed to find RCTs investigating intrathecal hydrophilic opioids in abdominal surgery. Caesarean section and continuous regional or neuraxial techniques were excluded. Several subgroup analyses were prespecified. A conventional meta-analysis, meta-regression, trial sequential analysis, and provision of GRADE scores were planned.<br><br>RESULTS: The search yielded 40 trials consisting of 2500 patients. A difference was detected in &#x27;i.v. morphine consumption&#x27; at Day 1 {mean difference [MD] -18.4 mg, (95% confidence interval [CI]: -22.3 to -14.4)} and Day 2 (MD -25.5 mg [95% CI: -30.2 to -20.8]), pain scores at Day 1 in rest (MD -0.9 [95% CI: -1.1 to -0.7]) and during movement (MD -1.2 [95% CI: -1.6 to -0.8]), length of stay (MD -0.2 days [95% CI: -0.4 to -0.1]) and pruritus (relative risk 4.3 [95% CI: 2.5-7.5]) but not in nausea or sedation. A difference was detected for respiratory depression (odds ratio 5.5 [95% CI: 2.1-14.2]) but not when two small outlying studies were excluded (odds ratio 1.4 [95% CI: 0.4-5.2]). The level of evidence was graded as high for morphine consumption, in part because the required information size was reached.<br><br>CONCLUSIONS: This study showed important opioid-sparing effects of intrathecal hydrophilic opioids. Our data suggest a dose-dependent relationship between the risk of respiratory depression and the dose of intrathecal opioids. Excluding two high-dose studies, intrathecal opioids have a comparable incidence of respiratory depression as the control group.<br><br>CLINICAL TRIAL REGISTRATION: PROSPERO-registry: CRD42018090682.</div></details>
+</li>
+<li id="ref-36">
+<div class="ref-label"><strong>Rimmer et al., Early versus delayed urinary catheter removal after hysterectomy: A systematic review and meta-analysis, <em>Eur J Obstet Gynecol Reprod Biol</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32065990/" target="_blank" rel="noopener">32065990</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVES: In bladder drainage, an essential part of post-hysterectomy care, the optimal timing for removing the urinary catheter is unclear. Our objective was to evaluate the risks and benefits of early (&lt;6 h) vs delayed (&gt;6 h) catheter removal post-hysterectomy.<br><br>STUDY DESIGN: A systematic review searching MEDLINE, EMBASE and Cochrane CENTRAL from inception till May 2019 for randomised trials of women undergoing hysterectomy. We reported on urinary retention, positive urine culture, urinary tract infection (UTI) (defined by symptoms and/or antibiotic use), post-operative pyrexia, time to ambulation, and length of hospital stay. We assessed risk of bias in included trials and used a random-effect model to generate risk ratios (RR) for dichotomous outcomes and weighted mean differences (WMD) for continuous outcomes, with 95 % confidence intervals (CI).<br><br>RESULTS: Of 1020 potentially relevant citations, we included 10 randomised trials (1120 women). Four trials had low risk of bias for randomisation and allocation concealment while five had low risk for outcome assessment and selective reporting. Compared to delayed removal, women in the early catheter removal group had a higher risk of urinary retention and needing re-catheterisation (10 RCTs, RR 3.61, 95 %CI 1.21-9.21, I2 = 56 %). There was some reduction in the risk of post-operative UTI (6 RCTs, RR 0.42, 95 %CI 0.18 to 0.96, I2 = 0 %), but we did not find a significant difference in post-operative pyrexia (6 RCTs, RR 0.73, 95 %CI 0.43-1.24, I2 = 18 %) or positive urine cultures (6 RCTs, RR of 0.56, 95 %CI 0.27-1.12, I2 = 55 %). There was no significant difference in the average time to ambulation (3RCTs, WMD -4.6, 95 %CI -9.16 to -0.18, I2 = 98 %) and length of hospital stay (3RCTs, WMD -1.05, 95 %CI -2.42 to 0.31, I2 = 98 %). Our meta-regression on the provision of prophylactic antibiotics did not show a significant effect on the reported outcomes. Our analysis was limited by our inability to adjust for potential effect modifiers such as the surgical route.<br><br>CONCLUSIONS: Early removal of the urinary catheter &lt;6 h post-hysterectomy seems to increase the risk of urinary retention and needing re-catheterisation, but may reduce post-operative UTI.</div></details>
+</li>
+<li id="ref-37">
+<div class="ref-label"><strong>Ilyas et al., Systematic review of enhanced recovery protocols for elective caesarean section versus conventional care, <em>Aust N Z J Obstet Gynaecol</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31514241/" target="_blank" rel="noopener">31514241</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Enhanced recovery protocols for caesarean section have been introduced in many maternity units with the aim of improving clinical outcomes and improving service efficiency.<br><br>AIM: Our aim was to assess the available evidence for the efficacy of enhanced recovery protocols for elective caesarean section compared to conventional care.<br><br>MATERIALS AND METHODS: A systematic review was performed through a search of MEDLINE, EMBASE, The Cochrane Database of Systematic Reviews and Cochrane Central Register of Controlled Trials Database.<br><br>RESULTS: After screening 118 records and reviewing 38 articles, no studies met the inclusion criteria for this systematic review. However, from ten articles we were able to describe 29 individual interventions that are included in the enhanced recovery pathways of care for elective caesarean sections. Early reintroduction of fluids and food was the only intervention that was common to all pathways.<br><br>CONCLUSION: This review reveals that while the adoption of enhanced recovery pathways for caesarean sections is increasing, there remains a paucity of evidence in the published literature on outcomes. This is reflected in the significant heterogeneity of the individual components included in various pathways currently in practice. Furthermore, development of standardised outcome metrics is required to facilitate meaningful comparison of multiple interventions. Further well-designed research is needed to properly assess the potential benefits of these interventions to improve maternal outcomes after obstetric surgery.</div></details>
+</li>
+<li id="ref-38">
+<div class="ref-label"><strong>Katz et al., The Effect of Adding Subarachnoid Epinephrine to Hyperbaric Bupivacaine and Morphine for Repeat Cesarean Delivery: A Double-Blind Prospective Randomized Control Trial, <em>Anesth Analg</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/29077615/" target="_blank" rel="noopener">29077615</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Spinal anesthesia has become the most common type of anesthetic for cesarean delivery. The major limitation to spinal anesthesia is that the duration of the anesthetic may not be adequate in the event of a prolonged surgery. Some practitioners add epinephrine to hyperbaric bupivacaine to increase the duration, although its effect has not been fully studied. We therefore aimed to evaluate whether adding epinephrine to the spinal medication prolongs the duration of action of the resultant block in women presenting for repeat cesarean delivery.<br><br>METHODS: Sixty-eight patients were randomized to receive no epinephrine (NE group), epinephrine 100 µg (low-dose [LD] group), or epinephrine 200 µg (high-dose [HD] group) with a standardized spinal mixture (1.5 mL 0.75% hyperbaric bupivacaine with 0.25 mg morphine). Sixty-five patients were included for primary analysis. Our primary outcome was time to intraoperative activation of the epidural catheter or postoperative regression of sensory blockade to T-10 dermatome level as measured by pinprick sensation; motor recovery was a secondary outcome, and graded via a Modified Bromage scale.<br><br>RESULTS: Block onset time, vital sign changes, and the incidence of hypotension; nausea, and vomiting were similar among groups. Median difference in time to T-10 regression was greatest in the HD group compared to the NE group (median difference [min] [95% confidence interval]: 40 [15-60]; P = .007), followed by the HD group to the LD group (30 [15-45]; P = .007). Comparisons of LD to NE were not significant, but trended to an increase in T-10 regression time (10 [-15 to 30]; P = .76). Median difference in time to knee extension (Bromage 3) was also greatest in the HD group when compared to both the LD and NE group (median difference [min] [95% confidence interval]: 30 [0-60]; P = .034, 60 [0-93]; P = .007). Median difference time to knee extension (min) between the LD and NE group was also significant (37.5 [15-60]; P = .001]. Pain scores during the procedure were higher in the NE group (median [interquartile range] HD: 0 [0-0], LD: 0 [0-0], NE: 0 [0-3]; P = .02) during uterine closure and were otherwise not significantly different from the other groups.<br><br>CONCLUSIONS: In this single center, prospective, double-blind, randomized control trial, the addition of epinephrine 200 µg to hyperbaric bupivacaine and preservative-free morphine for repeat cesarean delivery prolonged the duration of the sensory blockade. Motor blockade was similarly prolonged and block quality may have been enhanced.</div></details>
+</li>
+<li id="ref-39">
+<div class="ref-label"><strong>Oliveira et al., Surgical Treatment for Stress Urinary Incontinence in Women: A Systematic Review and Meta-analysis, <em>Rev Bras Ginecol Obstet</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30142667/" target="_blank" rel="noopener">30142667</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To compare surgical treatments for stress urinary incontinence in terms of efficiency and complications.<br><br>DATA SOURCES: We searched the MEDLINE and COCHRANE databases using the terms stress urinary incontinence, surgical treatment for stress urinary incontinence and sling.<br><br>SELECTION OF STUDIES: Forty-eight studies were selected, which amounted to a total of 6,881 patients with scores equal to or higher than 3 in the Jadad scale.<br><br>DATA COLLECTION: Each study was read by one of the authors, added to a standardized table and checked by a second author. We extracted data on intervention details, follow-up time, the results of treatment and adverse events.<br><br>DATA SYNTHESIS: Comparing retropubic versus transobturator slings, the former was superior for both objective (odds ratio [OR], 1.27; 95% confidence interval [CI], 1.05-1.54) and subjective (OR, 1.23; 95% CI, 1.02-1.48) cures. Between minislings versus other slings, there was a difference favoring other slings for subjective cure (OR, 0.58; 95% CI, 0.39-0.86). Between pubovaginal sling versus Burch surgery, there was a difference for both objective (OR, 2.04; 95% CI, 1.50-2.77) and subjective (OR, 1.64; 95% CI, 1.10-2.44) cures, favoring pubovaginal sling. There was no difference in the groups: midurethral slings versus Burch, pubovaginal sling versus midurethral slings, transobturator slings, minislings versus other slings (objective cure). Retropubic and pubovaginal slings are more retentionist. Retropubic slings have more bladder perforation, and transobturator slings, more leg and groin pain, neurological lesion and vaginal perforation.<br><br>CONCLUSION: Pubovaginal slings are superior to Burch colposuspension surgery but exhibit more retention. Retropubic slings are superior to transobturator slings, with more adverse events. Other slings are superior to minislings in the subjective aspect. There was no difference in the comparisons between midurethral slings versus Burch colposuspension surgery, pubovaginal versus midurethral slings, and inside-out versus outside-in transobturator slings.</div></details>
+</li>
+<li id="ref-40">
+<div class="ref-label"><strong>de Resende JA Júnior et al., Risk of urinary retention after nerve-sparing surgery for deep infiltrating endometriosis: A systematic review and meta-analysis, <em>Neurourol Urodyn</em> 2017</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26479158/" target="_blank" rel="noopener">26479158</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">AIMS: Recently, nerve-sparing (NS) techniques have been incorporated in surgeries for deep infiltrating endometriosis (DIE) to prevent urinary complications. Our aim was to perform a systematic review and meta-analysis to assess the risk of urinary retention after NS surgery for DIE compared with classical (non-NS) techniques.<br><br>METHODS: Following the MOOSE guidelines for systematic reviews of observational studies, data were collected from published research articles that compared NS techniques with non-NS techniques in DIE surgery, with regard to post-operative urinary complications.<br><br>INCLUSION CRITERIA: randomized clinical trials, intervention or observational (cohort and case-control) studies assessing women who underwent surgery for painful DIE.<br><br>EXCLUSION CRITERIA: cancer surgery and women submitted to bladder or ureteral resections. The respective relative risks (RR) and 95% confidence intervals (CI) were extracted and a forest plot was generated to show individual and combined estimates.<br><br>RESULTS: Preliminarily, 1,270 potentially relevant studies were identified from which four studies were selected. A meta-analysis was performed to assess the risk of urinary retention at discharge and 90 days after surgery. We found a common RR of 0.19 [95%CI: 0.03-1.17; (I2  = 50.20%; P = 0.09)] for need of self-catheterization at discharge in the NS group in relation to the conventional technique. Based on two studies, common RR for persistent urinary retention (after 90 days) was 0.16 [95%CI: 0.03-0.84].<br><br>CONCLUSIONS: Our results suggest significant advantages of the NS technique when considering the RR of persistent urinary retention. Controlled studies evaluating the best approach to manage the urinary tract after complex surgery for DIE are needed. Neurourol. Urodynam. 36:57-61, 2017. © 2015 Wiley Periodicals, Inc.</div></details>
+</li>
+<li id="ref-41">
+<div class="ref-label"><strong>Yeung et al., Paravertebral block versus thoracic epidural for patients undergoing thoracotomy, <em>Cochrane Database Syst Rev</em> 2016</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26897642/" target="_blank" rel="noopener">26897642</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Operations on structures in the chest (usually the lungs) involve cutting between the ribs (thoracotomy). Severe post-thoracotomy pain can result from pleural (lung lining) and muscular damage, costovertebral joint (ribcage) disruption and intercostal nerve (nerves that run along the ribs) damage during surgery. Poor pain relief after surgery can impede recovery and increase the risks of developing complications such as lung collapse, chest infections and blood clots due to ineffective breathing and clearing of secretions. Effective management of acute pain following thoracotomy may prevent these complications and reduce the likelihood of developing chronic pain. A multi-modal approach to analgesia is widely employed by thoracic anaesthetists using a combination of regional anaesthetic blockade and systemic analgesia, with both non-opioid and opioid medications and local anaesthesia blockade.There is some evidence that blocking the nerves as they emerge from the spinal column (paravertebral block, PVB) may be associated with a lower risk of major complications in thoracic surgery but the majority of thoracic anaesthetists still prefer to use a thoracic epidural blockade (TEB) as analgesia for their patients undergoing thoracotomy. In order to bring about a change in practice, anaesthetists need a review that evaluates the risk of all major complications associated with thoracic epidural and paravertebral block in thoracotomy.<br><br>OBJECTIVES: To compare the two regional techniques of TEB and PVB in adults undergoing elective thoracotomy with respect to:1. analgesic efficacy;2. the incidence of major complications (including mortality);3. the incidence of minor complications;4. length of hospital stay;5. cost effectiveness.<br><br>SEARCH METHODS: We searched for studies in the Cochrane Central Register of Controlled Trials (CENTRAL 2013, Issue 9); MEDLINE via Ovid (1966 to 16 October 2013); EMBASE via Ovid (1980 to 16 October 2013); CINAHL via EBSCO host (1982 to 16 October 2013); and reference lists of retrieved studies. We handsearched the Journal of Cardiothoracic Surgery and Journal of Cardiothoracic and Vascular Anesthesia (16 October 2013). We reran the search on 31st January 2015. We found one additional study which is awaiting classification and will be addressed when we update the review.<br><br>SELECTION CRITERIA: We included all randomized controlled trials (RCTs) comparing PVB with TEB in thoracotomy, including upper gastrointestinal surgery.<br><br>DATA COLLECTION AND ANALYSIS: We used standard methodological procedures expected by Cochrane. Two review authors (JY and SG) independently assessed the studies for inclusion and then extracted data as eligible for inclusion in qualitative and quantitative synthesis (meta-analysis).<br><br>MAIN RESULTS: We included 14 studies with a total of 698 participants undergoing thoracotomy. There are two studies awaiting classification. The studies demonstrated high heterogeneity in insertion and use of both regional techniques, reflecting real-world differences in the anaesthesia techniques. Overall, the included studies have a moderate to high potential for bias, lacking details of randomization, group allocation concealment or arrangements to blind participants or outcome assessors. There was low to very low-quality evidence that showed no significant difference in 30-day mortality (2 studies, 125 participants. risk ratio (RR) 1.28, 95% confidence interval (CI) 0.39 to 4.23, P value = 0.68) and major complications (cardiovascular: 2 studies, 114 participants. Hypotension RR 0.30, 95% CI 0.01 to 6.62, P value = 0.45; arrhythmias RR 0.36, 95% CI 0.04 to 3.29, P value = 0.36, myocardial infarction RR 3.19, 95% CI 0.13, 76.42, P value = 0.47); respiratory: 5 studies, 280 participants. RR 0.62, 95% CI 0.26 to 1.52, P value = 0.30). There was moderate-quality evidence that showed comparable analgesic efficacy across all time points both at rest and after coughing or physiotherapy (14 studies, 698 participants). There was moderate-quality evidence that showed PVB had a better minor complication profile than TEB including hypotension (8 studies, 445 participants. RR 0.16, 95% CI 0.07 to 0.38, P value &lt; 0.0001), nausea and vomiting (6 studies, 345 participants. RR 0.48, 95% CI 0.30 to 0.75, P value = 0.001), pruritis (5 studies, 249 participants. RR 0.29, 95% CI 0.14 to 0.59, P value = 0.0005) and urinary retention (5 studies, 258 participants. RR 0.22, 95% CI 0.11 to 0.46, P value &lt; 0.0001). There was insufficient data in chronic pain (six or 12 months). There was no difference found in and length of hospital stay (3 studies, 124 participants). We found no studies that reported costs.<br><br>AUTHORS&#x27; CONCLUSIONS: Paravertebral blockade reduced the risks of developing minor complications compared to thoracic epidural blockade. Paravertebral blockade was as effective as thoracic epidural blockade in controlling acute pain. There was a lack of evidence in other outcomes. There was no difference in 30-day mortality, major complications, or length of hospital stay. There was insufficient data on chronic pain and costs. Results from this review should be interpreted with caution due to the heterogeneity of the included studies and the lack of reliable evidence. Future studies in this area need well-conducted, adequately-powered RCTs that focus not only on acute pain but also on major complications, chronic pain, length of stay and costs.</div></details>
+</li>
+<li id="ref-42">
+<div class="ref-label"><strong>Kalogera et al., Enhanced recovery in gynecologic surgery, <em>Obstet Gynecol</em> 2013</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/23969801/" target="_blank" rel="noopener">23969801</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To investigate the effects of enhanced recovery (a multimodal perioperative care enhancement protocol) in patients undergoing gynecologic surgery.<br><br>METHODS: Consecutive patients managed under an enhanced recovery pathway and undergoing cytoreduction, surgical staging, or pelvic organ prolapse surgery between June 20, 2011, and December 20, 2011, were compared with consecutive historical controls (March to December 2010) matched by procedure. Wilcoxon rank-sum, χ, and Fisher&#x27;s exact tests were used for comparisons. Direct medical costs incurred in the first 30 days were obtained from the Olmsted County Healthcare Expenditure and Utilization Database and standardized to 2011 Medicare dollars.<br><br>RESULTS: A total of 241 enhanced recovery women in the case group (81 cytoreduction, 84 staging, and 76 vaginal surgery) were compared with women in the control groups. In the cytoreductive group, patient-controlled anesthesia use decreased from 98.7% to 33.3% and overall opioid use decreased by 80% in the first 48 hours with no change in pain scores. Enhanced recovery resulted in a 4-day reduction in hospital stay with stable readmission rates (25.9% of women in the case group compared with 17.9% of women in the control group) and 30-day cost savings of more than $7,600 per patient (18.8% reduction). No differences were observed in rate (63% compared with 71.8%) or severity of postoperative complications (grade 3 or more: 21% compared with 20.5%). Similar, albeit less dramatic, improvements were observed in the other two cohorts. Ninety-five percent of patients rated satisfaction with perioperative care as excellent or very good.<br><br>CONCLUSIONS: Implementation of enhanced recovery was associated with acceptable pain management with reduced opioids, reduced length of stay with stable readmission and morbidity rates, good patient satisfaction, and substantial cost reductions.<br><br>LEVEL OF EVIDENCE: II.</div></details>
+</li>
+</ol>
+</section>
+</div>
+<div id="modal-root" class="modal-root" aria-hidden="true">
+<div class="modal-backdrop" data-close></div>
+<article class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal-close" data-close aria-label="Close">&times;</button>
+<h2 id="modal-title" class="modal-title"></h2>
+<div id="modal-body" class="modal-body"></div>
+</article></div>
+<template id="tpl-preop-deep" data-title="What to do in the week before surgery">
+        <p>The week before surgery sets up how everything goes. Modern ERAS protocols front-load preparation so that the day of surgery is as straightforward as possible<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">?, ACOG Committee Opinion No. 750: Perioperative Pathways: Enhanced Re..., Obstet Gynecol 2018 &middot; PMID 30134426</span></sup><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Nelson et al., Guidelines for postoperative care in gynecologic/oncology surgery: ..., Gynecol Oncol 2016 &middot; PMID 26757238</span></sup><!-- §0.8 anchor: kb_doc_id=1ef4fe71-3efb-4045-a741-9cc7effb56c6; field=keyPoints; idx=0 -->.</p>
+        <p><strong>Medication review &mdash; what to continue, what to hold:</strong></p>
+        <ul class="bullets">
+            <li><strong>GLP-1 receptor agonists</strong> (Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda, Trulicity, Victoza) &mdash; hold per anesthesia guidance<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Oh et al., Perioperative risks of glucagon-like peptide-1 receptor agonists an..., Anesth Pain Med (Seoul) 2026 &middot; PMID 42135216</span></sup>. Generally: 1 day for daily preparations, 1 week for weekly preparations.</li>
+            <li><strong>Anticoagulants &amp; antiplatelets</strong><sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Gould et al., Prevention of VTE in nonorthopedic surgical patients: Antithromboti..., Chest 2012 &middot; PMID 22315263</span></sup> &mdash; warfarin, apixaban, rivaroxaban, dabigatran, clopidogrel, aspirin: each has different hold times. Your prescriber and surgical team will coordinate.</li>
+            <li><strong>Herbs and supplements that affect bleeding</strong> &mdash; hold for 1 week: garlic, ginger, ginkgo, ginseng, St. John&rsquo;s wort, vitamin E, fish oil, turmeric in supplement form, green tea extract.</li>
+            <li><strong>Hormonal therapy</strong> &mdash; combined oral contraceptives are sometimes held pre-major surgery; LNG-IUD typically stays; HRT decisions individualized.</li>
+            <li><strong>Standing medications you usually take</strong> (blood pressure, asthma, thyroid, etc.) &mdash; usually continued through morning of surgery with a small sip of water. Confirm with your surgical team.</li>
+        </ul>
+        <p><strong>Prehab:</strong></p>
+        <ul class="bullets">
+            <li>Walking 30 minutes daily.</li>
+            <li>Adequate protein intake (1&ndash;1.2&nbsp;g/kg/day).</li>
+            <li>Smoking cessation &mdash; even 4 weeks of cessation reduces complications.</li>
+            <li>Alcohol moderation &mdash; cessation 1&ndash;2 weeks pre-op reduces complications.</li>
+            <li>Optimize hemoglobin if anemic (iron supplementation if needed).</li>
+        </ul>
+        <p><strong>Pre-op fasting:</strong></p>
+        <ul class="bullets">
+            <li>Stop solid food <strong>8 hours</strong> before scheduled OR start.</li>
+            <li>Stop dairy <strong>6 hours</strong> before.</li>
+            <li><strong>Clear fluids (water, clear juice, black coffee, sports drinks) up to 2 hours before</strong> &mdash; modern ERAS protocols actively encourage a clear-carb drink the morning of surgery.</li>
+        </ul>
+        <p><strong>If you get sick before surgery</strong> &mdash; fever, productive cough, vomiting, diarrhea &mdash; call. Some illnesses require rescheduling.</p>
+    </template>
+<template id="tpl-day-of-deep" data-title="The day of surgery">
+        <p>The day of surgery is shorter and gentler than most patients expect for a modern MIGS case<!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=4 -->.</p>
+        <p><strong>Arrival:</strong> arrive at the surgical facility per your instructions, typically 1&ndash;2 hours before scheduled OR time. Pre-op intake includes vital signs, IV placement, anesthesia interview, surgical site marking, and confirmation of the procedure.</p>
+        <p><strong>Anesthesia:</strong> general anesthesia for most laparoscopic procedures, sometimes with regional blocks (TAP block, paracervical block) added to extend post-op pain control. Pre-induction anti-emetics. Pre-induction dexamethasone reduces postop nausea and inflammation.</p>
+        <p><strong>The procedure itself:</strong> duration depends on what&rsquo;s being done (45 minutes for a hysteroscopic procedure, 1.5&ndash;3 hours for laparoscopic hysterectomy or extensive endometriosis excision). Minimal blood loss for most MIGS cases.</p>
+        <p><strong>Recovery room (PACU):</strong> 1&ndash;2 hours. Vital signs monitored. Multimodal analgesia continues. Some patients receive IV anti-emetics, fluids, or pain medication. Catheter typically removed before discharge unless retention is anticipated<!-- §0.8 anchor: kb_doc_id=1b915400-7869-4e68-8002-a98aff82fcbc; field=keyPoints; idx=7 -->.</p>
+        <p><strong>Discharge:</strong> most laparoscopic gynecologic procedures are same-day discharge. Criteria: stable vitals, tolerating fluids, urinating spontaneously, pain controlled on oral medication, family or friend available to drive home and stay with you for 24 hours.</p>
+        <p><strong>Going home:</strong> someone drives you. You walk to the car &mdash; <em>walking is part of ERAS</em>, not a sign you&rsquo;re not ready. You go to bed when you get home, but not all day &mdash; the goal is to get up and walk every 1&ndash;2 hours of waking time.</p>
+    </template>
+<template id="tpl-early-rec" data-title="Days 1&amp;ndash;7 &amp;mdash; early recovery">
+        <p>The first week is when most of the symptomatic recovery happens.</p>
+        <p><strong>Day 0&ndash;1:</strong> pain peaks at day 1 for most patients. Take pain medication on schedule, not as needed &mdash; staying ahead of pain works better than chasing it. Light activity (walking 5&ndash;10 minutes every 1&ndash;2 hours), liquids and light food as tolerated, naps are fine. Most people sleep 12+ hours.</p>
+        <p><strong>Day 2&ndash;3:</strong> pain typically improving. Bowel function returning (the first bowel movement is a milestone &mdash; usually day 3&ndash;5). Start polyethylene glycol day 1 to make this less of an event. Diet broadens.</p>
+        <p><strong>Day 4&ndash;7:</strong> most patients off opioid pain medication entirely. Can shower per your surgeon&rsquo;s instructions (typically after 24&ndash;48 hours). Light activities (cooking, household), light walking, gentle stretching. Driving once off opioids and feeling alert.</p>
+        <p><strong>Routine activities that may surprise:</strong></p>
+        <ul class="bullets">
+            <li><strong>Shoulder pain</strong> after laparoscopy is from CO2 absorption irritating the diaphragm. Improves day 2&ndash;3, helped by walking.</li>
+            <li><strong>Belly bloating / distension</strong> from residual gas &mdash; same cause, same remedy.</li>
+            <li><strong>Fatigue</strong> for the entire first week, sometimes longer. Sleep extra.</li>
+            <li><strong>Emotional ups and downs</strong> are common &mdash; partly anesthesia, partly hormonal shifts if ovaries were removed, partly the body recovering.</li>
+            <li><strong>Bruising</strong> at IV sites and around incisions resolves over 1&ndash;2 weeks.</li>
+        </ul>
+        <p><strong>Wound care:</strong> small adhesive strips over incisions can stay on until they fall off (or are removed at follow-up). Keep them dry initially; once cleared, shower normally. Watch for any spreading redness, warmth, drainage, or persistent pain at incision sites &mdash; that&rsquo;s the SSI presentation<!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=1 --><!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=2 -->.</p>
+    </template>
+<template id="tpl-weeks-rec" data-title="Weeks 2&amp;ndash;6 &amp;mdash; the longer arc">
+        <p>The longer arc of recovery extends to about 6 weeks, with most people back to normal-feeling life by week 2&ndash;3.</p>
+        <p><strong>Week 2:</strong> follow-up visit. Pathology results reviewed. Incision check. Removal of any retained dressings. Activity progression: light cardio, light strength work, light yoga / pilates with abdominal modifications. Sex restrictions individualized at this visit.</p>
+        <p><strong>Week 3&ndash;4:</strong> driving fully resumed. Most desk-job patients back to work. Increased exercise intensity. Pelvic-floor PT often started for patients with pelvic-floor or prolapse procedures.</p>
+        <p><strong>Week 5&ndash;6:</strong> full activity for most patients. Heavy lifting cleared at week 6 in most cases. Sex restrictions lifted at week 6 for hysterectomy patients. Vaginal cuff fully healed.</p>
+        <p><strong>Beyond week 6:</strong> full intensity. Specific recommendations for special situations (large abdominal incisions, complex reconstructions, fertility-related considerations) discussed individually.</p>
+        <p><strong>What signals you&rsquo;re NOT progressing well:</strong></p>
+        <ul class="bullets">
+            <li>Increasing pain after the first week.</li>
+            <li>New fever after the first 48 hours.</li>
+            <li>New heavy bleeding after it had stopped.</li>
+            <li>Calf or thigh swelling, especially asymmetric.</li>
+            <li>Shortness of breath disproportionate to activity.</li>
+            <li>Inability to tolerate oral intake.</li>
+            <li>Mood changes severe enough that you&rsquo;re worried about yourself.</li>
+        </ul>
+        <p>Any of these &mdash; call.</p>
+    </template>
+<template id="tpl-pain-deep" data-title="Pain management without opioids">
+        <p>Modern post-op pain management is opioid-sparing and multimodal<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Massoth et al., Impact of opioid-free anaesthesia on postoperative nausea, vomiting..., J Clin Anesth 2021 &middot; PMID 34229292</span></sup>. The framework<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Kehlet, Multimodal approach to control postoperative pathophysiology and re..., Br J Anaesth 1997 &middot; PMID 9175983</span></sup> is to layer non-opioid medications that work through different mechanisms, so opioids become a backup, not the foundation.</p>
+        <p><strong>Foundation &mdash; scheduled non-opioid:</strong></p>
+        <ul class="bullets">
+            <li><strong>Acetaminophen 1000&nbsp;mg every 8 hours</strong> &mdash; not as needed. Maximum 3 g/day in healthy patients. Avoid with liver disease.</li>
+            <li><strong>NSAID</strong> &mdash; ibuprofen 600&ndash;800&nbsp;mg every 6&ndash;8 hours with food, or naproxen 500&nbsp;mg every 12 hours. Avoid with renal disease, active GI ulcer, certain bleeding contexts.</li>
+            <li>Schedule these for the first 5&ndash;7 days, then taper as comfort allows.</li>
+        </ul>
+        <p><strong>Adjuncts for selected patients:</strong></p>
+        <ul class="bullets">
+            <li><strong>Regional anesthesia</strong> &mdash; TAP blocks, paracervical blocks, infiltration of port sites with long-acting local anesthetic.</li>
+            <li><strong>Gabapentin or pregabalin</strong> &mdash; for select patients, can reduce opioid need.</li>
+            <li><strong>Muscle relaxants</strong> for spasm-driven discomfort.</li>
+            <li><strong>Anti-emetics</strong> proactively for nausea-prone patients.</li>
+        </ul>
+        <p><strong>Opioids &mdash; for breakthrough only:</strong></p>
+        <ul class="bullets">
+            <li>Oxycodone 5&ndash;10&nbsp;mg or hydrocodone 5&ndash;10&nbsp;mg as needed for breakthrough pain not relieved by scheduled non-opioids.</li>
+            <li>Goal: as few doses as possible. Many MIGS patients use zero or 2&ndash;4 total tablets.</li>
+            <li>Always paired with stool softener + laxative.</li>
+            <li>Driving and decision-making restrictions apply while taking any opioid.</li>
+        </ul>
+        <p><strong>Non-medication adjuncts:</strong> heating pad on abdomen, walking, hydration, getting up to chair vs lying in bed, mindfulness / breathing exercises, sleep hygiene. These genuinely help and are part of the protocol &mdash; not soft alternatives.</p>
+    </template>
+<template id="tpl-complications" data-title="Red flags &amp;mdash; when to call">
+        <p>Call promptly (or go to the ER for severe symptoms) for any of the following:</p>
+        <p><strong>Infection (SSI is the most common gyn complication<!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=1 --><!-- §0.8 anchor: kb_doc_id=1da39940-975f-4e93-ad3c-6229c4849cf2; field=keyPoints; idx=2 -->):</strong></p>
+        <ul class="bullets">
+            <li>Fever &gt;38.0&deg;C (100.4&deg;F) after the first 24 hours.</li>
+            <li>Spreading redness, warmth, or tenderness around any incision.</li>
+            <li>Purulent (yellow / green / foul-smelling) drainage from incision or vagina.</li>
+            <li>Increasing rather than decreasing pain after day 2&ndash;3.</li>
+        </ul>
+        <p><strong>Bleeding:</strong></p>
+        <ul class="bullets">
+            <li>Soaking through a pad every 1&ndash;2 hours (heavy menstrual flow level).</li>
+            <li>Passing large blood clots (golf-ball-sized or larger).</li>
+            <li>New heavy bleeding after the bleeding had stopped.</li>
+            <li>Bleeding from a laparoscopic port site that won&rsquo;t stop with pressure.</li>
+        </ul>
+        <p><strong>Blood clots / pulmonary embolism:</strong></p>
+        <ul class="bullets">
+            <li><strong>Asymmetric calf or thigh pain / swelling</strong> (DVT).</li>
+            <li><strong>Sudden shortness of breath</strong> at rest or out of proportion to activity (PE).</li>
+            <li><strong>Sharp chest pain, especially with deep breaths</strong> (PE).</li>
+            <li><strong>Fast resting heart rate, fainting</strong> (PE).</li>
+            <li>These are emergencies &mdash; go to the ER.</li>
+        </ul>
+        <p><strong>GI / urinary:</strong></p>
+        <ul class="bullets">
+            <li>Persistent vomiting, severe abdominal distension, or no bowel movement by day 7 despite a full regimen.</li>
+            <li>Inability to empty your bladder<!-- §0.8 anchor: kb_doc_id=1b915400-7869-4e68-8002-a98aff82fcbc; field=keyPoints; idx=7 -->.</li>
+            <li>Severe burning with urination, cloudy / bloody urine, fever.</li>
+            <li>Black tarry stools or hematemesis (GI bleeding).</li>
+        </ul>
+        <p><strong>Neurologic:</strong></p>
+        <ul class="bullets">
+            <li>Persistent severe headache.</li>
+            <li>New weakness, numbness, or visual changes.</li>
+        </ul>
+        <p>The Member Portal messaging is the right channel for non-urgent questions and pictures of incisions. Use it generously &mdash; the four things that drive most calls (constipation, pain, urinary, vaginal bleeding)<!-- §0.8 anchor: kb_doc_id=9c1bbfd8-ba08-48a8-8de6-d9e797717b0d; field=keyPoints; idx=5 --> are all worth checking on rather than worrying about alone.</p>
+    </template>
+<template id="tpl-meds-hold" data-title="Medications to hold (GLP-1s, anticoagulants, herbs)">
+        <p>Medications that need to pause or adjust around surgery, organized by category:</p>
+        <p><strong>GLP-1 receptor agonists<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Oh et al., Perioperative risks of glucagon-like peptide-1 receptor agonists an..., Anesth Pain Med (Seoul) 2026 &middot; PMID 42135216</span></sup>:</strong></p>
+        <ul class="bullets">
+            <li>Semaglutide (Ozempic, Wegovy, Rybelsus) &mdash; hold 1 week pre-op (weekly injection); Rybelsus daily &mdash; hold 1 day.</li>
+            <li>Tirzepatide (Mounjaro, Zepbound) &mdash; hold 1 week pre-op.</li>
+            <li>Liraglutide (Saxenda, Victoza) &mdash; hold 1 day pre-op (daily injection).</li>
+            <li>Dulaglutide (Trulicity) &mdash; hold 1 week pre-op (weekly injection).</li>
+            <li>The reason: delayed gastric emptying raises aspiration risk under anesthesia.</li>
+        </ul>
+        <p><strong>Anticoagulants and antiplatelets<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Gould et al., Prevention of VTE in nonorthopedic surgical patients: Antithromboti..., Chest 2012 &middot; PMID 22315263</span></sup>:</strong></p>
+        <ul class="bullets">
+            <li>Warfarin &mdash; usually stopped 5 days pre-op; bridge with LMWH for higher-risk patients.</li>
+            <li>Apixaban (Eliquis), rivaroxaban (Xarelto) &mdash; usually stopped 2 days pre-op.</li>
+            <li>Dabigatran (Pradaxa) &mdash; stopped 2&ndash;4 days pre-op depending on renal function.</li>
+            <li>Clopidogrel (Plavix) &mdash; stopped 5&ndash;7 days pre-op (per cardiology if for cardiac stent).</li>
+            <li>Aspirin &mdash; sometimes continued, sometimes stopped 5&ndash;7 days pre-op depending on indication and procedure.</li>
+        </ul>
+        <p><strong>Herbs &amp; supplements that affect bleeding (stop 1 week pre-op):</strong></p>
+        <ul class="bullets">
+            <li>Garlic, ginger, ginkgo, ginseng, St. John&rsquo;s wort.</li>
+            <li>Vitamin E (high-dose).</li>
+            <li>Fish oil (high-dose).</li>
+            <li>Turmeric (supplement strength).</li>
+            <li>Green tea extract supplements.</li>
+        </ul>
+        <p><strong>Hormonal / GYN herbs (often held 1 week pre-op):</strong></p>
+        <ul class="bullets">
+            <li>Black cohosh, evening primrose, soy isoflavones (high-dose).</li>
+            <li>Dong quai, licorice root.</li>
+            <li>Red clover.</li>
+            <li>Vitex / chasteberry, maca, ashwagandha.</li>
+        </ul>
+        <p><strong>Standing medications to continue:</strong></p>
+        <ul class="bullets">
+            <li>Blood pressure medications (usually with a small sip of water morning of surgery).</li>
+            <li>Asthma inhalers.</li>
+            <li>Thyroid replacement.</li>
+            <li>Most antidepressants and anxiety medications.</li>
+            <li>Anti-seizure medications.</li>
+        </ul>
+        <p>Any uncertainty &mdash; ask your surgical team. Anesthesia and the pre-op intake will review every medication you&rsquo;re taking, including supplements.</p>
+    </template>
+
+<script>
+(function(){
+  const root = document.getElementById('modal-root');
+  const titleEl = document.getElementById('modal-title');
+  const bodyEl = document.getElementById('modal-body');
+  function openModal(mid){
+    const tpl = document.getElementById('tpl-' + mid);
+    if (!tpl) return;
+    titleEl.innerHTML = tpl.dataset.title;
+    bodyEl.innerHTML = tpl.innerHTML;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    bodyEl.innerHTML = '';
+  }
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('[data-modal]');
+    if (opener){ e.preventDefault(); openModal(opener.dataset.modal); return; }
+    if (e.target.closest('[data-close]')){ e.preventDefault(); closeModal(); return; }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && root.classList.contains('open')) closeModal();
+  });
+  document.addEventListener('click', function(e){
+    const ref = e.target.closest('.mz-ref');
+    if (!ref){
+      document.querySelectorAll('.mz-ref.mz-open').forEach(r => r.classList.remove('mz-open'));
+      return;
+    }
+    if (e.target.tagName === 'A') return;
+    e.preventDefault();
+    document.querySelectorAll('.mz-ref.mz-open').forEach(r => { if (r !== ref) r.classList.remove('mz-open'); });
+    ref.classList.toggle('mz-open');
+  });
+})();
+</script>
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/postoperative-recovery/index.html",
+  "topic": "Postoperative Recovery (ERAS + Routine Care)",
+  "topic_synthesis_id": "topic_routine_postoperative_care + ba4695d9-3fbe-4714-9b83-967969fdb27d",
+  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
+  "kb_documents_loaded": [
+    "2e87c6b198df",
+    "1b915400-7869-4e68-8002-a98aff82fcbc",
+    "1ef4fe71-3efb-4045-a741-9cc7effb56c6",
+    "4bf8f0db-94d7-4bcc-9799-a8fbbdc726d6",
+    "1da39940-975f-4e93-ad3c-6229c4849cf2",
+    "9c1bbfd8-ba08-48a8-8de6-d9e797717b0d",
+    "513CBD22-0BBA-44FF-8334-1E85BDA81EC8"
+  ],
+  "kb_documents_quoted": [
+    {
+      "kb_doc_id": "1ef4fe71-3efb-4045-a741-9cc7effb56c6",
+      "title": "Enhanced recovery after gynecologic surgery: Components and implementation",
+      "field": "keyPoints",
+      "claim": "ERAS = perioperative protocols of evidence-based interventions to speed functional recovery",
+      "excerpt_first_words": "Enhanced recovery after surgery (ERAS) programs are perioperative protocols of evidence",
+      "page_anchor_id": "eras-def"
+    },
+    {
+      "kb_doc_id": "1da39940-975f-4e93-ad3c-6229c4849cf2",
+      "title": "ACOG Practice Bulletin 195: Perioperative Pathways - Enhanced Recovery After Surgery (2018)",
+      "field": "keyPoints",
+      "claim": "Surgical site infection is the most common complication of gynecologic procedures",
+      "excerpt_first_words": "Surgical site infection is the most common complication of gynecologic procedures",
+      "page_anchor_id": "ssi"
+    },
+    {
+      "kb_doc_id": "1da39940-975f-4e93-ad3c-6229c4849cf2",
+      "title": "ACOG Practice Bulletin 195: Perioperative Pathways - Enhanced Recovery After Surgery (2018)",
+      "field": "keyPoints",
+      "claim": "Superficial SSI occurs within 30 days and involves only skin/subcutaneous tissue",
+      "excerpt_first_words": "Superficial incisional SSI occurs within 30 days and involves only skin or subcutaneous tissue",
+      "page_anchor_id": "ssi-types"
+    },
+    {
+      "kb_doc_id": "1da39940-975f-4e93-ad3c-6229c4849cf2",
+      "title": "ACOG Practice Bulletin 195: Perioperative Pathways - Enhanced Recovery After Surgery (2018)",
+      "field": "keyPoints",
+      "claim": "When the vagina is opened, the site is clean-contaminated due to polymicrobial flora",
+      "excerpt_first_words": "When the vagina is opened during surgery, the site is classified as clean-contaminated due to polymicrobial flora",
+      "page_anchor_id": "vag-contam"
+    },
+    {
+      "kb_doc_id": "9c1bbfd8-ba08-48a8-8de6-d9e797717b0d",
+      "title": "Enhanced Recovery and Surgical Optimization Protocol for Minimally Invasive Gynecologic Surgery: An AAGL White Paper ",
+      "field": "keyPoints",
+      "claim": "ERAS for MIGS reduces recovery time and improves outcomes",
+      "excerpt_first_words": "ERAS protocols for minimally invasive gynecologic surgery reduce recovery time and improve patient outcomes",
+      "page_anchor_id": "migs-benefit"
+    },
+    {
+      "kb_doc_id": "9c1bbfd8-ba08-48a8-8de6-d9e797717b0d",
+      "title": "Enhanced Recovery and Surgical Optimization Protocol for Minimally Invasive Gynecologic Surgery: An AAGL White Paper ",
+      "field": "keyPoints",
+      "claim": "Most post-MIGS calls concern constipation, pain, urinary catheters, and vaginal bleeding",
+      "excerpt_first_words": "Most post-MIGS telephone calls concern constipation, pain, urinary catheters, and vaginal bleeding",
+      "page_anchor_id": "post-calls"
+    },
+    {
+      "kb_doc_id": "9c1bbfd8-ba08-48a8-8de6-d9e797717b0d",
+      "title": "Enhanced Recovery and Surgical Optimization Protocol for Minimally Invasive Gynecologic Surgery: An AAGL White Paper ",
+      "field": "keyPoints",
+      "claim": "Postoperative instructions should explicitly address constipation, pain, catheter, bleeding",
+      "excerpt_first_words": "Postoperative instructions should explicitly address constipation, pain management, catheter care, and bleeding expectations",
+      "page_anchor_id": "explicit-instr"
+    },
+    {
+      "kb_doc_id": "1b915400-7869-4e68-8002-a98aff82fcbc",
+      "title": "Postoperative urinary retention in females",
+      "field": "keyPoints",
+      "claim": "POUR = impaired voiding despite full bladder with elevated PVR",
+      "excerpt_first_words": "Postoperative urinary retention (POUR) refers to impaired voiding after a procedure despite a",
+      "page_anchor_id": "pour"
+    }
+  ],
+  "pmids_efetched_in_session": [
+    "30134426",
+    "26757238",
+    "9175983",
+    "22315263",
+    "18574271",
+    "34229292",
+    "42135216",
+    "41103245",
+    "40607963",
+    "40107451",
+    "40689540",
+    "39814403",
+    "39952278",
+    "37863195",
+    "39307664",
+    "39567916",
+    "38042118",
+    "38888922",
+    "36464803",
+    "37420310",
+    "37474828",
+    "37130316",
+    "37589632",
+    "36356373",
+    "36828283",
+    "37575751",
+    "34978584",
+    "36309174",
+    "34599682",
+    "33388155",
+    "34390864",
+    "34623077",
+    "31914080",
+    "32873454",
+    "32660719",
+    "32065990",
+    "31514241",
+    "29077615",
+    "30142667",
+    "26479158",
+    "26897642",
+    "23969801"
+  ],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "2026-05-17T17:06:29.561462+00:00"
+}
+-->

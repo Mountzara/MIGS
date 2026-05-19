@@ -1,0 +1,175 @@
+{
+  "menopause": {
+    "anchors": [
+      {
+        "ref_id": "ref-1",
+        "pmid": "24630263",
+        "current_pmid": "23435025",
+        "current_label": "ACOG Practice Bulletin 141: Management of Menopausal Symptoms, Obstet Gynecol 2014",
+        "claim": "",
+        "score": 4,
+        "suggested_label": "[Health status of adults with congenital adrenal hyperplasia due to 21-hydroxylase deficie",
+        "suggested_first_author": "Bachelot A",
+        "suggested_year": "2014"
+      },
+      {
+        "ref_id": "ref-4",
+        "pmid": "35357369",
+        "current_pmid": "36083874",
+        "current_label": "The 2022 hormone therapy position statement of The North American Menopause Society, Menopause 2022",
+        "claim": "",
+        "score": 6,
+        "suggested_label": "Safety and efficacy of compounded bioidentical hormone therapy (cBHT) in perimenopausal an",
+        "suggested_first_author": "Liu Y",
+        "suggested_year": "2022"
+      },
+      {
+        "ref_id": "ref-2",
+        "pmid": "11858475",
+        "current_pmid": "12117397",
+        "current_label": "Writing Group for the WHI Investigators, Risks and Benefits of Estrogen + Progestin in Healthy Postmenopausal Women, JAMA 2002",
+        "claim": "",
+        "score": 5,
+        "suggested_label": "Postpartum bone mineral density in women treated for thromboprophylaxis with unfractionate",
+        "suggested_first_author": "Pettil\u00e4 V",
+        "suggested_year": "2002"
+      },
+      {
+        "ref_id": "ref-3",
+        "pmid": "28093732",
+        "current_pmid": "28323976",
+        "current_label": "Manson et al., Menopausal Hormone Therapy and Long-term All-Cause and Cause-Specific Mortality, JAMA 2017",
+        "claim": "",
+        "score": 8,
+        "suggested_label": "Long-term hormone therapy for perimenopausal and postmenopausal women.",
+        "suggested_first_author": "Marjoribanks J",
+        "suggested_year": "2017"
+      },
+      {
+        "ref_id": "ref-5",
+        "pmid": "36734148",
+        "current_pmid": "37166324",
+        "current_label": "Lederman et al., Fezolinetant for the treatment of moderate-to-severe vasomotor symptoms (SKYLIGHT 1), Lancet 2023",
+        "claim": "",
+        "score": 9,
+        "suggested_label": "Efficacy and Safety of Fezolinetant in Moderate to Severe Vasomotor Symptoms Associated Wi",
+        "suggested_first_author": "Johnson KA",
+        "suggested_year": "2023"
+      },
+      {
+        "ref_id": "ref-6",
+        "pmid": "26644543",
+        "current_pmid": "23736866",
+        "current_label": "ACOG Committee Opinion 659: Use of Vaginal Estrogen in Women with Breast Cancer History, Obstet Gynecol 2016",
+        "claim": "",
+        "score": 6,
+        "suggested_label": "American Cancer Society/American Society of Clinical Oncology Breast Cancer Survivorship C",
+        "suggested_first_author": "Runowicz CD",
+        "suggested_year": "2016"
+      }
+    ],
+    "keywords": [
+      "menopaus",
+      "perimenopaus",
+      "vasomotor",
+      "hot flash",
+      "hormone therap",
+      "estrogen",
+      "estradiol",
+      "progester",
+      "osteoporosi",
+      "bone loss",
+      "genitourinary syndrome",
+      "vaginal atrophy",
+      "ssri",
+      "snri",
+      "fezolinetant",
+      "neurokinin"
+    ]
+  },
+  "fibroids": {
+    "anchors": [
+      {
+        "ref_id": "ref-2",
+        "pmid": "12780419",
+        "current_pmid": "12892907",
+        "current_label": "Baird et al., High cumulative incidence of uterine leiomyoma in Black and White women, Am J Obstet Gynecol 2003",
+        "claim": "",
+        "score": 6,
+        "suggested_label": "A systematic review of transvaginal ultrasonography, sonohysterography and hysteroscopy fo",
+        "suggested_first_author": "Farquhar C",
+        "suggested_year": "2003"
+      },
+      {
+        "ref_id": "ref-1",
+        "pmid": "34036872",
+        "current_pmid": "34293770",
+        "current_label": "ACOG Practice Bulletin 228: Management of Symptomatic Uterine Leiomyomas, Obstet Gynecol 2021",
+        "claim": "",
+        "score": 5,
+        "suggested_label": "Contrast-Enhanced Ultrasound Imaging of Uterine Disorders: A Systematic Review.",
+        "suggested_first_author": "Stoelinga B",
+        "suggested_year": "2021"
+      },
+      {
+        "ref_id": "ref-3",
+        "pmid": "29653718",
+        "current_pmid": "30801466",
+        "current_label": "Munro et al., FIGO classification system PALM-COEIN for AUB causes (including fibroid sub-types), Int J Gynaecol Obstet 2018",
+        "claim": "",
+        "score": 4,
+        "suggested_label": "Reintervention risk and quality of life outcomes after uterine-sparing interventions for f",
+        "suggested_first_author": "Sandberg EM",
+        "suggested_year": "2018"
+      },
+      {
+        "ref_id": "ref-5",
+        "pmid": "32633025",
+        "current_pmid": "31810136",
+        "current_label": "Schlaff et al., Elagolix for heavy menstrual bleeding in women with uterine fibroids, NEJM 2020",
+        "claim": "",
+        "score": 6,
+        "suggested_label": "Uterine fibroids and preterm birth risk: A systematic review and meta-analysis.",
+        "suggested_first_author": "P\u00e9rez-Roncero GR",
+        "suggested_year": "2020"
+      },
+      {
+        "ref_id": "ref-7",
+        "pmid": "18339376",
+        "current_pmid": "29059500",
+        "current_label": "Pritts et al., Fibroids and infertility: an updated systematic review of the evidence, Fertil Steril 2009 (updated)",
+        "claim": "",
+        "score": 12,
+        "suggested_label": "Fibroids and infertility: an updated systematic review of the evidence.",
+        "suggested_first_author": "Pritts EA",
+        "suggested_year": "2009"
+      },
+      {
+        "ref_id": "ref-6",
+        "pmid": "32458009",
+        "current_pmid": "32797043",
+        "current_label": "Pron et al., FIBROID Registry \u2014 Uterine artery embolization registry outcomes, Obstet Gynecol 2020 (updated)",
+        "claim": "",
+        "score": 8,
+        "suggested_label": "Pregnancy and its Outcomes in Patients After Uterine Fibroid Embolization: A Systematic Re",
+        "suggested_first_author": "Ghanaati H",
+        "suggested_year": "2020"
+      }
+    ],
+    "keywords": [
+      "fibroid",
+      "leiomyom",
+      "myoma",
+      "uterine artery embol",
+      "myomectom",
+      "hifu",
+      "radiofrequency ablation",
+      "ulipristal",
+      "elagolix",
+      "linzagolix",
+      "gnrh",
+      "hysterectom",
+      "hysteroscop"
+    ]
+  }
+}

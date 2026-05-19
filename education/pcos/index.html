@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PCOS &mdash; what to know &middot; Mount Zara</title>
+    <meta name="description" content="A patient guide to PCOS: Rotterdam diagnostic criteria, phenotypes, the full management menu (lifestyle, metformin, GLP-1s, COC, spironolactone, letrozole), and lifespan cardiometabolic + endometrial cancer surveillance. KB-anchored, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    text-decoration: none;
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
+
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* HERO */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero .eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 16px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+
+/* KEY FACTS */
+.facts {
+    display: grid; gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s, border-color 0.22s, background 0.22s;
+    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
+.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
+.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
+
+/* SECTIONS */
+section.panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(22px, 4vw, 36px);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    transition: border-color 0.25s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel .section-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 10px;
+}
+section.panel h2 {
+    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.012em; color: var(--fg-strong);
+    margin: 0 0 18px 0; line-height: 1.15;
+}
+section.panel p {
+    font-size: 16.5px; line-height: 1.7;
+    color: var(--fg-mid); margin: 0 0 14px 0;
+}
+section.panel p:last-child { margin-bottom: 0; }
+section.panel p strong { color: var(--fg-strong); font-weight: 500; }
+section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
+
+/* INLINE CITATION SUP + POPOUT */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref a {
+    color: var(--accent-soft);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover a,
+sup.mz-ref.mz-open a,
+sup.mz-ref:focus a {
+    background: rgba(var(--glow-purple), 0.20);
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden; opacity: 0;
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translate(-50%, -6px);
+    width: 320px; max-width: 92vw;
+    padding: 10px 14px;
+    background: rgba(7,7,10,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: var(--fg-mid);
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 400;
+    z-index: 200;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    white-space: normal;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
+   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
+   problem. Each modifier locks the row size so cards stay even at every
+   breakpoint. */
+.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) {
+    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Symptoms grid — 8 items, want 1/2/4 columns */
+.symptoms {
+    display: grid; gap: 10px; margin-top: 18px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
+
+/* Featured banner card — used for the lone FitzGerald PFPT RCT below
+   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
+   internal layout. */
+.featured-card {
+    display: grid; gap: 18px;
+    grid-template-columns: 1fr;
+    background: rgba(var(--glow-purple), 0.07);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+    align-items: center;
+    position: relative;
+}
+.featured-card:hover, .featured-card:focus {
+    border-color: rgba(var(--glow-purple), 0.65);
+    background: rgba(var(--glow-purple), 0.12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.featured-card h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--fg-strong); margin: 0 0 4px 0;
+    padding-right: 80px;
+}
+.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+.featured-card .open-hint {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    letter-spacing: 0.08em;
+}
+.featured-card .stat-badge {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    background: rgba(var(--glow-purple), 0.18);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 8px;
+}
+.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+@media (min-width: 720px) {
+    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card:hover, .card:focus {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    outline: none;
+}
+.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
+.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.card .card-corner {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.card .open-hint {
+    position: absolute; bottom: 12px; right: 14px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+}
+.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
+
+/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
+.symptom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px 12px 44px;
+    position: relative;
+    font-size: 14px; color: var(--fg-mid);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom::before {
+    content: ""; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.08);
+}
+.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
+.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
+.timeline::before {
+    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
+}
+.timeline-item {
+    position: relative; margin-bottom: 16px;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    padding: 12px 14px;
+    transition: border-color 0.22s, background 0.22s;
+}
+.timeline-item:hover, .timeline-item:focus {
+    border-color: rgba(var(--glow-purple), 0.40);
+    background: rgba(var(--glow-purple), 0.06);
+    outline: none;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.95);
+    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
+}
+.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
+.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-item .open-hint {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    letter-spacing: 0.08em;
+}
+
+/* TREATMENT LADDER */
+.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+.rung {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px; align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+}
+.rung:hover, .rung:focus {
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
+.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
+.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
+.rung-tag {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    align-self: center;
+}
+
+/* OMT block */
+.omt-block {
+    background: rgba(var(--glow-purple), 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    margin-top: 18px;
+}
+.omt-block .quote-frame {
+    border-left: 3px solid rgba(var(--glow-purple), 0.60);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0;
+    color: var(--fg-mid);
+    font-size: 16px; line-height: 1.7;
+    position: relative;
+}
+.omt-block .quote-frame::before {
+    content: '\201C';
+    position: absolute;
+    left: 6px; top: -4px;
+    font-family: Georgia, serif;
+    color: rgba(var(--glow-purple), 0.40);
+    font-size: 26px; line-height: 1;
+}
+
+/* Q&A accordion */
+.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+details.qa {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.22s, background 0.22s;
+    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
+details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 50px 14px 18px;
+    font-size: 15.5px; font-weight: 500;
+    color: var(--fg-strong); position: relative; line-height: 1.4;
+}
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after {
+    content: '+';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 22px; color: var(--accent-soft);
+    font-weight: 200; line-height: 1;
+    transition: transform 0.2s;
+}
+details.qa[open] summary::after { content: '\2212'; }
+details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
+details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
+details.qa .qa-answer p:last-child { margin: 0; }
+
+/* Red flags */
+.red-flags {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
+.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
+.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
+
+/* CTA */
+.cta-strip {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.45);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    text-align: center;
+    margin-top: clamp(20px, 4vw, 32px);
+}
+.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-strip a.btn {
+    display: inline-block;
+    background: rgba(var(--glow-purple), 0.20);
+    border: 1px solid rgba(var(--glow-purple), 0.65);
+    color: #fff;
+    padding: 10px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin: 4px;
+}
+.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
+.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+
+/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
+.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
+.refs-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    counter-increment: ref;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.refs-list .ref-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
+.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
+.refs-list .pmid {
+    display: inline-block;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11.5px; color: var(--accent-soft);
+    background: rgba(var(--glow-purple), 0.10);
+    padding: 1px 6px; border-radius: 4px;
+    white-space: nowrap;
+}
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
+details.mz-abstract {
+    margin-top: 10px;
+    margin-left: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+details.mz-abstract summary {
+    list-style: none; cursor: pointer;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    position: relative;
+}
+details.mz-abstract summary::-webkit-details-marker { display: none; }
+details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
+details.mz-abstract[open] summary::before { content: '\2212 '; }
+details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract .abstract-body {
+    padding: 4px 16px 14px 28px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
+details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
+.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
+
+/* MODAL system */
+.mz-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.66);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: mzFadeIn 0.18s ease both;
+}
+.mz-modal-bg.open { display: flex; }
+.mz-modal {
+    width: 100%; max-width: 700px;
+    max-height: 88vh; overflow-y: auto;
+    background: rgba(12,12,16,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.50);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    position: relative;
+    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mz-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--fg-soft);
+    font-size: 20px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal h2 {
+    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.015em; color: var(--fg-strong);
+    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
+}
+.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
+.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
+.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+
+/* Footer note */
+.footer-note {
+    margin-top: 40px; padding: 20px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12.5px; color: var(--fg-dim);
+    line-height: 1.6;
+}
+.footer-note strong { color: var(--fg-soft); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    section.panel { padding: 22px 18px; }
+    .site-nav .crumb { display: none; }
+    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
+    details.mz-abstract { margin-left: 0; }
+}
+
+    .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
+    @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
+    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+    .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; }
+    .cause-card ul { padding-left: 20px; margin: 0; }
+    .cause-card li { font-size: 14px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 8px; }
+    .cause-card li strong { color: var(--fg-strong); font-weight: 500; }
+    </style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site navigation">
+    <div class="inner">
+        <a class="brand" href="/">Mount Zara</a>
+        <span class="crumb">&middot;  Patient Education  &middot;  PCOS</span>
+        <div class="right-actions">
+            <a href="/about/">About</a>
+            <a class="cta" href="/portal/">Member portal</a>
+        </div>
+    </div>
+</nav>
+<div class="wrap">
+
+    <header class="hero">
+        <div class="eyebrow">Patient Education &middot; Polycystic Ovary Syndrome</div>
+        <h1>PCOS &mdash; what it is, what it does, what changes the trajectory.</h1>
+        <p class="lede">
+            Polycystic ovary syndrome affects roughly <strong>7&ndash;15%</strong> of reproductive-age women depending on which
+            diagnostic criteria are applied<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Teede et al., Recommendations from the 2023 International Evidence-based Guidelin..., Fertil Steril 2023 &middot; PMID 37589624</span></sup><!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=0 -->. It is one of the most common endocrine conditions
+            in women &mdash; and one of the most under-recognized, in part because the name is misleading: PCOS isn&rsquo;t
+            primarily about ovarian cysts, it&rsquo;s about <em>three</em> overlapping features (irregular cycles,
+            androgen excess, and polycystic ovarian morphology)<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Rotterdam ESHRE/ASRM-Sponsored PCOS consensus workshop group, Revised 2003 consensus on diagnostic criteria and long-term health ..., Hum Reprod 2004 &middot; PMID 14688154</span></sup><!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=1 --><!-- §0.8 anchor: kb_doc_id=4803c5f2-bfe1-4e4b-aaee-bec194dfa09c; field=keyPoints; idx=4 --> that combine
+            in different patterns to produce four distinct phenotypes. This guide walks through how the diagnosis is made
+            the diagnosis, the full management menu &mdash; lifestyle<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Knowler et al., Reduction in the incidence of type 2 diabetes with lifestyle interv..., N Engl J Med 2002 &middot; PMID 11832527</span></sup>, metformin<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Naderpoor et al., Metformin and lifestyle modification in polycystic ovary syndrome: ..., Hum Reprod Update 2015 &middot; PMID 26060208</span></sup>,
+            combined hormonal contraceptives, spironolactone<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Al Khalifah et al., The effectiveness and safety of treatments used for polycystic ovar..., Syst Rev 2015 &middot; PMID 26420636</span></sup>, GLP-1 agonists, letrozole for
+            ovulation induction<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Legro et al., Letrozole versus clomiphene for infertility in the polycystic ovary..., N Engl J Med 2014 &middot; PMID 25006718</span></sup> &mdash; and the long-term cardiometabolic and endometrial-cancer surveillance
+            that matters across the lifespan<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Hoeger et al., Update on PCOS: Consequences, Challenges, and Guiding Treatment, J Clin Endocrinol Metab 2021 &middot; PMID 33211867</span></sup>.
+        </p>
+    </header>
+    <section class="key-facts" aria-label="At a glance">
+        <div class="fact"><div class="stat">7&ndash;15<span class="unit">%</span></div><div class="label">of reproductive-age women have PCOS depending on criteria<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Teede et al., Recommendations from the 2023 International Evidence-based Guidelin..., Fertil Steril 2023 &middot; PMID 37589624</span></sup><!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=0 -->.</div></div>
+        <div class="fact"><div class="stat">2 of 3<span class="unit"></span></div><div class="label">Rotterdam diagnostic criteria required<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=1 -->.</div></div>
+        <div class="fact"><div class="stat">58<span class="unit">%</span></div><div class="label">reduction in type-2-diabetes incidence with lifestyle intervention (DPP)<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Knowler et al., Reduction in the incidence of type 2 diabetes with lifestyle interv..., N Engl J Med 2002 &middot; PMID 11832527</span></sup> &mdash; the cornerstone of PCOS metabolic care.</div></div>
+    </section>
+    
+
+    <section class="section">
+        <h2>What PCOS actually is</h2>
+        <p>PCOS is a syndrome &mdash; not a single disease &mdash; defined by the combination of <em>ovulatory dysfunction</em>, <em>hyperandrogenism</em> (clinical or biochemical), and <em>polycystic ovarian morphology</em> on imaging<!-- §0.8 anchor: kb_doc_id=4803c5f2-bfe1-4e4b-aaee-bec194dfa09c; field=keyPoints; idx=4 -->. The Rotterdam consensus criteria (2003, updated 2023 in the international evidence-based guideline) require <strong>two of three</strong> of those features, with other causes excluded<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Rotterdam ESHRE/ASRM-Sponsored PCOS consensus workshop group, Revised 2003 consensus on diagnostic criteria and long-term health ..., Hum Reprod 2004 &middot; PMID 14688154</span></sup><!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=1 -->.</p>
+        <p>The phenotypic spread matters:</p>
+        <div class="palm-coein-grid">
+            <div class="cause-card cause-palm">
+                <h3>Reproductive features</h3>
+                <ul>
+                    <li>Irregular cycles &mdash; oligomenorrhea (cycles &gt;35 days), amenorrhea, or unpredictable bleeding.</li>
+                    <li>Anovulation &mdash; cycles without ovulation, often the cause of infertility in PCOS.</li>
+                    <li>Polycystic ovarian morphology on ultrasound &mdash; ≥20 follicles per ovary or ovarian volume &gt;10 mL using modern transducers.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-coein">
+                <h3>Metabolic features</h3>
+                <ul>
+                    <li>Insulin resistance &mdash; present in many women with PCOS, independent of weight.</li>
+                    <li>Increased visceral adiposity even at normal BMI.</li>
+                    <li>Higher risk of impaired glucose tolerance, type-2 diabetes, dyslipidemia, NAFLD, sleep apnea.</li>
+                    <li>Cardiovascular risk factors accumulate across the lifespan.</li>
+                </ul>
+            </div>
+        </div>
+        <p>The hyperandrogenism component shows up clinically as <strong>hirsutism</strong> (excess terminal hair in male-pattern distribution), <strong>acne</strong>, <strong>androgenic alopecia</strong>, or biochemically as elevated total or free testosterone. The full evaluation rules out <em>other</em> causes of these features &mdash; congenital adrenal hyperplasia, hyperprolactinemia, thyroid dysfunction, androgen-secreting neoplasms<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=2 -->.</p>
+    </section>
+    
+
+    <section class="section">
+        <h2>How PCOS gets diagnosed</h2>
+        <p>The workup is targeted &mdash; designed to confirm Rotterdam criteria and rule out conditions that mimic PCOS.</p>
+        <ol class="ladder">
+            <li><strong>History.</strong> Age at menarche, cycle pattern (length, regularity, predictability), pregnancy and fertility history, weight changes, hirsutism / acne / alopecia, family history of PCOS or type-2 diabetes, medications.</li>
+            <li><strong>Exam.</strong> BMI, waist circumference (visceral adiposity matters more than BMI in PCOS), modified Ferriman-Gallwey hirsutism score, acne distribution, alopecia pattern, acanthosis nigricans (signals significant insulin resistance), blood pressure.</li>
+            <li><strong>Labs to confirm hyperandrogenism + exclude mimics<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=3 -->:</strong>
+                <ul>
+                    <li>Total testosterone, SHBG (calculate free androgen index).</li>
+                    <li>TSH (rule out thyroid disease).</li>
+                    <li>Prolactin (rule out hyperprolactinemia).</li>
+                    <li>17-hydroxyprogesterone (rule out non-classic CAH).</li>
+                    <li>DHEAS if rapid-onset hyperandrogenism (rule out adrenal tumor).</li>
+                </ul>
+            </li>
+            <li><strong>Transvaginal ultrasound</strong> for ovarian morphology. Use modern probe criteria (≥20 follicles per ovary or ovarian volume &gt;10 mL). Note: AMH levels can substitute for ultrasound in adults per IEBG 2023.</li>
+            <li><strong>Metabolic workup</strong> at diagnosis and periodically thereafter:
+                <ul>
+                    <li>Fasting glucose + HbA1c, or oral glucose tolerance test (preferred for PCOS).</li>
+                    <li>Fasting lipid panel.</li>
+                    <li>Blood pressure measurement at every visit.</li>
+                    <li>Screen for sleep apnea symptoms (snoring, daytime somnolence) and NAFLD.</li>
+                </ul>
+            </li>
+            <li><strong>Endometrial assessment</strong> in women with prolonged amenorrhea, breakthrough bleeding, or risk factors for endometrial hyperplasia &mdash; pelvic ultrasound for endometrial thickness, biopsy as indicated.</li>
+        </ol>
+    </section>
+    
+
+    <section class="section">
+        <h2>The treatment menu &mdash; built around your goal</h2>
+        <p>PCOS management isn&rsquo;t a single plan &mdash; it&rsquo;s a menu organized around <em>what you&rsquo;re trying to fix</em>: cycle regularity, hirsutism / acne, metabolic risk, weight, or fertility. Many of the same medications appear in multiple categories.</p>
+        <div class="ladder-cards">
+            <article class="ladder-card" data-modal="cycle-deep">
+                <div class="rung-num">1</div>
+                <h3>For irregular cycles</h3>
+                <p>Combined hormonal contraceptives (or LNG-IUD) regulate cycles and protect the endometrium. Continuous use eliminates periods entirely.</p>
+            </article>
+            <article class="ladder-card" data-modal="androgens-deep">
+                <div class="rung-num">2</div>
+                <h3>For hirsutism &amp; acne</h3>
+                <p>COCs first, spironolactone 100&ndash;200&nbsp;mg/d added when COC alone is insufficient<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Al Khalifah et al., The effectiveness and safety of treatments used for polycystic ovar..., Syst Rev 2015 &middot; PMID 26420636</span></sup>. Cosmetic measures (laser, electrolysis) in parallel.</p>
+            </article>
+            <article class="ladder-card" data-modal="metabolic-deep">
+                <div class="rung-num">3</div>
+                <h3>For metabolic risk</h3>
+                <p>Lifestyle is foundational &mdash; the DPP showed 58% diabetes reduction with diet + exercise<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Knowler et al., Reduction in the incidence of type 2 diabetes with lifestyle interv..., N Engl J Med 2002 &middot; PMID 11832527</span></sup><!-- §0.8 anchor: kb_doc_id=28d0a4f2-d92c-42ba-848f-8d1a08a8cbab; field=keyPoints; idx=5 -->. Metformin adds further benefit<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Naderpoor et al., Metformin and lifestyle modification in polycystic ovary syndrome: ..., Hum Reprod Update 2015 &middot; PMID 26060208</span></sup>. GLP-1 agonists when weight loss is a goal.</p>
+            </article>
+            <article class="ladder-card" data-modal="fertility-deep">
+                <div class="rung-num">4</div>
+                <h3>For fertility</h3>
+                <p>Letrozole is first-line ovulation induction in PCOS, with higher live birth rates than clomiphene<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Legro et al., Letrozole versus clomiphene for infertility in the polycystic ovary..., N Engl J Med 2014 &middot; PMID 25006718</span></sup>. Lifestyle modification before / alongside induction. Gonadotropins and IVF for refractory cases.</p>
+            </article>
+            <article class="ladder-card" data-modal="lifespan-deep">
+                <div class="rung-num">5</div>
+                <h3>Long-term surveillance</h3>
+                <p>Annual blood pressure, periodic OGTT and lipid panel, endometrial cancer awareness, mental-health check-in. PCOS is a lifelong condition that needs lifelong attention.</p>
+            </article>
+            <article class="ladder-card" data-modal="phenotypes-deep">
+                <div class="rung-num">P</div>
+                <h3>Phenotypes A&ndash;D</h3>
+                <p>The four Rotterdam phenotypes carry different metabolic risk profiles and shape which interventions matter most for each woman.</p>
+            </article>
+        </div>
+    </section>
+    
+
+    <section class="section">
+        <h2>Most common patient questions</h2>
+        <div class="qa-grid">
+            <details class="qa"><summary>Do I have to have cysts to have PCOS?</summary>
+                <div class="qa-answer"><p>No. PCOS is diagnosed by <strong>two of three</strong> Rotterdam criteria<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=1 --><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Rotterdam ESHRE/ASRM-Sponsored PCOS consensus workshop group, Revised 2003 consensus on diagnostic criteria and long-term health ..., Hum Reprod 2004 &middot; PMID 14688154</span></sup>: irregular cycles / anovulation, hyperandrogenism (clinical or lab), and polycystic ovarian morphology. You can have PCOS without polycystic ovaries on ultrasound, as long as the other two features are present and other causes are excluded. The name is a historical misnomer.</p></div>
+            </details>
+            <details class="qa"><summary>Can I have PCOS if I&rsquo;m not overweight?</summary>
+                <div class="qa-answer"><p>Absolutely. &ldquo;Lean PCOS&rdquo; is a recognized presentation. Many women with PCOS have normal BMI but still carry insulin resistance, irregular cycles, and hyperandrogenism. Body habitus does not rule it in or out.</p></div>
+            </details>
+            <details class="qa"><summary>Will I be able to get pregnant?</summary>
+                <div class="qa-answer"><p>Most likely yes &mdash; sometimes spontaneously, sometimes with help. Ovulation induction with letrozole achieves pregnancy in most women with PCOS-related anovulatory infertility<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Legro et al., Letrozole versus clomiphene for infertility in the polycystic ovary..., N Engl J Med 2014 &middot; PMID 25006718</span></sup>. Lifestyle modification (especially even modest weight loss in women with overweight or obesity) often restores ovulation on its own. Refractory cases may need gonadotropin therapy or IVF.</p></div>
+            </details>
+            <details class="qa"><summary>Should I take metformin?</summary>
+                <div class="qa-answer"><p>It depends. Metformin improves menstrual regularity, ovulation, BMI, and insulin resistance in PCOS<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Naderpoor et al., Metformin and lifestyle modification in polycystic ovary syndrome: ..., Hum Reprod Update 2015 &middot; PMID 26060208</span></sup>, and is recommended adjunct therapy for many patients alongside lifestyle modification. The decision is individualized based on your metabolic profile, fertility goals, GI tolerance, and other factors. It&rsquo;s not mandatory for every patient.</p></div>
+            </details>
+            <details class="qa"><summary>What about GLP-1 agonists like Ozempic?</summary>
+                <div class="qa-answer"><p>GLP-1 receptor agonists (semaglutide, tirzepatide) cause meaningful weight loss in women with PCOS and obesity, which in turn improves cycle regularity, ovulation, and metabolic parameters. The 2023 IEBG guideline acknowledges GLP-1 agonists as part of the obesity-management toolkit<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Teede et al., Recommendations from the 2023 International Evidence-based Guidelin..., Fertil Steril 2023 &middot; PMID 37589624</span></sup>. <strong>Important:</strong> they must be discontinued well before any planned pregnancy (safety not established) and held appropriately around surgery per the latest anesthesia guidance for GLP-1 hold protocols.</p></div>
+            </details>
+            <details class="qa"><summary>Does PCOS increase my cancer risk?</summary>
+                <div class="qa-answer"><p>Yes, specifically endometrial cancer &mdash; prolonged anovulation means prolonged unopposed estrogen exposure on the endometrium, which raises hyperplasia and cancer risk over decades. The mitigation is straightforward: regular progestogen exposure via combined OCP, cyclic oral progesterone, LNG-IUD, or planned withdrawal bleeds every 1&ndash;3 months. Breast and ovarian cancer risks do <em>not</em> appear elevated in PCOS specifically.</p></div>
+            </details>
+            <details class="qa"><summary>Why are my periods so irregular?</summary>
+                <div class="qa-answer"><p>Because you&rsquo;re not ovulating predictably. In a typical cycle, ovulation triggers progesterone production, which leads to predictable withdrawal bleeding when the corpus luteum involutes. In PCOS, ovulation is irregular or absent, so progesterone doesn&rsquo;t rise on schedule, and the endometrium sheds unpredictably (sometimes after a long buildup, causing heavy bleeding when it finally does shed)<!-- §0.8 anchor: kb_doc_id=4803c5f2-bfe1-4e4b-aaee-bec194dfa09c; field=keyPoints; idx=4 -->. Hormonal cycle regulation restores predictability and protects the endometrium.</p></div>
+            </details>
+        </div>
+    </section>
+    
+<section class="section references-section" id="references">
+<h2>References</h2>
+<p class="ref-intro">Every clinical claim above ties to one of these peer-reviewed sources. Click any abstract to expand the verbatim PubMed record retrieved via NCBI E-Utilities.</p>
+<ol class="ref-list">
+<li id="ref-1">
+<div class="ref-label"><strong>Teede et al., Recommendations from the 2023 International Evidence-based Guideline for the Assessment and Management of Polycystic Ovary Syndrome, <em>Fertil Steril</em> 2023</strong></div>
+<div class="ref-what">Teede et al., Fertil Steril 2023 — 2023 International Evidence-based Guideline for the Assessment and Management of PCOS: updates Rotterdam criteria, prioritizes AMH for diagnosis in adults, and reframes the lifelong cardiometabolic risk profile.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37589624/" target="_blank" rel="noopener">37589624</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY QUESTION: What is the recommended assessment and management of those with polycystic ovary syndrome (PCOS), based on the best available evidence, clinical expertise, and consumer preference?<br><br>SUMMARY ANSWER: International evidence-based guidelines address prioritized questions and outcomes and include 254 recommendations and practice points, to promote consistent, evidence-based care and improve the experience and health outcomes in PCOS.<br><br>WHAT IS KNOWN ALREADY: The 2018 International PCOS Guideline was independently evaluated as high quality and integrated multidisciplinary and consumer perspectives from six continents; it is now used in 196 countries and is widely cited. It was based on best available, but generally very low to low quality, evidence. It applied robust methodological processes and addressed shared priorities. The guideline transitioned from consensus based to evidence-based diagnostic criteria and enhanced accuracy of diagnosis, whilst promoting consistency of care. However, diagnosis is still delayed, the needs of those with PCOS are not being adequately met, evidence quality was low and evidence-practice gaps persist.<br><br>STUDY DESIGN, SIZE, DURATION: The 2023 International Evidence-based Guideline update reengaged the 2018 network across professional societies and consumer organizations with multidisciplinary experts and women with PCOS directly involved at all stages. Extensive evidence synthesis was completed. Appraisal of Guidelines for Research and Evaluation-II (AGREEII)-compliant processes were followed. The Grading of Recommendations, Assessment, Development, and Evaluation (GRADE) framework was applied across evidence quality, feasibility, acceptability, cost, implementation and ultimately recommendation strength and diversity and inclusion were considered throughout.<br><br>PARTICIPANTS/ MATERIALS, SETTING, METHODS: This summary should be read in conjunction with the full Guideline for detailed participants and methods. Governance included a six-continent international advisory and management committee, five guideline development groups, and paediatric, consumer, and translation committees. Extensive consumer engagement and guideline experts informed the update scope and priorities. Engaged international society-nominated panels included paediatrics, endocrinology, gynaecology, primary care, reproductive endocrinology, obstetrics, psychiatry, psychology, dietetics, exercise physiology, obesity care, public health and other experts, alongside consumers, project management, evidence synthesis, statisticians and translation experts. Thirty-nine professional and consumer organizations covering 71 countries engaged in the process. Twenty meetings and five face-to-face forums over 12 months addressed 58 prioritized clinical questions involving 52 systematic and 3 narrative reviews. Evidence-based recommendations were developed and approved via consensus across five guideline panels, modified based on international feedback and peer review, independently reviewed for methodological rigour, and approved by the Australian Government National Health and Medical Research Council (NHMRC).<br><br>MAIN RESULTS AND THE ROLE OF CHANCE: The evidence in the assessment and management of PCOS has generally improved in the past five years, but remains of low to moderate quality. The technical evidence report and analyses (∼6000 pages) underpins 77 evidence-based and 54 consensus recommendations, with 123 practice points. Key updates include: i) further refinement of individual diagnostic criteria, a simplified diagnostic algorithm and inclusion of anti-Müllerian hormone (AMH) levels as an alternative to ultrasound in adults only; ii) strengthening recognition of broader features of PCOS including metabolic risk factors, cardiovascular disease, sleep apnea, very high prevalence of psychological features, and high risk status for adverse outcomes during pregnancy; iii) emphasizing the poorly recognized, diverse burden of disease and the need for greater healthcare professional education, evidence-based patient information, improved models of care and shared decision making to improve patient experience, alongside greater research; iv) maintained emphasis on healthy lifestyle, emotional wellbeing and quality of life, with awareness and consideration of weight stigma; and v) emphasizing evidence-based medical therapy and cheaper and safer fertility management.<br><br>LIMITATIONS, REASONS FOR CAUTION: Overall, recommendations are strengthened and evidence is improved, but remain generally low to moderate quality. Significantly greater research is now needed in this neglected, yet common condition. Regional health system variation was considered and acknowledged, with a further process for guideline and translation resource adaptation provided.<br><br>WIDER IMPLICATIONS OF THE FINDINGS: The 2023 International Guideline for the Assessment and Management of PCOS provides clinicians and patients with clear advice on best practice, based on the best available evidence, expert multidisciplinary input and consumer preferences. Research recommendations have been generated and a comprehensive multifaceted dissemination and translation programme supports the Guideline with an integrated evaluation program.<br><br>STUDY FUNDING/COMPETING INTEREST(S): This effort was primarily funded by the Australian Government via the National Health Medical Research Council (NHMRC) (APP1171592), supported by a partnership with American Society for Reproductive Medicine, Endocrine Society, European Society for Human Reproduction and Embryology, and the Society for Endocrinology. The Commonwealth Government of Australia also supported Guideline translation through the Medical Research Future Fund (MRFCRI000266). HJT and AM are funded by NHMRC fellowships. JT is funded by a Royal Australasian College of Physicians (RACP) fellowship. Guideline development group members were volunteers. Travel expenses were covered by the sponsoring organizations. Disclosures of interest were strictly managed according to NHMRC policy and are available with the full guideline, technical evidence report, peer review and responses (www.monash.edu/medicine/mchri/pcos). Of named authors HJT, CTT, AD, LM, LR, JBoyle, AM have no conflicts of interest to declare. JL declares grant from Ferring and Merck; consulting fees from Ferring and Titus Health Care; speaker&#x27;s fees from Ferring; unpaid consultancy for Ferring, Roche Diagnostics and Ansh Labs; and sits on advisory boards for Ferring, Roche Diagnostics, Ansh Labs, and Gedeon Richter. TP declares a grant from Roche; consulting fees from Gedeon Richter and Organon; speaker&#x27;s fees from Gedeon Richter and Exeltis; travel support from Gedeon Richter and Exeltis; unpaid consultancy for Roche Diagnostics; and sits on advisory boards for Roche Diagnostics. MC declares travels support from Merck; and sits on an advisory board for Merck. JBoivin declares grants from Merck Serono Ltd.; consulting fees from Ferring B.V; speaker&#x27;s fees from Ferring Arzneimittell GmbH; travel support from Organon; and sits on an advisory board for the Office of Health Economics. RJN has received speaker&#x27;s fees from Merck and sits on an advisory board for Ferring. AJoham has received speaker&#x27;s fees from Novo Nordisk and Boehringer Ingelheim. The guideline was peer reviewed by special interest groups across our 39 partner and collaborating organizations, was independently methodologically assessed against AGREEII criteria and was approved by all members of the guideline development groups and by the NHMRC.</div></details>
+</li>
+<li id="ref-2">
+<div class="ref-label"><strong>Rotterdam ESHRE/ASRM-Sponsored PCOS consensus workshop group, Revised 2003 consensus on diagnostic criteria and long-term health risks related to polycystic ovary syndrome (PCOS), <em>Hum Reprod</em> 2004</strong></div>
+<div class="ref-what">Rotterdam ESHRE/ASRM PCOS Consensus Workshop Group, Hum Reprod 2004 — revised 2003 consensus on diagnostic criteria (any 2 of 3: oligo/anovulation, hyperandrogenism, polycystic ovarian morphology) and long-term health risks.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/14688154/" target="_blank" rel="noopener">14688154</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Since the 1990 NIH-sponsored conference on polycystic ovary syndrome (PCOS), it has become appreciated that the syndrome encompasses a broader spectrum of signs and symptoms of ovarian dysfunction than those defined by the original diagnostic criteria. The 2003 Rotterdam consensus workshop concluded that PCOS is a syndrome of ovarian dysfunction along with the cardinal features hyperandrogenism and polycystic ovary (PCO) morphology. PCOS remains a syndrome and, as such, no single diagnostic criterion (such as hyperandrogenism or PCO) is sufficient for clinical diagnosis. Its clinical manifestations may include: menstrual irregularities, signs of androgen excess, and obesity. Insulin resistance and elevated serum LH levels are also common features in PCOS. PCOS is associated with an increased risk of type 2 diabetes and cardiovascular events.</div></details>
+</li>
+<li id="ref-3">
+<div class="ref-label"><strong>Knowler et al., Reduction in the incidence of type 2 diabetes with lifestyle intervention or metformin, <em>N Engl J Med</em> 2002</strong></div>
+<div class="ref-what">Knowler et al., Diabetes Prevention Program (NEJM 2002) — landmark trial: lifestyle intervention reduced type 2 diabetes incidence by 58%, metformin by 31% in high-risk adults — foundational for PCOS metabolic management.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/11832527/" target="_blank" rel="noopener">11832527</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Type 2 diabetes affects approximately 8 percent of adults in the United States. Some risk factors--elevated plasma glucose concentrations in the fasting state and after an oral glucose load, overweight, and a sedentary lifestyle--are potentially reversible. We hypothesized that modifying these factors with a lifestyle-intervention program or the administration of metformin would prevent or delay the development of diabetes.<br><br>METHODS: We randomly assigned 3234 nondiabetic persons with elevated fasting and post-load plasma glucose concentrations to placebo, metformin (850 mg twice daily), or a lifestyle-modification program with the goals of at least a 7 percent weight loss and at least 150 minutes of physical activity per week. The mean age of the participants was 51 years, and the mean body-mass index (the weight in kilograms divided by the square of the height in meters) was 34.0; 68 percent were women, and 45 percent were members of minority groups.<br><br>RESULTS: The average follow-up was 2.8 years. The incidence of diabetes was 11.0, 7.8, and 4.8 cases per 100 person-years in the placebo, metformin, and lifestyle groups, respectively. The lifestyle intervention reduced the incidence by 58 percent (95 percent confidence interval, 48 to 66 percent) and metformin by 31 percent (95 percent confidence interval, 17 to 43 percent), as compared with placebo; the lifestyle intervention was significantly more effective than metformin. To prevent one case of diabetes during a period of three years, 6.9 persons would have to participate in the lifestyle-intervention program, and 13.9 would have to receive metformin.<br><br>CONCLUSIONS: Lifestyle changes and treatment with metformin both reduced the incidence of diabetes in persons at high risk. The lifestyle intervention was more effective than metformin.</div></details>
+</li>
+<li id="ref-4">
+<div class="ref-label"><strong>Legro et al., Letrozole versus clomiphene for infertility in the polycystic ovary syndrome, <em>N Engl J Med</em> 2014</strong></div>
+<div class="ref-what">Legro et al., NEJM 2014 — letrozole vs clomiphene for PCOS infertility: letrozole significantly increased live births (27.5% vs 19.1%) without increased adverse outcomes — first-line ovulation induction.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/25006718/" target="_blank" rel="noopener">25006718</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Clomiphene is the current first-line infertility treatment in women with the polycystic ovary syndrome, but aromatase inhibitors, including letrozole, might result in better pregnancy outcomes.<br><br>METHODS: In this double-blind, multicenter trial, we randomly assigned 750 women, in a 1:1 ratio, to receive letrozole or clomiphene for up to five treatment cycles, with visits to determine ovulation and pregnancy, followed by tracking of pregnancies. The polycystic ovary syndrome was defined according to modified Rotterdam criteria (anovulation with either hyperandrogenism or polycystic ovaries). Participants were 18 to 40 years of age, had at least one patent fallopian tube and a normal uterine cavity, and had a male partner with a sperm concentration of at least 14 million per milliliter; the women and their partners agreed to have regular intercourse with the intent of conception during the study. The primary outcome was live birth during the treatment period.<br><br>RESULTS: Women who received letrozole had more cumulative live births than those who received clomiphene (103 of 374 [27.5%] vs. 72 of 376 [19.1%], P=0.007; rate ratio for live birth, 1.44; 95% confidence interval, 1.10 to 1.87) without significant differences in overall congenital anomalies, though there were four major congenital anomalies in the letrozole group versus one in the clomiphene group (P=0.65). The cumulative ovulation rate was higher with letrozole than with clomiphene (834 of 1352 treatment cycles [61.7%] vs. 688 of 1425 treatment cycles [48.3%], P&lt;0.001). There were no significant between-group differences in pregnancy loss (49 of 154 pregnancies in the letrozole group [31.8%] and 30 of 103 pregnancies in the clomiphene group [29.1%]) or twin pregnancy (3.4% and 7.4%, respectively). Clomiphene was associated with a higher incidence of hot flushes, and letrozole was associated with higher incidences of fatigue and dizziness. Rates of other adverse events were similar in the two treatment groups.<br><br>CONCLUSIONS: As compared with clomiphene, letrozole was associated with higher live-birth and ovulation rates among infertile women with the polycystic ovary syndrome. (Funded by the Eunice Kennedy Shriver National Institute of Child Health and Human Development and others; ClinicalTrials.gov number, NCT00719186.).</div></details>
+</li>
+<li id="ref-5">
+<div class="ref-label"><strong>Al Khalifah et al., The effectiveness and safety of treatments used for polycystic ovarian syndrome management in adolescents: a systematic review and network meta-analysis protocol, <em>Syst Rev</em> 2015</strong></div>
+<div class="ref-what">Al Khalifah et al., Syst Rev 2015 — effectiveness and safety review of treatments used for PCOS (including spironolactone, OCPs, metformin for hirsutism and menstrual regulation).</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26420636/" target="_blank" rel="noopener">26420636</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Polycystic ovarian syndrome (PCOS) is a common reproductive endocrine disease that is seen among adolescent women. Currently, there is limited evidence to support treatment options leading to considerable variation in practice among healthcare specialists. The objective of this study is to review and synthesize all the available evidence on treatment options for PCOS among adolescent women.<br><br>METHODS/DESIGN: We will conduct a systematic review of all randomized controlled trials evaluating the use of metformin, oral contraceptive pills as monotherapy, or as combination with pioglitazone, spironolactone, flutamide, and lifestyle interventions in the treatment of PCOS in adolescent women ages 11 to 19 years. The primary outcome measures are menstrual regulation and change hirsutism scores. The secondary outcome measures include acne scores, prevalence of dysglycaemia, BMI, lipid profile, total testosterone level, and adverse events. We will perform literature searches through Ovid Medline, Ovid Embase, and Cochrane Central Register of Controlled Trials (CENTRAL), and gray literature resources. Two reviewers will independently screen titles and abstracts of identified citations, review the full texts of potentially eligible trials, extract information from eligible trials, and assess the risk of bias and quality of the evidence independently. Results of this review will be summarized narratively and quantitatively as appropriate. We will perform a multiple treatment comparison using network meta-analysis to estimate the pooled direct and indirect effects for all PCOS interventions on outcomes if adequate data is available.<br><br>DISCUSSION: PCOS treatment poses a clinical challenge to the patients and physicians. This is the first systematic review and network meta-analysis for PCOS treatment in adolescents. We expect that our results will help improve patient care, unify the treatment approaches among specialists, and encourage research for other therapeutic options.<br><br>SYSTEMATIC REVIEW REGISTRATION: PROSPERO CRD42015016148.</div></details>
+</li>
+<li id="ref-6">
+<div class="ref-label"><strong>Naderpoor et al., Metformin and lifestyle modification in polycystic ovary syndrome: systematic review and meta-analysis, <em>Hum Reprod Update</em> 2015</strong></div>
+<div class="ref-what">Naderpoor et al., Hum Reprod Update 2015 — meta-analysis: metformin plus lifestyle is more effective than lifestyle alone for weight loss, menstrual regulation, and biochemical hyperandrogenism in PCOS.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26060208/" target="_blank" rel="noopener">26060208</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Polycystic ovary syndrome (PCOS) is a common endocrine disorder with diverse reproductive and metabolic features. It is underpinned by insulin resistance that is exacerbated by obesity. Lifestyle modification is the first line treatment in PCOS, but it is associated with low adherence and sustainability. In small studies, metformin improves outcomes such as hyperinsulinaemia, ovulation and menstrual cyclicity. We conducted a systematic review and meta-analysis to compare the effect of lifestyle modification + metformin with lifestyle modification ± placebo, and of metformin alone with lifestyle modification ± placebo in PCOS on anthropometric, metabolic, reproductive and psychological outcomes.<br><br>METHODS: Databases including MEDLINE, EMBASE, Pubmed, Scopus, Cochrane, PsycINFO, CINAHL, Clinical Trials registry and ANZCTR were searched for RCTs conducted on humans and published in English up to August 2014. Inclusion criteria were diagnosis of PCOS based on Rotterdam criteria (inclusive of National Institutes of Health criteria) at any age and with any BMI. Interventions of interest included lifestyle + metformin (with any dose and any duration) or metformin alone compared with lifestyle ± placebo.<br><br>RESULTS: Of 2372 identified studies, 12 RCTs were included for analysis comprising 608 women with PCOS. Lifestyle + metformin were associated with lower BMI (mean difference (MD) -0.73 kg/m(2), 95% confidence intervals (CI) -1.14, -0.32, P = 0.0005) and subcutaneous adipose tissue (MD -92.49 cm(2), 95% CI -164.14, -20.84, P = 0.01) and increased number of menstrual cycles (MD 1.06, 95% CI 0.30, 1.82, P = 0.006) after 6 months compared with lifestyle ± placebo. There were no differences in other anthropometric, metabolic (surrogate markers of insulin resistance, fasting and area under the curve glucose, lipids and blood pressure), reproductive (clinical and biochemical hyperandrogenism), and psychological (quality of life) outcomes after 6 months between lifestyle + metformin compared with lifestyle ± placebo. With metformin alone compared with lifestyle ± placebo, weight and BMI were similar after 6 months, but testosterone was lower with metformin.<br><br>CONCLUSIONS: Lifestyle + metformin is associated with lower BMI and subcutaneous adipose tissue and improved menstruation in women with PCOS compared with lifestyle ± placebo over 6 months. Metformin alone compared with lifestyle showed similar BMI at 6 months. These results suggest the combination of lifestyle with metformin has a role to play in weight management: a key concern for women with PCOS. Existing study limitations include small sample sizes, short durations and risk of bias. With international guidelines now acknowledging that lifestyle and pharmacotherapy are required for weight loss and maintenance in obesity, future studies of appropriate size and duration are vital to clarify the role of metformin in PCOS management.</div></details>
+</li>
+<li id="ref-7">
+<div class="ref-label"><strong>Hoeger et al., Update on PCOS: Consequences, Challenges, and Guiding Treatment, <em>J Clin Endocrinol Metab</em> 2021</strong></div>
+<div class="ref-what">Hoeger et al., J Clin Endocrinol Metab 2021 — update on PCOS consequences, challenges, and guiding treatment across the lifespan: metabolic, reproductive, and psychological dimensions.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33211867/" target="_blank" rel="noopener">33211867</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Polycystic ovary syndrome (PCOS) is one of the most common reproductive endocrine disorders in women and despite this, diagnostic challenges, delayed diagnosis, and less-than-optimal treatment regimens plague the condition. The International PCOS network, consisting of geographically diverse international experts in PCOS as well as consumers, engaged in a multi-year international evidence-based guideline development process that was jointly sponsored by the European Society for Human Reproduction and Embryology (ESHRE) and the American Society of Reproductive Medicine (ASRM). The guideline was published in 2018 and endorsed by more than 40 international societies involved in PCOS. Translation of this evidence-based guideline to medical practice and consumer groups remains a priority. However, there remain many challenges to both understanding the diagnosis and treatment of PCOS. Evidence suggests that both clinicians and consumers are not satisfied with the timeliness of diagnosis and treatment options. This review summarizes the important findings for diagnosis and treatment from the guidelines and expands on recent developments in the literature since its publication. Special attention to diagnosis at the ends of the reproductive spectrum are discussed and remaining areas of controversy are noted. Additionally, the review highlights some of the remaining challenges in the understanding and management of PCOS to help guide clinicians and investigators in this perplexing condition.</div></details>
+</li>
+<li id="ref-8">
+<div class="ref-label"><strong>Bachega et al., New comprehension on polycystic ovary syndrome and sexual function: a systematic review and meta-analysis, <em>J Sex Med</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40693905/" target="_blank" rel="noopener">40693905</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Polycystic ovary syndrome (PCOS), a prevalent endocrine disorder characterized by menstrual irregularities and hyperandrogenic manifestations, has been increasingly associated with psychological distress and impaired self-image. However, results regarding sexual function (SF) in PCOS women are still controversial, and their interpretation is complicated by the use of different SF assessment tools across studies.<br><br>AIM: To evaluate female sexual dysfunction in PCOS women diagnosed through modified Rotterdam criteria by conducting specific meta-analyses for each validated SF questionnaire and assess the influence of overweight/obesity (OW/O) on these outcomes.<br><br>METHODS: A Systematic Review (PRISMA) of 8 databases was performed until March 2024. Meta-analysis employed STATA software, employing a random-effects model to compare groups via Hedges&#x27; g and standardized mean difference (SMD). Heterogeneity (I2 statistic; Q test) and publication bias (funnel plots; Egger&#x27;s test) were assessed.<br><br>OUTCOMES: The influence of PCOS and OW/O on SF.<br><br>RESULTS: A total of 6171 articles were initially screened, and 40/6171 studies were included in this systematic review. Meta-analyses were performed solely for the Female Sexual Function Index (FSFI) score as it was the only SF assessment tool widely used across published studies. Pooled meta-analysis results showed that PCOS women had significantly lower FSFI scores in all fields than controls: total FSFI: -0.4 (95% CI -0.45; -0.36, I2 = 94.3%); desire: -0.22 (95% CI -0.26; -0.17, I2 = 90.8%); arousal: -0.3 (95% CI -0.34; -0.25, I2 = 94.1%); lubrication: -0.31 (95% CI -0.36; -0.26, I2 = 93%); orgasm: -0.27 (95% CI -0.32; -0.22 I2 = 89.2%); satisfaction: -0.23 (95% CI -0.28; -0.18, I2 = 81.5%); pain: -0.3 (95% CI -0.35; -0.25, I2 = 91.1%). OW/O PCOS women scored with higher lubrication scores than OW/O controls (SMD = 0.3 95% CI [0.03;0.58], P = .02, I2 = 0%).<br><br>CLINICAL TRANSLATION: These findings emphasize the importance of incorporating SF assessments into PCOS follow-up protocols and multidisciplinary care.<br><br>STRENGTHS AND LIMITATIONS: Strengths include a large cohort, analysis of an OW/O subgroup, and robust quality assessment using the Newcastle-Ottawa Scale. The main limitation was the lack of published studies using SF-assessment tools other than the FSFI, which precluded meta-analyses for other questionnaires.<br><br>CONCLUSION: While PCOS women experience significantly impaired SF than controls, those with OW/O and PCOS may have comparable or even enhanced SF in certain domains, particularly lubrication, suggesting that the interplay between obesity and SF in PCOS women may not always be negative. By integrating routine screening with a multidisciplinary approach, we can more effectively address the sexual health challenges faced by PCOS women, ultimately empowering them to achieve optimal health and overall well-being.</div></details>
+</li>
+<li id="ref-9">
+<div class="ref-label"><strong>Gautam et al., The Role of Lifestyle Interventions in PCOS Management: A Systematic Review, <em>Nutrients</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39861440/" target="_blank" rel="noopener">39861440</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Polycystic ovary syndrome (PCOS) is one of the most prevalent endocrine disorders among reproductive-aged women. It is characterized by hyperandrogenism, anovulation, and polycystic ovaries. Lifestyle changes are suggested as first-line interventions in managing PCOS. This systematic review aims to assess the scientific evidence regarding the role of lifestyle modifications (dietary changes, physical activity, and behavioral changes) in improving reproductive, anthropometric, metabolic, and psychological outcomes in women with PCOS. Dietary interventions such as foods with low glycemic index scores; caloric restrictions; high-fiber, omega three fatty acid-rich diets; ketogenic diets; Mediterranean diets; antioxidant-rich food; and anti-inflammatory diets improve insulin sensitivity and hormonal balance in women with PCOS. Physical activity, like aerobic and resistance exercise, enhances insulin sensitivity, helps weight loss, and improves metabolic and reproductive outcomes in women with PCOS. Further, behavioral and education modules can also be used to improve awareness, adherence, and the effectiveness of conventional treatment and to manage mental health issues related to PCOS. Collectively, lifestyle modifications not only improve the biochemical, hormonal, and anthropometric parameters in PCOS patients but also reduce the long-term risks of metabolic and cardiovascular diseases.</div></details>
+</li>
+<li id="ref-10">
+<div class="ref-label"><strong>Gul et al., Comparative efficacy of combined myo-inositol and D-chiro inositol versus metformin across PCOS Phenotypes: enhancing ovarian function, ovulation, and stress response in a prospective clinical trial, <em>Naunyn Schmiedebergs Arch Pharmacol</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39847053/" target="_blank" rel="noopener">39847053</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This study aimed to evaluate the comparative efficacy of Myo-inositol (MI) and D-chiro-inositol (DCI) with metformin in enhancing ovarian function, promoting ovulation, and reducing perceived stress in patients with polycystic ovary syndrome (PCOS). Women with PCOS were identified using the Androgen Excess Society&#x27;s criteria, and 60 participants were enrolled and divided equally into two groups. One group received a 40:1 ratio of MI plus DCI, while the other received metformin for a 12-week period. Endocrine and metabolic parameters, insulin-resistance, stress levels, and quality of life were assessed pre- and post-treatment. Both MI plus DCI and metformin significantly improved insulin sensitivity (HOMA-IR, p &lt; 0.001), SHBG levels (p = 0.021), ovarian volume (p &lt; 0.001), and menstrual regularity (p = 0.002), along with BMI, quality of life, and PSS scores (p &lt; 0.001). Metformin showed slightly better outcomes in certain parameters, such as insulin sensitivity and endocrine markers, probably due to a higher representation of Phenotype A. In contrast, we hypothesize that MI plus DCI may be more effective for Phenotypes C and D. Our findings support both MI plus DCI and metformin as effective treatments for PCOS, with each treatment offering specific benefits. These results highlight the potential for a phenotype-specific tailored therapeutic approach to better manage the complex metabolic, endocrine, and stress-related challenges of PCOS. Trial Registration: clinicalTrial.gov NCT05767515. Registered 3 February, 2023.</div></details>
+</li>
+<li id="ref-11">
+<div class="ref-label"><strong>Turetta et al., Impact of Ketogenic Diet on Weight, Metabolic, and Endocrine Parameters in Women with Polycystic Ovary Syndrome: A Systematic Review and Meta-Analysis, <em>Gynecol Obstet Invest</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39978319/" target="_blank" rel="noopener">39978319</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Polycystic ovary syndrome (PCOS) is a widespread disease among women of childbearing age. This pathology embraces a complex spectrum of clinical manifestations. An altered secretion of gonadotropins and high levels of androgens determine menstrual irregularities and ovulatory dysfunction, infertility, hirsutism, alopecia and acne. Moreover, hyperinsulinemia and insulin resistance (IR) are common, leading to an increased metabolic risk. Whilst various pharmacological strategies have been studied to manage PCOS, the role of lifestyle should be emphasized. Numerous studies highlight the fundamental role that diet plays in the regulation of these hormonal imbalances. The hypothesis that a low-carbohydrate diet, such as the ketogenic diet (KD), may be beneficial in patients with PCOS has been evaluated in some clinical studies. The aim of the present systematic review and meta-analysis has been to evaluate through anthropometric, metabolic, and hormonal parameters the impact of KD in overweight or obese patients with PCOS.<br><br>METHODS: A research question according to the PICOS framework was formulated, and a literature search following the PRISMA criteria for systematic review was performed. Studies that reported the following outcomes were included: weight loss, body mass index (BMI), circulating levels of glucose, insulin, Homeostasis Model Assessment - Insulin Resistance (HOMA-IR), LDL cholesterol, HDL cholesterol, triglycerides, luteinizing hormone (LH), follicle-stimulating hormone (FSH), LH/FSH, estrogens, progesterone, anti-müllerian hormone (AMH), total-testosterone (total-T), free testosterone (free-T), sex hormone-binding globulin (SHBG), dehydroepiandrosterone sulfate (DHEAS), pregnancies and live births. The extracted data were analyzed, and pooled results were expressed as standardized mean difference (SMD) with 95% confidence interval (CI).<br><br>RESULTS: Seven studies were included in the systematic review. The results of the meta-analysis showed that after KD the patients had a significant weight loss (standard mean difference or SMD 1.31 kg [95% CI: 0.45, 2.17] p = 0.003) and lower BMI (SMD 1.27 kg/m2 [95% CI: 0.71, 1.83], p &lt; 0.001). Blood glucose (SMD 1.36 mg/dL [95% CI: 1.08, 1.64], p &lt; 0.001), insulin (SMD 1.15 µU/mL [95% CI: 0.60, 1.70], p &lt; 0.001) and HOMA-IR (SMD 1.84 [95% CI: 0.72, 2.96], p = 0.001) were all decreased, and lipid profile was improved with higher HDL (SMD 0.38 mg/dL [95% CI: 1.45, 0.68], p = 0.48, not significant), lower LDL (SMD 0.73 mg/dL [95% CI: 0.03, 1.42], p = 0.04) and lower triglycerides (SMD 1.11 mg/dL [95% CI: 0.53, 1.68], p &lt; 0.001). Moreover, LH concentrations were significantly reduced (SMD 1.12 ng/dL [95% CI: 0.39, 1.84] p = 0.003), FSH levels raised (SMD -0.76 ng/dL [95% CI: -1.25, -0.28], p = 0.002), the LH/FSH ratio decreased (SMD 2.04 [95% CI: 1.04-3.03], p &lt; 0.001); testosterone decreased (free-T SMD 0.57 ng/dL [95% CI: 0.28, 0.86], p &lt; 0.001; total-T SMD 0.54 ng/dL [95% CI: 0.28, 0.80] p &lt; 0.001), and SHBG levels were significantly increased (SMD 0.79 [95% CI: 1.24-0.34], p &lt; 0.001). Data about estrogens, progesterone, DHEAS, and pregnancies were too scarce to allow a comparison in the meta-analysis.<br><br>CONCLUSION: The KD seems to offer a substantial benefit in improving all the anthropometric, metabolic, and hormonal parameters evaluated. Broader studies involving women with PCOS may provide further insight into the effects of a low glycemic index diet in this group of patients.</div></details>
+</li>
+<li id="ref-12">
+<div class="ref-label"><strong>Bahri Khomami et al., Systematic review and meta-analysis of pregnancy outcomes in women with polycystic ovary syndrome, <em>Nat Commun</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38965226/" target="_blank" rel="noopener">38965226</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Screening for polycystic ovary syndrome (PCOS) in antenatal care is inadequate, largely owing to the lack of clarity around whether PCOS is an independent risk factor for pregnancy complications. This systematic review and meta-analysis include 104 studies and 106,690 pregnancies in women with and without PCOS from inception until 13th July 2022. We report that women with PCOS are younger and have higher body mass index (BMI) around conception and have greater gestational weight gain. The odds of miscarriage, gestational diabetes mellitus, gestational hypertension, pre-eclampsia and cesarean section are higher in women with PCOS. The increased odds of adverse outcomes in PCOS remain significant when age and BMI are matched and when analyses are restricted to high-quality studies. This work informed the recommendations from the 2023 international evidence-based guideline for the assessment and management of polycystic ovary syndrome, emphasizing that PCOS status should be captured in all women who are planning to, or have recently become pregnant to facilitate prevention of adverse outcomes and improve pregnancy outcomes.</div></details>
+</li>
+<li id="ref-13">
+<div class="ref-label"><strong>Burns et al., Body mass index stratified meta-analysis of genome-wide association studies of polycystic ovary syndrome in women of European ancestry, <em>BMC Genomics</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38408933/" target="_blank" rel="noopener">38408933</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Polycystic ovary syndrome (PCOS) is a complex multifactorial disorder with a substantial genetic component. However, the clinical manifestations of PCOS are heterogeneous with notable differences between lean and obese women, implying a different pathophysiology manifesting in differential body mass index (BMI). We performed a meta-analysis of genome-wide association study (GWAS) data from six well-characterised cohorts, using a case-control study design stratified by BMI, aiming to identify genetic variants associated with lean and overweight/obese PCOS subtypes.<br><br>RESULTS: The study comprised 254,588 women (5,937 cases and 248,651 controls) from individual studies performed in Australia, Estonia, Finland, the Netherlands and United States of America, and separated according to three BMI stratifications (lean, overweight and obese). Genome-wide association analyses were performed for each stratification within each cohort, with the data for each BMI group meta-analysed using METAL software. Almost half of the total study population (47%, n = 119,584) were of lean BMI (≤ 25 kg/m2). Two genome-wide significant loci were identified for lean PCOS, led by rs12000707 within DENND1A (P = 1.55 × 10-12) and rs2228260 within XBP1 (P = 3.68 × 10-8). One additional locus, LINC02905, was highlighted as significantly associated with lean PCOS through gene-based analyses (P = 1.76 × 10-6). There were no significant loci observed for the overweight or obese sub-strata when analysed separately, however, when these strata were combined, an association signal led by rs569675099 within DENND1A reached genome-wide significance (P = 3.22 × 10-9) and a gene-based association was identified with ERBB4 (P = 1.59 × 10-6). Nineteen of 28 signals identified in previous GWAS, were replicated with consistent allelic effect in the lean stratum. There were less replicated signals in the overweight and obese groups, and only 4 SNPs were replicated in each of the three BMI strata.<br><br>CONCLUSIONS: Genetic variation at the XBP1, LINC02905 and ERBB4 loci were associated with PCOS within unique BMI strata, while DENND1A demonstrated associations across multiple strata, providing evidence of both distinct and shared genetic features between lean and overweight/obese PCOS-affected women. This study demonstrated that PCOS-affected women with contrasting body weight are not only phenotypically distinct but also show variation in genetic architecture; lean PCOS women typically display elevated gonadotrophin ratios, lower insulin resistance, higher androgen levels, including adrenal androgens, and more favourable lipid profiles. Overall, these findings add to the growing body of evidence supporting a genetic basis for PCOS as well as differences in genetic patterns relevant to PCOS BMI-subtype.</div></details>
+</li>
+<li id="ref-14">
+<div class="ref-label"><strong>Fitz et al., Inositol for Polycystic Ovary Syndrome: A Systematic Review and Meta-analysis to Inform the 2023 Update of the International Evidence-based PCOS Guidelines, <em>J Clin Endocrinol Metab</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38163998/" target="_blank" rel="noopener">38163998</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">CONTEXT: Insulin resistance is common in women with polycystic ovary syndrome (PCOS). Inositol may have insulin sensitizing effects; however, its efficacy in the management of PCOS remains indeterminate.<br><br>OBJECTIVE: To inform the 2023 international evidence-based guidelines in PCOS, this systematic review and meta-analysis evaluated the efficacy of inositol, alone or in combination with other therapies, in the management of PCOS.<br><br>DATA SOURCES: Medline, PsycInfo, EMBASE, All EBM, and CINAHL from inception until August 2022.<br><br>STUDY SELECTION: Thirty trials (n = 2230; 1093 intervention, 1137 control), with 19 pooled in meta-analyses were included.<br><br>DATA EXTRACTION: Data were extracted for hormonal, metabolic, lipids, psychological, anthropometric, reproductive outcomes, and adverse effects by 1 reviewer, independently verified by a second.<br><br>DATA SYNTHESIS: Thirteen comparisons were assessed, with 3 in meta-analyses. Evidence suggests benefits for myo-inositol or D-chiro-inositol (DCI) for some metabolic measures and potential benefits from DCI for ovulation, but inositol may have no effect on other outcomes. Metformin may improve waist-hip ratio and hirsutism compared to inositol, but there is likely no difference for reproductive outcomes, and the evidence is very uncertain for body mass indexI. Myo-inositol likely causes fewer gastrointestinal adverse events compared with metformin; however, these are typically mild and self-limited.<br><br>CONCLUSION: The evidence supporting the use of inositol in the management of PCOS is limited and inconclusive. Clinicians and their patients should consider the uncertainty of the evidence together with individual values and preferences when engaging in shared decision-making regarding the use of inositol for PCOS.</div></details>
+</li>
+<li id="ref-15">
+<div class="ref-label"><strong>Juhász et al., Ranking the dietary interventions by their effectiveness in the management of polycystic ovary syndrome: a systematic review and network meta-analysis, <em>Reprod Health</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38388374/" target="_blank" rel="noopener">38388374</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Polycystic ovary syndrome (PCOS) is a common condition in women, characterised by reproductive and metabolic dysfunction. While dietary approaches have been evaluated as a first-line treatment for patients with PCOS, there is limited evidence to support preference for a specific dietary composition. This systematic review and network meta-analysis was performed with the objective of comparing different dietary interventions in terms of positive impact. Metformin, the currently preferred treatment, was also compared.<br><br>METHODS: The latest systematic search was performed on the 20th of March, 2023. Eligible randomised controlled trials (RCTs) included patients with PCOS and compared the dietary approach with another intervention or a standard diet. Outcomes were expressed via anthropometric measurements and hormonal, glycemic, and lipid levels. The Bayesian method was used to perform a network meta-analysis and to calculate the surface under the cumulative ranking curve (SUCRA) values in order to rank the dietary interventions. The overall quality of the evidence was assessed using the Grading of Recommendations Assessment, Development, and Evaluation system.<br><br>RESULTS: 19 RCTs were identified, comprising data from 727 patients who were variously treated with 10 types of dietary interventions and metformin. The Dietary Approaches to Stop Hypertension (DASH) diet was the most effective in reducing Homeostatic Model Assessment of Insulin Resistance (SUCRA 92.33%), fasting blood glucose (SUCRA 85.92%), fasting insulin level (SUCRA 79.73%) and triglyceride level (SUCRA 82.07%). For body mass index (BMI), the most effective intervention was the low-calorie diet (SUCRA 84.59%). For weight loss, the low-calorie diet with metformin (SUCRA 74.38%) was the most effective intervention. Metformin produced the greatest reductions in low-density lipoprotein cholesterol (SUCRA 78.08%) and total testosterone levels (SUCRA 71.28%). The low-carb diet was the most effective intervention for reducing cholesterol levels (SUCRA 69.68%), while the normal diet (SUCRA 65.69%) ranked first for increasing high-density lipoprotein cholesterol levels.<br><br>CONCLUSION: Dietary interventions vary in their effects on metabolic parameters in women with PCOS. Based on our results, the DASH diet is the most effective dietary intervention for treating PCOS. Registration PROSPERO ID CRD42021282984.</div></details>
+</li>
+<li id="ref-16">
+<div class="ref-label"><strong>Melin et al., Metformin and Combined Oral Contraceptive Pills in the Management of Polycystic Ovary Syndrome: A Systematic Review and Meta-analysis, <em>J Clin Endocrinol Metab</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37554096/" target="_blank" rel="noopener">37554096</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">CONTEXT: Polycystic ovary syndrome (PCOS) affects more than 1 in 10 women.<br><br>OBJECTIVE: As part of the 2023 International PCOS Guidelines update, comparisons between combined oral contraceptive pills (COCP), metformin, and combination treatment were evaluated.<br><br>DATA SOURCES: Ovid Medline, Embase, PsycINFO, All EBM, and CINAHL were searched.<br><br>STUDY SELECTION: Women with PCOS included in randomized controlled trials (RCTs).<br><br>DATA EXTRACTION: We calculated mean differences and 95% CIs regarding anthropometrics, metabolic, and hyperandrogenic outcomes. Meta-analyses and quality assessment using GRADE were performed.<br><br>DATA SYNTHESIS: The search identified 1660 publications; 36 RCTs were included. For hirsutism, no differences were seen when comparing metformin vs COCP, nor when comparing COCP vs combination treatment with metformin and COCP. Metformin was inferior on free androgen index (FAI) (7.08; 95% CI 4.81, 9.36), sex hormone binding globulin (SHBG) (-118.61 nmol/L; 95% CI -174.46, -62.75) and testosterone (0.48 nmol/L; 95% CI 0.32, 0.64) compared with COCP. COCP was inferior for FAI (0.58; 95% CI 0.36, 0.80) and SHBG (-16.61 nmol/L; 95% CI -28.51, -4.71) compared with combination treatment, whereas testosterone did not differ. Metformin lowered insulin (-27.12 pmol/L; 95% CI -40.65, -13.59) and triglycerides (-0.15 mmol/L; 95% CI -0.29, -0.01) compared with COCP. COCP was inferior for insulin (17.03 pmol/L; 95% CI 7.79, 26.26) and insulin resistance (0.44; 95% CI 0.17, 0.70) compared with combination treatment.<br><br>CONCLUSIONS: The choice of metformin or COCP treatment should be based on symptoms, noting some biochemical benefits from combination treatment targeting both major endocrine disturbances seen in PCOS (hyperinsulinemia and hyperandrogenism).</div></details>
+</li>
+<li id="ref-17">
+<div class="ref-label"><strong>Salari et al., Global prevalence of polycystic ovary syndrome in women worldwide: a comprehensive systematic review and meta-analysis, <em>Arch Gynecol Obstet</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38922413/" target="_blank" rel="noopener">38922413</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Polycystic ovary syndrome (PCOS) is the most common metabolic disorder among women of reproductive age. Many factors are involved in the development of PCOS, among which genetic predisposition is probably the main contributor that is also influenced by lifestyle and environmental factors. This study aims to determine the prevalence of PCOS in different continents based on Rotterdam, AES and NIH diagnostic criteria.<br><br>METHODS: We conducted a systematic review and meta-analysis to evaluate the prevalence of polycystic ovary syndrome in women according to (Preferred Reporting Items for Systematic Review and Meta-Analysis) PRISMA guidelines. PubMed, Scopus, Science Direct, Web of Science and Google Scholar databases were comprehensively searched until February 2021 for relevant articles. Heterogeneity between the studies was assessed using the I2 index. Begg and Mazumdar&#x27;s test was used to evaluate publication bias.<br><br>RESULTS: A total of 35 studies with 12,365,646 subjects were retrieved. The mean age ranged from 10-45 years. Global prevalence of PCOS was 9.2% (95% CI: 6.8-12.5%) based on meta-analysis, our results showed that the global prevalence of PCOS was 5.5% (95% CI: 3.9-7.7%) based on NIH criteria, 11.5 (95% CI: 6.6-19.4) based on Rotterdam criteria, and 7.1% (95% CI: 2.3-20.2%) based on AES criteria. According to self-report subgroup analysis, the prevalence of PCOS was found to be 11% (95% CI: 5.2-21.8%).<br><br>CONCLUSION: Based on the results of the present study, the prevalence of PCOS in the world was 9.2% (95% CI: 6.8-12.5%). According to the results of the present study and the high prevalence of PCOS, especially in the Africa continent, it is necessary for health systems to implement measures to timely prevent and treat this syndrome.</div></details>
+</li>
+<li id="ref-18">
+<div class="ref-label"><strong>Greff et al., Inositol is an effective and safe treatment in polycystic ovary syndrome: a systematic review and meta-analysis of randomized controlled trials, <em>Reprod Biol Endocrinol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36703143/" target="_blank" rel="noopener">36703143</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Metformin is the gold standard insulin sensitizer, which is widely used to treat insulin resistance in polycystic ovary syndrome (PCOS). However, metformin may induce gastrointestinal side effects.<br><br>OBJECTIVE: Inositols have long been debated as a potential alternative for metformin in treating PCOS. Therefore, the present systematic review aimed to evaluate the efficacy and safety of inositols in treating PCOS.<br><br>METHODS: The present systematic search was performed in CENTRAL, MEDLINE, and Embase from the inception until October 20th, 2021. Eligible randomized controlled trials (RCTs) included women diagnosed with PCOS and compared any inositols with metformin or placebo. Our primary outcome was cycle normalization, whereas secondary outcomes were body mass index (BMI), parameters of carbohydrate metabolism and clinical and laboratory hyperandrogenism. Results are reported as risk ratios or mean differences (MDs) with 95% confidence intervals (CIs).<br><br>RESULTS: Twenty-six RCTs were identified, including data of 1691 patients (806 inositol, 311 with placebo, and 509 metformin groups). In patients treated with inositols, the risk (CI: 1.13; 2.85) of having a regular menstrual cycle was found by 1.79 higher than in the case of placebo. Moreover, the inositols showed non-inferiority compared to metformin in this outcome. In the case of BMI (MD = -0.45; CI: -0.89; -0.02), free testosterone (MD = -0,41, CI: -0.69; -0.13), total testosterone (MD = -20.39, CI: -40.12; -0.66), androstenedione (MD = -0.69, CI: -1,16; -0.22), glucose (MD = -3.14; CI: -5.75; -0.54) levels and AUC insulin (MD = -2081.05, CI: -2745.32; -1416.78) inositol treatment induced greater decrease compared to placebo. Inositol increased sex-hormone-binding globulin significantly compared to placebo (MD = 32.06, CI:1.27; 62.85).<br><br>CONCLUSION: Inositol is an effective and safe treatment in PCOS. Moreover, inositols showed non-inferiority in most outcomes compared to the gold standard treatment; metformin.<br><br>TRIAL REGISTRATION: PROSPERO registration number: CRD42021283275.</div></details>
+</li>
+<li id="ref-19">
+<div class="ref-label"><strong>Liu et al., Letrozole Compared With Clomiphene Citrate for Polycystic Ovarian Syndrome: A Systematic Review and Meta-analysis, <em>Obstet Gynecol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36735392/" target="_blank" rel="noopener">36735392</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To estimate the effect of letrozole and clomiphene citrate in women with infertility and polycystic ovarian syndrome (PCOS).<br><br>METHODS OF STUDY SELECTION: MEDLINE through PubMed, Web of Science, EMBASE, Cochrane Library, and ClinicalTrials.gov were searched for relevant studies from inception to February 1, 2022. Two reviewers retrieved, filtered, and extracted data independently using the bibliographic software EndNote X9 and Excel workbook. We included randomized controlled trials (RCTs) reporting ovulation induction outcomes in women with infertility and PCOS treated with either letrozole or clomiphene citrate followed by timed intercourse or intrauterine insemination. The data were merged into a mean difference or risk ratio (RR) with 95% CI, depending on variable types.<br><br>TABULATION, INTEGRATION, AND RESULTS: Data collection and organization were conducted in accordance with the 2020 PRISMA (Preferred Reporting Items for Systematic Review and Meta-Analyses) statement. Twenty-nine RCTs were eligible, which included 3,952 women and 7,633 ovulation induction cycles. We acquired evidence from 22 RCTs for the ovulation rate, 28 RCTs for the clinical pregnancy rate, and eight RCTs for live-birth rate. Pooled analysis indicated that letrozole treatment prevailed against clomiphene citrate in ovulation rate (RR 1.14, 95% CI 1.06-1.21, P &lt;.001), clinical pregnancy rate (RR 1.48, 95% CI 1.34-1.63, P &lt;.001), and live-birth rate (RR 1.49, 95% CI 1.27-1.74, P &lt;.001).<br><br>CONCLUSIONS: Letrozole was associated with improved ovulation, pregnancy, and live-birth rates compared with clomiphene citrate. We recommend letrozole over clomiphene citrate as an ovulation induction drug in women with infertility and PCOS, although the quality of the evidence is mixed.<br><br>SYSTEMATIC REVIEW REGISTRATION: PROSPERO, CRD42022308777.</div></details>
+</li>
+<li id="ref-20">
+<div class="ref-label"><strong>Nazirudeen et al., A randomized controlled trial comparing myoinositol with metformin versus metformin monotherapy in polycystic ovary syndrome, <em>Clin Endocrinol (Oxf)</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37265016/" target="_blank" rel="noopener">37265016</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: Insulin resistance and hyperinsulinemia plays an important role in pathogenesis of polycystic ovary syndrome (PCOS). Metformin, Myoinositol and d-chiro-inositol acts as insulin sensitizers and exerts a beneficial effects in PCOS. The objective is to compare the effect of metformin monotherapy versus a combination of metformin with Myoinositol and d-chiro-inositol in PCOS.<br><br>DESIGN: This study is a randomized controlled trial conducted over a period of 6 months. All overweight and obese women with PCOS with the age group between 18 and 35 were included and randomized into two groups, 27 in the metformin monotherapy arm and 26 in the myoinositol combination arm.<br><br>PATIENTS AND MEASUREMENTS: The variables assessed were duration of menstrual cycle, anthropometric parameters, modified Ferriman Gallwey score, global acne score, Fasting insulin, HOMA-IR, fasting lipid profile, serum testosterone, sex hormone binding globulin, luteinizing hormone, follicle stimulating hormone, anti-Mullerian hormone, and pelvic ultrasound to assess ovarian volume, PCOS Questionnaire score. Changes in the parameters from baseline at the end of 6 months of treatment were assessed and compared between the groups.<br><br>RESULTS: Menstrual cycle regularity improved in both groups with significantly greater improvement in the group receiving myoinositol-based therapy (p &lt; .001). Pregnancy rate was equal in both the arms. There was a significant improvement in PCOSQ score in myoinositol-based therapy group (p &lt; .001). However, there was no statistically significant difference in other hormonal, metabolic parameters between two groups in spite of symptomatic benefits.<br><br>CONCLUSIONS: The addition of myoinositol to metformin exerts additional benefits in improving menstrual cycle regularity, and quality of life in women with PCOS.</div></details>
+</li>
+<li id="ref-21">
+<div class="ref-label"><strong>Wartena et al., Polycystic ovary syndrome and recurrent pregnancy loss, a review of literature, <em>Front Endocrinol (Lausanne)</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38027110/" target="_blank" rel="noopener">38027110</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: PCOS is a syndrome of ovarian dysfunction associated with recurrent pregnancy loss. Several correlating factors have been investigated that influence the risk of pregnancy loss in PCOS. However, uncertainty remains about their contribution to pregnancy loss and prognosis. This review of literature aims to identify what is known and what requires further investigation on the relationship between PCOS and recurrent pregnancy loss, to guide future research and optimize medical guidance throughout pregnancy.<br><br>STUDY DESIGN: a review of literature was performed on several search engines using the following terms; polycystic ovarian syndrome, PCOS, recurrent pregnancy loss, recurrent miscarriage, RPL, aborted fetus, abortus provocatus, miscarriage and habitual abortion.<br><br>RESULTS: 37 articles were included; 3 systematic reviews, 1 meta-analysis, 2 randomized controlled trials, 6 prospective cohort studies, 22 case-control studies and 3 case series. The main objectives investigated by studies were pregnancy complications, pregnancy loss and live birth in the PCOS population.<br><br>CONCLUSION: Studies that investigated the relationship between PCOS and recurrent pregnancy loss are few and inconsistent and warrant further research. Factors apt for further investigation include the extent to which PCOS phenotypes, BMI, obesity, insulin resistance, hyperandrogenemia, SHBG, hs-CRP, CTRP6, adiponectin, plasma leptin, homocysteine, AMH and thrombophilia contribute to further risk of miscarriage. Other factors requiring further exploration in relation to risk for miscarriage in PCOS patient with RPL include sOB-R, PAI-Fx and the Factor-V-Leiden mutations.</div></details>
+</li>
+<li id="ref-22">
+<div class="ref-label"><strong>Yang et al., Effects of vitamin D supplementation on ovulation and pregnancy in women with polycystic ovary syndrome: a systematic review and meta-analysis, <em>Front Endocrinol (Lausanne)</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37593349/" target="_blank" rel="noopener">37593349</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the effect of vitamin D supplementation on pregnancy and ovulation in patients with polycystic ovary syndrome.<br><br>METHOD: We searched Pubmed, Medline (via Ovid, 1974 to 2020), EMBASE (via Ovid, 1974 to 2020), Cochrane Central Register of Controlled Trials (via Ovid), Web of Science, CNKI, WangFang and the Vip database from inception until April 2021. Two researchers independently screened articles, collected data and evaluated the quality, with Review manager 5.3 for meta-analysis.<br><br>RESULTS: Totally 20 randomized controlled studies with 1961 subjects were included. Meta analysis showed that pregnancy rate [RR=1.44 (1.28, 1.62), p&lt;0.00,001], ovulation rate [RR=1.42 (1.14, 1.78), p=0.002] and matured oocytes rate [RR=1.08 (1.03, 1.13), p=0.002] of vitamin D supplementation group were significantly higher than those of control group. Meanwhile, early miscarriage rate [RR=0.44 (0.30, 0.66), p&lt;0.00,001], androgen level [MD=-2.31 (-3.51, -1.11), p=0.0002], luteinizing hormone [MD=-1.47 (-2.57, -0.36), p=0.009], follicle stimulating hormone [MD=-0.15 (-0.24, -0.05), p=0.002], and premature delivery rate [RR=0.38, 95% CI (0.21, 0.70), p=0.002] were declined significantly than the controls. However, only one article suggested that the progesterone [MD=6.52 (4.52, 8.52), p&lt;0.05] in the vitamin D intervention group was increased. There was no notable difference in the biochemical pregnancy rate [RR=0.95 (0.55, 1.63), p=0.84], gestational hypertension rate [RR=0.40, 95% CI (0.15, 1.11), p=0.08], gestational diabetes mellitus rate [RR=0.27, 95% CI (0.05, 1.39), p=0.11], fertilization rate [RR=1.05 (1.00, 1.10), p=0.04], cleavage rate [RR=1.03 (0.99, 1.06), p=0.17], high-quality embryo rate [RR=1.08 (0.98, 1.20), p=0.10], endometrial thickness [MD=0.10], 77 (-0.23, 1.77), p=0.13], estrogen level [MD=-0.34 (-1.55, 0.87), p=0.59], LH/FSH [MD=-0.14, 95% CI (-0.48, 0.20), p=1.00] and anti-Mullerian hormone [MD=-0.22 (-0.65, 0.21), p=0.32].<br><br>CONCLUSION: Vitamin D supplementation contribute to the higher pregnancy and ovulation rates, and lower androgen, LH, FSH and early miscarriage rates in women with PCOS, regardless of the use of ovulation induction drugs or assisted reproductive technologies. However, no significant improvement was observed in fertilization rate or cleavage rate. Due to the limitation in quality of involved studies, more high-quality RCTs are needed for further validation.<br><br>SYSTEMATIC REVIEW REGISTRATION: https://www.crd.york.ac.uk/PROSPERO, identifier CRD42021250284.</div></details>
+</li>
+<li id="ref-23">
+<div class="ref-label"><strong>Zhou et al., Effects of GLP1RAs on pregnancy rate and menstrual cyclicity in women with polycystic ovary syndrome: a meta-analysis and systematic review, <em>BMC Endocr Disord</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37940910/" target="_blank" rel="noopener">37940910</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: This study was aimed to assess the effectiveness of Glucagon-like peptide 1 receptor agonists on pregnancy rate, menses, anthropometric and hormonal parameters in PCOS patients.<br><br>METHODS: We conducted searches of the published literature in PubMed, EMBASE, Cochrane Library, Web of Science up to September 2022. Data from randomized controlled trials were obtained to assess the effects of GLP1RAs in PCOS women. Weighted mean difference, standardized mean difference, and risks ratio were employed for effect size estimation using a random-effects model.<br><br>RESULTS: A total of 840 patients with 469 individuals in GLP1RAs group and 371 individuals in control group from 11 RCTs were included. GLP1RAs usage was associated with an improvement in natural pregnancy rate (RR: 1.72, 95% CI 1.22 to 2.43, P = 0.002, I2 = 0%) and menstrual regularity (SMD: 1.72, 95% CI 0.60 to 2.85, P &lt; 0.001, I2 = 95.6%). There were no statistically significant differences in total pregnancy rate, IVF pregnancy rate between two groups, but total PR elevated in a short time after GLP1RAs as shown in subgroup analysis. Randomization to GLP1RAs treatment was associated with great improvement in HOMA-IR, BMI, WC, SHBG and a slight reduction in TT compared to control group. A decrease in TBF was seen in European population. GLP1RAs monotherapy was not superior to metformin when it came to fT, DHEAS, FAI.<br><br>CONCLUSIONS: Prescription of GLP1RAs improves natural pregnancy rate, menstrual cyclicity and insulin sensitivity, anthropometrics, hormonal indexes in PCOS women.</div></details>
+</li>
+<li id="ref-24">
+<div class="ref-label"><strong>Jaripur et al., The effects of magnesium supplementation on abnormal uterine bleeding, alopecia, quality of life, and acne in women with polycystic ovary syndrome: a randomized clinical trial, <em>Reprod Biol Endocrinol</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35918728/" target="_blank" rel="noopener">35918728</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Abnormal uterine bleeding (AUB), alopecia, low quality of life, and acne are considered as complications of polycystic ovary syndrome (PCOS). We hypothesized that magnesium supplementation would yield beneficial effects on PCOS related complications.<br><br>OBJECTIVE: To examine the effects of magnesium supplementation on AUB, alopecia, quality of life, and acne.<br><br>METHODS: In this parallel randomized clinical trial, we randomly assigned 64 women with PCOS to the magnesium group (n = 32) or placebo group (n = 32) for 10 weeks. AUB, alopecia, quality of life, and acne were assessed by the International Federation of Gynecology and Obstetrics criterion, the Sinclair Scale, the Health Survey Quality of Life Questionnaire, and the Global Acne Grading System, respectively. This randomized clinical trial was registered at IRCT.ir (IRCT20130903014551N9).<br><br>RESULTS: Magnesium supplementation significantly improved the components of quality of life including physical functioning (p = 0.011), role limitations due to physical health (p = 0.012), role limitations due to emotional problems (p &lt; 0.001), energy/fatigue (p = 0.005), emotional wellbeing (p &lt; 0.001), social functioning (p = 0.002), general health (p = 0.013), and total quality of life (p &lt; 0.001), compared with placebo. No significant effect was observed on acne, alopecia, and AUB.<br><br>CONCLUSION: Magnesium supplementation in women with PCOS had a significant positive effect on improving total quality of life.<br><br>TRIAL REGISTRATION: This randomized clinical trial was registered at IRCT.ir on 2020-10-18 (Registration Code: IRCT20130903014551N9 ).</div></details>
+</li>
+<li id="ref-25">
+<div class="ref-label"><strong>Wen et al., Effect of acupuncture and metformin on insulin sensitivity in women with polycystic ovary syndrome and insulin resistance: a three-armed randomized controlled trial, <em>Hum Reprod</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34907435/" target="_blank" rel="noopener">34907435</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY QUESTION: Does acupuncture improve insulin sensitivity more effectively than metformin or sham acupuncture in women with polycystic ovary syndrome (PCOS) and insulin resistance (IR)?<br><br>SUMMARY ANSWER: Among women with PCOS and IR, acupuncture was not more effective than metformin or sham acupuncture in improving insulin sensitivity.<br><br>WHAT IS KNOWN ALREADY: Uncontrolled trials have shown that acupuncture improved insulin sensitivity with fewer side effects compared with metformin in women with PCOS and IR. However, data from randomized trials between acupuncture and metformin or sham acupuncture are lacking.<br><br>STUDY DESIGN, SIZE, DURATION: This was a three-armed randomized controlled trial enrolling a total of 342 women with PCOS and IR from three hospitals between November 2015 and February 2018, with a 3-month follow-up until October 2018.<br><br>PARTICIPANTS/MATERIALS, SETTING, METHODS: Women aged from 18 to 40 years with PCOS and homeostasis model assessment of insulin resistance (HOMA-IR) ≥2.14 were randomly assigned (n = 114 per group) to receive true acupuncture plus placebo (true acupuncture), metformin plus sham acupuncture (metformin, 0.5 g three times daily) or sham acupuncture plus placebo (sham acupuncture) for 4 months, with an additional 3-month follow-up. True or sham acupuncture was given three times per week, and 0.5 g metformin or placebo was given three times daily. The primary outcome was change in HOMA-IR from baseline to 4 months after baseline visit. Secondary outcomes included changes in the glucose AUC during an oral glucose tolerance test, BMI and side effects at 4 months after baseline visit.<br><br>MAIN RESULTS AND THE ROLE OF CHANCE: After 4 months of treatment, the changes of HOMA-IR were -0.5 (decreased 14.7%) in the true acupuncture group, -1.0 (decreased 25.0%) in the metformin group and -0.3 (decreased 8.6%) in the sham acupuncture group, when compared with baseline. True acupuncture is not as effective as metformin in improving HOMA-IR at 4 months after baseline visit (difference, 0.6; 95% CI, 0.1-1.1). No significant difference was found in change in HOMA-IR between true and sham acupuncture groups at 4 months after baseline visit (difference, -0.2; 95% CI, -0.7 to 0.3). During the 4 months of treatment, gastrointestinal side effects were more frequent in the metformin group, including diarrhea, nausea, loss of appetite, fatigue, vomiting and stomach discomfort (31.6%, 13.2%, 11.4%, 8.8%, 14.0% and 8.8%, respectively). Bruising was more common in the true acupuncture group (14.9%).<br><br>LIMITATIONS, REASONS FOR CAUTION: This study might have underestimated the sample size in the true acupuncture group with 4 months of treatment to enable detection of statistically significant changes in HOMA-IR with fixed acupuncture (i.e. a non-personalized protocol). Participants who withdrew because of pregnancy did not have further blood tests and this can introduce bias.<br><br>WIDER IMPLICATIONS OF THE FINDINGS: True acupuncture did not improve insulin sensitivity as effectively as metformin in women with PCOS and IR, but it is better than metformin in improving glucose metabolism (which might reduce the risk of type 2 diabetes) and has less side effects. Metformin had a higher incidence of gastrointestinal adverse effects than acupuncture groups, and thus acupuncture might be a non-pharmacological treatment with low risk for women with PCOS. Further studies are needed to evaluate the effect of acupuncture combined with metformin on insulin sensitivity in these women.<br><br>STUDY FUNDING/COMPETING INTEREST(S): This work was supported by grants 2017A020213004 and 2014A020221060 from the Science and Technology Planning Project of Guangdong Province. The authors have no conflicts of interest.<br><br>TRIAL REGISTRATION NUMBER: Clinicaltrials.gov number: NCT02491333.<br><br>TRIAL REGISTRATION DATE: 8 July 2015.<br><br>DATE OF FIRST PATIENT’S ENROLLMENT: 11 November 2015.</div></details>
+</li>
+<li id="ref-26">
+<div class="ref-label"><strong>Chen et al., The effects of statins on hyperandrogenism in women with polycystic ovary syndrome: a systematic review and meta-analysis of randomized controlled trials, <em>Reprod Biol Endocrinol</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34930305/" target="_blank" rel="noopener">34930305</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Several clinical studies showed that statins were potential to treat polycystic ovary syndrome (PCOS). Through comprehensive search PubMed, EMBASE, the Web of Science, BIOSIS, the ClinialTrails.gov, and the Cochrane Library database up to 14 Feb 2020, we identified the randomized controlled trials about the treatment of statins on hyperandrogenism in PCOS women, and performed a systematic review and meta-analysis. The quality of the included studies was assessed by the Cochrane risk of bias tool and the Jadda score. Subgroup analysis and sensitivity analysis were conducted to analyze the pooled results. Nine trials included 682 PCOS patients were identified. Statins showed a significant potential to reduce testosterone (SMD = -0.47; 95% CI, - 0.76-- 0.18; P = 0.002) and dehydroepiandrosterone (SMD = -0.51; 95% CI, - 0.97-- 0.05; P = 0.03) levels, compared to the control treatments. The cutaneous symptoms hirsutism (SMD = -0.61; 95% CI, - 1.13-- 0.10; P = 0.02) and acne (SMD = -0.92; 95% CI, - 1.49-- 0.34; P = 0.002) were significantly improved by statins in PCOS women. Subgroup analysis showed that the two types of statins, and the different control treatments as well, presented no significantly different effect on testosterone and dehydroepiandrosterone. Sensitivity analysis confirmed the stability of the findings from the meta-analysis. In conclusion, statin treatment could significantly reduce androgen levels and improve cutaneous manifestations of hyperandrogenism of PCOS.</div></details>
+</li>
+<li id="ref-27">
+<div class="ref-label"><strong>Tso et al., Metformin treatment before and during IVF or ICSI in women with polycystic ovary syndrome, <em>Cochrane Database Syst Rev</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33347618/" target="_blank" rel="noopener">33347618</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The use of insulin-sensitising agents, such as metformin, in women with polycystic ovary syndrome (PCOS) who are undergoing ovulation induction or in vitro fertilisation (IVF) cycles has been widely studied. Metformin reduces hyperinsulinaemia and suppresses the excessive ovarian production of androgens. It is suggested that as a consequence metformin could improve assisted reproductive techniques (ART) outcomes, such as ovarian hyperstimulation syndrome (OHSS), pregnancy, and live birth rates.<br><br>OBJECTIVES: To determine the effectiveness and safety of metformin as a co-treatment during IVF or intracytoplasmic sperm injection (ICSI) in achieving pregnancy or live birth in women with PCOS.<br><br>SEARCH METHODS: We searched the Cochrane Gynaecology and Fertility Group Specialised Register, CENTRAL via the Cochrane Register of Studies Online (CRSO), MEDLINE, Embase, PsycINFO, LILACS, the trial registries for ongoing trials, and reference lists of articles (from inception to 13 February 2020).<br><br>SELECTION CRITERIA: Types of studies: randomised controlled trials (RCTs) comparing metformin treatment with placebo or no treatment in women with PCOS who underwent IVF or ICSI treatment.<br><br>TYPES OF PARTICIPANTS: women of reproductive age with anovulation due to PCOS with or without co-existing infertility factors. Types of interventions: metformin administered before and during IVF or ICSI treatment.<br><br>PRIMARY OUTCOME MEASURES: live birth rate, incidence of ovarian hyperstimulation syndrome.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently selected the studies, extracted the data according to the protocol, and assessed study quality. We assessed the overall quality of the evidence using the GRADE approach.<br><br>MAIN RESULTS: This updated review includes 13 RCTs involving a total of 1132 women with PCOS undergoing IVF/ICSI treatments. We stratified the analysis by type of ovarian stimulation protocol used (long gonadotrophin-releasing hormone agonist (GnRH-agonist) or short gonadotrophin-releasing hormone antagonist (GnRH-antagonist)) to determine whether the type of stimulation used influenced the outcomes. We did not perform meta-analysis on the overall (both ovarian stimulation protocols combined) data for the outcomes of live birth and clinical pregnancy rates per woman because of substantial heterogeneity. In the long protocol GnRH-agonist subgroup, the pooled evidence showed that we are uncertain of the effect of metformin on live birth rate per woman when compared with placebo/no treatment (risk ratio (RR) 1.30, 95% confidence interval (CI) 0.94 to 1.79; 6 RCTs; 651 women; I2 = 47%; low-quality evidence). This suggests that if the chance for live birth following placebo/no treatment is 28%, the chance following metformin would be between 27% and 51%. Only one study used short protocol GnRH-antagonist and reported live birth rate. Metformin may reduce live birth rate compared with placebo/no treatment (RR 0.48, 95% CI 0.29 to 0.79; 1 RCT; 153 women; low-quality evidence). This suggests that if the chance for live birth following placebo/no treatment is 43%, the chance following metformin would be between 13% and 34% (short GnRH-antagonist protocol). We found that metformin may reduce the incidence of OHSS (RR 0.46, 95% CI 0.29 to 0.72; 11 RCTs; 1091 women; I2 = 38%; low-quality evidence). This suggests that for a woman with a 20% risk of OHSS without metformin, the corresponding risk using metformin would be between 6% and 14%. Using long protocol GnRH-agonist stimulation, metformin may increase clinical pregnancy rate per woman compared with placebo/no treatment (RR 1.32, 95% CI 1.08 to 1.63; 10 RCTs; 915 women; I2 = 13%; low-quality evidence). Using short protocol GnRH-antagonist, we are uncertain of the effect of metformin on clinical pregnancy rate per woman compared with placebo/no treatment (RR 1.38, 95% CI 0.21 to 9.14; 2 RCTs; 177 women; I2 = 87%; very low-quality evidence). We are uncertain of the effect of metformin on miscarriage rate per woman when compared with placebo/no treatment (RR 0.86, 95% CI 0.56 to 1.32; 8 RCTs; 821 women; I2 = 0%; low-quality evidence). Metformin may result in an increase in side effects compared with placebo/no treatment (RR 3.35, 95% CI 2.34 to 4.79; 8 RCTs; 748 women; I2 = 0%; low-quality evidence). The overall quality of evidence ranged from very low to low. The main limitations were inconsistency, risk of bias, and imprecision.<br><br>AUTHORS&#x27; CONCLUSIONS: This updated review on metformin versus placebo/no treatment before or during IVF/ICSI treatment in women with PCOS found no conclusive evidence that metformin improves live birth rates. In a long GnRH-agonist protocol, we are uncertain whether metformin improves live birth rates, but metformin may increase the clinical pregnancy rate. In a short GnRH-antagonist protocol, metformin may reduce live birth rates, although we are uncertain about the effect of metformin on clinical pregnancy rate. Metformin may reduce the incidence of OHSS but may result in a higher incidence of side effects. We are uncertain of the effect of metformin on miscarriage rate per woman.</div></details>
+</li>
+<li id="ref-28">
+<div class="ref-label"><strong>Day et al., Large-scale genome-wide meta-analysis of polycystic ovary syndrome suggests shared genetic architecture for different diagnosis criteria, <em>PLoS Genet</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30566500/" target="_blank" rel="noopener">30566500</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Polycystic ovary syndrome (PCOS) is a disorder characterized by hyperandrogenism, ovulatory dysfunction and polycystic ovarian morphology. Affected women frequently have metabolic disturbances including insulin resistance and dysregulation of glucose homeostasis. PCOS is diagnosed with two different sets of diagnostic criteria, resulting in a phenotypic spectrum of PCOS cases. The genetic similarities between cases diagnosed based on the two criteria have been largely unknown. Previous studies in Chinese and European subjects have identified 16 loci associated with risk of PCOS. We report a fixed-effect, inverse-weighted-variance meta-analysis from 10,074 PCOS cases and 103,164 controls of European ancestry and characterisation of PCOS related traits. We identified 3 novel loci (near PLGRKT, ZBTB16 and MAPRE1), and provide replication of 11 previously reported loci. Only one locus differed significantly in its association by diagnostic criteria; otherwise the genetic architecture was similar between PCOS diagnosed by self-report and PCOS diagnosed by NIH or non-NIH Rotterdam criteria across common variants at 13 loci. Identified variants were associated with hyperandrogenism, gonadotropin regulation and testosterone levels in affected women. Linkage disequilibrium score regression analysis revealed genetic correlations with obesity, fasting insulin, type 2 diabetes, lipid levels and coronary artery disease, indicating shared genetic architecture between metabolic traits and PCOS. Mendelian randomization analyses suggested variants associated with body mass index, fasting insulin, menopause timing, depression and male-pattern balding play a causal role in PCOS. The data thus demonstrate 3 novel loci associated with PCOS and similar genetic architecture for all diagnostic criteria. The data also provide the first genetic evidence for a male phenotype for PCOS and a causal link to depression, a previously hypothesized comorbid disease. Thus, the genetics provide a comprehensive view of PCOS that encompasses multiple diagnostic criteria, gender, reproductive potential and mental health.</div></details>
+</li>
+<li id="ref-29">
+<div class="ref-label"><strong>Rocha et al., Non-alcoholic fatty liver disease in women with polycystic ovary syndrome: systematic review and meta-analysis, <em>J Endocrinol Invest</em> 2017</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28612285/" target="_blank" rel="noopener">28612285</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Non-alcoholic fatty liver disease (NAFLD) is an insidious pathologic condition that can manifest from simple steatosis to steatohepatitis (NASH) with potential progression to cirrhosis. Like the polycystic ovary syndrome (PCOS), NAFLD is associated with obesity, diabetes mellitus, insulin resistance and metabolic syndrome. PCOS women have an increased risk of NAFLD, but it is debatable which features of PCOS, either specific (androgen excess) or unspecific (metabolic derangements) affect the NAFLD risk.<br><br>METHODS: We performed a systematic review and meta-analysis of studies that addressed the association of PCOS and NAFLD. We selected 17 studies published between 2007 and 2017 that included 2734 PCOS patients and 2561 controls of similar age and body mass index (BMI).<br><br>RESULTS: PCOS patients have increased prevalence of NAFLD (odds ratio 2.54, 95% confidence interval 2.19-2.95). PCOS women with hyperandrogenism (classic phenotype) have a higher prevalence of NAFLD compared to women with PCOS without hyperandrogenism, even after correction for confounding variables. Among women with PCOS, those with NAFLD have higher serum total testosterone (mean difference 0.40 nmol/L, 95% CI 0.29-0.50 nmol/L) and free androgen index (mean difference 4.46, 95% CI 3.53-5.39) than those without NAFLD. The studies that used multivariate analysis controlling for age, BMI, triglycerides, and insulin resistance index confirmed that serum androgens are independent predictors of NAFLD in women with PCOS.<br><br>CONCLUSION: The prevalence of NAFLD is increased in women with PCOS and the presence of NAFLD is associated with high serum androgen levels, in addition to obesity and insulin resistance.</div></details>
+</li>
+<li id="ref-30">
+<div class="ref-label"><strong>Locke et al., Genetic studies of body mass index yield new insights for obesity biology, <em>Nature</em> 2015</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/25673413/" target="_blank" rel="noopener">25673413</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Obesity is heritable and predisposes to many diseases. To understand the genetic basis of obesity better, here we conduct a genome-wide association study and Metabochip meta-analysis of body mass index (BMI), a measure commonly used to define obesity and assess adiposity, in up to 339,224 individuals. This analysis identifies 97 BMI-associated loci (P &lt; 5 × 10(-8)), 56 of which are novel. Five loci demonstrate clear evidence of several independent association signals, and many loci have significant effects on other metabolic phenotypes. The 97 loci account for ∼2.7% of BMI variation, and genome-wide estimates suggest that common variation accounts for &gt;20% of BMI variation. Pathway analyses provide strong support for a role of the central nervous system in obesity susceptibility and implicate new genes and pathways, including those related to synaptic function, glutamate signalling, insulin secretion/action, energy metabolism, lipid biology and adipogenesis.</div></details>
+</li>
+</ol>
+</section>
+</div>
+<div id="modal-root" class="modal-root" aria-hidden="true">
+<div class="modal-backdrop" data-close></div>
+<article class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal-close" data-close aria-label="Close">&times;</button>
+<h2 id="modal-title" class="modal-title"></h2>
+<div id="modal-body" class="modal-body"></div>
+</article></div>
+<template id="tpl-diagnosis-deep" data-title="Diagnostic criteria &amp;mdash; Rotterdam / IEBG">
+        <p>PCOS diagnosis in adults follows the Rotterdam criteria (2003, updated in IEBG 2023)<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Teede et al., Recommendations from the 2023 International Evidence-based Guidelin..., Fertil Steril 2023 &middot; PMID 37589624</span></sup><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Rotterdam ESHRE/ASRM-Sponsored PCOS consensus workshop group, Revised 2003 consensus on diagnostic criteria and long-term health ..., Hum Reprod 2004 &middot; PMID 14688154</span></sup>: <strong>two of three</strong> features must be present, AND other causes must be excluded<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=1 --><!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=2 -->.</p>
+        <ol class="ladder">
+            <li><strong>Ovulatory dysfunction.</strong> Oligomenorrhea (cycles &gt;35 days), amenorrhea, or documented anovulation. Cycle history is often sufficient; serum progesterone &gt;3&nbsp;ng/mL in the mid-luteal phase confirms ovulation if needed.</li>
+            <li><strong>Hyperandrogenism (clinical or biochemical).</strong> Clinical: hirsutism (modified Ferriman-Gallwey ≥4&ndash;6 depending on ethnicity), acne, androgenic alopecia. Biochemical: elevated total or free testosterone, or elevated free androgen index (calculated from total testosterone and SHBG).</li>
+            <li><strong>Polycystic ovarian morphology.</strong> Transvaginal ultrasound showing ≥20 follicles per ovary or ovarian volume &gt;10 mL (modern transducer criteria). Per IEBG 2023, serum AMH can substitute for ultrasound in adults (with caveats about reference ranges).</li>
+        </ol>
+        <p><strong>Exclusion of other causes</strong> is mandatory<!-- §0.8 anchor: kb_doc_id=61254D4B-B363-483A-95EF-95644872A28C; field=keyPoints; idx=2 -->:</p>
+        <ul class="bullets">
+            <li>Congenital adrenal hyperplasia (non-classic) &mdash; check 17-hydroxyprogesterone in the early follicular phase.</li>
+            <li>Hyperprolactinemia &mdash; check prolactin.</li>
+            <li>Thyroid dysfunction &mdash; check TSH.</li>
+            <li>Cushing syndrome &mdash; check if clinical features suggest it.</li>
+            <li>Androgen-secreting tumor &mdash; consider with rapid-onset virilization or testosterone &gt;200&nbsp;ng/dL.</li>
+            <li>Acromegaly &mdash; consider with features.</li>
+        </ul>
+        <p><strong>Adolescent diagnosis</strong> requires more caution &mdash; cycle irregularity is common in the first 2&ndash;3 years post-menarche, and ovarian morphology criteria don&rsquo;t apply the same way. IEBG 2023 recommends both ovulatory dysfunction AND clinical/biochemical hyperandrogenism for an adolescent diagnosis (and not the ultrasound criterion). Many adolescent presentations are deferred &mdash; treated symptomatically with monitoring and re-evaluated in adulthood.</p>
+    </template>
+<template id="tpl-phenotypes-deep" data-title="PCOS phenotypes A&amp;ndash;D">
+        <p>The Rotterdam framework defines four phenotypes based on which of the three diagnostic criteria are present:</p>
+        <ul class="bullets">
+            <li><strong>Phenotype A &mdash; classic / complete.</strong> Hyperandrogenism + ovulatory dysfunction + polycystic morphology. Highest metabolic risk and most prominent reproductive and androgenic symptoms.</li>
+            <li><strong>Phenotype B &mdash; classic without PCOM.</strong> Hyperandrogenism + ovulatory dysfunction, but normal-appearing ovaries. Similar metabolic and reproductive risk to phenotype A.</li>
+            <li><strong>Phenotype C &mdash; ovulatory PCOS.</strong> Hyperandrogenism + polycystic morphology, with normal ovulation. Lower metabolic risk; primarily androgenic symptoms.</li>
+            <li><strong>Phenotype D &mdash; non-hyperandrogenic.</strong> Ovulatory dysfunction + polycystic morphology, without hyperandrogenism. Mildest phenotype with the lowest metabolic risk.</li>
+        </ul>
+        <p>The clinical importance: <strong>treatment priorities shift by phenotype</strong>. Phenotype A women need aggressive metabolic surveillance and intervention. Phenotype D women may need less intervention but still benefit from cycle regulation and endometrial protection.</p>
+    </template>
+<template id="tpl-metabolic-deep" data-title="Metabolic risk &amp;mdash; what to watch for">
+        <p>The metabolic dimension of PCOS deserves more attention than it sometimes gets. PCOS is associated with:</p>
+        <ul class="bullets">
+            <li>Insulin resistance (independent of weight in many women).</li>
+            <li>Increased visceral adiposity even at normal BMI.</li>
+            <li>Higher incidence of impaired glucose tolerance and type-2 diabetes.</li>
+            <li>Dyslipidemia (higher TG, lower HDL).</li>
+            <li>Non-alcoholic fatty liver disease.</li>
+            <li>Obstructive sleep apnea (especially with obesity).</li>
+            <li>Hypertension over time.</li>
+            <li>Increased lifetime cardiovascular event risk.</li>
+        </ul>
+        <p><strong>Management foundation:</strong></p>
+        <ol class="ladder">
+            <li><strong>Lifestyle modification.</strong> The cornerstone. Even modest weight loss (5&ndash;7% of body weight) in women with overweight or obesity restores ovulation in many, improves insulin sensitivity, normalizes lipids, and reduces type-2 diabetes risk by &gt;50%<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Knowler et al., Reduction in the incidence of type 2 diabetes with lifestyle interv..., N Engl J Med 2002 &middot; PMID 11832527</span></sup><!-- §0.8 anchor: kb_doc_id=28d0a4f2-d92c-42ba-848f-8d1a08a8cbab; field=keyPoints; idx=5 -->. Mediterranean-style or DASH-style diets are well evidenced; specific macronutrient ratios are less critical than caloric balance, food quality, and consistency.</li>
+            <li><strong>Metformin.</strong> 500&ndash;2000&nbsp;mg/d (titrated to GI tolerance) improves menstrual regularity, ovulation, BMI, and insulin resistance<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Naderpoor et al., Metformin and lifestyle modification in polycystic ovary syndrome: ..., Hum Reprod Update 2015 &middot; PMID 26060208</span></sup>. Start low (500&nbsp;mg with the largest meal) and titrate weekly to minimize GI side effects.</li>
+            <li><strong>GLP-1 receptor agonists.</strong> Semaglutide, tirzepatide, liraglutide cause clinically meaningful weight loss in women with PCOS and obesity, with downstream improvements in cycle regularity and metabolic parameters. Hold appropriately around any planned pregnancy and around surgery (per the latest anesthesia hold protocols).</li>
+            <li><strong>Statin therapy</strong> when dyslipidemia warrants per general cardiovascular guidelines.</li>
+            <li><strong>Annual surveillance</strong> &mdash; OGTT or HbA1c every 1&ndash;3 years, lipid panel every 2&ndash;3 years, blood pressure at every visit.</li>
+        </ol>
+    </template>
+<template id="tpl-cycle-deep" data-title="Menstrual cycle management">
+        <p>Cycle regulation has two goals: <strong>predictability + endometrial protection</strong> from prolonged unopposed estrogen exposure.</p>
+        <ul class="bullets">
+            <li><strong>Combined hormonal contraceptives (COCs).</strong> First-line for women not currently trying to conceive. Regulate cycles, suppress hyperandrogenism (estrogen raises SHBG and lowers free testosterone), protect the endometrium. Continuous use (skipping placebo week) eliminates withdrawal bleeding entirely. <strong>VTE risk</strong> is increased with COCs and is particularly elevated in obese women<!-- §0.8 anchor: kb_doc_id=28d0a4f2-d92c-42ba-848f-8d1a08a8cbab; field=keyPoints; idx=6 --> &mdash; weigh risks individually.</li>
+            <li><strong>Cyclic oral progesterone.</strong> Medroxyprogesterone acetate 10&nbsp;mg/day for 10&ndash;14 days every 1&ndash;3 months, or micronized progesterone. Induces predictable withdrawal bleeding and protects the endometrium without estrogen exposure. Useful when COCs are contraindicated.</li>
+            <li><strong>Levonorgestrel IUD.</strong> Suppresses the endometrium effectively, often producing amenorrhea over time. Particularly useful when contraception is also desired and oral therapy is impractical.</li>
+            <li><strong>Continuous oral progestin.</strong> Norethindrone, dienogest, or others taken daily &mdash; can be used when other options aren&rsquo;t feasible.</li>
+        </ul>
+        <p><strong>Endometrial cancer prevention</strong> is the main reason cycle regulation matters long-term. Years of anovulation = years of unopposed estrogen = increasing risk of endometrial hyperplasia and cancer. Regular progestogen exposure (any modality) mitigates that risk substantially.</p>
+    </template>
+<template id="tpl-androgens-deep" data-title="Hyperandrogenism &amp;mdash; hirsutism, acne, alopecia">
+        <p>Hyperandrogenism in PCOS manifests as hirsutism (excess terminal hair in male-pattern distribution), acne, and androgenic alopecia (thinning at the crown and frontal scalp). Treatment combines hormonal therapy with cosmetic measures.</p>
+        <p><strong>Hormonal:</strong></p>
+        <ul class="bullets">
+            <li><strong>Combined hormonal contraceptives.</strong> Estrogen raises SHBG and lowers free testosterone. Progestins with lower androgenic activity (drospirenone, desogestrel, norgestimate) are preferred. Treatment takes <strong>4&ndash;6 months</strong> to show meaningful hirsutism improvement &mdash; patience matters.</li>
+            <li><strong>Spironolactone 100&ndash;200&nbsp;mg/d.</strong> Androgen receptor antagonist + aldosterone antagonist. Improves hirsutism with Cochrane support<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Al Khalifah et al., The effectiveness and safety of treatments used for polycystic ovar..., Syst Rev 2015 &middot; PMID 26420636</span></sup>. Watch potassium (especially with renal disease or ACE inhibitor use); contraception is essential (potential teratogenicity to a male fetus). Often combined with COC for synergistic effect.</li>
+            <li><strong>Cyproterone acetate</strong> (where available; not FDA-approved in the US) &mdash; potent anti-androgen, combined with estrogen.</li>
+            <li><strong>Finasteride / dutasteride</strong> (5α-reductase inhibitors). Less commonly used in women; same contraception/teratogenicity caveat.</li>
+            <li><strong>Eflornithine cream (Vaniqa).</strong> Topical for facial hirsutism; slows but doesn&rsquo;t eliminate hair growth.</li>
+        </ul>
+        <p><strong>Cosmetic measures (highly effective long-term):</strong></p>
+        <ul class="bullets">
+            <li><strong>Laser hair reduction.</strong> Most effective on darker hair against lighter skin; modern devices work on broader skin tones.</li>
+            <li><strong>Electrolysis.</strong> Permanent on any hair color and skin tone; slower than laser.</li>
+            <li><strong>Plucking, threading, waxing, shaving, depilatories</strong> &mdash; temporary; safe; do not worsen hair growth.</li>
+        </ul>
+        <p><strong>Acne and alopecia</strong> often respond to the same hormonal regimens; topical retinoids and benzoyl peroxide for acne; topical minoxidil for alopecia. Dermatology partnership is often valuable.</p>
+    </template>
+<template id="tpl-fertility-deep" data-title="Fertility &amp;mdash; ovulation induction">
+        <p>PCOS-related infertility is most often anovulatory in origin &mdash; ovulation isn&rsquo;t happening reliably. The treatment ladder is well established:</p>
+        <ol class="ladder">
+            <li><strong>Lifestyle optimization.</strong> 5&ndash;7% weight loss in women with overweight/obesity restores ovulation in many without further intervention. Time to attempt: 3&ndash;6 months of lifestyle modification before pharmacologic induction in most cases.</li>
+            <li><strong>Letrozole 2.5&ndash;7.5&nbsp;mg daily for 5 days</strong> in the early follicular phase &mdash; first-line ovulation induction with higher live birth rates than clomiphene in PCOS<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Legro et al., Letrozole versus clomiphene for infertility in the polycystic ovary..., N Engl J Med 2014 &middot; PMID 25006718</span></sup>. Typical regimen: 2.5&nbsp;mg cycle 1, escalate by 2.5&nbsp;mg per cycle if no ovulation, up to 7.5&nbsp;mg.</li>
+            <li><strong>Clomiphene citrate 50&ndash;150&nbsp;mg</strong> for 5 days &mdash; historical first-line, now second-line behind letrozole in PCOS.</li>
+            <li><strong>Metformin</strong> can be added as adjunct to letrozole/clomiphene, particularly in women with insulin resistance.</li>
+            <li><strong>Gonadotropins (FSH ± LH injectables).</strong> When oral induction fails. Requires careful monitoring for multiple-gestation and OHSS risk.</li>
+            <li><strong>IVF.</strong> When less invasive approaches have failed, when additional factors (tubal disease, severe male factor) are present, or when there&rsquo;s urgency.</li>
+            <li><strong>Laparoscopic ovarian drilling.</strong> Rarely used now; reserved for very specific clomiphene-resistant cases.</li>
+        </ol>
+        <p>Once pregnant, PCOS pregnancies are higher-risk for gestational diabetes (screen early), gestational hypertension, preeclampsia, and preterm birth &mdash; appropriate prenatal monitoring matters.</p>
+    </template>
+<template id="tpl-lifespan-deep" data-title="Long-term &amp;mdash; cardiometabolic &amp;amp; cancer risk">
+        <p>PCOS is a lifelong condition that needs lifelong attention, even when the cycle and androgenic symptoms feel under control.</p>
+        <p><strong>Annual or biennial surveillance:</strong></p>
+        <ul class="bullets">
+            <li>Blood pressure at every visit.</li>
+            <li>OGTT (preferred) or HbA1c every 1&ndash;3 years &mdash; more often if prior abnormal results or treatment for impaired glucose tolerance.</li>
+            <li>Fasting lipid panel every 2&ndash;3 years.</li>
+            <li>BMI trajectory.</li>
+            <li>Symptom check &mdash; obstructive sleep apnea, NAFLD, mental-health screening (depression and anxiety more common in PCOS).</li>
+        </ul>
+        <p><strong>Cancer surveillance<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Hoeger et al., Update on PCOS: Consequences, Challenges, and Guiding Treatment, J Clin Endocrinol Metab 2021 &middot; PMID 33211867</span></sup>:</strong></p>
+        <ul class="bullets">
+            <li><strong>Endometrial cancer:</strong> elevated lifetime risk due to chronic anovulation and unopposed estrogen exposure. Mitigation = regular progestogen exposure (COC, cyclic progesterone, LNG-IUD). Investigate any abnormal bleeding, especially if cycles have been chronically irregular without treatment.</li>
+            <li><strong>Breast and ovarian cancer:</strong> not clearly elevated in PCOS specifically. Maintain standard age-appropriate screening.</li>
+        </ul>
+        <p><strong>Cardiovascular health:</strong> PCOS is associated with higher lifetime cardiovascular event risk. The mitigation playbook is the same as for general cardiovascular prevention but applied earlier and more deliberately: lifestyle, treat hypertension and dyslipidemia, statins per risk-based guidelines, glycemic control, smoking cessation, sleep apnea treatment.</p>
+        <p><strong>Mental health:</strong> PCOS carries higher rates of depression, anxiety, and disordered eating. Screen at routine visits; refer when indicated. The connection between body-image concerns, hirsutism, fertility worries, and mental health is real and important.</p>
+        <p><strong>Menopausal transition.</strong> Many women with PCOS find that cycles become more regular as they approach menopause &mdash; the hyperandrogenism may actually persist longer than reproductive years but generally moderates. Cardiovascular risk continues to accumulate, so surveillance doesn&rsquo;t stop at menopause &mdash; it intensifies.</p>
+    </template>
+
+<script>
+(function(){
+  const root = document.getElementById('modal-root');
+  const titleEl = document.getElementById('modal-title');
+  const bodyEl = document.getElementById('modal-body');
+  function openModal(mid){
+    const tpl = document.getElementById('tpl-' + mid);
+    if (!tpl) return;
+    titleEl.innerHTML = tpl.dataset.title;
+    bodyEl.innerHTML = tpl.innerHTML;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    bodyEl.innerHTML = '';
+  }
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('[data-modal]');
+    if (opener){ e.preventDefault(); openModal(opener.dataset.modal); return; }
+    if (e.target.closest('[data-close]')){ e.preventDefault(); closeModal(); return; }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && root.classList.contains('open')) closeModal();
+  });
+  document.addEventListener('click', function(e){
+    const ref = e.target.closest('.mz-ref');
+    if (!ref){
+      document.querySelectorAll('.mz-ref.mz-open').forEach(r => r.classList.remove('mz-open'));
+      return;
+    }
+    if (e.target.tagName === 'A') return;
+    e.preventDefault();
+    document.querySelectorAll('.mz-ref.mz-open').forEach(r => { if (r !== ref) r.classList.remove('mz-open'); });
+    ref.classList.toggle('mz-open');
+  });
+})();
+</script>
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/pcos/index.html",
+  "topic": "Polycystic Ovary Syndrome",
+  "topic_synthesis_id": "dfde25b5-4009-4b7c-a91b-89fba0ad6640",
+  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
+  "kb_documents_loaded": [
+    "61254D4B-B363-483A-95EF-95644872A28C",
+    "4803c5f2-bfe1-4e4b-aaee-bec194dfa09c",
+    "28d0a4f2-d92c-42ba-848f-8d1a08a8cbab",
+    "abb443d5-98a2-4169-b5c6-a35f5bbd502d",
+    "4fd42316-32ad-4f2b-9af6-8acf1017ea9d"
+  ],
+  "kb_documents_quoted": [
+    {
+      "kb_doc_id": "61254D4B-B363-483A-95EF-95644872A28C",
+      "title": "Polycystic Ovary Syndrome",
+      "field": "keyPoints",
+      "claim": "PCOS affects ~7% of reproductive-age women by NIH criteria",
+      "excerpt_first_words": "PCOS affects approximately 7% of reproductive-age women using NIH criteria",
+      "page_anchor_id": "epi"
+    },
+    {
+      "kb_doc_id": "61254D4B-B363-483A-95EF-95644872A28C",
+      "title": "Polycystic Ovary Syndrome",
+      "field": "keyPoints",
+      "claim": "Rotterdam criteria require 2 of 3: hyperandrogenism, ovulatory dysfunction, polycystic morphology",
+      "excerpt_first_words": "Rotterdam criteria require 2 of 3: hyperandrogenism, ovulatory dysfunction, polycystic ovarian morphology",
+      "page_anchor_id": "rotterdam"
+    },
+    {
+      "kb_doc_id": "61254D4B-B363-483A-95EF-95644872A28C",
+      "title": "Polycystic Ovary Syndrome",
+      "field": "keyPoints",
+      "claim": "Diagnosis requires exclusion of CAH, hyperprolactinemia, and androgen-secreting neoplasms",
+      "excerpt_first_words": "All diagnostic approaches require exclusion of CAH, hyperprolactinemia, and androgen-secreting neoplasms",
+      "page_anchor_id": "exclude"
+    },
+    {
+      "kb_doc_id": "61254D4B-B363-483A-95EF-95644872A28C",
+      "title": "Polycystic Ovary Syndrome",
+      "field": "keyPoints",
+      "claim": "Lab workup: total testosterone, SHBG, TSH, prolactin, 17-OHP",
+      "excerpt_first_words": "Lab workup: total testosterone, SHBG, TSH, prolactin, 17-hydroxyprogesterone for exclusion of secondary causes",
+      "page_anchor_id": "labs"
+    },
+    {
+      "kb_doc_id": "4803c5f2-bfe1-4e4b-aaee-bec194dfa09c",
+      "title": "Diagnosis of polycystic ovary syndrome in adults",
+      "field": "keyPoints",
+      "claim": "PCOS = important cause of menstrual irregularity and androgen excess",
+      "excerpt_first_words": "The polycystic ovary syndrome (PCOS) is an important cause of both menstrual irregularity",
+      "page_anchor_id": "definition"
+    },
+    {
+      "kb_doc_id": "28d0a4f2-d92c-42ba-848f-8d1a08a8cbab",
+      "title": "Treatment of polycystic ovary syndrome in adults",
+      "field": "keyPoints",
+      "claim": "Lifestyle interventions more effective than minimal treatment for weight loss in PCOS",
+      "excerpt_first_words": "Available The literature documents that lifestyle interventions (diet, exercise, and behavioral interventions) are more effective than minimal treatment for weight",
+      "page_anchor_id": "lifestyle"
+    },
+    {
+      "kb_doc_id": "28d0a4f2-d92c-42ba-848f-8d1a08a8cbab",
+      "title": "Treatment of polycystic ovary syndrome in adults",
+      "field": "keyPoints",
+      "claim": "COCs are associated with increased VTE risk, especially in obese women",
+      "excerpt_first_words": "COCs are associated with an increased risk of venous thromboembolism (VTE) in all users but particularly in obese women",
+      "page_anchor_id": "coc-vte"
+    }
+  ],
+  "pmids_efetched_in_session": [
+    "37589624",
+    "14688154",
+    "11832527",
+    "25006718",
+    "26420636",
+    "26060208",
+    "33211867",
+    "40693905",
+    "39861440",
+    "39847053",
+    "39978319",
+    "38965226",
+    "38408933",
+    "38163998",
+    "38388374",
+    "37554096",
+    "38922413",
+    "36703143",
+    "36735392",
+    "37265016",
+    "38027110",
+    "37593349",
+    "37940910",
+    "35918728",
+    "34907435",
+    "34930305",
+    "33347618",
+    "30566500",
+    "28612285",
+    "25673413"
+  ],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "2026-05-17T16:49:46.705094+00:00"
+}
+-->

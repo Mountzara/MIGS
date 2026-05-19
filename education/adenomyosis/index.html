@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Adenomyosis &mdash; what to know &middot; Mount Zara</title>
+    <meta name="description" content="A patient guide to adenomyosis: diffuse vs focal disease, imaging-based diagnosis (TVUS MUSA + MRI junctional zone), and the full medical and surgical treatment ladder. KB-anchored, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    text-decoration: none;
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
+
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* HERO */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero .eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 16px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+
+/* KEY FACTS */
+.facts {
+    display: grid; gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s, border-color 0.22s, background 0.22s;
+    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
+.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
+.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
+
+/* SECTIONS */
+section.panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(22px, 4vw, 36px);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    transition: border-color 0.25s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel .section-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 10px;
+}
+section.panel h2 {
+    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.012em; color: var(--fg-strong);
+    margin: 0 0 18px 0; line-height: 1.15;
+}
+section.panel p {
+    font-size: 16.5px; line-height: 1.7;
+    color: var(--fg-mid); margin: 0 0 14px 0;
+}
+section.panel p:last-child { margin-bottom: 0; }
+section.panel p strong { color: var(--fg-strong); font-weight: 500; }
+section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
+
+/* INLINE CITATION SUP + POPOUT */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref a {
+    color: var(--accent-soft);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover a,
+sup.mz-ref.mz-open a,
+sup.mz-ref:focus a {
+    background: rgba(var(--glow-purple), 0.20);
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden; opacity: 0;
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translate(-50%, -6px);
+    width: 320px; max-width: 92vw;
+    padding: 10px 14px;
+    background: rgba(7,7,10,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: var(--fg-mid);
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 400;
+    z-index: 200;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    white-space: normal;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
+   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
+   problem. Each modifier locks the row size so cards stay even at every
+   breakpoint. */
+.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) {
+    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Symptoms grid — 8 items, want 1/2/4 columns */
+.symptoms {
+    display: grid; gap: 10px; margin-top: 18px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
+
+/* Featured banner card — used for the lone FitzGerald PFPT RCT below
+   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
+   internal layout. */
+.featured-card {
+    display: grid; gap: 18px;
+    grid-template-columns: 1fr;
+    background: rgba(var(--glow-purple), 0.07);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+    align-items: center;
+    position: relative;
+}
+.featured-card:hover, .featured-card:focus {
+    border-color: rgba(var(--glow-purple), 0.65);
+    background: rgba(var(--glow-purple), 0.12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.featured-card h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--fg-strong); margin: 0 0 4px 0;
+    padding-right: 80px;
+}
+.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+.featured-card .open-hint {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    letter-spacing: 0.08em;
+}
+.featured-card .stat-badge {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    background: rgba(var(--glow-purple), 0.18);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 8px;
+}
+.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+@media (min-width: 720px) {
+    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card:hover, .card:focus {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    outline: none;
+}
+.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
+.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.card .card-corner {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.card .open-hint {
+    position: absolute; bottom: 12px; right: 14px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+}
+.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
+
+/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
+.symptom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px 12px 44px;
+    position: relative;
+    font-size: 14px; color: var(--fg-mid);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom::before {
+    content: ""; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.08);
+}
+.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
+.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
+.timeline::before {
+    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
+}
+.timeline-item {
+    position: relative; margin-bottom: 16px;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    padding: 12px 14px;
+    transition: border-color 0.22s, background 0.22s;
+}
+.timeline-item:hover, .timeline-item:focus {
+    border-color: rgba(var(--glow-purple), 0.40);
+    background: rgba(var(--glow-purple), 0.06);
+    outline: none;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.95);
+    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
+}
+.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
+.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-item .open-hint {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    letter-spacing: 0.08em;
+}
+
+/* TREATMENT LADDER */
+.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+.rung {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px; align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+}
+.rung:hover, .rung:focus {
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
+.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
+.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
+.rung-tag {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    align-self: center;
+}
+
+/* OMT block */
+.omt-block {
+    background: rgba(var(--glow-purple), 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    margin-top: 18px;
+}
+.omt-block .quote-frame {
+    border-left: 3px solid rgba(var(--glow-purple), 0.60);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0;
+    color: var(--fg-mid);
+    font-size: 16px; line-height: 1.7;
+    position: relative;
+}
+.omt-block .quote-frame::before {
+    content: '\201C';
+    position: absolute;
+    left: 6px; top: -4px;
+    font-family: Georgia, serif;
+    color: rgba(var(--glow-purple), 0.40);
+    font-size: 26px; line-height: 1;
+}
+
+/* Q&A accordion */
+.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+details.qa {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.22s, background 0.22s;
+    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
+details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 50px 14px 18px;
+    font-size: 15.5px; font-weight: 500;
+    color: var(--fg-strong); position: relative; line-height: 1.4;
+}
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after {
+    content: '+';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 22px; color: var(--accent-soft);
+    font-weight: 200; line-height: 1;
+    transition: transform 0.2s;
+}
+details.qa[open] summary::after { content: '\2212'; }
+details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
+details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
+details.qa .qa-answer p:last-child { margin: 0; }
+
+/* Red flags */
+.red-flags {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
+.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
+.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
+
+/* CTA */
+.cta-strip {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.45);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    text-align: center;
+    margin-top: clamp(20px, 4vw, 32px);
+}
+.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-strip a.btn {
+    display: inline-block;
+    background: rgba(var(--glow-purple), 0.20);
+    border: 1px solid rgba(var(--glow-purple), 0.65);
+    color: #fff;
+    padding: 10px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin: 4px;
+}
+.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
+.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+
+/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
+.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
+.refs-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    counter-increment: ref;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.refs-list .ref-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
+.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
+.refs-list .pmid {
+    display: inline-block;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11.5px; color: var(--accent-soft);
+    background: rgba(var(--glow-purple), 0.10);
+    padding: 1px 6px; border-radius: 4px;
+    white-space: nowrap;
+}
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
+details.mz-abstract {
+    margin-top: 10px;
+    margin-left: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+details.mz-abstract summary {
+    list-style: none; cursor: pointer;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    position: relative;
+}
+details.mz-abstract summary::-webkit-details-marker { display: none; }
+details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
+details.mz-abstract[open] summary::before { content: '\2212 '; }
+details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract .abstract-body {
+    padding: 4px 16px 14px 28px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
+details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
+.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
+
+/* MODAL system */
+.mz-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.66);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: mzFadeIn 0.18s ease both;
+}
+.mz-modal-bg.open { display: flex; }
+.mz-modal {
+    width: 100%; max-width: 700px;
+    max-height: 88vh; overflow-y: auto;
+    background: rgba(12,12,16,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.50);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    position: relative;
+    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mz-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--fg-soft);
+    font-size: 20px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal h2 {
+    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.015em; color: var(--fg-strong);
+    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
+}
+.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
+.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
+.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+
+/* Footer note */
+.footer-note {
+    margin-top: 40px; padding: 20px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12.5px; color: var(--fg-dim);
+    line-height: 1.6;
+}
+.footer-note strong { color: var(--fg-soft); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    section.panel { padding: 22px 18px; }
+    .site-nav .crumb { display: none; }
+    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
+    details.mz-abstract { margin-left: 0; }
+}
+
+    .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
+    @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
+    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+    .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; }
+    .cause-card ul { padding-left: 20px; margin: 0; }
+    .cause-card li { font-size: 14px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 8px; }
+    .cause-card li strong { color: var(--fg-strong); font-weight: 500; }
+    </style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site navigation">
+    <div class="inner">
+        <a class="brand" href="/">Mount Zara</a>
+        <span class="crumb">&middot;  Patient Education  &middot;  Adenomyosis</span>
+        <div class="right-actions">
+            <a href="/about/">About</a>
+            <a class="cta" href="/portal/">Member portal</a>
+        </div>
+    </div>
+</nav>
+<div class="wrap">
+
+    <header class="hero">
+        <div class="eyebrow">Patient Education &middot; Adenomyosis</div>
+        <h1>Adenomyosis &mdash; the often-missed cause of heavy painful periods.</h1>
+        <p class="lede">
+            Adenomyosis is endometrial-like tissue that grows <em>inside</em> the muscle wall of the uterus &mdash; not on the outside
+            (that&rsquo;s endometriosis) and not in the cavity (that&rsquo;s a polyp or submucosal fibroid)<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Vannuccini et al., Recent advances in understanding and managing adenomyosis, F1000Res 2019 &middot; PMID 30918629</span></sup><!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=0 -->.
+            For decades it was thought of as a hysterectomy-specimen diagnosis &mdash; something you only discovered after the
+            uterus was removed. Modern transvaginal ultrasound and MRI criteria<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in t..., Fertil Steril 2018 &middot; PMID 29566851</span></sup><sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Harmsen et al., Consensus on revised definitions of Morphological Uterus Sonographi..., Ultrasound Obstet Gynecol 2022 &middot; PMID 34587658</span></sup><!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=3 --><!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=4 --> now allow accurate non-surgical
+            diagnosis, which is why this condition is increasingly recognized in women living with what they were told was just
+            &ldquo;bad periods.&rdquo; This guide walks through how adenomyosis is diagnosed, the medical and surgical treatment
+            options &mdash; including the levonorgestrel IUD that often resolves symptoms without surgery<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup> &mdash;
+            and the special considerations when adenomyosis coexists with endometriosis or fertility is at stake.
+        </p>
+    </header>
+    <section class="key-facts" aria-label="At a glance">
+        <div class="fact"><div class="stat">1&ndash;70<span class="unit">%</span></div><div class="label">prevalence range &mdash; varies enormously by diagnostic criteria and population studied<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">Vannuccini et al., Recent advances in understanding and managing adenomyosis, F1000Res 2019 &middot; PMID 30918629</span></sup>.</div></div>
+        <div class="fact"><div class="stat">&gt;12<span class="unit">mm</span></div><div class="label">junctional zone thickness on MRI is a diagnostic threshold<!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=5 --><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in t..., Fertil Steril 2018 &middot; PMID 29566851</span></sup>.</div></div>
+        <div class="fact"><div class="stat">8.3<span class="unit">%</span></div><div class="label">uterine rupture rate in pregnancies after adenomyomectomy &mdash; informs delivery planning<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=7 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>.</div></div>
+    </section>
+    
+
+    <section class="section">
+        <h2>What adenomyosis actually is</h2>
+        <p>Endometrial glands and stroma &mdash; the tissue that normally lines the inside of the uterus and sheds with each period &mdash; can invade the underlying muscle wall (the myometrium)<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=0 --><!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=2 -->. When that tissue continues to respond to the monthly hormonal cycle, it bleeds and inflames within the muscle, causing pain, heavy bleeding, and progressive enlargement of the uterus over years.</p>
+        <p>Two patterns matter clinically:</p>
+        <div class="palm-coein-grid">
+            <div class="cause-card cause-palm">
+                <h3>Diffuse adenomyosis</h3>
+                <ul>
+                    <li>Widespread infiltration throughout the muscle wall.</li>
+                    <li>The uterus enlarges globally &mdash; often tender, &ldquo;boggy&rdquo; on bimanual exam.</li>
+                    <li>Most common pattern.</li>
+                    <li>Best treated medically (LNG-IUD, GnRH antagonist) or definitively with hysterectomy.</li>
+                </ul>
+            </div>
+            <div class="cause-card cause-coein">
+                <h3>Focal adenomyosis (adenomyoma)</h3>
+                <ul>
+                    <li>A discrete mass of adenomyosis within the muscle wall.</li>
+                    <li>Often mistaken for a fibroid on imaging &mdash; MRI distinguishes the two<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 -->.</li>
+                    <li>Can be approached with conservative surgery (adenomyomectomy) in carefully selected patients<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=7 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>.</li>
+                    <li>Pregnancy after adenomyomectomy carries a real uterine-rupture risk; delivery planning is essential.</li>
+                </ul>
+            </div>
+        </div>
+        <p>Adenomyosis is distinct from endometriosis even though both involve endometrial-like tissue in the wrong location, and even though they often coexist<!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=6 -->. Endometriosis is endometrial tissue <em>outside</em> the uterus (pelvis, ovaries, bowel, distant sites). Adenomyosis is endometrial tissue <em>within</em> the uterine muscle wall. Different molecular mechanisms drive each disease, even when they coexist.</p>
+    </section>
+    
+
+    <section class="section">
+        <h2>How adenomyosis gets diagnosed</h2>
+        <p>For most of the last century, adenomyosis was confirmed only by histologic examination after hysterectomy. Modern imaging has changed that &mdash; transvaginal ultrasound and MRI can now make the diagnosis reliably in living patients.</p>
+        <p><strong>Transvaginal ultrasound</strong> is first-line<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Harmsen et al., Consensus on revised definitions of Morphological Uterus Sonographi..., Ultrasound Obstet Gynecol 2022 &middot; PMID 34587658</span></sup>. The MUSA (Morphological Uterus Sonographic Assessment) consensus criteria identify <em>direct</em> features (asymmetric wall thickness, intramyometrial cysts, hyperechoic islands, fan-shaped shadowing, irregular junctional zone)<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=4 --> and <em>indirect</em> features (globally enlarged uterus, heterogeneous myometrial texture). Multiple features improve diagnostic specificity.</p>
+        <p><strong>Pelvic MRI</strong> is the gold standard for non-surgical diagnosis<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in t..., Fertil Steril 2018 &middot; PMID 29566851</span></sup>, especially when ultrasound is inconclusive, when distinguishing focal adenomyoma from fibroid matters for surgical planning, or when the patient is being considered for conservative surgery. The classic MRI finding is junctional zone thickening &mdash; <strong>&gt;12 mm</strong> or <strong>JZ/total myometrium ratio &gt;40%</strong> support the diagnosis<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=3 --><!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=5 -->.</p>
+        <p>Notes on interpretation:</p>
+        <ul class="bullets">
+            <li>Junctional zone thickness varies through the menstrual cycle &mdash; imaging is best timed early follicular phase (days 4&ndash;7).</li>
+            <li>Rigid threshold cutoffs risk underdiagnosing mild disease &mdash; clinical features still matter.</li>
+            <li>Endometrial polyps and submucosal fibroids should be ruled out concurrently &mdash; they can coexist with adenomyosis and contribute to bleeding symptoms.</li>
+            <li>Histology after hysterectomy or focal excision remains the only definitive confirmation, but is rarely needed to start treatment.</li>
+        </ul>
+    </section>
+    
+
+    <section class="section">
+        <h2>The treatment ladder</h2>
+        <p>The right treatment depends on symptom severity, fertility plans, and whether disease is diffuse or focal. The conservative ladder works for most women; surgery is reserved for refractory cases or specific anatomic patterns.</p>
+        <div class="ladder-cards">
+            <article class="ladder-card" data-modal="medical-deep">
+                <div class="rung-num">1</div>
+                <h3>NSAIDs + hormonal first-line</h3>
+                <p>NSAIDs pre-emptively dosed, combined hormonal contraceptives or progestin-only options for cycle suppression. Many women improve substantially without further escalation.</p>
+            </article>
+            <article class="ladder-card" data-modal="medical-deep">
+                <div class="rung-num">2</div>
+                <h3>Levonorgestrel IUD</h3>
+                <p>Often the breakthrough treatment for adenomyosis &mdash; reduces dysmenorrhea and HMB with high satisfaction and good 5-year retention<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>. The single most useful medical option for diffuse adenomyosis.</p>
+            </article>
+            <article class="ladder-card" data-modal="medical-deep">
+                <div class="rung-num">3</div>
+                <h3>GnRH antagonist</h3>
+                <p>Oral elagolix or injectable agonists with add-back therapy when LNG-IUD fails or isn&rsquo;t tolerated<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Schlaff et al., Elagolix for Heavy Menstrual Bleeding in Women with Uterine Fibroids, N Engl J Med 2020 &middot; PMID 31971678</span></sup>. Useful as a 3&ndash;6 month bridge to surgery.</p>
+            </article>
+            <article class="ladder-card" data-modal="surgical-deep">
+                <div class="rung-num">4</div>
+                <h3>Focal adenomyomectomy</h3>
+                <p>Uterus-preserving surgery for discrete adenomyomas in carefully selected patients &mdash; usually those wanting future fertility<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>. Subsequent pregnancy requires careful delivery planning.</p>
+            </article>
+            <article class="ladder-card" data-modal="surgical-deep">
+                <div class="rung-num">5</div>
+                <h3>Hysterectomy</h3>
+                <p>Definitive treatment &mdash; reserved for women not planning future pregnancy with refractory symptoms despite conservative therapy. Laparoscopic or vaginal approach when feasible.</p>
+            </article>
+            <article class="ladder-card" data-modal="fertility-deep">
+                <div class="rung-num">F</div>
+                <h3>Fertility considerations</h3>
+                <p>Adenomyosis impairs fertility through endometrial-myometrial junction disruption. Treatment paths depend on severity, location, and the woman&rsquo;s reproductive timeline.</p>
+            </article>
+        </div>
+    </section>
+    
+
+    <section class="section">
+        <h2>Most common patient questions</h2>
+        <div class="qa-grid">
+            <details class="qa"><summary>How is adenomyosis different from endometriosis?</summary>
+                <div class="qa-answer"><p>Endometriosis is endometrial-like tissue <em>outside</em> the uterus &mdash; on the ovaries, peritoneum, bowel, distant sites. Adenomyosis is endometrial-like tissue <em>inside</em> the uterine muscle wall. They share some mechanisms and often coexist<!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=6 -->, but they&rsquo;re different diseases with different treatment ladders and different surgical approaches.</p></div>
+            </details>
+            <details class="qa"><summary>Can adenomyosis be diagnosed without surgery?</summary>
+                <div class="qa-answer"><p>Yes &mdash; that&rsquo;s a big change from a decade ago. Modern transvaginal ultrasound (MUSA criteria) and MRI (junctional zone thickness)<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=3 --><!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=5 --><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in t..., Fertil Steril 2018 &middot; PMID 29566851</span></sup> now make accurate non-surgical diagnosis routine. Histology after hysterectomy remains the gold standard, but treatment decisions can be made from imaging-based clinical diagnosis.</p></div>
+            </details>
+            <details class="qa"><summary>Will the LNG-IUD really help?</summary>
+                <div class="qa-answer"><p>For many women with adenomyosis, yes &mdash; the levonorgestrel IUD reduces dysmenorrhea and HMB with high satisfaction and good 5-year continuation rates<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>. The local progestin suppresses the symptomatic adenomyosis tissue. It&rsquo;s often the single most useful intervention before considering surgery.</p></div>
+            </details>
+            <details class="qa"><summary>I want to keep my uterus &mdash; what are my options?</summary>
+                <div class="qa-answer"><p>Medical management first (LNG-IUD, GnRH antagonist with add-back), then focal adenomyomectomy for discrete lesions in carefully selected patients<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>. Hysterectomy is the last step, reserved for refractory symptoms in women not planning pregnancy. Many women never need to consider hysterectomy.</p></div>
+            </details>
+            <details class="qa"><summary>Is pregnancy safe after adenomyomectomy?</summary>
+                <div class="qa-answer"><p>Pregnancy is possible but carries a real uterine-rupture risk. The published data report 33 uterine ruptures in 397 post-adenomyomectomy pregnancies (~8%)<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=7 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>. Electrosurgical techniques during the original adenomyomectomy are most associated with this risk<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=8 -->. Delivery planning typically includes elective cesarean at 36&ndash;37 weeks &mdash; the specifics are individualized based on the surgical report.</p></div>
+            </details>
+            <details class="qa"><summary>Does adenomyosis cause infertility?</summary>
+                <div class="qa-answer"><p>It can. Adenomyosis appears to impair fertility through disruption of the endometrial-myometrial junction, altered uterine contractility, and inflammation. Treatment paths are individualized &mdash; suppression with GnRH antagonist pre-IVF, focal adenomyomectomy for discrete disease, expectant management for mild disease.</p></div>
+            </details>
+            <details class="qa"><summary>What about pain after menopause?</summary>
+                <div class="qa-answer"><p>Adenomyosis is hormonally driven, so symptoms typically improve substantially after menopause as estrogen drops. Persistent pain in a postmenopausal woman with prior adenomyosis deserves a fresh workup &mdash; not because adenomyosis &ldquo;turns into&rdquo; cancer (it doesn&rsquo;t), but because new pain in postmenopause warrants ruling out other causes.</p></div>
+            </details>
+        </div>
+    </section>
+    
+<section class="section references-section" id="references">
+<h2>References</h2>
+<p class="ref-intro">Every clinical claim above ties to one of these peer-reviewed sources. Click any abstract to expand the verbatim PubMed record retrieved via NCBI E-Utilities.</p>
+<ol class="ref-list">
+<li id="ref-1">
+<div class="ref-label"><strong>Vannuccini et al., Recent advances in understanding and managing adenomyosis, <em>F1000Res</em> 2019</strong></div>
+<div class="ref-what">Vannuccini & Petraglia, F1000Research 2019 — recent advances in understanding adenomyosis: pathophysiology, imaging criteria, and the medical + surgical management menu.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30918629/" target="_blank" rel="noopener">30918629</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Adenomyosis is a benign uterine disorder in which endometrial glands and stroma are pathologically demonstrated in the uterine myometrium and it is considered a specific entity in the PALM-COEIN FIGO (polyp; adenomyosis; leiomyoma; malignancy and hyperplasia; coagulopathy; ovulatory dysfunction; endometrial; iatrogenic; and not yet classified - International Federation of Gynecology and Obstetrics) classification of causes of abnormal uterine bleeding (AUB). Although it has always been considered the classic condition of multiparous women over 40 years old who have pain and heavy menstrual bleeding, diagnosed at hysterectomy, the epidemiological scenario has completely changed. Adenomyosis is increasingly identified in young women with pain, AUB, infertility, or no symptoms by using imaging techniques such as transvaginal ultrasound and magnetic resonance. However, there is no agreement on the definition and classification of adenomyotic lesions from both the histopathology and the imaging point of view, and the diagnosis remains difficult and unclear. A uniform and shared reporting system needs to be implemented in order to improve our understanding on imaging features, their relationship with pathogenic theories, and their importance in terms of clinical symptoms and response to treatment. In fact, adenomyosis pathogenesis remains elusive and not a single theory can explain all of the different phenotypes of the disease. Furthermore, adenomyosis often coexists with other gynecological conditions, such as endometriosis and uterine fibroids, increasing the heterogeneity of available data. Treatment requires a lifelong management plan as the disease has a negative impact on quality of life in terms of menstrual symptoms, fertility, and pregnancy outcome and has a high risk of miscarriage and obstetric complications.</div></details>
+</li>
+<li id="ref-2">
+<div class="ref-label"><strong>Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in the diagnosis of uterine adenomyosis, <em>Fertil Steril</em> 2018</strong></div>
+<div class="ref-what">Bazot & Daraï, Fertil Steril 2018 — role of transvaginal sonography and MRI in the diagnosis of adenomyosis: TVUS as the first-line tool with MRI for inconclusive cases or surgical planning.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/29566851/" target="_blank" rel="noopener">29566851</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The aim of the present review, conducted according to PRISMA statement recommendations, was to evaluate the contribution of transvaginal sonography (TVS) and magnetic resonance imaging (MRI) to diagnose adenomyosis. Although there is a lack of consensus on adenomyosis classification, three subtypes are described, internal, external adenomyosis, and adenomyomas. Using TVS, whatever the subtype, pooled sensitivities, pooled specificities, and pooled positive likelihood ratios are 0.72-0.82, 0.85-0.81, and 4.67-3.7, respectively, but with a high heterogeneity between the studies. MRI has a pooled sensitivity of 0.77, specificity of 0.89, positive likelihood ratio of 6.5, and negative likelihood ratio of 0.2 for all subtypes. Our results suggest that MRI is more useful than TVS in the diagnosis of adenomyosis. Further studies are required to determine the performance of direct signs (cystic component) and indirect signs (characteristics of junctional zone) to avoid misdiagnosis of adenomyosis.</div></details>
+</li>
+<li id="ref-3">
+<div class="ref-label"><strong>Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the Treatment of Abnormal Uterine Bleeding and Dysmenorrhea: A Narrative Review, <em>J Clin Med</em> 2022</strong></div>
+<div class="ref-what">Bianchi et al., J Clin Med 2022 — utility of the levonorgestrel-releasing intrauterine system for AUB and dysmenorrhea, including adenomyosis-driven heavy menstrual bleeding and quality-of-life outcomes versus hysterectomy.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36233703/" target="_blank" rel="noopener">36233703</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: We undertook a literature review of the use of levonorgestrel-releasing intrauterine devices when utilized for heavy menstrual bleeding and/or dysmenorrhea.<br><br>METHODS: A narrative review of articles in the Scopus and Medline databases was conducted.<br><br>RESULTS: A number of options exist for the management of both abnormal uterine bleeding (AUB) and dysmenorrhea, and evidence is accumulating that the insertion of a levonorgestrel-releasing intrauterine system (LNG-IUS) represents a useful option for their long-term treatment. The idea of using a progestogen released in utero was initially conceived to achieve long-term contraception, but it was quickly found that these systems could be utilized for a number of therapeutic applications. The first device to be made commercially available, Progestasert, was withdrawn from the market because, in the event of contraceptive failure, it caused a disproportionate percentage of extrauterine pregnancies. On the other hand, the LNG-IUS continues to be successfully utilized in its various variants, releasing 20, 13, or 8 μg/day. These devices have a respective duration of action of 7 (possibly 8), 5, and 3 years, and there exist versions of frameless systems affixed to the myometrium of the uterine fundus. In the present review, following a brief description of the major causes of AUB and dysmenorrhea, the molecular bases for the use of the LNG-IUS are summarized. This is followed by a compendium of its use in AUB and dysmenorrhea, concluding that the insertion of the system improves the quality of life, reduces menstrual blood loss better than other medical therapies, and decreases the extent of dysmenorrhea and pelvic pain. In addition, there is no evidence of a significant difference in these outcomes when the use of the LNG-IUS was compared with improvements offered by endometrial ablation or hysterectomy. Possibly, the most important mechanism of action of the system consists of its ability to induce amenorrhea, which effectively eliminates heavy bleeding and dysmenorrhea. However, no method is ideal for every woman, and, in the case of the LNG-IUS, younger age and severe dysmenorrhea seem to be associated with a higher risk of discontinuation.<br><br>CONCLUSION: The higher-dose LNG-IUS is a useful tool for HMB and dysmenorrhea in women of all ages. The low cost and ease of use make the LNG-IUS an attractive option, especially when contraception is also desired.</div></details>
+</li>
+<li id="ref-4">
+<div class="ref-label"><strong>Schlaff et al., Elagolix for Heavy Menstrual Bleeding in Women with Uterine Fibroids, <em>N Engl J Med</em> 2020</strong></div>
+<div class="ref-what">Schlaff et al., ELARIS UF-1/UF-2 RCTs (NEJM 2020) — elagolix with hormonal add-back reduces heavy menstrual bleeding in fibroid/adenomyosis-overlap patients.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31971678/" target="_blank" rel="noopener">31971678</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Uterine fibroids are hormone-responsive neoplasms that are associated with heavy menstrual bleeding. Elagolix, an oral gonadotropin-releasing hormone antagonist resulting in rapid, reversible suppression of ovarian sex hormones, may reduce fibroid-associated bleeding.<br><br>METHODS: We conducted two identical, double-blind, randomized, placebo-controlled, 6-month phase 3 trials (Elaris Uterine Fibroids 1 and 2 [UF-1 and UF-2]) to evaluate the efficacy and safety of elagolix at a dose of 300 mg twice daily with hormonal &quot;add-back&quot; therapy (to replace reduced levels of endogenous hormones; in this case, estradiol, 1 mg, and norethindrone acetate, 0.5 mg, once daily) in women with fibroid-associated bleeding. An elagolix-alone group was included to assess the impact of add-back therapy on the hypoestrogenic effects of elagolix. The primary end point was menstrual blood loss of less than 80 ml during the final month of treatment and at least a 50% reduction in menstrual blood loss from baseline to the final month; missing data were imputed with the use of multiple imputation.<br><br>RESULTS: A total of 412 women in UF-1 and 378 women in UF-2 underwent randomization, received elagolix or placebo, and were included in the analyses. Criteria for the primary end point were met in 68.5% of 206 women in UF-1 and in 76.5% of 189 women in UF-2 who received elagolix plus add-back therapy, as compared with 8.7% of 102 women and 10% of 94 women, respectively, who received placebo (P&lt;0.001 for both trials). Among the women who received elagolix alone, the primary end point was met in 84.1% of 104 women in UF-1 and in 77% of 95 women in UF-2. Hot flushes (in both trials) and metrorrhagia (in UF-1) occurred significantly more commonly with elagolix plus add-back therapy than with placebo. Hypoestrogenic effects of elagolix, especially decreases in bone mineral density, were attenuated with add-back therapy.<br><br>CONCLUSIONS: Elagolix with add-back therapy was effective in reducing heavy menstrual bleeding in women with uterine fibroids. (Funded by AbbVie; Elaris UF-1 and Elaris UF-2 ClinicalTrials.gov numbers, NCT02654054 and NCT02691494.).</div></details>
+</li>
+<li id="ref-5">
+<div class="ref-label"><strong>Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, <em>J Minim Invasive Gynecol</em> 2018</strong></div>
+<div class="ref-what">Younes & Tulandi, JMIG 2018 — systematic review of conservative surgery for adenomyosis: adenomyomectomy techniques, fertility outcomes, and uterine-rupture risk in subsequent pregnancy.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28739414/" target="_blank" rel="noopener">28739414</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The traditional treatment for women with symptomatic adenomyosis is hysterectomy. However, reproductive-aged women should be managed with less invasive treatments including medical treatment. For patients who are refractory or unsuitable to long-term medical treatment or those with focal adenomyoma, conservative surgeries could be offered. The objective of our study was to review available conservative surgeries for the treatment of adenomyosis, their complications, and the rates of success and recurrence. In this systematic review we evaluated 27 studies; 10 prospective and 17 retrospective studies including a total of 1398 patients. The results showed that excision of adenomyosis is effective for symptom control such as menorrhagia and dysmenorrhea and most probably for adenomyosis-related infertility. For preserving fertility and relieving symptoms, medical treatment is usually the first choice, whereas excisional surgery could be performed for refractory adenomyosis. The results show that over three-fourths of women will experience symptom relief after conservative surgery. The pregnancy rates after conservative surgical treatment vary widely. However, three-fourths of them conceived after surgery with or without adjuvant medical treatment. Depending on the duration of follow-up, recurrence rates differ from no recurrence to almost one-half of patients. Conservative surgery for adenomyosis improves pelvic pain, abnormal uterine bleeding, and possibly fertility. The best method of surgery is yet to be seen.</div></details>
+</li>
+<li id="ref-6">
+<div class="ref-label"><strong>Harmsen et al., Consensus on revised definitions of Morphological Uterus Sonographic Assessment (MUSA) features of adenomyosis: results of modified Delphi procedure, <em>Ultrasound Obstet Gynecol</em> 2022</strong></div>
+<div class="ref-what">Harmsen et al., Ultrasound Obstet Gynecol 2022 — MUSA consensus on revised sonographic definitions of adenomyosis features (linear striations, asymmetric myometrial thickening, cystic spaces, junctional-zone irregularity).</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34587658/" target="_blank" rel="noopener">34587658</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVES: To evaluate whether the Morphological Uterus Sonographic Assessment (MUSA) features of adenomyosis need to be better defined and, if deemed necessary, to reach consensus on the updated definitions.<br><br>METHODS: A modified Delphi procedure was performed among European gynecologists with expertise in ultrasound diagnosis of adenomyosis. To identify MUSA features that might need revision, 15 two-dimensional (2D) video recordings (four recordings also included three-dimensional (3D) still images) of transvaginal ultrasound (TVS) examinations of the uterus were presented in the first Delphi round (online questionnaire). Experts were asked to confirm or refute the presence of each of the nine MUSA features of adenomyosis (described in the original MUSA consensus statement) in each of the 15 videoclips and to provide comments. In the second Delphi round (online questionnaire), the results of the first round and suggestions for revision of MUSA features were shared with the experts before they were asked to assess a new set of 2D and 3D still images of TVS examinations and to provide feedback on the proposed revisions. A third Delphi round (virtual group meeting) was conducted to discuss and reach final consensus on revised definitions of MUSA features. Consensus was predefined as at least 66.7% agreement between experts.<br><br>RESULTS: Of 18 invited experts, 16 agreed to participate in the Delphi procedure. Eleven experts completed and four experts partly finished the first round. The experts identified a need for more detailed definitions of some MUSA features. They recommended use of 3D ultrasound to optimize visualization of the junctional zone. Fifteen experts participated in the second round and reached consensus on the presence or absence of ultrasound features of adenomyosis in most of the still images. Consensus was reached for all revised definitions except those for subendometrial lines and buds and interrupted junctional zone. Thirteen experts joined the online meeting, in which they discussed and agreed on final revisions of the MUSA definitions. There was consensus on the need to distinguish between direct features of adenomyosis, i.e. features indicating presence of ectopic endometrial tissue in the myometrium, and indirect features, i.e. features reflecting changes in the myometrium secondary to presence of endometrial tissue in the myometrium. Myometrial cysts, hyperechogenic islands and echogenic subendometrial lines and buds were classified unanimously as direct features of adenomyosis. Globular uterus, asymmetrical myometrial thickening, fan-shaped shadowing, translesional vascularity, irregular junctional zone and interrupted junctional zone were classified as indirect features of adenomyosis.<br><br>CONCLUSION: Consensus between gynecologists with expertise in ultrasound diagnosis of adenomyosis was achieved regarding revised definitions of the MUSA features of adenomyosis and on the classification of MUSA features as direct or indirect signs of adenomyosis. © 2021 The Authors. Ultrasound in Obstetrics &amp; Gynecology published by John Wiley &amp; Sons Ltd on behalf of International Society of Ultrasound in Obstetrics and Gynecology.</div></details>
+</li>
+<li id="ref-7">
+<div class="ref-label"><strong>Bafort et al., Laparoscopic surgery for endometriosis, <em>Cochrane Database Syst Rev</em> 2020</strong></div>
+<div class="ref-what">Bafort et al., Cochrane 2020 — laparoscopic surgery for endometriosis and adenomyosis-related chronic pelvic pain improves overall pain versus no surgical treatment.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">33095458</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Endometriosis is associated with pain and infertility. Surgical interventions aim to remove visible areas of endometriosis and restore the anatomy.<br><br>OBJECTIVES: To assess the effectiveness and safety of laparoscopic surgery in the treatment of pain and infertility associated with endometriosis.<br><br>SEARCH METHODS: This review has drawn on the search strategy developed by the Cochrane Gynaecology and Fertility Group including searching the Cochrane Gynaecology and Fertility Group&#x27;s specialised register, CENTRAL, MEDLINE, Embase, PsycINFO, CINAHL, reference lists for relevant trials, and trial registries from inception to April 2020.<br><br>SELECTION CRITERIA: We selected randomised controlled trials (RCTs) that compared the effectiveness and safety of laparoscopic surgery with any other laparoscopic or robotic intervention, holistic or medical treatment, or diagnostic laparoscopy only.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently performed selection of studies, assessment of trial quality and extraction of relevant data with disagreements resolved by a third review author. We collected data for the core outcome set for endometriosis. Primary outcomes included overall pain and live birth. We evaluated the quality of evidence using GRADE methods.<br><br>MAIN RESULTS: We included 14 RCTs. The studies randomised 1563 women with endometriosis. Four RCTs compared laparoscopic ablation or excision with diagnostic laparoscopy only. Two RCTs compared laparoscopic excision with diagnostic laparoscopy only. One RCT compared laparoscopic ablation or excision with laparoscopic ablation or excision and uterine suspension. Two RCTs compared laparoscopic ablation and uterine nerve transection with diagnostic laparoscopy only. One RCT compared laparoscopic ablation with diagnostic laparoscopy and gonadotropin-releasing hormone (GnRH) analogues. Two RCTs compared laparoscopic ablation with laparoscopic excision. One RCT compared laparoscopic ablation or excision with helium thermal coagulator with laparoscopic ablation or excision with electrodiathermy. One RCT compared conservative laparoscopic surgery with laparoscopic colorectal resection of deep endometriosis infiltrating the rectum. Common limitations in the primary studies included lack of clearly described blinding, failure to fully describe methods of randomisation and allocation concealment, and poor reporting of outcome data. Laparoscopic treatment versus diagnostic laparoscopy We are uncertain of the effect of laparoscopic treatment on overall pain scores compared to diagnostic laparoscopy only at six months (mean difference (MD) 0.90, 95% confidence interval (CI) 0.31 to 1.49; 1 RCT, 16 participants; very low quality evidence) and at 12 months (MD 1.65, 95% CI 1.11 to 2.19; 1 RCT, 16 participants; very low quality evidence), where a positive value means pain relief (the higher the score, the more pain relief) and a negative value reflects pain increase (the lower the score, the worse the increase in pain). No studies looked at live birth. We are uncertain of the effect of laparoscopic treatment on quality of life compared to diagnostic laparoscopy only: EuroQol-5D index summary at six months (MD 0.03, 95% CI -0.12 to 0.18; 1 RCT, 39 participants; low quality evidence), 12-item Short Form (SF-12) mental health component (MD 2.30, 95% CI -4.50 to 9.10; 1 RCT, 39 participants; low quality evidence) and SF-12 physical health component (MD 2.70, 95% CI -2.90 to 8.30; 1 RCT, 39 participants; low quality evidence). Laparoscopic treatment probably improves viable intrauterine pregnancy rate compared to diagnostic laparoscopy only (odds ratio (OR) 1.89, 95% CI 1.25 to 2.86; 3 RCTs, 528 participants; I2 = 0%; moderate quality evidence). We are uncertain of the effect of laparoscopic treatment compared to diagnostic laparoscopy only on ectopic pregnancy (MD 1.18, 95% CI 0.10 to 13.48; 1 RCT, 100 participants; low quality evidence) and miscarriage (MD 0.94, 95% CI 0.35 to 2.54; 2 RCTs, 112 participants; low quality evidence). There was limited reporting of adverse events. No conversions to laparotomy were reported in both groups (1 RCT, 341 participants). Laparoscopic ablation and uterine nerve transection versus diagnostic laparoscopy We are uncertain of the effect of laparoscopic ablation and uterine nerve transection on adverse events (more specifically vascular injury) compared to diagnostic laparoscopy only (OR 0.33, 95% CI 0.01 to 8.32; 1 RCT, 141 participants; low quality evidence). No studies looked at overall pain scores (at six and 12 months), live birth, quality of life, viable intrauterine pregnancy confirmed by ultrasound, ectopic pregnancy and miscarriage. Laparoscopic ablation versus laparoscopic excision There was insufficient evidence to determine whether there was a difference in overall pain, measured at 12 months, for laparoscopic ablation compared with laparoscopic excision (MD 0.00, 95% CI -1.22 to 1.22; 1 RCT, 103 participants; very low quality evidence). No studies looked at overall pain scores at six months, live birth, quality of life, viable intrauterine pregnancy confirmed by ultrasound, ectopic pregnancy, miscarriage and adverse events. Helium thermal coagulator versus electrodiathermy We are uncertain whether helium thermal coagulator compared to electrodiathermy improves quality of life using the 30-item Endometriosis Health Profile (EHP-30) at nine months, when considering the components: pain (MD 6.68, 95% CI -3.07 to 16.43; 1 RCT, 119 participants; very low quality evidence), control and powerlessness (MD 4.79, 95% CI -6.92 to 16.50; 1 RCT, 119 participants; very low quality evidence), emotional well-being (MD 6.17, 95% CI -3.95 to 16.29; 1 RCT, 119 participants; very low quality evidence) and social support (MD 5.62, 95% CI -6.21 to 17.45; 1 RCT, 119 participants; very low quality evidence). Adverse events were not estimable. No studies looked at overall pain scores (at six and 12 months), live birth, viable intrauterine pregnancy confirmed by ultrasound, ectopic pregnancy and miscarriage.<br><br>AUTHORS&#x27; CONCLUSIONS: Compared to diagnostic laparoscopy only, it is uncertain whether laparoscopic surgery reduces overall pain associated with minimal to severe endometriosis. No data were reported on live birth. There is moderate quality evidence that laparoscopic surgery increases viable intrauterine pregnancy rates confirmed by ultrasound compared to diagnostic laparoscopy only. No studies were found that looked at live birth for any of the comparisons. Further research is needed considering the management of different subtypes of endometriosis and comparing laparoscopic interventions with lifestyle and medical interventions. There was insufficient evidence on adverse events to allow any conclusions to be drawn regarding safety.</div></details>
+</li>
+<li id="ref-8">
+<div class="ref-label"><strong>Etrusco et al., Efficacy and safety of hormone therapies for treating adenomyosis-associated pelvic pain: a systematic review and network meta-analysis of randomized controlled trials, <em>Front Endocrinol (Lausanne)</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40166680/" target="_blank" rel="noopener">40166680</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: To date, there are no clear guidelines available on the treatment of adenomyosis-associated pelvic pain (AAPP); however, numerous hormonal treatments (HTs) are currently being used off-label. We conducted a systematic review and network metanalysis with the aim of assessing the efficacy and safety of HTs to reduce AAPP and ranking the available options.<br><br>METHODS: MEDLINE, LILACS, EMBASE, Scielo.br, PROSPERO, Cochrane Library, conference proceedings, and international registries were searched with no time, region, or language restrictions. Randomized controlled trials that analyzed AAPP in women undergoing HTs were deemed suitable.<br><br>RESULTS: Six studies (563 women affected by adenomyosis) were included. At 3 months, women who received a placebo or a levonorgestrel-based intrauterine system (LNG-IUS) experienced more AAPP than those who received dienogest [mean difference of visual analog scale (VAS) pain scores (MD) 4.10 (95% CI 0.49 to 7.71); high evidence; MD 3.05 (95% CI 0.45 to 5.65); high evidence]. At 6 months, women who received dienogest experienced significantly less AAPP compared to those who received combined oral contraceptives [MD -2.85 (95% CI -5.30 to -0.39); moderate evidence], while the prevalence of AAPP was higher among those who received a LNG-IUS than those who received dienogest [MD 1.79 (95% CI 0.06 to 3.53); low evidence].<br><br>CONCLUSION: Dienogest seems to be the most effective HT for AAPP. However, although rare, it is also related to more adverse effects compared to other HTs.<br><br>SYSTEMATIC REVIEW REGISTRATION: https://www.crd.york.ac.uk/prospero/, identifier CRD42024535472.</div></details>
+</li>
+<li id="ref-9">
+<div class="ref-label"><strong>Wang et al., Therapeutic efficacy of dienogest combined with GnRH agonist in adenomyosis and associated obstetric risk factors: A meta-analysis, <em>Medicine (Baltimore)</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/41327644/" target="_blank" rel="noopener">41327644</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Adenomyosis is a chronic gynecological condition commonly affecting women of reproductive age, with its etiology still unclear. In clinical practice, gonadotropin-releasing hormone agonists (GnRH-a), often combined with other drugs, are used to treat mild to moderate cases. This meta-analysis aimed to evaluate the therapeutic efficacy of dienogest combined with GnRH-a in managing adenomyosis and explore related obstetric risk factors. A systematic search was conducted for relevant studies published up to 2024, with 5 studies involving 520 patients included in the meta-analysis. Results showed that compared to monotherapy, the combination of dienogest and GnRH-a significantly improved visual analogue scale scores, hemoglobin levels, CA-125 levels, and uterine volume, with no significant difference in adverse event rates. Additionally, 11 studies with 15,015 participants analyzed obstetric risk factors, revealing that women with adenomyosis had significantly higher risks of spontaneous abortion, premature rupture of membranes, preterm birth, small-for-gestational-age fetuses, and cesarean section. These findings suggest that dienogest combined with GnRH-a can improve therapeutic outcomes for adenomyosis, while also highlighting increased obstetric risks associated with the condition.</div></details>
+</li>
+<li id="ref-10">
+<div class="ref-label"><strong>Xia et al., Systematic review and meta-analysis of adverse pregnancy outcomes with different types of adenomyosis, <em>Int J Gynaecol Obstet</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40459223/" target="_blank" rel="noopener">40459223</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Different types of adenomyosis have distinct impacts on various pregnancy outcomes. The influence of diffuse and focal adenomyosis on adverse pregnancy outcomes remains controversial.<br><br>OBJECTIVE: To examine the effects of diffuse and focal adenomyosis on adverse pregnancy outcomes in women.<br><br>SEARCH STRATEGY: We conducted searches on PubMed, Embase, Web of Science, and the Cochrane Database for studies published between January 1950 and June 2024.<br><br>SELECTION CRITERIA: We included observational studies that identified medically confirmed adverse pregnancy outcomes (preterm birth, hypertensive disorders of pregnancy, and fetal growth restriction) as endpoints.<br><br>DATA COLLECTION AND ANALYSIS: Two researchers independently screened and selected pertinent studies. The methodological quality of these selected studies was assessed using the Newcastle-Ottawa Quality Assessment Form for Case-control and Cohort studies. Data analysis was primarily performed using Stata software. Dichotomous data for all adverse pregnancy outcomes were reported as odds ratios (ORs) with 95% confidence intervals (CIs) and synthesized in a meta-analysis using a fixed-effects model.<br><br>RESULTS: Five studies (involving 390 women with diffuse adenomyosis and 233 women with focal adenomyosis) were included in the meta-analysis. The analysis indicated that diffuse adenomyosis was significantly associated with an increased risk of adverse pregnancy outcomes (OR 2.59, 95% CI 1.73-3.88; P &lt; 0.001). Women with diffuse adenomyosis had higher odds of experiencing preterm birth(OR1.66, 95% CI1.03-2.67, P = 0.038) and hypertensive disorders of pregnancy (OR 2.23, 95% CI 1.32-3.77; P = 0.002).<br><br>CONCLUSION: Women with diffuse adenomyosis are more likely to experience preterm birth and hypertensive disorders of pregnancy compared with those with focal adenomyosis.</div></details>
+</li>
+<li id="ref-11">
+<div class="ref-label"><strong>Busnelli et al., Untangling the independent effect of endometriosis, adenomyosis, and ART-related factors on maternal, placental, fetal, and neonatal adverse outcomes: results from a systematic review and meta-analysis, <em>Hum Reprod Update</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39049473/" target="_blank" rel="noopener">39049473</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Women with endometriosis may constitute a group at a particularly increased risk of pregnancy-related complications. Furthermore, women selected for assisted reproductive technology (ART) are exposed to additional endocrinological and embryological factors that have been associated with adverse pregnancy outcomes.<br><br>OBJECTIVE AND RATIONALE: This study aimed to investigate the independent effect of endometriosis, adenomyosis, and various ART-related factors on adverse maternal, placental, fetal, and neonatal outcomes.<br><br>SEARCH METHODS: Published randomized controlled trials, cohort studies, and case-control studies were considered eligible. PubMed, MEDLINE, ClinicalTrials.gov, Embase, and Scopus were systematically searched up to 1 March 2024. This systematic review and meta-analysis was performed in line with the PRISMA and the MOOSE reporting guidelines. To thoroughly investigate the association between endometriosis/adenomyosis and adverse pregnancy outcomes, sub-analyses were conducted, whenever possible, according to: the method of conception (i.e. ART and non-ART conception), the endometriosis stage/phenotype, the coexistence of endometriosis and adenomyosis, any pre-pregnancy surgical treatment of endometriosis, and the form of adenomyosis. The odds ratio (OR) with 95% CI was used as effect measure. The quality of evidence was assessed using the GRADE approach.<br><br>OUTCOMES: We showed a higher risk of placenta previa in women with endometriosis compared to controls (34 studies, OR 2.84; 95% CI: 2.47, 3.26; I2 = 83%, moderate quality). The association was observed regardless of the method of conception and was particularly strong in the most severe forms of endometriosis (i.e. rASRM stage III-IV endometriosis and deep endometriosis (DE)) (OR 6.61; 95% CI: 2.08, 20.98; I2 = 66% and OR 14.54; 95% CI: 3.67, 57.67; I2 = 54%, respectively). We also showed an association, regardless of the method of conception, between endometriosis and: (i) preterm birth (PTB) (43 studies, OR 1.43; 95% CI: 1.32, 1.56; I2 = 89%, low quality) and (ii) cesarean section (29 studies, OR 1.52; 95% CI: 1.41, 1.63; I2 = 93%, low quality). The most severe forms of endometriosis were strongly associated with PTB. Two outcomes were associated with adenomyosis both in the main analysis and in the sub-analysis that included only ART pregnancies: (i) miscarriage (14 studies, OR 1.83; 95% CI: 1.53, 2.18; I2 = 72%, low quality) and (ii) pre-eclampsia (7 studies, OR 1.70; 95% CI: 1.16, 2.48; I2 = 77%, low quality). Regarding ART-related factors, the following associations were observed in the main analysis and confirmed in all sub-analyses conducted by pooling only risk estimates adjusted for covariates: (i) blastocyst stage embryo transfer (ET) and monozygotic twinning (28 studies, OR 2.05; 95% CI, 1.72, 2.45; I2 = 72%, low quality), (ii) frozen embryo transfer (FET) and (reduced risk of) small for gestational age (21 studies, OR 0.59; 95% CI, 0.57, 0.61; P &lt; 0.00001; I2 = 17%, very low quality) and (increased risk of) large for gestational age (16 studies, OR 1.70; 95% CI, 1.60, 1.80; P &lt; 0.00001; I2 = 55%, very low quality), (iii) artificial cycle (AC)-FET and pre-eclampsia (12 studies, OR 2.14; 95% CI: 1.91-2.39; I2 = 9%, low quality), PTB (21 studies, OR 1.24; 95% CI 1.15, 1.34; P &lt; 0.0001; I2 = 50%, low quality), cesarean section (15 studies, OR 1.59; 95% CI 1.49, 1.70; P &lt; 0.00001; I2 = 67%, very low quality) and post-partum hemorrhage (6 studies, OR 2.43; 95% CI 2.11, 2.81; P &lt; 0.00001; I2 = 15%, very low quality).<br><br>WIDER IMPLICATIONS: Severe endometriosis (i.e. rASRM stage III-IV endometriosis, DE) constitutes a considerable risk factor for placenta previa and PTB. Herein, we recommend against superimposing on this condition other exposure factors that have a strong association with the same obstetric adverse outcome or with different outcomes which, if coexisting, could determine the onset of an ominous obstetric syndrome. Specifically, we strongly discourage the use of AC regimens for FET in ovulatory women with rASRM stage III-IV endometriosis or DE. We also recommend single ET at the blastocyst stage in this high-risk population.<br><br>REGISTRATION NUMBER: CRD42023401428.</div></details>
+</li>
+<li id="ref-12">
+<div class="ref-label"><strong>Chen et al., Systematic review and meta-analysis of reproductive outcomes after high-intensity focused ultrasound (HIFU) treatment of adenomyosis, <em>Best Pract Res Clin Obstet Gynaecol</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38065008/" target="_blank" rel="noopener">38065008</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">High-intensity focused ultrasound (HIFU) has emerged as a promising uterus-sparing and possibly fertility-sparing treatment modality for women with adenomyosis, especially those who desire to conceive. We conducted this systematic review and performed a meta-analysis on clinical studies aimed to improve reproduction in women with adenomyosis. After extensive search of PubMed and CNKI, we identified 10 studies published in English and Chinese involving a total of 557 patients with adenomyosis who desired to conceive after HIFU treatment. We found a pooled estimate of pregnancy rate of 53.4% and of the live birth rate of 35.2%, and there was a substantial heterogeneity among these studies. While there is a potential for HIFU treatment to improve fertility for patients with adenomyosis who desired to conceive, such evidence is very weak as of now. Comparative studies with much higher methodological rigor, preferably randomized clinical trials, are badly needed to further illuminate this issue.</div></details>
+</li>
+<li id="ref-13">
+<div class="ref-label"><strong>Giorgi et al., Extrauterine adenomyoma: A case report and systematic review of the literature, <em>Int J Gynaecol Obstet</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37688388/" target="_blank" rel="noopener">37688388</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To describe a case of extrauterine adenomyoma (EA) and review all the cases of EA in the literature.<br><br>METHODS: Pubmed/MEDLINE, Embase, and Google Scholar from 1807 to December 2022. All studies reporting the histologic diagnosis of an EA. We collected the following data: patient&#x27;s age, size and location of adenomyoma, presence of endometriosis and adenomyosis, past gynecologic treatment, symptoms, diagnostic imaging, surgical intervention, alternative/adjuvant treatment, associated malignancy, and follow up.<br><br>RESULTS: Sixty-seven studies with 85 patients were included. Pain was the most frequent symptom (69.5%). Among diagnostic examinations, ultrasonography was used in 60 out of 81 reported cases, with several radiologic features described. EA was located inside the pelvis in 77.6% of patients. Adnexa were the most frequent site of the disease (24, 28.2%). History of endometriosis or adenomyosis was described in 35 patients (35, 41.2%). Uterine tissue morcellation was reported in 6 of the 85 patients (7.1%). Associated malignancy was detected in 9 out of 85 patients with available data (10.6%). There were two recurrences of disease.<br><br>CONCLUSION: Specific imaging features of EA are yet to be described in the literature. History of endometriosis and adenomyosis or uterine tissue morcellation may be suggestive of EA. Histologic examination can give a definitive diagnosis and exclude malignant transformation.</div></details>
+</li>
+<li id="ref-14">
+<div class="ref-label"><strong>Lee et al., Effectiveness of high-intensity focused ultrasound combined with gonadotropin-releasing hormone agonist or combined with levonorgestrel-releasing intrauterine system for adenomyosis: A systematic review and meta-analysis, <em>Taiwan J Obstet Gynecol</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39004475/" target="_blank" rel="noopener">39004475</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Gonadotropin-Releasing Hormone Agonist (GnRH-a) and levonorgestrel releasing intrauterine system (LNG-IUS) are conventional conservative treatments for adenomyosis, and high-intensity focused ultrasound (HIFU) is a novel ablation technique. This study aimed to investigate the effectiveness of HIFU combined with GnRH-a or LNG-IUS for adenomyosis patients. In this systematic review and meta-analysis, Pubmed, Embase, Cochrane Library and Scopus databases were searched up to December 2021. Published studies comparing HIFU plus GnRH-a with HIFU plus LNG-IUS in adenomyosis patients were assessed for eligibility by two independent authors. Risk of bias tool was utilized for risk evaluation. We selected treatment effective rate of dysmenorrhea (pain during menstruation) as the primary outcome; effective rate of menorrhagia severity and reduction rate of adenomyotic lesion as the secondary outcomes. Adverse effects were assessed. Four studies with a total 729 patients were enrolled in the meta-analysis. HIFU plus LNG-IUS showed lower dysmenorrhea [within 6 months: risk ratio (RR) 0.88, 95% confidence interval (CI) 0.83-0.93, p &lt; 0.00001; over 1 year: RR 0.73, 95% CI 0.65-0.82, p &lt; 0.00001] and less menorrhagia severity (RR 0.63, 95% CI 0.60-0.66, p &lt; 0.00001) than HIFU plus GnRH-a. Both groups demonstrated equal efficacy in adenomyotic lesion reduction rate (RR 1.03, 95% CI 0.97-1.09, p = 0.30). Adverse effects happened equally in both groups. Combination therapy of HIFU and LNG-IUS revealed better effectiveness in treating dysmenorrhea and menorrhagia than that of HIFU and GnRH-a. However, interpreting the conclusion should be approached with caution as a result of significant heterogeneity.</div></details>
+</li>
+<li id="ref-15">
+<div class="ref-label"><strong>Salmeri et al., Functional determinants of uterine contractility in endometriosis and adenomyosis: a systematic review and meta-analysis, <em>Fertil Steril</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39067674/" target="_blank" rel="noopener">39067674</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">IMPORTANCE: Evidence suggests that aberrant uterine contractility in nonpregnant women with endometriosis and adenomyosis contributes to symptoms and potentially heralds their pathogenesis. However, uterine peristalsis remains understudied, inconsistently measured, and poorly understood.<br><br>OBJECTIVE: To summarize evidence on uterine contractility across the menstrual cycle phases in women with endometriosis and adenomyosis.<br><br>DATA SOURCES: PubMed/MEDLINE, Embase, and Scopus databases searched up to May 2, 2024.<br><br>STUDY SELECTION AND SYNTHESIS: Observational studies compared quantitative measures of uterine contractility using magnetic resonance imaging, ultrasound, electrophysiology, or direct intrauterine pressure recording across different menstrual cycle phases between women with endometriosis/adenomyosis and controls on the basis of predefined problem/population, intervention, comparison, and outcome criteria. Study quality was assessed using the Newcastle-Ottawa Scale. Pooled estimates for primary (risk ratios with 95% confidence intervals [CIs]) and secondary (mean difference [MD] with 95% CIs) outcomes were calculated using random-effects models.<br><br>MAIN OUTCOMES: Pooled risk of retrograde menstruation uterine contraction pattern in cases vs. controls; pooled MD in continuous measures of uterine contractility (frequency, amplitude, and velocity of contractions) across all the menstrual cycle phases in cases vs. controls.<br><br>RESULTS: Nine studies met the inclusion criteria; most were studies that evaluated women with endometriosis. An increased risk of retrograde uterine contractions during menstruation was observed in women with endometriosis compared with that in controls (risk ratio, 8.63; 95% CI, 3.24-22.95; I2, 0). The pooled MDs in contraction frequency between cases and controls were 0.82 (95% CI, 0.13-1.52; I2, 18.61%) in the menstrual phase and 0.52 (95% CI, 0.22-0.83; I2, 27.18%) in the luteal phase. Results for the follicular and periovulatory phases were more heterogeneous. Higher contraction amplitudes in women with endometriosis or adenomyosis were reported across all menstrual cycle phases. Because of the paucity of data, especially for adenomyosis, evidence certainty was graded as low for most comparisons.<br><br>CONCLUSION AND RELEVANCE: The approximately ninefold increased risk of retrograde pattern during menstruation in endometriosis supports the potential role of retrograde menstruation in its etiopathogenesis. Abnormal uterine contractility, likely not limited to the menstrual phase, may be a mechanical factor contributing to development of endometriosis and related symptoms, including menstrual pain and infertility, with limited, mostly concordant evidence for adenomyosis.<br><br>REGISTRATION NUMBER: PROSPERO ID CRD42024512273-accepted on February 23, 2024.</div></details>
+</li>
+<li id="ref-16">
+<div class="ref-label"><strong>Dominguez et al., Diagnosis and management of isthmocele (Cesarean scar defect): a SWOT analysis, <em>Ultrasound Obstet Gynecol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36730180/" target="_blank" rel="noopener">36730180</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The purpose of this State-of-the-Art Review was to provide a strategic analysis, in terms of strengths, weaknesses, opportunities and threats (SWOT analysis), of the current evidence regarding the management of uterine isthmocele (Cesarean scar defect). Strengths include the fact that isthmocele can be diagnosed on two-dimensional transvaginal ultrasound, and that surgical repair may restore natural fertility potential and prevent secondary infertility, as well as reduce the risk of miscarriage and other obstetric complications. However, there is a lack of high-quality evidence regarding the best diagnostic method and criteria, as well as the potential benefits of surgical repair with respect to fertility. There is a need for experienced surgeons skilled in the various isthmocele repair techniques. Isthmocele repair does not prevent the need for Cesarean delivery in subsequent pregnancies. There is increasing awareness regarding the accuracy of transvaginal ultrasound in diagnosing isthmocele. This may lead to surgical correction and prevention of obstetric and perinatal complications in subsequent pregnancies, including Cesarean scar pregnancy. Regarding threats, the existence of different surgical techniques means that there is a risk of selecting an inadequate approach if the type of isthmocele and the patient&#x27;s characteristics are not considered. There is a risk of overtreatment when asymptomatic defects are repaired surgically. Finally, there is an absence of cost-effectiveness analyses to justify routine repair. Thus, while there are many data suggesting that isthmocele has an adverse effect on both natural fertility and the outcome of assisted reproduction techniques, high-quality evidence to support surgical isthmocele repair in all asymptomatic patients desiring future fertility are lacking. There is increasing agreement to recommend hysteroscopic repair of isthmocele as a first-line approach as long as the residual myometrial thickness is at least 2.5-3.0 mm. © 2023 The Authors. Ultrasound in Obstetrics &amp; Gynecology published by John Wiley &amp; Sons Ltd on behalf of International Society of Ultrasound in Obstetrics and Gynecology.</div></details>
+</li>
+<li id="ref-17">
+<div class="ref-label"><strong>Jiang et al., Pregnancy Outcomes after Uterus-sparing Operative Treatment for Adenomyosis: A Systematic Review and Meta-analysis, <em>J Minim Invasive Gynecol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36972750/" target="_blank" rel="noopener">36972750</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: A meta-analysis was conducted to evaluate the overall pregnancy outcomes after uterus-sparing operative treatment in patients with adenomyosis (AD).<br><br>DATA SOURCES: We searched PubMed, Web of Science, Cochrane Library, and Embase for literature from January 2000 to January 2022.<br><br>METHODS OF STUDY SELECTION: We included all studies reporting reproductive outcomes of uterine-sparing surgery for patients with AD with fertility requirements. Surgical treatment was classified as complete excision or incomplete removal of AD and nonexcisional techniques for induction of necrosis in AD. The latter included physically removing the tissue where pathology is present or disrupting the blood flow to the affected area, involving high-intensity focused ultrasound, microwave ablation, radiofrequency ablation, and uterine artery embolization. Two independent researchers performed study selection according to the screening criteria.<br><br>TABULATION, INTEGRATION, AND RESULTS: A total of 13 studies with 1319 patients with AD were included in this study, comprising 795 women wishing fertility. Pooled estimates of pregnancy, miscarriage, and live-birth rates after excisional treatment for women attempting to conceive were 40% (95% confidence interval [CI], 29-52), 21% (95% CI, 16-27), and 70% (95% CI, 64-76), respectively, and corresponding rates after nonexcisional treatment were 51% (95% CI, 42-60), 22% (95% CI, 13-34), and 71% (95% CI, 57-83), respectively. The differences were not statistically significant.<br><br>CONCLUSION: Excisional treatment could be a treatment consideration for patients with symptomatic AD and infertility for several years or repeated failure of assisted reproductive technology. Nonexcisional techniques may be considered probably for AD-related infertility.</div></details>
+</li>
+<li id="ref-18">
+<div class="ref-label"><strong>Vercellini et al., Association of endometriosis and adenomyosis with pregnancy and infertility, <em>Fertil Steril</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36948440/" target="_blank" rel="noopener">36948440</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">We performed a comprehensive narrative synthesis of systematic reviews with meta-analysis published in the last 5 years on the association of endometriosis and adenomyosis with reproductive and obstetric outcomes. This review aimed to define the information on which to base preconceptional counseling and clarify whether and in which cases pregnant women with endometriosis and adenomyosis should be referred to tertiary care centers and followed as high-risk obstetric patients. Reduced pregnancy and live birth rates and an increased miscarriage rate were observed in women with endometriosis and adenomyosis. The effect was larger in women with adenomyosis than in those with endometriosis. Women with superficial peritoneal and ovarian endometriosis do not appear to be at considerably increased risk of major obstetric and neonatal complications, whereas women with severe endometriosis, whether operated or not, are at several-fold increased risk of placenta previa. Moreover, deep infiltrating endometriosis is a risk factor for spontaneous hemoperitoneum in pregnancy and is associated with surgical complications at cesarean section. Overall, women with adenomyosis are at increased risk of various adverse obstetric outcomes, including preeclampsia, preterm delivery, fetal malpresentation, postpartum hemorrhage, low birth weight, and small for gestational age. Most studies included in the considered systematic reviews are characterized by substantial qualitative and quantitative heterogeneity. This makes a reliable assessment of the available evidence difficult, and caution should be exercised when attempting to derive clinical indications. Nevertheless, women with deep infiltrating endometriosis and severe adenomyosis should be considered at high obstetric risk and can benefit from referral to tertiary care centers where they can be safely followed through pregnancy and delivery. Whether the same should apply also to pregnant women with minimal endometriosis and adenomyosis forms is currently uncertain. Emerging evidence suggests that some adverse reproductive and obstetric outcomes observed in women with endometriosis are, in fact, associated with coexisting adenomyosis.</div></details>
+</li>
+<li id="ref-19">
+<div class="ref-label"><strong>Cozzolino et al., The Effect of Uterine Adenomyosis on IVF Outcomes: a Systematic Review and Meta-analysis, <em>Reprod Sci</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34981458/" target="_blank" rel="noopener">34981458</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">To investigate the impact of uterine adenomyosis on in vitro fertilization (IVF)/intracytoplasmic sperm injection (ICSI) clinical outcomes and also to evaluate the impact of gonadotropin-releasing hormone agonist (GnRHa) and surgical treatments. Infertile women with adenomyosis undergoing conventional IVF or ICSI were compared with women without adenomyosis. Fertility outcomes were evaluated in two patients with adenomyosis untreated and treated surgically or medically therapy. The review protocol was registered in PROSPERO (CRD42020214586). We consider the live birth rate (LBR) as the primary outcome. The analysis showed that women with adenomyosis had lower LBR (OR 0.59, 95% CI 0.37-0.92, p = 0.02), clinical pregnancy rate (OR 0.66, 95% CI 0.48-0.90), and ongoing pregnancy rate (OR 0.43, 95% CI 0.21-0.88) compared to those without adenomyosis, and miscarriage rate was higher in women with adenomyosis (OR 2.11, 95% CI 1.33-3.33). Surgical treatment increases natural conception in women with adenomyosis although the paucity of data (only two studies), and conversely, treatment with GnRHa does not increase the IVF outcomes. Women with adenomyosis have decreased IVF clinical outcomes. Pretreatment with the use of long-term GnRHa could not be beneficial, even though only three studies were included in the meta-analysis. The major part of the studies has not divided focal and diffuse adenomyosis, and this represents a relevant source of bias: studies conducted with standardized diagnostic criteria for adenomyosis are still needed to determine if the different clinical presentations of such condition could compromise IVF outcomes.</div></details>
+</li>
+<li id="ref-20">
+<div class="ref-label"><strong>Nirgianakis et al., Fertility, pregnancy and neonatal outcomes of patients with adenomyosis: a systematic review and meta-analysis, <em>Reprod Biomed Online</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33191131/" target="_blank" rel="noopener">33191131</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This study aimed to investigate the association of adenomyosis with fertility, pregnancy and neonatal outcomes. An electronic search was conducted using the MEDLINE, PubMed and Cochrane databases up to April 2020. Seventeen observational studies were included. Adenomyosis was significantly associated with a lower clinical pregnancy rate (odds ratio [OR] 0.69; 95% confidence interval [CI] 0.51-0.94) and higher miscarriage rate (OR 2.17; 95% CI 1.25-3.79) after treatment with assisted reproductive technology (ART). The lower clinical pregnancy rate was more significant in the subgroup of patients with short down-regulation protocols. Similar associations were recorded after age adjustment. Adenomyosis was also significantly associated with an increased risk of pre-eclampsia, preterm delivery, Caesarean section, fetal malpresentation, small for gestational age infancy and post-partum haemorrhage, which was confirmed after correction for age and mode of conception. In conclusion, adenomyosis is associated with negative effects on fertility after ART. The potentially protective role of the ultra-long down-regulation protocols needs further evaluation in randomized controlled studies. Adenomyosis is also associated (independently of the mode of conception) with adverse pregnancy and neonatal outcomes. Proper counselling prior to ART and close monitoring of pregnancy in patients with adenomyosis should be recommended.</div></details>
+</li>
+<li id="ref-21">
+<div class="ref-label"><strong>Mikos et al., The Outcome of Fertility-Sparing and Nonfertility-Sparing Surgery for the Treatment of Adenomyosis. A Systematic Review and Meta-analysis, <em>J Minim Invasive Gynecol</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31398415/" target="_blank" rel="noopener">31398415</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: The purpose of this systematic review was to identify the operative issues and specific dysmenorrhea and menorrhagia outcomes in women who had undergone fertility-sparing surgery, as well as determine the expected outcome for extirpative surgery.<br><br>DATA SOURCES: PROSPERO (ID no. 125692). Search was conducted for eligible studies up to March 31, 2019, on MEDLINE/PubMed (1966-2019), Scopus/Elsevier (1950-2019), and Google Scholar (up to 2019). The search terms applied for the search strategy were as follows: adenomyosis, adenomyomas, uterus-sparing surgery, fertility-sparing surgery, pain, dysmenorrhea, menorrhagia, uterine volume, adenomyotic volume, case-control studies, cohort studies, and prospective studies.<br><br>METHODS OF STUDY SELECTION: A total of 443 studies were initially identified. Exclusion criteria was as follows: (1) inadequate description of preoperative adenomyosis or absence of postoperative histology confirmation of adenomyosis, (2) no statement of use of a standardized instrument for measurement of pain, bleeding, or adenomyotic/uterine volume, (3) follow-up &lt;12 months postoperatively, (4) study population &lt;20 women, and (5) non-English language.<br><br>TABULATION, INTEGRATION, AND RESULTS: Nineteen studies with a total of 1843 patients with adenomyosis were included. Twelve studies were further analyzed in the meta-analysis. Complete excision of adenomyosis was associated with improvement in pain, menorrhagia, and reduction of uterine volume by a factor of 6.2, 3.9, and 2.3, respectively; the partial excision of adenomyosis was associated with improvement in pain, menorrhagia, and reduction of uterine volume by a factor of 5.9, 3.0, and 2.9, respectively; the studies with a mixed volume of patients with complete and partial excision of adenomyosis reported improvement in pain, menorrhagia, and reduction of uterine volume by a factor of 4.0, 6.3, and 5.1, respectively.<br><br>CONCLUSION: The surgical treatment of adenomyosis results in the satisfactory control of pain and bleeding, as well as in the reduction of uterine volume. Further research is warranted to investigate the long-term control of symptoms to identify any parameters related to the recurrence of adenomyosis, as well as to compare the conservative surgical treatment of adenomyosis with other treatment options.</div></details>
+</li>
+<li id="ref-22">
+<div class="ref-label"><strong>Horton et al., Reproductive, obstetric, and perinatal outcomes of women with adenomyosis and endometriosis: a systematic review and meta-analysis, <em>Hum Reprod Update</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31318420/" target="_blank" rel="noopener">31318420</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The reproductive impact of adenomyosis and endometriosis is widely researched but the extent of these impacts remains elusive. It has been demonstrated that endometriosis, in particular, is known to result in subfertility but endometriosis and adenomyosis are increasingly linked to late pregnancy complications such as those caused by placental insufficiency. At the molecular level, the presence of ectopic endometrium perturbs the endometrial hormonal, cellular, and immunological milieu, negatively influencing decidualization, placentation, and developmental programming of the embryo. It is unclear if and how such early aberrant reproductive development relates to pregnancy outcomes in endometriosis and adenomyosis.<br><br>OBJECTIVE AND RATIONALE: The aims of this systematic review and meta-analysis were to (i) investigate the association of adenomyosis and endometriosis with fertility, obstetric, and neonatal outcomes of women through both assisted reproduction and natural conception and (ii) determine whether endometriosis disease subtypes have specific impacts on different stages of the reproductive process.<br><br>SEARCH METHODS: A systematic literature review of NHS evidence electronic databases and the Cochrane database identified all comparative and observational studies between 1980 and December 2018 in any language on adenomyosis and endometriosis with fertility, obstetric, and neonatal outcomes (23 search terms used). A total of 104 papers were selected for data extraction and meta-analysis, with use of Downs and Black standardized checklist to evaluate quality and bias.<br><br>OUTCOMES: We found that endometriosis consistently leads to reduced oocyte yield and a reduced fertilization rate (FR), in line with current evidence. Milder forms of endometriosis were most likely to affect the fertilization (FR OR 0.77, CI 0.63-0.93) and earlier implantation processes (implantation rate OR 0.76, CI 0.62-0.93). The more severe disease by American Society for Reproductive Medicine staging (ASRM III and IV) influenced all stages of reproduction. Ovarian endometriosis negatively affects the oocyte yield (MD -1.22, CI -1.96, -0.49) and number of mature oocytes (MD -2.24, CI -3.4, -1.09). We found an increased risk of miscarriage in both adenomyosis and endometriosis (OR 3.40, CI 1.41-8.65 and OR 1.30, CI 1.25-1.35, respectively), and endometriosis can be associated with a range of obstetric and fetal complications including preterm delivery (OR 1.38, CI 1.01-1.89), caesarean section delivery (OR 1.98 CI 1.64-2.38), and neonatal unit admission following delivery (OR 1.29, CI 1.07-1.55).<br><br>WIDER IMPLICATIONS: Adenomyosis and the subtypes of endometriosis may have specific complication profiles though further evidence is needed to be able to draw conclusions. Several known pregnancy complications are likely to be associated with these conditions. The complications are possibly caused by dysfunctional uterine changes leading to implantation and placentation issues and therefore could potentially have far-reaching consequences as suggested by Barker&#x27;s hypothesis. Our findings would suggest that women with these conditions should ideally receive pre-natal counselling and should be considered higher risk in pregnancy and at delivery, until evidence to the contrary is available. In order to expand our knowledge of these conditions and better advise on future management of these patients in reproductive and maternal medicine, a more unified approach to studying fertility and reproductive outcomes with longer term follow-up of the offspring and attention to the subtype of disease is necessary.</div></details>
+</li>
+<li id="ref-23">
+<div class="ref-label"><strong>Razavi et al., Systematic review and meta-analysis of adverse pregnancy outcomes after uterine adenomyosis, <em>Int J Gynaecol Obstet</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30828808/" target="_blank" rel="noopener">30828808</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Studies on the impact of adenomyosis and its pregnancy complications have yielded conflicting results.<br><br>OBJECTIVE: To determine the likelihood of adverse pregnancy outcomes among women with adenomyosis relative to women without adenomyosis.<br><br>SEARCH STRATEGY: PubMed, Embase, Scopus, and Web of Science were searched for studies published up to June 15, 2018.<br><br>SELECTION CRITERIA: Observational studies with medically confirmed pregnancy outcomes as endpoints.<br><br>DATA COLLECTION AND ANALYSIS: Two researchers independently screened and selected relevant studies. Dichotomous data for all adverse pregnancy outcomes were expressed as an odds ratio (OR) with 95% confidence interval (CI), and combined in a meta-analysis by using a random-effects model.<br><br>MAIN RESULTS: Six studies (322 cases and 9420 controls) were eligible for inclusion in the meta-analysis. Women with adenomyosis had an increased likelihood of preterm birth (OR, 3.05; 95% CI, 2.08-4.47; P˂0.001), small for gestational age (OR, 3.22; 95% CI, 1.71-6.08; P˂0.001), and pre-eclampsia (OR, 4.35; 95% CI, 1.07-17.72; P=0.042).<br><br>CONCLUSION: Adenomyosis seems to have a detrimental impact on pregnancy outcomes, resulting in a higher likelihood of preterm birth, small for gestational age, and pre-eclampsia.</div></details>
+</li>
+<li id="ref-24">
+<div class="ref-label"><strong>Younes et al., Effects of adenomyosis on in vitro fertilization treatment outcomes: a meta-analysis, <em>Fertil Steril</em> 2017</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28865548/" target="_blank" rel="noopener">28865548</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To systematically review and summarize the existing evidence related to the effect of adenomyosis on fertility and on in vitro fertilization (IVF) clinical outcomes, and to explore the effects of surgical or medical treatments.<br><br>DESIGN: Meta-analysis.<br><br>SETTING: Not applicable.<br><br>PATIENT(S): An electronic-based search was performed with the use of the following databases: Pubmed, Embase, Ovid Medline, Cochrane Central Register of Controlled Trials, and Google Scholar, identifying all related articles up to November 2016. We included 11 comparative studies that evaluated the clinical outcomes of IVF treatments in women with (519 patients) and without (1,535 patients) adenomyosis diagnosed with the use of magnetic resonance imaging or transvaginal ultrasound. We also separately evaluated four articles comparing fertility outcomes in two groups of infertile adenomyotic patients untreated and treated surgically or medically with the use of GnRH agonist (GnRHa).<br><br>INTERVENTION(S): None.<br><br>MAIN OUTCOME MEASURE(S): Primary outcome: clinical pregnancy rate after IVF.<br><br>SECONDARY OUTCOMES: rates of implantation, ongoing pregnancy, live birth, miscarriage, and ectopic pregnancy. The summary measures were expressed as odds ratio (OR) and 95% confidence interval (CI).<br><br>RESULT(S): The rates of implantation, clinical pregnancy per cycle, clinical pregnancy per embryo transfer, ongoing pregnancy, and live birth among women with adenomyosis were significantly lower than in those without adenomyosis. The miscarriage rate in women with adenomyosis was higher than in those without adenomyosis. It appears that surgical treatment or treatment withf GnRHa increases the spontaneous pregnancy rate in women with adenomyosis.<br><br>CONCLUSION(S): Adenomyosis has a detrimental effect on IVF clinical outcomes. Pretreatment with the use of long-term GnRHa or long protocol could be beneficial.</div></details>
+</li>
+</ol>
+</section>
+</div>
+<div id="modal-root" class="modal-root" aria-hidden="true">
+<div class="modal-backdrop" data-close></div>
+<article class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal-close" data-close aria-label="Close">&times;</button>
+<h2 id="modal-title" class="modal-title"></h2>
+<div id="modal-body" class="modal-body"></div>
+</article></div>
+<template id="tpl-diffuse-vs-focal" data-title="Diffuse vs focal adenomyosis">
+        <p>The diffuse-vs-focal distinction is the single most important treatment-planning question in adenomyosis.</p>
+        <p><strong>Diffuse adenomyosis</strong> spreads throughout the myometrium without forming discrete masses. The uterus enlarges symmetrically (or near-symmetrically), the wall texture becomes heterogeneous on imaging, and the junctional zone thickens diffusely. Most women with adenomyosis have this pattern. Treatment: medical management is the mainstay (LNG-IUD, GnRH antagonist)<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup><sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Schlaff et al., Elagolix for Heavy Menstrual Bleeding in Women with Uterine Fibroids, N Engl J Med 2020 &middot; PMID 31971678</span></sup>; if surgery is needed, hysterectomy is usually the answer because diffuse disease can&rsquo;t be cleanly excised.</p>
+        <p><strong>Focal adenomyosis (adenomyoma)</strong> presents as a discrete mass of adenomyotic tissue within the muscle wall. It can mimic a fibroid on imaging &mdash; MRI is the best tool to distinguish them, looking at the appearance of the lesion (ill-defined borders, T2 dark signal with hyperintense foci suggest adenomyoma; well-circumscribed with capsule suggests fibroid)<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 -->. Focal disease can sometimes be approached with conservative surgery &mdash; focal adenomyomectomy &mdash; in patients wanting to preserve the uterus.</p>
+        <p>Mixed patterns exist &mdash; a woman can have diffuse adenomyosis plus a focal adenomyoma, or focal disease in multiple sites. The imaging description on the MRI or detailed ultrasound report is what we plan from.</p>
+    </template>
+<template id="tpl-imaging-deep" data-title="How adenomyosis is diagnosed on imaging">
+        <p>The diagnostic shift from &ldquo;hysterectomy specimen only&rdquo; to &ldquo;reliable imaging-based diagnosis&rdquo; happened over the last 15 years and continues to be refined. The current standards:</p>
+        <p><strong>Transvaginal ultrasound (TVUS):</strong></p>
+        <ul class="bullets">
+            <li>First-line imaging. Best done early follicular phase (days 4&ndash;7) when junctional zone is most visible.</li>
+            <li>MUSA consensus features<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Harmsen et al., Consensus on revised definitions of Morphological Uterus Sonographi..., Ultrasound Obstet Gynecol 2022 &middot; PMID 34587658</span></sup>:
+                <ul>
+                    <li><em>Direct:</em> asymmetric uterine wall thickness, intramyometrial cysts, hyperechoic islands, fan-shaped shadowing, irregular junctional zone with linear striations<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=4 -->.</li>
+                    <li><em>Indirect:</em> globally enlarged uterus, heterogeneous myometrial texture, distorted uterine cavity.</li>
+                </ul>
+            </li>
+            <li>3D TVUS adds value &mdash; coronal reconstruction shows the junctional zone clearly.</li>
+            <li>Color/power Doppler helps distinguish adenomyoma from fibroid (vascular pattern differs).</li>
+        </ul>
+        <p><strong>MRI:</strong></p>
+        <ul class="bullets">
+            <li>Gold standard for non-surgical diagnosis<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Bazot et al., Role of transvaginal sonography and magnetic resonance imaging in t..., Fertil Steril 2018 &middot; PMID 29566851</span></sup>.</li>
+            <li>Junctional zone thickness <strong>&gt;12 mm</strong> supports diagnosis<!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=5 -->.</li>
+            <li>JZ/total myometrium ratio <strong>&gt;40%</strong> supports diagnosis<!-- §0.8 anchor: kb_doc_id=d7775ffa3c80; field=keyPoints; idx=3 -->.</li>
+            <li>T2 dark signal with scattered hyperintense foci is classic.</li>
+            <li>Best for distinguishing focal adenomyoma from fibroid.</li>
+            <li>Essential preoperatively when conservative surgery is planned<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 -->.</li>
+        </ul>
+        <p>Limitations to know about:</p>
+        <ul class="bullets">
+            <li>Junctional zone thickness varies through the menstrual cycle &mdash; one snapshot may not capture maximum thickness.</li>
+            <li>Rigid cutoff thresholds risk underdiagnosing mild adenomyosis; some patients meet clinical criteria with imaging that&rsquo;s only borderline.</li>
+            <li>Postmenopausal women lose hormonal stimulation of the junctional zone &mdash; criteria don&rsquo;t apply the same way.</li>
+        </ul>
+    </template>
+<template id="tpl-symptoms-deep" data-title="What adenomyosis feels like">
+        <p>The classic adenomyosis triad: <strong>severe dysmenorrhea + heavy menstrual bleeding + an enlarged tender uterus on exam</strong>. But women present in a spectrum of severity, and other patterns occur.</p>
+        <p><strong>Dysmenorrhea.</strong> Often progressive &mdash; women describe periods that have become significantly more painful over years. Pain typically peaks just before and during the heaviest day of bleeding, often refractory to NSAIDs alone. Associated with the cyclic inflammation of adenomyotic tissue within the muscle wall.</p>
+        <p><strong>Heavy menstrual bleeding (HMB).</strong> Often the dominant complaint &mdash; soaking through pads every 1&ndash;2 hours, large clots, flooding, prolonged bleeding. HMB from adenomyosis is driven by the enlarged uterine surface area and the abnormal endometrial-myometrial interface.</p>
+        <p><strong>Bulk symptoms.</strong> As the uterus enlarges, women may notice abdominal fullness, increased urinary frequency from anterior pressure on the bladder, and back ache.</p>
+        <p><strong>Dyspareunia.</strong> Especially with deep penetration as the uterus enlarges. Often coexists with endometriosis-related dyspareunia.</p>
+        <p><strong>Chronic pelvic pain.</strong> Beyond the cyclic dysmenorrhea, some women develop chronic background pelvic pain, particularly when adenomyosis coexists with endometriosis or pelvic-floor dysfunction.</p>
+        <p><strong>Subfertility / pregnancy loss.</strong> Adenomyosis is increasingly recognized as a contributor to infertility and miscarriage, especially in women with severe disease.</p>
+    </template>
+<template id="tpl-medical-deep" data-title="Medical management">
+        <p>Medical management is the foundation of adenomyosis treatment for most women. Treatment plans are individualized based on symptom dominance (bleeding vs pain vs both), fertility plans, and contraception preferences.</p>
+        <p><strong>NSAIDs.</strong> Naproxen 500&nbsp;mg twice daily or ibuprofen 600&ndash;800&nbsp;mg every 8 hours &mdash; started before expected menses and continued through the heaviest days. Reduces blood loss 20&ndash;40% and helps pain. Always with food; cautions for GI ulcer, renal disease, NSAID-sensitive asthma.</p>
+        <p><strong>Tranexamic acid.</strong> 1300&nbsp;mg three times daily during bleeding days only. Non-hormonal antifibrinolytic; reduces blood loss ~40%. Useful for women who can&rsquo;t or don&rsquo;t want hormones.</p>
+        <p><strong>Combined hormonal contraceptives.</strong> Pills, patch, or ring. Reduces blood loss 40&ndash;50% and stabilizes the endometrium. Continuous use (skipping placebo week) eliminates withdrawal bleeding and often substantially reduces adenomyosis-related cyclic pain. Contraindicated in smokers over 35, migraine with aura, elevated VTE risk.</p>
+        <p><strong>Levonorgestrel IUD.</strong> Often the most effective single medical intervention for adenomyosis<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Bianchi et al., Utility of the Levonorgestrel-Releasing Intrauterine System in the ..., J Clin Med 2022 &middot; PMID 36233703</span></sup>. Local progestin suppresses the adenomyotic tissue and reduces both HMB and dysmenorrhea. High patient satisfaction and good 5-year continuation rates. Best for diffuse adenomyosis; cavity must be able to accept and retain the device.</p>
+        <p><strong>Oral progestins.</strong> Norethindrone, dienogest, or medroxyprogesterone given continuously. Useful when LNG-IUD isn&rsquo;t tolerated or fits poorly.</p>
+        <p><strong>GnRH antagonist with add-back.</strong> Oral elagolix 200&nbsp;mg twice daily with estradiol/norethindrone add-back<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Schlaff et al., Elagolix for Heavy Menstrual Bleeding in Women with Uterine Fibroids, N Engl J Med 2020 &middot; PMID 31971678</span></sup>. Reserved for refractory pain or HMB after first-line options. Designed for up to 24 months continuous use; useful as a 3&ndash;6 month bridge to surgery.</p>
+        <p><strong>GnRH agonists (leuprolide).</strong> Shrinks adenomyosis significantly over 3&ndash;6 months. Limited to short-term use without add-back due to hypoestrogenic side effects and bone-density loss. Often used pre-operatively to reduce uterine size before conservative surgery.</p>
+    </template>
+<template id="tpl-surgical-deep" data-title="Surgical options (adenomyomectomy &amp;amp; hysterectomy)">
+        <p>Surgery is reserved for adenomyosis that has failed medical management or where anatomy makes surgery the better answer.</p>
+        <p><strong>Focal adenomyomectomy</strong> is uterus-preserving surgery for discrete adenomyomas &mdash; usually in women wanting future fertility<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>. The operation excises the adenomyotic mass and reconstructs the myometrium in multiple layers. <strong>Pre-operative MRI is essential</strong> to map location, depth, and relationship to the cavity<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=9 -->. The technical challenge: adenomyosis has no capsule, so the surgical plane is less clear than fibroid enucleation, and obtaining adequate excision while preserving healthy myometrium and cavity integrity requires careful technique.</p>
+        <p><strong>Pregnancy after adenomyomectomy</strong> carries a real uterine-rupture risk. The published series report <strong>33 uterine ruptures in 397 pregnancies</strong> after adenomyomectomy (~8.3%)<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=7 --><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup>. Electrically powered instruments during the original operation are associated with most of the rupture cases<!-- §0.8 anchor: kb_doc_id=1d24bd42-7881-4850-a171-fa43a96b6c95; field=keyPoints; idx=8 -->. Standard practice for women who conceive after adenomyomectomy:</p>
+        <ul class="bullets">
+            <li>Detailed review of the operative report &mdash; how deep, how much myometrium reconstructed, what energy source.</li>
+            <li>Recommendation for elective cesarean delivery, typically at 36&ndash;37 weeks before active labor begins.</li>
+            <li>Avoidance of trial of labor in most cases.</li>
+            <li>Continuous fetal and maternal monitoring through the third trimester.</li>
+        </ul>
+        <p><strong>Hysterectomy</strong> is definitive treatment for adenomyosis. Indicated when:</p>
+        <ul class="bullets">
+            <li>Conservative options have failed and symptoms are severe.</li>
+            <li>The woman is not planning future pregnancy.</li>
+            <li>Anatomy makes uterus-preservation impractical (massive diffuse disease, recurrence after multiple adenomyomectomies).</li>
+            <li>Concurrent pathology (large fibroids, persistent AUB despite a full workup, endometrial hyperplasia).</li>
+        </ul>
+        <p>Approach: laparoscopic or vaginal whenever feasible &mdash; smaller incisions, faster recovery, less pain than open. Ovarian preservation is the default in premenopausal women without ovarian pathology, regardless of why the uterus is being removed.</p>
+        <p><strong>Newer / experimental options</strong>: high-intensity focused ultrasound (HIFU) for selected focal lesions, radiofrequency ablation, uterine artery embolization (limited evidence for diffuse adenomyosis). None has yet displaced the LNG-IUD &mdash; hysterectomy axis for routine care.</p>
+    </template>
+<template id="tpl-fertility-deep" data-title="Adenomyosis &amp;amp; fertility">
+        <p>Adenomyosis impairs fertility through multiple mechanisms: disruption of the endometrial-myometrial junction (which contains the contractile machinery driving sperm transport and embryo implantation), altered uterine contractility, persistent inflammation, and the bulk effect of an enlarged uterus.</p>
+        <p>The fertility-aware treatment paths:</p>
+        <ul class="bullets">
+            <li><strong>Mild disease, no infertility yet:</strong> LNG-IUD if not actively trying to conceive; expectant management with NSAIDs and OCP if cycle suppression is acceptable; switch to active conception when ready.</li>
+            <li><strong>Active fertility planning, mild-to-moderate diffuse disease:</strong> Time-limited treatment trial with GnRH antagonist for 3&ndash;6 months can reduce inflammation and uterine size before attempting conception (or before IVF cycle).</li>
+            <li><strong>Active fertility planning, focal adenomyoma:</strong> Pre-IVF or pre-conception focal adenomyomectomy in carefully selected cases<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Younes et al., Conservative Surgery for Adenomyosis and Results: A Systematic Review, J Minim Invasive Gynecol 2018 &middot; PMID 28739414</span></sup> &mdash; restores cavity contour and reduces inflammatory bulk. Then 6&ndash;12 months of healing before conception, and elective cesarean delivery at term.</li>
+            <li><strong>Severe diffuse disease + infertility:</strong> Difficult clinical situation. GnRH suppression pre-IVF transfer is sometimes used. Outcomes are improved but not equivalent to women without adenomyosis. Gestational carrier may be discussed when severe disease combines with multiple failed IVF cycles.</li>
+        </ul>
+        <p>The conversation with each woman includes her age, ovarian reserve, partner factors, severity of adenomyosis, fertility timeline, and her tolerance for surgical risk. There&rsquo;s rarely a single right answer.</p>
+    </template>
+<template id="tpl-coexist-deep" data-title="When adenomyosis &amp;amp; endometriosis coexist">
+        <p>Adenomyosis and endometriosis frequently coexist &mdash; some series report 60&ndash;80% co-occurrence in women with one or the other diagnosis. Despite sharing endometrial-like tissue as their core feature, the two diseases have <em>different</em> molecular mechanisms<!-- §0.8 anchor: kb_doc_id=955b80ed-9a54-4bf5-9832-df7b50417d32; field=keyPoints; idx=6 --> and need distinct treatment plans.</p>
+        <p>When both are present:</p>
+        <ul class="bullets">
+            <li>Symptoms can compound &mdash; dysmenorrhea, dyspareunia, chronic pelvic pain, infertility, HMB all overlap.</li>
+            <li>Imaging needs to evaluate both compartments &mdash; TVUS and MRI for adenomyosis (junctional zone), TVUS for endometrioma and deep infiltrating endometriosis features.</li>
+            <li>Surgical planning is more complex &mdash; laparoscopic excision of endometriosis lesions can be done alongside adenomyomectomy or hysterectomy. Order of operations and adhesion management require experience.</li>
+            <li>Hormonal suppression covers both diseases &mdash; LNG-IUD, GnRH antagonist, progestins all suppress endometriosis and adenomyosis. Definitive surgical treatment is condition-specific.</li>
+        </ul>
+        <p>The full endometriosis guide on this site covers the deep-disease subset; the dysmenorrhea guide covers the workup pathway when either or both are suspected; this guide focuses on the adenomyosis half. The clinical conversation with each woman synthesizes across all three.</p>
+    </template>
+
+<script>
+(function(){
+  const root = document.getElementById('modal-root');
+  const titleEl = document.getElementById('modal-title');
+  const bodyEl = document.getElementById('modal-body');
+  function openModal(mid){
+    const tpl = document.getElementById('tpl-' + mid);
+    if (!tpl) return;
+    titleEl.innerHTML = tpl.dataset.title;
+    bodyEl.innerHTML = tpl.innerHTML;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    bodyEl.innerHTML = '';
+  }
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('[data-modal]');
+    if (opener){ e.preventDefault(); openModal(opener.dataset.modal); return; }
+    if (e.target.closest('[data-close]')){ e.preventDefault(); closeModal(); return; }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && root.classList.contains('open')) closeModal();
+  });
+  document.addEventListener('click', function(e){
+    const ref = e.target.closest('.mz-ref');
+    if (!ref){
+      document.querySelectorAll('.mz-ref.mz-open').forEach(r => r.classList.remove('mz-open'));
+      return;
+    }
+    if (e.target.tagName === 'A') return;
+    e.preventDefault();
+    document.querySelectorAll('.mz-ref.mz-open').forEach(r => { if (r !== ref) r.classList.remove('mz-open'); });
+    ref.classList.toggle('mz-open');
+  });
+})();
+</script>
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/adenomyosis/index.html",
+  "topic": "Adenomyosis",
+  "topic_synthesis_id": "8bc29200-92dc-4dac-8099-1b06b0d16aa1",
+  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
+  "kb_documents_loaded": [
+    "d7775ffa3c80",
+    "1d24bd42-7881-4850-a171-fa43a96b6c95",
+    "955b80ed-9a54-4bf5-9832-df7b50417d32"
+  ],
+  "kb_documents_quoted": [
+    {
+      "kb_doc_id": "d7775ffa3c80",
+      "title": "On behalf of the Society of Endometriosis and Uterine Disorders (SEUD) Forum Group on Adenomyosis",
+      "field": "keyPoints",
+      "claim": "Adenomyosis = endometrial glands & stroma within the myometrium",
+      "excerpt_first_words": "Adenomyosis involves pathologic endometrial glands and stroma within the uterine myometrium",
+      "page_anchor_id": "definition"
+    },
+    {
+      "kb_doc_id": "1d24bd42-7881-4850-a171-fa43a96b6c95",
+      "title": "Uterine adenomyosis and adenomyoma: the surgical approach ",
+      "field": "keyPoints",
+      "claim": "Classified as diffuse or focal",
+      "excerpt_first_words": "Adenomyosis is classified as diffuse or focal, involving endometrial glands infiltrating the myometrium",
+      "page_anchor_id": "classification"
+    },
+    {
+      "kb_doc_id": "d7775ffa3c80",
+      "title": "On behalf of the Society of Endometriosis and Uterine Disorders (SEUD) Forum Group on Adenomyosis",
+      "field": "keyPoints",
+      "claim": "Sex-steroid hormones drive pathogenesis via tissue invasion and inflammation",
+      "excerpt_first_words": "Sex steroid hormones drive adenomyosis pathogenesis via tissue invasion and inflammation",
+      "page_anchor_id": "pathogenesis"
+    },
+    {
+      "kb_doc_id": "d7775ffa3c80",
+      "title": "On behalf of the Society of Endometriosis and Uterine Disorders (SEUD) Forum Group on Adenomyosis",
+      "field": "keyPoints",
+      "claim": "JZ max-to-total myometrium ratio >40% on MRI suggests adenomyosis",
+      "excerpt_first_words": "On MRI, junctional zone (JZ) max-to-total myometrium ratio > 40% suggests adenomyosis",
+      "page_anchor_id": "mri"
+    },
+    {
+      "kb_doc_id": "d7775ffa3c80",
+      "title": "On behalf of the Society of Endometriosis and Uterine Disorders (SEUD) Forum Group on Adenomyosis",
+      "field": "keyPoints",
+      "claim": "2D/3D TVUS direct features include asymmetric wall thickness and intramyometrial cysts",
+      "excerpt_first_words": "2D and 3D transvaginal ultrasound signs include asymmetric wall thickness and intramyometrial cysts",
+      "page_anchor_id": "tvus"
+    },
+    {
+      "kb_doc_id": "955b80ed-9a54-4bf5-9832-df7b50417d32",
+      "title": "Surgery in adenomyosis",
+      "field": "keyPoints",
+      "claim": "Junctional zone thickness >12 mm on MRI is a diagnostic criterion",
+      "excerpt_first_words": "Junctional zone thickness >12 mm on MRI is a diagnostic criterion for adenomyosis",
+      "page_anchor_id": "jz-12"
+    },
+    {
+      "kb_doc_id": "955b80ed-9a54-4bf5-9832-df7b50417d32",
+      "title": "Surgery in adenomyosis",
+      "field": "keyPoints",
+      "claim": "Adenomyosis and endometriosis share mechanisms but are independent diseases",
+      "excerpt_first_words": "Adenomyosis and endometriosis share some pathogenic mechanisms but are independent diseases",
+      "page_anchor_id": "endo-overlap"
+    },
+    {
+      "kb_doc_id": "1d24bd42-7881-4850-a171-fa43a96b6c95",
+      "title": "Uterine adenomyosis and adenomyoma: the surgical approach ",
+      "field": "keyPoints",
+      "claim": "33 uterine ruptures in 397 reported pregnancies post-adenomyomectomy",
+      "excerpt_first_words": "397 post-adenomyomectomy pregnancies reported, with 33 uterine rupture cases during subsequent pregnancy",
+      "page_anchor_id": "rupture-risk"
+    },
+    {
+      "kb_doc_id": "1d24bd42-7881-4850-a171-fa43a96b6c95",
+      "title": "Uterine adenomyosis and adenomyoma: the surgical approach ",
+      "field": "keyPoints",
+      "claim": "Electrically powered instruments associated with most post-adenomyomectomy ruptures",
+      "excerpt_first_words": "Electrically powered instruments are associated with most uterine rupture cases post-adenomyomectomy",
+      "page_anchor_id": "electrosurgery"
+    },
+    {
+      "kb_doc_id": "1d24bd42-7881-4850-a171-fa43a96b6c95",
+      "title": "Uterine adenomyosis and adenomyoma: the surgical approach ",
+      "field": "keyPoints",
+      "claim": "MRI essential preop to map adenomyosis location/extent and cavity",
+      "excerpt_first_words": "MRI is essential preoperatively to map adenomyosis location, extent, and uterine cavity position",
+      "page_anchor_id": "preop-mri"
+    }
+  ],
+  "pmids_efetched_in_session": [
+    "30918629",
+    "29566851",
+    "36233703",
+    "31971678",
+    "28739414",
+    "34587658",
+    "33095458",
+    "40166680",
+    "41327644",
+    "40459223",
+    "39049473",
+    "38065008",
+    "37688388",
+    "39004475",
+    "39067674",
+    "36730180",
+    "36972750",
+    "36948440",
+    "34981458",
+    "33191131",
+    "31398415",
+    "31318420",
+    "30828808",
+    "28865548"
+  ],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "2026-05-17T16:45:48.612044+00:00"
+}
+-->

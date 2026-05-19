@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Pregnancy loss &mdash; what to know &middot; Mount Zara</title>
+    <meta name="description" content="A trauma-informed patient guide to early pregnancy loss: diagnosis, the three management options (expectant, medical, surgical), ectopic pregnancy, recurrent loss workup, emotional support. KB-anchored, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-base: #07070a;
+    --bg-card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.10);
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245,245,247,0.84);
+    --fg-soft: rgba(245,245,247,0.62);
+    --fg-dim: rgba(245,245,247,0.42);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.14), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    min-height: 100vh;
+}
+a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--fg-strong); }
+
+/* Site nav */
+.site-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 7, 10, 0.86);
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px clamp(16px, 4vw, 32px);
+}
+.site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
+.site-nav .brand {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    text-decoration: none;
+}
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a:hover { color: var(--fg-strong); }
+.site-nav .cta {
+    background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--accent-soft) !important;
+    padding: 5px 14px; border-radius: 999px;
+    font-weight: 500; transition: all 0.2s;
+}
+.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
+
+@keyframes mzRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mzFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* HERO */
+.hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero .eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 14px;
+}
+.hero h1 {
+    font-weight: 200; font-size: clamp(34px, 6vw, 56px);
+    letter-spacing: -0.022em; line-height: 1.05;
+    color: var(--fg-strong); margin: 0 0 16px 0;
+    max-width: 22ch;
+}
+.hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+.hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+
+/* KEY FACTS */
+.facts {
+    display: grid; gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    transition: transform 0.22s, border-color 0.22s, background 0.22s;
+    animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
+.fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
+.fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
+
+/* SECTIONS */
+section.panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(22px, 4vw, 36px);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    transition: border-color 0.25s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel .section-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin-bottom: 10px;
+}
+section.panel h2 {
+    font-weight: 200; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.012em; color: var(--fg-strong);
+    margin: 0 0 18px 0; line-height: 1.15;
+}
+section.panel p {
+    font-size: 16.5px; line-height: 1.7;
+    color: var(--fg-mid); margin: 0 0 14px 0;
+}
+section.panel p:last-child { margin-bottom: 0; }
+section.panel p strong { color: var(--fg-strong); font-weight: 500; }
+section.panel p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+section.panel .section-intro { font-size: 15px; color: var(--fg-soft); max-width: 64ch; margin-bottom: 18px; }
+
+/* INLINE CITATION SUP + POPOUT */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref a {
+    color: var(--accent-soft);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover a,
+sup.mz-ref.mz-open a,
+sup.mz-ref:focus a {
+    background: rgba(var(--glow-purple), 0.20);
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden; opacity: 0;
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translate(-50%, -6px);
+    width: 320px; max-width: 92vw;
+    padding: 10px 14px;
+    background: rgba(7,7,10,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: var(--fg-mid);
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 400;
+    z-index: 200;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    white-space: normal;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+/* CARDS — phenotypes, pain-sources, treatment rungs, OMT RCT
+   Explicit columns per card count to prevent the auto-fit 3+1 / 3+2 wrap
+   problem. Each modifier locks the row size so cards stay even at every
+   breakpoint. */
+.card-grid { display: grid; gap: 14px; margin-top: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) {
+    .card-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+    .card-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid--4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Symptoms grid — 8 items, want 1/2/4 columns */
+.symptoms {
+    display: grid; gap: 10px; margin-top: 18px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .symptoms { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .symptoms { grid-template-columns: repeat(4, 1fr); } }
+
+/* Featured banner card — used for the lone FitzGerald PFPT RCT below
+   the OMT 4-card grid so it doesn't look orphaned. Full-width, two-column
+   internal layout. */
+.featured-card {
+    display: grid; gap: 18px;
+    grid-template-columns: 1fr;
+    background: rgba(var(--glow-purple), 0.07);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+    align-items: center;
+    position: relative;
+}
+.featured-card:hover, .featured-card:focus {
+    border-color: rgba(var(--glow-purple), 0.65);
+    background: rgba(var(--glow-purple), 0.12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.featured-card h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--fg-strong); margin: 0 0 4px 0;
+    padding-right: 80px;
+}
+.featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
+.featured-card .open-hint {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    letter-spacing: 0.08em;
+}
+.featured-card .stat-badge {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    background: rgba(var(--glow-purple), 0.18);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    margin-top: 6px;
+    margin-right: 8px;
+}
+.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+@media (min-width: 720px) {
+    .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card:hover, .card:focus {
+    transform: translateY(-2px);
+    border-color: rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    outline: none;
+}
+.card .card-svg { width: 48px; height: 48px; margin-bottom: 10px; display: block; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; padding-right: 28px; }
+.card p { font-size: 13px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.card .card-corner {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.card .open-hint {
+    position: absolute; bottom: 12px; right: 14px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+}
+.card:hover .open-hint, .card:focus .open-hint { opacity: 1; color: var(--accent-soft); }
+
+/* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
+.symptom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px 12px 44px;
+    position: relative;
+    font-size: 14px; color: var(--fg-mid);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom::before {
+    content: ""; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(var(--glow-purple), 0.50);
+    background: rgba(var(--glow-purple), 0.08);
+}
+.symptom strong { color: var(--fg-strong); font-weight: 500; display: block; margin-bottom: 2px; }
+.symptom .or { font-size: 11px; color: var(--accent-soft); font-weight: 700; letter-spacing: 0.06em; margin-left: 6px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 24px; margin-top: 18px; }
+.timeline::before {
+    content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(var(--glow-purple), 0.55), rgba(var(--glow-purple), 0.18));
+}
+.timeline-item {
+    position: relative; margin-bottom: 16px;
+    animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    padding: 12px 14px;
+    transition: border-color 0.22s, background 0.22s;
+}
+.timeline-item:hover, .timeline-item:focus {
+    border-color: rgba(var(--glow-purple), 0.40);
+    background: rgba(var(--glow-purple), 0.06);
+    outline: none;
+}
+.timeline-item:last-child { margin-bottom: 0; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.95);
+    box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.16);
+}
+.timeline-item h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; padding-right: 36px; }
+.timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
+.timeline-item .open-hint {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    letter-spacing: 0.08em;
+}
+
+/* TREATMENT LADDER */
+.ladder { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+.rung {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 16px; align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color 0.22s, background 0.22s, transform 0.22s;
+}
+.rung:hover, .rung:focus {
+    border-color: rgba(var(--glow-purple), 0.45);
+    background: rgba(var(--glow-purple), 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
+.rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
+.rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
+.rung-tag {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    align-self: center;
+}
+
+/* OMT block */
+.omt-block {
+    background: rgba(var(--glow-purple), 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.35);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    margin-top: 18px;
+}
+.omt-block .quote-frame {
+    border-left: 3px solid rgba(var(--glow-purple), 0.60);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0;
+    color: var(--fg-mid);
+    font-size: 16px; line-height: 1.7;
+    position: relative;
+}
+.omt-block .quote-frame::before {
+    content: '\201C';
+    position: absolute;
+    left: 6px; top: -4px;
+    font-family: Georgia, serif;
+    color: rgba(var(--glow-purple), 0.40);
+    font-size: 26px; line-height: 1;
+}
+
+/* Q&A accordion */
+.qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+details.qa {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    transition: border-color 0.22s, background 0.22s;
+    animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
+details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 50px 14px 18px;
+    font-size: 15.5px; font-weight: 500;
+    color: var(--fg-strong); position: relative; line-height: 1.4;
+}
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after {
+    content: '+';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 22px; color: var(--accent-soft);
+    font-weight: 200; line-height: 1;
+    transition: transform 0.2s;
+}
+details.qa[open] summary::after { content: '\2212'; }
+details.qa .qa-answer { padding: 0 18px 18px 18px; font-size: 14.5px; line-height: 1.7; color: var(--fg-mid); }
+details.qa .qa-answer p { font-size: 14.5px !important; margin: 0 0 10px 0; }
+details.qa .qa-answer p:last-child { margin: 0; }
+
+/* Red flags */
+.red-flags {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+.red-flags .red-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(252, 165, 165, 0.95); margin-bottom: 12px; }
+.red-flags ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.red-flags li { font-size: 14px; color: var(--fg-mid); line-height: 1.55; padding-left: 20px; position: relative; }
+.red-flags li::before { content: '\26A0'; position: absolute; left: 0; top: 0; color: rgba(252, 165, 165, 0.95); font-size: 12px; }
+
+/* CTA */
+.cta-strip {
+    background: rgba(var(--glow-purple), 0.10);
+    border: 1px solid rgba(var(--glow-purple), 0.45);
+    border-radius: 14px;
+    padding: clamp(22px, 4vw, 36px);
+    text-align: center;
+    margin-top: clamp(20px, 4vw, 32px);
+}
+.cta-strip h2 { font-weight: 200; font-size: clamp(22px, 3vw, 28px); color: var(--fg-strong); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+.cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
+.cta-strip a.btn {
+    display: inline-block;
+    background: rgba(var(--glow-purple), 0.20);
+    border: 1px solid rgba(var(--glow-purple), 0.65);
+    color: #fff;
+    padding: 10px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin: 4px;
+}
+.cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
+.cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+
+/* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
+.refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
+.refs-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    counter-increment: ref;
+}
+.refs-list li:last-child { border-bottom: none; }
+.refs-list .ref-head { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+.refs-list .ref-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--glow-purple), 0.12);
+    border: 1px solid rgba(var(--glow-purple), 0.40);
+    color: var(--accent-soft);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.refs-list .ref-citation { font-size: 14px; line-height: 1.55; color: var(--fg-mid); }
+.refs-list .ref-citation strong { color: var(--fg-strong); font-weight: 500; }
+.refs-list .ref-citation em { color: var(--accent-soft); font-style: normal; }
+.refs-list .pmid {
+    display: inline-block;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11.5px; color: var(--accent-soft);
+    background: rgba(var(--glow-purple), 0.10);
+    padding: 1px 6px; border-radius: 4px;
+    white-space: nowrap;
+}
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
+details.mz-abstract {
+    margin-top: 10px;
+    margin-left: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+}
+details.mz-abstract summary {
+    list-style: none; cursor: pointer;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--accent-soft);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    position: relative;
+}
+details.mz-abstract summary::-webkit-details-marker { display: none; }
+details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
+details.mz-abstract[open] summary::before { content: '\2212 '; }
+details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract .abstract-body {
+    padding: 4px 16px 14px 28px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+    line-height: 1.6;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+details.mz-abstract .abstract-body p { margin: 0 0 8px 0; font-size: 12.5px !important; line-height: 1.6 !important; }
+details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
+.no-abstract { margin: 10px 0 0 40px; font-size: 12px; color: var(--fg-dim); font-style: italic; }
+
+/* MODAL system */
+.mz-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.66);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: mzFadeIn 0.18s ease both;
+}
+.mz-modal-bg.open { display: flex; }
+.mz-modal {
+    width: 100%; max-width: 700px;
+    max-height: 88vh; overflow-y: auto;
+    background: rgba(12,12,16,0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.50);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    position: relative;
+    animation: mzRise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mz-modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--fg-soft);
+    font-size: 20px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal h2 {
+    font-weight: 200; font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.015em; color: var(--fg-strong);
+    margin: 0 0 18px 0; padding-right: 50px; line-height: 1.2;
+}
+.mz-modal p { font-size: 15px !important; line-height: 1.7; color: var(--fg-mid); margin: 0 0 12px 0; }
+.mz-modal p strong { color: var(--fg-strong); font-weight: 500; }
+.mz-modal p em { color: var(--accent-soft); font-style: normal; font-weight: 500; }
+
+/* Footer note */
+.footer-note {
+    margin-top: 40px; padding: 20px 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 12.5px; color: var(--fg-dim);
+    line-height: 1.6;
+}
+.footer-note strong { color: var(--fg-soft); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero, section.panel, .fact, .card, .timeline-item, details.qa, .mz-modal { animation: none !important; }
+    * { transition: none !important; }
+    html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    section.panel { padding: 22px 18px; }
+    .site-nav .crumb { display: none; }
+    sup.mz-ref .mz-ref-pop { width: min(280px, 84vw); }
+    details.mz-abstract { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site navigation">
+    <div class="inner">
+        <a class="brand" href="/">Mount Zara</a>
+        <span class="crumb">&middot;  Patient Education  &middot;  Pregnancy Loss</span>
+        <div class="right-actions">
+            <a href="/about/">About</a>
+            <a class="cta" href="/portal/">Member portal</a>
+        </div>
+    </div>
+</nav>
+<div class="wrap">
+
+    <header class="hero">
+        <div class="eyebrow">Patient Education &middot; Pregnancy Loss</div>
+        <h1>Pregnancy loss &mdash; what&rsquo;s happening, what&rsquo;s normal, and what comes next.</h1>
+        <p class="lede">
+            Pregnancy loss is much more common than most people realize. About <strong>10%</strong> of clinically recognized
+            pregnancies end in loss, and the great majority happen in the first trimester<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 200: Early Pregnancy Loss, Obstet Gynecol 2018 &middot; PMID 30157093</span></sup><!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=0 --> &mdash;
+            <strong>not because of anything you did or didn&rsquo;t do</strong>. The most common cause is a chromosomal
+            abnormality that developed at conception<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=1 -->, not anything in your control. This guide walks through
+            how early pregnancy loss is approached with care: how it&rsquo;s diagnosed, the three management
+            options<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=4 --> (expectant, medical<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Schreiber et al., Mifepristone Pretreatment for the Medical Management of Early Pregn..., N Engl J Med 2018 &middot; PMID 29874535</span></sup>, surgical), what to expect for recovery, when
+            recurrent-loss workup is appropriate<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org, Definitions of infertility and recurrent pregnancy loss: a committe..., Fertil Steril 2020 &middot; PMID 32115183</span></sup><sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org et al., Recurrent pregnancy loss: a committee opinion, Fertil Steril 2026 &middot; PMID 42062119</span></sup>, and &mdash; importantly &mdash;
+            the emotional and mental-health support that often matters as much as the medical care<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Herbert et al., The mental health impact of perinatal loss: A systematic review and..., J Affect Disord 2022 &middot; PMID 34678403</span></sup>.
+        </p>
+    </header>
+    <section class="key-facts" aria-label="At a glance">
+        <div class="fact"><div class="stat">10<span class="unit">%</span></div><div class="label">of clinically recognized pregnancies end in loss<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 200: Early Pregnancy Loss, Obstet Gynecol 2018 &middot; PMID 30157093</span></sup><!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=0 -->; the true rate including very early losses is higher.</div></div>
+        <div class="fact"><div class="stat">50<span class="unit">%</span></div><div class="label">of early losses are caused by random chromosomal errors<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=1 --> &mdash; not anything you did.</div></div>
+        <div class="fact"><div class="stat">3 options<span class="unit"></span></div><div class="label">for managing an early loss when no urgent issue<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=4 --><!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=5 --> &mdash; expectant, medical, or surgical.</div></div>
+    </section>
+    
+
+    <section class="section">
+        <h2>If you&rsquo;ve just been told</h2>
+        <p>If your provider has just told you that the pregnancy isn&rsquo;t viable, the most important things to know:</p>
+        <ul class="bullets">
+            <li><strong>This is almost never your fault.</strong> About half of early losses come from random chromosomal abnormalities of the embryo<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=1 --> that have nothing to do with what you did or didn&rsquo;t do.</li>
+            <li><strong>You have time and options.</strong> Unless you&rsquo;re hemodynamically unstable or have signs of infection, there is no medical urgency to choose treatment in the next hours. You can take days to decide.</li>
+            <li><strong>Your preferences matter.</strong> Modern guidance is explicit that the choice between expectant, medical, and surgical management should accommodate your preferences when no urgent indication exists<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=5 -->.</li>
+            <li><strong>Future fertility is usually unaffected</strong> after a single first-trimester loss. The chance of a healthy next pregnancy is roughly the same as your chance for any pregnancy.</li>
+            <li><strong>Grief is normal and real.</strong> Pregnancy loss is associated with clinically significant rates of acute grief, depression, and post-traumatic symptoms<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Herbert et al., The mental health impact of perinatal loss: A systematic review and..., J Affect Disord 2022 &middot; PMID 34678403</span></sup>. Mental-health support is part of care, not a sign of weakness.</li>
+        </ul>
+    </section>
+    
+
+    <section class="section">
+        <h2>How an early loss is diagnosed</h2>
+        <p>The diagnosis of early pregnancy loss usually combines transvaginal ultrasound findings and serum beta-hCG trends. Specific ultrasound criteria for non-viable pregnancy<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=3 -->:</p>
+        <ul class="bullets">
+            <li><strong>Crown-rump length (CRL) ≥ 7 mm</strong> without cardiac activity.</li>
+            <li><strong>Mean sac diameter (MSD) ≥ 25 mm</strong> without an embryo.</li>
+            <li><strong>Absence of embryo with heartbeat ≥ 2 weeks</strong> after a scan that showed a gestational sac without a yolk sac.</li>
+            <li><strong>Absence of embryo with heartbeat ≥ 11 days</strong> after a scan that showed a gestational sac with a yolk sac.</li>
+        </ul>
+        <p>Beta-hCG patterns help when ultrasound is inconclusive &mdash; rising hCG &lt;35&ndash;50% over 48 hours is concerning for a non-viable pregnancy or ectopic. <strong>One single set of numbers is rarely enough</strong> &mdash; serial measurements and a follow-up ultrasound are the standard before declaring a pregnancy non-viable.</p>
+        <p><strong>What to ask for if you&rsquo;re unsure of the diagnosis:</strong></p>
+        <ul class="bullets">
+            <li>A copy of the ultrasound report.</li>
+            <li>A second opinion (formal repeat scan, sometimes a different operator).</li>
+            <li>Time &mdash; if the diagnosis is borderline, repeating the scan in 7&ndash;14 days often clarifies.</li>
+        </ul>
+    </section>
+    
+
+    <section class="section">
+        <h2>The three management options</h2>
+        <p>When the diagnosis is clear and there&rsquo;s no urgent issue (heavy bleeding, infection, hemodynamic concern), three options are available<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=4 --><!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=5 -->. None is medically &ldquo;right&rdquo; or &ldquo;wrong&rdquo;; the choice depends on your preferences, your timeline, and your medical history.</p>
+        <div class="ladder-cards">
+            <article class="ladder-card" data-modal="expectant-deep">
+                <div class="rung-num">1</div>
+                <h3>Expectant management</h3>
+                <p>Let the loss complete on its own, over days to weeks. Limited to the first trimester<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=6 -->. Most natural-feeling option for many.</p>
+            </article>
+            <article class="ladder-card" data-modal="medical-deep">
+                <div class="rung-num">2</div>
+                <h3>Medical management</h3>
+                <p>Mifepristone followed by misoprostol &mdash; achieves complete expulsion in ~84% of patients<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Schreiber et al., Mifepristone Pretreatment for the Medical Management of Early Pregn..., N Engl J Med 2018 &middot; PMID 29874535</span></sup>, much higher than misoprostol alone. At home.</p>
+            </article>
+            <article class="ladder-card" data-modal="surgical-deep">
+                <div class="rung-num">3</div>
+                <h3>Surgical management</h3>
+                <p>Office or OR D&amp;C / suction evacuation. Fastest resolution. Highest success rate. Local or moderate sedation depending on setting.</p>
+            </article>
+            <article class="ladder-card" data-modal="ectopic-deep">
+                <div class="rung-num">E</div>
+                <h3>Ectopic pregnancy</h3>
+                <p>A separate pathway &mdash; pregnancy implanted outside the uterus. Medical (methotrexate) or surgical<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 193: Tubal Ectopic Pregnancy, Obstet Gynecol 2018 &middot; PMID 29470343</span></sup>. Urgent attention required.</p>
+            </article>
+            <article class="ladder-card" data-modal="recurrent-deep">
+                <div class="rung-num">R</div>
+                <h3>Recurrent loss</h3>
+                <p>Two or more losses warrants a workup<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org, Definitions of infertility and recurrent pregnancy loss: a committe..., Fertil Steril 2020 &middot; PMID 32115183</span></sup><sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org et al., Recurrent pregnancy loss: a committee opinion, Fertil Steril 2026 &middot; PMID 42062119</span></sup> &mdash; antiphospholipid syndrome, uterine cavity, karyotype, endocrine.</p>
+            </article>
+            <article class="ladder-card" data-modal="emotional-deep">
+                <div class="rung-num">&hearts;</div>
+                <h3>Grief &amp; mental health</h3>
+                <p>Acute grief, depression, and PTSD are common after loss<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Herbert et al., The mental health impact of perinatal loss: A systematic review and..., J Affect Disord 2022 &middot; PMID 34678403</span></sup>. Counseling, peer support, time. Part of care.</p>
+            </article>
+        </div>
+    </section>
+    
+
+    <section class="section">
+        <h2>Most common patient questions</h2>
+        <div class="qa-grid">
+            <details class="qa"><summary>Did I do something wrong?</summary>
+                <div class="qa-answer"><p>Almost certainly not. About half of first-trimester losses are caused by random chromosomal abnormalities of the embryo<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=1 --> that occurred at conception and have nothing to do with what you did, ate, lifted, drank, or experienced emotionally. Working out, sex, mild illnesses, mild stress, common medications &mdash; none of these cause early pregnancy loss.</p></div>
+            </details>
+            <details class="qa"><summary>What does my age have to do with it?</summary>
+                <div class="qa-answer"><p>Maternal age strongly affects miscarriage risk because egg quality declines with age. Loss rates rise from <strong>9&ndash;17% at age 20&ndash;30 to 40% at age 40 and 80% at age 45</strong><!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=2 -->. This is biology, not anything you can change &mdash; but it does affect the conversation about future pregnancy and any evaluation you might want.</p></div>
+            </details>
+            <details class="qa"><summary>How will I know I&rsquo;ve passed the pregnancy?</summary>
+                <div class="qa-answer"><p>Bleeding becomes heavier than menstrual flow, cramping is significant, and you may pass tissue (often described as &ldquo;like beef liver&rdquo; or a clot-with-grayish-tissue). Pain usually peaks during passage and improves substantially within hours. Bleeding tapers to lighter flow over 1&ndash;2 weeks. A follow-up ultrasound at 1&ndash;2 weeks usually confirms completion.</p></div>
+            </details>
+            <details class="qa"><summary>When can I try again?</summary>
+                <div class="qa-answer"><p>Physically, most couples can try again with the next menstrual cycle &mdash; usually 4&ndash;6 weeks after the loss. There is no medical reason to wait longer for one early loss. Emotionally, the right time varies enormously by person and couple &mdash; some are ready right away, others need months. Both are normal.</p></div>
+            </details>
+            <details class="qa"><summary>Do I need RhoGAM (RhIg)?</summary>
+                <div class="qa-answer"><p>Per the 2024 ACOG clinical practice update<!-- §0.8 anchor: kb_doc_id=491ECCDD-016B-4F7B-8BAB-2C1F83150914; field=keyPoints; idx=7 --><!-- §0.8 anchor: kb_doc_id=491ECCDD-016B-4F7B-8BAB-2C1F83150914; field=keyPoints; idx=8 --><sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">?, ACOG Clinical Practice Update: Rh D Immune Globulin Administration ..., Obstet Gynecol 2024 &middot; PMID 39255498</span></sup>: routine RhIg is no longer needed for pregnancy loss or abortion <em>before</em> 12 0/7 weeks &mdash; flow cytometry data show 99.8% of patients remain below the sensitization threshold. For loss at or beyond 12 weeks, RhIg is still indicated in Rh-negative women. Some patients with Rh-negative blood and plans for future pregnancy still choose to receive RhIg even at &lt;12 weeks via shared decision-making.</p></div>
+            </details>
+            <details class="qa"><summary>How many losses before we do a workup?</summary>
+                <div class="qa-answer"><p>Two or more clinical pregnancy losses meets the modern definition of recurrent pregnancy loss<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org, Definitions of infertility and recurrent pregnancy loss: a committe..., Fertil Steril 2020 &middot; PMID 32115183</span></sup> and is reasonable grounds for a workup<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org et al., Recurrent pregnancy loss: a committee opinion, Fertil Steril 2026 &middot; PMID 42062119</span></sup>. The workup includes evaluation for antiphospholipid antibody syndrome, an assessment of the uterine cavity (sonohysterography or hysteroscopy), karyotype of pregnancy tissue when available, parental karyotypes in selected cases, and an endocrine workup (thyroid, prolactin, diabetes, sometimes prolactin and progesterone).</p></div>
+            </details>
+            <details class="qa"><summary>Will this affect future pregnancies?</summary>
+                <div class="qa-answer"><p>After a single first-trimester loss, the chance of a healthy next pregnancy is roughly the same as your chance was for the lost pregnancy &mdash; the lost pregnancy doesn&rsquo;t add risk to the next one. After recurrent losses (2+), the chance of a healthy next pregnancy is still good, but lower &mdash; about 60&ndash;70% even after 3&ndash;4 losses. Workup can sometimes identify treatable causes.</p></div>
+            </details>
+            <details class="qa"><summary>How do I cope emotionally?</summary>
+                <div class="qa-answer"><p>Grief after pregnancy loss is real and clinically significant<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Herbert et al., The mental health impact of perinatal loss: A systematic review and..., J Affect Disord 2022 &middot; PMID 34678403</span></sup> &mdash; reactions range from quiet sadness to clinical depression to features of acute stress disorder. None of these are signs of being &ldquo;weak&rdquo; or &ldquo;broken.&rdquo; Options that help: peer support (groups, online communities), counseling with a perinatal-loss-aware therapist, ritual or memorialization when meaningful to you, time. If you&rsquo;re struggling more than a few weeks &mdash; or if you have thoughts of self-harm &mdash; please reach out. The portal messaging is one channel; crisis lines and your primary care team are others.</p></div>
+            </details>
+        </div>
+    </section>
+    
+<section class="section references-section" id="references">
+<h2>References</h2>
+<p class="ref-intro">Every clinical claim above ties to one of these peer-reviewed sources. Click any abstract to expand the verbatim PubMed record retrieved via NCBI E-Utilities.</p>
+<ol class="ref-list">
+<li id="ref-1">
+<div class="ref-label"><strong>American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 200: Early Pregnancy Loss, <em>Obstet Gynecol</em> 2018</strong></div>
+<div class="ref-what">ACOG Practice Bulletin 200 — Early Pregnancy Loss: diagnostic criteria (sonographic + β-hCG), three management pathways (expectant, medical with mifepristone+misoprostol, surgical), and Rh-D considerations.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30157093/" target="_blank" rel="noopener">30157093</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Early pregnancy loss, or loss of an intrauterine pregnancy within the first trimester, is encountered commonly in clinical practice. Obstetricians and gynecologists should understand the use of various diagnostic tools to differentiate between viable and nonviable pregnancies and offer the full range of therapeutic options to patients, including expectant, medical, and surgical management. The purpose of this Practice Bulletin is to review diagnostic approaches and describe options for the management of early pregnancy loss.</div></details>
+</li>
+<li id="ref-2">
+<div class="ref-label"><strong>Schreiber et al., Mifepristone Pretreatment for the Medical Management of Early Pregnancy Loss, <em>N Engl J Med</em> 2018</strong></div>
+<div class="ref-what">Schreiber et al., NEJM 2018 — pretreatment with mifepristone significantly improves completion of medical management of early pregnancy loss with single-dose misoprostol (84% vs 67%) and reduces need for surgical evacuation.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/29874535/" target="_blank" rel="noopener">29874535</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Medical management of early pregnancy loss is an alternative to uterine aspiration, but standard medical treatment with misoprostol commonly results in treatment failure. We compared the efficacy and safety of pretreatment with mifepristone followed by treatment with misoprostol with the efficacy and safety of misoprostol use alone for the management of early pregnancy loss.<br><br>METHODS: We randomly assigned 300 women who had an anembryonic gestation or in whom embryonic or fetal death was confirmed to receive pretreatment with 200 mg of mifepristone, administered orally, followed by 800 μg of misoprostol, administered vaginally (mifepristone-pretreatment group), or 800 μg of misoprostol alone, administered vaginally (misoprostol-alone group). Participants returned 1 to 4 days after misoprostol use for evaluation, including ultrasound examination, by an investigator who was unaware of the treatment-group assignments. Women in whom the gestational sac was not expelled were offered expectant management, a second dose of misoprostol, or uterine aspiration. We followed all participants for 30 days after randomization. Our primary outcome was gestational sac expulsion with one dose of misoprostol by the first follow-up visit and no additional intervention within 30 days after treatment.<br><br>RESULTS: Complete expulsion after one dose of misoprostol occurred in 124 of 148 women (83.8%; 95% confidence interval [CI], 76.8 to 89.3) in the mifepristone-pretreatment group and in 100 of 149 women (67.1%; 95% CI, 59.0 to 74.6) in the misoprostol-alone group (relative risk, 1.25; 95% CI, 1.09 to 1.43). Uterine aspiration was performed less frequently in the mifepristone-pretreatment group than in the misoprostol-alone group (8.8% vs. 23.5%; relative risk, 0.37; 95% CI, 0.21 to 0.68). Bleeding that resulted in blood transfusion occurred in 2.0% of the women in the mifepristone-pretreatment group and in 0.7% of the women in the misoprostol-alone group (P=0.31); pelvic infection was diagnosed in 1.3% of the women in each group.<br><br>CONCLUSIONS: Pretreatment with mifepristone followed by treatment with misoprostol resulted in a higher likelihood of successful management of first-trimester pregnancy loss than treatment with misoprostol alone. (Funded by the National Institute of Child Health and Human Development; PreFaiR ClinicalTrials.gov number, NCT02012491 .).</div></details>
+</li>
+<li id="ref-3">
+<div class="ref-label"><strong>Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org, Definitions of infertility and recurrent pregnancy loss: a committee opinion, <em>Fertil Steril</em> 2020</strong></div>
+<div class="ref-what">ASRM Practice Committee, Fertil Steril 2020 — definitions of infertility and recurrent pregnancy loss: standardized terminology (≥2 clinically recognized losses, including biochemical and ectopic) to harmonize research and clinical practice.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32115183/" target="_blank" rel="noopener">32115183</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This document contains the definitions of infertility and recurrent pregnancy loss as defined by the Practice Committee of the American Society for Reproductive Medicine. It replaces the document, &quot;Definitions of Infertility and Recurrent Pregnancy Loss: a Committee Opinion,&quot; last published in 2013 (Fertil Steril 2013;99:63).</div></details>
+</li>
+<li id="ref-4">
+<div class="ref-label"><strong>Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org et al., Recurrent pregnancy loss: a committee opinion, <em>Fertil Steril</em> 2026</strong></div>
+<div class="ref-what">ASRM Practice Committee, Fertil Steril 2026 — recurrent pregnancy loss: current committee opinion on evaluation (genetic, anatomic, endocrine, thrombophilia, immunologic) and evidence-based therapy.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/42062119/" target="_blank" rel="noopener">42062119</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Current strategies for the assessment and treatment of recurrent pregnancy loss are discussed. This replaces the previous document, titled, ‟Evaluation and treatment of recurrent pregnancy loss: a committee opinion,&quot; last published in 2012.</div></details>
+</li>
+<li id="ref-5">
+<div class="ref-label"><strong>American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 193: Tubal Ectopic Pregnancy, <em>Obstet Gynecol</em> 2018</strong></div>
+<div class="ref-what">ACOG Practice Bulletin 193 — Tubal Ectopic Pregnancy: diagnostic algorithm with TVUS + serial β-hCG, methotrexate criteria (single-dose vs multi-dose), and indications for surgical management.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/29470343/" target="_blank" rel="noopener">29470343</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Ectopic pregnancy is defined as a pregnancy that occurs outside of the uterine cavity. The most common site of ectopic pregnancy is the fallopian tube. Most cases of tubal ectopic pregnancy that are detected early can be treated successfully either with minimally invasive surgery or with medical management using methotrexate. However, tubal ectopic pregnancy in an unstable patient is a medical emergency that requires prompt surgical intervention. The purpose of this document is to review information on the current understanding of tubal ectopic pregnancy and to provide guidelines for timely diagnosis and management that are consistent with the best available scientific evidence.</div></details>
+</li>
+<li id="ref-6">
+<div class="ref-label"><strong>?, ACOG Clinical Practice Update: Rh D Immune Globulin Administration After Abortion or Pregnancy Loss at Less Than 12 Weeks of Gestation, <em>Obstet Gynecol</em> 2024</strong></div>
+<div class="ref-what">ACOG Clinical Practice Update 2024 — Rh D Immune Globulin Administration After Early Pregnancy Loss: revised guidance on indications and dosing based on gestational age and procedure.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39255498/" target="_blank" rel="noopener">39255498</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This Clinical Practice Update provides revised guidance on Rh testing and Rh D immune globulin administration for individuals undergoing abortion or experiencing pregnancy loss at less than 12 0/7 weeks of gestation. This document updates Practice Bulletin No. 225, Medication Abortion Up to 70 Days of Gestation (Obstet Gynecol 2020;136:e31-47); Practice Bulletin No. 200, Early Pregnancy Loss (Obstet Gynecol 2018;132:e197-207); and Practice Bulletin No. 181, Prevention of Rh D Alloimmunization (Obstet Gynecol 2017;130:e57-70).</div></details>
+</li>
+<li id="ref-7">
+<div class="ref-label"><strong>Herbert et al., The mental health impact of perinatal loss: A systematic review and meta-analysis, <em>J Affect Disord</em> 2022</strong></div>
+<div class="ref-what">Herbert et al., J Affect Disord 2022 systematic review + meta-analysis — the mental health impact of perinatal loss: increased risk of depression, anxiety, PTSD, and complicated grief; framework for identifying patients needing structured support.</div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34678403/" target="_blank" rel="noopener">34678403</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Perinatal loss can pose a significant risk to maternal mental health. There is limited data on the strength of association between perinatal loss and subsequent common mental health disorders (CMHD) such as anxiety, depression and post-traumatic symptoms (PTS). A systematic review and meta-analysis identified studies with control groups, published between January 1995 and March 2020 reporting validated mental health outcomes following perinatal loss. We identified 29 studies from 17 countries, representing a perinatal loss sample (n = 31,072) and a control group of women not experiencing loss (n = 1,261,517). We compared the likelihood of increased CMHD in both groups. Random-effects modelling on suggested that compared to controls, perinatal loss was associated with increased risk of depressive (RR = 2.14, 95% CI = 1.73-2.66, p &lt; 0.001, k = 22) and anxiety disorders (RR = 1.75, 95% CI = 1.27-2.42, p &lt; 0.001, k = 9). Compared to controls, Perinatal loss was also associated with increased depression (SMD = 0.34, 95% CI = 0.20-0.48, p &lt; 0.001, k = 12) and anxiety scores (SMD = 0.35, 95% CI = 0.12-0.58, p &lt; 0.003, k = 10). There were no significant effects for post-traumatic stress (PTS) outcomes (k = 3). Our findings confirm that anxiety and depression levels following perinatal loss are significantly elevated compared to &quot;no loss&quot; controls (live-births, non pregnant from community, or difficult live births). Elevated depression and anxiety rates were also reported for those who experienced loss during later stages of pregnancy. Assessing mental health following loss is a maternal health priority.</div></details>
+</li>
+<li id="ref-8">
+<div class="ref-label"><strong>Brim et al., Risk factors for ectopic pregnancy occurrence: Systematic review and meta-analysis, <em>Int J Gynaecol Obstet</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39602079/" target="_blank" rel="noopener">39602079</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Given the high incidence of ectopic pregnancy (EP) in the general population and the high maternal morbidity and mortality rates associated with it, determining risk factors for the occurrence of EP is essential for directing attention and care to risk groups, aiming for early diagnosis, favorable outcomes, and the development of prevention strategies.<br><br>OBJECTIVES: The aim of this study was to identify risk factors for the occurrence of EP.<br><br>SEARCH STRATEGY: A systematic review with meta-analysis was performed on the electronic databases MEDLINE/PubMed, LILACS, The Cochrane Library, and Virtual Health Library (VHL), searching the following terms &quot;Ectopic Pregnancy&quot; or &quot;Ectopic Gestation&quot; and &quot;Risk Factors&quot; or &quot;Predisposing Factors&quot;.<br><br>SELECTION CRITERIA: The inclusion criteria were observational studies published in English and Portuguese. We excluded studies with undefined methodology and those published before the year 2000.<br><br>DATA COLLECTION AND ANALYSIS: The authors independently read the titles, abstracts, and full texts, using pre-defined inclusion and exclusion criteria, and discussed any differences. Data extraction and assessment of methodological quality were performed by each author in a standardized way. Sixteen risk factors were evaluated. The meta-analysis calculations were performed using the Reviewer Manager 5.3 software (RevMan 5.3).<br><br>MAIN RESULTS: The study found 715 studies, of which 11 were selected for review. The surveys were conducted between 2003 and 2019 and included 25 051 patients. The study revealed that several factors were strongly associated with the occurrence of EP. These included EP history (OR 9.03; 95% CI: 7.18-11.35; I2 = 67%), pelvic inflammatory disease (OR 4.00; 95% CI: 3.46-4.61; I2 = 0%), infertility (OR 3.70; 95% CI: 3.23-4.23; I2 = 48%), abdominal and pelvic surgeries (OR 5.60; 95% CI: 4.83-6.49; I2 = 81%), and previous tubal ligation (OR 5.59; 95% CI: 2.49-12.55; I2 = 0%). Furthermore, the study showed that advanced maternal age, smoking, number of partners exceeding one, history of spontaneous and induced abortion, previous use of emergency contraception, and intrauterine device, demonstrated a slightly increased risk. Advanced maternal age within the range of 30-34 years (OR 1.13; 95% CI: 1.03-1.24; I1 = 11%) and ≥ 40 years (OR 1.46; 95% CI: 1.19-1.78; I1 = 88%), marital status (OR 1.19; 95% CI: 1.03-1.37; I2 = 88%), and the use of oral contraceptives (OR 0.77; 95% CI: 0.66-0.90; I2 = 86%) were also found to be associated with a slightly increased or decreased risk of EP, respectively. The impact of condom use on the occurrence of EP seems to be very limited (OR 0.93; 95% CI: 0.83-1.05; I2 = 83%).<br><br>CONCLUSION: Based on the study findings, it is suggested that the presence of strong risk factors warrants the implementation of a screening policy for EP among these women.</div></details>
+</li>
+<li id="ref-9">
+<div class="ref-label"><strong>Liao et al., Comparison of laparoscopic tubal-preserving surgical management versus methotrexate therapy for tubal pregnancy: A conventional and network meta-analysis, <em>PLoS One</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40938840/" target="_blank" rel="noopener">40938840</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Tubal pregnancy is one of the common emergencies in obstetrics and gynecology. There are various treatment options for tubal pregnancy. However, there is no consensus on how patients should choose among the treatment options that preserve the fallopian tube. This study aims to investigate the difference in prognosis between different treatment options when the tube is preserved in patients with tubal pregnancy.<br><br>METHODS: We conducted a search for studies on tubal pregnancy in the PubMed, EMBASE, Web of Science, and Cochrane Library databases. Ultimately, we obtained 8 studies that met the screening criteria. The Jadad scale and NOS were used to evaluate the quality of the studies, and the evidence quality was evaluated and graded according to GRADE guidelines. Stata 17.0 software was used for data analysis.<br><br>RESULT: A total of 8 studies involving 677 patients were included. Meta-analysis revealed a significant overall difference in the failure rate between methotrexate treatment and salpingostomy for tubal pregnancy(OR=1.582, 95%CI(1.062, 2.358), p = 0.024). Subgroup analysis demonstrated that a single dose of methotrexate was associated with a higher failure rate compared to salpingostomy(OR = 2.044,95%CI(1.20, 3.47), p = 0.008). In contrast, two or more doses of methotrexate did not show a significant difference in failure rate compared to salpingostomy(OR = 1.130, 95% CI(0.62, 2.07), p = 0.692). However, salpingostomy combined with methotrexate showed a lower failure rate compared to salpingostomy alone(OR = 0.11, 95% CI (0.03-0.48), p = 0.003). Network meta-analysis indicated that the salpingostomy combined with methotrexate had the lowest failure rate, while there was no significant difference in failure rates between salpingostomy and methotrexate alone.<br><br>CONCLUSION: For hemodynamically stable patients with a desire for future fertility, salpingostomy combined with methotrexate is an excellent option for treating tubal pregnancy. This approach has a lower failure rate compared to either methotrexate or salpingostomy alone and appears to have minimal impact on the patient&#x27;s quality of life.</div></details>
+</li>
+<li id="ref-10">
+<div class="ref-label"><strong>Mumusoglu et al., Preimplantation genetic testing for aneuploidy in unexplained recurrent pregnancy loss: a systematic review and meta-analysis, <em>Fertil Steril</em> 2025</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39151684/" target="_blank" rel="noopener">39151684</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">IMPORTANCE: Preimplantation genetic testing for aneuploidy (PGT-A) to deselect aneuploid embryos in assisted reproductive technology (ART) treatment cycles may hold promise by augmenting pregnancy rates per transfer and reducing pregnancy loss rates for patients with unexplained recurrent pregnancy loss (RPL).<br><br>OBJECTIVE: To explore effectiveness of PGT-A in managing unexplained RPL by evaluating several key aspects: the likelihood of live birth in a subsequent spontaneous pregnancy, whether women with unexplained RPL have a higher rate of aneuploidy, whether euploid blastocysts offer comparable live birth rate (LBR) in patients with unexplained RPL, whether the endometrium is less selective in unexplained RPL loss, and whether PGT-A increases the LBR or reduces pregnancy losses until delivery.<br><br>DATA SOURCES: PubMed and Cochrane Library databases were searched from inception until June 2024.<br><br>STUDY SELECTION AND SYNTHESIS: Studies involving patients with ≥2 unexplained RPL who underwent ART with or without PGT-A or expectant management were included.<br><br>MAIN OUTCOME MEASURES: The primary outcome measure was the LBR. Secondary outcome measures were aneuploidy rate, clinical pregnancy rate, and clinical pregnancy loss rate.<br><br>RESULTS: Whether couples with unexplained RPL have higher embryo aneuploidy rates remains equivocal. Euploid blastocyst transfers yielded comparable clinical pregnancy loss rate (odds ratio [OR], 1.10; 95% confidence interval [CI], 0.57-2.13) and LBR (OR, 1.04; 95% CI, 0.74-1.44) in patients with and without unexplained RPL. Comprehensive chromosome analysis of products of conception shows similar aneuploidy rates between patients with and without RPL and does not support the less selective endometrium hypothesis. Preimplantation genetic testing for aneuploidy decreased clinical pregnancy loss rate (OR, 0.42; 95% CI, 0.27-0.67) and enhanced LBR per transfer (OR, 2.17; 95% CI, 1.77-2.65) and LBR per patient (OR, 1.85; 95% CI, 1.18-2.91) in patients with unexplained RPL.<br><br>CONCLUSION AND RELEVANCE: Current low-quality evidence suggests that PGT-A enhances LBR per transfer and per patient in unexplained RPL. Well-designed randomized controlled trials comparing ART with PGT-A vs. expectant management for unexplained RPL are warranted.<br><br>REGISTRATION NUMBER: CRD42021291546.</div></details>
+</li>
+<li id="ref-11">
+<div class="ref-label"><strong>Alameddine et al., Treatments for cesarean scar pregnancy: a systematic review and meta-analysis, <em>J Matern Fetal Neonatal Med</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39385517/" target="_blank" rel="noopener">39385517</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To report the outcome of cesarean scar pregnancy (CSP) undergoing treatment.<br><br>METHODS: MEDLINE, Embase and CINAHL databases were searched. Inclusion criteria were women with CSP undergoing treatment. The primary outcome was successful treatment for CSP, defined as no need for additional medical or surgical strategies. Secondary outcomes were the type of additional treatment (surgical or medical), need for blood transfusion, emergency laparotomy, hysterectomy, post-treatment complications.All these outcomes were explored in women undergoing single and compound treatments for CSP. Furthermore, we performed a separate sub-group analysis only including studies which reported on the outcomes of elective treatments. Random effects meta-analyses were used to analyze the data and results reported as pooled proportions or odd ratio (OR).<br><br>RESULTS: 176 studies (13431 women with CSP undergoing treatment) were included.Successful treatment after primary intervention was achieved in 86.2% (95% CI 82.3-89.7) of women with CSP undergoing treatment with ultrasound guided suction curettage, 72.4% (95% CI 64.8-79.3) with systemic MTX, 81.6% (95% CI 72.3-89.3) with local MTX, 83.9% (95% CI 66.7-95.6) with interventional radiology, 90.42% (95% CI 82.9-96.0) with hysteroscopy, 96.1% (95% CI (92.3-98.6) with laparoscopy and 92.6 with high intensity focused ultrasound (95% CI 78.2-99.6). Post-treatments complications were reported in 3.5% (95% CI 1.7-6.0) of women treated with systemic MTX, 5.9% (95% CI 0.8-15.1) with local MTX or KCl, 1.2% (95% CI 0.1-3.5) with interventional radiology, 1.4% (95% CI 0.4-2.9) with hysteroscopy, 5.5% (95% CI 0.4-25.7) with high intensity focused ultrasound and in none of the cases treated with ultrasound guided suction curettage.When considering compound treatments, successful resolution of CSP was achieved in 91.9% (95% CI 88.0-95.10) of women treated with interventional radiology followed by curettage, 83.3% (95% CI 68.8-93.8) with systemic MTX and curettage, 79.4% (95% CI 56.3-95.2) with local MTX and curettage, 96.2% (95% CI 92.3-98.7) with curettage followed by single or double balloon insertion in the uterine cavity, 98.3% (95% CI 95.9-99.7) with high intensity focused ultrasound followed by curettage, 91.1% (95% CI 3.4-97.0) with interventional radiology followed by removal of CSP with hysteroscopy, 64.3% (95% CI 13.8-99.2) with interventional radiology and systemic MTX and in 95.5% (95% CI 92.9-97.5) with curettage and hysteroscopy.When considering studies reporting a comparison between different treatments, there was no difference between systemic vs local MTX in the primary outcome. Curettage was associated with a higher chance of achieving a successful treatment.<br><br>CONCLUSIONS: A multitude of treatments for CSP have been reported in the published literature. All treatments described for CSP are apparently equally effective in treating this condition. The findings from this systematic review highlight the need for adopting a common definition and outcome reporting of CSP to better elucidate its natural history, estimate the magnitude of maternal complication after treatment and design appropriately powered RCT to elucidate the optimal treatment of CSP according to its ultrasound phenotype and gestational age at treatment, in terms of effective resolution of the condition and risk of post-intervention complications.</div></details>
+</li>
+<li id="ref-12">
+<div class="ref-label"><strong>Zhao et al., Progestogens in women with threatened miscarriage or recurrent miscarriage: A meta-analysis, <em>Acta Obstet Gynecol Scand</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38481031/" target="_blank" rel="noopener">38481031</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Clinical practice guidelines provide inconsistent recommendations regarding progestogen supplementation for threatened and recurrent miscarriage. We conducted a systematic review and meta-analysis to assess the effectiveness and safety of progestogens for these patients.<br><br>MATERIAL AND METHODS: We searched Medline, Embase, and Cochrane Central Registry of Controlled Trials up to October 6, 2023 for randomized control trials (RCTs) comparing progestogen supplementation to placebo or no treatment for pregnant women with threatened or recurrent miscarriage. We assessed the risk of bias using a modified version of the Cochrane risk-of-bias tool and the certainty of evidence using the GRADE approach.<br><br>RESULTS: Of 15 RCTs (6616 pregnancies) reporting on threatened or recurrent miscarriage, 12 (5610 pregnancies) reported on threatened miscarriage with or without a prior history of miscarriage. Results indicated that progesterone probably increases live births (relative risk (RR) 1.04, 95% confidence interval (CI) 0.99-1.10, absolute increase 3.1%, moderate certainty). Of these RCTs, three (1973 pregnancies) reporting on threatened miscarriage with a prior history of miscarriage indicated that progesterone possibly increases live births (RR 1.06, 95% CI: 0.97-1.16, absolute increase 4.4%; low certainty), while four (2540 pregnancies) reporting on threatened miscarriage and no prior miscarriage left the effect very uncertain (RR 1.02, 95% CI: 0.96-1.10, absolute increase 1.7%; very low certainty). Three trials reporting on 1006 patients with a history of two or more prior miscarriages indicated progesterone probably increases live births (RR 1.08, 95% CI: 0.98-1.19, absolute increase 5.7%, moderate certainty). Six RCTs that reported on 2979 patients with at least one prior miscarriage indicated that progesterone probably increases live births (RR 1.07, 95% CI: 1.01-1.13, absolute increase 5.0%; moderate certainty). Progesterone probably has little or no effect on congenital anomalies (RR 1.06, 95% CI: 0.76-1.48, absolute increase 0.1%; moderate certainty), and other serious adverse pregnancy events (RR 1.07, 95% CI: 0.83-1.40, absolute increase 0.2%, moderate certainty).<br><br>CONCLUSIONS: In women at increased risk of pregnancy loss, progestogens probably increase live births without increasing adverse maternal and neonatal events. It remains possible that the benefit is restricted to those with prior miscarriages.</div></details>
+</li>
+<li id="ref-13">
+<div class="ref-label"><strong>van Baar et al., COVID-19 in pregnant women: a systematic review and meta-analysis on the risk and prevalence of pregnancy loss, <em>Hum Reprod Update</em> 2024</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38016805/" target="_blank" rel="noopener">38016805</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Pregnant women infected with severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) are more likely to experience preterm birth and their neonates are more likely to be stillborn or admitted to a neonatal unit. The World Health Organization declared in May 2023 an end to the coronavirus disease 2019 (COVID-19) pandemic as a global health emergency. However, pregnant women are still becoming infected with SARS-CoV-2 and there is limited information available regarding the effect of SARS-CoV-2 infection in early pregnancy on pregnancy outcomes.<br><br>OBJECTIVE AND RATIONALE: We conducted this systematic review to determine the prevalence of early pregnancy loss in women with SARS-Cov-2 infection and compare the risk to pregnant women without SARS-CoV-2 infection.<br><br>SEARCH METHODS: Our systematic review is based on a prospectively registered protocol. The search of PregCov19 consortium was supplemented with an extra electronic search specifically on pregnancy loss in pregnant women infected with SARS-CoV-2 up to 10 March 2023 in PubMed, Google Scholar, and LitCovid. We included retrospective and prospective studies of pregnant women with SARS-CoV-2 infection, provided that they contained information on pregnancy losses in the first and/or second trimester. Primary outcome was miscarriage defined as a pregnancy loss before 20 weeks of gestation, however, studies that reported loss up to 22 or 24 weeks were also included. Additionally, we report on studies that defined the pregnancy loss to occur at the first and/or second trimester of pregnancy without specifying gestational age, and for second trimester miscarriage only when the study presented stillbirths and/or foetal losses separately from miscarriages. Data were stratified into first and second trimester. Secondary outcomes were ectopic pregnancy (any extra-uterine pregnancy), and termination of pregnancy. At least three researchers independently extracted the data and assessed study quality. We calculated odds ratios (OR) and risk differences (RDs) with corresponding 95% CI and pooled the data using random effects meta-analysis. To estimate risk prevalence, we performed meta-analysis on proportions. Heterogeneity was assessed by I2.<br><br>OUTCOMES: We included 120 studies comprising a total of 168 444 pregnant women with SARS-CoV-2 infection; of which 18 233 women were in their first or second trimester of pregnancy. Evidence level was considered to be of low to moderate certainty, mostly owing to selection bias. We did not find evidence of an association between SARS-CoV-2 infection and miscarriage (OR 1.10, 95% CI 0.81-1.48; I2 = 0.0%; RD 0.0012, 95% CI -0.0103 to 0.0127; I2 = 0%; 9 studies, 4439 women). Miscarriage occurred in 9.9% (95% CI 6.2-14.0%; I2 = 68%; 46 studies, 1797 women) of the women with SARS CoV-2 infection in their first trimester and in 1.2% (95% CI 0.3-2.4%; I2 = 34%; 33 studies; 3159 women) in the second trimester. The proportion of ectopic pregnancies in women with SARS-CoV-2 infection was 1.4% (95% CI 0.02-4.2%; I2 = 66%; 14 studies, 950 women). Termination of pregnancy occurred in 0.6% of the women (95% CI 0.01-1.6%; I2 = 79%; 39 studies; 1166 women).<br><br>WIDER IMPLICATIONS: Our study found no indication that SARS-CoV-2 infection in the first or second trimester increases the risk of miscarriages. To provide better risk estimates, well-designed studies are needed that include pregnant women with and without SARS-CoV-2 infection at conception and early pregnancy and consider the association of clinical manifestation and severity of SARS-CoV-2 infection with pregnancy loss, as well as potential confounding factors such as previous pregnancy loss. For clinical practice, pregnant women should still be advised to take precautions to avoid risk of SARS-CoV-2 exposure and receive SARS-CoV-2 vaccination.</div></details>
+</li>
+<li id="ref-14">
+<div class="ref-label"><strong>Asmis et al., Thrombophilia Testing - a Systematic Review, <em>Clin Lab</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37057948/" target="_blank" rel="noopener">37057948</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Thrombophilia testing is controversial, not least because of its high cost. Because comprehensive valid testing requires standardized blood collection close by the specialized laboratory, and interpretation of findings together with clinical data, often only part of the necessary laboratory analyses can be performed in remote central laboratories. Restrictive indications for testing, as have been recommended by previous reviews on the topic, have been based on incomplete analytics, studies with small case numbers, or short observation periods, and on an inappropriate, simple risk stratification for venous thromboembolism (VTE), further subdivided into provoked and unprovoked events.<br><br>METHODS: The authors reviewed four electronic databases for all peer-reviewed and in-press articles about thrombophilia, VTE, obstetric complications, and arterial thrombosis. After confirmation for relevance to the topic, 201 articles were accepted for inclusion in this article. This review summarizes the studies relevant to the evaluation of thrombophilic conditions, and their combination with each other and with clinical risk factors, to stratify individual risk for thromboembolism and obstetric complications.<br><br>RESULTS: Thrombophilia testing requires highly skilled personnel for laboratory analysis and interpretation. Clinical conditions that influence the results as well as special preanalytical, analytical, and postanalytical aspects must be considered if valid results are to be obtained. Tests involved include the natural anticoagulants antithrombin, protein C, and protein S; the procoagulants fibrinogen (dysfibrinogen), prothrombin (mutation G20210A), factor V (Leiden mutation), factor VIII/von Willebrand factor/blood group ABO, factor IX, and factor XI; the anti-phospholipid antibodies to detect an antiphospholipid syndrome and potentially additional uncertain thrombophilic conditions. The risks of thrombophilic conditions and clinical risk factors for VTE are cumulative or even supra-additive. Scores from thrombophilic conditions and other genetic and nongenetic risk factors permit estimation of risk for first and recurrent VTE. Therapeutic strategies can be derived from this risk stratification.<br><br>CONCLUSIONS: Thrombophilia testing is indicated when the results have potential to influence the type and duration of treatment. Indications include certain patients after VTE; or patients without previous VTE but with positive family history regarding VTE or thrombophilia before major surgery, pregnancy, combined oral contraceptives, or hormone replacement therapy. Whether or not thrombophilia is present should help determine anticoagulation, hormonal contraception, or hormone replacement.</div></details>
+</li>
+<li id="ref-15">
+<div class="ref-label"><strong>Silva et al., Cesarean Scar Pregnancy: A systematic review on expectant management, <em>Eur J Obstet Gynecol Reprod Biol</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37421745/" target="_blank" rel="noopener">37421745</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">A Cesarean Scar Pregnancy (CSP) is a variant of uterine ectopic pregnancy defined by full or partial implantation of the gestational sac in the scar of a previous cesarean section. The continuous increase of Cesarean Deliveries is causing a parallel increase in CSP and its complications. Considering its high morbidity, the most usual recommendation has been termination of pregnancy in the first trimester; however, several cases progress to viable births. The aim of this systematic review is to evaluate the outcome of CSP managed expectantly and understand whether sonographic signs could correlate to the outcomes. An online-based search of PubMed and Cochrane Library Databases was used to gather studies including women diagnosed with a CSP who were managed expectantly. The description of all cases was analysed by the authors in order to obtain information for each outcome. 47 studies of different types were retrieved, and the gestational outcome was available in 194 patients. Out of these, 39 patients (20,1%) had a miscarriage and 16 (8,3%) suffered foetal death. 50 patients (25,8%) had a term delivery and 81 (41,8%) patients had a preterm birth, out of which 27 (13,9%) delivered before 34 weeks of gestation. In 102 (52,6%) patients, a hysterectomy was performed. Placenta Accreta Spectrum (PAS) was a common disorder among CSP and was linked to a higher rate of complications such as foetal death, preterm birth, hysterectomy, haemorrhagic morbidity and surgical complications. Some of the analysed articles showed that sonographic signs with specific characteristics, such as type II and III CSP classification, Crossover Sign - 1, &quot;In the niche&quot; implantation and lower myometrial thickness could be related to worse outcomes of CSP. This article provides a good understanding of CSP as an entity that, although rare, presents with a high rate of relevant morbidity. It is also understood that pregnancies with confirmed PAS had an even higher rate of morbidity. Some sonographic signs were shown to predict the prognosis of these pregnancies and further investigation is necessary to validate one or more signs so they can be used for a more reliable counselling of women with CSP.</div></details>
+</li>
+<li id="ref-16">
+<div class="ref-label"><strong>Solangon et al., Methotrexate vs expectant management for treatment of tubal ectopic pregnancy: An individual participant data meta-analysis, <em>Acta Obstet Gynecol Scand</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37345445/" target="_blank" rel="noopener">37345445</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">INTRODUCTION: Ectopic pregnancy is an important health condition which affects up to 1 in 100 women. Women who present with mild symptoms and low serum human chorionic gonadotrophin (hCG) are often treated with methotrexate (MTX), but expectant management with close monitoring is a feasible alternative. Studies comparing the two treatments have not shown a statistically significant difference in uneventful resolution of ectopic pregnancy, but these studies were too small to define whether certain subgroups could benefit more from either treatment.<br><br>MATERIAL AND METHODS: We performed a systematic review and individual participant data meta-analysis (IPD-MA) of randomized controlled trials comparing systemic MTX and expectant management in women with tubal ectopic pregnancy and low hCG (&lt;2000 IU/L). A one-stage IPD-MA was performed to assess overall treatment effects of MTX and expectant management to generate a pooled intervention effect. Subgroup analyses and exploratory multivariable analyses were undertaken according to baseline serum hCG and progesterone levels. Primary outcome was treatment success, defined as resolution of clinical symptoms and decline in level of serum hCG to &lt;20 IU/L, or a negative urine pregnancy test by the initial intervention strategy, without any additional treatment. Secondary outcomes were need for blood transfusion, surgical intervention, additional MTX side-effects and hCG resolution times.<br><br>TRIAL REGISTRATION NUMBER: PROSPERO: CRD42021214093.<br><br>RESULTS: 1547 studies reviewed and 821 remained after duplicates removed. Five studies screened for eligibility and three IPD requested. Two randomized controlled trials supplied IPD, leading to 153 participants for analysis. Treatment success rate was 65/82 (79.3%) after MTX and 48/70 (68.6%) after expectant management (IPD risk ratio [RR] 1.16, 95% confidence interval [CI] 0.95-1.40). Surgical intervention rates were not significantly different: 8/82 (9.8%) vs 13/70 (18.6%) (RR 0.65, 95% CI 0.23-1.14). Mean time to success was 19.7 days (95% CI 17.4-22.3) after MTX and 21.2 days (95% CI 17.8-25.2) after expectant management (P = 0.25). MTX specific side-effects were reported in 33 MTX compared to four in the expectant group.<br><br>CONCLUSIONS: Our IPD-MA showed no statistically significant difference in treatment efficacy between MTX and expectant management in women with tubal ectopic pregnancy with low hCG. Initial expectant management could be the preferred strategy due to fewer side-effects.</div></details>
+</li>
+<li id="ref-17">
+<div class="ref-label"><strong>Wartena et al., Polycystic ovary syndrome and recurrent pregnancy loss, a review of literature, <em>Front Endocrinol (Lausanne)</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/38027110/" target="_blank" rel="noopener">38027110</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: PCOS is a syndrome of ovarian dysfunction associated with recurrent pregnancy loss. Several correlating factors have been investigated that influence the risk of pregnancy loss in PCOS. However, uncertainty remains about their contribution to pregnancy loss and prognosis. This review of literature aims to identify what is known and what requires further investigation on the relationship between PCOS and recurrent pregnancy loss, to guide future research and optimize medical guidance throughout pregnancy.<br><br>STUDY DESIGN: a review of literature was performed on several search engines using the following terms; polycystic ovarian syndrome, PCOS, recurrent pregnancy loss, recurrent miscarriage, RPL, aborted fetus, abortus provocatus, miscarriage and habitual abortion.<br><br>RESULTS: 37 articles were included; 3 systematic reviews, 1 meta-analysis, 2 randomized controlled trials, 6 prospective cohort studies, 22 case-control studies and 3 case series. The main objectives investigated by studies were pregnancy complications, pregnancy loss and live birth in the PCOS population.<br><br>CONCLUSION: Studies that investigated the relationship between PCOS and recurrent pregnancy loss are few and inconsistent and warrant further research. Factors apt for further investigation include the extent to which PCOS phenotypes, BMI, obesity, insulin resistance, hyperandrogenemia, SHBG, hs-CRP, CTRP6, adiponectin, plasma leptin, homocysteine, AMH and thrombophilia contribute to further risk of miscarriage. Other factors requiring further exploration in relation to risk for miscarriage in PCOS patient with RPL include sOB-R, PAI-Fx and the Factor-V-Leiden mutations.</div></details>
+</li>
+<li id="ref-18">
+<div class="ref-label"><strong>Wen et al., Thrombophilic gene polymorphisms and recurrent pregnancy loss: a systematic review and meta-analysis, <em>J Assist Reprod Genet</em> 2023</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37248348/" target="_blank" rel="noopener">37248348</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Recurrent pregnancy loss (RPL) is affecting 1-4% of women who conceive approximately, and no cause could be found in more than 50% of women suffering from RPL. Inherited thrombophilias have got increasing attention in women with unexplained RPL, so we aim to explore the relationship among these most common thrombophilic polymorphisms and RPL through a literature review and meta-analysis.<br><br>METHODS: Observational studies from PubMed, Embase, Cochrane, and Web of Science from 1997 to 7 April 2022 were searched. For each genetic variant, a fixed or random-effect model was used according to the heterogeneity test to calculate pooled ORs and 95% CIs for both dominant and recessive genetic models. Egger&#x27;s line regression test was used to assess publication bias. The quality of the included articles was assessed by the Newcastle Ottawa scale.<br><br>RESULTS: A total of 124 articles comprising 17,278 RPL patients and 16,021 controls were included. Results showed that hyperhomocysteinemia (MTHFR) C677T (dominant model: OR, 1.43; 95% CI, 1.25-1.64; recessive model: OR, 1.60; 95% CI, 1.36-1.87), MTHFR A1298C (dominant model: OR, 1.66; 95% CI, 1.26-2.18; recessive model: OR, 1.79; 95% CI, 1.42-2.26), PAI-1 4G/5G (dominant model: OR, 1.67; 95% CI, 1.36-2.06; recessive model: OR, 1.80; 95% CI, 1.39-2.32), angiotensin-converting enzyme I/D (OR, 1.23; 95% CI, 1.00-1.53), Factor XIII V34L (OR, 1.38; 95% CI, 1.02-1.87), and β-fibrinogen-455G/A (OR, 1.60; 95% CI, 1.02-2.51) were significantly associated with RPL.<br><br>CONCLUSION: This study provides potentially useful clinical markers to evaluate the risk of RPL or to help unexplained RPL patients identify possible causes, which may allow for targeted treatment.</div></details>
+</li>
+<li id="ref-19">
+<div class="ref-label"><strong>De Vito et al., Trauma in pregnancy clinical practice guidelines: systematic review, <em>J Matern Fetal Neonatal Med</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35703623/" target="_blank" rel="noopener">35703623</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: To objectively evaluate the methodological quality and clinical heterogeneity robustness of the published clinical practice guidelines (CPGs) on the management of trauma in pregnancy.<br><br>MATERIALS AND METHODS: Pubmed, Google Scholar, UpToDate, and Scopus Database were searched. The risk of bias and quality assessment of the included CPGs were performed using &quot;The Appraisal Of Guidelines for Research and Evaluation (AGREE II)&quot; tool. The following points relating to the management of trauma during pregnancy were addressed: quality of evidence assessment, classification of recommendations, main causes of trauma in pregnancy, importance of correct use of seat belts, ultrasound scans and/or pregnancy test in every female of reproductive age, description of physiological changes in pregnancy, classification in primary and secondary survey, primary survey based on ABCD Approach, fetus viable based on the weeks, radiographic studies for maternal evaluation, duration of fetal monitoring, use of anti-D immunoglobulin in rhesus-D-negative pregnant trauma patients, description of dose of RhD-Ig, the way to define gestational age if it was undetermined, descriptions of obstetrical complications, use of tetanus vaccination, and timing to perimortem cesarean section (CS).<br><br>RESULTS: Six CPGs were included. Quality of evidence assessment was described in 16.7% of CPGs (1/6), while it was not reported in 83.3% (5/6). Classification of recommendations was reported in 50% (3/3) of the CPGs. Motor vehicle crash was reported as the main cause of trauma in pregnancy in all the CPGs included in the present review, despite that the importance of a correct use of seat belts was described only in the 50% (3/6). Definition of fetal viability was also different among the included CPGs; in 50% (3/6) defined a fetus viable when it from 23 weeks, 33.3% (2/6) from 24 weeks, and 16.7% (1/6) from 20 weeks of gestation. Regarding the type of fetal monitoring, 33.3% (2/6) CPGs recommended CTG assessment at least every 4 h, 16.7% (1/6) at least every 6 h, 33.3% for 24 h if there are not reassuring signs and 16.7% (1/6) did not specify the duration of monitoring. Recommendations about the use of anti-D-immunoglobulin in rhesus-D-negative pregnant were also heterogeneous: 50% (3/6) of the CPGs suggested administration in all rhesus-D-negative pregnant women, 16.7% (1/6) only according to gestational age at trauma or in case of significant abdominal trauma, and 16.7% (1/6) only in case of positive Kleihauer test while 16.7% (1/6) did not specify it. Administration of tetanus vaccination was suggested in in 33.3% (2/6) of CPGs. Finally, there were different descriptions of timing to perimortem CS: 33.3% (2/6) of CPGs claims to do CS no later than 4 min, 50% (3/6) no later than 5 min, and 16.7% (1/6) does not describe timing for CS. The AGREE II standardized domain scores for the first overall assessment (OA1) had a mean of 69%. Only three CPGs scored more than 60% and revealed a consensus agreement between the reviewers on recommending the use of these CPGs.<br><br>CONCLUSION: There is clinical heterogeneity in some of the most relevant aspects of the management of pregnant women with trauma. The findings from this systematic review highlight the need for up to date and shared guidelines promoted by the main body societies in order make management of pregnant women with trauma homogenous.</div></details>
+</li>
+<li id="ref-20">
+<div class="ref-label"><strong>Tamblyn et al., Vitamin D and miscarriage: a systematic review and meta-analysis, <em>Fertil Steril</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35637024/" target="_blank" rel="noopener">35637024</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To investigate whether a significant association between vitamin D status and the risk of miscarriage or recurrent miscarriage (RM) exists.<br><br>DESIGN: Systematic review and meta-analysis.<br><br>SETTING: Not applicable.<br><br>PATIENT(S): Women with miscarriage and RM.<br><br>INTERVENTION(S): We searched the Ovid MEDLINE, Embase, the Cumulative Index to Nursing and Allied Health Literature, and Cochrane Central Register of Controlled Trials from database inception to May 2021. Randomized and observational studies investigating the association between maternal vitamin D status and miscarriage and/or vitamin D treatment and miscarriage were included.<br><br>MAIN OUTCOME MEASURE(S): The primary outcome was miscarriage or RM, with vitamin D status used as the predictor of risk. Whether vitamin D treatment reduces the risk of miscarriage and RM was also assessed.<br><br>RESULT(S): Of 902 studies identified, 10 (n = 7,663 women) were included: 4 randomized controlled trials (n = 666 women) and 6 observational studies (n = 6,997 women). Women diagnosed with vitamin D deficiency (&lt;50 nmol/L) had an increased risk of miscarriage compared with women who were vitamin D replete (&gt;75 nmol/L) (odds ratio, 1.94; 95% confidence interval, 1.25-3.02; 4 studies; n = 3,674; I2 = 18%). Combined analysis, including women who were vitamin D insufficient (50-75 nmol/L) and deficient (&lt;50 nmol/L) compared with women who were replete (&gt;75 nmol/L), found an association with miscarriage (odds ratio, 1.60; 95% confidence interval, 1.11-2.30; 6 studies; n = 6,338; I2 = 35%). Although 4 randomized controlled trials assessed the effect of vitamin D treatment on miscarriage, study heterogeneity, data quality, and reporting bias precluded direct comparison and meta-analysis. The overall study quality was &quot;low&quot; or &quot;very low&quot; using the Grading of Recommendations, Assessment, Development and Evaluations approach.<br><br>CONCLUSION(S): Vitamin D deficiency and insufficiency are associated with miscarriage. Whether preconception treatment of vitamin D deficiency protects against pregnancy loss in women at risk of miscarriage remains unknown.<br><br>REGISTRATION NUMBER: CRD42021259899.</div></details>
+</li>
+<li id="ref-21">
+<div class="ref-label"><strong>Zhao et al., Decidual macrophages in recurrent spontaneous abortion, <em>Front Immunol</em> 2022</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36569856/" target="_blank" rel="noopener">36569856</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Recurrent spontaneous abortion (RSA) is defined as two or more pregnancy loss, affecting the happiness index of fertility couples. The mechanisms involved in the occurrence of RSA are not clear to date. The primary problem for the maternal immune system is how to establish and maintain the immune tolerance to the semi-allogeneic fetuses. During the pregnancy, decidual macrophages mainly play an important role in the immunologic dialogue. The purpose of this study is to explore decidual macrophages, and to understand whether there is a connection between these cells and RSA by analyzing their phenotypes and functions. Pubmed, Web of Science and Embase were searched. The eligibility criterion for this review was evaluating the literature about the pregnancy and macrophages. Any disagreement between the authors was resolved upon discussion and if required by the judgment of the corresponding author. We summarized the latest views on the phenotype, function and dysfunction of decidual macrophages to illuminate its relationship with RSA.</div></details>
+</li>
+<li id="ref-22">
+<div class="ref-label"><strong>Devall et al., Progestogens for preventing miscarriage: a network meta-analysis, <em>Cochrane Database Syst Rev</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33872382/" target="_blank" rel="noopener">33872382</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Miscarriage, defined as the spontaneous loss of a pregnancy before 24 weeks&#x27; gestation, is common with approximately 25% of women experiencing a miscarriage in their lifetime, and 15% to 20% of pregnancies ending in a miscarriage. Progesterone has an important role in maintaining a pregnancy, and supplementation with different progestogens in early pregnancy has been attempted to rescue a pregnancy in women with early pregnancy bleeding (threatened miscarriage), and to prevent miscarriages in asymptomatic women who have a history of three or more previous miscarriages (recurrent miscarriage).<br><br>OBJECTIVES: To estimate the relative effectiveness and safety profiles for the different progestogen treatments for threatened and recurrent miscarriage, and provide rankings of the available treatments according to their effectiveness, safety, and side-effect profile.<br><br>SEARCH METHODS: We searched the following databases up to 15 December 2020: Cochrane Central Register of Controlled Trials, Ovid MEDLINE(R), ClinicalTrials.gov and the WHO International Clinical Trials Registry Platform (ICTRP), and reference lists of retrieved studies.<br><br>SELECTION CRITERIA: We included all randomised controlled trials assessing the effectiveness or safety of progestogen treatment for the prevention of miscarriage. Cluster-randomised trials were eligible for inclusion. Randomised trials published only as abstracts were eligible if sufficient information could be retrieved. We excluded quasi- and non-randomised trials.<br><br>DATA COLLECTION AND ANALYSIS: At least two review authors independently assessed the trials for inclusion and risk of bias, extracted data and checked them for accuracy. We performed pairwise meta-analyses and indirect comparisons, where possible, to determine the relative effects of all available treatments, but due to the limited number of included studies only direct or indirect comparisons were possible. We estimated the relative effects for the primary outcome of live birth and the secondary outcomes including miscarriage (&lt; 24 weeks of gestation), preterm birth (&lt; 37 weeks of gestation), stillbirth, ectopic pregnancy, congenital abnormalities, and adverse drug events. Relative effects for all outcomes are reported separately by the type of miscarriage (threatened and recurrent miscarriage). We used the GRADE approach to assess the certainty of evidence.<br><br>MAIN RESULTS: Our meta-analysis included seven randomised trials involving 5,682 women, and all provided data for meta-analysis. All trials were conducted in hospital settings. Across seven trials (14 treatment arms), the following treatments were used: three arms (21%) used vaginal micronized progesterone; three arms (21%) used dydrogesterone; one arm (7%) used oral micronized progesterone; one arm (7%) used 17-α-hydroxyprogesterone, and six arms (43%) used placebo. Women with threatened miscarriage Based on the relative effects from the pairwise meta-analysis, vaginal micronized progesterone (two trials, 4090 women, risk ratio (RR) 1.03, 95% confidence interval (CI) 1.00 to 1.07, high-certainty evidence), and dydrogesterone (one trial, 406 women, RR 0.98, 95% CI 0.89 to 1.07, moderate-certainty evidence) probably make little or no difference to the live birth rate when compared with placebo for women with threatened miscarriage. No data are available to assess the effectiveness of 17-α-hydroxyprogesterone or oral micronized progesterone for the outcome of live birth in women with threatened miscarriage. The pre-specified subgroup analysis by number of previous miscarriages is only possible for vaginal micronized progesterone in women with threatened miscarriage. In women with no previous miscarriages and early pregnancy bleeding, there is probably little or no improvement in the live birth rate (RR 0.99, 95% CI 0.95 to 1.04, high-certainty evidence) when treated with vaginal micronized progesterone compared to placebo. However, for women with one or more previous miscarriages and early pregnancy bleeding, vaginal micronized progesterone increases the live birth rate compared to placebo (RR 1.08, 95% CI 1.02 to 1.15, high-certainty evidence). Women with recurrent miscarriage Based on the results from one trial (826 women) vaginal micronized progesterone (RR 1.04, 95% CI 0.95 to 1.15, high-certainty evidence) probably makes little or no difference to the live birth rate when compared with placebo for women with recurrent miscarriage. The evidence for dydrogesterone compared with placebo for women with recurrent miscarriage is of very low-certainty evidence, therefore the effects remain unclear. No data are available to assess the effectiveness of 17-α-hydroxyprogesterone or oral micronized progesterone for the outcome of live birth in women with recurrent miscarriage. Additional outcomes All progestogen treatments have a wide range of effects on the other pre-specified outcomes (miscarriage (&lt; 24 weeks of gestation), preterm birth (&lt; 37 weeks of gestation), stillbirth, ectopic pregnancy) in comparison to placebo for both threatened and recurrent miscarriage. Moderate- and low-certainty evidence with a wide range of effects suggests that there is probably no difference in congenital abnormalities and adverse drug events with vaginal micronized progesterone for threatened (congenital abnormalities RR 1.00, 95% CI 0.68 to 1.46, moderate-certainty evidence; adverse drug events RR 1.07 95% CI 0.81 to 1.39, moderate-certainty evidence) or recurrent miscarriage (congenital abnormalities 0.75, 95% CI 0.31 to 1.85, low-certainty evidence; adverse drug events RR 1.46, 95% CI 0.93 to 2.29, moderate-certainty evidence) compared with placebo. There are limited data and very low-certainty evidence on congenital abnormalities and adverse drug events for the other progestogens.<br><br>AUTHORS&#x27; CONCLUSIONS: The overall available evidence suggests that progestogens probably make little or no difference to live birth rate for women with threatened or recurrent miscarriage. However, vaginal micronized progesterone may increase the live birth rate for women with a history of one or more previous miscarriages and early pregnancy bleeding, with likely no difference in adverse events. There is still uncertainty over the effectiveness and safety of alternative progestogen treatments for threatened and recurrent miscarriage.</div></details>
+</li>
+<li id="ref-23">
+<div class="ref-label"><strong>Ghosh et al., Methods for managing miscarriage: a network meta-analysis, <em>Cochrane Database Syst Rev</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34061352/" target="_blank" rel="noopener">34061352</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Miscarriage, defined as the spontaneous loss of a pregnancy before 24 weeks&#x27; gestation, is common with approximately 25% of women experiencing a miscarriage in their lifetime. An estimated 15% of pregnancies end in miscarriage. Miscarriage can lead to serious morbidity, including haemorrhage, infection, and even death, particularly in settings without adequate healthcare provision. Early miscarriages occur during the first 14 weeks of pregnancy, and can be managed expectantly, medically or surgically. However, there is uncertainty about the relative effectiveness and risks of each option.<br><br>OBJECTIVES: To estimate the relative effectiveness and safety profiles for the different management methods for early miscarriage, and to provide rankings of the available methods according to their effectiveness, safety, and side-effect profile using a network meta-analysis.<br><br>SEARCH METHODS: We searched the Cochrane Pregnancy and Childbirth&#x27;s Trials Register (9 February 2021), ClinicalTrials.gov and the WHO International Clinical Trials Registry Platform (ICTRP) (12 February 2021), and reference lists of retrieved studies.<br><br>SELECTION CRITERIA: We included all randomised controlled trials assessing the effectiveness or safety of methods for miscarriage management. Early miscarriage was defined as less than or equal to 14 weeks of gestation, and included missed and incomplete miscarriage. Management of late miscarriages after 14 weeks of gestation (often referred to as intrauterine fetal deaths) was not eligible for inclusion in the review. Cluster- and quasi-randomised trials were eligible for inclusion. Randomised trials published only as abstracts were eligible if sufficient information could be retrieved. We excluded non-randomised trials.<br><br>DATA COLLECTION AND ANALYSIS: At least three review authors independently assessed the trials for inclusion and risk of bias, extracted data and checked them for accuracy. We estimated the relative effects and rankings for the primary outcomes of complete miscarriage and composite outcome of death or serious complications. The certainty of evidence was assessed using GRADE. Relative effects for the primary outcomes are reported subgrouped by the type of miscarriage (incomplete and missed miscarriage). We also performed pairwise meta-analyses and network meta-analysis to determine the relative effects and rankings of all available methods.<br><br>MAIN RESULTS: Our network meta-analysis included 78 randomised trials involving 17,795 women from 37 countries. Most trials (71/78) were conducted in hospital settings and included women with missed or incomplete miscarriage. Across 158 trial arms, the following methods were used: 51 trial arms (33%) used misoprostol; 50 (32%) used suction aspiration; 26 (16%) used expectant management or placebo; 17 (11%) used dilatation and curettage; 11 (6%) used mifepristone plus misoprostol; and three (2%) used suction aspiration plus cervical preparation. Of these 78 studies, 71 (90%) contributed data in a usable form for meta-analysis. Complete miscarriage Based on the relative effects from the network meta-analysis of 59 trials (12,591 women), we found that five methods may be more effective than expectant management or placebo for achieving a complete miscarriage: · suction aspiration after cervical preparation (risk ratio (RR) 2.12, 95% confidence interval (CI) 1.41 to 3.20, low-certainty evidence), · dilatation and curettage (RR 1.49, 95% CI 1.26 to 1.75, low-certainty evidence), · suction aspiration (RR 1.44, 95% CI 1.29 to 1.62, low-certainty evidence), · mifepristone plus misoprostol (RR 1.42, 95% CI 1.22 to 1.66, moderate-certainty evidence), · misoprostol (RR 1.30, 95% CI 1.16 to 1.46, low-certainty evidence). The highest ranked surgical method was suction aspiration after cervical preparation. The highest ranked non-surgical treatment was mifepristone plus misoprostol. All surgical methods were ranked higher than medical methods, which in turn ranked above expectant management or placebo. Composite outcome of death and serious complications Based on the relative effects from the network meta-analysis of 35 trials (8161 women), we found that four methods with available data were compatible with a wide range of treatment effects compared with expectant management or placebo: · dilatation and curettage (RR 0.43, 95% CI 0.17 to 1.06, low-certainty evidence), · suction aspiration (RR 0.55, 95% CI 0.23 to 1.32, low-certainty evidence), · misoprostol (RR 0.50, 95% CI 0.22 to 1.15, low-certainty evidence), · mifepristone plus misoprostol (RR 0.76, 95% CI 0.31 to 1.84, low-certainty evidence). Importantly, no deaths were reported in these studies, thus this composite outcome was entirely composed of serious complications, including blood transfusions, uterine perforations, hysterectomies, and intensive care unit admissions. Expectant management and placebo ranked the lowest when compared with alternative treatment interventions. Subgroup analyses by type of miscarriage (missed or incomplete) agreed with the overall analysis in that surgical methods were the most effective treatment, followed by medical methods and then expectant management or placebo, but there are possible subgroup differences in the effectiveness of the available methods.  AUTHORS&#x27; CONCLUSIONS: Based on relative effects from the network meta-analysis, all surgical and medical methods for managing a miscarriage may be more effective than expectant management or placebo. Surgical methods were ranked highest for managing a miscarriage, followed by medical methods, which in turn ranked above expectant management or placebo. Expectant management or placebo had the highest chance of serious complications, including the need for unplanned or emergency surgery. A subgroup analysis showed that surgical and medical methods may be more beneficial in women with missed miscarriage compared to women with incomplete miscarriage. Since type of miscarriage (missed and incomplete) appears to be a source of inconsistency and heterogeneity within these data, we acknowledge that the main network meta-analysis may be unreliable. However, we plan to explore this further in future updates and consider the primary analysis as separate networks for missed and incomplete miscarriage.</div></details>
+</li>
+<li id="ref-24">
+<div class="ref-label"><strong>Ozcan et al., A Systematic Review and Meta-analysis of Surgical Treatment of Ectopic Pregnancy with Salpingectomy versus Salpingostomy, <em>J Minim Invasive Gynecol</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33198948/" target="_blank" rel="noopener">33198948</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the fertility outcomes of salpingectomy compared with those of salpingostomy among patients treated for tubal ectopic pregnancies, including a separate analysis of women with risk factors along with a review of the surgical technique.<br><br>DATA SOURCES: Systematic review and meta-analysis from 1990 to the present through PubMed, Embase, CINAHL, and Ovid MEDLINE. The search string included &quot;tubal pregnancy&quot; or &quot;ectopic&quot; as well as &quot;salpingectomy&quot; and various terms describing salpingotomy.<br><br>METHODS OF STUDY SELECTION: Articles studying women who underwent surgical management of an ectopic pregnancy and the contrasted outcomes of salpingectomy vs salpingostomy were reviewed. The primary outcomes included subsequent intrauterine pregnancy (IUP) and repeat ectopic pregnancy (REP).<br><br>TABULATION, INTEGRATION, AND RESULTS: Two randomized controlled trials (RCTs), which consisted mostly of patients classified as low risk, and patients from 16 cohort studies were included. In the RCTs, there was no significant difference in the odds of subsequent IUP in patients who underwent a salpingectomy compared with those who were treated with salpingotomy (odds ratio [OR] 0.97; 95% confidence interval [CI], 0.71-1.33). However, a significant and clinically meaningful difference was noted in the cohort studies, with the patients having a lower chance of IUP after salpingectomy (OR 0.45; 95% CI, 0.39-0.52). No significant difference was noted in the OR for a REP in the randomized trials (OR 0.77; 95% CI, 0.41-1.47), but the patients followed in the cohort studies had a cumulatively higher risk of REP after a salpingostomy (OR 0.73; 95% CI, 0.60-0.90). The subgroup analysis examining women within the studies with risk factors for tubal pathology found an even more impressive lowering in the odds of a subsequent IUP in patients classified as at-risk who were treated with salpingectomy (OR 0.30; 95% CI, 0.17-0.54), with a change in the direction of the odds for an REP rate favoring those who were treated with salpingostomy (OR 1.96; 95% CI, 0.88-4.35).<br><br>CONCLUSION: Salpingectomy has clear advantages over salpingostomy, and RCTs consisting mainly of patients classified as low risk show no difference in outcomes between salpingectomy and salpingostomy. However, in cohort studies inclusive of all patients, the likelihood of a subsequent spontaneous IUP is decreased in patients treated with salpingectomy, and salpingostomies may be especially underused in women with risk factors for tubal disease.</div></details>
+</li>
+<li id="ref-25">
+<div class="ref-label"><strong>Xiao et al., Non-surgical management of tubal ectopic pregnancy: A systematic review and meta-analysis, <em>Medicine (Baltimore)</em> 2021</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34918633/" target="_blank" rel="noopener">34918633</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Ectopic pregnancy (EP) is a common cause of acute abdominal pain in the field of gynecology. Because the majority of women with EP are hemodynamically stable, non-surgical therapy is a viable option. The goal of this study was to determine the most effective non-surgical therapy for hemodynamically stable EP.<br><br>METHODS: We performed a systematic review and meta-analysis. We searched PubMed, LILACS, SciELO, CINAHL, Embase, and the Cochrane library in May 2020, with no starting date restrictions.Studies were restricted to randomized controlled trials, which were included if the target population contained women with tubal EP and the intervention was non-surgical management. The primary outcome measure was treatment success defined by a decrease in serum hCG to a level ranging from five mIU/mL to 50 mIU/mL. Secondary outcome measures were side effects, time needed to treat, number of injections and operative rate.<br><br>RESULTS: We conducted a meta-analysis of 15 studies that included 1573 women who were diagnosed with EP and managed non-surgically. There was no significant difference in treatment success in the matched groups; however, single-dose MTX was associated with fewer side effects than multiple-dose (relative risk 0.48, 95% confidence interval 0.28-0.80, P = .006) and two-dose therapies (relative risk 0.74, 95% confidence interval 0.55-1.00, P = .05).<br><br>CONCLUSIONS: We highly recommend that single-dose MTX without mifepristone be used first-line in patients who require conservative therapy due to the inherent negative effects of mifepristone. An EP woman with a low -hCG level that is falling or plateauing should receive expectant treatment to reduce adverse effects.</div></details>
+</li>
+<li id="ref-26">
+<div class="ref-label"><strong>Long et al., Interventions for non-tubal ectopic pregnancy, <em>Cochrane Database Syst Rev</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32609376/" target="_blank" rel="noopener">32609376</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Non-tubal ectopic pregnancy is the implantation of an embryo at a site lying outside the uterine cavity or fallopian tubes. Sites include a caesarean scar, the cornua uteri, the ovary, the cervix, and the abdomen. There has been an increasing trend in the occurrence of these rare conditions, especially caesarean scar pregnancy (CSP).<br><br>OBJECTIVES: To evaluate the clinical effectiveness and safety of surgery, medical treatment, and expectant management of non-tubal ectopic pregnancy in terms of fertility outcomes and complications.<br><br>SEARCH METHODS: We searched the Cochrane Gynaecology and Fertility (CGF) Group Specialised Register of Controlled Trials, CENTRAL, MEDLINE, Embase, ClinicalTrials.gov, the World Health Organization (WHO) search portal and nine other databases to 12 December 2019. We handsearched reference lists of articles retrieved and contacted experts in the field to obtain additional data.<br><br>SELECTION CRITERIA: We included randomized controlled trials (RCTs) published in all languages that examined the effects and safety of surgery, medical treatment, and expectant management of non-tubal ectopic pregnancy.<br><br>DATA COLLECTION AND ANALYSIS: We used Cochrane standard methodological procedures. Primary outcomes were treatment success and complications.<br><br>MAIN RESULTS: We included five RCTs with 303 women, all reporting Caesarean scar pregnancy. Two compared uterine arterial embolization (UAE) or uterine arterial chemoembolization (UACE) plus methotrexate (MTX) versus systemic MTX and subsequent dilation and suction curettage; one compared UACE plus MTX versus ultrasonography-guided local MTX injection; and two compared suction curettage under hysteroscopy versus suction curettage under ultrasonography after UAE/UACE. The quality of evidence ranged from moderate to very low. The main limitations were imprecision (small sample sizes and very wide confidence intervals (CI) for most analyses), multiple comparisons with a small number of trials, and insufficient data available to assess heterogeneity. UAE/UACE versus systemic MTX prior to suction curettage Two studies reported this comparison. One compared UAE with systemic MTX and one compared UACE plus MTX versus systemic MTX, in both cases followed by a suction curettage. We are uncertain whether UAE/UACE improved success rates after initial treatment (UAE: risk ratio (RR) 1.00, 95% CI 0.90 to 1.12; 1 RCT, 72 women; low-quality evidence; UACE: RR 0.87, 95% CI 0.54 to 1.38; 1 RCT, 28 women; low-quality evidence). We are uncertain whether UAE/UACE reduced rates of complications (UAE: RR 0.47, 95% CI 0.13 to 1.75; 1 RCT, 72 women; low-quality evidence; UACE: RR 0.62, 95% CI 0.26 to 1.48; 1 RCT, 28 women; low-quality evidence). We are uncertain whether UAE/UACE reduced adverse effects (UAE: RR 1.58, 95% CI 0.41 to 6.11; 1 RCT, 72 women; low-quality evidence; UACE: RR 1.16, 95% CI 0.32 to 4.24; 1 RCT, 28 women; low-quality evidence), and it was not obvious that the types of events had similar values to participants (e.g. fever versus vomiting). Blood loss was lower in UAE/UACE groups than systemic MTX groups (UAE: mean difference (MD) -378.70 mL, 95% CI -401.43 to -355.97; 1 RCT, 72 women; moderate-quality evidence; UACE: MD -879.00 mL, 95% CI -1135.23 to -622.77; 1 RCT, 28 women; moderate-quality evidence). Data were not available on time to normalize β-human chorionic gonadotropin (β-hCG). UACE plus MTX versus ultrasonography-guided local MTX injection We are uncertain whether UACE improved success rates after initial treatment (RR 0.95, 95% CI 0.56 to 1.60; 1 RCT, 45 women; very low-quality evidence). Adverse effects: the study reported the same number of failed treatments in each arm (RR 0.88, 95% CI 0.40 to 1.92; 1 RCT, 45 women). We are uncertain whether UACE shortened the time to normalize β-hCG (MD 1.50 days, 95% CI -3.16 to 6.16; 1 RCT, 45 women; very low-quality evidence). Data were not available for complications. Suction curettage under hysteroscopy versus under ultrasonography after UAE/UACE. Two studies reported this comparison. One compared suction curettage under hysteroscopy versus under ultrasonography after UAE, and one compared these interventions after UACE. We are uncertain whether suction curettage under hysteroscopy improved success rates after initial treatment (UAE: RR 0.91, 95% CI 0.81 to 1.03; 1 RCT, 66 women; very low-quality evidence; UACE: RR 1.02, 95% CI 0.96 to 1.09; 1 RCT, 92 women; low-quality evidence). We are uncertain whether suction curettage under hysteroscopy reduced rates of complications (UAE: RR 4.00, 95% CI 0.47 to 33.91; 1 RCT, 66 women; very low-quality evidence; UACE: RR 0.18, 95% CI 0.01 to 3.72; 1 RCT, 92 women; low-quality evidence). We are uncertain whether suction curettage under hysteroscopy reduced adverse effects (UAE: RR 3.09, 95% CI 0.12 to 78.70; 1 RCT, 66 women; very low-quality evidence; UACE: not estimable; 1 RCT, 92 women; very low-quality evidence). We are uncertain whether suction curettage under hysteroscopy shortened the time to normalize β-hCG (UAE: MD 4.03 days, 95% CI -1.79 to 9.85; 1 RCT, 66 women; very low-quality evidence; UACE: MD 0.84 days, 95% CI -1.90 to 3.58; 1 RCT, 92 women; low-quality evidence). Non-tubal ectopic pregnancy other than CSP No studies reported on non-tubal ectopic pregnancies in locations other than on a caesarean scar.<br><br>AUTHORS&#x27; CONCLUSIONS: For Caesarean scar pregnancies (CSP) it is uncertain whether there is a difference in success rates, complications, or adverse events between UAE/UACE and administration of systemic MTX before suction curettage (low-quality evidence). Blood loss was lower if suction curettage is conducted after UAE/UACE than after administration of systemic MTX (moderate-quality evidence). It is uncertain whether there is a difference in treatment success rates, complications, adverse effects or time to normalize β-hCG between suction curettage under hysteroscopy and under ultrasonography (very low-quality evidence). There are no studies of non-tubal ectopic pregnancy other than CSP and RCTs for these types of pregnancy are unlikely.</div></details>
+</li>
+<li id="ref-27">
+<div class="ref-label"><strong>Tang et al., Pregnancy and fertility-related adverse outcomes associated with Chlamydia trachomatis infection: a global systematic review and meta-analysis, <em>Sex Transm Infect</em> 2020</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31836678/" target="_blank" rel="noopener">31836678</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Genital chlamydia infection in women is often asymptomatic, but may result in adverse outcomes before and during pregnancy. The purpose of this study was to examine the strength of the relationships between chlamydia infection and different reproductive health outcomes and to assess the certainty of the evidence.<br><br>METHODS: This review was registered and followed the Cochrane guidelines. We searched three databases to quantitatively examine adverse outcomes associated with chlamydia infection. We included pregnancy and fertility-related outcomes. We performed meta-analyses on different study designs for various adverse outcomes using unadjusted and adjusted analyses.<br><br>RESULTS: We identified 4730 unique citations and included 107 studies reporting 12 pregnancy and fertility-related outcomes. Sixty-eight studies were conducted in high-income countries, 37 studies were conducted in low-income or middle-income countries, and 2 studies were conducted in both high-income and low-income countries. Chlamydia infection was positively associated with almost all of the 12 included pregnancy and fertility-related adverse outcomes in unadjusted analyses, including stillbirth (OR=5.05, 95% CI 2.95 to 8.65 for case-control studies and risk ratio=1.28, 95% CI 1.09 to 1.51 for cohort studies) and spontaneous abortion (OR=1.30, 95% CI 1.14 to 1.49 for case-control studies and risk ratio=1.47, 95% CI 1.16 to 1.85 for cohort studies). However, there were biases in the design and conduct of individual studies, affecting the certainty of the overall body of evidence. The risk of adverse outcomes associated with chlamydia is higher in low-income and middle-income countries compared with high-income countries.<br><br>CONCLUSION: Chlamydia is associated with an increased risk of several pregnancy and fertility-related adverse outcomes in unadjusted analyses, especially in low-income and middle-income countries. Further research on how to prevent the sequelae of chlamydia in pregnant women is needed.<br><br>TRIAL REGISTRATION NUMBER: CRD42017056818.</div></details>
+</li>
+<li id="ref-28">
+<div class="ref-label"><strong>Bobdiwala et al., Diagnostic protocols for the management of pregnancy of unknown location: a systematic review and meta-analysis, <em>BJOG</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30129999/" target="_blank" rel="noopener">30129999</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: There is no international consensus on how to manage women with a pregnancy of unknown location (PUL).<br><br>OBJECTIVES: To present a systematic quantitative review summarising the evidence related to management protocols for PUL.<br><br>SEARCH STRATEGY: MEDLINE, COCHRANE and DARE databases were searched from 1 January 1984 to 31 January 2017. The primary outcome was accurate risk prediction of women initially diagnosed with a PUL having an ectopic pregnancy (high risk) as opposed to either a failed PUL or intrauterine pregnancy (low risk).<br><br>SELECTION CRITERIA: All studies written in the English language, which were not case reports or series that assessed women classified as having a PUL at initial ultrasound.<br><br>DATA COLLECTION AND ANALYSIS: Forty-three studies were included. QUADAS-2 criteria were used to assess the risk of bias. We used a novel, linear mixed-effects model and constructed summary receiver operating characteristic curves for the thresholds of interest.<br><br>MAIN RESULTS: There was a high risk of differential verification bias in most studies. Meta-analyses of accuracy were performed on (i) single human chorionic gonadotrophin (hCG) cut-off levels, (ii) hCG ratio (hCG at 48 hours/initial hCG), (iii) single progesterone cut-off levels and (iv) the &#x27;M4 model&#x27; (a logistic regression model based on the initial hCG and hCG ratio). For predicting an ectopic pregnancy, the areas under the curves (95% CI) for these four management protocols were as follows: (i) 0.42 (0.00-0.99), (ii) 0.69 (0.57-0.78), (iii) 0.69 (0.54-0.81) and (iv) 0.87 (0.83-0.91), respectively.<br><br>CONCLUSIONS: The M4 model was the best available method for predicting a final outcome of ectopic pregnancy. Developing and validating risk prediction models may optimise the management of PUL.<br><br>TWEETABLE ABSTRACT: Pregnancy of unknown location meta-analysis: M4 model has best test performance to predict ectopic pregnancy.</div></details>
+</li>
+<li id="ref-29">
+<div class="ref-label"><strong>Salomon et al., Risk of miscarriage following amniocentesis or chorionic villus sampling: systematic review of literature and updated meta-analysis, <em>Ultrasound Obstet Gynecol</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31124209/" target="_blank" rel="noopener">31124209</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To estimate the procedure-related risk of miscarriage after amniocentesis and chorionic villus sampling (CVS) based on a systematic review of the literature and an updated meta-analysis.<br><br>METHODS: A search of MEDLINE, EMBASE and The Cochrane Library was carried out to identify studies reporting complications following CVS or amniocentesis. Eligible for inclusion were large controlled studies reporting data for pregnancy loss prior to 24 weeks&#x27; gestation. Study authors were contacted when required to identify additional necessary data. Data for cases that had an invasive procedure and controls were inputted into contingency tables and the risk of miscarriage was estimated for each study. Summary statistics based on a random-effects model were calculated after taking into account the weighting for each study included in the systematic review. Procedure-related risk of miscarriage was estimated as a weighted risk difference from the summary statistics for cases and controls. Subgroup analyses were performed according to the similarity in risk levels for chromosomal abnormality between the invasive-testing and control groups. Heterogeneity was assessed using the I2 statistic. Egger&#x27;s bias was estimated to assess reporting bias in published studies.<br><br>RESULTS: The electronic search yielded 2943 potential citations, from which 12 controlled studies for amniocentesis and seven for CVS were selected for inclusion in the systematic review. A total of 580 miscarriages occurred following 63 723 amniocentesis procedures, resulting in a weighted risk of pregnancy loss of 0.91% (95% CI, 0.73-1.09%). In the control group, there were 1726 miscarriages in 330 469 pregnancies with a loss rate of 0.58% (95% CI, 0.47-0.70%). The weighted procedure-related risk of miscarriage following amniocentesis was 0.30% (95% CI, 0.11-0.49%; I2  = 70.1%). A total of 163 miscarriages occurred following 13 011 CVS procedures, resulting in a risk of pregnancy loss of 1.39% (95% CI, 0.76-2.02%). In the control group, there were 1946 miscarriages in 232 680 pregnancies with a loss rate of 1.23% (95% CI, 0.86-1.59%). The weighted procedure-related risk of miscarriage following CVS was 0.20% (95% CI, -0.13 to 0.52%; I2  = 52.7%). However, when studies including only women with similar risk profiles for chromosomal abnormality in the intervention and control groups were considered, the procedure-related risk for amniocentesis was 0.12% (95% CI, -0.05 to 0.30%; I2  = 44.1%) and for CVS it was -0.11% (95% CI, -0.29 to 0.08%; I2  = 0%).<br><br>CONCLUSIONS: The procedure-related risks of miscarriage following amniocentesis and CVS are lower than currently quoted to women. The risk appears to be negligible when these interventions were compared to control groups of the same risk profile. Copyright © 2019 ISUOG. Published by John Wiley &amp; Sons Ltd.</div></details>
+</li>
+<li id="ref-30">
+<div class="ref-label"><strong>White et al., Single dose v two-dose antenatal anti-D prophylaxis: a randomised controlled trial, <em>Med J Aust</em> 2019</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31304600/" target="_blank" rel="noopener">31304600</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To compare rates of detectability of circulating Rh(D)-immunoglobulin (anti-D) at delivery with single and two-dose antenatal anti-D prophylaxis (RAADP) regimens; to compare compliance with the two regimens.<br><br>DESIGN: Open label, randomised controlled trial between May 2013 and November 2015.<br><br>SETTING, PARTICIPANTS: 277 women who attended a tertiary obstetric referral hospital in Perth for antenatal care and were at least 18 years of age, less than 30 weeks pregnant and yet to receive RAADP, Rh(D)-negative (negative antibody screen), and who intended to deliver their baby at the hospital. Exclusion criteria were prior anti-D sensitisation, any contraindication of anti-D administration, and a history of isolated IgA deficiency.<br><br>INTERVENTIONS: One 1500 IU anti-D dose at 28 weeks of pregnancy (single dose regimen); two doses of 625 IU each at 28 and 34 weeks of pregnancy (two-dose regimen).<br><br>MAIN OUTCOME MEASURES: The primary outcome was the proportion of women with detectable anti-D levels at delivery; the secondary outcome was compliance with the allocated RAADP regimen.<br><br>RESULTS: Circulating anti-D was detectable at delivery in a greater proportion of women in the two-dose group (111 of 129, 86%) than in the single dose group (70 of 125, 56%; P &lt; 0.001). Compliance was not significantly different between the single dose (86 of 138, 61%) and two-dose groups (70 of 139, 50%; P = 0.06).<br><br>CONCLUSIONS: The two-dose RAADP schedule currently recommended in Australia provides better protection against Rh(D) sensitisation than a one-dose regimen.<br><br>TRIAL REGISTRATION: Australian and New Zealand Clinical Trials Registry (ACTRN12613000661774).</div></details>
+</li>
+<li id="ref-31">
+<div class="ref-label"><strong>Jayaram et al., Expectant management of caesarean scar ectopic pregnancy: a systematic review, <em>J Perinat Med</em> 2018</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/29116934/" target="_blank" rel="noopener">29116934</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">AIM: The purpose of this review is to systematically review all the reported cases and case series of caesarean scar pregnancy (CSP) managed expectantly without any intervention in order to understand the outcomes of pregnancy which will guide clinicians and patients in making treatment choices.<br><br>METHODS: An electronic search on PubMed, EMBASE and Cochrane databases and a manual search from references of the articles were performed. Studies were selected based on inclusion and exclusion criteria. Data were extracted for various outcomes of pregnancy and the quality of the reports was assessed using a modified Delphi technique.<br><br>RESULTS: A total of 56 cases of CSP from 11 reports were included in the review, including 44 cases with foetal cardiac activity. Live births were achieved in 73% of cases with a quarter of them born before 34 weeks. Hysterectomy rates were 70%. In 12/44 (27%) of cases pregnancies were lost due to complications before 24 weeks. Most (67%) of the CSPs with no foetal cardiac activities resolved on expectant management and the remaining required intervention for bleeding.<br><br>CONCLUSIONS: Caution should be exercised when choosing expectant management in cases of viable CSPs, and if chosen, the patient should be counselled adequately for possible outcomes including loss of pregnancy and hysterectomy. Expectant management is acceptable in CSPs with no foetal cardiac activity. There is a need for prospective research on this topic with adequate reporting on possible prognostic markers, as well as a need to improve on the techniques to prevent loss of fertility during delivery.</div></details>
+</li>
+<li id="ref-32">
+<div class="ref-label"><strong>Birch Petersen et al., Cesarean scar pregnancy: a systematic review of treatment studies, <em>Fertil Steril</em> 2016</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26794422/" target="_blank" rel="noopener">26794422</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To study treatment modalities for cesarean scar pregnancies (CSPs), focusing on efficacy and complications in relation to study quality.<br><br>DESIGN: Systematic review.<br><br>SETTING: Not applicable.<br><br>PATIENT(S): A total of 2,037 women with CSP.<br><br>INTERVENTION(S): Review of MEDLINE, EMBASE, and Cochrane Library to find studies including five or more women. Data were extracted on primary treatment modality/efficacy, complications, and future fertility. The level of evidence was categorized according to Oxford Centre for Evidence-based Medicine guidelines. Quality was assessed using The Cochrane Collaboration&#x27;s Risk of Bias Tools for Randomized Controlled Trials and the modified Delphi techniques for case series. Meta-analysis was impossible owing to multifarious treatments.<br><br>MAIN OUTCOME MEASURE(S): Successful first-line treatment. Complications were hysterectomy, laparotomy, bleeding &gt;1,000 mL, or blood transfusion.<br><br>RESULT(S): Fifty-two studies were included: four randomized, controlled trials and 48 case series. Fifteen of the 52 analyzed studies were scored as high quality. Treatment modalities were condensed to 14 different approaches. Combining study quality, level of evidence, efficacy, and safety, five approaches for treating CSP are recommended, depending on availability, severity of patient symptoms, and surgical skills: [1] resection through a transvaginal approach, [2] laparoscopy, [3] uterine artery embolization in combination with dilatation and curettage and hysteroscopy, [4] uterine artery embolization in combination with dilatation and curettage, and [5] hysteroscopy.<br><br>CONCLUSION(S): This review recommends treatment options for CSP in clinical practice, based on efficacy and safety. The literature supports an interventional rather than medical approach. Present recommendations are primarily based on case series. Multicenter, well-designed studies are needed to draw definite conclusions on how to treat CSP.</div></details>
+</li>
+<li id="ref-33">
+<div class="ref-label"><strong>Kanat-Pektas et al., Systematic review: What is the best first-line approach for cesarean section ectopic pregnancy?, <em>Taiwan J Obstet Gynecol</em> 2016</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/27125412/" target="_blank" rel="noopener">27125412</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This systematic review aims to analyze the case reports, case series, or clinical studies describing the women with cesarean scar ectopic pregnancy (CSEP), and thus, to determine the efficacy and safety of different primary treatment modalities in the management of CSEP. A thorough search of electronic databases showed that 274 articles on CSEP were published between January 1978 and April 2014. Systemic methotrexate, uterine artery embolization, dilatation and curettage (D&amp;C), hysterotomy, and hysteroscopy were the most frequently adopted first-line approaches. The success rates of systemic methotrexate, uterine artery embolization, hysteroscopy, D&amp;C, and hysterotomy were 8.7%, 18.3%, 39.1%, 61.6%, and 92.1%, respectively. The hysterectomy rates were 3.6%, 1.1%, 0.0%, 7.3%, and 1.7% in CSEP cases that were treated by systemic methotrexate, uterine artery embolization, hysteroscopy, D&amp;C, and hysterotomy, respectively. The ability to achieve a subsequent term pregnancy is related to successful systemic methotrexate treatment (p = 0.001) or hysterotomy (p = 0.009). Future term pregnancy was significantly more frequent in the hysterotomy group (p = 0.001). Hysteroscopy and laparoscopic hysterotomy are safe and efficient surgical procedures that can be adopted as primary treatment modalities for CSEP. Uterine artery embolization should be reserved for cases with significant bleeding and/or a high suspicion index for arteriovenous malformation. Systemic methotrexate and D&amp;C are not recommended as first-line approaches for CSEP, as these procedures are associated with high complication and hysterectomy rates.</div></details>
+</li>
+<li id="ref-34">
+<div class="ref-label"><strong>Mumford et al., Expanded findings from a randomized controlled trial of preconception low-dose aspirin and pregnancy loss, <em>Hum Reprod</em> 2016</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26759138/" target="_blank" rel="noopener">26759138</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY QUESTION: What is the association between daily preconception-initiated low-dose aspirin (LDA) treatment and very early pregnancy losses or euploid (chromosomally normal) losses among women with one to two prior losses?<br><br>SUMMARY ANSWER: Daily LDA initiated preconception was not associated with the rate or type of pregnancy loss among women with a history of one to two prior pregnancy losses.<br><br>WHAT IS KNOWN ALREADY: LDA is often used to treat recurrent pregnancy loss with reductions in pregnancy loss generally only observed among women with antiphospholipid antibodies, and null associations observed among women without antiphospholipid antibodies. We previously evaluated the association between LDA and pregnancy loss overall among women with one to two prior losses in the Effects of Aspirin in Gestation and Reproduction (EAGeR) trial and found no association, though did not distinguish between potential effects at different stages of pregnancy loss, including implantation failure, or between euploid and aneuploid losses.<br><br>STUDY DESIGN, SIZE, DURATION: The EAGeR trial was a multi-site prospective block-randomized double-blind placebo-controlled trial. In total, 1228 women were randomized to daily LDA (81 mg/day) plus folic acid (400 mcg/day), or placebo plus folic acid. Participants were assigned study drug for less than or equal to six menstrual cycles or if they conceived, throughout pregnancy with study drug discontinued at 36 weeks gestation. This analysis includes additional outcome information obtained from chart abstractions after the completion of the trial, as well as testing of stored urine for measurement of hCG and detection of very early pregnancy losses, and karyotyping of the products of conception for assessment of aneuploidy of the losses.<br><br>PARTICIPANTS, SETTING, METHODS: Women aged 18-40 with a history of one to two prior losses and actively trying to conceive were randomized (n = 615 LDA and n = 613 placebo) at four clinical centers in the USA (2007-2011). Log-binomial regression was used to estimate risk ratios under the intent-to-treat approach.<br><br>MAIN RESULTS AND THE ROLE OF CHANCE: Daily LDA initiated preconception was not associated with clinically recognized pregnancy losses or implantation failures among women with proved fecundity and a history of one to two prior losses. Specifically, 1088 (88.6%) women completed the trial with 797 having an hCG detected pregnancy (64.9%). Overall there were 133 clinical losses (12.7% LDA versus 11.8% placebo, P = 0.71) and 55 implantation failures (5.2% LDA versus 4.9% placebo, P = 0.89). No differences were found in rate of euploid losses (RR 1.11, 95% confidence interval: 0.99, 1.26).<br><br>LIMITATIONS, REASONS FOR CAUTION: Generalizability of these findings is limited to women with a history of one to two prior losses, and may further be limited to women of white race with higher socioeconomic status as given the rigors of the study protocol participants tended to be white and have higher incomes and more education. We were also missing karyotype information on approximately one-third of the clinically recognized pregnancy losses, which may limit our power to detect effects on euploid losses, though detailed sensitivity analysis showed similar results.<br><br>WIDER IMPLICATIONS OF THE FINDINGS: Our data do not support the general use of LDA to decrease pregnancy loss and further demonstrate no increased risk of loss for women on LDA treatment.<br><br>STUDY FUNDING/COMPETING INTERESTS: This research was supported by the Intramural Research Program of the Eunice Kennedy Shriver National Institute of Child Health and Human Development, National Institutes of Health, Bethesda, Maryland (Contract Nos. HHSN267200603423, HHSN267200603424, HHSN267200603426). The authors have no conflicts of interest.<br><br>TRIAL REGISTRATION NUMBER: The trial was registered at ClinicalTrials.gov #NCT00467363.<br><br>TRIAL REGISTRATION DATE: 27 April 2007.<br><br>DATE OF FIRST PATIENT&#x27;S ENROLLMENT: 15 June 2007.</div></details>
+</li>
+<li id="ref-35">
+<div class="ref-label"><strong>McBain et al., Anti-D administration in pregnancy for preventing Rhesus alloimmunisation, <em>Cochrane Database Syst Rev</em> 2015</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26334436/" target="_blank" rel="noopener">26334436</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: During pregnancy, a Rhesus negative (Rh-negative) woman may develop antibodies when her fetus is Rhesus positive (Rh-positive). These antibodies may harm Rh-positive babies.<br><br>OBJECTIVES: To assess the effects of antenatal anti-D immunoglobulin on the incidence of Rhesus D alloimmunisation when given to Rh-negative women without anti-D antibodies.<br><br>SEARCH METHODS: We searched the Cochrane Pregnancy and Childbirth Group&#x27;s Trials Register (31 May 2015) and reference lists of retrieved studies.<br><br>SELECTION CRITERIA: Randomised trials in Rh-negative women without anti-D antibodies given anti-D after 28 weeks of pregnancy, compared with no treatment, placebo or a different regimen of anti-D.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently assessed trials for inclusion and risk of bias, extracted data and checked them for accuracy.<br><br>MAIN RESULTS: We included two trials involving over 4500 women, comparing anti-D prophylaxis with no anti-D during pregnancy in this review. Overall, the trials were judged to be at moderate to high risk of bias. The quality of the evidence for pre-specified outcomes was also assessed using the GRADE (Grades of Recommendation, Assessment, Development and Evaluation) approach.In regards to primary review outcomes, there did not appear to be a clear difference in the risks of immunisation when women who received anti-D at 28 and 34 weeks&#x27; gestation were compared with women who were not given antenatal anti-D: risk ratio (RR) for incidence of Rhesus D alloimmunisation during pregnancy was 0.42 (95% confidence interval (CI) 0.15 to 1.17, two trials, 3902 women; GRADE: low quality evidence); at birth of a Rh-positive infant the RR was 0.42 (95% CI 0.15 to 1.17, two trials, 2297 women); and within 12 months after birth of a Rh-positive infant the average RR was 0.39 (95% CI 0.10 to 1.62, two trials, 2048 women; Tau²: 0.47; I²: 39%; GRADE: low quality evidence). Neither of the trials reported on incidence of Rhesus D alloimmunisation in subsequent pregnancies.Considering secondary outcomes, in one trial, women receiving anti-D during pregnancy were shown to be less likely to register a positive Kleihauer test (which detects fetal cells in maternal blood) in pregnancy (at 32 to 25 weeks) (RR 0.60, 95% CI 0.41 to 0.88; 1884 women; GRADE: low quality evidence) and at the birth of a Rh-positive infant (RR 0.60, 95% CI 0.46 to 0.79; 1189 women; GRADE: low quality evidence). No clear differences were seen for neonatal jaundice (RR 0.26, 95% CI 0.03 to 2.30; 1882 infants; GRADE: very low quality evidence). Neither of the trials reported on adverse effects associated with anti-D treatment.<br><br>AUTHORS&#x27; CONCLUSIONS: Existing studies do not provide conclusive evidence that the use of anti-D during pregnancy benefits either mother or baby in terms of incidence of Rhesus D alloimmunisation during the pregnancy or postpartum, or the incidence of neonatal morbidity (jaundice) (low to very low quality evidence). However women receiving anti-D may be less likely to register a positive Kleihauer test in pregnancy and at the birth of a Rh-positive infant (low quality evidence). Fewer women who receive anti-D during pregnancy may have Rhesus D antibodies in a subsequent pregnancy, with benefits for the baby, however this needs to be tested in studies of robust design.</div></details>
+</li>
+<li id="ref-36">
+<div class="ref-label"><strong>Karanth et al., Anti-D administration after spontaneous miscarriage for preventing Rhesus alloimmunisation, <em>Cochrane Database Syst Rev</em> 2013</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/23543581/" target="_blank" rel="noopener">23543581</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: During pregnancy, a Rhesus-negative (Rh-negative) woman may develop antibodies if her fetus is Rh-positive, which can cause fetal morbidity or mortality in following pregnancies, if untreated.<br><br>OBJECTIVES: To assess the effects of administering anti-D immunoglobulin (Ig) after spontaneous miscarriage in a Rh-negative woman, with no anti-D antibodies.<br><br>SEARCH METHODS: We searched the Cochrane Pregnancy and Childbirth Group&#x27;s Trials Register (31 December 2012).<br><br>SELECTION CRITERIA: Randomised controlled trials (RCT) in Rh-negative women without antibodies who were given anti-D Ig following spontaneous miscarriage compared with no treatment or placebo treatment following spontaneous miscarriage as control.<br><br>DATA COLLECTION AND ANALYSIS: Two review authors independently assessed trials for inclusion and trial quality. Two review authors extracted data and checked it for accuracy.<br><br>MAIN RESULTS: We included one RCT, involving 48 women who had a miscarriage between eight to 24 weeks of gestation. Of the 19 women in the treatment group, 14 had therapeutic dilatation &amp; curettage (D&amp;C) and five had spontaneous miscarriage; of the 29 women in the control group, 25 had therapeutic D&amp;C and four had spontaneous miscarriage. The treatment group received 300 µg anti-D Ig intramuscular injection and were compared with a control group who received 1 cc homogenous gamma globulin placebo.This review&#x27;s primary outcomes (development of a positive Kleihauer Betke test (a test that detects fetal cells in the maternal blood; and development of RhD alloimmunisation in a subsequent pregnancy) were not reported in the included study.Similarly, none of the review&#x27;s secondary outcomes were reported in the included study: the need for increased surveillance for suspected fetal blood sampling and fetal transfusions in subsequent pregnancies, neonatal morbidity such as neonatal anaemia, jaundice, bilirubin encephalopathy, erythroblastosis, prematurity, hypoglycaemia (low blood sugar) in subsequent pregnancies, maternal adverse events of anti-D administration including anaphylactic reaction and blood-borne infections.The included study did report subsequent Rh-positive pregnancies in three women in the treatment group and six women in the control group. However, due to the small sample size, the study failed to show any difference in maternal sensitisation or development of Rh alloimmunisation in the subsequent pregnancies.<br><br>AUTHORS&#x27; CONCLUSIONS: There are insufficient data available to evaluate the practice of anti-D administration in an unsensitised Rh-negative mother after spontaneous miscarriage. Thus, until high-quality evidence becomes available, the practice of anti-D Immunoglobulin prophylaxis after spontaneous miscarriage for preventing Rh alloimmunisation cannot be generalised and should be based on the standard practice guidelines of each country.</div></details>
+</li>
+<li id="ref-37">
+<div class="ref-label"><strong>Moise KJ Jr et al., Management and prevention of red cell alloimmunization in pregnancy: a systematic review, <em>Obstet Gynecol</em> 2012</strong></div>
+<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/23090532/" target="_blank" rel="noopener">23090532</a></div>
+<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the application of new technologies to the management of the red cell alloimmunized pregnancy.<br><br>DATA SOURCES: We searched three computerized databases for studies that described treatment or prevention of alloimmunization in pregnancy (MEDLINE, Embase, and the Cochrane Central Register of Controlled Trials [1990 to July 2012]). The text words and MeSH included Rhesus alloimmunization, Rhesus isoimmunization, Rhesus prophylaxis, Rhesus disease, red cell alloimmunization, red cell isoimmunization, and intrauterine transfusion.<br><br>METHODS OF STUDY SELECTION: Of the 2,264 studies initially identified, 246 were chosen after limiting the review to those articles published in English and crossreferencing to eliminate duplication.<br><br>TABULATION, INTEGRATION, AND RESULTS: Both authors independently reviewed the articles to eliminate publications involving less than six patients. Special emphasis was given to publications that have appeared since 2008.<br><br>CONCLUSION: Quantitative polymerase chain reaction can be used instead of serology to more accurately determine the paternal RHD zygosity. In the case of unknown or a heterozygous paternal RHD genotype, new DNA techniques now make it possible to diagnose the fetal blood type through cell-free fetal DNA in maternal plasma. Serial Doppler assessment of the peak systolic velocity in the middle cerebral artery is now the standard to detect fetal anemia and determine the need for the first intrauterine transfusion. Assessment of the peak systolic velocity in the middle cerebral artery can be used to time the second transfusion, but its use to decide when to perform subsequent procedures awaits further study. New data suggest normal neurologic outcome in 94% of cases after intrauterine transfusion, although severe hydrops fetalis may be associated with a higher risk of impairment. Recombinant Rh immune globulin is on the horizon. Cell-free fetal DNA for fetal RHD genotyping may be used in the future to decide which patients should receive antenatal Rh immune globulin.</div></details>
+</li>
+</ol>
+</section>
+</div>
+<div id="modal-root" class="modal-root" aria-hidden="true">
+<div class="modal-backdrop" data-close></div>
+<article class="modal-frame" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<button class="modal-close" data-close aria-label="Close">&times;</button>
+<h2 id="modal-title" class="modal-title"></h2>
+<div id="modal-body" class="modal-body"></div>
+</article></div>
+<template id="tpl-diagnosis-deep" data-title="How early loss is diagnosed">
+        <p>The diagnostic threshold for a non-viable early pregnancy is deliberately conservative &mdash; the criteria<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=3 --> are designed so that the diagnosis is essentially never wrong:</p>
+        <ul class="bullets">
+            <li><strong>CRL ≥ 7 mm without cardiac activity</strong> on transvaginal ultrasound.</li>
+            <li><strong>Mean sac diameter ≥ 25 mm without an embryo</strong> (anembryonic pregnancy / blighted ovum).</li>
+            <li><strong>No embryo with cardiac activity ≥ 2 weeks</strong> after an earlier scan showed gestational sac without yolk sac.</li>
+            <li><strong>No embryo with cardiac activity ≥ 11 days</strong> after an earlier scan showed gestational sac with yolk sac.</li>
+        </ul>
+        <p>When measurements are below threshold and the diagnosis is uncertain, the right next step is repeat imaging in 7&ndash;14 days &mdash; not declaring the pregnancy non-viable prematurely. Beta-hCG trends are an adjunct: rising less than 35&ndash;50% over 48 hours raises concern for non-viability or ectopic pregnancy and warrants closer evaluation.</p>
+        <p><strong>Special situations</strong>: ectopic pregnancy must be ruled out before any management of suspected loss, particularly when bleeding is present or beta-hCG patterns are abnormal. See the ectopic deep-dive.</p>
+        <p><strong>Symptomatic patients</strong> presenting with bleeding and crampy pain may complete the loss before the diagnostic threshold is fully met. Clinical exam (open cervical os with passage of tissue) and post-loss ultrasound (empty uterus, falling hCG) confirm completion.</p>
+    </template>
+<template id="tpl-expectant-deep" data-title="Expectant management">
+        <p>Expectant management means letting the pregnancy pass on its own. For many patients it&rsquo;s the most natural-feeling option, and for selected cases it&rsquo;s as effective as medical or surgical management.</p>
+        <p><strong>What to expect:</strong></p>
+        <ul class="bullets">
+            <li>Time to completion is variable &mdash; days to several weeks. Most patients pass tissue within 2&ndash;3 weeks of the diagnosis.</li>
+            <li>Bleeding heavier than menstrual flow for hours during passage; then tapering over 1&ndash;2 weeks.</li>
+            <li>Cramping during passage can be significant &mdash; NSAIDs (ibuprofen 600&ndash;800&nbsp;mg every 8 hours with food) help substantially.</li>
+            <li>Tissue passage often described as a large clot with grayish material.</li>
+            <li>Follow-up ultrasound at 1&ndash;2 weeks confirms completion or identifies retained tissue.</li>
+        </ul>
+        <p><strong>Limits and caveats:</strong></p>
+        <ul class="bullets">
+            <li>Expectant management is appropriate for <em>first-trimester</em> losses &mdash; second-trimester losses carry higher hemorrhage risk and are managed differently<!-- §0.8 anchor: kb_doc_id=84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8; field=keyPoints; idx=6 -->.</li>
+            <li>Success rate ~80% within 4 weeks; if incomplete after 4 weeks, conversion to medical or surgical management is reasonable.</li>
+            <li>Sometimes the body doesn&rsquo;t complete the loss without intervention &mdash; that&rsquo;s not a failure of the patient.</li>
+            <li>Bleeding that&rsquo;s heavy enough to soak through more than 2 pads per hour for 2+ hours warrants prompt evaluation.</li>
+        </ul>
+        <p><strong>When to call:</strong> very heavy bleeding (soaking 2+ pads/hr for 2+ hr), fever, foul-smelling discharge, severe abdominal pain, or signs of shock (dizziness, fast heart rate, pale skin). The portal messaging covers non-urgent questions and follow-up.</p>
+    </template>
+<template id="tpl-medical-deep" data-title="Medical management &amp;mdash; mifepristone + misoprostol">
+        <p>Medical management uses medications to induce passage of the pregnancy at home, within a defined window of hours. The modern evidence-based regimen<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Schreiber et al., Mifepristone Pretreatment for the Medical Management of Early Pregn..., N Engl J Med 2018 &middot; PMID 29874535</span></sup> is:</p>
+        <p><strong>Mifepristone 200&nbsp;mg orally on day 0</strong>, followed by</p>
+        <p><strong>Misoprostol 800&nbsp;mcg vaginally (or buccally) 24&ndash;48 hours later.</strong></p>
+        <p>This combination achieves complete expulsion in <strong>about 84%</strong> of patients<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Schreiber et al., Mifepristone Pretreatment for the Medical Management of Early Pregn..., N Engl J Med 2018 &middot; PMID 29874535</span></sup> &mdash; substantially higher than the ~67% rate seen with misoprostol alone.</p>
+        <p><strong>What to expect after misoprostol dose:</strong></p>
+        <ul class="bullets">
+            <li>Cramping starts within 1&ndash;4 hours, sometimes longer.</li>
+            <li>Bleeding heavier than menstrual flow for several hours; peak pain and tissue passage usually within 4&ndash;8 hours of misoprostol.</li>
+            <li>Tapering bleeding over 1&ndash;2 weeks.</li>
+            <li>Take ibuprofen (or acetaminophen) and use heat for cramping.</li>
+            <li>Have a support person at home, and access to follow-up if needed.</li>
+        </ul>
+        <p><strong>If the first round doesn&rsquo;t result in complete passage</strong>: a second misoprostol dose (or conversion to surgical management) is reasonable. Many patients have full success after the first attempt.</p>
+        <p><strong>Side effects</strong>: nausea, diarrhea, low-grade fever or chills (especially with misoprostol), uterine cramping. Most resolve within 24 hours of medication.</p>
+        <p><strong>Follow-up</strong>: a urine or quantitative beta-hCG to document return to negative; sometimes a repeat ultrasound to confirm completion if symptoms persist.</p>
+    </template>
+<template id="tpl-surgical-deep" data-title="Surgical management">
+        <p>Surgical management is the fastest option for completing an early pregnancy loss, with the highest success rate (&gt;95% complete expulsion). Two settings:</p>
+        <p><strong>Manual vacuum aspiration (MVA) in the office:</strong></p>
+        <ul class="bullets">
+            <li>Performed with paracervical block, oral analgesia, and sometimes anxiolytics.</li>
+            <li>Procedure typically 10&ndash;15 minutes.</li>
+            <li>Discharge home within an hour.</li>
+            <li>Recovery similar to a heavy period for 1&ndash;2 weeks.</li>
+        </ul>
+        <p><strong>Suction D&amp;C in the operating room:</strong></p>
+        <ul class="bullets">
+            <li>Performed under moderate sedation or general anesthesia.</li>
+            <li>Same procedure technically, just done with more anesthesia for patient comfort.</li>
+            <li>Outpatient &mdash; home within hours.</li>
+            <li>Right setting for patients who want full anesthesia, have anxiety, or have anatomical considerations.</li>
+        </ul>
+        <p><strong>When surgical is the right choice or required:</strong></p>
+        <ul class="bullets">
+            <li>Heavy bleeding requiring urgent treatment.</li>
+            <li>Suspected or known infected miscarriage (septic abortion) &mdash; medical urgency, IV antibiotics + prompt evacuation.</li>
+            <li>Hemodynamic instability.</li>
+            <li>Patient preference for fast resolution.</li>
+            <li>Second-trimester losses where uterine size makes other options unsafe.</li>
+            <li>Need for tissue for genetic / pathologic analysis (recurrent loss workup).</li>
+        </ul>
+        <p><strong>Recovery</strong>: most patients return to non-strenuous activity within 1&ndash;2 days. Light bleeding for 1&ndash;2 weeks. Menstrual cycle typically returns in 4&ndash;6 weeks.</p>
+        <p><strong>Complications</strong> are uncommon &mdash; uterine perforation, retained products, infection, intrauterine adhesions (Asherman syndrome, very rare). Modern technique with ultrasound guidance minimizes risk.</p>
+    </template>
+<template id="tpl-ectopic-deep" data-title="Ectopic pregnancy">
+        <p>An ectopic pregnancy is a pregnancy that implants outside the uterine cavity &mdash; most commonly in the fallopian tube. It is a separate pathway from intrauterine pregnancy loss and requires <strong>urgent</strong> attention because of rupture risk<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">American College of Obstetricians and Gynecologists' Committee on Practice Bulletins—Gynecology, ACOG Practice Bulletin No. 193: Tubal Ectopic Pregnancy, Obstet Gynecol 2018 &middot; PMID 29470343</span></sup>.</p>
+        <p><strong>How it&rsquo;s diagnosed:</strong></p>
+        <ul class="bullets">
+            <li>Positive pregnancy test with no intrauterine pregnancy on TVUS.</li>
+            <li>Beta-hCG above the discriminatory zone (~2000&ndash;3500 IU/L) without visible IUP.</li>
+            <li>Visualization of an adnexal mass with yolk sac or embryo.</li>
+            <li>Free fluid in the cul-de-sac (suggests rupture).</li>
+            <li>Beta-hCG rising less than 35&ndash;50% over 48 hours, or plateauing.</li>
+        </ul>
+        <p><strong>Management:</strong></p>
+        <ul class="bullets">
+            <li><strong>Methotrexate</strong> &mdash; single- or multi-dose regimens, for hemodynamically stable patients with low beta-hCG, no cardiac activity on TVUS, mass &lt; 3.5 cm. Allows non-surgical resolution.</li>
+            <li><strong>Laparoscopic salpingectomy or salpingostomy</strong> &mdash; preferred when methotrexate is contraindicated, beta-hCG is high, mass is &gt;3.5&nbsp;cm, cardiac activity is present, or rupture is suspected.</li>
+            <li><strong>Emergency laparotomy</strong> &mdash; for hemodynamic instability from rupture.</li>
+        </ul>
+        <p><strong>Symptoms suggesting rupture &mdash; emergency:</strong></p>
+        <ul class="bullets">
+            <li>Sudden severe one-sided pelvic / abdominal pain.</li>
+            <li>Shoulder pain (from diaphragmatic irritation by blood).</li>
+            <li>Dizziness, lightheadedness, fainting.</li>
+            <li>Rapid heart rate, pale skin, low blood pressure.</li>
+        </ul>
+        <p>Any of those &mdash; call 911 or go to the ER immediately.</p>
+        <p><strong>Future pregnancy after ectopic</strong>: most women conceive normally afterward. Risk of repeat ectopic is somewhat elevated (~10&ndash;15%), so early monitoring of the next pregnancy is standard.</p>
+    </template>
+<template id="tpl-recurrent-deep" data-title="Recurrent pregnancy loss">
+        <p>Recurrent pregnancy loss (RPL) is defined as 2 or more clinical pregnancy losses<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org, Definitions of infertility and recurrent pregnancy loss: a committe..., Fertil Steril 2020 &middot; PMID 32115183</span></sup>. After 2 losses, workup is reasonable; after 3 losses, workup is strongly recommended.</p>
+        <p><strong>The workup<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">Practice Committee of the American Society for Reproductive Medicine. Electronic address: asrm@asrm.org et al., Recurrent pregnancy loss: a committee opinion, Fertil Steril 2026 &middot; PMID 42062119</span></sup>:</strong></p>
+        <ul class="bullets">
+            <li><strong>Antiphospholipid syndrome (APS) screening</strong> &mdash; lupus anticoagulant, anticardiolipin antibodies, anti-&beta;2-glycoprotein I antibodies (each on 2 occasions, 12 weeks apart). Treatable cause when present.</li>
+            <li><strong>Uterine cavity assessment</strong> &mdash; saline-infusion sonohysterography or diagnostic hysteroscopy. Septate uterus, intracavitary fibroids, polyps, synechiae are surgically correctable.</li>
+            <li><strong>Karyotype of pregnancy tissue</strong> when obtainable &mdash; identifies whether losses are due to random aneuploidy (which doesn&rsquo;t require further parental workup) or balanced structural rearrangement.</li>
+            <li><strong>Parental karyotypes</strong> when tissue karyotype is abnormal in a structural way, when there&rsquo;s a family history, or when other workup is negative.</li>
+            <li><strong>Thyroid function (TSH)</strong> &mdash; both hypo- and hyperthyroidism associated with loss; subclinical hypothyroidism may merit treatment.</li>
+            <li><strong>Diabetes</strong> &mdash; HbA1c if risk factors.</li>
+            <li><strong>Prolactin</strong> if cycles are irregular.</li>
+            <li><strong>Progesterone</strong> evaluation for luteal phase considerations (controversial; not universally indicated).</li>
+        </ul>
+        <p><strong>What&rsquo;s NOT routinely indicated</strong>: thrombophilia panels beyond APS (factor V Leiden, prothrombin gene, MTHFR &mdash; not routinely associated with recurrent loss), immune testing panels, peripheral blood karyotyping without indication.</p>
+        <p><strong>If a treatable cause is found</strong> &mdash; APS gets aspirin + heparin; uterine cavity lesions get surgical correction; thyroid disease gets treatment; parental balanced translocations get genetic counseling and IVF with PGT options. <strong>Even when no cause is identified</strong> (50&ndash;75% of RPL), live-birth rates with the next pregnancy remain about 60&ndash;70%.</p>
+    </template>
+<template id="tpl-emotional-deep" data-title="Grief, support, and what comes next">
+        <p>The emotional impact of pregnancy loss varies enormously. Some women find quiet sadness; others experience grief that meets criteria for clinical depression or acute stress disorder<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Herbert et al., The mental health impact of perinatal loss: A systematic review and..., J Affect Disord 2022 &middot; PMID 34678403</span></sup>. <strong>None of these reactions are signs of weakness</strong> &mdash; they are documented and clinically significant features of pregnancy loss.</p>
+        <p><strong>What can help:</strong></p>
+        <ul class="bullets">
+            <li><strong>Permission to grieve.</strong> Even very early losses are losses &mdash; of a pregnancy, of a future imagined child, of a sense of safety in your body. Naming it matters.</li>
+            <li><strong>Peer support.</strong> Loss-specific support groups (in-person and online) connect you with others who have experienced loss. Many people find this validating in ways that general support doesn&rsquo;t reach.</li>
+            <li><strong>Professional counseling.</strong> Perinatal mental-health specialists understand pregnancy loss specifically. CBT, EMDR, and other modalities help with grief and trauma symptoms.</li>
+            <li><strong>Ritual or memorialization</strong> if meaningful &mdash; some patients find planting something, writing a letter, naming the pregnancy, or attending a memorial service helps. Others find these not meaningful, and that&rsquo;s also fine.</li>
+            <li><strong>Self-compassion</strong> with partners, friends, family. Sharing the loss often surfaces unexpected support; not sharing is also okay.</li>
+            <li><strong>Time.</strong> Most acute grief eases over weeks to months, though anniversaries and pregnancy-related reminders may bring waves back.</li>
+        </ul>
+        <p><strong>When professional help is particularly important:</strong></p>
+        <ul class="bullets">
+            <li>Symptoms of depression beyond 2&ndash;3 weeks &mdash; persistent low mood, loss of interest, sleep / appetite changes, anhedonia.</li>
+            <li>PTSD symptoms &mdash; intrusive thoughts, flashbacks, avoidance, hyperarousal.</li>
+            <li>Anxiety severe enough to disrupt life.</li>
+            <li>Any thoughts of self-harm or suicide &mdash; please reach out immediately.</li>
+            <li>Difficulty in your relationship or parenting other children that&rsquo;s tied to the loss.</li>
+        </ul>
+        <p>Mount Zara&rsquo;s member portal messaging can help connect you with appropriate resources &mdash; perinatal counseling, support groups, your primary care team for medication evaluation. You&rsquo;re not alone, and asking for help is the right step.</p>
+    </template>
+
+<script>
+(function(){
+  const root = document.getElementById('modal-root');
+  const titleEl = document.getElementById('modal-title');
+  const bodyEl = document.getElementById('modal-body');
+  function openModal(mid){
+    const tpl = document.getElementById('tpl-' + mid);
+    if (!tpl) return;
+    titleEl.innerHTML = tpl.dataset.title;
+    bodyEl.innerHTML = tpl.innerHTML;
+    root.classList.add('open');
+    root.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    bodyEl.innerHTML = '';
+  }
+  document.addEventListener('click', function(e){
+    const opener = e.target.closest('[data-modal]');
+    if (opener){ e.preventDefault(); openModal(opener.dataset.modal); return; }
+    if (e.target.closest('[data-close]')){ e.preventDefault(); closeModal(); return; }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && root.classList.contains('open')) closeModal();
+  });
+  document.addEventListener('click', function(e){
+    const ref = e.target.closest('.mz-ref');
+    if (!ref){
+      document.querySelectorAll('.mz-ref.mz-open').forEach(r => r.classList.remove('mz-open'));
+      return;
+    }
+    if (e.target.tagName === 'A') return;
+    e.preventDefault();
+    document.querySelectorAll('.mz-ref.mz-open').forEach(r => { if (r !== ref) r.classList.remove('mz-open'); });
+    ref.classList.toggle('mz-open');
+  });
+})();
+</script>
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest
+{
+  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/pregnancy-loss/index.html",
+  "topic": "Pregnancy Loss",
+  "topic_synthesis_id": "71219e8a-ee3b-42ef-afd7-5e8cf3ee0747",
+  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
+  "kb_documents_loaded": [
+    "491ECCDD-016B-4F7B-8BAB-2C1F83150914",
+    "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+    "8eddc58a-51fd-464e-a272-a17702b82297"
+  ],
+  "kb_documents_quoted": [
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Early pregnancy loss occurs in 10% of clinically recognized pregnancies; 80% first trimester",
+      "excerpt_first_words": "Early pregnancy loss occurs in 10% of clinically recognized pregnancies; 80% in the first trimester",
+      "page_anchor_id": "incidence"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "~50% are due to fetal chromosomal abnormalities",
+      "excerpt_first_words": "Approximately 50% of cases are due to fetal chromosomal abnormalities",
+      "page_anchor_id": "chromo"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Loss rate increases with maternal age (9-17% at 20-30 to 80% at 45)",
+      "excerpt_first_words": "Loss rate increases from 9-17% at ages 20-30 to 40% at age 40 and 80% at age 45",
+      "page_anchor_id": "age-risk"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Diagnostic criteria: CRL >=7mm without heartbeat or MSD >=25mm without embryo",
+      "excerpt_first_words": "Diagnostic criteria for pregnancy failure",
+      "page_anchor_id": "diag"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Management options: expectant, medical (mife + miso), or surgical",
+      "excerpt_first_words": "Management options: expectant, medical (mifepristone with misoprostol), or surgical evacuation",
+      "page_anchor_id": "options"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Treatment choice should accommodate patient preferences when no urgent indication",
+      "excerpt_first_words": "Treatment choice should accommodate patient preferences when no urgent surgical indication exists",
+      "page_anchor_id": "choice"
+    },
+    {
+      "kb_doc_id": "84ECB6D2-3EF1-473D-B2BE-2C0BB3FBCDA8",
+      "title": "Early Pregnancy Loss",
+      "field": "keyPoints",
+      "claim": "Expectant management should be limited to the first trimester",
+      "excerpt_first_words": "Expectant management should be limited to the first trimester due to hemorrhage concerns",
+      "page_anchor_id": "expectant"
+    },
+    {
+      "kb_doc_id": "491ECCDD-016B-4F7B-8BAB-2C1F83150914",
+      "title": "ACOG Clinical Practice Update: Rh D Immune Globulin Administration After Abortion or Pregnancy Loss at Less Than 12 Weeks of Gestation",
+      "field": "keyPoints",
+      "claim": "Routine Rh testing and RhIg no longer necessary at <12 0/7 weeks",
+      "excerpt_first_words": "Routine Rh testing and RhIg prophylaxis are no longer necessary for pregnancy loss or abortion at",
+      "page_anchor_id": "rhig"
+    },
+    {
+      "kb_doc_id": "491ECCDD-016B-4F7B-8BAB-2C1F83150914",
+      "title": "ACOG Clinical Practice Update: Rh D Immune Globulin Administration After Abortion or Pregnancy Loss at Less Than 12 Weeks of Gestation",
+      "field": "keyPoints",
+      "claim": "Flow cytometry: 99.8% remain below sensitization threshold for early loss",
+      "excerpt_first_words": "Flow cytometry shows fetal RBC concentrations remain below the sensitization threshold in 99.8% of patients with early pregnancy loss",
+      "page_anchor_id": "rhig-data"
+    }
+  ],
+  "pmids_efetched_in_session": [
+    "30157093",
+    "29874535",
+    "32115183",
+    "42062119",
+    "29470343",
+    "39255498",
+    "34678403",
+    "39602079",
+    "40938840",
+    "39151684",
+    "39385517",
+    "38481031",
+    "38016805",
+    "37057948",
+    "37421745",
+    "37345445",
+    "38027110",
+    "37248348",
+    "35703623",
+    "35637024",
+    "36569856",
+    "33872382",
+    "34061352",
+    "33198948",
+    "34918633",
+    "32609376",
+    "31836678",
+    "30129999",
+    "31124209",
+    "31304600",
+    "29116934",
+    "26794422",
+    "27125412",
+    "26759138",
+    "26334436",
+    "23543581",
+    "23090532"
+  ],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "2026-05-17T17:17:31.382681+00:00"
+}
+-->
