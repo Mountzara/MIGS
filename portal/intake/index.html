@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Intake · Patient Portal · Mount Zara</title>
+    <title>Intake · Member Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -403,7 +403,7 @@
             h('div', { class: 'banner info' }, 'Your electronic signature below is treated like an in-person signature for the purpose of starting evaluation. You can withdraw consent at any time.'),
             h('div', { class: 'check-grid' },
                 checkbox('consent_accuracy', 'I confirm the information I provide here is accurate to the best of my knowledge.'),
-                checkbox('consent_treatment', 'I authorize evaluation and any treatment Dr. Mabini and I agree on after discussion.')),
+                checkbox('consent_treatment', 'I authorize evaluation and any treatment my clinician and I agree on after discussion.')),
             h('div', { class: 'grid-2' },
                 field('Electronic signature (type your full legal name)', textIn('electronic_signature', { full: 1 })),
                 field('Date', dateIn('consent_date', { full: 1 })))),
@@ -464,7 +464,7 @@
                 { v: 'definitive', l: 'Definitive' },
                 { v: 'unsure', l: 'Unsure' }])),
             field('Treatments I do NOT want (any)', textareaIn('treatments_to_avoid', { full: 1 })),
-            field('Specific questions for Dr. Mabini', textareaIn('questions_for_surgeon', { full: 1 }))),
+            field('Specific questions for your clinician', textareaIn('questions_for_surgeon', { full: 1 }))),
 
         5: () => h('div', { class: 'card' },
             h('h2', null, 'Section 4 of 18'),
@@ -930,7 +930,7 @@
             const body = await r.json().catch(() => ({}));
             if (r.ok) {
                 banner.innerHTML = '';
-                banner.appendChild(h('div', { class: 'banner ok' }, 'Intake submitted. Dr. Mabini and the office will review it before your visit.'));
+                banner.appendChild(h('div', { class: 'banner ok' }, 'Intake submitted. The clinician and the office will review it before your visit.'));
                 form.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
                 submitBtn.style.display = 'none';
                 nextBtn.style.display = 'none';

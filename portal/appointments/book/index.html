@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Book Your Visit · Patient Portal · Mount Zara</title>
+    <title>Book Your Visit · Member Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -361,12 +361,12 @@
 <body>
     <div class="wrap">
         <div class="top-row">
-            <a href="/portal/">&larr; Patient portal</a>
+            <a href="/portal/">&larr; Member portal</a>
             <span style="color: var(--fg-dim);">/portal/appointments/book</span>
         </div>
 
         <p class="eyebrow">Step 3 · Pick your visit</p>
-        <h1>Book your visit with Dr. Mabini</h1>
+        <h1>Book your visit</h1>
         <p class="lede" id="lede">Loading your visit categorization…</p>
 
         <div id="error-banner" class="error-banner"></div>
@@ -525,8 +525,8 @@
             $('lede').textContent = state.triage.status === 'released'
                 ? "We've categorized your visit and held times that fit. Pick what works."
                 : state.triage.status === 'pending_review'
-                    ? "Your intake is in for clinician review. We'll release slots as soon as Dr. Mabini reviews."
-                    : "Your intake needs manual review. Dr. Mabini will reach out with a slot directly.";
+                    ? "Your intake is in for clinician review. Slots release as soon as it's reviewed."
+                    : "Your intake needs manual review. The clinician will reach out with a slot directly.";
 
             const t = state.triage;
             const statusPill = t.status === 'released'
@@ -537,7 +537,7 @@
             const urgPill = t.urgency === 'urgent' ? `<span class="pill urgent">urgent</span>` : `<span class="pill routine">routine</span>`;
 
             const visitLine = t.was_overridden_by_clinician
-                ? `${escapeHtml(visitTypeLabel(t.visit_type))} <span style="color:var(--fg-dim); font-size:12px;">(adjusted from ${escapeHtml(visitTypeLabel(t.ai_visit_type))} by Dr. Mabini)</span>`
+                ? `${escapeHtml(visitTypeLabel(t.visit_type))} <span style="color:var(--fg-dim); font-size:12px;">(adjusted from ${escapeHtml(visitTypeLabel(t.ai_visit_type))} by your clinician)</span>`
                 : escapeHtml(visitTypeLabel(t.visit_type));
 
             $('triage-fields').innerHTML = `
@@ -619,7 +619,7 @@
                 if (e.code === 'no_released_triage') {
                     showError('Your triage is still pending clinician review. Slots will appear once it is released.');
                 } else if (e.code === 'manual_review_required') {
-                    showError('Your triage requires manual review. Dr. Mabini will reach out directly.');
+                    showError('Your triage requires manual review. The clinician will reach out directly.');
                 } else {
                     showError(e.message || 'Could not load available slots.');
                 }

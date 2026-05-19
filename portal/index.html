@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Patient Portal · Mount Zara</title>
+    <title>Member Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -198,7 +198,7 @@
         <div class="top-row">
             <div class="brand">
                 <img src="/assets/images/monogram.svg" alt="" width="20" height="20" style="opacity:0.9" onerror="this.remove()">
-                <span>Mount Zara · Patient Portal</span>
+                <span>Mount Zara · Member Portal</span>
             </div>
             <div class="session-actions">
                 <a href="/portal/profile/">Profile</a>
@@ -206,7 +206,7 @@
             </div>
         </div>
 
-        <p class="eyebrow">Patient portal</p>
+        <p class="eyebrow">Member portal</p>
         <h1 id="greeting">Welcome.</h1>
         <p class="greeting-sub" id="greeting-sub">Loading your dashboard…</p>
 
@@ -223,7 +223,7 @@
                 <div class="badge-row"><span class="badge badge-empty" id="msg-badge">—</span></div>
                 <div class="card-eyebrow">Messages</div>
                 <h2 id="msg-title">Loading…</h2>
-                <div class="card-body" id="msg-body">Conversations with Dr. Mabini.</div>
+                <div class="card-body" id="msg-body">Conversations with your clinician.</div>
                 <span class="card-action">Open messages →</span>
             </a>
 
@@ -231,8 +231,16 @@
                 <div class="badge-row"><span class="badge badge-empty" id="sym-badge">—</span></div>
                 <div class="card-eyebrow">Symptom diary</div>
                 <h2 id="sym-title">Loading…</h2>
-                <div class="card-body" id="sym-body">Track pain, bleeding, sleep, cycle, mood — Dr. Mabini reviews your trends before every visit.</div>
+                <div class="card-body" id="sym-body">Track pain, bleeding, sleep, cycle, mood — your clinician reviews your trends before every visit.</div>
                 <span class="card-action">Log today's symptoms →</span>
+            </a>
+
+            <a class="card" href="/portal/proms/" id="card-proms">
+                <div class="badge-row"><span class="badge badge-empty" id="proms-badge">—</span></div>
+                <div class="card-eyebrow">Health check-ins</div>
+                <h2 id="proms-title">Loading…</h2>
+                <div class="card-body" id="proms-body">Short, validated questionnaires (PHQ-2, GAD-2, BPI, EHP-5, …) that Dr. Mabini reviews to track how you're doing between visits. AI-assigned from your intake; each takes 1–4 minutes.</div>
+                <span class="card-action">Open check-ins →</span>
             </a>
 
             <a class="card" href="/portal/intake/" id="card-intake">
@@ -246,7 +254,7 @@
             <a class="card" href="/portal/documents/">
                 <div class="card-eyebrow">Documents</div>
                 <h2>Records & uploads</h2>
-                <div class="card-body">Imaging discs, outside records, AAGL reports, and anything Dr. Mabini sends back to you.</div>
+                <div class="card-body">Imaging discs, outside records, AAGL reports, and anything the clinician sends back to you.</div>
                 <span class="card-action">Open documents →</span>
             </a>
 
@@ -268,7 +276,7 @@
             <a class="card" href="/portal/education/" id="card-education">
                 <div class="badge-row"><span class="badge badge-empty" id="edu-badge">—</span></div>
                 <div class="card-eyebrow">Education</div>
-                <h2 id="edu-title">Primers from Dr. Mabini</h2>
+                <h2 id="edu-title">Patient primers</h2>
                 <div class="card-body" id="edu-body">Patient-facing primers on endometriosis, adenomyosis, fibroids, OMT, perioperative prep, surgical recovery.</div>
                 <span class="card-action">Open library →</span>
             </a>
@@ -349,6 +357,7 @@
             loadSymptomCard();
             loadIntakeCard();
             loadEducationCard();
+            loadPROMsCard();
 
             // 3. logout
             $('link-logout').addEventListener('click', async (e) => {
@@ -385,11 +394,11 @@
                     $('appt-action').textContent = 'Pick a time →';
                 } else if (triage.status === 'pending_review') {
                     $('appt-title').textContent = 'Awaiting clinician review';
-                    $('appt-body').innerHTML = `Your intake categorization is in for Dr. Mabini to confirm. Auto-releases within 4 hours if not yet reviewed.`;
+                    $('appt-body').innerHTML = `Your intake categorization is in for clinician review. Auto-releases within 4 hours if not yet reviewed.`;
                     $('appt-action').textContent = 'View status →';
                 } else {
                     $('appt-title').textContent = 'Manual review needed';
-                    $('appt-body').textContent = "Dr. Mabini will reach out directly to confirm what visit type fits best.";
+                    $('appt-body').textContent = "The clinician will reach out directly to confirm what visit type fits best.";
                     $('appt-action').textContent = 'See details →';
                 }
             } catch (e) {
@@ -413,7 +422,7 @@
                 const unread = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
                 if (threads.length === 0) {
                     $('msg-title').textContent = 'No messages yet';
-                    $('msg-body').textContent = 'Send Dr. Mabini a non-urgent question or pre-visit update anytime.';
+                    $('msg-body').textContent = 'Send a non-urgent question or pre-visit update anytime.';
                     $('msg-badge').textContent = '—';
                 } else if (unread > 0) {
                     $('msg-title').innerHTML = `<span class="stat">${unread}</span> <span class="stat-unit">new message${unread === 1 ? '' : 's'}</span>`;
@@ -444,7 +453,7 @@
                     $('sym-badge').className = 'badge badge-released';
                 } else {
                     $('sym-title').textContent = "Today's diary is empty";
-                    $('sym-body').textContent = "Even one symptom is helpful — Dr. Mabini reviews your trend before every visit.";
+                    $('sym-body').textContent = "Even one symptom is helpful — your clinician reviews your trend before every visit.";
                     $('sym-badge').textContent = 'not logged';
                     $('sym-badge').className = 'badge badge-pending';
                 }
@@ -454,13 +463,41 @@
             }
         }
 
+        async function loadPROMsCard() {
+            try {
+                const data = await fetchJson('/api/v1/patient/proms');
+                const a = data.assignments || [];
+                const pending = a.filter(x => x.status === 'pending' || x.status === 'in_progress');
+                const completed = a.filter(x => x.status === 'completed');
+                if (pending.length > 0) {
+                    $('proms-title').innerHTML = `<span class="stat">${pending.length}</span> <span class="stat-unit">${pending.length === 1 ? 'check-in pending' : 'check-ins pending'}</span>`;
+                    $('proms-body').textContent = `${pending.map(p => (p.short_name || p.prom_slug || '').toUpperCase()).slice(0, 4).join(' · ')}${pending.length > 4 ? ' …' : ''}. Each is 1–4 minutes.`;
+                    $('proms-badge').textContent = 'new';
+                    $('proms-badge').className = 'badge badge-pending';
+                } else if (completed.length > 0) {
+                    $('proms-title').textContent = 'All caught up';
+                    $('proms-body').textContent = `${completed.length} completed. New check-ins are assigned automatically as your care evolves.`;
+                    $('proms-badge').textContent = 'up to date';
+                    $('proms-badge').className = 'badge badge-released';
+                } else {
+                    $('proms-title').textContent = 'No check-ins yet';
+                    $('proms-body').textContent = 'Once your intake is submitted, your care team and our AI will assign the right validated questionnaires for your situation.';
+                    $('proms-badge').textContent = 'awaiting intake';
+                    $('proms-badge').className = 'badge badge-empty';
+                }
+            } catch (e) {
+                $('proms-title').textContent = 'Health check-ins';
+                $('proms-body').textContent = 'Validated questionnaires Dr. Mabini reviews between visits.';
+            }
+        }
+
         async function loadEducationCard() {
             try {
                 const data = await fetchJson('/api/v1/patient/education');
                 const materials = data.materials || [];
                 if (materials.length === 0) {
                     $('edu-title').textContent = 'Library opening soon';
-                    $('edu-body').textContent = 'Dr. Mabini is publishing primers — they will appear here.';
+                    $('edu-body').textContent = 'Primers are being published — they will appear here.';
                     $('edu-badge').textContent = 'empty';
                     return;
                 }
@@ -468,7 +505,7 @@
                 const unread = materials.filter(m => !m.view).length;
                 if (assigned > 0) {
                     $('edu-title').innerHTML = `<span class="stat">${assigned}</span> <span class="stat-unit">assigned for you</span>`;
-                    $('edu-body').textContent = `Dr. Mabini has lined up reading for you. Click in to start.`;
+                    $('edu-body').textContent = `Reading has been lined up for you. Click in to start.`;
                     $('edu-badge').textContent = 'assigned';
                     $('edu-badge').className = 'badge badge-urgent';
                 } else if (unread > 0) {
@@ -483,7 +520,7 @@
                     $('edu-badge').className = 'badge badge-empty';
                 }
             } catch (e) {
-                $('edu-title').textContent = 'Primers from Dr. Mabini';
+                $('edu-title').textContent = 'Patient primers';
                 $('edu-body').textContent = 'Could not load library count.';
             }
         }
@@ -501,7 +538,7 @@
                 const status = i.intake.status;
                 const stepDone = i.completed_section_count != null ? i.completed_section_count : '—';
                 if (status === 'submitted' || status === 'reviewed') {
-                    $('intake-title').textContent = status === 'reviewed' ? 'Reviewed by Dr. Mabini' : 'Submitted';
+                    $('intake-title').textContent = status === 'reviewed' ? 'Reviewed by your clinician' : 'Submitted';
                     $('intake-body').textContent = "Your intake is on file. We'll surface it in clinic and tie it into your triage.";
                     $('intake-badge').textContent = status;
                     $('intake-badge').className = 'badge badge-released';
