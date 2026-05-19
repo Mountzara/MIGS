@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Billing · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px 80px; }
+
+        header.bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+            font-size: 13px; color: var(--fg-soft); flex-wrap: wrap;
+        }
+        header.bar .crumb { color: var(--fg-dim); }
+        header.bar .crumb a { color: var(--accent-soft); }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 6px 0;
+        }
+        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 76ch; margin: 0 0 18px 0; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex; gap: 6px; margin: 0 0 18px 0; flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-chip {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 999px; padding: 6px 14px;
+            color: var(--fg-soft); font-size: 12px;
+            cursor: pointer; font: inherit;
+            transition: all 0.18s;
+        }
+        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip.active {
+            background: rgba(var(--glow-purple), 0.16);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+        }
+        .filter-chip .badge {
+            display: inline-block; margin-left: 6px;
+            font-size: 10px; color: var(--fg-dim);
+        }
+        .search-input {
+            flex: 1; min-width: 220px; max-width: 320px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 9px; padding: 7px 12px;
+            font: inherit; font-size: 13px;
+            color: var(--fg-strong);
+            transition: border-color 0.18s;
+        }
+        .search-input::placeholder { color: var(--fg-dim); }
+        .search-input:focus {
+            outline: none; border-color: rgba(var(--glow-purple), 0.55);
+        }
+
+        /* KPI grid */
+        .kpi-grid {
+            display: grid; gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            margin-bottom: 22px;
+        }
+        .kpi {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .kpi:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.30); }
+        @keyframes mzRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .kpi .label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 6px; }
+        .kpi .value { font-size: 28px; font-weight: 200; color: var(--fg-strong); letter-spacing: -0.02em; line-height: 1; }
+        .kpi .sub { font-size: 11.5px; color: var(--fg-soft); margin-top: 4px; }
+        .kpi.alert { border-color: rgba(245, 158, 11, 0.45); }
+        .kpi.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .kpi.good { border-color: rgba(16, 185, 129, 0.45); }
+        .kpi.purple .value { color: var(--accent-soft); }
+
+        /* Layout — list + detail */
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 1024px) {
+            .layout.with-detail { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+        }
+
+        /* Claim list */
+        .claim-list {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .claim-list .row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 70px 90px;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.18s;
+            animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .claim-list .row:last-child { border-bottom: none; }
+        .claim-list .row:hover { background: rgba(var(--glow-purple), 0.06); }
+        .claim-list .row.selected { background: rgba(var(--glow-purple), 0.12); }
+        .claim-list .col-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .claim-list .patient-name {
+            font-size: 13.5px; font-weight: 500; color: var(--fg-strong);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .claim-list .meta-line {
+            font-size: 11.5px; color: var(--fg-soft); display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .claim-list .meta-line .pill {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 999px; padding: 1px 8px; font-size: 10.5px;
+        }
+        .claim-list .meta-line .pill.em { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
+        .claim-list .meta-line .pill.error { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.40); }
+        .claim-list .meta-line .pill.warn  { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.40); }
+        .claim-list .meta-line .pill.upcode { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.40); }
+        .claim-list .col-amount {
+            font-size: 13px; font-weight: 500; color: var(--fg-strong);
+            text-align: right;
+        }
+        .claim-list .col-amount .sub { font-size: 10.5px; color: var(--fg-soft); font-weight: 400; }
+        .claim-list .col-status {
+            text-align: right; align-self: center;
+        }
+        .status-chip {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            color: var(--fg-soft);
+        }
+        .status-chip.pending_review { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
+        .status-chip.edited         { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
+        .status-chip.rejected       { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.45); }
+        .status-chip.ready_to_submit{ color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
+        .status-chip.submitted, .status-chip.accepted_by_clearinghouse {
+            color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45);
+        }
+        .status-chip.paid, .status-chip.partially_paid {
+            color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.55);
+        }
+        .status-chip.denied, .status-chip.appealed, .status-chip.rebilled {
+            color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.55);
+        }
+        .status-chip.written_off { color: var(--fg-dim); }
+
+        /* Detail panel */
+        .detail-panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .detail-panel .section { margin-bottom: 24px; }
+        .detail-panel .section:last-child { margin-bottom: 0; }
+        .detail-panel h2 {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase;
+            color: var(--accent-soft); margin: 0 0 10px 0;
+        }
+        .detail-panel .patient-strip {
+            display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
+            margin-bottom: 6px;
+        }
+        .detail-panel .patient-strip .name {
+            font-size: 22px; font-weight: 200; letter-spacing: -0.012em; color: var(--fg-strong);
+        }
+        .detail-panel .patient-strip .meta { font-size: 12.5px; color: var(--fg-soft); }
+        .detail-panel .summary-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .detail-panel .stat {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px 12px;
+        }
+        .detail-panel .stat .lbl {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--fg-dim); margin-bottom: 4px;
+        }
+        .detail-panel .stat .val { font-size: 18px; color: var(--fg-strong); font-weight: 300; }
+
+        /* Medico-legal gauge */
+        .mzlegal-gauge {
+            display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center;
+        }
+        .gauge-wrap { position: relative; width: 110px; height: 70px; }
+        .gauge-wrap svg { width: 110px; height: 70px; display: block; }
+        .gauge-score {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            text-align: center; font-size: 20px; font-weight: 300; color: var(--fg-strong);
+        }
+        .gauge-score .out-of { font-size: 11px; color: var(--fg-dim); margin-left: 2px; }
+        .mzlegal-caption { font-size: 12.5px; color: var(--fg-soft); line-height: 1.5; }
+
+        /* Lines table */
+        .lines-table {
+            width: 100%; border-collapse: collapse; font-size: 12.5px;
+        }
+        .lines-table th, .lines-table td {
+            padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: left; vertical-align: top;
+        }
+        .lines-table th {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--fg-dim);
+        }
+        .lines-table .code { font-family: 'SF Mono', 'Menlo', monospace; color: var(--accent-soft); }
+        .lines-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .lines-table .modifier-pill {
+            display: inline-block; font-size: 10px; padding: 1px 6px;
+            border-radius: 999px; background: rgba(var(--glow-purple), 0.10);
+            border: 1px solid rgba(var(--glow-purple), 0.35);
+            color: var(--accent-soft);
+            margin-right: 4px;
+        }
+
+        /* Flag cards */
+        .flag-list { display: flex; flex-direction: column; gap: 10px; }
+        .flag {
+            border-radius: 10px; padding: 12px 14px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+        }
+        .flag.error   { border-color: rgba(239, 68, 68, 0.45);  background: rgba(239, 68, 68, 0.05); }
+        .flag.warning { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.05); }
+        .flag.info    { border-color: rgba(var(--glow-purple), 0.35); }
+        .flag.resolved { opacity: 0.55; }
+        .flag-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px; margin-bottom: 4px;
+        }
+        .flag-title { font-size: 13px; font-weight: 500; color: var(--fg-strong); }
+        .flag-sev {
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        .flag.error .flag-sev   { color: rgba(252, 165, 165, 0.95); }
+        .flag.warning .flag-sev { color: rgba(252, 211, 77, 0.95); }
+        .flag.info .flag-sev    { color: var(--accent-soft); }
+        .flag-body { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
+        .flag-fix { font-size: 12px; color: var(--fg-soft); margin-top: 6px; }
+        .flag-fix em { color: var(--accent-soft); font-style: normal; }
+
+        /* Upcoding cards */
+        .upcode {
+            border-radius: 10px; padding: 12px 14px;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: rgba(16, 185, 129, 0.04);
+            margin-bottom: 10px;
+        }
+        .upcode-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
+        }
+        .upcode-codes { font-size: 14px; font-weight: 500; color: rgba(110, 231, 183, 0.95); }
+        .upcode-codes .arrow { color: var(--fg-dim); margin: 0 6px; }
+        .upcode-stats { font-size: 11.5px; color: var(--fg-soft); }
+        .upcode-stats strong { color: rgba(110, 231, 183, 0.95); font-weight: 600; }
+        .upcode-required { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
+        .upcode-rationale { font-size: 11.5px; color: var(--fg-soft); margin-top: 6px; font-style: italic; }
+
+        /* Doc suggestion cards */
+        .docsugg {
+            border-radius: 10px; padding: 12px 14px;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            background: rgba(245, 158, 11, 0.04);
+            margin-bottom: 10px;
+        }
+        .docsugg.high   { border-color: rgba(245, 158, 11, 0.55); }
+        .docsugg.medium { border-color: rgba(245, 158, 11, 0.30); background: rgba(245, 158, 11, 0.03); }
+        .docsugg.low    { border-color: rgba(255, 255, 255, 0.10); background: rgba(255, 255, 255, 0.02); }
+        .docsugg-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px; margin-bottom: 6px;
+        }
+        .docsugg-section { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(252, 211, 77, 0.95); }
+        .docsugg-priority { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); }
+        .docsugg-issue { font-size: 13px; color: var(--fg-strong); margin-bottom: 4px; }
+        .docsugg-suggestion { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
+        .docsugg-revimpact { font-size: 11px; color: rgba(110, 231, 183, 0.85); margin-top: 6px; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--fg-soft);
+            font-size: 14px;
+        }
+
+        /* Action bar + inline action buttons */
+        .action-bar {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+            margin-top: 12px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .btn-action {
+            font: inherit; font-size: 12.5px; font-weight: 500;
+            padding: 7px 14px; border-radius: 999px;
+            cursor: pointer; transition: all 0.2s;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: var(--fg-mid);
+            white-space: nowrap;
+        }
+        .btn-action:hover:not(:disabled) {
+            color: var(--fg-strong);
+            border-color: rgba(var(--glow-purple), 0.55);
+            transform: translateY(-1px);
+        }
+        .btn-action:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-action.primary {
+            background: rgba(var(--glow-purple), 0.14);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft);
+            font-weight: 500;
+        }
+        .btn-action.primary:hover:not(:disabled) {
+            background: rgba(var(--glow-purple), 0.24);
+            color: var(--fg-strong);
+        }
+        .btn-action.danger {
+            color: rgba(252, 165, 165, 0.95);
+            border-color: rgba(239, 68, 68, 0.40);
+        }
+        .btn-action.danger:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fff;
+            border-color: rgba(239, 68, 68, 0.65);
+        }
+        .btn-action.success {
+            color: rgba(110, 231, 183, 0.95);
+            border-color: rgba(16, 185, 129, 0.45);
+        }
+        .btn-action.success:hover:not(:disabled) {
+            background: rgba(16, 185, 129, 0.16);
+            color: #fff;
+        }
+        .btn-action.mini { font-size: 11px; padding: 4px 10px; }
+        .action-toast {
+            position: fixed; right: 22px; bottom: 22px;
+            background: rgba(7, 7, 10, 0.92);
+            border: 1px solid rgba(var(--glow-purple), 0.45);
+            border-radius: 10px; padding: 10px 16px;
+            color: var(--fg-strong); font-size: 13px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            animation: mzRise 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .action-toast.danger { border-color: rgba(239, 68, 68, 0.55); }
+        .action-toast.success { border-color: rgba(16, 185, 129, 0.55); }
+
+        /* Pagination */
+        .pagination {
+            display: flex; gap: 8px; align-items: center; justify-content: center;
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12.5px; color: var(--fg-soft);
+        }
+        .pagination button {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 8px; padding: 5px 12px;
+            color: var(--fg-soft); cursor: pointer; font: inherit; font-size: 12.5px;
+            transition: all 0.18s;
+        }
+        .pagination button:hover:not(:disabled) {
+            color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45);
+        }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .kpi, .claim-list .row, .detail-panel { animation: none !important; }
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar">
+            <span class="crumb"><a href="/admin/">Admin</a> · Billing</span>
+            <a href="/admin/billing/payers/"
+               style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
+                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
+                      color: var(--accent-soft); text-decoration: none;">Manage payers →</a>
+        </header>
+
+        <h1 class="page-title">Insurance billing review</h1>
+        <p class="lede">
+            Claims arrive here from the MountZara Transcription app's coding analysis — E/M code, ICD-10 / CPT lines,
+            wRVU, compliance flags, upcoding opportunities, and documentation suggestions. Review each claim, accept
+            or edit the AI's recommendations, then approve for clearinghouse submission. Until insurance contracts
+            are signed and a clearinghouse is connected, approved claims remain at <em>ready_to_submit</em>.
+        </p>
+
+        <!-- Filters -->
+        <div class="filter-bar" id="filter-bar">
+            <button class="filter-chip active" data-status="pending_review,edited">Awaiting review</button>
+            <button class="filter-chip"        data-status="ready_to_submit">Ready to submit</button>
+            <button class="filter-chip"        data-status="submitted,accepted_by_clearinghouse">In flight</button>
+            <button class="filter-chip"        data-status="paid,partially_paid">Paid</button>
+            <button class="filter-chip"        data-status="denied,appealed,rebilled">Denied / appealed</button>
+            <button class="filter-chip"        data-status="rejected,written_off">Closed</button>
+            <input type="search" class="search-input" id="search" placeholder="Search patient / code / visit type" autocomplete="off">
+        </div>
+
+        <!-- KPI summary -->
+        <div class="kpi-grid" id="kpi-grid">
+            <div class="kpi purple"><div class="label">Open claims</div><div class="value" id="kpi-open">—</div><div class="sub" id="kpi-open-sub">awaiting review</div></div>
+            <div class="kpi alert" id="kpi-flags-card"><div class="label">Compliance flags</div><div class="value" id="kpi-flags">—</div><div class="sub" id="kpi-flags-sub">unresolved errors</div></div>
+            <div class="kpi good"><div class="label">Upcoding</div><div class="value" id="kpi-upcode">—</div><div class="sub" id="kpi-upcode-sub">opportunities pending</div></div>
+            <div class="kpi"><div class="label">Total wRVU</div><div class="value" id="kpi-wrvu">—</div><div class="sub">last 60 days</div></div>
+            <div class="kpi"><div class="label">Expected $</div><div class="value" id="kpi-expected">—</div><div class="sub">last 60 days</div></div>
+        </div>
+
+        <!-- Layout -->
+        <div class="layout" id="layout">
+            <div class="claim-list" id="claim-list">
+                <div class="empty-state" id="list-empty">Loading…</div>
+                <div class="pagination" id="pagination" style="display:none;">
+                    <button id="page-prev">‹ Prev</button>
+                    <span id="page-info">—</span>
+                    <button id="page-next">Next ›</button>
+                </div>
+            </div>
+            <div id="detail-panel-host"></div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        const state = {
+            filterStatus: ['pending_review', 'edited'],
+            q: '',
+            limit: 25,
+            offset: 0,
+            total: 0,
+            claims: [],
+            selectedClaimId: null,
+            detail: null,
+        };
+
+        const $list  = document.getElementById('claim-list');
+        const $empty = document.getElementById('list-empty');
+        const $pagi  = document.getElementById('pagination');
+        const $pinfo = document.getElementById('page-info');
+        const $prev  = document.getElementById('page-prev');
+        const $next  = document.getElementById('page-next');
+        const $search = document.getElementById('search');
+        const $layout = document.getElementById('layout');
+        const $detailHost = document.getElementById('detail-panel-host');
+
+        function fmtMoney(cents) {
+            if (cents == null || isNaN(cents)) return '—';
+            const dollars = Math.round(cents / 100);
+            return '$' + dollars.toLocaleString();
+        }
+        function fmtWRVU(n) {
+            if (n == null || isNaN(n)) return '—';
+            return Number(n).toFixed(2);
+        }
+        function fmtDate(d) {
+            if (!d) return '—';
+            try {
+                const dt = new Date(d + 'T00:00:00');
+                return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch { return d; }
+        }
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/[&<>"']/g, (c) => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+
+        async function fetchClaims() {
+            const params = new URLSearchParams();
+            params.set('status', state.filterStatus.join(','));
+            if (state.q) params.set('q', state.q);
+            params.set('limit', String(state.limit));
+            params.set('offset', String(state.offset));
+            try {
+                const resp = await fetch('/api/v1/admin/billing/claims?' + params.toString(), {
+                    credentials: 'include',
+                });
+                if (resp.status === 401) {
+                    $empty.textContent = 'Admin auth required — refresh the page.';
+                    $empty.style.display = 'block';
+                    return;
+                }
+                if (!resp.ok) {
+                    $empty.textContent = 'Failed to load claims (' + resp.status + ').';
+                    $empty.style.display = 'block';
+                    return;
+                }
+                const data = await resp.json();
+                state.claims = data.claims || [];
+                state.total = data.total || 0;
+                renderList();
+                renderKpis();
+            } catch (e) {
+                $empty.textContent = 'Network error loading claims.';
+                $empty.style.display = 'block';
+            }
+        }
+
+        function renderKpis() {
+            // Aggregate across the current page (cheap; a real-world dashboard would query separately).
+            const pendingOpen = state.claims.filter(c => c.status === 'pending_review' || c.status === 'edited').length;
+            const errors = state.claims.reduce((acc, c) => acc + (c.unresolved_errors || 0), 0);
+            const upcode = state.claims.reduce((acc, c) => acc + (c.unaccepted_upcoding || 0), 0);
+            const wrvu = state.claims.reduce((acc, c) => acc + (Number(c.total_wrvu) || 0), 0);
+            const expected = state.claims.reduce((acc, c) => acc + (Number(c.expected_collection_cents) || 0), 0);
+            document.getElementById('kpi-open').textContent = pendingOpen;
+            document.getElementById('kpi-flags').textContent = errors;
+            document.getElementById('kpi-upcode').textContent = upcode;
+            document.getElementById('kpi-wrvu').textContent = fmtWRVU(wrvu);
+            document.getElementById('kpi-expected').textContent = fmtMoney(expected);
+            document.getElementById('kpi-open-sub').textContent = state.total > pendingOpen
+                ? `of ${state.total} matching`
+                : 'awaiting review';
+        }
+
+        function renderList() {
+            if (state.claims.length === 0) {
+                $empty.textContent = 'No claims match the current filter.';
+                $empty.style.display = 'block';
+                $pagi.style.display = 'none';
+                // Clear any rendered rows.
+                Array.from($list.querySelectorAll('.row')).forEach(r => r.remove());
+                return;
+            }
+            $empty.style.display = 'none';
+            // Clear prior rows.
+            Array.from($list.querySelectorAll('.row')).forEach(r => r.remove());
+
+            const frag = document.createDocumentFragment();
+            state.claims.forEach((c, idx) => {
+                const row = document.createElement('div');
+                row.className = 'row' + (c.id === state.selectedClaimId ? ' selected' : '');
+                row.style.animationDelay = (idx * 18) + 'ms';
+                row.dataset.claimId = c.id;
+                const fullName = ((c.patient_first_name || '') + ' ' + (c.patient_last_name || '')).trim() || c.patient_email || '(unnamed patient)';
+                const flagsHtml = [
+                    c.unresolved_errors   > 0 ? `<span class="pill error">${c.unresolved_errors} err</span>` : '',
+                    c.unresolved_warnings > 0 ? `<span class="pill warn">${c.unresolved_warnings} warn</span>` : '',
+                    c.unaccepted_upcoding > 0 ? `<span class="pill upcode">+${c.unaccepted_upcoding} upcode</span>` : '',
+                ].join(' ');
+                row.innerHTML = `
+                    <div class="col-main">
+                        <div class="patient-name">${escapeHtml(fullName)}</div>
+                        <div class="meta-line">
+                            <span>${escapeHtml(fmtDate(c.visit_date))}</span>
+                            <span class="pill em">${escapeHtml(c.em_code || '—')}</span>
+                            ${c.payer_name ? `<span class="pill">${escapeHtml(c.payer_name)}</span>` : ''}
+                            ${flagsHtml}
+                        </div>
+                    </div>
+                    <div class="col-amount">
+                        ${fmtMoney(c.expected_collection_cents)}
+                        <div class="sub">${fmtWRVU(c.total_wrvu)} wRVU</div>
+                    </div>
+                    <div class="col-status">
+                        <span class="status-chip ${escapeHtml(c.status || 'pending_review')}">${escapeHtml((c.status || 'pending_review').replace(/_/g, ' '))}</span>
+                    </div>
+                `;
+                row.addEventListener('click', () => selectClaim(c.id));
+                frag.appendChild(row);
+            });
+            const insertBefore = $pagi;
+            $list.insertBefore(frag, insertBefore);
+
+            // Pagination.
+            const pageStart = state.offset + 1;
+            const pageEnd = Math.min(state.offset + state.claims.length, state.total);
+            $pinfo.textContent = `${pageStart}–${pageEnd} of ${state.total}`;
+            $prev.disabled = state.offset === 0;
+            $next.disabled = pageEnd >= state.total;
+            $pagi.style.display = state.total > state.limit ? 'flex' : 'none';
+        }
+
+        async function selectClaim(id) {
+            state.selectedClaimId = id;
+            // Re-style row selection.
+            Array.from($list.querySelectorAll('.row')).forEach(r => {
+                r.classList.toggle('selected', r.dataset.claimId === id);
+            });
+            $layout.classList.add('with-detail');
+            $detailHost.innerHTML = '<div class="detail-panel"><div class="empty-state">Loading claim…</div></div>';
+            try {
+                const resp = await fetch('/api/v1/admin/billing/claims/' + encodeURIComponent(id), { credentials: 'include' });
+                if (!resp.ok) {
+                    $detailHost.innerHTML = '<div class="detail-panel"><div class="empty-state">Failed to load claim.</div></div>';
+                    return;
+                }
+                const data = await resp.json();
+                state.detail = data;
+                renderDetail(data);
+            } catch (e) {
+                $detailHost.innerHTML = '<div class="detail-panel"><div class="empty-state">Network error.</div></div>';
+            }
+        }
+
+        function gaugeSvg(score) {
+            // Half-circle gauge — 0..100. Needle angle: -90deg (0) to +90deg (100).
+            const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+            const angle = -90 + (safeScore / 100) * 180;
+            const rad = angle * Math.PI / 180;
+            const cx = 55, cy = 60, r = 42;
+            const x = cx + r * Math.cos(rad - Math.PI / 2);
+            const y = cy + r * Math.sin(rad - Math.PI / 2);
+            // Arc start (left) -> end (right). Stroke gradient red->amber->green.
+            return `
+                <svg viewBox="0 0 110 70" aria-label="Medico-legal score gauge: ${safeScore} of 100">
+                    <defs>
+                        <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%"   stop-color="rgba(239, 68, 68, 0.95)"/>
+                            <stop offset="50%"  stop-color="rgba(245, 158, 11, 0.95)"/>
+                            <stop offset="100%" stop-color="rgba(16, 185, 129, 0.95)"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 13 60 A 42 42 0 0 1 97 60"
+                          fill="none" stroke="url(#gauge-grad)" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"
+                          stroke="rgba(245,245,247,0.84)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="${cx}" cy="${cy}" r="3" fill="rgba(245,245,247,0.84)"/>
+                </svg>
+            `;
+        }
+
+        function renderDetail(data) {
+            const c = data.claim;
+            const fullName = ((c.patient_first_name || '') + ' ' + (c.patient_last_name || '')).trim() || c.patient_email || '(unnamed patient)';
+            const lines = data.lines || [];
+            const dx = data.diagnoses || [];
+            const flags = data.flags || [];
+            const upcoding = data.upcoding_opportunities || [];
+            const docSugg = data.documentation_suggestions || [];
+            const tally = data.tally || {};
+
+            const linesHtml = lines.length === 0 ? '<div class="empty-state">No coded lines on this claim.</div>' : `
+                <table class="lines-table">
+                    <thead><tr>
+                        <th>#</th><th>Code</th><th>Description</th><th>Modifiers</th>
+                        <th class="num">wRVU</th><th class="num">Charge</th><th class="num">Expected</th><th class="num">Conf.</th>
+                    </tr></thead>
+                    <tbody>
+                        ${lines.map(ln => `
+                            <tr>
+                                <td>${ln.line_number}</td>
+                                <td><span class="code">${escapeHtml(ln.code)}</span><br><span style="font-size:10px;color:var(--fg-dim)">${escapeHtml(ln.code_type)}</span></td>
+                                <td>${escapeHtml(ln.code_description || '')}</td>
+                                <td>${
+                                    [ln.modifier_1, ln.modifier_2, ln.modifier_3, ln.modifier_4]
+                                        .filter(Boolean).map(m => `<span class="modifier-pill">${escapeHtml(m)}</span>`).join('')
+                                }</td>
+                                <td class="num">${fmtWRVU(ln.wrvu)}</td>
+                                <td class="num">${fmtMoney(ln.charge_cents)}</td>
+                                <td class="num">${fmtMoney(ln.expected_cents)}</td>
+                                <td class="num">${ln.confidence != null ? (Number(ln.confidence) * 100).toFixed(0) + '%' : '—'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            const dxHtml = dx.length === 0 ? '<div class="empty-state">No diagnoses on this claim.</div>' : `
+                <table class="lines-table">
+                    <thead><tr><th>#</th><th>ICD-10</th><th>Description</th><th class="num">Conf.</th></tr></thead>
+                    <tbody>
+                        ${dx.map(d => `
+                            <tr>
+                                <td>${d.diagnosis_index}</td>
+                                <td><span class="code">${escapeHtml(d.icd10_code)}</span></td>
+                                <td>${escapeHtml(d.icd10_description || '')}</td>
+                                <td class="num">${d.confidence != null ? (Number(d.confidence) * 100).toFixed(0) + '%' : '—'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            const flagsHtml = flags.length === 0 ? '<div class="empty-state">No compliance flags on this claim.</div>' : `
+                <div class="flag-list">
+                    ${flags.map(f => `
+                        <div class="flag ${escapeHtml(f.severity)}${f.resolved ? ' resolved' : ''}">
+                            <div class="flag-head">
+                                <span class="flag-title">${escapeHtml(f.title || 'Compliance note')}${f.referenced_code ? ` <span style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent-soft)">[${escapeHtml(f.referenced_code)}]</span>` : ''}</span>
+                                <span class="flag-sev">${escapeHtml(f.severity)}${f.resolved ? ' · resolved' : ''}</span>
+                            </div>
+                            ${f.description ? `<div class="flag-body">${escapeHtml(f.description)}</div>` : ''}
+                            ${f.suggested_fix ? `<div class="flag-fix"><em>Suggested fix:</em> ${escapeHtml(f.suggested_fix)}</div>` : ''}
+                            <div style="margin-top:8px;">
+                                ${f.resolved
+                                    ? `<button class="btn-action mini" data-action="flag-unresolve" data-id="${escapeHtml(f.id)}">Mark unresolved</button>`
+                                    : `<button class="btn-action mini success" data-action="flag-resolve" data-id="${escapeHtml(f.id)}">Mark resolved</button>`
+                                }
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const upHtml = upcoding.length === 0 ? '' : `
+                <div class="section">
+                    <h2>Upcoding opportunities · ${upcoding.length}</h2>
+                    ${upcoding.map(u => `
+                        <div class="upcode">
+                            <div class="upcode-head">
+                                <div class="upcode-codes">
+                                    <span class="code">${escapeHtml(u.current_code)}</span>
+                                    <span class="arrow">→</span>
+                                    <span class="code">${escapeHtml(u.potential_code)}</span>
+                                </div>
+                                <div class="upcode-stats">
+                                    <strong>+${fmtWRVU(u.wrvu_delta)} wRVU</strong>
+                                    ${u.revenue_delta_cents ? ` · <strong>+${fmtMoney(u.revenue_delta_cents)}</strong>` : ''}
+                                    · ${u.confidence != null ? (Number(u.confidence) * 100).toFixed(0) + '%' : '—'} conf.
+                                </div>
+                            </div>
+                            <div class="upcode-required"><strong>To bill the upcode, document:</strong> ${escapeHtml(u.required_documentation)}</div>
+                            ${u.rationale ? `<div class="upcode-rationale">${escapeHtml(u.rationale)}</div>` : ''}
+                            <div style="margin-top:8px;">
+                                ${u.accepted
+                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
+                                       <button class="btn-action mini" style="margin-left:10px;" data-action="upcode-revert" data-id="${escapeHtml(u.id)}">Revert</button>`
+                                    : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Accept upcode + apply to line</button>`
+                                }
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const docHtml = docSugg.length === 0 ? '' : `
+                <div class="section">
+                    <h2>Documentation suggestions · ${docSugg.length}</h2>
+                    ${docSugg.map(d => `
+                        <div class="docsugg ${escapeHtml(d.priority)}">
+                            <div class="docsugg-head">
+                                <span class="docsugg-section">${escapeHtml(d.section || 'NOTE')}</span>
+                                <span class="docsugg-priority">${escapeHtml(d.priority)} priority</span>
+                            </div>
+                            <div class="docsugg-issue">${escapeHtml(d.issue)}</div>
+                            <div class="docsugg-suggestion">${escapeHtml(d.suggestion)}</div>
+                            ${d.revenue_impact ? `<div class="docsugg-revimpact">Revenue impact: ${escapeHtml(d.revenue_impact)}</div>` : ''}
+                            <div style="margin-top:8px;">
+                                ${d.applied
+                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Applied</span>
+                                       <button class="btn-action mini" style="margin-left:10px;" data-action="docsugg-unapply" data-id="${escapeHtml(d.id)}">Mark not applied</button>`
+                                    : `<button class="btn-action mini" data-action="docsugg-apply" data-id="${escapeHtml(d.id)}">Mark applied</button>`
+                                }
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const canApprove = c.status === 'pending_review' || c.status === 'edited';
+            const actionBarHtml = canApprove
+                ? `<div class="action-bar">
+                       <button class="btn-action primary" data-action="claim-approve">Approve for submission</button>
+                       <button class="btn-action danger" data-action="claim-reject">Reject claim</button>
+                       <a class="btn-action" href="/admin/cases/${encodeURIComponent(c.patient_id)}/snapshot/" target="_blank" style="text-decoration:none;">Open patient snapshot ↗</a>
+                       ${tally.errors > 0 ? `<span style="font-size:11.5px;color:rgba(252,165,165,0.95);margin-left:auto;">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'} — resolve first or force-approve.</span>` : ''}
+                   </div>`
+                : `<div class="action-bar">
+                       <span style="font-size:11.5px;color:var(--fg-soft);">Claim is <strong style="color:var(--fg-mid)">${escapeHtml(c.status.replace(/_/g, ' '))}</strong>${c.status_reason ? ` — ${escapeHtml(c.status_reason)}` : ''}. Approve/reject actions are unavailable in this state.</span>
+                       <a class="btn-action" href="/admin/cases/${encodeURIComponent(c.patient_id)}/snapshot/" target="_blank" style="text-decoration:none;">Open patient snapshot ↗</a>
+                   </div>`;
+
+            $detailHost.innerHTML = `
+                <div class="detail-panel">
+                    <div class="section">
+                        <div class="patient-strip">
+                            <span class="name">${escapeHtml(fullName)}</span>
+                            <span class="meta">
+                                <a href="/admin/cases/${encodeURIComponent(c.patient_id)}/" style="border-bottom:1px dashed rgba(var(--glow-purple), 0.45)">Open case →</a>
+                                · ${escapeHtml(fmtDate(c.visit_date))}
+                                · <span class="status-chip ${escapeHtml(c.status)}">${escapeHtml(c.status.replace(/_/g, ' '))}</span>
+                            </span>
+                        </div>
+                        ${actionBarHtml}
+                    </div>
+
+                    <div class="section">
+                        <h2>Coding summary</h2>
+                        <div class="summary-grid">
+                            <div class="stat"><div class="lbl">E/M code</div><div class="val"><span style="font-family:'SF Mono',monospace;color:var(--accent-soft)">${escapeHtml(c.em_code || '—')}</span></div></div>
+                            <div class="stat"><div class="lbl">MDM level</div><div class="val">${escapeHtml(c.em_mdm_level || '—')}</div></div>
+                            <div class="stat"><div class="lbl">Total wRVU</div><div class="val">${fmtWRVU(c.total_wrvu)}</div></div>
+                            <div class="stat"><div class="lbl">Charge total</div><div class="val">${fmtMoney(c.total_charge_cents)}</div></div>
+                            <div class="stat"><div class="lbl">Expected</div><div class="val">${fmtMoney(c.expected_collection_cents)}</div></div>
+                            <div class="stat"><div class="lbl">Compliance</div><div class="val" style="font-size:14px">${escapeHtml(c.compliance_status || '—')}</div></div>
+                        </div>
+                    </div>
+
+                    ${c.medico_legal_score != null ? `
+                        <div class="section">
+                            <h2>Medico-legal score</h2>
+                            <div class="mzlegal-gauge">
+                                <div class="gauge-wrap">
+                                    ${gaugeSvg(c.medico_legal_score)}
+                                    <div class="gauge-score">${escapeHtml(String(c.medico_legal_score))}<span class="out-of">/100</span></div>
+                                </div>
+                                <div class="mzlegal-caption">
+                                    AI estimate of how well the documentation defends each billed code in the event of an audit.
+                                    ${tally.errors > 0 ? `<strong style="color:rgba(252,165,165,0.95)">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'}</strong> pulling this down. ` : ''}
+                                    ${tally.warnings > 0 ? `${tally.warnings} warning${tally.warnings === 1 ? '' : 's'} to review.` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="section">
+                        <h2>Service lines</h2>
+                        ${linesHtml}
+                    </div>
+
+                    <div class="section">
+                        <h2>Diagnoses</h2>
+                        ${dxHtml}
+                    </div>
+
+                    <div class="section">
+                        <h2>Compliance flags · ${flags.length}</h2>
+                        ${flagsHtml}
+                    </div>
+
+                    ${upHtml}
+                    ${docHtml}
+
+                    <div class="section" style="font-size:11.5px;color:var(--fg-dim);border-top:1px solid var(--border);padding-top:14px;">
+                        Created ${new Date(c.created_at).toLocaleString()}
+                        ${c.payer_name ? ` · payer ${escapeHtml(c.payer_name)}` : ' · no payer assigned'}
+                        ${c.clearinghouse_vendor ? ` · clearinghouse ${escapeHtml(c.clearinghouse_vendor)}` : ''}
+                        · source <code style="color:var(--accent-soft)">${escapeHtml(c.source_app)}/${escapeHtml(c.source_session_id || '—')}</code>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ---- Wire events ----
+        document.getElementById('filter-bar').addEventListener('click', (ev) => {
+            const btn = ev.target.closest('.filter-chip');
+            if (!btn) return;
+            const status = btn.dataset.status;
+            if (!status) return;
+            Array.from(document.querySelectorAll('.filter-chip')).forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            state.filterStatus = status.split(',');
+            state.offset = 0;
+            state.selectedClaimId = null;
+            $detailHost.innerHTML = '';
+            $layout.classList.remove('with-detail');
+            fetchClaims();
+        });
+
+        let searchT;
+        $search.addEventListener('input', () => {
+            clearTimeout(searchT);
+            searchT = setTimeout(() => {
+                state.q = $search.value.trim();
+                state.offset = 0;
+                fetchClaims();
+            }, 250);
+        });
+
+        $prev.addEventListener('click', () => {
+            state.offset = Math.max(0, state.offset - state.limit);
+            fetchClaims();
+        });
+        $next.addEventListener('click', () => {
+            state.offset = state.offset + state.limit;
+            fetchClaims();
+        });
+
+        // ---- Action handlers (Phase 8 Round C) ----
+        function toast(msg, kind) {
+            const t = document.createElement('div');
+            t.className = 'action-toast' + (kind ? ' ' + kind : '');
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s';
+                setTimeout(() => t.remove(), 300);
+            }, 2400);
+        }
+
+        async function mutate(url, method, body) {
+            const resp = await fetch(url, {
+                method,
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            const data = await resp.json().catch(() => ({}));
+            return { ok: resp.ok, status: resp.status, data };
+        }
+
+        async function approveClaim(claimId) {
+            const r = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/approve`, 'POST', {});
+            if (!r.ok && r.data && r.data.error === 'unresolved_errors_block_approval') {
+                const force = confirm(
+                    `${r.data.unresolved_errors} unresolved error-severity flag(s) on this claim.\n\n` +
+                    `Resolve those first, or click OK to force-approve.\n` +
+                    `Force-approval is logged in the audit trail.`
+                );
+                if (!force) return;
+                const r2 = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/approve`, 'POST', { force: true });
+                if (!r2.ok) { toast('Approve failed: ' + (r2.data.error || r2.status), 'danger'); return; }
+                toast('Claim approved (force) → ready_to_submit', 'success');
+            } else if (!r.ok) {
+                toast('Approve failed: ' + (r.data.error || r.status), 'danger');
+                return;
+            } else {
+                toast('Claim approved → ready_to_submit', 'success');
+            }
+            await selectClaim(claimId);
+            await fetchClaims();
+        }
+
+        async function rejectClaim(claimId) {
+            const reason = prompt(
+                'Why is this claim being rejected?\n\n' +
+                'Short code (e.g., miscoded, not_billable, duplicate_session):'
+            );
+            if (!reason || !reason.trim()) return;
+            const notes = prompt('Additional notes (optional):') || '';
+            const r = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/reject`, 'POST',
+                { reason: reason.trim().slice(0, 64), notes });
+            if (!r.ok) { toast('Reject failed: ' + (r.data.error || r.status), 'danger'); return; }
+            toast('Claim rejected', 'success');
+            await selectClaim(claimId);
+            await fetchClaims();
+        }
+
+        async function patchChild(path, body) {
+            const r = await mutate(path, 'PATCH', body || {});
+            if (!r.ok) {
+                toast('Action failed: ' + (r.data.error || r.status), 'danger');
+                return false;
+            }
+            return true;
+        }
+
+        // Delegate clicks inside the detail panel to action buttons.
+        $detailHost.addEventListener('click', async (ev) => {
+            const btn = ev.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const claimId = state.selectedClaimId;
+            if (!claimId) return;
+            btn.disabled = true;
+            try {
+                if (action === 'claim-approve') {
+                    await approveClaim(claimId);
+                } else if (action === 'claim-reject') {
+                    await rejectClaim(claimId);
+                } else if (action === 'flag-resolve' || action === 'flag-unresolve') {
+                    const ok = await patchChild(
+                        `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/flags/${encodeURIComponent(btn.dataset.id)}`,
+                        { resolved: action === 'flag-resolve' }
+                    );
+                    if (ok) { toast(action === 'flag-resolve' ? 'Flag resolved' : 'Flag re-opened', 'success'); await selectClaim(claimId); await fetchClaims(); }
+                } else if (action === 'upcode-accept' || action === 'upcode-revert') {
+                    const ok = await patchChild(
+                        `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/upcoding/${encodeURIComponent(btn.dataset.id)}`,
+                        { accepted: action === 'upcode-accept' }
+                    );
+                    if (ok) { toast(action === 'upcode-accept' ? 'Upcode accepted + line updated' : 'Upcode reverted', 'success'); await selectClaim(claimId); await fetchClaims(); }
+                } else if (action === 'docsugg-apply' || action === 'docsugg-unapply') {
+                    const ok = await patchChild(
+                        `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/doc-suggestions/${encodeURIComponent(btn.dataset.id)}`,
+                        { applied: action === 'docsugg-apply' }
+                    );
+                    if (ok) { toast(action === 'docsugg-apply' ? 'Suggestion marked applied' : 'Suggestion re-opened', 'success'); await selectClaim(claimId); await fetchClaims(); }
+                }
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Initial fetch.
+        fetchClaims();
+    })();
+    </script>
+</body>
+</html>
