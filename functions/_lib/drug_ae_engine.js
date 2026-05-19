@@ -38,7 +38,13 @@ const FETCH_TIMEOUT_MS = 8000;
 // String normalization
 // --------------------------------------------------------------------- //
 
-const DOSE_SUFFIX_RE = /\s+\d+(\.\d+)?\s*(mg|mcg|g|ml|iu|units?|tablets?)\b.*$/i;
+// Dose suffix variants: "0.5 mg", "1/20", "75mcg", "10 units", etc.
+const DOSE_SUFFIX_RE = /\s+\d+(\.\d+)?\s*(mg|mcg|g|ml|iu|units?|tablets?|tabs?)\b.*$/i;
+// Slash-doses like "Loestrin Fe 1/20" or "lisinopril 10/12.5"
+const SLASH_DOSE_RE = /\s+\d+\/\d+(\.\d+)?\b.*$/;
+// Scheduling words that appear without a numeric dose
+const SCHEDULE_WORDS_RE =
+    /\s+(daily|qd|bid|tid|qid|q\.?d|q\.?h\.?s|prn|po|sc|iv|im|sub-?cut|sublingual|topical|weekly|monthly|as needed|once daily|twice daily)\b.*$/i;
 const PUNCT_RE = /[(){}\[\]"'`,.;:!?]/g;
 
 /**
@@ -46,11 +52,15 @@ const PUNCT_RE = /[(){}\[\]"'`,.;:!?]/g;
  *   "Ozempic 0.5mg/wk SC"   → "ozempic"
  *   "Tylenol Extra Strength" → "tylenol extra strength"
  *   "Synthroid (levothyroxine) 75 mcg" → "synthroid levothyroxine"
+ *   "Loestrin Fe 1/20 daily" → "loestrin fe"
+ *   "Sertraline 50mg daily" → "sertraline"
  */
 export function normalizeDrugName(raw) {
     if (!raw || typeof raw !== "string") return "";
     return raw
         .replace(DOSE_SUFFIX_RE, "")
+        .replace(SLASH_DOSE_RE, "")
+        .replace(SCHEDULE_WORDS_RE, "")
         .replace(PUNCT_RE, " ")
         .replace(/\s+/g, " ")
         .trim()
@@ -243,19 +253,53 @@ export async function fetchDrugLabel(env, rawName) {
 // --------------------------------------------------------------------- //
 
 // Common stopwords / parts-of-speech we never want to match against AE text.
+//
+// IMPORTANT: drug labels are written in formal clinical prose, which means
+// many high-frequency English words (established, treated, considered,
+// indicated, appropriate, etc.) appear in *both* AE strings AND in a
+// patient's chief complaint / triage rationale, generating false-positive
+// "matches" that aren't symptom-related. We aggressively expand the
+// stopword set with words that are common in medical narratives but
+// useless as symptom signals.
 const STOPWORDS = new Set([
+    // Articles + conjunctions + prepositions
     "the", "a", "an", "and", "or", "for", "of", "to", "in", "on", "at",
     "is", "was", "were", "has", "had", "have", "with", "without", "by",
     "from", "as", "be", "been", "being", "this", "that", "these", "those",
     "than", "then", "so", "if", "but", "not", "no", "yes", "any", "all",
-    "some", "her", "his", "their", "your", "my", "our", "i", "we", "you",
-    "she", "he", "it", "they", "them", "me", "us",
-    "patient", "patients", "pt", "history", "year", "years", "month",
-    "months", "day", "days", "week", "weeks", "post", "pre", "during",
-    "after", "before", "since", "currently", "previously",
+    "some", "her", "his", "their", "your", "my", "our", "we", "you",
+    "she", "he", "it", "they", "them", "me", "us", "into", "onto", "upon",
+    "such", "each", "other", "another", "both", "either", "neither",
+    "very", "much", "more", "less", "most", "least", "only", "also",
+    "however", "therefore", "thus", "while", "when", "where", "which",
+    "whose", "whether", "due", "via", "between", "among", "during",
+    // Temporal markers — these surface in every CC narrative
+    "year", "years", "month", "months", "day", "days", "week", "weeks",
+    "post", "pre", "after", "before", "since", "currently", "previously",
+    "history", "ago", "recent", "recently", "today", "yesterday",
+    // Patient + clinical narrative scaffolding (NOT clinical symptoms)
+    "patient", "patients", "established", "treated", "treating", "treatment",
+    "considered", "indicated", "recommended", "appropriate", "available",
+    "generally", "believed", "include", "including", "associated",
+    "clinical", "controlled", "trials", "trial", "study", "studies",
+    "pediatric", "adult", "adults", "population", "subjects",
+    "effectiveness", "efficacy", "safety", "evaluated", "evaluation",
+    "important", "discontinued", "discontinue", "continue", "continued",
+    "switching", "switch", "intervene", "increase", "increased", "decrease",
+    "decreased", "use", "used", "using", "dose", "dosed", "dosing", "dosage",
+    "period", "periods", "duration", "level", "levels",
+    "may", "should", "could", "might", "must", "would",
+    "see", "above", "below", "section", "table",
+    "based", "results", "result",
+    "complaint", "complaints", "concern", "concerns",
+    "established",   // belt-and-suspenders
 ]);
 
-const MIN_TOKEN_LEN = 4;
+// Raise the min token length — 4-char tokens (pain, mass, mood, hair) match
+// too broadly across AE prose. 5+ catches genuinely specific symptom words
+// (nausea, fatigue, dizzy, headache, anxiety, constipation, …) while
+// dropping high-frequency English noise.
+const MIN_TOKEN_LEN = 5;
 
 /**
  * Tokenize a free-text string into clinical symptom candidates.
@@ -325,10 +369,11 @@ export function collectPatientSymptoms(briefing) {
     for (const e of (briefing.recent_encounters || []).slice(0, 3)) {
         if (e.chief_complaint) addTokens(e.chief_complaint, "encounter_cc");
     }
-    // 6. The lede itself — captures G/P + ERAS + watch_for context
-    if (briefing.executive_lede) {
-        addTokens(briefing.executive_lede, "executive_lede");
-    }
+    // 6. (DO NOT tokenize executive_lede — it's our own auto-generated
+    //    output that contains the same clinical content as triage_rationale,
+    //    just paraphrased. Including it triples the chances of medical-prose
+    //    stopwords like "established" sneaking through and bumping false-
+    //    positive matches into the high-confidence bucket.)
 
     return {
         tokens: new Set(provenance.keys()),
