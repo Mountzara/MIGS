@@ -2,6 +2,9 @@
 *~
 *.bak
 *.swp
+*.pre-cite-rebuild.html
+*.pre-voice-sweep.html
+*.pre-rebuild.html
 
 # Wrangler
 .wrangler/
