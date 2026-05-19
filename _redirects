@@ -8,9 +8,9 @@
 /blog/ /trending/ 301
 /blog/* /trending/:splat 301
 
-# Phase 5 clinician workspace — /admin/cases/<patient_id>/ is a single
-# static SPA at /admin/cases/[id]/index.html. Cloudflare Pages serves
-# the literal [id] folder only when the URL also has [id] in it, so we
-# rewrite any patient_id path to that one file. The SPA reads the
-# patient_id from window.location.pathname itself.
-/admin/cases/* /admin/cases/[id]/index.html 200
+# Phase 5 clinician workspace — /admin/cases/<patient_id>/ routes through
+# Pages Functions at functions/admin/cases/[patient_id]/index.js (and the
+# snapshot subroute). The Functions serve the static SPA HTML so trailing-
+# slash directory navigation in the browser works without falling back to
+# the marketing homepage. _redirects rewrites were unreliable for this
+# pattern — see incident note in CLAUDE.md.

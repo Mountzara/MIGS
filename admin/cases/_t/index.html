@@ -231,13 +231,35 @@
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; <a href="/admin/patients/">Patients</a> &rsaquo; <span id="crumb-name">…</span></span>
-            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="patient-id">—</span>
+            <a id="proms-link" href="#"
+               style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
+                      background: rgba(var(--glow-purple), 0.08); border: 1px solid rgba(var(--glow-purple), 0.32);
+                      color: var(--accent-soft); text-decoration: none; transition: all 0.2s;">PROMs →</a>
+            <a id="snapshot-link" href="#"
+               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
+                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
+                      color: var(--accent-soft); text-decoration: none; transition: all 0.2s;">AI snapshot →</a>
+            <span style="font-size:12px; color: var(--fg-dim); margin-left: 8px;" id="patient-id">—</span>
         </header>
 
         <section class="patient-card">
             <h1 id="p-name">Loading…</h1>
             <div class="patient-meta" id="p-meta"></div>
             <div class="summary-chips" id="summary-chips"></div>
+        </section>
+
+        <!-- Phase 9.5 — "What's new since you last looked" panel.
+             Hydrated by /api/v1/admin/cases/:id/whats-new. -->
+        <section class="panel" id="panel-whats-new" style="display:none; border-color: rgba(var(--glow-purple), 0.32);">
+            <h2 style="display:flex; align-items:baseline; gap:14px;">
+                What's new since you last looked
+                <span id="whats-new-counts" style="font-size:13px; font-weight:400; color: var(--fg-soft);"></span>
+                <button type="button" id="btn-mark-viewed"
+                    style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
+                           background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.32);
+                           color: var(--accent-soft); cursor: pointer;">Mark as reviewed</button>
+            </h2>
+            <div id="whats-new-events"></div>
         </section>
 
         <nav class="tab-bar" id="tab-bar"></nav>
@@ -359,10 +381,58 @@
                 renderPatientHeader(data);
                 renderTabs(data);
                 renderAll(data);
+                // Phase 9.5 — fetch + render the "What's new since you last looked" panel.
+                // Best-effort: failure here does NOT block the case view.
+                try { await loadWhatsNew(); } catch (e) { console.warn("whats-new failed", e); }
             } catch (e) {
                 document.body.innerHTML = `<div class="wrap"><div class="empty-state">Could not load case: ${escapeHtml(e.message)}</div></div>`;
             }
         })();
+
+        async function loadWhatsNew() {
+            const data = await fetchJson(`/api/v1/admin/cases/${encodeURIComponent(patient_id)}/whats-new`);
+            const events = data.events || [];
+            if (!events.length) {
+                $('panel-whats-new').style.display = 'none';
+                return;
+            }
+            const c = data.counts || { by_severity: {} };
+            const cs = c.by_severity || {};
+            const parts = [];
+            if (cs.urgent)  parts.push(`<span style="color: rgba(252,165,165,0.95);">${cs.urgent} urgent</span>`);
+            if (cs.warning) parts.push(`<span style="color: rgba(253,224,71,0.95);">${cs.warning} warning</span>`);
+            if (cs.info)    parts.push(`<span style="color: var(--fg-soft);">${cs.info} info</span>`);
+            const sinceLabel = data.first_visit
+                ? 'showing the last 30 days (first time you\'re viewing this patient)'
+                : `since you last viewed on ${new Date(data.since).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}`;
+            $('whats-new-counts').innerHTML = `${parts.join(' · ')} — ${sinceLabel}`;
+            $('whats-new-events').innerHTML = events.map(e => {
+                const tone = e.severity === 'urgent' ? 'rgba(239,68,68,0.42)'
+                           : e.severity === 'warning' ? 'rgba(245,158,11,0.42)'
+                           : 'rgba(167,139,250,0.32)';
+                const sev = e.severity === 'urgent' ? '⚠️ URGENT'
+                          : e.severity === 'warning' ? '⚠ WARNING'
+                          : '·';
+                return `
+                    <div style="padding:12px 14px; margin-bottom:8px; background: rgba(255,255,255,0.04); border: 1px solid ${tone}; border-radius: 10px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);">
+                        <div style="display:flex; justify-content:space-between; gap:14px; align-items: baseline;">
+                            <span style="font-size:14px; font-weight: 500; color: var(--fg-strong);">${escapeHtml(e.event_summary)}</span>
+                            <span style="font-size: 11px; color: var(--fg-dim);">${sev} · ${new Date(e.occurred_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--fg-dim); margin-top: 3px; letter-spacing: 0.04em; text-transform: uppercase;">${escapeHtml(e.event_type)}${e.ref_kind ? ' · '+escapeHtml(e.ref_kind) : ''}</div>
+                    </div>
+                `;
+            }).join('');
+            $('panel-whats-new').style.display = '';
+            $('btn-mark-viewed').onclick = async () => {
+                try {
+                    await fetchJson(`/api/v1/admin/cases/${encodeURIComponent(patient_id)}/whats-new`, { method: 'POST', body: JSON.stringify({}) });
+                    $('panel-whats-new').style.display = 'none';
+                } catch (e) {
+                    alert('Could not mark as reviewed: ' + (e.message || e));
+                }
+            };
+        }
 
         function renderPatientHeader(d) {
             const p = d.patient;
@@ -370,6 +440,8 @@
             $('crumb-name').textContent = name;
             $('patient-id').textContent = p.id;
             $('p-name').textContent = name;
+            $('snapshot-link').href = `/admin/cases/${encodeURIComponent(p.id)}/snapshot/`;
+            $('proms-link').href = `/admin/cases/${encodeURIComponent(p.id)}/proms/`;
             document.title = `Case · ${name}`;
             const meta = [
                 p.dob ? `<span><span class="k">DOB</span>${escapeHtml(p.dob)}${p.age_years != null ? ` (${p.age_years}y)` : ''}</span>` : '',
