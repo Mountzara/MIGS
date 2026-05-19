@@ -2,7 +2,7 @@
 // Admin-gated proxy for a single carousel bundle file (PDF, slide PNGs).
 // Used by the admin SPA to render the cover thumbnail + download links.
 
-import { adminRoute, jsonError } from "../../../../../_lib/admin_api.js";
+import { adminRoute, jsonError } from "../../../../../../_lib/admin_api.js";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9_-]{2,80}$/;
 const NAME_RE = /^[A-Za-z0-9._-]{1,120}$/;
