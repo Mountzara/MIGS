@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Pre-visit briefings · Admin · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #0a0a0c;
+            --bg-elev:      #14141a;
+            --ink:          #f5f5f7;
+            --ink-mute:     rgba(245, 245, 247, 0.74);
+            --ink-soft:     rgba(245, 245, 247, 0.46);
+            --ink-faint:    rgba(245, 245, 247, 0.22);
+            --accent:       #6d28d9;
+            --glow-purple:  167, 139, 250;
+            --hairline:     rgba(255, 255, 255, 0.10);
+            --emerald:      #34d399;
+            --red:          #ef4444;
+            --amber:        #fbbf24;
+            --terra:        #b85a47;
+            --oxblood:      #8a3d2d;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background: var(--bg); color: var(--ink);
+            min-height: 100vh;
+        }
+        body {
+            font-family: 'Nunito Sans', 'Avenir Next', -apple-system, BlinkMacSystemFont,
+                         "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.55;
+        }
+
+        main { padding: clamp(20px, 3vw, 36px) clamp(16px, 4vw, 40px) 80px; }
+        .page-head {
+            max-width: 1480px; margin: 0 auto 24px;
+            display: flex; flex-wrap: wrap; align-items: flex-end;
+            gap: 16px 24px;
+        }
+        .page-head .titles { flex: 1 1 auto; min-width: 280px; }
+        .page-head h1 {
+            margin: 0; font-weight: 200; letter-spacing: -0.022em;
+            font-size: clamp(28px, 4vw, 42px);
+        }
+        .page-head .eyebrow {
+            color: rgba(var(--glow-purple), 0.95);
+            text-transform: uppercase; letter-spacing: 0.22em;
+            font-size: 11px; font-weight: 700; margin: 0 0 10px;
+        }
+        .page-head .lede {
+            color: var(--ink-mute); font-size: 15px;
+            margin: 6px 0 0; max-width: 60ch;
+        }
+        .toolbar {
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        }
+        .toolbar label { color: var(--ink-soft); font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.12em; }
+        .toolbar input[type=date], .toolbar select, .toolbar button {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline); border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--ink); font: inherit; font-size: 13px;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .toolbar button { cursor: pointer; }
+        .toolbar input[type=date]:focus, .toolbar select:focus, .toolbar button:hover {
+            border-color: rgba(var(--glow-purple), 0.55);
+            background: rgba(var(--glow-purple), 0.10);
+            outline: none;
+        }
+        .range-pills { display: flex; gap: 6px; }
+        .range-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline); border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 12px; font-weight: 600; color: var(--ink-mute);
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s, border-color 0.18s;
+        }
+        .range-pill:hover { color: var(--ink); border-color: rgba(var(--glow-purple), 0.45); }
+        .range-pill.active {
+            background: rgba(var(--glow-purple), 0.12);
+            border-color: rgba(var(--glow-purple), 0.55);
+            color: rgba(var(--glow-purple), 0.98);
+        }
+
+        .layout {
+            max-width: 1480px; margin: 0 auto;
+            display: grid; grid-template-columns: 320px 1fr;
+            gap: clamp(16px, 2vw, 28px);
+            align-items: start;
+        }
+        @media (max-width: 880px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        /* ============== APPLE-GLASS BASE for every card ============== */
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+        }
+        .card.hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+
+        /* ============== Left rail — schedule list ============== */
+        .rail { padding: 18px 0; position: sticky; top: 16px; }
+        .rail-head {
+            padding: 0 18px 12px;
+            border-bottom: 1px solid var(--hairline);
+            margin-bottom: 8px;
+            font-size: 12px; font-weight: 700;
+            color: rgba(var(--glow-purple), 0.95);
+            text-transform: uppercase; letter-spacing: 0.18em;
+        }
+        .rail-empty {
+            padding: 28px 18px; color: var(--ink-soft);
+            font-size: 13px; font-style: italic;
+            text-align: center;
+        }
+        .rail-item {
+            padding: 12px 18px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            display: flex; gap: 12px; align-items: flex-start;
+            transition: background 0.18s, border-left-color 0.18s;
+        }
+        .rail-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: rgba(var(--glow-purple), 0.35);
+        }
+        .rail-item.selected {
+            background: rgba(var(--glow-purple), 0.10);
+            border-left-color: rgba(var(--glow-purple), 0.85);
+        }
+        .rail-time {
+            font-size: 12px; font-weight: 700;
+            color: var(--ink); min-width: 56px;
+        }
+        .rail-time small {
+            display: block; font-weight: 400; font-size: 10px;
+            color: var(--ink-soft); letter-spacing: 0.08em;
+            text-transform: uppercase; margin-top: 2px;
+        }
+        .rail-body { flex: 1 1 auto; min-width: 0; }
+        .rail-name { font-weight: 600; font-size: 13px; line-height: 1.3; }
+        .rail-name small { color: var(--ink-soft); font-weight: 400; }
+        .rail-visit { color: var(--ink-mute); font-size: 11px; margin-top: 3px; }
+        .rail-mod {
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 1px 7px; border-radius: 999px;
+            display: inline-block; margin-top: 4px;
+        }
+        .rail-mod.in_person { background: rgba(52, 211, 153, 0.10); color: var(--emerald); }
+        .rail-mod.telehealth { background: rgba(var(--glow-purple), 0.14); color: rgba(var(--glow-purple), 0.98); }
+
+        /* ============== Main pane ============== */
+        .main {
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .briefing-section {
+            padding: 18px 20px;
+        }
+        .briefing-section h2 {
+            margin: 0 0 12px;
+            font-weight: 500; font-size: 15px;
+            color: rgba(var(--glow-purple), 0.95);
+            text-transform: uppercase; letter-spacing: 0.18em;
+        }
+        .briefing-section .empty-note {
+            color: var(--ink-soft); font-size: 13px; font-style: italic;
+        }
+
+        /* Patient header */
+        .ph {
+            display: flex; gap: 18px; padding: 20px 22px;
+            align-items: flex-start;
+        }
+        .ph .avatar {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(var(--glow-purple), 0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 300; color: rgba(var(--glow-purple), 0.95);
+            overflow: hidden; flex-shrink: 0;
+            border: 1px solid rgba(var(--glow-purple), 0.30);
+        }
+        .ph .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .ph .meta { flex: 1 1 auto; min-width: 0; }
+        .ph h1 {
+            margin: 0; font-weight: 300;
+            font-size: clamp(22px, 2.5vw, 30px); letter-spacing: -0.012em;
+        }
+        .ph .ph-sub {
+            margin: 4px 0 0; color: var(--ink-mute); font-size: 13px;
+        }
+        .ph .ph-sub strong { color: var(--ink); font-weight: 600; }
+        .ph .goals {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+        }
+        .goal-chip {
+            font-size: 11px; padding: 4px 10px; border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.10);
+            color: rgba(var(--glow-purple), 0.95);
+            border: 1px solid rgba(var(--glow-purple), 0.30);
+        }
+        .goal-chip.avoid { background: rgba(239, 68, 68, 0.08); color: var(--red);
+                          border-color: rgba(239, 68, 68, 0.30); }
+        .goal-chip.preference { background: rgba(251, 191, 36, 0.08); color: var(--amber);
+                                border-color: rgba(251, 191, 36, 0.30); }
+        .care-notes {
+            margin-top: 10px; padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--hairline); border-radius: 10px;
+            font-size: 13px; color: var(--ink-mute); font-style: italic;
+        }
+
+        /* Executive lede — the headline TL;DR */
+        .lede-card {
+            padding: 22px 26px;
+            background: rgba(var(--glow-purple), 0.07);
+            border-color: rgba(var(--glow-purple), 0.45);
+        }
+        .lede-card .lede-text {
+            font-size: 16px; line-height: 1.5; color: var(--ink);
+            margin: 0; font-weight: 400;
+        }
+
+        /* Watch-for chips */
+        .watch-grid {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+        .watch-chip {
+            font-size: 12.5px; padding: 6px 12px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline);
+            display: flex; gap: 8px; align-items: center;
+        }
+        .watch-chip .sev-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--ink-soft);
+            flex-shrink: 0;
+        }
+        .watch-chip.high { border-color: rgba(239, 68, 68, 0.55);
+                           background: rgba(239, 68, 68, 0.07); }
+        .watch-chip.high .sev-dot { background: var(--red); }
+        .watch-chip.moderate { border-color: rgba(251, 191, 36, 0.50);
+                               background: rgba(251, 191, 36, 0.07); }
+        .watch-chip.moderate .sev-dot { background: var(--amber); }
+        .watch-chip.active { border-color: rgba(251, 191, 36, 0.50);
+                             background: rgba(251, 191, 36, 0.07); }
+        .watch-chip.active .sev-dot { background: var(--amber); }
+        .watch-chip.preference { border-color: rgba(52, 211, 153, 0.50);
+                                 background: rgba(52, 211, 153, 0.07); }
+        .watch-chip.preference .sev-dot { background: var(--emerald); }
+
+        /* Suggested questions */
+        .qlist { list-style: none; margin: 0; padding: 0; }
+        .qlist li {
+            padding: 8px 0 8px 22px;
+            position: relative; font-size: 14px; color: var(--ink-mute);
+            border-bottom: 1px solid var(--hairline);
+        }
+        .qlist li:last-child { border-bottom: none; }
+        .qlist li::before {
+            content: "→";
+            position: absolute; left: 0; top: 8px;
+            color: rgba(var(--glow-purple), 0.9); font-weight: 700;
+        }
+
+        /* Personal touchpoints */
+        .ptouch {
+            padding: 12px 14px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--hairline);
+            margin-bottom: 8px;
+        }
+        .ptouch .ptouch-head { display: flex; gap: 8px; align-items: center;
+            font-size: 11.5px; font-weight: 700; color: var(--ink-soft);
+            text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 4px; }
+        .ptouch .ptouch-pin {
+            font-size: 10px; color: rgba(var(--glow-purple), 0.95);
+        }
+        .ptouch .ptouch-summary {
+            font-size: 14px; color: var(--ink); margin: 0 0 4px;
+        }
+        .ptouch .ptouch-body {
+            font-size: 13px; color: var(--ink-mute); margin: 0;
+        }
+
+        /* Clinical bands */
+        .band { padding: 12px 14px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--hairline);
+            margin-bottom: 8px; font-size: 13px;
+        }
+        .band-label {
+            font-size: 11px; font-weight: 700; color: var(--ink-soft);
+            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px;
+        }
+
+        /* PROM row */
+        .prom-row {
+            display: flex; gap: 8px; align-items: baseline;
+            padding: 6px 0; border-bottom: 1px solid var(--hairline);
+        }
+        .prom-row:last-child { border: none; }
+        .prom-name { font-weight: 600; min-width: 80px; font-size: 13px; }
+        .prom-arrow {
+            font-size: 14px; font-weight: 700;
+        }
+        .prom-arrow.improved { color: var(--emerald); }
+        .prom-arrow.worsened { color: var(--red); }
+        .prom-arrow.stable { color: var(--ink-soft); }
+        .prom-interp { color: var(--ink-mute); font-size: 12px; }
+
+        /* Medication watch cards */
+        .med-card {
+            padding: 12px 14px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--hairline);
+            margin-bottom: 10px;
+        }
+        .med-card-head { display: flex; gap: 10px; align-items: baseline; }
+        .med-card-name { font-weight: 700; font-size: 14px; }
+        .med-card-sub { color: var(--ink-soft); font-size: 11.5px; }
+        .med-card-status {
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.10em; padding: 2px 8px; border-radius: 999px;
+            margin-left: auto;
+        }
+        .med-card-status.clear  { background: rgba(52, 211, 153, 0.10); color: var(--emerald); }
+        .med-card-status.match  { background: rgba(239, 68, 68, 0.10); color: var(--red); }
+        .med-card-status.notfound { background: rgba(251, 191, 36, 0.10); color: var(--amber); }
+        .med-match {
+            padding: 8px 10px; margin-top: 8px; border-radius: 8px;
+            background: rgba(239, 68, 68, 0.07);
+            border-left: 3px solid var(--red);
+        }
+        .med-match.moderate { background: rgba(251, 191, 36, 0.07); border-left-color: var(--amber); }
+        .med-match.low { background: rgba(255, 255, 255, 0.03); border-left-color: var(--ink-faint); }
+        .med-match-head {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.10em; color: var(--ink-soft); margin-bottom: 4px;
+        }
+        .med-match-tokens {
+            display: inline-flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;
+        }
+        .tok-chip {
+            font-size: 10.5px; padding: 1px 8px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--ink); font-weight: 600;
+        }
+        .med-match-ae { color: var(--ink-mute); font-size: 12.5px; font-style: italic; }
+        .med-card-source {
+            font-size: 10.5px; color: var(--ink-faint);
+            margin-top: 8px; padding-top: 6px;
+            border-top: 1px solid var(--hairline);
+        }
+        .med-advisory {
+            font-size: 12.5px; color: var(--amber); margin-top: 6px;
+        }
+
+        /* Encounter row */
+        .enc-row {
+            padding: 8px 0; border-bottom: 1px solid var(--hairline);
+            display: flex; gap: 14px; align-items: baseline; font-size: 13px;
+        }
+        .enc-row:last-child { border: none; }
+        .enc-date { min-width: 100px; font-weight: 600; color: var(--ink); }
+        .enc-type { color: var(--ink-mute); }
+        .enc-cc { color: var(--ink-mute); flex: 1 1 auto; }
+
+        /* Documents */
+        .doc-row {
+            padding: 8px 12px; margin-bottom: 6px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--hairline);
+            display: flex; gap: 10px; align-items: center; font-size: 13px;
+        }
+        .doc-kind {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.10em; color: var(--ink-soft);
+            padding: 2px 8px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05); flex-shrink: 0;
+        }
+        .doc-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .doc-meta { color: var(--ink-soft); font-size: 11px; flex-shrink: 0; }
+
+        /* Error / loading states */
+        .placeholder {
+            padding: 40px; text-align: center;
+            color: var(--ink-soft); font-style: italic;
+        }
+        .error-card {
+            padding: 18px 22px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px;
+            color: var(--red); font-size: 13px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js" defer></script>
+    <main>
+        <header class="page-head">
+            <div class="titles">
+                <p class="eyebrow">Mount Zara · Admin</p>
+                <h1>Pre-visit briefings</h1>
+                <p class="lede">AI-synthesized day-of-clinic briefings — one per patient on the
+                    schedule. Pulls from intake, encounters, PROMs, snapshot, personal notes,
+                    medications + openFDA AE matches. Click a name on the left to load.</p>
+            </div>
+            <div class="toolbar">
+                <label for="date">Date</label>
+                <input type="date" id="date">
+                <div class="range-pills" role="tablist">
+                    <button class="range-pill active" data-range="day" type="button">Day</button>
+                    <button class="range-pill" data-range="week" type="button">Week</button>
+                </div>
+                <button id="refresh" type="button" title="Refresh">↻</button>
+            </div>
+        </header>
+
+        <div class="layout">
+            <aside class="card rail" id="rail">
+                <div class="rail-head">Schedule</div>
+                <div class="rail-empty">Loading…</div>
+            </aside>
+            <section class="main" id="main">
+                <div class="card placeholder">
+                    Select a patient on the left to load their briefing.
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // ----------------------------------------------------------------
+        // State
+        // ----------------------------------------------------------------
+        const state = {
+            window: null,
+            briefings: [],     // raw briefing objects from the window API
+            appointments: [],
+            selectedPatientId: null,
+            range: "day",
+        };
+
+        const $ = (sel, el = document) => el.querySelector(sel);
+        const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+
+        function todayISO() {
+            const d = new Date();
+            return d.toISOString().slice(0, 10);
+        }
+        function fmtTime(ms) {
+            if (!ms) return "";
+            const d = new Date(ms);
+            return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+        }
+        function fmtDate(ms) {
+            if (!ms) return "";
+            const d = new Date(ms);
+            return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+        }
+        function esc(s) {
+            if (s == null) return "";
+            return String(s).replace(/[&<>"']/g, (c) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+            })[c]);
+        }
+        function initial(name) {
+            if (!name) return "?";
+            return String(name).trim().charAt(0).toUpperCase();
+        }
+
+        // ----------------------------------------------------------------
+        // Schedule loading
+        // ----------------------------------------------------------------
+        async function loadSchedule() {
+            const date = $("#date").value || todayISO();
+            const range = state.range;
+            const url = `/api/v1/admin/briefings?date=${date}&range=${range}`;
+            const rail = $("#rail");
+            rail.innerHTML = '<div class="rail-head">Schedule</div><div class="rail-empty">Loading…</div>';
+            try {
+                const resp = await fetch(url, { credentials: "include" });
+                if (resp.status === 401) {
+                    rail.innerHTML = '<div class="rail-head">Schedule</div><div class="rail-empty">Sign in required.</div>';
+                    return;
+                }
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                state.window = data.window;
+                state.briefings = data.briefings || [];
+                state.appointments = data.appointments || [];
+                renderRail();
+                // Auto-select: if a patient was previously selected and still in window, keep them;
+                // otherwise pick the first scheduled patient (or just the first briefing).
+                const stillThere = state.selectedPatientId &&
+                    state.briefings.find((b) => b.patient.id === state.selectedPatientId);
+                if (!stillThere && state.briefings.length) {
+                    state.selectedPatientId = state.briefings[0].patient.id;
+                }
+                if (state.selectedPatientId) {
+                    loadBriefingForPatient(state.selectedPatientId);
+                } else {
+                    $("#main").innerHTML = `<div class="card placeholder">
+                        No scheduled patients in this window. Try widening the range or
+                        loading a single patient by ID.</div>`;
+                }
+            } catch (e) {
+                rail.innerHTML = `<div class="rail-head">Schedule</div>
+                    <div class="rail-empty">Failed to load: ${esc(e.message || e)}</div>`;
+            }
+        }
+
+        function renderRail() {
+            const rail = $("#rail");
+            if (!state.briefings.length) {
+                rail.innerHTML = `<div class="rail-head">Schedule</div>
+                    <div class="rail-empty">No appointments in window.</div>`;
+                return;
+            }
+            // Build rail items keyed by appointment_focus (the earliest appt per patient).
+            const items = state.briefings.map((b) => {
+                const ap = b.appointment_focus;
+                const p = b.patient;
+                const time = ap ? fmtTime(ap.starts_at) : "";
+                const date = ap ? fmtDate(ap.starts_at) : "";
+                const visit = ap ? esc(ap.visit_type || "") : "";
+                const mod = ap ? (ap.modality || "in_person") : "";
+                const selected = (p.id === state.selectedPatientId) ? " selected" : "";
+                const nick = p.nickname ? `<small> · ${esc(p.nickname)}</small>` : "";
+                return `<div class="rail-item${selected}" data-pid="${esc(p.id)}">
+                    <div class="rail-time">${esc(time)}<small>${esc(date)}</small></div>
+                    <div class="rail-body">
+                        <div class="rail-name">${esc(p.full_name)}${nick}</div>
+                        <div class="rail-visit">${visit}</div>
+                        ${mod ? `<span class="rail-mod ${esc(mod)}">${esc(mod === "telehealth" ? "Telehealth" : "In-person")}</span>` : ""}
+                    </div>
+                </div>`;
+            }).join("");
+            rail.innerHTML = `<div class="rail-head">Schedule (${state.briefings.length})</div>${items}`;
+            $$(".rail-item", rail).forEach((el) => {
+                el.addEventListener("click", () => {
+                    state.selectedPatientId = el.dataset.pid;
+                    $$(".rail-item", rail).forEach((x) => x.classList.toggle("selected",
+                        x === el));
+                    loadBriefingForPatient(state.selectedPatientId);
+                });
+            });
+        }
+
+        // ----------------------------------------------------------------
+        // Briefing loading (single patient — full med watch)
+        // ----------------------------------------------------------------
+        async function loadBriefingForPatient(patientId) {
+            const main = $("#main");
+            main.innerHTML = `<div class="card placeholder">Loading briefing…</div>`;
+            try {
+                // Find the focused appointment for this patient in the current window.
+                const matched = state.briefings.find((b) => b.patient.id === patientId);
+                const apId = matched?.appointment_focus?.id;
+                const url = apId
+                    ? `/api/v1/admin/briefings/${patientId}?appointment_id=${apId}`
+                    : `/api/v1/admin/briefings/${patientId}`;
+                const resp = await fetch(url, { credentials: "include" });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const b = await resp.json();
+                renderBriefing(b);
+            } catch (e) {
+                main.innerHTML = `<div class="error-card">Failed to load briefing: ${esc(e.message || e)}</div>`;
+            }
+        }
+
+        function renderBriefing(b) {
+            const p = b.patient || {};
+            const out = [];
+
+            // Patient header
+            const photoTag = p.photo_url
+                ? `<img src="${esc(p.photo_url)}" alt="" loading="lazy">`
+                : esc(initial(p.full_name));
+            const subParts = [];
+            if (p.age != null) subParts.push(`<strong>${esc(p.age)}</strong>`);
+            if (p.pronouns) subParts.push(esc(p.pronouns));
+            if (p.preferred_language && p.preferred_language !== "en")
+                subParts.push(`prefers ${esc(p.preferred_language)}`);
+            const sub = subParts.join(" · ");
+            const cg = p.care_goals || {};
+            const cgChips = [];
+            for (const g of (cg.goals || [])) cgChips.push(`<span class="goal-chip">Goal: ${esc(g)}</span>`);
+            for (const pf of (cg.preferences || [])) cgChips.push(`<span class="goal-chip preference">${esc(pf)}</span>`);
+            for (const av of (cg.avoid || [])) cgChips.push(`<span class="goal-chip avoid">Avoid: ${esc(av)}</span>`);
+            out.push(`<div class="card ph">
+                <div class="avatar">${photoTag}</div>
+                <div class="meta">
+                    <h1>${esc(p.nickname || p.preferred_name || p.first_name || "Patient")}
+                        ${p.nickname ? `<span style="color: var(--ink-soft); font-size: 0.7em; font-weight: 300;">(${esc(p.full_name)})</span>` : ""}
+                    </h1>
+                    <p class="ph-sub">${sub}</p>
+                    ${cgChips.length ? `<div class="goals">${cgChips.join("")}</div>` : ""}
+                    ${cg.notes ? `<div class="care-notes">${esc(cg.notes)}</div>` : ""}
+                </div>
+            </div>`);
+
+            // Executive lede
+            if (b.executive_lede) {
+                out.push(`<div class="card lede-card">
+                    <p class="lede-text">${esc(b.executive_lede)}</p>
+                </div>`);
+            }
+
+            // Focused appointment
+            const ap = b.appointment_focus;
+            if (ap) {
+                out.push(`<div class="card briefing-section">
+                    <h2>Today's appointment</h2>
+                    <div class="band">
+                        <div>${esc(fmtDate(ap.starts_at))} at <strong>${esc(fmtTime(ap.starts_at))}</strong>
+                            · ${esc(ap.visit_type || "")}
+                            · ${esc(ap.modality === "telehealth" ? "Telehealth" : "In-person")}
+                            · ${esc(ap.duration_min || "")} min</div>
+                        ${ap.chief_complaint_summary ? `<div style="margin-top:6px;">CC: ${esc(ap.chief_complaint_summary)}</div>` : ""}
+                        ${ap.doxy_room_url ? `<div style="margin-top:6px;"><a style="color: rgba(var(--glow-purple), 0.95);" href="${esc(ap.doxy_room_url)}" target="_blank">Open Doxy room ↗</a></div>` : ""}
+                    </div>
+                </div>`);
+            }
+
+            // Watch for
+            const wf = b.watch_for || [];
+            if (wf.length) {
+                const chips = wf.map((w) =>
+                    `<span class="watch-chip ${esc(w.severity)}"><span class="sev-dot"></span>${esc(w.label)}</span>`
+                ).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>Watch for</h2>
+                    <div class="watch-grid">${chips}</div>
+                </div>`);
+            }
+
+            // Suggested questions
+            const sq = b.suggested_questions || [];
+            if (sq.length) {
+                out.push(`<div class="card briefing-section">
+                    <h2>Suggested questions</h2>
+                    <ul class="qlist">${sq.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>
+                </div>`);
+            }
+
+            // Personal touchpoints
+            const pt = b.personal_touchpoints || [];
+            if (pt.length) {
+                const items = pt.map((n) => `<div class="ptouch">
+                    <div class="ptouch-head">
+                        <span>${esc(n.category)}</span>
+                        ${n.is_pinned ? `<span class="ptouch-pin">📌 pinned</span>` : ""}
+                    </div>
+                    <p class="ptouch-summary">${esc(n.summary)}</p>
+                    ${n.body ? `<p class="ptouch-body">${esc(n.body)}</p>` : ""}
+                </div>`).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>Personal touchpoints</h2>
+                    ${items}
+                </div>`);
+            }
+
+            // Snapshot summary
+            const snap = b.snapshot_summary;
+            if (snap) {
+                const parts = [];
+                if (snap.executive_summary) parts.push(`<div class="band"><div class="band-label">Snapshot summary</div>${esc(snap.executive_summary)}</div>`);
+                if (snap.chief_complaint) parts.push(`<div class="band"><div class="band-label">Chief complaint</div>${esc(snap.chief_complaint)}</div>`);
+                if (snap.cc_history) parts.push(`<div class="band"><div class="band-label">CC history</div>${esc(snap.cc_history)}</div>`);
+                if ((snap.problems_preview || []).length) {
+                    const probs = snap.problems_preview.map((p) =>
+                        `<div style="font-size:13px;">• <strong>${esc(p.label)}</strong> <span style="color:var(--ink-soft);">— ${esc(p.status || "")}</span>${p.last_visit_plan ? ` · <em>${esc(p.last_visit_plan)}</em>` : ""}</div>`
+                    ).join("");
+                    parts.push(`<div class="band"><div class="band-label">Active problem list (${snap.problem_count})</div>${probs}</div>`);
+                }
+                if ((snap.action_items_preview || []).length) {
+                    const acts = snap.action_items_preview.map((a) =>
+                        `<div style="font-size:13px;">→ ${esc(a.label)}${a.due_date ? ` <span style="color:var(--ink-soft);">(due ${esc(a.due_date)})</span>` : ""}</div>`
+                    ).join("");
+                    parts.push(`<div class="band"><div class="band-label">Open action items (${snap.action_item_count})</div>${acts}</div>`);
+                }
+                if (parts.length) {
+                    out.push(`<div class="card briefing-section">
+                        <h2>Clinical snapshot</h2>
+                        ${parts.join("")}
+                    </div>`);
+                }
+            }
+
+            // Triage rationale
+            const tr = b.triage;
+            if (tr) {
+                out.push(`<div class="card briefing-section">
+                    <h2>Triage</h2>
+                    <div class="band">
+                        <div><strong>${esc(tr.visit_type || "")}</strong>${tr.estimated_duration_min ? ` · ${esc(tr.estimated_duration_min)} min` : ""}${tr.urgency ? ` · ${esc(tr.urgency)}` : ""}${tr.in_person_required ? " · in-person required" : ""}</div>
+                        ${tr.rationale ? `<div style="margin-top:6px;">${esc(tr.rationale)}</div>` : ""}
+                    </div>
+                </div>`);
+            }
+
+            // PROM trends
+            const pr = b.prom_trends || [];
+            if (pr.length) {
+                const rows = pr.map((p) => {
+                    const arrow = p.direction === "improved" ? "↓" :
+                                  p.direction === "worsened" ? "↑" : "→";
+                    const delta = p.delta != null ? `(Δ ${p.delta > 0 ? "+" : ""}${p.delta})` : "";
+                    return `<div class="prom-row">
+                        <div class="prom-name">${esc(p.short_name)}</div>
+                        <div class="prom-arrow ${esc(p.direction || "stable")}">${arrow}</div>
+                        <div>${esc(p.previous_score ?? "—")} → <strong>${esc(p.latest_score ?? "—")}</strong> ${delta}</div>
+                        <div class="prom-interp">${esc(p.latest_interpretation || "")}${p.latest_period ? ` · ${esc(p.latest_period)}` : ""}</div>
+                    </div>`;
+                }).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>PROM trends</h2>
+                    ${rows}
+                </div>`);
+            }
+
+            // Obstetric history
+            const oh = b.obstetric_history;
+            if (oh) {
+                out.push(`<div class="card briefing-section">
+                    <h2>Obstetric history</h2>
+                    <div class="band">
+                        <div><strong>G${esc(oh.gravida)}P${esc(oh.para_living)}</strong> — ${esc(oh.para_simple)}</div>
+                        <div style="margin-top:4px; color: var(--ink-mute); font-size:12.5px;">
+                            ${oh.wants_future_pregnancy ? "Wants future pregnancy. " : ""}
+                            ${oh.ttc_now ? "Currently TTC. " : ""}
+                            ${oh.infertility_flag ? "Infertility dx. " : ""}
+                            ${oh.fertility_tx ? "On / has had fertility treatment." : ""}
+                        </div>
+                    </div>
+                </div>`);
+            }
+
+            // Past surgeries
+            const ps = b.past_surgeries;
+            if (ps && ps.count) {
+                const items = ps.items.map((s) => `<div>• ${esc(s.label)}${s.year ? ` (${esc(s.year)})` : ""}</div>`).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>Past gyn surgeries (${ps.count})</h2>
+                    <div class="band">${items}</div>
+                    ${ps.findings_text ? `<div class="band"><div class="band-label">Operative findings</div>${esc(ps.findings_text)}</div>` : ""}
+                </div>`);
+            }
+
+            // Medical history / ERAS
+            const mh = b.medical_history;
+            if (mh && (mh.eras_positives.length || mh.glp1_use.length || mh.anticoagulants.length || mh.hormone_tx.length || mh.other_conditions.length || mh.gyn_conditions.length)) {
+                const bands = [];
+                if (mh.glp1_use.length) {
+                    bands.push(`<div class="band"><div class="band-label">GLP-1 use (anesthesia hold)</div>${mh.glp1_use.map((g) => `${esc(g.drug)}${g.last_dose_date ? ` <span style="color:var(--ink-soft);">— last ${esc(g.last_dose_date)}</span>` : ""}`).join(", ")}</div>`);
+                }
+                if (mh.anticoagulants.length) {
+                    bands.push(`<div class="band"><div class="band-label">Anticoagulants</div>${mh.anticoagulants.map(esc).join(", ")}</div>`);
+                }
+                if (mh.eras_positives.length) {
+                    bands.push(`<div class="band"><div class="band-label">ERAS / perioperative positives</div>${mh.eras_positives.map((p) => `${esc(p.label)}${p.detail ? ` (${esc(p.detail)})` : ""}`).join(", ")}</div>`);
+                }
+                if (mh.hormone_tx.length) {
+                    bands.push(`<div class="band"><div class="band-label">Hormone therapy</div>${mh.hormone_tx.map(esc).join(", ")}</div>`);
+                }
+                if (mh.other_conditions.length) {
+                    bands.push(`<div class="band"><div class="band-label">Other medical conditions</div>${mh.other_conditions.map(esc).join(", ")}</div>`);
+                }
+                if (mh.gyn_conditions.length) {
+                    bands.push(`<div class="band"><div class="band-label">Gyn conditions</div>${mh.gyn_conditions.map(esc).join(", ")}</div>`);
+                }
+                out.push(`<div class="card briefing-section">
+                    <h2>Medical history</h2>
+                    ${bands.join("")}
+                </div>`);
+            }
+
+            // Current medications + medication_watch
+            const cm = b.current_medications;
+            const mw = b.medication_watch || [];
+            if ((cm && (cm.pain_meds || cm.contraceptives_hormones || cm.other_meds)) || mw.length) {
+                const rawBands = [];
+                if (cm?.pain_meds) rawBands.push(`<div class="band"><div class="band-label">Pain meds</div>${esc(cm.pain_meds)}</div>`);
+                if (cm?.contraceptives_hormones) rawBands.push(`<div class="band"><div class="band-label">Contraceptives / hormones</div>${esc(cm.contraceptives_hormones)}</div>`);
+                if (cm?.other_meds) rawBands.push(`<div class="band"><div class="band-label">Other meds</div>${esc(cm.other_meds)}</div>`);
+
+                const watchCards = mw.map((m) => {
+                    let status = "clear", statusLabel = "No symptom overlap";
+                    if (m.not_found) { status = "notfound"; statusLabel = "Drug not found"; }
+                    else if ((m.high_confidence_count || 0) > 0) { status = "match"; statusLabel = `${m.high_confidence_count} match${m.high_confidence_count === 1 ? "" : "es"}`; }
+                    else if (m.matches && m.matches.length) { statusLabel = `${m.matches.length} low-conf`; }
+                    const matches = (m.matches || []).slice(0, 4).map((mm) => {
+                        const toks = (mm.matched_tokens || []).map((t) => `<span class="tok-chip">${esc(t)}</span>`).join("");
+                        return `<div class="med-match ${esc(mm.confidence)}">
+                            <div class="med-match-head">${esc(mm.confidence)} · ${esc(mm.category)}</div>
+                            <div class="med-match-tokens">${toks}</div>
+                            <div class="med-match-ae">${esc(mm.ae_text.slice(0, 220))}${mm.ae_text.length > 220 ? "…" : ""}</div>
+                        </div>`;
+                    }).join("");
+                    const fetchedDate = m.fetched_at ? new Date(m.fetched_at).toISOString().slice(0, 10) : "";
+                    return `<div class="med-card">
+                        <div class="med-card-head">
+                            <span class="med-card-name">${esc(m.drug)}</span>
+                            <span class="med-card-sub">${esc(m.raw_input)}</span>
+                            <span class="med-card-status ${status}">${esc(statusLabel)}</span>
+                        </div>
+                        ${m.advisory ? `<div class="med-advisory">${esc(m.advisory)}</div>` : ""}
+                        ${matches}
+                        ${m.set_id ? `<div class="med-card-source">openFDA · set ${esc(m.set_id)} · fetched ${esc(fetchedDate)} · matched on ${esc(m.matched_on || "")}</div>` : ""}
+                    </div>`;
+                }).join("");
+
+                out.push(`<div class="card briefing-section">
+                    <h2>Current medications + AE watch</h2>
+                    ${rawBands.join("")}
+                    ${watchCards || `<div class="empty-note">No openFDA results loaded. The engine runs on briefing render and writes to drug_label_cache (30-day TTL).</div>`}
+                </div>`);
+            }
+
+            // Allergies
+            const al = b.allergies;
+            if (al && (al.has_drug_allergies || al.has_latex_allergy || al.list)) {
+                out.push(`<div class="card briefing-section">
+                    <h2>Allergies</h2>
+                    <div class="band">
+                        ${al.has_drug_allergies ? "<strong>Drug allergies on file.</strong> " : ""}
+                        ${al.has_latex_allergy ? "<strong>Latex allergy.</strong> " : ""}
+                        ${al.list ? `<div style="margin-top:6px;">${esc(al.list)}</div>` : ""}
+                    </div>
+                </div>`);
+            }
+
+            // Imaging summary
+            const im = b.imaging_summary;
+            if (im) {
+                const bits = [];
+                if (im.tvus_date) bits.push(`TVUS ${esc(im.tvus_date)}`);
+                if (im.endometrial_thickness_mm) bits.push(`endo thickness ${esc(im.endometrial_thickness_mm)} mm`);
+                if (im.fibroid_count) bits.push(`${esc(im.fibroid_count)} fibroid(s)`);
+                if (im.largest_fibroid_size_cm) bits.push(`largest ${esc(im.largest_fibroid_size_cm)} cm`);
+                if (im.had_pelvic_mri) bits.push(`MRI${im.pelvic_mri_date ? ` ${esc(im.pelvic_mri_date)}` : ""}`);
+                if (im.had_ct_abd_pelvis) bits.push(`CT A/P${im.ct_date ? ` ${esc(im.ct_date)}` : ""}`);
+                if (im.had_sonohysterography) bits.push(`SIS${im.sis_date ? ` ${esc(im.sis_date)}` : ""}`);
+                if (im.had_hsg) bits.push(`HSG${im.hsg_date ? ` ${esc(im.hsg_date)}` : ""}`);
+                if (bits.length) {
+                    out.push(`<div class="card briefing-section">
+                        <h2>Imaging summary</h2>
+                        <div class="band">${bits.join(" · ")}</div>
+                    </div>`);
+                }
+            }
+
+            // Recent encounters
+            const re = b.recent_encounters || [];
+            if (re.length) {
+                const rows = re.map((e) =>
+                    `<div class="enc-row">
+                        <div class="enc-date">${esc(e.visit_date || "")}</div>
+                        <div class="enc-type">${esc(e.visit_type || "")}</div>
+                        <div class="enc-cc">${esc(e.chief_complaint || "")}</div>
+                    </div>`
+                ).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>Recent encounters (${re.length})</h2>
+                    ${rows}
+                </div>`);
+            }
+
+            // Uploaded documents
+            const ud = b.uploaded_documents || [];
+            if (ud.length) {
+                const rows = ud.slice(0, 12).map((d) =>
+                    `<div class="doc-row">
+                        <span class="doc-kind">${esc(d.kind || "doc")}</span>
+                        <span class="doc-name">${esc(d.original_filename || "(no name)")}</span>
+                        <span class="doc-meta">${esc(d.content_type || "")} · ${esc(d.size_bytes ? Math.round(d.size_bytes / 1024) + " KB" : "")}</span>
+                    </div>`
+                ).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>Uploaded documents (${ud.length})</h2>
+                    ${rows}
+                </div>`);
+            }
+
+            // Footer — manifest
+            const mf = b.medication_watch_manifest;
+            if (mf && mf.openfda_calls?.length) {
+                const calls = mf.openfda_calls.map((c) =>
+                    `<div style="font-family: monospace; font-size: 11px; color: var(--ink-soft);">
+                        ${esc(c.raw)} → ${esc(c.drug_key)} · ${esc(c.cache)} · ${c.status || "—"} · ${c.duration_ms ? c.duration_ms + "ms" : "—"}
+                    </div>`
+                ).join("");
+                out.push(`<div class="card briefing-section">
+                    <h2>openFDA call log (§3.6 provenance)</h2>
+                    ${calls}
+                </div>`);
+            }
+
+            $("#main").innerHTML = out.join("");
+        }
+
+        // ----------------------------------------------------------------
+        // Wiring
+        // ----------------------------------------------------------------
+        $("#date").value = todayISO();
+        $("#refresh").addEventListener("click", loadSchedule);
+        $("#date").addEventListener("change", loadSchedule);
+        $$(".range-pill").forEach((pill) => {
+            pill.addEventListener("click", () => {
+                $$(".range-pill").forEach((p) => p.classList.toggle("active", p === pill));
+                state.range = pill.dataset.range;
+                loadSchedule();
+            });
+        });
+
+        loadSchedule();
+    </script>
+</body>
+</html>
