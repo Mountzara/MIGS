@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Carousels · Admin · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:           #0a0a0c;
+            --bg-elev:      #14141a;
+            --ink:          #f5f5f7;
+            --ink-mute:     rgba(245, 245, 247, 0.74);
+            --ink-soft:     rgba(245, 245, 247, 0.46);
+            --accent:       #6d28d9;
+            --glow-purple:  167, 139, 250;
+            --hairline:     rgba(255, 255, 255, 0.10);
+            --terra:        #b85a47;
+            --oxblood:      #8a3d2d;
+            --emerald:      #34d399;
+            --red:          #ef4444;
+            --amber:        #fbbf24;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+        body {
+            font-family: 'Nunito Sans', 'Avenir Next', -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px);
+        }
+        h1 {
+            margin: 0 0 8px 0;
+            font-weight: 200;
+            letter-spacing: -0.022em;
+            font-size: clamp(30px, 4.2vw, 46px);
+        }
+        .eyebrow {
+            color: rgba(var(--glow-purple), 0.95);
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            font-size: 11px;
+            font-weight: 700;
+            margin: 0 0 14px 0;
+        }
+        .lede {
+            max-width: 64ch;
+            color: var(--ink-mute);
+            font-size: 17px;
+            line-height: 1.55;
+            margin: 0 0 28px 0;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .filter-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: var(--ink-mute);
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, color 0.18s;
+        }
+        .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--ink);
+        }
+        .filter-pill.active {
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.45);
+            color: rgba(var(--glow-purple), 0.95);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: clamp(16px, 2.4vw, 28px);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--hairline);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            overflow: hidden;
+            transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(var(--glow-purple), 0.06);
+        }
+        .card-cover {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            background: rgba(255, 255, 255, 0.02);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: block;
+        }
+        .card-body {
+            padding: 14px 16px 18px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card-handle {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--terra);
+        }
+        .card-title {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--ink);
+            margin: 0;
+            line-height: 1.3;
+        }
+        .card-meta {
+            font-size: 12px;
+            color: var(--ink-soft);
+            line-height: 1.4;
+        }
+        .badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+        .badge {
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid var(--hairline);
+            color: var(--ink-mute);
+        }
+        .badge.status-draft     { color: var(--amber);   border-color: rgba(251, 191, 36, 0.45); }
+        .badge.status-approved  { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
+        .badge.status-rejected  { color: var(--red);     border-color: rgba(239, 68, 68, 0.45); }
+        .badge.status-published { color: rgba(var(--glow-purple), 0.95); border-color: rgba(var(--glow-purple), 0.45); }
+        .badge.gate-ready  { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
+        .badge.gate-blocked{ color: var(--red);     border-color: rgba(239, 68, 68, 0.45); }
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn {
+            flex: 1;
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--hairline);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--ink);
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, color 0.18s;
+        }
+        .btn:hover {
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.45);
+        }
+        .btn.btn-approve { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
+        .btn.btn-approve:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn.btn-reject  { color: var(--red);     border-color: rgba(239, 68, 68, 0.45); }
+        .empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--ink-soft);
+            padding: 64px 16px;
+            font-style: italic;
+        }
+        .err {
+            grid-column: 1 / -1;
+            background: rgba(239, 68, 68, 0.10);
+            border: 1px solid rgba(239, 68, 68, 0.40);
+            border-radius: 12px;
+            padding: 16px 18px;
+            color: var(--red);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js" defer></script>
+    <main>
+        <p class="eyebrow">Mount Zara · Admin</p>
+        <h1>Carousel queue</h1>
+        <p class="lede">
+            Generated social-media carousels (Instagram + LinkedIn) waiting for editorial review.
+            Each tile shows the cover slide + handle + deploy-gate verdict. Approve releases the
+            bundle for publish; reject removes it from the queue.
+        </p>
+
+        <div class="toolbar">
+            <div class="filter-pill active" data-filter="">All</div>
+            <div class="filter-pill" data-filter="draft">Draft</div>
+            <div class="filter-pill" data-filter="approved">Approved</div>
+            <div class="filter-pill" data-filter="rejected">Rejected</div>
+            <div class="filter-pill" data-filter="published">Published</div>
+        </div>
+
+        <div class="grid" id="grid">
+            <div class="empty">Loading…</div>
+        </div>
+    </main>
+
+    <script>
+        const grid = document.getElementById("grid");
+        let activeFilter = "";
+        let allCarousels = [];
+
+        async function fetchCarousels() {
+            try {
+                const resp = await fetch("/api/v1/admin/carousels", { credentials: "include" });
+                if (resp.status === 401) {
+                    grid.innerHTML = '<div class="err">Sign in required.</div>';
+                    return;
+                }
+                if (!resp.ok) {
+                    grid.innerHTML = `<div class="err">API error ${resp.status}.</div>`;
+                    return;
+                }
+                const body = await resp.json();
+                allCarousels = body.carousels || [];
+                renderGrid();
+            } catch (e) {
+                grid.innerHTML = `<div class="err">Network error: ${e.message || e}.</div>`;
+            }
+        }
+
+        function renderGrid() {
+            const list = activeFilter
+                ? allCarousels.filter((c) => c.status === activeFilter)
+                : allCarousels;
+            if (!list.length) {
+                grid.innerHTML = '<div class="empty">No carousels yet. Run the pipeline + publisher to queue one.</div>';
+                return;
+            }
+            grid.innerHTML = list.map(carouselCard).join("\n");
+            grid.querySelectorAll("[data-action]").forEach((btn) => {
+                btn.addEventListener("click", onAction);
+            });
+        }
+
+        function carouselCard(c) {
+            const status = c.status || "draft";
+            const ready = c.ready_to_publish;
+            const cover = c.cover_png_url
+                ? `<div class="card-cover" style="background-image: url('${c.cover_png_url}');"></div>`
+                : `<div class="card-cover"></div>`;
+            const week = c.week_label ? ` · ${escapeHtml(c.week_label)}` : "";
+            const createdAt = c.created_at
+                ? new Date(c.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                : "";
+            return `
+            <article class="card" data-slug="${escapeHtml(c.slug)}">
+                ${cover}
+                <div class="card-body">
+                    <div class="card-handle">${escapeHtml(c.handle_line || "Mount Zara · Carousel")}${week}</div>
+                    <h3 class="card-title">${escapeHtml(c.title || c.slug)}</h3>
+                    <div class="card-meta">${c.slide_count || 0} slides · created ${createdAt}</div>
+                    <div class="badges">
+                        <span class="badge status-${status}">${status.toUpperCase()}</span>
+                        <span class="badge ${ready ? "gate-ready" : "gate-blocked"}">${ready ? "READY" : "BLOCKED"}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-approve" data-action="approve" data-slug="${escapeHtml(c.slug)}"
+                                ${(!ready || status !== "draft") ? "disabled" : ""}>Approve</button>
+                        <button class="btn btn-reject" data-action="reject" data-slug="${escapeHtml(c.slug)}"
+                                ${(status === "rejected") ? "disabled" : ""}>Reject</button>
+                    </div>
+                </div>
+            </article>`;
+        }
+
+        async function onAction(ev) {
+            const btn = ev.currentTarget;
+            const slug = btn.dataset.slug;
+            const action = btn.dataset.action;
+            btn.disabled = true;
+            try {
+                const resp = await fetch(`/api/v1/admin/carousels/${slug}`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ action }),
+                });
+                if (!resp.ok) {
+                    const e = await resp.json().catch(() => ({}));
+                    alert(`${action} failed: ${e.error || resp.status}`);
+                    return;
+                }
+                await fetchCarousels();
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        document.querySelectorAll(".filter-pill").forEach((pill) => {
+            pill.addEventListener("click", () => {
+                document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+                pill.classList.add("active");
+                activeFilter = pill.dataset.filter;
+                renderGrid();
+            });
+        });
+
+        function escapeHtml(s) {
+            if (s == null) return "";
+            return String(s).replace(/[&<>"']/g, (c) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+            }[c]));
+        }
+
+        fetchCarousels();
+    </script>
+</body>
+</html>
