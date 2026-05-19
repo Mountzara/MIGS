@@ -31,6 +31,7 @@
         { key: 'education',  label: 'Education',    href: '/admin/education/',  match: /^\/admin\/education\b/  },
         { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
         { key: 'carousels',  label: 'Carousels',    href: '/admin/carousels/',  match: /^\/admin\/carousels\b/  },
+        { key: 'debug',      label: 'Debug',        href: '/admin/debug/sessions/', match: /^\/admin\/debug\b/  },
     ];
 
     const STYLE = `

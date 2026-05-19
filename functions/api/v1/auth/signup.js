@@ -22,6 +22,7 @@ import { previewAccess, preLaunchNotFound } from "../../../_lib/preview_gate.js"
 import { hashPassword, createSession, buildSessionCookie, normalizeEmail, nowMs } from "../../../_lib/auth.js";
 import { logAudit } from "../../../_lib/audit.js";
 import { newId } from "../../../_lib/db.js";
+import { recordTrace } from "../../../_lib/session_trace.js";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ISO_DATE_RX = /^\d{4}-\d{2}-\d{2}$/;
@@ -42,8 +43,15 @@ function serverError(message) {
 
 export async function onRequestPost(ctx) {
     const { request, env } = ctx;
+    const _t0 = Date.now();
     const { allow } = await previewAccess(request, env);
-    if (!allow) return preLaunchNotFound();
+    if (!allow) {
+        await recordTrace(env, {
+            request, action: "auth_signup_gate_closed",
+            outcome: "blocked", http_status: 404, duration_ms: Date.now() - _t0,
+        });
+        return preLaunchNotFound();
+    }
 
     if (!env.DB || !env.MZ_SESSIONS) {
         return serverError("auth backend not configured");
@@ -68,12 +76,20 @@ export async function onRequestPost(ctx) {
     const preferred_name = (body?.preferred_name || "").trim() || null;
 
     // Validate
-    if (!EMAIL_RX.test(email)) return badRequest("invalid email", "invalid_email");
-    if (password.length < 12) return badRequest("password must be at least 12 characters", "weak_password");
-    if (password.length > 256) return badRequest("password too long", "weak_password");
-    if (!first_name) return badRequest("first name required", "missing_first_name");
-    if (!last_name) return badRequest("last name required", "missing_last_name");
-    if (!ISO_DATE_RX.test(dob)) return badRequest("dob must be ISO YYYY-MM-DD", "invalid_dob");
+    const _failTrace = async (reason, code) => {
+        await recordTrace(env, {
+            request, action: "auth_signup_validation_fail",
+            outcome: "validation_fail", http_status: 400,
+            duration_ms: Date.now() - _t0,
+            detail: { reason: code || reason },
+        });
+    };
+    if (!EMAIL_RX.test(email)) { await _failTrace("invalid email", "invalid_email"); return badRequest("invalid email", "invalid_email"); }
+    if (password.length < 12) { await _failTrace("password short", "weak_password"); return badRequest("password must be at least 12 characters", "weak_password"); }
+    if (password.length > 256) { await _failTrace("password long", "weak_password"); return badRequest("password too long", "weak_password"); }
+    if (!first_name) { await _failTrace("missing first name", "missing_first_name"); return badRequest("first name required", "missing_first_name"); }
+    if (!last_name) { await _failTrace("missing last name", "missing_last_name"); return badRequest("last name required", "missing_last_name"); }
+    if (!ISO_DATE_RX.test(dob)) { await _failTrace("invalid dob", "invalid_dob"); return badRequest("dob must be ISO YYYY-MM-DD", "invalid_dob"); }
 
     const ip = request.headers.get("CF-Connecting-IP") || "";
     const ua = request.headers.get("User-Agent") || "";
@@ -89,6 +105,12 @@ export async function onRequestPost(ctx) {
             ip, user_agent: ua,
             success: false,
             details: { reason: "email_exists" },
+        });
+        await recordTrace(env, {
+            request, action: "auth_signup_email_exists",
+            outcome: "validation_fail", http_status: 409,
+            duration_ms: Date.now() - _t0,
+            detail: { existing_patient_id: existing.id },
         });
         return new Response(JSON.stringify({ error: "email_exists" }), {
             status: 409,
@@ -164,6 +186,16 @@ export async function onRequestPost(ctx) {
         ip, user_agent: ua,
         success: true,
         details: { source: "signup" },
+    });
+
+    await recordTrace(env, {
+        request,
+        patient_id,
+        session_token: session.token,
+        action: "auth_signup_success",
+        outcome: "ok", http_status: 201,
+        duration_ms: Date.now() - _t0,
+        detail: { has_phone: !!phone, has_preferred_name: !!preferred_name, has_pronouns: !!pronouns },
     });
 
     const cookie = buildSessionCookie(session.token, session.expires_at);

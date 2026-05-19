@@ -21,6 +21,7 @@
 // =====================================================================
 
 import { verifyPbkdf2 } from "../admin/_middleware.js";
+import { verifyAccessCookie, readAccessCookieValue } from "./preview_invite.js";
 
 const ADMIN_REALM = 'Mount Zara Admin';
 
@@ -101,12 +102,42 @@ function hasMemberSessionCookie(request) {
 }
 
 /**
+ * Returns true if the request is targeting the preview-grant landing
+ * page or its supporting endpoint. These paths are always allowed
+ * pre-launch because they're what an admin-issued invitation lands on
+ * — they validate the signed grant token before doing anything else.
+ *
+ *   GET  /portal/preview-grant
+ *   GET  /portal/preview-grant/        — trailing slash
+ *   GET  /portal/preview-grant/?t=…
+ */
+function isPreviewGrantPath(url) {
+    const p = url.pathname.replace(/\/+$/, "");
+    return p === "/portal/preview-grant";
+}
+
+/**
+ * Returns the decoded payload of a valid mz_preview_access cookie, or
+ * null. The cookie is HMAC-SHA256-signed (PREVIEW_INVITE_KEY) and
+ * carries no PHI — only a label, a jti, and an expiry.
+ */
+async function readSignedPreviewCookie(request, env) {
+    const raw = readAccessCookieValue(request);
+    if (!raw) return null;
+    return await verifyAccessCookie(env, raw);
+}
+
+/**
  * Returns { allow, reason } indicating whether this request may access
  * the patient-facing surface.
  *
  *   allow=true if:
  *     - PORTAL_PUBLIC_LAUNCH=true (public launch)
  *     - admin Basic Auth is valid (operator preview)
+ *     - the request targets /portal/preview-grant (the invitation
+ *       landing page — single-use grant-token validates inside)
+ *     - a valid signed mz_preview_access cookie is present (admin-issued
+ *       invitation has been redeemed for this browser)
  *     - the request is the magic-link redeem path (token is the auth)
  *     - the request carries an mz_session cookie (already-authenticated member)
  *
@@ -116,6 +147,10 @@ function hasMemberSessionCookie(request) {
  * factor:
  *   - launch flag is operator-controlled
  *   - Basic Auth is operator-authenticated (PBKDF2 100k)
+ *   - preview-grant path runs single-use token validation inline
+ *   - signed cookie carries an HMAC tag the gate verifies; cookie is
+ *     a routing-layer artifact only, NOT an auth credential — every
+ *     downstream endpoint that touches PHI still validates mz_session
  *   - magic-link redeem is member-authenticated by single-use cryptographic
  *     token, verified server-side against KV before any session issues
  *   - session cookie is server-issued, KV-backed, validated downstream on
@@ -133,7 +168,15 @@ export async function previewAccess(request, env) {
     if (await isAdminAuthed(request, env)) {
         return { allow: true, reason: "admin_preview" };
     }
-    if (isMagicLinkRedeem(new URL(request.url))) {
+    const url = new URL(request.url);
+    if (isPreviewGrantPath(url)) {
+        return { allow: true, reason: "preview_grant" };
+    }
+    const cookiePayload = await readSignedPreviewCookie(request, env);
+    if (cookiePayload) {
+        return { allow: true, reason: "preview_cookie", label: cookiePayload.label || "guest" };
+    }
+    if (isMagicLinkRedeem(url)) {
         return { allow: true, reason: "magic_link_redeem" };
     }
     if (hasMemberSessionCookie(request)) {

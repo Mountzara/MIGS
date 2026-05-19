@@ -25,6 +25,7 @@ import { requireRole, nowMs } from "../../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../../_lib/audit.js";
 import { newId } from "../../../../../../_lib/db.js";
 import { sectionByNumber, TOTAL_PATIENT_SECTIONS } from "../../../../../../_lib/intake_sections.js";
+import { recordTrace } from "../../../../../../_lib/session_trace.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -118,6 +119,27 @@ export async function onRequestPatch(ctx) {
             details: { section_number: n, section_key: def.key, completion_pct: pct },
         });
 
+        // PHI-conservative: count payload keys, byte size — never the values.
+        let payload_bytes = 0;
+        let payload_keys = 0;
+        try {
+            payload_bytes = new TextEncoder().encode(JSON.stringify(body)).length;
+            payload_keys = Object.keys(body).length;
+        } catch {}
+        await recordTrace(env, {
+            request,
+            patient_id: session.patient_id,
+            action: "intake_section_save",
+            outcome: "ok", http_status: 200,
+            detail: {
+                section_number: n,
+                section_key: def.key,
+                completion_pct: pct,
+                payload_keys,
+                payload_bytes,
+            },
+        });
+
         return new Response(JSON.stringify({
             ok: true,
             section_number: n,
@@ -130,6 +152,13 @@ export async function onRequestPatch(ctx) {
         });
     } catch (e) {
         console.error("intake section PATCH threw", { error: String(e), intake_id, n });
+        await recordTrace(env, {
+            request,
+            patient_id: session.patient_id,
+            action: "intake_section_save",
+            outcome: "error", http_status: 500,
+            detail: { section_number: n, error_class: e?.constructor?.name || "Error" },
+        });
         return err(500, "server_error", "could not save section");
     }
 }

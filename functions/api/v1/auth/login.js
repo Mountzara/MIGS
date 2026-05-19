@@ -12,6 +12,7 @@ import { previewAccess, preLaunchNotFound } from "../../../_lib/preview_gate.js"
 import { verifyPassword, createSession, buildSessionCookie, normalizeEmail } from "../../../_lib/auth.js";
 import { logAudit } from "../../../_lib/audit.js";
 import { checkLockout, recordFailure, clearLockout, tooManyRequests } from "../../../_lib/rate_limit.js";
+import { recordTrace } from "../../../_lib/session_trace.js";
 
 // Per HIPAA risk register row 5. 10 failures per 15-min window
 // triggers a soft-lockout for the remainder of that window.
@@ -34,8 +35,15 @@ function unauthorized() {
 
 export async function onRequestPost(ctx) {
     const { request, env } = ctx;
+    const _t0 = Date.now();
     const { allow } = await previewAccess(request, env);
-    if (!allow) return preLaunchNotFound();
+    if (!allow) {
+        await recordTrace(env, {
+            request, action: "auth_login_gate_closed",
+            outcome: "blocked", http_status: 404, duration_ms: Date.now() - _t0,
+        });
+        return preLaunchNotFound();
+    }
 
     if (!env.DB || !env.MZ_SESSIONS) {
         return new Response(JSON.stringify({ error: "server_error" }), {
@@ -66,6 +74,11 @@ export async function onRequestPost(ctx) {
             record_type: "patient",
             ip, user_agent: ua, success: false,
             details: { reason: "rate_limited", fails: lock.fails, retry_after_seconds: lock.retry_after_seconds },
+        });
+        await recordTrace(env, {
+            request, action: "auth_login_rate_limited",
+            outcome: "blocked", http_status: 429, duration_ms: Date.now() - _t0,
+            detail: { fails: lock.fails, retry_after_s: lock.retry_after_seconds },
         });
         return tooManyRequests(lock.retry_after_seconds);
     }
@@ -99,6 +112,17 @@ export async function onRequestPost(ctx) {
                 reason: row ? "wrong_password" : "no_such_email",
                 fails: fr.fails,
                 locked_after_this: fr.locked_after_this,
+            },
+        });
+        await recordTrace(env, {
+            request, action: "auth_login_failed",
+            outcome: "validation_fail",
+            http_status: fr.locked_after_this ? 429 : 401,
+            duration_ms: Date.now() - _t0,
+            detail: {
+                reason: row ? "wrong_password" : "no_such_email",
+                fails: fr.fails,
+                locked_after_this: !!fr.locked_after_this,
             },
         });
         // If THIS failure triggers the lockout, return 429 instead of 401
@@ -149,6 +173,16 @@ export async function onRequestPost(ctx) {
         ip, user_agent: ua,
         success: true,
         details: { source: "password" },
+    });
+
+    await recordTrace(env, {
+        request,
+        patient_id: row.id,
+        session_token: session.token,
+        action: "auth_login_success",
+        outcome: "ok", http_status: 200,
+        duration_ms: Date.now() - _t0,
+        detail: { source: "password" },
     });
 
     const cookie = buildSessionCookie(session.token, session.expires_at);
