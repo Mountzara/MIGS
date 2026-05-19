@@ -13,7 +13,8 @@
 // "any row exists").
 // =====================================================================
 
-import { newId, nowMs } from "./db.js";
+import { newId } from "./db.js";
+import { nowMs } from "./auth.js";
 
 // Canonical step catalog. The order is the order the wizard presents
 // them. To add a step: append here, write the predicate, write the
