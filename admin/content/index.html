@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Mount Zara — Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="/assets/images/Black White Elegant Personal Monogram Logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --white: #ffffff;
+            --gray-1: rgba(255, 255, 255, 0.72);
+            --gray-2: rgba(255, 255, 255, 0.5);
+            --gray-3: rgba(255, 255, 255, 0.3);
+            --glow-purple: 139, 92, 246;
+            --glow-purple-deep: 109, 40, 217;
+            --status-draft: 255, 159, 10;
+            --status-published: 52, 199, 89;
+            --status-rejected: 255, 99, 99;
+            --text-on-dark: #f5f5f7;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
+            color: var(--text-on-dark); min-height: 100vh; line-height: 1.5;
+        }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+        .nav {
+            position: sticky; top: 0; z-index: 100;
+            padding: 14px clamp(20px, 4vw, 36px);
+            background: rgba(10, 10, 12, 0.85);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex; align-items: center; justify-content: space-between; gap: 24px;
+        }
+        .nav-left { display: inline-flex; align-items: center; gap: 16px; }
+        .nav-brand { display: inline-flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; letter-spacing: 0.08em; color: var(--white); }
+        .nav-brand img { height: 28px; filter: brightness(0) invert(1); }
+        .nav-admin-badge {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95); padding: 4px 10px;
+            background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.28);
+            border-radius: 999px;
+        }
+        .nav-user { font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+        .nav-user-email { color: var(--white); font-weight: 500; }
+
+        .layout {
+            display: grid; grid-template-columns: 380px 1fr;
+            min-height: calc(100vh - 65px);
+        }
+        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+        .sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 28px clamp(16px, 2vw, 24px);
+            overflow-y: auto;
+            max-height: calc(100vh - 65px);
+        }
+        .sidebar-section { margin-bottom: 32px; }
+        .sidebar-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .sidebar-title {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+            text-transform: uppercase; color: rgba(var(--glow-purple), 0.95);
+        }
+        .sidebar-count {
+            font-size: 11px; padding: 3px 9px; border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.75); font-weight: 600;
+        }
+        .kind-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+        .kind-tab {
+            flex: 1; padding: 10px 12px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.62);
+            transition: all 0.2s ease;
+        }
+        .kind-tab:hover { color: var(--white); background: rgba(255, 255, 255, 0.06); }
+        .kind-tab.active {
+            color: rgba(var(--glow-purple), 0.95);
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.32);
+        }
+
+        .post-list { display: flex; flex-direction: column; gap: 8px; }
+        .post-item {
+            padding: 14px 16px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .post-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(var(--glow-purple), 0.28);
+        }
+        .post-item.active {
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.42);
+        }
+        .post-item-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            margin-bottom: 6px;
+        }
+        .status-pill {
+            display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em;
+            text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
+        }
+        .status-draft     { color: rgba(var(--status-draft), 0.95);     background: rgba(var(--status-draft), 0.10);     border: 1px solid rgba(var(--status-draft), 0.30); }
+        .status-published { color: rgba(var(--status-published), 0.95); background: rgba(var(--status-published), 0.10); border: 1px solid rgba(var(--status-published), 0.30); }
+        .status-rejected  { color: rgba(var(--status-rejected), 0.85);  background: rgba(var(--status-rejected), 0.10);  border: 1px solid rgba(var(--status-rejected), 0.30); }
+        .post-item-date { font-size: 11px; color: rgba(255, 255, 255, 0.45); letter-spacing: 0.04em; }
+        .post-item-title { font-size: 14px; font-weight: 600; color: var(--white); line-height: 1.32; margin-bottom: 4px; }
+        .post-item-summary { font-size: 12px; line-height: 1.5; color: rgba(255, 255, 255, 0.55); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .empty-list {
+            padding: 40px 20px; text-align: center;
+            font-size: 13px; color: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+        }
+
+        .main {
+            padding: 28px clamp(20px, 3vw, 40px);
+            overflow-y: auto; max-height: calc(100vh - 65px);
+        }
+        .empty-main {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; min-height: 60vh;
+            color: rgba(255, 255, 255, 0.45); text-align: center; gap: 12px;
+        }
+        .empty-main h2 { font-size: 20px; font-weight: 500; color: rgba(255, 255, 255, 0.78); }
+
+        .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+        .detail-meta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+        .detail-title-row { flex: 1; min-width: 260px; }
+        .detail-title { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; letter-spacing: -0.018em; line-height: 1.2; color: var(--white); margin-bottom: 8px; }
+        .detail-summary { font-size: 14.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.7); }
+        .detail-actions {
+            display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 10px;
+            font-size: 13.5px; font-weight: 600; letter-spacing: 0;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .btn-approve {
+            color: rgba(var(--status-published), 0.95);
+            background: rgba(var(--status-published), 0.10);
+            border-color: rgba(var(--status-published), 0.30);
+        }
+        .btn-approve:hover { background: rgba(var(--status-published), 0.18); color: #fff; }
+        .btn-reject {
+            color: rgba(var(--status-rejected), 0.85);
+            background: rgba(var(--status-rejected), 0.10);
+            border-color: rgba(var(--status-rejected), 0.30);
+        }
+        .btn-reject:hover { background: rgba(var(--status-rejected), 0.18); color: #fff; }
+        .btn-edit {
+            color: rgba(var(--glow-purple), 0.95);
+            background: rgba(var(--glow-purple), 0.10);
+            border-color: rgba(var(--glow-purple), 0.28);
+        }
+        .btn-edit:hover { background: rgba(var(--glow-purple), 0.18); color: #fff; }
+        .btn-secondary {
+            color: rgba(255, 255, 255, 0.78);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.10);
+        }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .preview-toggle {
+            display: inline-flex; gap: 6px; margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px; padding: 4px;
+        }
+        .preview-toggle button {
+            padding: 7px 14px; font-size: 12.5px; font-weight: 600; border-radius: 7px;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.15s ease;
+        }
+        .preview-toggle button.active {
+            color: var(--white);
+            background: rgba(var(--glow-purple), 0.20);
+        }
+
+        .preview-frame {
+            width: 100%; height: 70vh; min-height: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            background: #0a0a0c;
+            box-shadow: 0 10px 32px -16px rgba(0, 0, 0, 0.6);
+        }
+
+        .source-view {
+            font-family: 'SF Mono', Menlo, monospace; font-size: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 22px;
+            color: rgba(255, 255, 255, 0.75);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 70vh;
+            overflow: auto;
+            line-height: 1.55;
+        }
+
+        .meta-panel {
+            margin-top: 20px;
+            padding: 18px 22px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
+            border: 1px solid rgba(var(--glow-purple), 0.18);
+            font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.78);
+        }
+        .meta-panel h4 { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
+        .meta-panel dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 16px; }
+        .meta-panel dt { color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+        .meta-panel a { color: rgba(var(--glow-purple), 0.95); border-bottom: 1px dotted rgba(var(--glow-purple), 0.32); }
+
+        /* Mobile responsive — the desktop layout pins the sidebar and main
+           panels to viewport height and makes each independently scrollable.
+           On iPhone that meant the sidebar consumed an entire viewport and
+           the main detail was hidden below another full scrollable region —
+           "crammed" was the right word. On mobile, let both flow naturally
+           in the document so a single page scroll moves through the sidebar
+           list and then through the detail view. Also tighten padding,
+           collapse the meta-panel grid to one column, and downsize the
+           preview iframe so it's not a 600px-tall wall on a 660px screen. */
+        @media (max-width: 720px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar, .main {
+                max-height: none;
+                overflow-y: visible;
+            }
+            .sidebar {
+                padding: 22px clamp(14px, 4vw, 18px);
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            }
+            .main {
+                padding: 22px clamp(14px, 4vw, 18px) 40px;
+            }
+            .detail-header { gap: 14px; }
+            .detail-title { font-size: 22px; }
+            .detail-summary { font-size: 14px; }
+            .detail-actions { width: 100%; }
+            .detail-actions .btn { flex: 1 1 calc(50% - 4px); }
+            .preview-frame {
+                min-height: 0;
+                height: 60vh;
+            }
+            .meta-panel {
+                padding: 16px;
+            }
+            .meta-panel dl {
+                grid-template-columns: 1fr;
+                gap: 4px 0;
+            }
+            .meta-panel dt {
+                margin-top: 10px;
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.42);
+            }
+            .meta-panel dd { margin-bottom: 2px; }
+            .kind-tabs { margin-bottom: 14px; }
+            .kind-tab { padding: 9px 10px; font-size: 12px; }
+            .post-item-title { font-size: 13.5px; }
+            .post-item-summary { font-size: 11.5px; }
+        }
+        @media (max-width: 420px) {
+            .detail-actions .btn { flex: 1 1 100%; }
+        }
+
+        .toast {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+            padding: 14px 22px; border-radius: 12px;
+            background: rgba(20, 20, 24, 0.95);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: var(--white); font-size: 13.5px; font-weight: 500;
+            box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.6);
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: rgba(var(--status-published), 0.40); }
+        .toast.error { border-color: rgba(var(--status-rejected), 0.40); }
+
+        .loader { text-align: center; padding: 60px; color: rgba(255, 255, 255, 0.4); }
+        .loader-spinner { width: 28px; height: 28px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: rgba(var(--glow-purple), 0.95); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 14px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js"></script>
+    <nav class="nav">
+        <div class="nav-left">
+            <a href="/" class="nav-brand">
+                <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara">
+                MOUNT ZARA
+            </a>
+            <span class="nav-admin-badge">Admin</span>
+        </div>
+        <div class="nav-user">
+            Signed in as <span class="nav-user-email" id="userEmail">…</span>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="kind-tabs">
+                <!-- Tab labels reflect audience semantics:
+                     kind="evidence" = Physician Blog (deep journal-club / MIGS Monday Morning)
+                     kind="blog"     = Influencer Page (trend rebuttals for patient + public)
+                     The internal kind slug is preserved for stable URLs; only display label changes. -->
+                <button class="kind-tab active" data-kind="evidence">Physician Blog</button>
+                <button class="kind-tab" data-kind="blog">Influencer Page</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">Pending review</span>
+                    <span class="sidebar-count" id="draftCount">0</span>
+                </div>
+                <div id="draftList" class="post-list"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">Published</span>
+                    <span class="sidebar-count" id="publishedCount">0</span>
+                </div>
+                <div id="publishedList" class="post-list"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">
+                    <span class="sidebar-title">Rejected</span>
+                    <span class="sidebar-count" id="rejectedCount">0</span>
+                </div>
+                <div id="rejectedList" class="post-list"></div>
+            </div>
+        </aside>
+
+        <main class="main" id="main">
+            <div class="empty-main">
+                <h2>Select a post from the sidebar</h2>
+                <p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API = '/api/posts';
+        const state = {
+            // Default to evidence/physician-blog since the Monday Morning digest
+            // (the primary recurring publication) lives in that tab now.
+            kind: 'evidence',
+            posts: [],
+            selectedId: null,
+            view: 'preview',  // preview | source
+        };
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); } catch { return ''; } };
+        const fmtDateTime = (iso) => { try { return new Date(iso).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return ''; } };
+
+        function showToast(msg, kind = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast ${kind} show`;
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        // Why the explicit Authorization header even though we're already
+        // signed in at /admin/ via Basic Auth:
+        // ----------------------------------------------------------------
+        // The browser caches Basic Auth credentials per RFC 7617 §2.2 by
+        // protection space (origin + realm + URL-prefix tree). The realm
+        // we authenticated at is "Mount Zara Admin" rooted at /admin/.
+        // When this SPA does fetch('/api/posts/_admin?kind=blog') the URL
+        // is OUTSIDE the /admin/ prefix, so Chrome/Safari do NOT auto-send
+        // the cached Authorization header — and the API returns 401, which
+        // the dashboard would silently render as "0 drafts" (the bug the
+        // user just hit). We can't read the browser's cached credentials
+        // from JS, so we prompt the user ONCE, store base64(user:pass) in
+        // sessionStorage (cleared on tab close), and attach Authorization
+        // on every API fetch explicitly. No persistent storage — sessionStorage
+        // dies with the tab, so a password manager paste each session is still
+        // the workflow. If the credentials are bad we 401 and re-prompt once.
+        async function ensureAdminCreds(force) {
+            if (!force) {
+                const cached = sessionStorage.getItem('mz_admin_basic');
+                if (cached) return cached;
+            }
+            const u = prompt('Admin email:', 'chris.mabini@gmail.com');
+            if (!u) return null;
+            const p = prompt('Admin password:');
+            if (!p) return null;
+            const b = btoa(`${u}:${p}`);
+            sessionStorage.setItem('mz_admin_basic', b);
+            return b;
+        }
+
+        async function api(method, path, body) {
+            const opts = { method, headers: {} };
+            if (body !== undefined) {
+                opts.headers['content-type'] = 'application/json';
+                opts.body = JSON.stringify(body);
+            }
+            let creds = await ensureAdminCreds(false);
+            if (creds) opts.headers['Authorization'] = 'Basic ' + creds;
+            let res = await fetch(`${API}${path}`, opts);
+            // On a fresh 401, the cached creds are stale (or never were valid).
+            // Wipe + reprompt ONCE and retry. If that still 401s, surface the
+            // error to the dashboard as a toast so the user can see it.
+            if (res.status === 401 && creds) {
+                sessionStorage.removeItem('mz_admin_basic');
+                creds = await ensureAdminCreds(true);
+                if (creds) {
+                    opts.headers['Authorization'] = 'Basic ' + creds;
+                    res = await fetch(`${API}${path}`, opts);
+                }
+            } else if (res.status === 401 && !creds) {
+                creds = await ensureAdminCreds(true);
+                if (creds) {
+                    opts.headers['Authorization'] = 'Basic ' + creds;
+                    res = await fetch(`${API}${path}`, opts);
+                }
+            }
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        }
+
+        // loadPosts has two callers:
+        //   - user-initiated (sidebar click, tab switch, approve/reject): we
+        //     fully re-render main with a loader → fetched post.
+        //   - auto-refresh setInterval every 30s: we MUST NOT clobber main
+        //     because the user is mid-read and clobbering main resets their
+        //     scroll position to the top of the page. Refresh sidebar counts
+        //     silently, and only touch main if the *currently selected* post
+        //     changed status under us (e.g. another tab approved it).
+        async function loadPosts(opts) {
+            const silent = opts && opts.silent === true;
+            const savedScrollY = silent ? window.scrollY : null;
+            try {
+                const data = await api('GET', `/_admin?kind=${encodeURIComponent(state.kind)}`);
+                const prevStatus = state.selectedId
+                    ? (state.posts.find(p => p.id === state.selectedId) || {}).status
+                    : null;
+                state.posts = data.posts || [];
+                renderSidebar();
+                const stillExists = state.selectedId && state.posts.find(p => p.id === state.selectedId);
+                if (state.selectedId && !stillExists) {
+                    state.selectedId = null;
+                    renderMain();
+                } else if (state.selectedId && !silent) {
+                    loadDetail(state.selectedId);
+                } else if (state.selectedId && silent && stillExists && stillExists.status !== prevStatus) {
+                    // status changed externally — refresh the detail so the
+                    // action buttons (Approve/Reject vs View live) update.
+                    loadDetail(state.selectedId);
+                }
+                // silent + no change: leave main untouched, preserve scroll.
+            } catch (e) {
+                showToast(`Failed to load: ${e.message}`, 'error');
+            } finally {
+                if (savedScrollY !== null) {
+                    // jump (not smooth) so the user never sees motion.
+                    window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' });
+                }
+            }
+        }
+
+        function renderSidebar() {
+            const drafts = state.posts.filter(p => p.status === 'draft');
+            const published = state.posts.filter(p => p.status === 'published');
+            const rejected = state.posts.filter(p => p.status === 'rejected');
+            document.getElementById('draftCount').textContent = drafts.length;
+            document.getElementById('publishedCount').textContent = published.length;
+            document.getElementById('rejectedCount').textContent = rejected.length;
+
+            function renderList(arr, container) {
+                if (!arr.length) {
+                    container.innerHTML = '<div class="empty-list">No items.</div>';
+                    return;
+                }
+                container.innerHTML = arr.map(p => `
+                    <div class="post-item ${state.selectedId === p.id ? 'active' : ''}" data-id="${esc(p.id)}">
+                        <div class="post-item-row">
+                            <span class="status-pill status-${esc(p.status)}">${esc(p.status)}</span>
+                            <span class="post-item-date">${esc(fmtDate(p.published_at || p.created_at))}</span>
+                        </div>
+                        <div class="post-item-title">${esc(p.title || '(Untitled)')}</div>
+                        <div class="post-item-summary">${esc(p.summary || '')}</div>
+                    </div>
+                `).join('');
+                container.querySelectorAll('.post-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        state.selectedId = el.dataset.id;
+                        renderSidebar();
+                        loadDetail(state.selectedId);
+                    });
+                });
+            }
+            renderList(drafts, document.getElementById('draftList'));
+            renderList(published, document.getElementById('publishedList'));
+            renderList(rejected, document.getElementById('rejectedList'));
+        }
+
+        async function loadDetail(id) {
+            const main = document.getElementById('main');
+            main.innerHTML = '<div class="loader"><div class="loader-spinner"></div>Loading…</div>';
+            try {
+                const post = await api('GET', `/_admin/${encodeURIComponent(id)}`);
+                renderMain(post);
+            } catch (e) {
+                main.innerHTML = `<div class="empty-main"><h2>Failed to load post</h2><p>${esc(e.message)}</p></div>`;
+            }
+        }
+
+        function renderMain(post) {
+            const main = document.getElementById('main');
+            if (!post) {
+                main.innerHTML = `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
+                return;
+            }
+            const publicPath = post.kind === 'blog' ? `/trending/?id=${encodeURIComponent(post.id)}` : `/evidence/?id=${encodeURIComponent(post.id)}`;
+            const isDraft = post.status === 'draft';
+            const isRejected = post.status === 'rejected';
+            main.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-title-row">
+                        <div class="detail-meta-row">
+                            <span class="status-pill status-${esc(post.status)}">${esc(post.status)}</span>
+                            <span class="post-item-date">${esc(fmtDateTime(post.published_at || post.created_at))}</span>
+                            ${post.week_label ? `<span class="status-pill" style="color:rgba(var(--glow-purple),0.95);background:rgba(var(--glow-purple),0.10);border:1px solid rgba(var(--glow-purple),0.24);">${esc(post.week_label)}</span>` : ''}
+                            ${post.verdict ? `<span class="status-pill" style="color:rgba(var(--glow-purple),0.95);background:rgba(var(--glow-purple),0.10);border:1px solid rgba(var(--glow-purple),0.24);">${esc(post.verdict)}</span>` : ''}
+                        </div>
+                        <h1 class="detail-title">${esc(post.title || '(Untitled)')}</h1>
+                        <p class="detail-summary">${esc(post.summary || '')}</p>
+                    </div>
+                    <div class="detail-actions">
+                        ${isDraft ? `<button class="btn btn-approve" id="btnApprove">✓ Approve & publish</button>` : ''}
+                        ${isDraft ? `<button class="btn btn-reject" id="btnReject">✕ Reject</button>` : ''}
+                        ${isRejected ? `<button class="btn btn-approve" id="btnApprove">↺ Publish anyway</button>` : ''}
+                        ${post.status === 'published' ? `<a class="btn btn-secondary" href="${esc(publicPath)}" target="_blank">View live ↗</a>` : ''}
+                    </div>
+                </div>
+
+                <div class="preview-toggle">
+                    <button class="${state.view === 'preview' ? 'active' : ''}" data-view="preview">Preview (rendered)</button>
+                    <button class="${state.view === 'source' ? 'active' : ''}" data-view="source">Source HTML</button>
+                </div>
+
+                <div id="previewContainer"></div>
+
+                <div class="meta-panel">
+                    <h4>Pipeline manifest</h4>
+                    <dl>
+                        <dt>Post ID</dt><dd><code>${esc(post.id)}</code></dd>
+                        <dt>Kind</dt><dd>${esc(post.kind)}</dd>
+                        ${post.week_label ? `<dt>Week</dt><dd>${esc(post.week_label)}</dd>` : ''}
+                        <dt>Topics</dt><dd>${(post.topics_covered || []).length ? (post.topics_covered).map(esc).join(' · ') : '—'}</dd>
+                        <dt>PMIDs cited</dt><dd>${(() => {
+                            const pmids = post.pmids_cited || [];
+                            if (!pmids.length) return '—';
+                            if (pmids.length <= 12) {
+                                return pmids.map(p => `<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(p)}/" target="_blank" rel="noopener" style="color:rgba(var(--glow-purple),0.95);">${esc(p)}</a>`).join(' · ');
+                            }
+                            return `<details><summary style="cursor:pointer;color:rgba(var(--glow-purple),0.95);">${pmids.length} cited — show list</summary><div style="margin-top:8px;line-height:1.9;">${pmids.map(p => `<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(p)}/" target="_blank" rel="noopener" style="color:rgba(var(--glow-purple),0.95);">${esc(p)}</a>`).join(' · ')}</div></details>`;
+                        })()}</dd>
+                        <dt>KB entries</dt><dd>${(() => {
+                            const kb = post.kb_entries_retrieved || [];
+                            if (!kb.length) {
+                                // Honest GAP badge — §0.8 requires retrieval; zero retrieved is not compliance.
+                                return `<span style="color:rgba(252,211,77,0.95);background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.35);padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;letter-spacing:0.02em;">0 retrieved · § 0.8 GAP</span>`;
+                            }
+                            const ok = `<span style="color:rgba(74,222,128,0.95);background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.35);padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;letter-spacing:0.02em;">${kb.length} retrieved · § 0.8 compliant</span>`;
+                            const list = `<details><summary style="cursor:pointer;margin-top:8px;color:rgba(var(--glow-purple),0.95);">Show topic syntheses</summary><ul style="margin:8px 0 0 18px;padding:0;line-height:1.8;">${kb.map(e => {
+                                if (typeof e === 'string') return `<li>${esc(e)}</li>`;
+                                const name = esc(e.topic_name || e.topicName || e.id || '?');
+                                const sub = esc(e.subspecialty || '');
+                                const dc = e.document_count != null ? `, ${esc(e.document_count)} docs` : '';
+                                return `<li><strong>${name}</strong> <span style="opacity:.7;">(${sub}${dc})</span></li>`;
+                            }).join('')}</ul></details>`;
+                            return ok + list;
+                        })()}</dd>
+                        ${(post.gaps_surfaced || []).length ? `<dt>Gaps</dt><dd>${(() => {
+                            const gaps = post.gaps_surfaced || [];
+                            return `<details><summary style="cursor:pointer;color:rgba(252,211,77,0.95);">${gaps.length} cited paper${gaps.length===1?'':'s'} not in KB landmark/recent index</summary><ul style="margin:8px 0 0 18px;padding:0;line-height:1.8;">${gaps.map(g => {
+                                if (typeof g === 'string') return `<li>${esc(g)}</li>`;
+                                const pmid = esc(g.pmid || '?');
+                                const reason = esc(g.reason || '');
+                                return `<li><a href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/" target="_blank" rel="noopener" style="color:rgba(var(--glow-purple),0.95);">PMID ${pmid}</a><span style="opacity:.7;"> — ${reason}</span></li>`;
+                            }).join('')}</ul></details>`;
+                        })()}</dd>` : ''}
+                        ${post.linkedin_draft ? `<dt>LinkedIn</dt><dd><details><summary style="cursor:pointer;color:rgba(var(--glow-purple),0.95);">Show draft</summary><pre style="white-space:pre-wrap;margin-top:8px;color:rgba(255,255,255,0.8);font-family:inherit;font-size:13px;line-height:1.6;">${esc(post.linkedin_draft)}</pre></details></dd>` : ''}
+                        ${post.instagram_draft ? `<dt>Instagram</dt><dd><details><summary style="cursor:pointer;color:rgba(var(--glow-purple),0.95);">Show draft</summary><pre style="white-space:pre-wrap;margin-top:8px;color:rgba(255,255,255,0.8);font-family:inherit;font-size:13px;line-height:1.6;">${esc(post.instagram_draft)}</pre></details></dd>` : ''}
+                        <dt>Created</dt><dd>${esc(fmtDateTime(post.created_at))}</dd>
+                        ${post.published_at ? `<dt>Published</dt><dd>${esc(fmtDateTime(post.published_at))}</dd>` : ''}
+                    </dl>
+                </div>
+            `;
+
+            renderPreview(post);
+
+            document.querySelectorAll('.preview-toggle button').forEach(b => {
+                b.addEventListener('click', () => {
+                    state.view = b.dataset.view;
+                    document.querySelectorAll('.preview-toggle button').forEach(x => x.classList.toggle('active', x === b));
+                    renderPreview(post);
+                });
+            });
+
+            const approveBtn = document.getElementById('btnApprove');
+            const rejectBtn = document.getElementById('btnReject');
+            if (approveBtn) approveBtn.addEventListener('click', () => approve(post.id));
+            if (rejectBtn) rejectBtn.addEventListener('click', () => reject(post.id));
+        }
+
+        function renderPreview(post) {
+            const c = document.getElementById('previewContainer');
+            if (state.view === 'source') {
+                c.innerHTML = `<pre class="source-view">${esc(post.body_html || '(empty body)')}</pre>`;
+            } else {
+                // Live preview by injecting the post body inside a sandboxed iframe
+                // that mirrors the public page's typography. Using srcdoc so no
+                // network round-trip is needed.
+                const previewDoc = `
+                    <!DOCTYPE html>
+                    <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+                    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+                    <style>
+                        body { margin: 0; padding: 40px clamp(20px, 5vw, 60px); font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif; background: linear-gradient(180deg, #000 0%, #0a0a0c 60%, #000 100%); color: #f5f5f7; line-height: 1.65; font-size: 16px; }
+                        .wrap { max-width: 760px; margin: 0 auto; }
+                        h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 18px; color: #fff; }
+                        h2 { font-size: clamp(20px, 2.2vw, 28px); margin: 36px 0 12px; color: #fff; font-weight: 600; }
+                        h3 { font-size: clamp(17px, 1.8vw, 21px); margin: 28px 0 10px; color: #fff; font-weight: 600; }
+                        p { margin: 14px 0; color: rgba(255,255,255,0.86); }
+                        ul, ol { margin: 14px 0; padding-left: 22px; }
+                        li { margin: 8px 0; }
+                        a { color: rgba(139,92,246,0.95); border-bottom: 1px solid rgba(139,92,246,0.32); text-decoration: none; }
+                        code { background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 5px; font-family: 'SF Mono', Menlo, monospace; font-size: 0.92em; }
+                        blockquote { border-left: 3px solid rgba(139,92,246,0.55); margin: 20px 0; padding: 12px 0 12px 20px; color: rgba(255,255,255,0.74); font-style: italic; }
+                        .summary { font-size: 17px; line-height: 1.55; color: rgba(255,255,255,0.74); margin-bottom: 30px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+                        .eyebrow { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(139,92,246,0.95); margin-bottom: 14px; padding: 4px 10px; background: rgba(139,92,246,0.10); border: 1px solid rgba(139,92,246,0.28); border-radius: 999px; }
+                    </style>
+                    </head><body><div class="wrap">
+                        ${post.week_label ? `<span class="eyebrow">${esc(post.week_label)}</span>` : (post.verdict ? `<span class="eyebrow">${esc(post.verdict)}</span>` : '')}
+                        <h1>${esc(post.title || '')}</h1>
+                        <p class="summary">${esc(post.summary || '')}</p>
+                        ${post.body_html || ''}
+                    </div></body></html>
+                `;
+                // sandbox allows scripts + same-origin so interactive post components
+                // (SVG charts, entrance animations, scroll-reveal IntersectionObserver,
+                // evidence pyramids, etc.) render the same in the admin preview as
+                // they will on the public page. Both flags are required: srcdoc
+                // content runs as an opaque origin without `allow-same-origin`,
+                // which would break some script behaviors we rely on. The iframe
+                // itself remains sandboxed against top-frame navigation and form
+                // submission, which is the security-relevant property here.
+                c.innerHTML = `<iframe class="preview-frame" srcdoc="${esc(previewDoc)}" sandbox="allow-same-origin allow-scripts"></iframe>`;
+            }
+        }
+
+        async function approve(id) {
+            if (!confirm('Approve & publish this post? It will become live on mountzara.com immediately.')) return;
+            try {
+                await api('POST', `/${encodeURIComponent(id)}/approve`);
+                showToast('Published');
+                await loadPosts();
+            } catch (e) { showToast(`Approve failed: ${e.message}`, 'error'); }
+        }
+        async function reject(id) {
+            if (!confirm('Reject this post? You can still publish later from the rejected list.')) return;
+            try {
+                await api('POST', `/${encodeURIComponent(id)}/reject`);
+                showToast('Rejected');
+                await loadPosts();
+            } catch (e) { showToast(`Reject failed: ${e.message}`, 'error'); }
+        }
+
+        // Pull user email from Cloudflare Access header (if exposed via meta tag) or fall back
+        async function loadUser() {
+            // CF Access sets Cf-Access-Authenticated-User-Email header server-side.
+            // The browser can fetch /cdn-cgi/access/get-identity to retrieve it.
+            try {
+                const r = await fetch('/cdn-cgi/access/get-identity');
+                if (r.ok) {
+                    const data = await r.json();
+                    if (data && data.email) {
+                        document.getElementById('userEmail').textContent = data.email;
+                        return;
+                    }
+                }
+            } catch {}
+            document.getElementById('userEmail').textContent = 'authenticated';
+        }
+
+        document.querySelectorAll('.kind-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                state.kind = tab.dataset.kind;
+                state.selectedId = null;
+                document.querySelectorAll('.kind-tab').forEach(t => t.classList.toggle('active', t === tab));
+                renderMain();
+                loadPosts();
+            });
+        });
+
+        loadUser();
+        loadPosts();
+        // gentle auto-refresh every 30s — silent so it doesn't reset
+        // the user's scroll position while they're reading a draft.
+        setInterval(() => loadPosts({ silent: true }), 30000);
+    </script>
+</body>
+</html>

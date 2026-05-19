@@ -20,13 +20,15 @@
     window.__mzAdminNavInstalled = true;
 
     const SECTIONS = [
-        { key: 'analytics',  label: 'Analytics',    href: '/admin/analytics/',  match: /^\/admin\/analytics\b/  },
+        { key: 'dashboard',  label: 'Dashboard',    href: '/admin/',            match: /^\/admin\/?$/           },
         { key: 'patients',   label: 'Patients',     href: '/admin/patients/',   match: /^\/admin\/(patients|cases)\b/ },
         { key: 'scheduling', label: 'Scheduling',   href: '/admin/scheduling/', match: /^\/admin\/scheduling\b/ },
         { key: 'triage',     label: 'Triage',       href: '/admin/triage/',     match: /^\/admin\/triage\b/     },
         { key: 'messages',   label: 'Messages',     href: '/admin/messages/',   match: /^\/admin\/messages\b/   },
+        { key: 'billing',    label: 'Billing',      href: '/admin/billing/',    match: /^\/admin\/billing\b/    },
+        { key: 'analytics',  label: 'Analytics',    href: '/admin/analytics/',  match: /^\/admin\/analytics\b/  },
         { key: 'education',  label: 'Education',    href: '/admin/education/',  match: /^\/admin\/education\b/  },
-        { key: 'posts',      label: 'Posts',        href: '/admin/',            match: /^\/admin\/?$/           },
+        { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
     ];
 
     const STYLE = `
@@ -151,7 +153,7 @@
                 ${linksHtml}
                 <span class="mz-asn-spacer"></span>
                 <span class="mz-asn-right">
-                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener">View patient portal →</a>
+                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener">View member portal →</a>
                     <a class="mz-asn-signout" href="/admin/_signout" title="Drop the cached admin credentials. Use when leaving an unattended Mac.">Sign out</a>
                 </span>
             </div>
