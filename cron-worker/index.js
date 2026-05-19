@@ -45,7 +45,7 @@ const TABLES = [
     "message_attachments",
     "documents",
 
-    // Patient portal modules
+    // Member portal modules
     "symptom_definitions",
     "symptom_diary_entries",
     "cycle_log",

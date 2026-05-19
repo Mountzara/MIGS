@@ -120,7 +120,7 @@ export async function onRequest({ request, env }) {
             "WWW-Authenticate": 'Basic realm="Mount Zara Admin — Signed out", charset="UTF-8"',
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-store, max-age=0",
-            // Strip any patient portal session cookie that might be in the
+            // Strip any member portal session cookie that might be in the
             // same browser. Idempotent if no cookie present.
             "set-cookie": "mz_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0",
         },

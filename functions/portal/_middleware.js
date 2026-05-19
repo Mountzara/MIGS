@@ -54,8 +54,8 @@ const COMING_SOON_HTML = `<!doctype html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Patient Portal — Coming Soon · Mount Zara</title>
-    <meta name="description" content="The Mount Zara patient portal is in active design. Telehealth, intake, secure messaging, and document handling launch soon.">
+    <title>Member Portal — Coming Soon · Mount Zara</title>
+    <meta name="description" content="The Mount Zara member portal is in active design. Telehealth, intake, secure messaging, and document handling launch soon.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -249,9 +249,9 @@ const COMING_SOON_HTML = `<!doctype html>
 <body>
     <main class="wrap">
         <a class="nav-back" href="/">Back to mountzara.com</a>
-        <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Patient Portal &middot; In Active Design</span>
+        <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Member Portal &middot; In Active Design</span>
         <h1 class="title">Building <em>a place to take care</em> of you, between visits and beyond.</h1>
-        <p class="lede">A complete patient portal is in active design. <strong>Intake forms, scheduling, telehealth, secure messaging, document handling, a symptom tracker &amp; diary, women&rsquo;s-health tooling, education materials, and AI-summarized recaps of your prior visits</strong> &mdash; plus a feed of the newest evidence-based literature and content from Dr. Mabini directly. When it&rsquo;s ready, you&rsquo;ll see it here.</p>
+        <p class="lede">A complete member portal is in active design. <strong>Intake forms, scheduling, telehealth, secure messaging, document handling, a symptom tracker &amp; diary, women&rsquo;s-health tooling, education materials, and AI-summarized recaps of your prior visits</strong> &mdash; plus a feed of the newest evidence-based literature and content from Dr. Mabini directly. When it&rsquo;s ready, you&rsquo;ll see it here.</p>
 
         <section class="features" aria-label="What the portal will offer">
             <article class="feature">

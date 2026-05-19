@@ -198,7 +198,22 @@ async function upsertIndexEntry(env, post) {
 // -----------------------------------------------------------------------------
 // Route dispatcher
 
-export async function onRequest({ request, env, params }) {
+export async function onRequest(ctx) {
+    try {
+        return await onRequestImpl(ctx);
+    } catch (e) {
+        // Surface the exception text instead of letting Cloudflare return
+        // a generic 1101. Critical for diagnosing PUT/approve failures.
+        const msg = (e && e.stack) ? String(e.stack) : String(e);
+        console.error("api/posts onRequest threw:", msg);
+        return new Response(
+            JSON.stringify({ error: "internal_error", detail: msg.slice(0, 2000) }),
+            { status: 500, headers: { "content-type": "application/json", "cache-control": "no-store" } },
+        );
+    }
+}
+
+async function onRequestImpl({ request, env, params }) {
     const url = new URL(request.url);
     const segments = (params.path || []).filter(Boolean);
     const method = request.method;

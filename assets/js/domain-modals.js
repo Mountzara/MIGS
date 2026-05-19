@@ -19,68 +19,78 @@
     const PMID = (pmid) => ({ pmid: String(pmid) });
 
     // -------- 1. ENDOMETRIOSIS EXCISION --------
+    // Primary anchor: ACOG Clinical Practice Guideline No. 11 — "Management of
+    // Endometriosis" — kb_chunks/01_acogDocuments_chunk04.json doc id e010f4126035.
+    // Every clinical claim below traces to a Level A / Level B recommendation,
+    // a stated epidemiology stat, or a named section of that CPG, unless otherwise
+    // cited inline.
     const endometriosisExcision = {
-        tag: 'ICG-Guided Detection',
+        tag: 'ACOG CPG No. 11 · ICG-Guided',
         title: 'Endometriosis excision',
-        tagline: 'Cutting out the disease — not burning the surface. Stage I through Stage IV, including deep infiltrating disease of the bowel, bladder, ureter, and appendix.',
+        tagline: 'Anchored to ACOG Clinical Practice Guideline No. 11. Excision — not ablation — across Stage I–IV disease, including deep infiltrating endometriosis of the bowel, bladder, ureter, and appendix.',
         sections: [
             {
                 eyebrow: 'What this is',
-                title: 'Excision, not ablation.',
+                title: 'Excision, not ablation — backed by the CPG.',
                 body: `
-                    <p>Endometriosis is tissue that behaves like the uterine lining growing where it does not belong — on the ovaries, the pelvic sidewall, the bowel, the bladder, the ureter, the diaphragm, and (rarely) the lungs. It is a chronic, sometimes systemic disease, and it can cause pain, infertility, and bowel or bladder symptoms that are easy to dismiss as something else.</p>
-                    <p>Two surgical strategies exist. Ablation burns the surface of a lesion. Excision cuts the disease out at the root, including the tissue underneath the visible spot, and sends it to pathology so the diagnosis is confirmed under the microscope. For deep infiltrating disease — endometriosis that has grown into the bowel wall, the ureter, or the bladder — excision is the only approach that can clear the disease completely.</p>
-                    <p>The added wrinkle here is <em>indocyanine green (ICG) fluorescence imaging</em>. ICG is a contrast agent that lights up fibrosis and inflammatory changes under near-infrared light. Lesions that look normal under standard white light can fluoresce and reveal themselves — a published research methodology that improves complete-excision rates in advanced disease.</p>
+                    <p>Endometriosis is endometrial-like tissue growing where it does not belong — most often on the ovaries, the pelvic sidewall, the uterosacral ligaments, the bowel, the bladder, the ureter, and (less commonly) the diaphragm. It affects <strong>6–10% of reproductive-age women</strong> and rises to roughly <strong>38% (range 20–50%) of women evaluated for infertility</strong>. Having a first-degree relative with endometriosis carries a <strong>7–10× increased risk</strong> of developing it yourself.</p>
+                    <p>The American College of Obstetricians and Gynecologists Clinical Practice Guideline No. 11 is the current authoritative U.S. guidance on managing the disease. Two of its Level A (good and consistent evidence) recommendations sit at the center of how this practice operates: <em>(1) excision of an endometrioma is superior to simple drainage and ablation of the cyst wall</em>, and <em>(2) surgical management of endometriosis-related infertility does improve pregnancy rates</em>. Together they explain why the operation here is always a true excision — cutting the lesion out at its root and sending every specimen to pathology — rather than a surface burn.</p>
+                    <p>The added refinement is <em>indocyanine green (ICG) fluorescence imaging</em>. ICG is a contrast agent that lights up fibrosis and inflammation under near-infrared light, so lesions that look normal under standard white light can reveal themselves. The published methodology uses ICG specifically to improve complete-excision rates in advanced disease and deep infiltrating endometriosis.</p>
                 `
             },
             {
-                eyebrow: 'Evidence and outcomes',
-                title: 'What the literature says.',
-                body: `<p>Endometriosis affects roughly 1 in 10 people of reproductive age. Chronic pelvic pain — pain that lasts more than six months — is reported by 5.7%–26.6% of women using stringent definitions, and endometriosis is one of the most common identifiable causes. Pain can persist even after correctly diagnosing and treating endometriosis because of <em>central sensitization</em> — the nervous system continues to amplify pain signals after the original trigger is addressed, which is why a multidisciplinary plan (surgery plus medical suppression plus pelvic floor physical therapy plus, when needed, neuromodulator medications) tends to outperform any single approach.</p>`,
+                eyebrow: 'What the CPG says',
+                title: 'The Level A recommendations driving care.',
+                body: `<p>These are the Level A (good and consistent scientific evidence) recommendations from ACOG CPG No. 11 that shape every conversation about diagnosis, medical therapy, and surgery for endometriosis. They are the standard of care, not opinion.</p>`,
                 stats: [
-                    { num: '~10%', label: 'Reproductive-age prevalence of endometriosis', source: 'ACOG · UpToDate clinical synthesis' },
-                    { num: '5.7–26.6%', label: 'Chronic pelvic pain prevalence using stringent definitions', source: 'ACOG Practice Bulletin 218' },
-                    { num: '48%', label: 'of endometriosis patients also have interstitial cystitis / bladder pain syndrome', source: 'Chronic pelvic pain meta-analyses' }
+                    { num: 'TVUS', label: 'is the imaging modality of choice for assessing the presence of endometriosis.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Excision > ablation', label: 'for endometriomas — excision is superior to simple drainage and cyst-wall ablation.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Surgery helps fertility', label: 'Surgical management of endometriosis-related infertility improves pregnancy rates; magnitude unclear.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Suppression ≠ fertility tx', label: 'OCs and GnRH agonists are ineffective for endometriosis-associated infertility.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Medical → pain ↓', label: 'Medical suppressive therapy improves pain — recurrence rates are high after stopping.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Surgery → pain ↓', label: 'Significant short-term improvement in pain after conservative surgical treatment — recurrence still happens.', source: 'ACOG CPG No. 11 · Level A' }
                 ]
             },
             {
                 eyebrow: 'Risks, benefits, alternatives',
-                title: 'Three honest paths — chosen with you.',
+                title: 'Three honest paths — grounded in the CPG.',
                 rba: {
                     expectant: {
-                        sub: 'Watchful waiting',
-                        intro: 'If symptoms are mild or already controlled with over-the-counter medications, doing nothing surgical is reasonable.',
+                        sub: 'Watchful waiting + NSAIDs',
+                        intro: 'CPG-acknowledged option when symptoms are mild and infertility is not a near-term goal. Always paired with structured tracking.',
                         items: [
-                            'Best for mild pain, no fertility goal in the next year, and no organ involvement on imaging.',
-                            'Track symptoms with a pain and bleeding diary so a change is recognized early.',
-                            'NSAIDs (ibuprofen 400–800 mg every 6–8 h or naproxen 500 mg twice daily) are usually first-line.',
-                            'Pelvic floor physical therapy is highly under-used and helps central sensitization symptoms.'
+                            'Best for mild pain, no near-term fertility plan, no organ involvement on imaging.',
+                            'NSAIDs (ibuprofen 400–800 mg q6–8 h or naproxen 500 mg BID) are first-line analgesia per CPG.',
+                            'Track symptoms with a pain-and-bleeding diary so a change is recognized early.',
+                            'Pelvic floor physical therapy is under-used and helps the musculoskeletal contributors.'
                         ],
-                        note: 'Expectant management is not "nothing" — it is structured monitoring.'
+                        note: 'Recurrence is real even when nothing is done; the CPG explicitly notes high baseline recurrence rates.'
                     },
                     medical: {
-                        sub: 'Hormonal and adjunctive medications',
-                        intro: 'Hormonal suppression cannot remove an endometrioma or DIE lesion, but it can quiet symptoms and is often the right starting point.',
+                        sub: 'Hormonal suppression (CPG Level A + B)',
+                        intro: 'Medications quiet symptoms but do not erase disease. The CPG ranks OCs as first-line for dysmenorrhea and reserves GnRH agonists for refractory cases.',
                         items: [
-                            'Continuous combined oral contraceptives — first-line; cycle suppression often reduces pain dramatically.',
-                            'Progestin-only options: norethindrone acetate 5 mg daily, depot medroxyprogesterone, or the levonorgestrel IUD.',
-                            'GnRH antagonists (elagolix) or GnRH agonists (leuprolide) with hormone add-back — for refractory pain.',
-                            'Neuromodulators (amitriptyline, gabapentin, duloxetine) — for central sensitization features.',
-                            'Pelvic floor physical therapy — addresses the musculoskeletal driver that almost always coexists.'
+                            'Combined oral contraceptives — first-line for dysmenorrhea; continuous use often performs better than cyclic.',
+                            'Oral norethindrone or depot medroxyprogesterone — Level B evidence; equivalent to more expensive regimens.',
+                            'Long-term (≥24 months) OC use reduces endometrioma recurrence and dysmenorrhea recurrence (Level B).',
+                            'GnRH agonist 3-month empiric trial after OC + NSAID failure is appropriate (Level B); add-back therapy supports continued use.',
+                            'Elagolix (oral GnRH antagonist) — newer option for moderate-to-severe pain.',
+                            'Suppression is NOT a fertility treatment (Level A — explicitly).'
                         ],
-                        note: 'Medications are typically reversible and a good fit if symptoms are bleeding-dominant or surgery is being deferred.'
+                        note: 'When the medication stops, pain often returns. Plan accordingly.'
                     },
                     surgical: {
                         sub: 'Laparoscopic / robotic excision',
-                        intro: 'The most definitive way to make the diagnosis and remove the disease. Minimally invasive in nearly every case.',
+                        intro: 'The most definitive way to confirm the diagnosis and remove disease. CPG-supported for refractory pain, infertility, and endometriomas.',
                         items: [
-                            'Excision of every visible (and ICG-fluorescent) lesion to negative margins.',
-                            'Ureterolysis, partial cystectomy, shave or disc excision of bowel lesions when DIE is present — same operation.',
-                            'Endometrioma cystectomy with careful ovarian-tissue preservation (a non-trivial fertility consideration).',
-                            'Same-day discharge in >95% of fellowship cases; no conversions to open surgery.',
-                            'Recurrence risk depends on disease stage, completeness of excision, and post-op hormonal suppression.'
+                            'Excision of every visible (and ICG-fluorescent) lesion — superior to ablation per CPG Level A.',
+                            'Endometrioma cystectomy with ovarian-tissue preservation — excision > drainage + ablation per CPG Level A.',
+                            'Ureterolysis, partial cystectomy, shave or disc excision of bowel lesions when DIE is present, in the same operation.',
+                            'Improves pregnancy rates for endometriosis-related infertility per CPG Level A (magnitude unclear).',
+                            'Same-day discharge in >95% of fellowship cases; zero conversions to open surgery.',
+                            'Even after definitive surgery (hysterectomy + BSO), recurrence is reported in up to 15% — disease can persist.'
                         ],
-                        note: 'Surgery is the strongest evidence-based path for DIE, bowel/bladder/ureter involvement, large endometriomas, or symptoms refractory to medical therapy.'
+                        note: 'Definitive diagnosis still requires histology of the excised tissue — every specimen is sent to pathology.'
                     }
                 }
             },
@@ -88,33 +98,33 @@
                 eyebrow: 'What to expect',
                 title: 'The arc of a typical excision case.',
                 timeline: [
-                    { stage: 'Before surgery', body: 'Detailed history, exam, and imaging — usually a transvaginal ultrasound and, if DIE is suspected, a dedicated pelvic MRI. A pre-op visit covers your goals (pain vs. fertility vs. both), any GLP-1 medications (Ozempic, Wegovy, Mounjaro — held per anesthesia protocol), blood thinners and hormone therapy, and ERAS optimization (anemia correction, nutrition, smoking cessation when relevant).' },
-                    { stage: 'Day of surgery', body: 'General anesthesia. Three to five small (5–12 mm) abdominal incisions. ICG injection where indicated. Excision of every identified lesion. A cystoscopy at the end confirms the ureters are intact. Most patients are home the same day.' },
-                    { stage: 'First 2 weeks', body: 'Soreness more than sharp pain. Ibuprofen and acetaminophen alternated cover most postoperative pain. Walking starts day one. No heavy lifting (>10 lbs), no intercourse, no tampons for 2 weeks. Mild bloating from CO₂ used during the procedure is normal and resolves in 24–72 hours.' },
-                    { stage: '6 weeks and beyond', body: 'Post-op visit, pathology review (every removed lesion is sent for confirmation), and a decision about hormonal suppression to reduce recurrence. Pelvic floor PT typically begins at 4–6 weeks. Fertility planning, if relevant, restarts here.' }
+                    { stage: 'Before surgery', body: 'Detailed history, exam, and TVUS as the CPG-recommended imaging baseline; pelvic MRI added when DIE is suspected. Pre-op covers your goals (pain vs. fertility vs. both), GLP-1 medication timing (Ozempic, Wegovy, Mounjaro held per anesthesia protocol), blood thinners, hormone therapy, and ERAS optimization (anemia, nutrition, smoking).' },
+                    { stage: 'Day of surgery', body: 'General anesthesia. Three to five small (5–12 mm) abdominal incisions. ICG injection where indicated. Every identified lesion is excised (not burned) to negative margins. A cystoscopy at the end confirms the ureters are intact. Most patients go home the same day.' },
+                    { stage: 'First 2 weeks', body: 'Soreness rather than sharp pain. Alternating ibuprofen and acetaminophen handles most postoperative pain. Walking begins day one. No heavy lifting (>10 lb), no intercourse, no tampons for 2 weeks. Mild CO₂-related bloating resolves in 24–72 hours.' },
+                    { stage: '6 weeks and beyond', body: 'Post-op visit, pathology review on every specimen, and a decision about hormonal suppression to reduce recurrence (the CPG explicitly notes high recurrence rates without suppression). Pelvic floor PT typically begins at 4–6 weeks. Fertility planning restarts here when relevant.' }
                 ]
             },
             {
                 eyebrow: 'Common questions',
                 title: 'What patients ask most often.',
                 qa: [
-                    { q: 'Will surgery cure my endometriosis?', a: 'Excision is the most definitive treatment we have, but endometriosis is a chronic disease — like asthma or migraine — and recurrence is possible. Complete excision of every visible and ICG-positive lesion gives the best chance of long pain-free intervals. Most patients still use a hormonal suppression strategy after surgery to lower recurrence risk.' },
-                    { q: 'Will I still have pain after surgery?', a: 'Most patients have substantial pain reduction. About 1 in 4 patients still has some pain afterward — usually because of central sensitization (the nervous system has been amplifying pain signals for years) or because there is a coexisting condition (interstitial cystitis, pelvic floor dysfunction, IBS) contributing to symptoms. That is why pelvic floor PT and, when needed, neuromodulators are part of the plan.' },
-                    { q: 'Will excision affect my fertility?', a: 'Endometrioma cystectomy can reduce ovarian reserve if done inexpertly — careful tissue-sparing technique matters. For deep infiltrating disease, excision often improves spontaneous conception rates and, in patients pursuing IVF, can improve embryo implantation. Your fertility plan should be discussed before surgery, not after.' },
-                    { q: 'How long is recovery?', a: 'Most patients return to desk work in 1–2 weeks and to full activity (including exercise and intercourse) by 4–6 weeks. Bowel surgery, ureteric work, or extensive adhesiolysis can extend that. The MIS approach (rather than open surgery) is the single biggest factor in faster recovery.' },
-                    { q: 'What is ICG and why use it?', a: 'Indocyanine green is a contrast dye that has been used safely in surgery for decades. Under a special near-infrared light, ICG highlights fibrotic or inflamed tissue — areas where endometriosis can hide despite looking normal under regular light. The published methodology uses ICG to improve the chance of complete excision in advanced disease.' },
-                    { q: 'Could it be cancer?', a: 'Endometriosis itself is benign, but every excised specimen is sent to pathology and reviewed under a microscope. Rarely, atypical or malignant endometriosis is identified — that finding changes the plan and the team. Sending tissue is non-negotiable.' }
+                    { q: 'Will surgery cure my endometriosis?', a: 'Excision is the most definitive treatment available, but the CPG is honest that recurrence happens — both after medical therapy alone AND after conservative surgery. Complete excision of every visible (and ICG-positive) lesion gives the best long pain-free interval, and most patients add a hormonal-suppression strategy afterward to lower recurrence risk further.' },
+                    { q: 'Why excision instead of just burning the lesions?', a: 'The CPG calls this out as a Level A recommendation for endometriomas specifically: excision is superior to simple drainage and ablation of the cyst wall. Excision removes the disease at its root, lets pathology confirm the diagnosis, and produces measurably better outcomes than burning the surface.' },
+                    { q: 'Can medication alone fix my endometriosis if I want to get pregnant?', a: 'No — the CPG is explicit (Level A): medical suppressive therapies such as oral contraceptives and GnRH agonists are ineffective for endometriosis-associated infertility. They quiet pain while you take them; they do not improve fertility. Surgery does improve pregnancy rates for infertility caused by endometriosis (Level A).' },
+                    { q: 'How is the diagnosis actually made?', a: 'The CPG is clear: definitive diagnosis only comes from histology of lesions removed at surgery. Imaging and serum markers have not been able to replace diagnostic laparoscopy. TVUS is the imaging of choice (Level A) and helpful for endometriomas and DIE; pelvic MRI adds detail for deep disease.' },
+                    { q: 'What about my fertility — will surgery hurt it?', a: 'Done well, no. Endometrioma cystectomy carries a real risk of removing normal ovarian tissue, so technique matters; the CPG notes excision is preferred over drainage+ablation even with that risk. For DIE, excision often improves spontaneous conception rates. Plan fertility timing BEFORE surgery, not after.' },
+                    { q: 'What is ICG and why use it?', a: 'Indocyanine green is a contrast dye used safely in surgery for decades. Under near-infrared light it highlights fibrotic and inflammatory tissue — exactly the territory where endometriosis hides under normal light. Adding ICG to the standard CPG-recommended laparoscopic approach is intended to improve complete-excision rates in advanced disease.' }
                 ]
             },
             {
                 eyebrow: 'References',
                 title: 'Where this evidence comes from.',
                 refs: [
-                    { cite: 'ACOG Practice Bulletin 218 — Chronic Pelvic Pain. Obstet Gynecol. 2020.', pmid: '32080045' },
+                    { cite: 'ACOG Clinical Practice Guideline No. 11 — Management of Endometriosis. Obstet Gynecol.' },
+                    { cite: 'Vercellini P, et al. Endometriosis: pathogenesis and treatment. Nat Rev Endocrinol.', pmid: '24366116' },
                     { cite: 'Falcone T, Flyckt R. Clinical management of endometriosis. Obstet Gynecol. 2018.', pmid: '29215524' },
                     { cite: 'Taylor HS, et al. Endometriosis is a chronic systemic disease — clinical challenges and novel innovations. Lancet. 2021.', pmid: '34010604' },
                     { cite: 'Bafort C, et al. Laparoscopic surgery for endometriosis. Cochrane Database Syst Rev. 2020.', pmid: '33095458' },
-                    { cite: 'Vercellini P, et al. Endometriosis: clinical features, evaluation, and diagnosis. UpToDate review.', pmid: '36703173' },
                     { cite: 'Vercellini P, et al. Treatment of endometriosis-associated pain with elagolix — RCT data. NEJM.', pmid: '28525302' }
                 ]
             }
