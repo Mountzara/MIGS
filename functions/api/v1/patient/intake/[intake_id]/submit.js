@@ -19,6 +19,10 @@ import { requireRole, nowMs } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
 import { triageForIntake } from "./triage.js";
 import { recommendAndAssignPROMs } from "../../../../../_lib/prom_intake_orchestrator.js";
+import {
+    buildCareGoalsFromSection4,
+    shouldOverwriteCareGoals,
+} from "../../../../../_lib/care_goals_mapper.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -97,6 +101,55 @@ export async function onRequestPost(ctx) {
         success: true,
         details: mh_flag ? { mental_health_flag: mh_flag } : null,
     });
+
+    // Phase 14 Round B+ — map Section 4 "Treatment Goals & Expectations" into
+    // the canonical patients.care_goals_json. Idempotent + non-clobbering:
+    // if the clinician has manually PATCHed care_goals AFTER intake.submitted_at
+    // we leave their edit in place and just log a 'intake-suggests-update'
+    // detail. Failure here MUST NOT fail the intake submit.
+    try {
+        const s4row = await env.DB.prepare(`
+            SELECT data_json FROM intake_section_data
+            WHERE intake_id = ? AND section_number = 4
+        `).bind(intake_id).first();
+        if (s4row?.data_json) {
+            let s4 = null;
+            try { s4 = JSON.parse(s4row.data_json); } catch {}
+            const derived = buildCareGoalsFromSection4(s4);
+            if (derived) {
+                const p = await env.DB.prepare(`
+                    SELECT care_goals_updated_at FROM patients WHERE id = ?
+                `).bind(session.patient_id).first();
+                const allow = shouldOverwriteCareGoals({
+                    care_goals_updated_at: p?.care_goals_updated_at || null,
+                    intake_submitted_at: now,
+                });
+                if (allow) {
+                    await env.DB.prepare(`
+                        UPDATE patients
+                        SET care_goals_json = ?, care_goals_updated_at = ?, updated_at = ?
+                        WHERE id = ?
+                    `).bind(JSON.stringify(derived), now, now, session.patient_id).run();
+                } else {
+                    await logAudit(env, {
+                        user_id: session.patient_id, user_role: "patient",
+                        action: "care_goals_overwrite_skipped",
+                        record_type: "patient",
+                        record_id: session.patient_id,
+                        success: true,
+                        details: {
+                            reason: "clinician_manually_edited_after_intake",
+                            patient_care_goals_updated_at: p?.care_goals_updated_at,
+                            intake_submitted_at: now,
+                            derived_from_intake: derived,
+                        },
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("intake submit care_goals map warn", { error: String(e) });
+    }
 
     // Phase 9 — mark patient as dirty for app-side context pulls. The
     // MountZaraMedicalTranscription app polls /api/v1/sync/transcription/patients

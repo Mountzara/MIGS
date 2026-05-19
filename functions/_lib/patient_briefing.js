@@ -137,6 +137,230 @@ async function loadIntakeTriage(env, intakeId) {
 }
 
 
+// ---------------------------------------------------------------------
+// Intake-section helpers — phase 14 round B+
+// Loads sections 4, 7, 8, 10, 12, 13, 14 (sourced per §11.6) for the
+// latest intake and reshapes them into briefing-friendly structures.
+// ---------------------------------------------------------------------
+
+async function loadIntakeSectionData(env, intakeId) {
+    if (!intakeId) return {};
+    const { results } = await env.DB.prepare(`
+        SELECT section_number, section_key, data_json, last_updated_at
+        FROM intake_section_data
+        WHERE intake_id = ? AND section_number IN (4, 7, 8, 10, 12, 13, 14)
+    `).bind(intakeId).all();
+    const out = {};
+    for (const r of (results || [])) {
+        out[r.section_number] = {
+            key: r.section_key,
+            data: safeJson(r.data_json) || {},
+            last_updated_at: r.last_updated_at,
+        };
+    }
+    return out;
+}
+
+
+function _shapeObstetric(s8) {
+    if (!s8) return null;
+    const total = Number(s8.total_pregnancies) || 0;
+    const vaginal = Number(s8.vaginal_births) || 0;
+    const csection = Number(s8.csections) || 0;
+    const miscarriage = Number(s8.miscarriages) || 0;
+    const ectopic = Number(s8.ectopic_pregnancies) || 0;
+    // Para = term + preterm + ab/miscarriage + living (TPAL). Wizard captures
+    // raw counts only; we surface G + a simplified Para summary.
+    const para_living = vaginal + csection - (miscarriage + ectopic);
+    return {
+        gravida: total,
+        para_simple: `${Math.max(0, vaginal + csection)} delivery(ies), ${miscarriage} miscarriage(s), ${ectopic} ectopic`,
+        para_living: Math.max(0, para_living),
+        vaginal_births: vaginal,
+        csections: csection,
+        miscarriages: miscarriage,
+        ectopic_pregnancies: ectopic,
+        wants_future_pregnancy: s8.future_pregnancy === "yes" || !!s8.want_pregnancy,
+        ttc_now: !!s8.ttc_now,
+        infertility_flag: !!s8.infertility_dx,
+        fertility_tx: !!s8.fertility_treatment,
+    };
+}
+
+
+// Maps section 7 boolean flags + per-procedure year + free-text findings.
+function _shapePastSurgeries(s7) {
+    if (!s7) return null;
+    const PROCS = [
+        ["diagnostic_laparoscopy",  "Diagnostic laparoscopy"],
+        ["endo_excision",           "Endometriosis excision"],
+        ["endo_ablation",           "Endometriosis ablation"],
+        ["myomectomy",              "Myomectomy"],
+        ["ovarian_cystectomy",      "Ovarian cystectomy"],
+        ["hysteroscopy",            "Hysteroscopy"],
+        ["polypectomy",             "Polypectomy"],
+        ["dc",                      "D&C"],
+        ["endometrial_ablation",    "Endometrial ablation"],
+        ["tubal_ligation",          "Tubal ligation"],
+    ];
+    const past = [];
+    for (const [key, label] of PROCS) {
+        if (s7[key] === true || s7[`gyn_${key}`] === true) {
+            const year = s7[`${key}_year`] || s7[`gyn_${key}_year`] || null;
+            past.push({ label, year });
+        }
+    }
+    const other = String(s7.other_surgery || "").trim();
+    if (other) past.push({ label: `Other: ${other}`, year: s7.other_surgery_year || null });
+    const findings = String(s7.findings_text || s7.other_findings || "").trim();
+    return { count: past.length, items: past, findings_text: findings || null };
+}
+
+
+// §11.6 section 12 — Medical History & ERAS Perioperative Considerations.
+// Surface ONLY positives so the briefing stays terse.
+function _shapeMedicalHistory(s12) {
+    if (!s12) return null;
+    const ERAS_FLAGS = [
+        ["eras_anemia",             "Anemia",                 "anemia_hgb"],
+        ["eras_sleep_apnea",        "Sleep apnea",            "cpap_use"],
+        ["eras_smoking",            "Active smoking",         "smoking_ppd"],
+        ["eras_diabetes",           "Diabetes",               "hba1c_pct"],
+        ["eras_bmi40",              "BMI > 40",               "current_weight_lbs"],
+        ["eras_bleeding_disorder",  "Bleeding disorder",      null],
+        ["eras_dvt_pe",             "Prior DVT / PE",         "dvt_pe_year"],
+        ["eras_cardiac",            "Cardiac disease",        "cardiac_type"],
+        ["eras_ckd",                "Chronic kidney disease", "creatinine"],
+        ["eras_latex_allergy",      "Latex/anesthesia allergy", null],
+    ];
+    const eras_positives = [];
+    for (const [flag, label, detailField] of ERAS_FLAGS) {
+        if (s12[flag] === true) {
+            eras_positives.push({
+                label,
+                detail: detailField ? (s12[detailField] || null) : null,
+            });
+        }
+    }
+
+    // Critical perioperative meds — GLP-1 anesthesia-hold protocol.
+    const GLP1_FLAGS = ["glp1_ozempic", "glp1_wegovy", "glp1_mounjaro",
+                        "glp1_saxenda", "glp1_other"];
+    const glp1 = GLP1_FLAGS.filter((k) => s12[k] === true)
+        .map((k) => ({
+            drug: k.replace("glp1_", ""),
+            last_dose_date: s12[`${k}_last_dose`] || s12.glp1_last_dose_date || null,
+        }));
+
+    // Anticoagulants
+    const BLOOD_THINNERS = ["bt_asa", "bt_plavix", "bt_coumadin", "bt_eliquis",
+                            "bt_xarelto", "bt_other"];
+    const anticoagulants = BLOOD_THINNERS.filter((k) => s12[k] === true)
+        .map((k) => k.replace("bt_", ""));
+
+    // Hormone therapy
+    const HT_FLAGS = ["ht_bcp", "ht_hrt", "ht_tamoxifen", "ht_lupron", "ht_progesterone"];
+    const hormone_tx = HT_FLAGS.filter((k) => s12[k] === true)
+        .map((k) => k.replace("ht_", ""));
+
+    // Other medical conditions
+    const MED_CONDS = [
+        ["med_htn",                "HTN"],
+        ["med_asthma_copd",        "Asthma / COPD"],
+        ["med_thyroid",            "Thyroid disease"],
+        ["med_autoimmune",         "Autoimmune"],
+        ["med_migraines",          "Migraines"],
+        ["med_depression_anxiety", "Depression / anxiety"],
+    ];
+    const conditions = MED_CONDS.filter(([k]) => s12[k] === true).map(([, l]) => l);
+
+    // Gyn-specific conditions
+    const GYN_CONDS = [
+        ["gyn_endometriosis", "Confirmed endometriosis"],
+        ["gyn_pcos",           "PCOS"],
+        ["gyn_adenomyosis",    "Adenomyosis"],
+        ["gyn_cpp",            "Chronic pelvic pain"],
+        ["gyn_ic",             "Interstitial cystitis"],
+        ["gyn_vulvodynia",     "Vulvodynia"],
+    ];
+    const gyn_conditions = GYN_CONDS.filter(([k]) => s12[k] === true).map(([, l]) => l);
+
+    return {
+        eras_positives,
+        glp1_use: glp1,                 // [] if none
+        anticoagulants,                 // [] if none
+        hormone_tx,                     // [] if none
+        other_conditions: conditions,
+        gyn_conditions,
+    };
+}
+
+
+function _shapeMedications(s13) {
+    if (!s13) return null;
+    const pain = String(s13.pain_meds || s13.pain_meds_text || "").trim();
+    const contraceptives = String(s13.contraceptives || s13.contraceptives_text || "").trim();
+    const other = String(s13.other_meds || s13.other_meds_text || "").trim();
+    return {
+        pain_meds: pain || null,
+        contraceptives_hormones: contraceptives || null,
+        other_meds: other || null,
+    };
+}
+
+
+function _shapeAllergies(s14) {
+    if (!s14) return null;
+    const drug = !!s14.drug_allergies;
+    const latex = !!s14.latex_allergy;
+    const list = String(s14.allergy_list || s14.allergies_text || "").trim();
+    return {
+        has_drug_allergies: drug,
+        has_latex_allergy: latex,
+        list: list || null,
+    };
+}
+
+
+function _shapeImaging(s10) {
+    if (!s10) return null;
+    return {
+        tvus_date: s10.tvus_date || null,
+        endometrial_thickness_mm: s10.endometrial_thickness_mm || null,
+        fibroid_count: s10.fibroid_count || null,
+        largest_fibroid_size_cm: s10.largest_fibroid_size_cm || null,
+        had_pelvic_mri: !!s10.had_pelvic_mri,
+        pelvic_mri_date: s10.pelvic_mri_date || null,
+        had_ct_abd_pelvis: !!s10.had_ct_abd_pelvis,
+        ct_date: s10.ct_date || null,
+        had_sonohysterography: !!s10.had_sonohysterography,
+        sis_date: s10.sis_date || null,
+        had_hsg: !!s10.had_hsg,
+        hsg_date: s10.hsg_date || null,
+    };
+}
+
+
+async function loadUploadedDocuments(env, patientId) {
+    // Returns metadata only — no decryption. Briefing UI offers a deep-link
+    // per doc; full body decryption happens on click.
+    try {
+        const { results } = await env.DB.prepare(`
+            SELECT id, kind, original_filename, content_type, size_bytes,
+                   uploaded_at, source
+            FROM documents
+            WHERE patient_id = ?
+            ORDER BY uploaded_at DESC
+            LIMIT 30
+        `).bind(patientId).all();
+        return results || [];
+    } catch (e) {
+        // Table may not exist if Phase 1 Round 3 hasn't been applied in this env.
+        return [];
+    }
+}
+
+
 async function loadRecentEncounters(env, patientId) {
     const { results } = await env.DB.prepare(`
         SELECT id, visit_date, visit_type_actual, chief_complaint,
@@ -383,12 +607,21 @@ async function loadAppointmentContext(env, patientId, focusAppointmentId) {
 // Heuristic narrative composition (no LLM, no PHI leaves the Worker)
 // ---------------------------------------------------------------------
 
-function composeExecutiveLede(header, snapshot, triage, prom_trends, personal_notes, focused_appt) {
+function composeExecutiveLede(header, snapshot, triage, prom_trends, personal_notes, focused_appt,
+                              obstetric_history, medical_history) {
     const parts = [];
     const greet = header.nickname
         ? `${header.nickname} (${header.full_name})`
         : (header.preferred_name || header.first_name || "Patient");
     let lede = `${greet}${header.age ? `, ${header.age}` : ""}${header.pronouns ? ` (${header.pronouns})` : ""}`;
+
+    // G/P fragment if obstetric data is available — e.g. "G2P1011"-style
+    // simplified: G<total>, <para_living> living.
+    if (obstetric_history && (obstetric_history.gravida || obstetric_history.para_living)) {
+        const gp = `G${obstetric_history.gravida || 0}P${obstetric_history.para_living || 0}`;
+        lede += `, ${gp}`;
+    }
+
     if (focused_appt) {
         const dt = new Date(focused_appt.starts_at);
         const date = dt.toLocaleString("en-US", {
@@ -403,6 +636,28 @@ function composeExecutiveLede(header, snapshot, triage, prom_trends, personal_no
         parts.push(`Today's chief complaint: ${focused_appt.chief_complaint_summary}.`);
     } else if (triage && triage.rationale) {
         parts.push(`Triage rationale: ${triage.rationale}.`);
+    }
+
+    // Surface ERAS / perioperative red flags loudly — they're the items
+    // that change clinical management. GLP-1 last-dose, anticoagulants,
+    // anemia, prior DVT/PE all qualify.
+    if (medical_history) {
+        const flags = [];
+        if (medical_history.glp1_use?.length) {
+            const drugs = medical_history.glp1_use.map((g) =>
+                g.last_dose_date ? `${g.drug} (last ${g.last_dose_date})` : g.drug
+            ).join(", ");
+            flags.push(`GLP-1 use: ${drugs} — anesthesia-hold protocol applies if surgery soon`);
+        }
+        if (medical_history.anticoagulants?.length) {
+            flags.push(`On anticoagulant(s): ${medical_history.anticoagulants.join(", ")}`);
+        }
+        const erasPositives = (medical_history.eras_positives || [])
+            .filter((p) => /anemia|sleep apnea|bmi|dvt|cardiac|ckd/i.test(p.label));
+        if (erasPositives.length) {
+            flags.push(`ERAS positives: ${erasPositives.map((p) => p.label).join(", ")}`);
+        }
+        if (flags.length) parts.push(flags.join("; ") + ".");
     }
 
     if (snapshot && snapshot.executive_summary) {
@@ -430,7 +685,7 @@ function composeExecutiveLede(header, snapshot, triage, prom_trends, personal_no
 }
 
 
-function composeSuggestedQuestions(snapshot, triage, prom_trends, care_goals) {
+function composeSuggestedQuestions(snapshot, triage, prom_trends, care_goals, focused_appt) {
     const out = [];
 
     // From the snapshot's open action items
@@ -465,7 +720,7 @@ function composeSuggestedQuestions(snapshot, triage, prom_trends, care_goals) {
 }
 
 
-function composeWatchFor(prom_trends, snapshot, care_goals) {
+function composeWatchFor(prom_trends, snapshot, care_goals, medical_history) {
     const items = [];
 
     // Worsening PROMs
@@ -497,7 +752,35 @@ function composeWatchFor(prom_trends, snapshot, care_goals) {
             items.push({ kind: "patient_avoid", label: a, severity: "preference" });
         }
     }
-    return items.slice(0, 8);
+    // Phase 14 Round B+ — perioperative red flags from intake Section 12.
+    if (medical_history) {
+        if (medical_history.glp1_use?.length) {
+            for (const g of medical_history.glp1_use) {
+                items.push({
+                    kind: "perioperative_glp1",
+                    label: `GLP-1 use: ${g.drug}${g.last_dose_date ? ` — last dose ${g.last_dose_date}` : ""} (ASA hold: 1 wk daily, 2 wk weekly)`,
+                    severity: "high",
+                });
+            }
+        }
+        if (medical_history.anticoagulants?.length) {
+            items.push({
+                kind: "perioperative_anticoag",
+                label: `Anticoagulant: ${medical_history.anticoagulants.join(", ")} — pre-op hold timing required`,
+                severity: "high",
+            });
+        }
+        for (const p of (medical_history.eras_positives || [])) {
+            if (/anemia|dvt|cardiac|ckd|bleeding/i.test(p.label)) {
+                items.push({
+                    kind: "eras_flag",
+                    label: p.detail ? `${p.label} (${p.detail})` : p.label,
+                    severity: "moderate",
+                });
+            }
+        }
+    }
+    return items.slice(0, 12);
 }
 
 
@@ -517,7 +800,7 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
     const header = await loadPatientHeader(env, patientId);
     if (!header) return null;
 
-    const [intake, encounters, prom_trends, snapshot, personal_notes, appts] =
+    const [intake, encounters, prom_trends, snapshot, personal_notes, appts, documents] =
         await Promise.all([
             loadLatestIntake(env, patientId),
             loadRecentEncounters(env, patientId),
@@ -525,9 +808,21 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
             loadCurrentSnapshot(env, patientId),
             loadPersonalNotes(env, patientId),
             loadAppointmentContext(env, patientId, opts.appointment_id || null),
+            loadUploadedDocuments(env, patientId),
         ]);
     // Triage is reverse-linked: appointment_triage.intake_id → intake_responses.id
     const triage = intake ? await loadIntakeTriage(env, intake.id) : null;
+
+    // Phase 14 Round B+ — load + reshape intake sections 4/7/8/10/12/13/14
+    // into briefing-friendly structures. Sections the patient hasn't yet
+    // filled return null so the UI can show "(not yet captured)".
+    const sectionData = intake ? await loadIntakeSectionData(env, intake.id) : {};
+    const obstetric_history   = _shapeObstetric(sectionData[8]?.data);
+    const past_surgeries      = _shapePastSurgeries(sectionData[7]?.data);
+    const medical_history     = _shapeMedicalHistory(sectionData[12]?.data);
+    const current_medications = _shapeMedications(sectionData[13]?.data);
+    const allergies           = _shapeAllergies(sectionData[14]?.data);
+    const imaging_summary     = _shapeImaging(sectionData[10]?.data);
 
     const focused = appts.focused || null;
 
@@ -539,7 +834,8 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
             upcoming_scheduled: appts.upcoming_scheduled,
         },
         executive_lede: composeExecutiveLede(
-            header, snapshot, triage, prom_trends, personal_notes, focused
+            header, snapshot, triage, prom_trends, personal_notes, focused,
+            obstetric_history, medical_history
         ),
         intake_summary: intake,
         triage,
@@ -549,8 +845,16 @@ export async function buildPatientBriefing(env, patientId, opts = {}) {
         personal_touchpoints: personal_notes.filter((n) => n.is_pinned || n.category === "personal"),
         all_personal_notes: personal_notes,
         care_goals: header.care_goals,
-        watch_for: composeWatchFor(prom_trends, snapshot, header.care_goals),
-        suggested_questions: composeSuggestedQuestions(snapshot, triage, prom_trends, header.care_goals),
+        // New Phase 14 Round B+ intake-sourced sections
+        obstetric_history,
+        past_surgeries,
+        medical_history,
+        current_medications,
+        allergies,
+        imaging_summary,
+        uploaded_documents: documents,
+        watch_for: composeWatchFor(prom_trends, snapshot, header.care_goals, medical_history),
+        suggested_questions: composeSuggestedQuestions(snapshot, triage, prom_trends, header.care_goals, focused),
         generated_at: Date.now(),
     };
 }
