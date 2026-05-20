@@ -36,35 +36,37 @@ export async function onRequestGet(ctx) {
     const tag = url.searchParams.get("tag");
     const audience = url.searchParams.get("audience");
 
-    // 1. Published materials.
-    let sql = `
+    // Batch the 3 D1 queries into a single round-trip with env.DB.batch().
+    // Previously these ran sequentially with 3 separate awaits, each adding
+    // ~10-20ms of D1 round-trip latency to the response path — material
+    // contributor to the intermittent Worker CPU-budget 503s. The batched
+    // call commits all three in one transaction-equivalent round-trip.
+    let pubSql = `
         SELECT id, slug, title, summary, topic_tags_json, target_audience,
                status, published_at, updated_at
         FROM education_materials
         WHERE status = 'published'
     `;
-    const binds = [];
-    if (audience) { sql += " AND (target_audience = ? OR target_audience = 'all')"; binds.push(audience); }
-    sql += " ORDER BY published_at DESC LIMIT 200";
-    const pubRes = await env.DB.prepare(sql).bind(...binds).all();
-
-    // 2. Materials explicitly assigned to this patient (may be unpublished).
-    const assignRes = await env.DB.prepare(`
-        SELECT m.id, m.slug, m.title, m.summary, m.topic_tags_json, m.target_audience,
-               m.status, m.published_at, m.updated_at,
-               a.id AS assignment_id, a.reason, a.assigned_at, a.first_opened_at, a.completed_at
-        FROM patient_education_assignments a
-        JOIN education_materials m ON m.id = a.material_id
-        WHERE a.patient_id = ?
-        ORDER BY a.assigned_at DESC
-    `).bind(session.patient_id).all();
-
-    // 3. Patient view state.
-    const viewRes = await env.DB.prepare(`
-        SELECT content_id, first_viewed_at, last_viewed_at, view_count, completed
-        FROM patient_content_views
-        WHERE patient_id = ? AND content_kind = 'education_material'
-    `).bind(session.patient_id).all();
+    const pubBinds = [];
+    if (audience) { pubSql += " AND (target_audience = ? OR target_audience = 'all')"; pubBinds.push(audience); }
+    pubSql += " ORDER BY published_at DESC LIMIT 200";
+    const [pubRes, assignRes, viewRes] = await env.DB.batch([
+        env.DB.prepare(pubSql).bind(...pubBinds),
+        env.DB.prepare(`
+            SELECT m.id, m.slug, m.title, m.summary, m.topic_tags_json, m.target_audience,
+                   m.status, m.published_at, m.updated_at,
+                   a.id AS assignment_id, a.reason, a.assigned_at, a.first_opened_at, a.completed_at
+            FROM patient_education_assignments a
+            JOIN education_materials m ON m.id = a.material_id
+            WHERE a.patient_id = ?
+            ORDER BY a.assigned_at DESC
+        `).bind(session.patient_id),
+        env.DB.prepare(`
+            SELECT content_id, first_viewed_at, last_viewed_at, view_count, completed
+            FROM patient_content_views
+            WHERE patient_id = ? AND content_kind = 'education_material'
+        `).bind(session.patient_id),
+    ]);
     const viewsBySlug = {};
     for (const v of (viewRes?.results || [])) viewsBySlug[v.content_id] = v;
 

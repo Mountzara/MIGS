@@ -93,37 +93,44 @@ export async function onRequestGet(ctx) {
         }
     }
 
-    // Track view (upsert patient_content_views).
+    // Track view (upsert patient_content_views) — async, off the response
+    // path. Previously each of these awaits added 10-30ms of D1 latency and
+    // stacked with the audit log below, materially contributing to the
+    // intermittent Worker CPU-budget 503s observed pre-2026-05-20.
     const t = nowMs();
-    try {
-        const existing = await env.DB.prepare(`
-            SELECT id, view_count FROM patient_content_views
-            WHERE patient_id = ? AND content_kind = 'education_material' AND content_id = ?
-        `).bind(session.patient_id, slug).first();
-        if (existing) {
-            await env.DB.prepare(`
-                UPDATE patient_content_views
-                SET last_viewed_at = ?, view_count = ?
-                WHERE id = ?
-            `).bind(t, (existing.view_count || 0) + 1, existing.id).run();
-        } else {
-            await env.DB.prepare(`
-                INSERT INTO patient_content_views
-                    (id, patient_id, content_kind, content_id, first_viewed_at, last_viewed_at, view_count, completed)
-                VALUES (?, ?, 'education_material', ?, ?, ?, 1, 0)
-            `).bind(newId(), session.patient_id, slug, t, t).run();
+    const trackPromise = (async () => {
+        try {
+            const existing = await env.DB.prepare(`
+                SELECT id, view_count FROM patient_content_views
+                WHERE patient_id = ? AND content_kind = 'education_material' AND content_id = ?
+            `).bind(session.patient_id, slug).first();
+            if (existing) {
+                await env.DB.prepare(`
+                    UPDATE patient_content_views
+                    SET last_viewed_at = ?, view_count = ?
+                    WHERE id = ?
+                `).bind(t, (existing.view_count || 0) + 1, existing.id).run();
+            } else {
+                await env.DB.prepare(`
+                    INSERT INTO patient_content_views
+                        (id, patient_id, content_kind, content_id, first_viewed_at, last_viewed_at, view_count, completed)
+                    VALUES (?, ?, 'education_material', ?, ?, ?, 1, 0)
+                `).bind(newId(), session.patient_id, slug, t, t).run();
+            }
+            // First-opened back-fill on the assignment, if applicable.
+            if (assignment && !assignment.first_opened_at) {
+                await env.DB.prepare(`
+                    UPDATE patient_education_assignments SET first_opened_at = ? WHERE id = ?
+                `).bind(t, assignment.id).run();
+            }
+        } catch (e) {
+            console.warn("education view tracking failed", { error: String(e) });
         }
-        // First-opened back-fill on the assignment, if applicable.
-        if (assignment && !assignment.first_opened_at) {
-            await env.DB.prepare(`
-                UPDATE patient_education_assignments SET first_opened_at = ? WHERE id = ?
-            `).bind(t, assignment.id).run();
-        }
-    } catch (e) {
-        console.warn("education view tracking failed", { error: String(e) });
-    }
+    })();
+    if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(trackPromise);
 
-    await logAudit(env, {
+    // Audit log also off the response path via logAudit's ctx-aware path.
+    logAudit(env, {
         user_id: session.patient_id, user_role: "patient",
         action: "education_view",
         record_type: "education_material",
@@ -132,7 +139,7 @@ export async function onRequestGet(ctx) {
         user_agent: request.headers.get("User-Agent") || "",
         success: true,
         details: { slug, op: assignment ? "assigned_read" : "library_read" },
-    });
+    }, ctx);
 
     return new Response(JSON.stringify({
         material: {

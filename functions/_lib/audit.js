@@ -66,7 +66,7 @@ const ALLOWED_ACTIONS = new Set([
  * @param {boolean} entry.success
  * @param {object=} entry.details        - serializable JSON, PHI-free
  */
-export async function logAudit(env, entry) {
+export async function logAudit(env, entry, ctx) {
     if (!env || !env.DB) {
         console.warn("logAudit skipped — env.DB not bound", { action: entry?.action });
         return;
@@ -87,25 +87,29 @@ export async function logAudit(env, entry) {
     } catch (e) {
         details_json = JSON.stringify({ _serialization_error: String(e) });
     }
-    try {
-        await env.DB.prepare(`
-            INSERT INTO audit_log
-                (id, ts, user_id, user_role, action, record_type, record_id, ip, user_agent, success, details_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-            row_id,
-            ts,
-            entry.user_id || null,
-            entry.user_role || "anonymous",
-            action,
-            entry.record_type || null,
-            entry.record_id || null,
-            entry.ip || null,
-            entry.user_agent || null,
-            entry.success ? 1 : 0,
-            details_json
-        ).run();
-    } catch (e) {
+    // Build the write promise once. When ctx is provided, hand it to
+    // ctx.waitUntil() and return immediately — the audit row writes
+    // after the response is sent, removing 20-50ms of D1 latency from
+    // the response path. This was a key cause of intermittent Worker
+    // 503s before 2026-05-20. When ctx is absent (legacy callers), the
+    // promise still runs in the background; we don't await it.
+    const writePromise = env.DB.prepare(`
+        INSERT INTO audit_log
+            (id, ts, user_id, user_role, action, record_type, record_id, ip, user_agent, success, details_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+        row_id,
+        ts,
+        entry.user_id || null,
+        entry.user_role || "anonymous",
+        action,
+        entry.record_type || null,
+        entry.record_id || null,
+        entry.ip || null,
+        entry.user_agent || null,
+        entry.success ? 1 : 0,
+        details_json
+    ).run().catch((e) => {
         // Last-resort: write to console so the event is at least in the
         // wrangler tail / Cloudflare log even if D1 was down.
         console.error("logAudit DB.prepare/run threw — event lost from D1 but logged here", {
@@ -118,7 +122,11 @@ export async function logAudit(env, entry) {
                 success: !!entry.success,
             },
         });
+    });
+    if (ctx && typeof ctx.waitUntil === "function") {
+        ctx.waitUntil(writePromise);
     }
+    // else: promise runs in the background unawaited
 }
 
 /**

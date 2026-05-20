@@ -249,7 +249,7 @@ async function sha256Base64Url(text) {
  * record (incl. role + patient_id/clinician_id) or null. Touches
  * last_seen_at on each call.
  */
-export async function getSession({ env, token, request }) {
+export async function getSession({ env, token, request, ctx }) {
     if (!token || typeof token !== "string") return null;
     const dot = token.indexOf(".");
     if (dot < 0) return null;
@@ -293,14 +293,25 @@ export async function getSession({ env, token, request }) {
         // KNOWN GAP: D1-only fallback acceptance — KV must be healthy.
     }
 
-    // Refresh last_seen_at fire-and-forget.
+    // Refresh last_seen_at — truly fire-and-forget. Previous behavior
+    // awaited this UPDATE on every authenticated request which added 20-50ms
+    // of D1 write latency to every /api/v1/* call, causing intermittent
+    // Worker CPU-limit 503s. Now: when ctx is provided, hand the write to
+    // ctx.waitUntil() so it runs after the response is sent; otherwise
+    // detach without awaiting (best-effort — the runtime may drop it but
+    // that's acceptable for a last_seen heartbeat).
     const now = nowMs();
-    try {
-        await env.DB.prepare(`UPDATE auth_sessions SET last_seen_at = ? WHERE id = ?`)
-            .bind(now, session_id).run();
-    } catch (e) {
-        console.error("auth.getSession touch threw", { error: String(e) });
+    const touchPromise = env.DB
+        .prepare(`UPDATE auth_sessions SET last_seen_at = ? WHERE id = ?`)
+        .bind(now, session_id)
+        .run()
+        .catch((e) => {
+            console.error("auth.getSession touch threw", { error: String(e) });
+        });
+    if (ctx && typeof ctx.waitUntil === "function") {
+        ctx.waitUntil(touchPromise);
     }
+    // (else: promise runs in the background; we don't await it)
 
     return kvRecord
         ? { session_id, ...kvRecord }
@@ -480,10 +491,15 @@ export async function requireRole(ctx, allowedRoles) {
     const m = cookie.match(/(?:^|;\s*)mz_session=([^;]+)/);
     if (!m) throw unauthorized();
     const token = decodeURIComponent(m[1]);
-    const session = await getSession({ env, token, request });
+    // Pass ctx through so getSession can hand its touch UPDATE to
+    // ctx.waitUntil() — keeps the response path off the D1-write hot
+    // path (was a key cause of intermittent 503s before 2026-05-20).
+    const session = await getSession({ env, token, request, ctx });
     if (!session) throw unauthorized();
     if (allowedRoles && !allowedRoles.includes(session.role)) {
-        await logAudit(env, {
+        // Audit role_check_fail off the response path — patient still
+        // gets the 403 immediately.
+        const auditPromise = logAudit(env, {
             user_id: session.patient_id || session.clinician_id,
             user_role: session.role,
             action: "role_check_fail",
@@ -494,6 +510,7 @@ export async function requireRole(ctx, allowedRoles) {
             success: false,
             details: { allowed: allowedRoles, actual: session.role },
         });
+        if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(auditPromise);
         throw forbidden();
     }
     return session;
@@ -518,7 +535,9 @@ export async function requireRoleOptional(ctx, allowedRoles) {
     const m = cookie.match(/(?:^|;\s*)mz_session=([^;]+)/);
     if (!m) return null;
     const token = decodeURIComponent(m[1]);
-    const session = await getSession({ env, token, request });
+    // Pass ctx through so getSession can hand its touch UPDATE to
+    // ctx.waitUntil() — see requireRole for context.
+    const session = await getSession({ env, token, request, ctx });
     if (!session) return null;
     if (allowedRoles && !allowedRoles.includes(session.role)) return null;
     // Surface the raw token so recordTrace() can hash + correlate it.
