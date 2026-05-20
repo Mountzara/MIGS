@@ -255,7 +255,7 @@
         <div id="list-view">
             <p class="eyebrow">Member portal · Learn</p>
             <h1>Patient primers</h1>
-            <p class="lede">Plain-language explainers on the conditions, procedures, and recovery topics that come up most often in MIGS care. Anything assigned to you sits at the top.</p>
+            <p class="lede">Plain-language explainers on the conditions, procedures, and recovery topics that come up most often in CBG/MIGS care. Anything assigned to you sits at the top.</p>
 
             <div class="filter-bar" id="tag-filter">
                 <button class="filter-chip active" data-tag="">All</button>
@@ -399,6 +399,19 @@
         }
 
         async function loadList() {
+            // 2026-05-20 resilience fix: the FEATURED static deep guides
+            // (the 12 §0.8.1-anchored patient education pages) must always
+            // render so the patient can navigate to them — independent of
+            // whether the /api/v1/patient/education endpoint succeeds.
+            // The endpoint is intermittently 503-flaky under Workers CPU
+            // pressure and the prior behavior of replacing the entire grid
+            // with "Could not load library:" left the patient stranded.
+            //
+            // Render FEATURED first, ALWAYS. Then attempt to enrich with
+            // D1-driven materials; if that fails, log + leave the FEATURED
+            // grid intact with a small non-blocking notice.
+            renderTags();
+            renderGrid();
             try {
                 const data = await fetchJson('/api/v1/patient/education');
                 state.materials = data.materials || [];
@@ -411,7 +424,13 @@
                     window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
                     return;
                 }
-                $('grid').innerHTML = `<div class="empty-state">Could not load library: ${escapeHtml(e.message)}</div>`;
+                // Non-blocking notice; FEATURED stays visible.
+                console.warn('Education list API failed (FEATURED guides still available):', e);
+                const grid = $('grid');
+                if (grid && !grid.querySelector('.ed-card')) {
+                    // FEATURED render fell through (shouldn't happen); show old error
+                    grid.innerHTML = `<div class="empty-state">Could not load library: ${escapeHtml(e.message)}</div>`;
+                }
             }
         }
 
