@@ -33,9 +33,12 @@ curl -sS -u "$MZ_ADMIN_USER:$MZ_ADMIN_PASS" \
     "https://mountzara.com/api/v1/admin/feedback?status=$FILTER&limit=100" \
     > /tmp/_mz_feedback_queue.json
 
-python3 - <<'PY' < /tmp/_mz_feedback_queue.json
+# python3 - <<'PY' reads the script from stdin; we pass the JSON via argv
+# instead so the heredoc-script and the data-file don't fight for stdin.
+python3 - /tmp/_mz_feedback_queue.json <<'PY'
 import json, sys, textwrap
-data = json.load(sys.stdin)
+with open(sys.argv[1]) as _f:
+    data = json.load(_f)
 if not data.get("ok"):
     print("ERR:", data)
     sys.exit(1)
