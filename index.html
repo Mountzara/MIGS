@@ -1891,6 +1891,317 @@
             font-weight: 500;
         }
 
+        /* ==========================================================
+           Surgical Practice — unified hub-expand mosaic (Phase QD)
+           Replaces .surgical-focus-section + .excellence-section's
+           .domain-grid; all .zero-* + .excellence-quote rules above
+           continue to apply because the markup re-uses those classes.
+           ========================================================== */
+        .surgical-unified-section {
+            padding: clamp(60px, 8vw, 120px) 0;
+            background: var(--black);
+            position: relative;
+        }
+        .surgical-unified-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 0%, rgba(167, 139, 250, 0.06), transparent 60%),
+                radial-gradient(ellipse 50% 35% at 85% 100%, rgba(109, 40, 217, 0.08), transparent 60%);
+            pointer-events: none;
+        }
+        .surgical-unified-section .container-wide { position: relative; }
+
+        .surgical-hub-eyebrow {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(167, 139, 250, 0.85);
+            margin: clamp(40px, 5vw, 72px) 0 22px;
+        }
+
+        .surgical-hub {
+            position: relative;
+            display: block;
+        }
+
+        .surgical-hub-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 720px)  { .surgical-hub-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1080px) { .surgical-hub-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .hub-tile {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+            padding: 20px 22px 18px;
+            font: inherit;
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            cursor: pointer;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+        }
+        .hub-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(167, 139, 250, 0.45);
+            background: rgba(167, 139, 250, 0.06);
+        }
+        .hub-tile:focus-visible {
+            outline: none;
+            border-color: rgba(167, 139, 250, 0.7);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+        }
+        .hub-tile.active {
+            border-color: rgba(167, 139, 250, 0.7);
+            background: rgba(167, 139, 250, 0.10);
+            box-shadow: 0 16px 40px -16px rgba(109, 40, 217, 0.45);
+        }
+        .hub-tile.dimmed {
+            opacity: 0.55;
+            transform: scale(0.985);
+        }
+        .hub-tile.dimmed:hover {
+            opacity: 0.92;
+            transform: translateY(-1px) scale(0.985);
+        }
+
+        .hub-tile-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            background: rgba(167, 139, 250, 0.10);
+            color: rgba(167, 139, 250, 0.95);
+            border: 1px solid rgba(167, 139, 250, 0.22);
+        }
+        .hub-tile-icon svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+        .hub-tile h3 {
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: -0.008em;
+            margin: 4px 0 0;
+            color: var(--white);
+        }
+        .hub-tile p {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.74);
+            margin: 0;
+        }
+        .hub-tile-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .hub-badge {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(167, 139, 250, 0.10);
+            border: 1px solid rgba(167, 139, 250, 0.22);
+            color: rgba(167, 139, 250, 0.95);
+        }
+
+        /* Expansion panel — slides open below the grid when a tile is active. */
+        .surgical-hub-panel {
+            margin-top: 18px;
+            padding: 26px 28px;
+            background:
+                radial-gradient(ellipse 70% 50% at 20% 0%, rgba(167, 139, 250, 0.07), transparent 60%),
+                rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(167, 139, 250, 0.28);
+            border-radius: 18px;
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.32s ease, transform 0.32s ease;
+        }
+        .surgical-hub-panel:not([hidden]) {
+            opacity: 1;
+            transform: none;
+        }
+        .hub-panel-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(245, 245, 247, 0.7);
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s, color 0.18s, border-color 0.18s;
+        }
+        .hub-panel-close:hover, .hub-panel-close:focus-visible {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: rgba(167, 139, 250, 0.45);
+            outline: none;
+        }
+        .hub-panel-inner { padding-right: 32px; }
+        .hub-panel-inner > article {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: 1fr;
+            animation: hubFade 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @media (min-width: 880px) {
+            .hub-panel-inner > article {
+                grid-template-columns: 220px 1fr;
+                gap: 32px;
+                align-items: start;
+            }
+        }
+        @keyframes hubFade {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        .hub-content-stat {
+            background: rgba(167, 139, 250, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.32);
+            border-radius: 14px;
+            padding: 16px 18px;
+        }
+        .hub-content-stat .stat-value {
+            font-family: 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
+            font-size: clamp(32px, 3.4vw, 44px);
+            font-weight: 200;
+            letter-spacing: -0.018em;
+            line-height: 1;
+            color: var(--white);
+            background: linear-gradient(180deg, rgba(167, 139, 250, 1) 0%, rgba(109, 40, 217, 1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .hub-content-stat .stat-label {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.78);
+        }
+
+        .hub-content-body h4 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.20em;
+            text-transform: uppercase;
+            color: rgba(167, 139, 250, 0.85);
+            margin: 0 0 10px;
+        }
+        .hub-content-body p {
+            font-size: 14.5px;
+            line-height: 1.62;
+            color: rgba(245, 245, 247, 0.86);
+            margin: 0 0 14px;
+        }
+        .hub-content-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+            display: grid;
+            gap: 6px;
+        }
+        .hub-content-list li {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: rgba(245, 245, 247, 0.78);
+            padding-left: 22px;
+            position: relative;
+        }
+        .hub-content-list li::before {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 9px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(167, 139, 250, 0.85);
+        }
+        .hub-content-cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .domain-cta-btn {
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 9px 16px 9px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(167, 139, 250, 0.6);
+            background: linear-gradient(180deg, rgba(167, 139, 250, 1), rgba(109, 40, 217, 1));
+            color: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+        .domain-cta-btn::after {
+            content: "→";
+            font-size: 13px;
+            transition: transform 0.18s;
+        }
+        .domain-cta-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px -10px rgba(109, 40, 217, 0.5);
+        }
+        .domain-cta-btn:hover::after { transform: translateX(3px); }
+        .domain-cta-btn.ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(167, 139, 250, 0.35);
+            color: rgba(167, 139, 250, 0.95);
+        }
+        .domain-cta-btn.ghost:hover {
+            background: rgba(167, 139, 250, 0.10);
+            color: #fff;
+            border-color: rgba(167, 139, 250, 0.7);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hub-tile, .surgical-hub-panel, .hub-panel-inner > article,
+            .domain-cta-btn, .hub-panel-close {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
         /* ========== OMM Section ========== */
         .omm-section {
             background: var(--black);
@@ -5597,124 +5908,6 @@
         </div>
     </section>
 
-    <!-- Surgical Focus — animated interactive cards -->
-    <section id="surgical-focus" class="surgical-focus-section">
-        <div class="container">
-            <span class="section-eyebrow">Surgical Focus</span>
-            <h2 class="section-headline gradient">The full range of complex benign &amp; minimally invasive gynecologic surgery.</h2>
-            <p class="section-sub">Seven areas of operative emphasis — every one trained, practiced, and refined across high-volume Chicagoland fellowship sites.</p>
-
-            <div class="surgical-grid">
-                <div class="surgical-card" data-focus="robotics">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="16" cy="8" r="3"/>
-                            <path d="M16 11v6M10 17h12M10 17v6l-3 3M22 17v6l3 3M13 26l3-3 3 3"/>
-                            <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Robotic Surgery</h3>
-                        <p>Da Vinci-trained across the full spectrum of complex benign gynecologic procedures — hysterectomy, myomectomy, endometriosis excision, sacrocolpopexy, and adhesiolysis.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Robotic platform · Da Vinci</span>
-                </div>
-
-                <div class="surgical-card" data-focus="laparoscopy">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M4 16h6M22 16h6M16 4v6M16 22v6"/>
-                            <circle cx="16" cy="16" r="5"/>
-                            <path d="M16 11l2 2-2 2-2-2z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Advanced Laparoscopy</h3>
-                        <p>Multi-port and reduced-port laparoscopy for complex pelvic pathology, including dense adhesive disease, deep infiltrating endometriosis, and large fibroids.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Conventional · Reduced-port · vNOTES</span>
-                </div>
-
-                <div class="surgical-card" data-focus="endometriosis">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M8 12c0 6 4 10 8 14 4-4 8-8 8-14a8 8 0 0 0-16 0z"/>
-                            <circle cx="13" cy="12" r="1.5" fill="currentColor"/>
-                            <circle cx="19" cy="14" r="1.2" fill="currentColor"/>
-                            <circle cx="16" cy="18" r="1" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Endometriosis Excision</h3>
-                        <p>Complete excision of all visible disease — superficial, deep infiltrating, and atypical lesions — guided by ICG fluorescence for fibrosis detection. Active IRB research in the field.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">ICG-guided · Active IRB research</span>
-                </div>
-
-                <div class="surgical-card" data-focus="ovarian-preservation">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <ellipse cx="16" cy="16" rx="6" ry="9"/>
-                            <path d="M16 7v18M11 12c2 2 8 2 10 0M11 20c2-2 8-2 10 0"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Ovarian Preservation Surgery</h3>
-                        <p>Cystectomy and conservative surgery techniques that maximize ovarian reserve — meticulous capsule dissection, minimized cautery, and judicious use of bipolar energy.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Reserve-conscious technique</span>
-                </div>
-
-                <div class="surgical-card" data-focus="myomectomy">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M10 22c-2-1-4-4-4-7 0-5 4-9 10-9s10 4 10 9c0 3-2 6-4 7"/>
-                            <circle cx="13" cy="13" r="2.5" fill="rgba(255,255,255,0.12)"/>
-                            <circle cx="19" cy="16" r="3.5" fill="rgba(255,255,255,0.18)"/>
-                            <path d="M10 22l4-2M22 22l-4-2"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>MIS Robotic Myomectomy</h3>
-                        <p>Robotic myomectomy for symptomatic fibroids of any size or location — single, multiple, intramural, submucosal, and pedunculated. Gel-port and ICG-guided techniques published in JMIG.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Published technique · Gel-port</span>
-                </div>
-
-                <div class="surgical-card" data-focus="hysteroscopy">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <rect x="4" y="13" width="20" height="6" rx="3"/>
-                            <path d="M24 16h4"/>
-                            <circle cx="9" cy="16" r="1" fill="currentColor"/>
-                            <path d="M14 16h6"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Advanced Operative Hysteroscopy</h3>
-                        <p>Hysteroscopic myomectomy, septum resection, polypectomy, RPOC removal, isthmocele repair, and adhesiolysis (Asherman's). 2024 AAGL Golden Hysteroscope Award.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Golden Hysteroscope · 2024</span>
-                </div>
-
-                <div class="surgical-card" data-focus="fertility">
-                    <div class="surgical-card-icon">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M16 6c-3 0-6 2-6 5 0 3 3 5 6 5s6-2 6-5c0-3-3-5-6-5z"/>
-                            <path d="M16 16v10M12 21h8M14 26h4"/>
-                            <circle cx="16" cy="11" r="1.5" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <div class="surgical-card-body">
-                        <h3>Fertility-Conscious Surgery</h3>
-                        <p>Surgical planning anchored in future fertility — uterine-sparing fibroid management, careful adhesion prevention, fallopian tube preservation, and isthmocele repair to optimize implantation.</p>
-                    </div>
-                    <span class="surgical-card-hover" aria-hidden="true">Uterine + tubal preservation</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- About Section -->
     <section id="about" class="about-section">
         <div class="container">
@@ -5758,101 +5951,317 @@
         </div>
     </section>
 
-    <!-- Surgical Excellence Section -->
-    <section id="excellence" class="excellence-section">
+    <!-- Surgical Practice — unified hub-expand mosaic (Phase QD)
+         Replaces the old Surgical Focus + Surgical Excellence sections.
+         7 unified clinical categories; click a tile -> expansion panel
+         below reveals approach badges, per-category safety stat, sub-
+         procedures, and the existing patient-modal trigger (data-domain
+         unchanged so all 9 patient modals stay live). -->
+    <section id="surgical" class="surgical-unified-section">
         <div class="container-wide">
-            <span class="section-eyebrow center">Surgical Excellence</span>
-            <h2 class="section-headline gradient center">Trained for complex and minimally invasive gynecology cases. Reviewed without reservation.</h2>
-            <p class="section-sub center">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area — across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
+            <span class="section-eyebrow center">Surgical Practice</span>
+            <h2 class="section-headline gradient center">The full range of complex benign &amp; minimally invasive gynecology &mdash; trained, practiced, and reviewed without reservation.</h2>
+            <p class="section-sub center">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area &mdash; across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
 
             <div class="excellence-quote">
-                <blockquote>I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology — without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level.</blockquote>
+                <blockquote>I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology &mdash; without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level.</blockquote>
                 <div class="excellence-cite-divider"></div>
                 <cite>
-                    <span class="cite-name">Teresa Tam, MD</span><span class="cite-sep">·</span><span class="cite-role">Program Director, CBG/MIGS Fellowship</span>
+                    <span class="cite-name">Teresa Tam, MD</span><span class="cite-sep">&middot;</span><span class="cite-role">Program Director, CBG/MIGS Fellowship</span>
                 </cite>
             </div>
 
             <div class="zero-eyebrow">Safety record across the fellowship</div>
-            <div class="zero-grid">
+            <div class="zero-grid" data-count-trigger>
                 <div class="zero-card">
-                    <div class="zero-num">Zero</div>
+                    <div class="zero-num" data-count-text="Zero">Zero</div>
                     <h4>Conversions to laparotomy</h4>
-                    <p>Across the entire fellowship — every advanced minimally invasive case completed minimally invasively.</p>
+                    <p>Across the entire fellowship &mdash; every advanced minimally invasive case completed minimally invasively.</p>
                 </div>
                 <div class="zero-card">
-                    <div class="zero-num">Zero</div>
+                    <div class="zero-num" data-count-text="Zero">Zero</div>
                     <h4>Major bowel injuries</h4>
-                    <p>Despite extensive adhesiolysis and complex pelvic dissection — exceptional tissue handling and injury recognition.</p>
+                    <p>Despite extensive adhesiolysis and complex pelvic dissection &mdash; exceptional tissue handling and injury recognition.</p>
                 </div>
                 <div class="zero-card">
-                    <div class="zero-num">Zero</div>
+                    <div class="zero-num" data-count-text="Zero">Zero</div>
                     <h4>Ureteral, bladder, and vascular injuries</h4>
-                    <p>Through extensive retroperitoneal dissection — anatomical awareness practiced as a discipline.</p>
+                    <p>Through extensive retroperitoneal dissection &mdash; anatomical awareness practiced as a discipline.</p>
                 </div>
                 <div class="zero-card">
-                    <div class="zero-num">&gt;95%</div>
+                    <div class="zero-num" data-count-target="95" data-count-suffix="%" data-count-prefix="&gt;">&gt;95%</div>
                     <h4>Same day discharge</h4>
-                    <p>Major surgery without the major hospital stay — MIS means you get home sooner, in less pain, and faster recovery time.</p>
+                    <p>Major surgery without the major hospital stay &mdash; MIS means you get home sooner, in less pain, and faster recovery time.</p>
                 </div>
             </div>
 
-            <div class="domain-eyebrow">Surgical practice areas</div>
-            <div class="domain-grid">
-                <div class="domain-card" data-domain="endometriosis-excision" role="button" tabindex="0" aria-label="Open patient-centered details: Endometriosis Excision">
-                    <div class="domain-tag">ICG-Guided Detection</div>
-                    <h4>Endometriosis Excision</h4>
-                    <p>Stage I through Stage IV, including deep infiltrating disease with bowel, bladder, ureter, and appendiceal involvement. Published research methodology using indocyanine green to illuminate fibrosis and inflammatory changes invisible under standard light.</p>
-                    <span class="domain-cta">For patients · what to know</span>
+            <div class="surgical-hub-eyebrow">Seven clinical practice areas</div>
+            <div class="surgical-hub" id="surgical-hub" role="tablist" aria-label="Clinical practice areas">
+                <div class="surgical-hub-grid">
+                    <button type="button" class="hub-tile" data-category="endometriosis" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 12c0 6 4 10 8 14 4-4 8-8 8-14a8 8 0 0 0-16 0z"/>
+                                <circle cx="13" cy="12" r="1.5" fill="currentColor"/>
+                                <circle cx="19" cy="14" r="1.2" fill="currentColor"/>
+                                <circle cx="16" cy="18" r="1" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Endometriosis &amp; DIE</h3>
+                        <p>Complete excision of all visible disease, ICG-guided fibrosis detection. Stages I&ndash;IV including bowel, bladder, ureter, and appendiceal involvement.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">ICG-Guided</span>
+                            <span class="hub-badge">Active IRB</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="fibroids" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 22c-2-1-4-4-4-7 0-5 4-9 10-9s10 4 10 9c0 3-2 6-4 7"/>
+                                <circle cx="13" cy="13" r="2.5" fill="rgba(167,139,250,0.18)"/>
+                                <circle cx="19" cy="16" r="3.5" fill="rgba(167,139,250,0.24)"/>
+                                <path d="M10 22l4-2M22 22l-4-2"/>
+                            </svg>
+                        </div>
+                        <h3>Fibroids &amp; Myomectomy</h3>
+                        <p>Robotic and laparoscopic myomectomy for fibroids of any size, location, or number. Gel-port containment for tissue extraction &mdash; published in JMIG, presented at AAGL.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">JMIG Published</span>
+                            <span class="hub-badge">AAGL Video Abstract</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="hysterectomy" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="16" cy="8" r="3"/>
+                                <path d="M16 11v6M10 17h12M10 17v6l-3 3M22 17v6l3 3M13 26l3-3 3 3"/>
+                                <circle cx="16" cy="23" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Minimally Invasive Hysterectomy</h3>
+                        <p>Robotic, laparoscopic, vNOTES, and hysteroscopic routes. Every hysterectomy of the fellowship completed minimally invasively &mdash; no conversions to laparotomy.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">Da Vinci</span>
+                            <span class="hub-badge">vNOTES</span>
+                            <span class="hub-badge">&gt;95% Same-Day</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="hysteroscopy" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="13" width="20" height="6" rx="3"/>
+                                <path d="M24 16h4"/>
+                                <circle cx="9" cy="16" r="1" fill="currentColor"/>
+                                <path d="M14 16h6"/>
+                            </svg>
+                        </div>
+                        <h3>Hysteroscopy &mdash; Operative + Office</h3>
+                        <p>Hysteroscopic myomectomy, polypectomy, septum resection, isthmocele repair, RPOC management, lysis of intrauterine adhesions (Asherman&rsquo;s), and Bettocchi no-touch in-office vaginoscopy.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">Golden Hysteroscope 2024</span>
+                            <span class="hub-badge">Bettocchi No-Touch</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="fertility" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="16" cy="16" rx="6" ry="9"/>
+                                <path d="M16 7v18M11 12c2 2 8 2 10 0M11 20c2-2 8-2 10 0"/>
+                            </svg>
+                        </div>
+                        <h3>Fertility-Conscious &amp; Ovarian Preservation</h3>
+                        <p>Uterine-sparing fibroid management, careful adhesion prevention, fallopian tube preservation, isthmocele repair, and reserve-conscious cystectomy with minimized cautery.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">Reserve-Conscious</span>
+                            <span class="hub-badge">Uterine + Tubal Preservation</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="reconstruction" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 22c4-6 8-6 10-6s6 0 10 6"/>
+                                <path d="M9 22c0-3 3-6 7-6s7 3 7 6"/>
+                                <path d="M16 6v10"/>
+                                <circle cx="16" cy="6" r="1.6" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3>Pelvic Reconstruction</h3>
+                        <p>Uterosacral ligament suspension, anterior and posterior colporrhaphy, native-tissue repair. Apical and compartment-specific approaches.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">Native-Tissue Repair</span>
+                            <span class="hub-badge">Apical Suspension</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="hub-tile" data-category="adhesiolysis" role="tab" aria-controls="hub-panel" aria-selected="false">
+                        <div class="hub-tile-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 10c4-2 8 2 11 0s7-3 11 0M5 16c4-2 8 2 11 0s7-3 11 0M5 22c4-2 8 2 11 0s7-3 11 0"/>
+                            </svg>
+                        </div>
+                        <h3>Complex Adhesiolysis &amp; Cross-Specialty</h3>
+                        <p>Multi-quadrant adhesive disease, dense bowel and pelvic sidewall pathology, retroperitoneal dissection, cystoscopy, ureteral stent placement, small bowel repair, and appendectomy.</p>
+                        <div class="hub-tile-badges">
+                            <span class="hub-badge">Highest Fellowship Volume</span>
+                            <span class="hub-badge">Multidisciplinary</span>
+                        </div>
+                    </button>
                 </div>
-                <div class="domain-card" data-domain="myomectomy" role="button" tabindex="0" aria-label="Open patient-centered details: Robotic and Laparoscopic Myomectomy">
-                    <div class="domain-tag">AAGL Video Abstract</div>
-                    <h4>Robotic &amp; Laparoscopic Myomectomy</h4>
-                    <p>Including extended robotic cases for large fibroid burden and the gel-based port containment system for tissue extraction — an AAGL-presented technique.</p>
-                    <span class="domain-cta">For patients · what to know</span>
+
+                <!-- Inline expansion panel — content swapped in by JS when a tile is clicked. -->
+                <div class="surgical-hub-panel" id="hub-panel" role="tabpanel" aria-live="polite" hidden>
+                    <button type="button" class="hub-panel-close" aria-label="Close panel">&times;</button>
+                    <div class="hub-panel-inner"></div>
                 </div>
-                <div class="domain-card" data-domain="hysterectomy-mis" role="button" tabindex="0" aria-label="Open patient-centered details: Complex Minimally Invasive Hysterectomy">
-                    <div class="domain-tag">Minimally Invasive Routes</div>
-                    <h4>Complex Minimally Invasive Hysterectomy</h4>
-                    <p>Proficiency in MIS routes: robotic, laparoscopic, vNOTES, hysteroscopy, and cystoscopy. Every hysterectomy of the fellowship completed minimally invasively — no conversions, no laparotomy.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="operative-hysteroscopy" role="button" tabindex="0" aria-label="Open patient-centered details: Operative Hysteroscopy">
-                    <div class="domain-tag">Golden Hysteroscope Award</div>
-                    <h4>Operative Hysteroscopy</h4>
-                    <p>Hysteroscopic myomectomy, polypectomy, septum resection, isthmocele repair, RPOC management, lysis of intrauterine adhesions, endometrial ablation. AAGL-recognized for technique innovation.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="office-hysteroscopy" role="button" tabindex="0" aria-label="Open patient-centered details: Office Hysteroscopy and Vaginoscopy">
-                    <div class="domain-tag">Bettocchi No-Touch Technique</div>
-                    <h4>Office Hysteroscopy &amp; Vaginoscopy</h4>
-                    <p>Awake, atraumatic, in-office hysteroscopy without speculum or tenaculum. A patient-centric standard for diagnostic and operative procedures outside the OR.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="vnotes" role="button" tabindex="0" aria-label="Open patient-centered details: vNOTES">
-                    <div class="domain-tag">Emerging Technique</div>
-                    <h4>vNOTES</h4>
-                    <p>Vaginal natural orifice transluminal endoscopic surgery — hysterectomy and adnexal procedures via the vaginal route. Early adoption and mastery of one of the field's fastest-emerging minimally invasive techniques.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="adhesiolysis" role="button" tabindex="0" aria-label="Open patient-centered details: Complex Adhesiolysis">
-                    <div class="domain-tag">Highest Fellowship Volume</div>
-                    <h4>Complex Adhesiolysis</h4>
-                    <p>Extensive multi-quadrant adhesive disease, sharp and energy-based dissection, dense bowel and pelvic sidewall pathology. Without a single major bowel injury across the entire fellowship.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="pelvic-reconstruction" role="button" tabindex="0" aria-label="Open patient-centered details: Pelvic Reconstruction">
-                    <div class="domain-tag">Native-Tissue Repair</div>
-                    <h4>Pelvic Reconstruction</h4>
-                    <p>Uterosacral ligament suspension, anterior and posterior colporrhaphy, native-tissue repair, ovarian-preserving surgery. Apical and compartment-specific approaches.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
-                <div class="domain-card" data-domain="urologic-cross-specialty" role="button" tabindex="0" aria-label="Open patient-centered details: Urologic and Cross-Specialty">
-                    <div class="domain-tag">Multidisciplinary</div>
-                    <h4>Urologic &amp; Cross-Specialty</h4>
-                    <p>Cystoscopy, ureteral stent placement, small bowel repair, appendectomy, retroperitoneal dissection. Interdisciplinary competence for the cases that demand it.</p>
-                    <span class="domain-cta">For patients · what to know</span>
-                </div>
+            </div>
+
+            <!-- Hidden source-of-truth content blocks for each category — JS lifts the
+                 matching block into .hub-panel-inner on tile click. Lives inside the
+                 section so View Source is one place for everything. -->
+            <div class="hub-content-source" hidden>
+                <article data-category="endometriosis">
+                    <div class="hub-content-stat" data-stat-num="Zero">
+                        <div class="stat-value">Zero</div>
+                        <div class="stat-label">ureteral, bladder, and vascular injuries through extensive retroperitoneal dissection.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Complete excision &mdash; not ablation &mdash; of superficial, deep infiltrating, and atypical lesions across all four anatomic compartments. ICG fluorescence used intraoperatively to illuminate fibrosis and inflammatory changes invisible under standard light, an active IRB-approved research methodology adopted from the fellowship.</p>
+                        <ul class="hub-content-list">
+                            <li>Stages I through IV including bowel, bladder, ureter, and appendiceal involvement</li>
+                            <li>Indocyanine green (ICG) guided excision for fibrosis detection</li>
+                            <li>Multi-quadrant resection with anatomical sparing where disease permits</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="endometriosis-excision" aria-label="Open patient-centered details: Endometriosis Excision">Click for more info</button>
+                    </div>
+                </article>
+
+                <article data-category="fibroids">
+                    <div class="hub-content-stat" data-stat-num="Zero">
+                        <div class="stat-value">Zero</div>
+                        <div class="stat-label">conversions to laparotomy &mdash; every fibroid case completed minimally invasively.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Robotic and laparoscopic myomectomy for fibroids of any size, number, or location &mdash; intramural, submucosal, subserosal, pedunculated. The gel-port containment system for tissue extraction is an AAGL-presented technique with the methodology published in <em>JMIG</em>.</p>
+                        <ul class="hub-content-list">
+                            <li>Extended robotic cases for high fibroid burden</li>
+                            <li>Gel-based port for contained tissue extraction</li>
+                            <li>Uterine-sparing where future fertility is a priority</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Robotic and Laparoscopic Myomectomy">Click for more info</button>
+                    </div>
+                </article>
+
+                <article data-category="hysterectomy">
+                    <div class="hub-content-stat" data-stat-num="&gt;95%">
+                        <div class="stat-value">&gt;95%</div>
+                        <div class="stat-label">same-day discharge across the fellowship &mdash; major surgery without the major hospital stay.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Proficiency across every minimally invasive route &mdash; robotic, conventional laparoscopic, vNOTES, and (where indicated) hysteroscopic and cystoscopic adjuncts. Every hysterectomy of the fellowship completed minimally invasively &mdash; no conversions, no laparotomy.</p>
+                        <ul class="hub-content-list">
+                            <li>Robotic Da Vinci across the full complexity range</li>
+                            <li>Conventional and reduced-port laparoscopy</li>
+                            <li>vNOTES &mdash; vaginal natural orifice transluminal endoscopic surgery</li>
+                            <li>Same-day discharge as the default expectation, not the exception</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="hysterectomy-mis" aria-label="Open patient-centered details: Complex Minimally Invasive Hysterectomy">Click for more info &middot; hysterectomy</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="vnotes" aria-label="Open patient-centered details: vNOTES">Click for more info &middot; vNOTES</button>
+                    </div>
+                </article>
+
+                <article data-category="hysteroscopy">
+                    <div class="hub-content-stat" data-stat-num="2024">
+                        <div class="stat-value">2024</div>
+                        <div class="stat-label">AAGL Golden Hysteroscope Award &mdash; recognized for technique innovation.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Operative hysteroscopy for myomectomy, polypectomy, septum resection, RPOC removal, isthmocele repair, lysis of intrauterine adhesions (Asherman&rsquo;s), and endometrial ablation. Complemented by office hysteroscopy via the Bettocchi no-touch vaginoscopy technique &mdash; awake, atraumatic, no speculum or tenaculum.</p>
+                        <ul class="hub-content-list">
+                            <li>Hysteroscopic myomectomy and septoplasty</li>
+                            <li>Retained products of conception (RPOC) management without curettage</li>
+                            <li>Isthmocele repair</li>
+                            <li>In-office diagnostic and operative procedures outside the OR</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="operative-hysteroscopy" aria-label="Open patient-centered details: Operative Hysteroscopy">Click for more info &middot; operative</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="office-hysteroscopy" aria-label="Open patient-centered details: Office Hysteroscopy and Vaginoscopy">Click for more info &middot; in-office</button>
+                    </div>
+                </article>
+
+                <article data-category="fertility">
+                    <div class="hub-content-stat" data-stat-num="Sparing">
+                        <div class="stat-value">Sparing</div>
+                        <div class="stat-label">technique anchored in future fertility &mdash; uterus, ovary, and tubal preservation.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Surgical planning starts from the question of future fertility, not the other way around. Uterine-sparing approaches to fibroid disease, careful adhesion prevention, fallopian tube preservation where oncologic and anatomic considerations permit, isthmocele repair to optimize implantation, and reserve-conscious ovarian cystectomy with meticulous capsule dissection.</p>
+                        <ul class="hub-content-list">
+                            <li>Uterine-sparing fibroid management when fertility is a goal</li>
+                            <li>Reserve-conscious cystectomy &mdash; minimized cautery, judicious bipolar use</li>
+                            <li>Adhesion prevention strategies built into the operative plan</li>
+                            <li>Isthmocele repair for implantation-window optimization</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Uterine-sparing myomectomy">Click for more info &middot; uterine sparing</button>
+                    </div>
+                </article>
+
+                <article data-category="reconstruction">
+                    <div class="hub-content-stat" data-stat-num="Native">
+                        <div class="stat-value">Native</div>
+                        <div class="stat-label">tissue repair &mdash; mesh-free approaches where the anatomy supports them.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Uterosacral ligament suspension, anterior and posterior colporrhaphy, and compartment-specific apical support. Native-tissue repair as the default when anatomy permits, with graft augmentation reserved for the indications where the literature genuinely supports it.</p>
+                        <ul class="hub-content-list">
+                            <li>Uterosacral ligament suspension for apical prolapse</li>
+                            <li>Anterior and posterior colporrhaphy for site-specific defects</li>
+                            <li>Ovarian-preserving where compatible with the reconstructive plan</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="pelvic-reconstruction" aria-label="Open patient-centered details: Pelvic Reconstruction">Click for more info</button>
+                    </div>
+                </article>
+
+                <article data-category="adhesiolysis">
+                    <div class="hub-content-stat" data-stat-num="Zero">
+                        <div class="stat-value">Zero</div>
+                        <div class="stat-label">major bowel injuries despite the highest adhesiolysis volume of the fellowship.</div>
+                    </div>
+                    <div class="hub-content-body">
+                        <h4>What this looks like in practice</h4>
+                        <p>Multi-quadrant adhesive disease and dense bowel/pelvic-sidewall pathology, dissected sharply and with carefully chosen energy &mdash; without a single major bowel injury across the entire fellowship. Cross-specialty competence layered on top: cystoscopy, ureteral stent placement, small bowel repair, appendectomy, and retroperitoneal dissection.</p>
+                        <ul class="hub-content-list">
+                            <li>Multi-quadrant sharp and energy-based dissection</li>
+                            <li>Cystoscopy and ureteral stent placement</li>
+                            <li>Small bowel repair, appendectomy, retroperitoneal dissection</li>
+                        </ul>
+                    </div>
+                    <div class="hub-content-cta">
+                        <button type="button" class="domain-cta-btn" data-domain="adhesiolysis" aria-label="Open patient-centered details: Complex Adhesiolysis">Click for more info &middot; adhesiolysis</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="urologic-cross-specialty" aria-label="Open patient-centered details: Urologic and Cross-Specialty">Click for more info &middot; cross-specialty</button>
+                    </div>
+                </article>
             </div>
 
         </div>
@@ -8142,6 +8551,141 @@
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
             });
         });
+
+        // ==========================================================
+        // Surgical Practice — unified hub-expand mosaic (Phase QD)
+        // ==========================================================
+        (function initSurgicalHub() {
+            const hub = document.getElementById('surgical-hub');
+            if (!hub) return;
+            const tiles = Array.from(hub.querySelectorAll('.hub-tile[data-category]'));
+            const panel = hub.querySelector('.surgical-hub-panel');
+            const panelInner = panel ? panel.querySelector('.hub-panel-inner') : null;
+            const closeBtn = panel ? panel.querySelector('.hub-panel-close') : null;
+            const sourceContainer = document.querySelector('.hub-content-source');
+            if (!tiles.length || !panel || !panelInner || !sourceContainer) return;
+
+            let activeKey = null;
+
+            function setActive(key) {
+                if (!key) return closePanel();
+                if (activeKey === key) return closePanel();
+                const sourceArticle = sourceContainer.querySelector(`article[data-category="${key}"]`);
+                if (!sourceArticle) {
+                    console.warn('surgical-hub: no source content for category', key);
+                    return;
+                }
+                // Clone the article so the source-of-truth stays intact for re-renders.
+                const clone = sourceArticle.cloneNode(true);
+                panelInner.innerHTML = '';
+                panelInner.appendChild(clone);
+                // Wire the CTA buttons inside the clone to openDomainModal.
+                clone.querySelectorAll('.domain-cta-btn[data-domain]').forEach(btn => {
+                    const slug = btn.getAttribute('data-domain');
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (typeof window.openDomainModal === 'function') {
+                            window.openDomainModal(slug);
+                        }
+                    });
+                });
+                // Update tile states.
+                tiles.forEach(t => {
+                    const k = t.getAttribute('data-category');
+                    if (k === key) {
+                        t.classList.add('active');
+                        t.classList.remove('dimmed');
+                        t.setAttribute('aria-selected', 'true');
+                    } else {
+                        t.classList.remove('active');
+                        t.classList.add('dimmed');
+                        t.setAttribute('aria-selected', 'false');
+                    }
+                });
+                panel.hidden = false;
+                activeKey = key;
+                // Scroll the panel into view smoothly on mobile so the user
+                // doesn't have to hunt for the just-revealed content.
+                if (window.innerWidth < 880) {
+                    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+                }
+            }
+
+            function closePanel() {
+                panel.hidden = true;
+                panelInner.innerHTML = '';
+                tiles.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.remove('dimmed');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                activeKey = null;
+            }
+
+            tiles.forEach(t => {
+                const key = t.getAttribute('data-category');
+                t.addEventListener('click', () => setActive(key));
+                t.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(key); }
+                    else if (e.key === 'Escape' && activeKey) { e.preventDefault(); closePanel(); }
+                });
+            });
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closePanel);
+            }
+            // Escape anywhere closes the panel when one is open.
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && activeKey) closePanel();
+            });
+
+            // ----------------------------------------------------------
+            // Safety-stat count-up on first scroll-into-view
+            // ----------------------------------------------------------
+            const zeroGrid = document.querySelector('.zero-grid[data-count-trigger]');
+            if (zeroGrid && 'IntersectionObserver' in window) {
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) return;
+                        obs.unobserve(entry.target);
+                        // For each numeric stat, animate from 0 -> target over ~1.4s.
+                        entry.target.querySelectorAll('[data-count-target]').forEach(el => {
+                            const target = parseInt(el.getAttribute('data-count-target'), 10);
+                            const prefix = el.getAttribute('data-count-prefix') || '';
+                            const suffix = el.getAttribute('data-count-suffix') || '';
+                            if (reduceMotion || !Number.isFinite(target)) {
+                                el.innerHTML = `${prefix}${target}${suffix}`;
+                                return;
+                            }
+                            const duration = 1400;
+                            const t0 = performance.now();
+                            function step(now) {
+                                const p = Math.min(1, (now - t0) / duration);
+                                // ease-out cubic
+                                const eased = 1 - Math.pow(1 - p, 3);
+                                const val = Math.round(target * eased);
+                                el.innerHTML = `${prefix}${val}${suffix}`;
+                                if (p < 1) requestAnimationFrame(step);
+                            }
+                            requestAnimationFrame(step);
+                        });
+                        // For Zero stats, fade them in with a brief upward float
+                        // so the section feels animated even without a counter.
+                        entry.target.querySelectorAll('[data-count-text]').forEach((el, i) => {
+                            if (reduceMotion) return;
+                            el.style.opacity = '0';
+                            el.style.transform = 'translateY(8px)';
+                            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                            setTimeout(() => {
+                                el.style.opacity = '1';
+                                el.style.transform = 'none';
+                            }, 80 + i * 80);
+                        });
+                    });
+                }, { threshold: 0.35 });
+                obs.observe(zeroGrid);
+            }
+        })();
 
         // ==========================================================
         // Evidence cards — staggered reveal + cursor glow
