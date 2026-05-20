@@ -301,19 +301,40 @@
                         </dl>
                     </div>
                 `;
+                // Claim block is rendered only when the post has a non-empty
+                // summary. Weekly digests (CBG/MIGS Monday Mornings posts)
+                // intentionally leave summary blank since the hero lede
+                // already says what the digest covers — repeating it as a
+                // "Claim under review" preamble was redundant.
+                const claimBlock = claim
+                    ? `<div class="brief-detail-claim">
+                        <span class="brief-detail-claim-label">Claim under review</span>
+                        ${esc(claim)}
+                    </div>`
+                    : '';
                 document.getElementById('detailContent').innerHTML = `
                     <div class="brief-detail-meta">
                         <span class="verdict-badge ${verdictClass(post.verdict)}">${esc(post.verdict || 'Reviewed')}</span>
                         <span class="brief-date" style="padding-top:7px;">${esc(fmtDate(post.published_at || post.created_at))}</span>
                     </div>
                     <h1 class="brief-detail-title">${esc(post.title)}</h1>
-                    <div class="brief-detail-claim">
-                        <span class="brief-detail-claim-label">Claim under review</span>
-                        ${esc(claim)}
-                    </div>
+                    ${claimBlock}
                     <div class="brief-detail-body">${post.body_html || ''}</div>
                     ${manifest}
                 `;
+
+                // Execute any <script> tags that came through innerHTML —
+                // innerHTML strips script execution by default, so we walk
+                // the new DOM and replace each <script> with a fresh one.
+                // This re-enables the deep-dive modal open/close handlers
+                // and the inline touch-device popout toggle that ship
+                // inside body_html for CBG/MIGS Monday Mornings posts.
+                document.querySelectorAll('#detailContent script').forEach(function (oldScript) {
+                    var s = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(function (a) { s.setAttribute(a.name, a.value); });
+                    s.text = oldScript.textContent;
+                    oldScript.parentNode.replaceChild(s, oldScript);
+                });
             } catch (e) {
                 document.getElementById('detailContent').innerHTML = `<div class="empty">Brief not found: ${esc(e.message || String(e))}</div>`;
             }
