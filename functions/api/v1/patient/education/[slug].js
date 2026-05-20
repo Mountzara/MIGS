@@ -59,8 +59,32 @@ export async function onRequestGet(ctx) {
     }
 
     // Resolve body — inline body_md wins; else fetch from content bucket.
+    //
+    // PORTAL-EDUCATION ROUTING (added 2026-05-20):
+    //
+    // Some seeded D1 rows point r2_key at the FULL STATIC HTML file
+    // (e.g. "education/endometriosis/index.html") rather than at a
+    // markdown blob. In that case we must NOT fetch the HTML and return
+    // it as body_md — the portal's renderMarkdown() would escape every
+    // angle bracket and the patient would see raw `<html>...` tags as
+    // text in the modal. That was the literal cause of the 2026-05-20
+    // "I only see html view" patient-portal bug.
+    //
+    // Instead we surface a `static_path` field that the portal honors by
+    // navigating the browser straight to the canonical static page at
+    // `/portal/education/<slug>/`. The static page is a fully-rendered
+    // §0.8.1-anchored patient education guide — the canonical UX. The
+    // modal-with-markdown render path stays in place for any future
+    // clinician-authored material that legitimately uses body_md.
     let body_md = material.body_md || "";
-    if (!body_md && material.r2_key && env.CONTENT) {
+    let static_path = null;
+    const r2KeyIsHtmlFile =
+        material.r2_key && /\.html?$/i.test(material.r2_key);
+    if (!body_md && r2KeyIsHtmlFile) {
+        // The r2_key references a complete HTML page — route the portal
+        // directly to the static URL rather than inlining the document.
+        static_path = `/portal/education/${encodeURIComponent(slug)}/`;
+    } else if (!body_md && material.r2_key && env.CONTENT) {
         try {
             const obj = await env.CONTENT.get(material.r2_key);
             if (obj) body_md = await obj.text();
@@ -123,6 +147,10 @@ export async function onRequestGet(ctx) {
             published_at: material.published_at,
             updated_at: material.updated_at,
         },
+        // When non-null, the portal should navigate the browser to this
+        // path instead of rendering body_md in the in-page reader. See
+        // the routing note above the static_path assignment.
+        static_path,
         assignment: assignment ? {
             id: assignment.id,
             reason: assignment.reason,

@@ -532,6 +532,15 @@
             const featuredFiltered = state.filterTag
                 ? FEATURED.filter(f => f.topic_tags.includes(state.filterTag))
                 : FEATURED;
+            // 2026-05-20 patient-portal fix: every slug in FEATURED also
+            // has a corresponding D1 education_materials row seeded with
+            // r2_key pointing at the same static HTML file. Without this
+            // filter the listing showed each topic twice — once as the
+            // working FEATURED card, once as a D1 card that opened the
+            // raw HTML source in the reader modal. Suppress the D1
+            // duplicates so the patient sees one card per topic.
+            const featuredSlugs = new Set(FEATURED.map(f => f.slug));
+            const matchesDeduped = matches.filter(m => !featuredSlugs.has(m.slug));
             const featuredHtml = featuredFiltered.map(f => {
                 const tagChips = f.topic_tags.map(t => `<span class="ed-tag">${escapeHtml(t)}</span>`).join('');
                 return `
@@ -543,7 +552,7 @@
                     </a>
                 `;
             }).join('');
-            $('grid').innerHTML = featuredHtml + matches.map(m => {
+            $('grid').innerHTML = featuredHtml + matchesDeduped.map(m => {
                 const completed = m.view && m.view.completed;
                 const seen = m.view && m.view.view_count > 0;
                 const badges = [];
@@ -570,7 +579,7 @@
             });
             // Empty-state message ONLY when both FEATURED and D1 returned nothing
             // (which can only happen if the tag filter excludes every guide).
-            if (!featuredFiltered.length && !matches.length) {
+            if (!featuredFiltered.length && !matchesDeduped.length) {
                 $('grid').innerHTML = '<div class="empty-state">No primers in this view yet. Try clearing the topic filter.</div>';
             }
         }
@@ -578,6 +587,19 @@
         async function openMaterial(slug) {
             try {
                 const data = await fetchJson(`/api/v1/patient/education/${encodeURIComponent(slug)}`);
+                // 2026-05-20 patient-portal "I only see html view" fix:
+                // some D1 education_materials rows reference a complete
+                // static HTML file via r2_key (e.g. the 12 §0.8.1-anchored
+                // patient education guides). The API surfaces those via
+                // a `static_path` hint. When present, route the browser
+                // straight to the canonical static URL rather than trying
+                // to render the HTML through the markdown reader (which
+                // would escape every angle bracket and show the source
+                // as text).
+                if (data && data.static_path) {
+                    window.location.href = data.static_path;
+                    return;
+                }
                 state.currentSlug = slug;
                 state.currentMaterial = data;
                 $('r-title').textContent = data.material.title;
