@@ -362,13 +362,28 @@ async function onRequestImpl({ request, env, params }) {
         const oldKind = post.kind;
         const editable = ["title", "summary", "body_html", "topics_covered", "pmids_cited",
                           "kb_entries_retrieved", "gaps_surfaced", "verdict",
-                          "linkedin_draft", "instagram_draft", "kind"];
+                          "linkedin_draft", "instagram_draft", "kind", "status"];
         for (const key of editable) {
             if (patch[key] !== undefined) post[key] = patch[key];
         }
         // Validate kind if it was changed
         if (post.kind !== oldKind && !POST_KINDS.has(post.kind)) {
             return errorResponse(`invalid kind: ${post.kind}`);
+        }
+        // Validate status if it was changed via PUT (2026-05-19 patch: allow
+        // admin to flip rejected → draft or draft → published without needing
+        // the dedicated /approve or /reject endpoints, so incident-recovery
+        // rebuilds can fully restore any status state).
+        if (patch.status !== undefined && !POST_STATUSES.has(post.status)) {
+            return errorResponse(`invalid status: ${post.status}`);
+        }
+        // Stamp published_at when status flips to "published"; clear it when
+        // status moves away from "published" so the public surface never
+        // renders a stale timestamp on a now-non-public post.
+        if (patch.status === "published" && !post.published_at) {
+            post.published_at = new Date().toISOString();
+        } else if (patch.status !== undefined && patch.status !== "published") {
+            post.published_at = null;
         }
         await writePost(env, post);
         await upsertIndexEntry(env, post);
