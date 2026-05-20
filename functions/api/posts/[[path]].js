@@ -27,7 +27,10 @@
 // All clinical content remains draft-and-queue per CLAUDE.md §9.2 — posts only
 // become publicly visible when status === "published".
 
-const POST_KINDS = new Set(["blog", "evidence"]);
+// 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
+// candidate trend-brief claims to the admin dashboard for clinician
+// approval before they enter the active trend_watchlist.json.
+const POST_KINDS = new Set(["blog", "evidence", "claim_proposal"]);
 const POST_STATUSES = new Set(["draft", "published", "rejected"]);
 
 function jsonResponse(body, status = 200, extraHeaders = {}) {
@@ -247,7 +250,11 @@ async function onRequestImpl({ request, env, params }) {
         if (!(await isAdminRequest(request, env))) return errorResponse("unauthorized", 401);
         const kind = url.searchParams.get("kind");
         if (kind && !POST_KINDS.has(kind)) return errorResponse(`invalid kind: ${kind}`);
-        const kinds = kind ? [kind] : ["blog", "evidence"];
+        // Admin listing includes claim_proposal by default so Chris sees
+        // pending candidate claims alongside drafts (Phase C). Public
+        // /api/posts intentionally stays blog+evidence to avoid leaking
+        // proposals via the public surface.
+        const kinds = kind ? [kind] : ["blog", "evidence", "claim_proposal"];
         const combined = [];
         for (const k of kinds) {
             const idx = await readIndex(env, k);
@@ -328,6 +335,35 @@ async function onRequestImpl({ request, env, params }) {
         post.published_at = new Date().toISOString();
         await writePost(env, post);
         await upsertIndexEntry(env, post);
+        // Phase C side effect (2026-05-19): when approving a claim_proposal,
+        // also write a pending_approvals/<id>.json blob to R2 so the
+        // watchlist migration script (run on Chris's Mac via osascript
+        // bash) can fold the approved candidate into trend_watchlist.json
+        // claims[]. The blob is removed by the migration script once the
+        // claim is appended and committed to the repo.
+        if (post.kind === "claim_proposal") {
+            try {
+                const candidate = {
+                    id: post.id,
+                    approved_at: post.published_at,
+                    claim_text: post.summary || post.title || "",
+                    topic_tags: post.topics_covered || [],
+                    source_pmids: post.pmids_cited || [],
+                    title: post.title,
+                };
+                await env.CONTENT.put(
+                    `pending_approvals/${post.id}.json`,
+                    JSON.stringify(candidate, null, 2),
+                    { httpMetadata: { contentType: "application/json" } },
+                );
+            } catch (e) {
+                console.error("approve claim_proposal: pending_approvals write failed", {
+                    module: "api/posts", op: "approve_claim_proposal",
+                    id: post.id, error: e && e.message ? e.message : String(e),
+                });
+                // Non-fatal — the post is approved; migration just needs a retry.
+            }
+        }
         return jsonResponse({ ok: true, id: post.id, status: post.status });
     }
 
@@ -340,6 +376,42 @@ async function onRequestImpl({ request, env, params }) {
         post.status = "rejected";
         await writePost(env, post);
         await upsertIndexEntry(env, post);
+        // Phase C side effect (2026-05-19): when rejecting a claim_proposal,
+        // append the candidate's claim_text + slug to a permanent
+        // rejected-history index so the discovery pipeline doesnt re-propose
+        // the same claim next week. Entries can be removed later (e.g., 12-
+        // month TTL or manual unreject) by editing the index.
+        if (post.kind === "claim_proposal") {
+            try {
+                const idxObj = await env.CONTENT.get("claim_proposals/rejected_index.json");
+                let idx = { entries: [] };
+                if (idxObj) {
+                    try { idx = JSON.parse(await idxObj.text()); } catch { /* keep empty */ }
+                }
+                if (!Array.isArray(idx.entries)) idx.entries = [];
+                // Dedup by id
+                if (!idx.entries.some(e => e.id === post.id)) {
+                    idx.entries.unshift({
+                        id: post.id,
+                        rejected_at: new Date().toISOString(),
+                        claim_text: post.summary || post.title || "",
+                        topic_tags: post.topics_covered || [],
+                    });
+                    // Cap at 500 most-recent to bound size
+                    idx.entries = idx.entries.slice(0, 500);
+                    await env.CONTENT.put(
+                        "claim_proposals/rejected_index.json",
+                        JSON.stringify(idx, null, 2),
+                        { httpMetadata: { contentType: "application/json" } },
+                    );
+                }
+            } catch (e) {
+                console.error("reject claim_proposal: rejected_index write failed", {
+                    module: "api/posts", op: "reject_claim_proposal",
+                    id: post.id, error: e && e.message ? e.message : String(e),
+                });
+            }
+        }
         return jsonResponse({ ok: true, id: post.id, status: post.status });
     }
 
