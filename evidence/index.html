@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MIGS & CBG — Physician Blog and Journal Club. Weekly synthesis of the peer-reviewed gynecologic surgery and complex benign gynecology literature, by Christopher Z. Mabini, DO, MSAEd.">
-    <title>MIGS & CBG — Physician Blog · Mount Zara</title>
+    <meta name="description" content="CBG/MIGS — Physician Blog and Journal Club. Weekly synthesis of the peer-reviewed Complex Benign Gynecology and Minimally Invasive Gynecologic Surgery literature, by Christopher Z. Mabini, DO, MSAEd.">
+    <title>CBG/MIGS — Physician Blog · Mount Zara</title>
     <link rel="icon" type="image/png" href="/assets/images/Black White Elegant Personal Monogram Logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,7 +203,7 @@
 
     <div id="listingView">
         <section class="hero">
-            <span class="eyebrow">MIGS &amp; CBG · Physician Blog</span>
+            <span class="eyebrow">CBG/MIGS · Physician Blog</span>
             <h1 class="title">Evidence, weekly. <span class="title-accent">A working clinician's journal club.</span></h1>
             <p class="subtitle">Every Monday morning — a synthesis of the prior week's peer-reviewed minimally invasive gynecologic surgery and complex benign gynecology literature. Journal-club analysis per paper: design, key findings, limitations, and where the result fits in the broader evidence base. Written for clinicians, with every citation linkable for further reading.</p>
         </section>
@@ -287,7 +287,7 @@
                 const res = await fetch(`${API}/${encodeURIComponent(id)}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const post = await res.json();
-                document.title = `${post.title || 'Post'} — MIGS &amp; CBG Physician Blog`;
+                document.title = `${post.title || 'Post'} — CBG/MIGS Physician Blog`;
                 const claim = post.summary || '';
                 const manifest = `
                     <div class="brief-detail-manifest">

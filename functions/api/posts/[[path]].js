@@ -1,4 +1,4 @@
-// MIGS & CBG Blog + Evidence Briefs API
+// CBG/MIGS Blog + Evidence Briefs API
 // ----------------------------------------------------------------
 // Routes (all under /api/posts):
 //   GET    /api/posts                       — list posts (filter: ?kind=blog|evidence&status=draft|published)
