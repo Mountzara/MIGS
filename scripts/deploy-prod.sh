@@ -65,6 +65,36 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ]; then
     echo ""
 fi
 
+# ---------------------------------------------------------------------------
+# §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
+# Runs scripts/regression_audit.py against every known clinical surface BEFORE
+# the wrangler deploy. Exit code 0 = pass; 1 = block deploy.
+#
+# Override (DANGEROUS, audited): DEPLOY_SKIP_REGRESSION_AUDIT=1
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_REGRESSION_AUDIT:-}" ]; then
+    AUDIT="/Users/beans/Developer/MountZara/agent-platform/scripts/regression_audit.py"
+    if [ -f "$AUDIT" ]; then
+        echo ""
+        echo "🔍 §0.4.1 comprehensive regression audit (all surfaces)..."
+        if /opt/homebrew/bin/python3 "$AUDIT" --all > /tmp/_deploy_audit.log 2>&1; then
+            tail -1 /tmp/_deploy_audit.log
+            echo "   ✅ audit passed"
+        else
+            echo ""
+            echo "🛑 DEPLOY BLOCKED by §0.4.1 comprehensive regression audit. Failures:"
+            grep -B1 FAIL /tmp/_deploy_audit.log | head -30
+            echo ""
+            echo "   Full log: /tmp/_deploy_audit.log"
+            echo "   Override (DANGEROUS): DEPLOY_SKIP_REGRESSION_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+        echo ""
+    else
+        echo "⚠️  regression_audit.py not found at $AUDIT — skipping §0.4.1 gate (this is a bug)"
+    fi
+fi
+
 npx --yes wrangler@latest pages deploy . \
     --project-name="$PROJECT" \
     --branch=main \
@@ -92,6 +122,29 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ]; then
         echo "   is missing its §0.8 KB-anchor manifest. Re-anchor with"
         echo "   scripts/_anchor_all_clinical_posts.py (and _anchor_w20_post.py)"
         echo "   then re-run this deploy."
+        exit 1
+    fi
+fi
+
+# §1.2 / §3.7 / §3.8 / §3.9 / §3.10 / §3.12 post-deploy gate (added
+# 2026-05-25 by audit_live_post.py). The KB-anchoring gate above only
+# checks the §0.8 manifest; this one runs the full CLAUDE.md compliance
+# audit on every published R2-served post — bare-MIGS detection per §1.2,
+# infra-language per §3.7/§3.11, blue-token per §3.10, missing-abstract
+# per §3.7/§3.8, REVIEW REQUIRED leak per §3.8, zero-cite-grid per §3.8.
+# Skip with DEPLOY_SKIP_POST_AUDIT=1 only for non-clinical site-shell
+# pushes that don't touch post bodies.
+if [ -z "${DEPLOY_SKIP_POST_AUDIT:-}" ]; then
+    echo ""
+    echo "🔒 §3 post-audit gate — running scripts/audit_live_post.py against every published post..."
+    if ! python3 scripts/audit_live_post.py --list ; then
+        echo ""
+        echo "🛑 §3 POST-AUDIT FAILED — at least one published post violates"
+        echo "   CLAUDE.md §1.2 / §3.7 / §3.8 / §3.9 / §3.10 / §3.12."
+        echo "   Inspect the per-post checklist above and either:"
+        echo "     (a) fix the post body in R2 via the admin PUT endpoint, or"
+        echo "     (b) re-run with DEPLOY_SKIP_POST_AUDIT=1 only when the"
+        echo "         failure is pre-existing and explicitly accepted."
         exit 1
     fi
 fi
