@@ -5778,6 +5778,50 @@
             color: #fff;
         }
 
+        /* ============================================================
+           iPhone mobile compression — 2026-05-21 surgical pass.
+           Per user audit: total page was 32 viewport-heights on iPhone
+           Pro Max (430x932). Each major section uses
+           `padding: clamp(80px, 10vw, 140px) 0` which at 430px width
+           pins to the 80px floor — 160px of vertical padding per
+           section × 9 sections ≈ 1440px of pure padding.
+           This block compresses section padding to a tighter clamp
+           (~50% reduction at mobile floor) without touching content.
+           Confined to max-width: 640px so desktop is unaffected.
+           §0.6 manual targeted edits; §3.10 design tokens unchanged
+           (purple-accent + Apple-glass cards stay identical, only the
+           wrapping section padding shrinks).
+           ============================================================ */
+        @media (max-width: 640px) {
+            .awards-section,
+            .education-section,
+            .curriculum-section {
+                padding: clamp(40px, 8vw, 72px) 0;
+            }
+            .surgical-unified-section {
+                padding: clamp(36px, 7vw, 56px) 0;
+            }
+            .surgical-focus-section {
+                padding: clamp(40px, 8vw, 72px) 0;
+            }
+            /* The omm/ai/apps/research sections inherit the legacy
+               `main section { padding }` rule but also carry their
+               own internal container padding. Reduce both. */
+            #osteopathic,
+            #ai,
+            #apps,
+            #research,
+            #contact {
+                padding-top: clamp(36px, 7vw, 56px);
+                padding-bottom: clamp(36px, 7vw, 56px);
+            }
+            /* Section eyebrow / headline / sub stack tightens with the
+               surrounding padding so the rhythm scales. */
+            .section-eyebrow { margin-bottom: 10px; }
+            .section-headline { margin-bottom: 14px; }
+            .section-sub { margin-bottom: 20px; }
+        }
+
         /* Graceful fallback for browsers without backdrop-filter (very rare).
            Use a slightly more opaque background so cards still have surface. */
         @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
