@@ -5846,6 +5846,23 @@
             .section-eyebrow { margin-bottom: 10px; }
             .section-headline { margin-bottom: 14px; }
             .section-sub { margin-bottom: 20px; }
+
+            /* 2026-05-21 — apps section is 4.5 viewports on iPhone Pro Max
+               (4 app cards each 380px min-height + bento gaps). Drop the
+               min-height + padding so each card runs tighter without losing
+               content. */
+            .app-card-v2 { min-height: 280px; border-radius: 18px; }
+            .app-feature .app-meta { padding: 22px 22px 26px; }
+            .app-feature h3 { font-size: 22px; margin-bottom: 8px; }
+            .app-feature p { font-size: 14px; }
+
+            /* Surgical mosaic — 7 cards stacked. Tighten card padding +
+               body line-height so each card is ~50-70px shorter without
+               removing any chips/title/summary. */
+            .surgical-card { padding: 16px 16px 18px; gap: 10px; border-radius: 16px; }
+            .surgical-card-body h3 { font-size: 16px; line-height: 1.25; margin-bottom: 6px; }
+            .surgical-card-body p { font-size: 13px; line-height: 1.45; }
+            .surgical-card-hover { padding-top: 8px; margin-top: 4px; }
         }
 
         /* Graceful fallback for browsers without backdrop-filter (very rare).
