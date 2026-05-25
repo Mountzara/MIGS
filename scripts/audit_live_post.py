@@ -81,16 +81,43 @@ BLUE_TOKENS = re.compile(
 # §3.10 — canonical purple brand token
 PURPLE_BRAND = re.compile(r"#6d28d9", re.IGNORECASE)
 
-# §3.12 — medicolegal disclaimer markers
+# §3.12 — medicolegal disclaimer markers. Checked against VISIBLE text only
+# (comments stripped) so a `<!-- TODO: add disclaimer -->` comment cannot
+# falsely satisfy the check. Discovered via negative-test 2026-05-25.
 DISCLAIMER = re.compile(
     r"medicolegal|AI-assisted|not a substitute|professional advice|not medical advice",
     re.IGNORECASE,
 )
 
-# §0.8 — KB-anchor manifest markers (comments OR visible disclosures)
-KB_MANIFEST = re.compile(
-    r"KB-anchor manifest|kb_anchor_manifest|kb-anchor-manifest|kb_manifest|"
-    r"§0\.8 manifest|topic_groups_anchored",
+# §0.8 — KB-anchor manifest detection.
+#
+# The §0.8 manifest lives inside an HTML comment per CLAUDE.md §0.8.1. A
+# legitimate manifest is a JSON-shaped block carrying at least one of the
+# structural keys (kb_entries_retrieved, pmids_cited, topic_groups_anchored,
+# kb_chunks_loaded). The earlier "match the literal phrase 'KB-anchor
+# manifest'" rule had a false-positive on bodies that merely MENTIONED the
+# manifest in prose or in placeholder comments — discovered via the
+# negative-test 2026-05-25.
+#
+# Strategy: pull every HTML comment, look inside each for ≥1 structural
+# manifest key. Comment-text without those keys does NOT count.
+KB_MANIFEST_KEYS = re.compile(
+    # Any kb_*, pmid_*, pmids_*, or topic_*_anchored / *_synthesis_*
+    # key — covers the two emit conventions in production:
+    #   W20 / trend briefs: topic_groups_anchored, pmid_count, pmids_efetched_per_card
+    #   W21:                kb_topic_syntheses_loaded, topic_synthesis_id
+    # plus the older kb_anchor_manifest / kb_entries_retrieved / pmids_cited.
+    # A real manifest will carry ≥1 of these as a JSON key. Phrase-only
+    # mentions in placeholder comments will not.
+    r'"(?:'
+    r'kb_[a-z_]+|'
+    r'pmids?_[a-z_]+|'
+    r'pmid_count|'
+    r'topic_[a-z_]+_anchored|'
+    r'topic_synthesis_id|'
+    r'topic_groups_anchored|'
+    r'manifest'
+    r')"\s*:',
     re.IGNORECASE,
 )
 
@@ -143,6 +170,42 @@ ARTICLE_CARD = re.compile(
 VERDICT_GAUGE = re.compile(r"mz-verdict-gauge|verdict-gauge", re.IGNORECASE)
 EVIDENCE_PYRAMID = re.compile(r"mz-evidence-pyramid|evidence-pyramid", re.IGNORECASE)
 CITE_GRID = re.compile(r'class="[^"]*mz-cite-grid[^"]*"', re.IGNORECASE)
+
+# §3.8 item 24 (added 2026-05-25) + §3.9 deep-dive modal — every cite card on
+# a trend brief or Monday Morning post MUST have:
+#   1. A <button class="mz-deepdive-trigger" onclick="openDeepDive('dd-<PMID>')">
+#   2. A sibling <dialog class="mz-jc-modal" id="dd-<PMID>"> per unique PMID
+#   3. The dialog contains all 13 §3.9 sections by anchor id
+# Section 5 (verbatim abstract) renders from PubMed efetch per §3.7; other 12
+# sections may be authored or marked `<span class="mz-jc-pending-tag">Pending review</span>`.
+# Authoring path is the Cowork peer-review workflow per §3.9 — NEVER programmatic.
+DEEPDIVE_TRIGGER = re.compile(r'class="[^"]*mz-deepdive-trigger[^"]*"', re.IGNORECASE)
+DEEPDIVE_DIALOG = re.compile(
+    r'<dialog[^>]*class="[^"]*mz-jc-modal[^"]*"[^>]*id="dd-([^"]+)"',
+    re.IGNORECASE,
+)
+DEEPDIVE_OPEN_CALL = re.compile(
+    r"openDeepDive\(['\"]dd-([^'\"]+)['\"]\)",
+    re.IGNORECASE,
+)
+# 13 anchor sections per §3.9 deep-dive modal anatomy.
+# Production naming convention (verified against blog-2026-W21 2026-05-25):
+# section IDs are emitted as `dd-<PMID>-<suffix>`; the suffix is one of:
+DEEPDIVE_SECTION_ANCHORS = [
+    "bottom",        # TL;DR / bottom-line-up-front
+    "question",      # Clinical question
+    "pico",          # PICO breakdown
+    "methods",       # Methodology
+    "abstract",      # Verbatim PubMed abstract (§3.7)
+    "findings",      # Key findings
+    "rob",           # Risk of bias
+    "strengths",     # Strengths
+    "applicability", # External validity / applicability
+    "kb",            # KB placement
+    "equity",        # Equity considerations
+    "monday",        # Monday-clinic takeaway
+    "prompts",       # Discussion prompts
+]
 
 # §3.9 — Monday Morning markers
 SUBSPECIALTY_PARA = re.compile(r"subspecialty|per-subspecialty|per-group", re.IGNORECASE)
@@ -241,8 +304,19 @@ def article_cards(body_html: str) -> list[str]:
     return ARTICLE_CARD.findall(body_html)
 
 
+_MZ_ABSTRACT_ELEMENT = re.compile(
+    r'<details[^>]*class="[^"]*mz-abstract[^"]*"[^>]*>',
+    re.IGNORECASE,
+)
+
+
 def cards_with_abstracts(article_contents: Iterable[str]) -> int:
-    return sum(1 for c in article_contents if "mz-abstract" in c)
+    """Per §3.7 + §3.8: a card "has an abstract" only if it contains an
+    actual `<details class="mz-abstract">` element. The earlier substring
+    check matched any occurrence of the literal text 'mz-abstract' — which
+    fires on cards that merely DESCRIBE the absence of the block in prose.
+    Discovered via negative-test 2026-05-25."""
+    return sum(1 for c in article_contents if _MZ_ABSTRACT_ELEMENT.search(c))
 
 
 # ---------------------------------------------------------------------------
@@ -255,14 +329,33 @@ def audit_post(post: dict) -> PostAudit:
     kind = post.get("kind") or ""
     title = (post.get("title") or "")[:120]
     body = post.get("body_html") or ""
-    # `visible` = the rendered text the reader sees (no HTML markup, no JS,
-    # no CSS). Used for §1.2 / §3.7 / §3.9 scans which govern user-facing
-    # text only. The full `body` is still used for §3.8 / §3.10 / §0.8
-    # checks that operate on the HTML structure itself.
-    visible = visible_text(body)
+
+    # Additional user-facing surfaces that §1.2 + §3.7/§3.11 govern, NOT just
+    # body_html. The /evidence/ post detail page renders `summary` as the
+    # "CLAIM UNDER REVIEW" panel, `verdict` as the labelled verdict line,
+    # and `title` as the page H1. Social drafts (linkedin_draft,
+    # instagram_draft) are public-facing the moment they're queued.
+    # Discovered 2026-05-25 when an audit of W20 visually showed
+    #   "MIGS Monday Morning — ... §0.8 KB-anchored synthesis ... verified PMIDs"
+    # in the rendered summary — invisible to a body_html-only scan.
+    summary = post.get("summary") or ""
+    verdict_str = post.get("verdict") or ""
+    li_draft = post.get("linkedin_draft") or ""
+    ig_draft = post.get("instagram_draft") or ""
+
+    # `visible` = the rendered text the reader sees from body_html (no HTML
+    # markup, no JS, no CSS) PLUS the public-facing string fields. Used for
+    # §1.2 / §3.7 / §3.9 scans which govern user-facing text only. The full
+    # `body` is still used for §3.8 / §3.10 / §0.8 checks that operate on
+    # the HTML structure itself.
+    visible_body = visible_text(body)
+    visible = "\n".join([
+        title, summary, verdict_str, li_draft, ig_draft, visible_body,
+    ])
     log.info(
-        "auditing %s (kind=%s title=%r body_html=%d chars, visible_text=%d chars)",
-        pid, kind, title[:60], len(body), len(visible),
+        "auditing %s (kind=%s title=%r body_html=%d, summary=%d, verdict=%d, li=%d, ig=%d, visible=%d chars)",
+        pid, kind, title[:60], len(body), len(summary), len(verdict_str),
+        len(li_draft), len(ig_draft), len(visible),
     )
 
     audit = PostAudit(post_id=pid, kind=kind, title=title, body_html_len=len(body))
@@ -325,7 +418,9 @@ def audit_post(post: dict) -> PostAudit:
     )
 
     # -- §3.12 medicolegal disclaimer ---------------------------------------
-    disclaimer_hits = DISCLAIMER.findall(body)
+    # Scan VISIBLE text — a `<!-- TODO: add disclaimer -->` comment must NOT
+    # falsely satisfy this. Found via negative-test 2026-05-25.
+    disclaimer_hits = DISCLAIMER.findall(visible_body)
     audit.add(
         "§3.12 medicolegal disclaimer present",
         bool(disclaimer_hits),
@@ -333,11 +428,20 @@ def audit_post(post: dict) -> PostAudit:
     )
 
     # -- §0.8 manifest -------------------------------------------------------
-    manifest_present = bool(KB_MANIFEST.search(body))
+    # Require an actual JSON-shaped manifest inside an HTML comment, not
+    # merely the phrase "KB-anchor manifest" anywhere in body. The phrase
+    # appears in placeholder comments and in prose ABOUT the manifest;
+    # only a real manifest counts. Found via negative-test 2026-05-25.
+    manifest_present = False
+    for cmt in re.finditer(r"<!--(.*?)-->", body, re.DOTALL):
+        if KB_MANIFEST_KEYS.search(cmt.group(1)):
+            manifest_present = True
+            break
     audit.add(
         "§0.8 KB-anchor manifest present",
         manifest_present,
-        "found" if manifest_present else "absent — clinical posts MUST carry the manifest",
+        "found in HTML comment" if manifest_present
+        else "absent or unstructured — clinical posts MUST carry a JSON manifest with kb_entries_retrieved / pmids_cited / topic_groups_anchored",
     )
 
     # -- §3.8 / §3.9 verdict-label tripwire ---------------------------------
@@ -368,6 +472,73 @@ def audit_post(post: dict) -> PostAudit:
             "§3.8 cite-card count via <article>",
             True,
             "0 cards (post has no cite-card surface — n/a for this post type)",
+        )
+
+    # -- §3.8 item 24 + §3.9 deep-dive modal coverage -----------------------
+    # Trend briefs AND Monday Morning posts require every cite card to have
+    # a deep-dive trigger + matching modal. Only check when the post has
+    # cards in the first place.
+    if cards_n > 0:
+        trigger_count = len(DEEPDIVE_TRIGGER.findall(body))
+        open_calls = set(DEEPDIVE_OPEN_CALL.findall(body))
+        dialog_ids = set(DEEPDIVE_DIALOG.findall(body))
+
+        # Rule a: every card has a trigger. Triggers can exceed cards (the
+        # 5-papers section reuses cards), so ≥1 trigger per card is the floor.
+        audit.add(
+            "§3.8 item 24 — every cite card has a deep-dive trigger",
+            trigger_count >= cards_n,
+            f"{trigger_count} triggers vs {cards_n} cards"
+            + (" — MISSING triggers" if trigger_count < cards_n else ""),
+        )
+
+        # Rule b: openDeepDive(...) IDs must each have a matching <dialog id="dd-...">
+        unmatched_calls = open_calls - dialog_ids
+        unmatched_dialogs = dialog_ids - open_calls
+        audit.add(
+            "§3.8 item 24 — every openDeepDive('dd-<PMID>') has a matching <dialog>",
+            not unmatched_calls,
+            f"{len(unmatched_calls)} unmatched openDeepDive ids: {sorted(unmatched_calls)[:3]}"
+            if unmatched_calls else f"{len(dialog_ids)} unique dialogs",
+        )
+        if unmatched_dialogs:
+            audit.add(
+                "§3.8 item 24 — orphaned dialogs (informational)",
+                True,
+                f"{len(unmatched_dialogs)} dialog(s) with no openDeepDive call",
+            )
+
+        # Rule c: each dialog must contain ALL 13 §3.9 section anchors.
+        # Production emits anchors as `id="dd-<PMID>-<suffix>"` per the
+        # naming convention verified on blog-2026-W21 (2026-05-25). We
+        # iterate each dialog, capture its PMID from id="dd-<PMID>", then
+        # check that every required suffix is present as `id="dd-<PMID>-<suffix>"`.
+        modals_complete = 0
+        modals_partial = 0
+        partial_examples: list[str] = []
+        for m in re.finditer(
+            r'<dialog[^>]*class="[^"]*mz-jc-modal[^"]*"[^>]*id="dd-([^"]+)"[^>]*>(.*?)</dialog>',
+            body, re.IGNORECASE | re.DOTALL,
+        ):
+            pmid = m.group(1)
+            content = m.group(2)
+            missing = [
+                a for a in DEEPDIVE_SECTION_ANCHORS
+                if not re.search(rf'\bid="dd-{re.escape(pmid)}-{re.escape(a)}"', content)
+            ]
+            if not missing:
+                modals_complete += 1
+            else:
+                modals_partial += 1
+                if len(partial_examples) < 3:
+                    partial_examples.append(f"dd-{pmid}: missing {missing[:4]}")
+        audit.add(
+            "§3.8 item 24 — every modal has all 13 §3.9 sections",
+            modals_partial == 0 and modals_complete >= 1 if dialog_ids
+            else trigger_count == 0,  # if no triggers either, the post is exempt above
+            (f"{modals_complete} complete, {modals_partial} partial of {len(dialog_ids)} dialogs"
+             + (f" — examples: {partial_examples}" if partial_examples else "")
+             if dialog_ids else "no dialogs (n/a)"),
         )
 
     # -- §3.8 cite-grid + structure -----------------------------------------
