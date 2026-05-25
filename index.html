@@ -3859,18 +3859,44 @@
         }
 
         @media (max-width: 768px) {
+            /* 2026-05-21 iPhone audit: research section was 6.8 viewport
+               heights on iPhone Pro Max — single biggest height driver.
+               Tightened gap/margin/padding/title-margin/summary line-
+               height to reclaim ~200-280px without removing content. */
             .research-cards {
                 grid-template-columns: 1fr;
-                gap: 24px;
-                margin: 48px 0;
+                gap: 14px;
+                margin: 24px 0;
             }
 
             .research-card {
-                padding: 24px;
+                padding: 18px 18px 20px;
+                border-radius: 18px;
+            }
+
+            .research-card-header {
+                margin-bottom: 10px;
             }
 
             .research-card-title {
                 font-size: 18px;
+                margin: 0 0 8px;
+                line-height: 1.25;
+            }
+
+            .research-card-journal {
+                margin: 0 0 10px;
+            }
+
+            .research-card-summary {
+                font-size: 13.5px;
+                line-height: 1.5;
+                margin: 0 0 14px;
+            }
+
+            .aagl-accepted-banner {
+                margin-top: 22px;
+                padding: 20px 18px;
             }
 
             .video-modal video {
