@@ -9851,7 +9851,13 @@
             }
         })();
 
-        window.toggleFeatureSound = toggleFeatureSound;
+        // Defensive: only re-expose if defined (avoids ReferenceError that
+        // would halt every script that runs after this line; the
+        // toggleFeatureSound function was removed in an earlier refactor
+        // but this stale window assignment was missed). 2026-05-26.
+        if (typeof toggleFeatureSound === 'function') {
+            window.toggleFeatureSound = toggleFeatureSound;
+        }
 
         // ============================================================
         // Research-card preview autoplay guard
