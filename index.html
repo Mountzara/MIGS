@@ -5999,6 +5999,161 @@
         }
 
         /* ============================================================
+           Mobile overflow trim + "See all" trigger + full-screen sheet
+           (Identity Map Commit 2 — 2026-05-26).
+           Pattern: any grid container with [data-mobile-overflow="N"]
+           hides children beyond N on viewports ≤ 640px. The matching
+           .mz-see-all-trigger button reveals on mobile, and clicking
+           opens the .mz-sheet dialog with a JS-cloned copy of the
+           grid (attribute stripped, so all children render).
+           ============================================================ */
+
+        .mz-see-all-trigger {
+            display: none;   /* hidden on desktop; shown via @media below */
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 22px auto 0;
+            padding: 13px 26px;
+            background: linear-gradient(135deg,
+                rgba(167, 139, 250, 0.10) 0%,
+                rgba(109, 40, 217, 0.04) 100%);
+            border: 1px solid rgba(167, 139, 250, 0.32);
+            border-radius: 100px;
+            color: rgba(245, 245, 247, 0.95);
+            font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.22s ease,
+                        border-color 0.22s ease,
+                        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+        }
+        .mz-see-all-trigger:hover,
+        .mz-see-all-trigger:focus-visible {
+            background: linear-gradient(135deg,
+                rgba(167, 139, 250, 0.20) 0%,
+                rgba(109, 40, 217, 0.08) 100%);
+            border-color: rgba(167, 139, 250, 0.62);
+            transform: translateY(-2px);
+        }
+        .mz-see-all-count {
+            color: rgba(var(--glow-purple), 1);
+            font-weight: 700;
+        }
+        .mz-see-all-arrow {
+            font-size: 16px;
+            line-height: 1;
+            transition: transform 0.22s ease;
+        }
+        .mz-see-all-trigger:hover .mz-see-all-arrow {
+            transform: translateX(4px);
+        }
+
+        /* ----- Full-screen sheet modal (mobile-primary, desktop-fallback) ----- */
+        .mz-sheet {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: rgba(10, 10, 12, 0.94);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            color: var(--white);
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .mz-sheet[open] {
+            display: flex;
+            flex-direction: column;
+        }
+        .mz-sheet::backdrop {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .mz-sheet-handle {
+            flex: 0 0 auto;
+            width: 48px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.32);
+            border-radius: 100px;
+            margin: 12px auto 0;
+            cursor: grab;
+        }
+        .mz-sheet-close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--white);
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.18s ease, border-color 0.18s ease;
+        }
+        .mz-sheet-close-btn:hover,
+        .mz-sheet-close-btn:focus-visible {
+            background: rgba(167, 139, 250, 0.18);
+            border-color: rgba(167, 139, 250, 0.55);
+        }
+        .mz-sheet-content {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 56px 18px 60px;
+        }
+        .mz-sheet-content > * { margin-top: 0; }
+        .mz-sheet-content .section-eyebrow,
+        .mz-sheet-content .section-headline {
+            margin-top: 12px;
+        }
+        /* When a grid is cloned into the sheet, the JS strips the
+           data-mobile-overflow attribute so the :nth-of-type hide rule
+           below no longer matches — all children render normally. */
+
+        /* The actual overflow-trim rules — ONLY on viewports ≤ 640px. */
+        @media (max-width: 640px) {
+            .mz-see-all-trigger {
+                display: inline-flex;
+            }
+            [data-mobile-overflow="3"] > *:nth-of-type(n+4) {
+                display: none !important;
+            }
+            [data-mobile-overflow="4"] > *:nth-of-type(n+5) {
+                display: none !important;
+            }
+            [data-mobile-overflow="5"] > *:nth-of-type(n+6) {
+                display: none !important;
+            }
+            [data-mobile-overflow="6"] > *:nth-of-type(n+7) {
+                display: none !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mz-see-all-trigger,
+            .mz-sheet-close-btn,
+            .mz-see-all-arrow { transition: none !important; }
+        }
+
+        /* ============================================================
            iPhone mobile compression — 2026-05-21 surgical pass.
            Per user audit: total page was 32 viewport-heights on iPhone
            Pro Max (430x932). Each major section uses
@@ -6366,7 +6521,7 @@
 
             <div class="surgical-hub-eyebrow">Seven clinical practice areas</div>
             <div class="surgical-hub" id="surgical-hub" role="tablist" aria-label="Clinical practice areas">
-                <div class="surgical-hub-grid">
+                <div class="surgical-hub-grid" data-mobile-overflow="3" data-mobile-overflow-label="surgical focus areas">
                     <button type="button" class="hub-tile" data-category="endometriosis" role="tab" aria-controls="hub-panel" aria-selected="false">
                         <div class="hub-tile-icon" aria-hidden="true">
                             <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -6481,6 +6636,12 @@
                         </div>
                     </button>
                 </div>
+
+                <button type="button" class="mz-see-all-trigger" data-sheet-section="surgical-hub-grid" hidden>
+                    <span class="mz-see-all-label">See all</span>
+                    <span class="mz-see-all-count" data-mz-count-target></span>
+                    <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
+                </button>
 
                 <!-- Inline expansion panel — content swapped in by JS when a tile is clicked. -->
                 <div class="surgical-hub-panel" id="hub-panel" role="tabpanel" aria-live="polite" hidden>
@@ -6647,7 +6808,7 @@
                  its own deep-content modal. Matches the AI + Apps section
                  pattern: one section header + one card grid, no fan-out
                  sub-sections. Per user 2026-05-16 directive. -->
-            <div class="bento-grid">
+            <div class="bento-grid" data-mobile-overflow="3" data-mobile-overflow-label="OMT topics">
                 <div class="bento-card omt-bento-clickable" data-omt-modal="philosophy" role="button" tabindex="0" aria-label="Open the osteopathic philosophy">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -6719,6 +6880,12 @@
                     </div>
                 </div>
             </div>
+
+            <button type="button" class="mz-see-all-trigger" data-sheet-section="bento-grid" hidden>
+                <span class="mz-see-all-label">See all</span>
+                <span class="mz-see-all-count" data-mz-count-target></span>
+                <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
+            </button>
 
             <div class="omm-quote-block">
                 <blockquote>"The DO philosophy isn't an alternative to surgery — it's the lens that makes surgical care truly holistic. The best outcomes happen when we understand <em>why</em> the body presents the way it does, not just how to fix the immediate problem."</blockquote>
@@ -6844,7 +7011,7 @@
                 </div>
             </div>
 
-            <div class="apps-bento">
+            <div class="apps-bento" data-mobile-overflow="3" data-mobile-overflow-label="apps">
                 <!-- Mount Zara Clinical AI -->
                 <div class="app-card-v2" data-app="clinical" role="button" tabindex="0">
                     <div class="app-visual">
@@ -6943,6 +7110,12 @@
                     </div>
                 </div>
             </div>
+
+            <button type="button" class="mz-see-all-trigger" data-sheet-section="apps-bento" hidden>
+                <span class="mz-see-all-label">See all</span>
+                <span class="mz-see-all-count" data-mz-count-target></span>
+                <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
+            </button>
         </div>
     </section>
 
@@ -6966,7 +7139,7 @@
             </div>
 
             <!-- Featured Research Cards -->
-            <div class="research-cards">
+            <div class="research-cards" data-mobile-overflow="4" data-mobile-overflow-label="research presentations">
 
                 <!-- Card 1: Golden Hysteroscope -->
                 <article class="research-card" data-reveal="up">
@@ -9463,6 +9636,96 @@
         window.addEventListener('resize', onScroll, { passive: true });
         tick();
 
+        // ============================================================
+        // Identity Map "See all" trigger + full-screen sheet modal
+        // (Commit 2 — 2026-05-26). Each .mz-see-all-trigger button has
+        // data-sheet-section pointing at a grid class with
+        // data-mobile-overflow="N". On mobile only, cards N+1..end are
+        // hidden by CSS (:nth-of-type rule). Clicking the trigger clones
+        // the grid into the .mz-sheet dialog and strips the overflow
+        // attribute so the cloned children all render.
+        // ============================================================
+        (function initSeeAllSheet() {
+            const triggers = Array.from(document.querySelectorAll('.mz-see-all-trigger'));
+            const sheet = document.getElementById('mz-sheet');
+            const sheetContent = document.getElementById('mz-sheet-content');
+            if (!sheet || !sheetContent) return;
+
+            // For each trigger, count the actual children of its target
+            // grid. If count > overflow threshold, populate the count
+            // label and reveal the trigger (remove hidden attr). Else
+            // leave it hidden — the section already fits without trim.
+            triggers.forEach(btn => {
+                const sectionClass = btn.getAttribute('data-sheet-section');
+                if (!sectionClass) return;
+                const grid = document.querySelector('.' + sectionClass);
+                if (!grid) return;
+                const overflow = parseInt(grid.getAttribute('data-mobile-overflow') || '0', 10);
+                const label = grid.getAttribute('data-mobile-overflow-label') || 'cards';
+                const childCount = grid.children.length;
+                if (childCount <= overflow) {
+                    // Nothing trimmed — leave trigger hidden, nothing for sheet to add.
+                    return;
+                }
+                const countSpan = btn.querySelector('[data-mz-count-target]');
+                if (countSpan) {
+                    countSpan.textContent = ' ' + childCount + ' ' + label;
+                }
+                btn.removeAttribute('hidden');
+                btn.addEventListener('click', () => openSheet(sectionClass));
+            });
+
+            function openSheet(sectionClass) {
+                const grid = document.querySelector('.' + sectionClass);
+                if (!grid) return;
+                // Pull the closest <section> ancestor for header/eyebrow context
+                const section = grid.closest('section');
+                let titleHtml = '';
+                if (section) {
+                    const eyebrow = section.querySelector('.section-eyebrow');
+                    const headline = section.querySelector('.section-headline');
+                    if (eyebrow) titleHtml += '<span class="section-eyebrow">' + eyebrow.textContent + '</span>';
+                    if (headline) titleHtml += '<h2 class="section-headline" id="mz-sheet-title">' + headline.innerHTML + '</h2>';
+                }
+                // Clone the grid; strip the overflow attribute so CSS
+                // :nth-of-type hide rule no longer matches the clone.
+                const cloned = grid.cloneNode(true);
+                cloned.removeAttribute('data-mobile-overflow');
+                cloned.removeAttribute('data-mobile-overflow-label');
+                sheetContent.innerHTML = titleHtml;
+                sheetContent.appendChild(cloned);
+                if (typeof sheet.showModal === 'function') {
+                    sheet.showModal();
+                } else {
+                    sheet.setAttribute('open', '');
+                }
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSheet() {
+                if (sheet.hasAttribute('open')) {
+                    if (typeof sheet.close === 'function') sheet.close();
+                    else sheet.removeAttribute('open');
+                }
+                sheetContent.innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            // Wire close affordances: × button, ESC key, click on backdrop
+            sheet.querySelectorAll('[data-mz-sheet-close]').forEach(b => {
+                b.addEventListener('click', closeSheet);
+            });
+            sheet.addEventListener('click', (e) => {
+                // dialog's ::backdrop bubbles click as if from the dialog itself;
+                // only close if the click target IS the dialog (i.e. backdrop), not a child
+                if (e.target === sheet) closeSheet();
+            });
+            sheet.addEventListener('cancel', (e) => {
+                // ESC fires 'cancel' on <dialog>; let default close happen, then clean up
+                setTimeout(closeSheet, 0);
+            });
+        })();
+
         // Video modal functions
         // Force the research-card video previews to autoplay reliably across
         // browsers — especially iOS Safari, which otherwise overlays a native
@@ -9706,6 +9969,16 @@
   "generated_at_utc": "2026-05-17T20:00:00Z"
 }
 -->
+
+<!-- Identity Map full-screen sheet modal (Commit 2 — 2026-05-26).
+     Populated dynamically by openSheet(sectionId). The cloned grid
+     has its data-mobile-overflow attribute stripped so all children
+     render in the sheet. Close with ×, ESC key, or click outside. -->
+<dialog class="mz-sheet" id="mz-sheet" aria-labelledby="mz-sheet-title">
+    <div class="mz-sheet-handle" aria-hidden="true"></div>
+    <button type="button" class="mz-sheet-close-btn" aria-label="Close" data-mz-sheet-close>&times;</button>
+    <div class="mz-sheet-content" id="mz-sheet-content"></div>
+</dialog>
 
 </body>
 </html>
