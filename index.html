@@ -5805,6 +5805,188 @@
         }
 
         /* ============================================================
+           Identity Map — 5-card horizontal swipe navigator (2026-05-25)
+           Per §3.10 Principles 1+8 — visualization-first + interactive
+           primitives. Apple-glass purple cards. Pure CSS scroll-snap
+           (no JS for the swipe itself; JS only for the scroll-spy
+           below). Mobile is the primary surface (the navigator wins its
+           own viewport); on desktop the section sits compact under the
+           about block as a navigational eyebrow row.
+           ============================================================ */
+        .identity-map-section {
+            background: var(--black);
+            position: relative;
+        }
+        .identity-map-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 20% 100%, rgba(167, 139, 250, 0.08), transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 0%, rgba(109, 40, 217, 0.06), transparent 60%);
+            pointer-events: none;
+        }
+        .identity-map-section .container-wide {
+            position: relative;
+            z-index: 1;
+        }
+        .identity-map-track {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(min(86vw, 320px), 1fr));
+            gap: 18px;
+            margin: 28px -16px 0;
+            padding: 8px 16px 24px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .identity-map-track::-webkit-scrollbar { display: none; }
+
+        .identity-card {
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 22px 22px 20px;
+            min-height: 280px;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.06) 0%,
+                rgba(255,255,255,0.02) 60%,
+                rgba(167, 139, 250, 0.04) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 22px;
+            text-decoration: none;
+            color: var(--white);
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.32s ease,
+                        background 0.32s ease,
+                        box-shadow 0.32s ease;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.10) inset,
+                0 12px 30px -14px rgba(0,0,0,0.45);
+            animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .identity-card:nth-of-type(1) { animation-delay: 80ms; }
+        .identity-card:nth-of-type(2) { animation-delay: 160ms; }
+        .identity-card:nth-of-type(3) { animation-delay: 240ms; }
+        .identity-card:nth-of-type(4) { animation-delay: 320ms; }
+        .identity-card:nth-of-type(5) { animation-delay: 400ms; }
+
+        .identity-card:hover,
+        .identity-card:focus-visible {
+            transform: translateY(-3px);
+            border-color: rgba(167, 139, 250, 0.55);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.08) 0%,
+                rgba(167, 139, 250, 0.06) 60%,
+                rgba(167, 139, 250, 0.10) 100%);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.18) inset,
+                0 22px 44px -18px rgba(0,0,0,0.55),
+                0 0 0 1px rgba(167, 139, 250, 0.20);
+            outline: none;
+        }
+        .identity-card.is-active {
+            border-color: rgba(167, 139, 250, 0.70);
+            background: linear-gradient(135deg,
+                rgba(167, 139, 250, 0.10) 0%,
+                rgba(109, 40, 217, 0.05) 60%,
+                rgba(167, 139, 250, 0.08) 100%);
+        }
+
+        .identity-card-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+        }
+        .identity-card-num {
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', system-ui, sans-serif;
+            font-size: 56px;
+            font-weight: 200;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            background: linear-gradient(180deg,
+                rgba(167, 139, 250, 1) 0%,
+                rgba(109, 40, 217, 1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 4px 0 0;
+        }
+        .identity-card-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(245, 245, 247, 0.92);
+            letter-spacing: -0.005em;
+        }
+        .identity-card-sub {
+            font-size: 13px;
+            line-height: 1.45;
+            color: rgba(245, 245, 247, 0.66);
+            flex: 1 1 auto;
+        }
+        .identity-card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            margin-top: 6px;
+            transition: gap 0.22s ease, color 0.22s ease;
+        }
+        .identity-card:hover .identity-card-cta { gap: 8px; color: #fff; }
+
+        .identity-map-pips {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .identity-pip {
+            width: 22px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.18);
+            transition: background 0.32s ease, width 0.32s ease;
+        }
+        .identity-pip.active {
+            background: rgba(var(--glow-purple), 0.92);
+            width: 36px;
+        }
+
+        @media (min-width: 768px) {
+            /* On desktop, show all 5 cards in a non-scrolling row;
+               navigator becomes a compact navigational eyebrow rather
+               than the dominant interaction. */
+            .identity-map-track {
+                grid-template-columns: repeat(5, 1fr);
+                overflow-x: visible;
+                margin: 28px 0 0;
+                padding: 8px 0 0;
+            }
+            .identity-card { min-height: 240px; padding: 24px 22px 22px; }
+            .identity-card-num { font-size: 48px; }
+            .identity-map-pips { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .identity-card {
+                animation: none !important;
+                transition: border-color 0.2s ease, background 0.2s ease !important;
+            }
+        }
+
+        /* ============================================================
            iPhone mobile compression — 2026-05-21 surgical pass.
            Per user audit: total page was 32 viewport-heights on iPhone
            Pro Max (430x932). Each major section uses
@@ -6054,6 +6236,74 @@
                     <div class="stat-num">5</div>
                     <div class="stat-label">macOS apps in development</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         Identity Map — mobile-first navigator (2026-05-25)
+         Horizontal scroll-snap row of 5 identity cards. On mobile (per
+         §3.10 Principle 1 "Visualization first" + Principle 8 "Interactive
+         primitives"), this is the table-of-contents that lets visitors
+         choose their journey without scrolling through every section
+         linearly. On desktop the row stays visible as a navigation
+         eyebrow but is less essential because the long-scroll experience
+         is intact.
+         Per user 2026-05-25 design decision after the iPhone audit
+         showed the homepage was 40 viewports of linear scroll on
+         iPhone Pro Max — the Identity Map gives breadth in 1.4 viewports.
+         Each card anchors to its section + becomes "active" via scroll-
+         spy so the active identity is always visible to the reader.
+         ============================================================ -->
+    <section id="identity-map" class="identity-map-section" aria-label="Choose your path">
+        <div class="container-wide">
+            <span class="section-eyebrow center">Choose your path</span>
+            <h2 class="section-headline center">Five identities. One practice.</h2>
+            <p class="section-sub center">Surgeon · researcher · engineer · educator · osteopath. Swipe to choose where to start.</p>
+
+            <div class="identity-map-track" role="tablist">
+                <a href="#surgical" class="identity-card" data-identity="surgical" role="tab" aria-controls="surgical">
+                    <span class="identity-card-eyebrow">Surgery</span>
+                    <span class="identity-card-num">7</span>
+                    <span class="identity-card-label">Clinical practice areas</span>
+                    <span class="identity-card-sub">CBG/MIGS — from endometriosis to robotic myomectomy</span>
+                    <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
+                </a>
+                <a href="#research" class="identity-card" data-identity="research" role="tab" aria-controls="research">
+                    <span class="identity-card-eyebrow">Research</span>
+                    <span class="identity-card-num">7+</span>
+                    <span class="identity-card-label">Peer-reviewed publications</span>
+                    <span class="identity-card-sub">4 active IRB studies · 2 AAGL Global + CAOG awards</span>
+                    <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
+                </a>
+                <a href="#apps" class="identity-card" data-identity="apps" role="tab" aria-controls="apps">
+                    <span class="identity-card-eyebrow">Apps</span>
+                    <span class="identity-card-num">5</span>
+                    <span class="identity-card-label">Native clinical apps in development</span>
+                    <span class="identity-card-sub">macOS suite + iOS — clinical AI, surgical workflow, transcription, research, education</span>
+                    <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
+                </a>
+                <a href="#osteopathic" class="identity-card" data-identity="osteopathic" role="tab" aria-controls="osteopathic">
+                    <span class="identity-card-eyebrow">Osteopathy</span>
+                    <span class="identity-card-num">6</span>
+                    <span class="identity-card-label">Pillars of integrated OMT</span>
+                    <span class="identity-card-sub">DO · MSAEd · AOM fellowship — whole-person care anchored to ACOG-grade evidence</span>
+                    <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
+                </a>
+                <a href="#curriculum" class="identity-card" data-identity="curriculum" role="tab" aria-controls="curriculum">
+                    <span class="identity-card-eyebrow">Education</span>
+                    <span class="identity-card-num">3</span>
+                    <span class="identity-card-label">Curricula authored</span>
+                    <span class="identity-card-sub">CBG/MIGS fellowship · Hospice Pilot Rotation · Hospice Care Training</span>
+                    <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
+                </a>
+            </div>
+            <div class="identity-map-pips" aria-hidden="true">
+                <span class="identity-pip active" data-target="surgical"></span>
+                <span class="identity-pip" data-target="research"></span>
+                <span class="identity-pip" data-target="apps"></span>
+                <span class="identity-pip" data-target="osteopathic"></span>
+                <span class="identity-pip" data-target="curriculum"></span>
             </div>
         </div>
     </section>
@@ -6627,7 +6877,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Mac · iPhone · Apple Watch</span>
                         <h3>Medical Transcription</h3>
-                        <p>Record encounters on Mac, iPhone, or Watch. On-device Whisper transcribes and de-identifies — no audio or PHI ever leaves the device. Structures into GYN/MIGS-tailored SOAP notes, auto-generates billing/coding analysis with missed-opportunity flags, medico-legal documentation recommendations, inline edits, patient education summaries, and point-of-care ACOG/AAGL/CDC/ESHRE guidelines — no internet required.</p>
+                        <p>Record encounters on Mac, iPhone, or Watch. On-device Whisper transcribes and de-identifies — no audio or PHI ever leaves the device. Structures into CBG/MIGS-tailored SOAP notes, auto-generates billing/coding analysis with missed-opportunity flags, medico-legal documentation recommendations, inline edits, patient education summaries, and point-of-care ACOG/AAGL/CDC/ESHRE guidelines — no internet required.</p>
                     </div>
                 </div>
 
@@ -7057,7 +7307,7 @@
                                 <span class="tag year">Active</span>
                             </div>
                             <h3>Detection of Appendiceal Endometriosis and Associated Fibrosis Using Indocyanine Green (ICG)</h3>
-                            <div class="journal">PRIME Illinois St. Francis Hospital — Fellowship in MIGS · IRB: RIL20240078 · Mabini, C., Tam, M., Siddique, S.</div>
+                            <div class="journal">PRIME Illinois St. Francis Hospital — CBG/MIGS Fellowship · IRB: RIL20240078 · Mabini, C., Tam, M., Siddique, S.</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -8053,7 +8303,7 @@
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">04</span>
                         <h4 class="pillar-title">Continued Mastery</h4>
-                        <p class="pillar-content">Ongoing training in the Fascial Distortion Model (FDM), Osteopathic Cranial techniques, and the SAAO Convocation. The MIGS surgeon&rsquo;s manual-therapy toolkit keeps growing.</p>
+                        <p class="pillar-content">Ongoing training in the Fascial Distortion Model (FDM), Osteopathic Cranial techniques, and the SAAO Convocation. The CBG/MIGS surgeon&rsquo;s manual-therapy toolkit keeps growing.</p>
                       </article>
                     </div>
                 `,
@@ -8090,7 +8340,7 @@
             carepath: {
                 eyebrow: 'The Care Path',
                 title: 'Services &mdash; start to finish.',
-                intro: 'A complete walk-through of the osteopathic + MIGS care offered, from the first consult through surgical recovery &mdash; for patients and the clinicians who refer to them.',
+                intro: 'A complete walk-through of the osteopathic + CBG/MIGS care offered, from the first consult through surgical recovery &mdash; for patients and the clinicians who refer to them.',
                 body: `
                     <div class="pillars-grid">
                       <article class="pillar-card frame-card">
@@ -8390,7 +8640,7 @@
                 tone: 'accent',
                 tag: 'Mac · iPhone · Apple Watch',
                 title: 'Medical Transcription',
-                tagline: 'Record any encounter on Mac, iPhone, or Watch. Whisper transcribes and de-identifies on-device — no audio or PHI leaves the device, ever. Structures into a GYN/MIGS-subspecialist SOAP note, then auto-generates billing/coding analysis, medico-legal documentation flags, patient education summaries, and point-of-care guideline support — all grounded in the Counsel knowledge base, which cites primary source documents (no AI hallucination).',
+                tagline: 'Record any encounter on Mac, iPhone, or Watch. Whisper transcribes and de-identifies on-device — no audio or PHI leaves the device, ever. Structures into a CBG/MIGS-subspecialist SOAP note, then auto-generates billing/coding analysis, medico-legal documentation flags, patient education summaries, and point-of-care guideline support — all grounded in the Counsel knowledge base, which cites primary source documents (no AI hallucination).',
                 platforms: ['macOS + iOS + watchOS', 'On-device Whisper — audio never uploaded', 'Base AI on-device · Optional Claude API', 'Counsel KB — source-grounded, no hallucination', 'Auto PHI redaction — HIPAA-compliant', 'In Beta Testing'],
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>',
                 description: 'Start recording with ⌘⇧R on Mac, or tap Record on your iPhone or Apple Watch. Whisper — a custom fork with an iOS 18 BNNS fix — transcribes on-device in real time, then immediately de-identifies the transcript (names, MRNs, dates of birth, addresses) before any further processing. No audio file is ever uploaded; no PHI leaves the device. The de-identified transcript is structured into a SOAP note tailored to the GYN and CBG/MIGS subspecialist workflow — subjective, objective, assessment, and plan written at subspecialty level. From the structured note, the app auto-generates: (1) billing and coding analysis with AI-flagged missed opportunities for higher-level E&M coding; (2) medico-legal compliance recommendations and inline documentation edits; (3) a patient education summary written at patient reading level, specific to that encounter. Every guideline reference, treatment recommendation, and patient counseling line is grounded in the <strong>Counsel knowledge base</strong> — a curated, indexed library of primary source documents (ACOG Practice Bulletins, AAGL Position Statements, ESHRE guidelines, ASRM, ASCCP, CDC, and landmark trial PDFs) with every claim cited back to the exact source page, paragraph, and sentence. The AI cannot return an answer that isn\'t backed by an indexed citation — no general-LLM hallucination. Operative note templates, OB calculators, breast workup decision trees (BI-RADS → ACOG workup path), ASCCP cervical screening risk stratification, COC switching with VTE assessment, and a LARC reference tool are all built in. Copy the structured note with ⌘⇧C and paste straight into your EMR.',
@@ -8451,7 +8701,7 @@
                     { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>', title: 'Clinical knowledge base sync', desc: 'AI Hub Sync tab pushes analyzed video evidence into MountZara Clinical AI — your operative footage and your literature index share the same queryable knowledge base.' },
                 ],
                 useCases: [
-                    { title: 'Building a personal MIGS curriculum', desc: 'Upload your operative recordings, run AI analysis on each video, and build a searchable archive of tagged techniques — your own private surgical education platform.' },
+                    { title: 'Building a personal CBG/MIGS curriculum', desc: 'Upload your operative recordings, run AI analysis on each video, and build a searchable archive of tagged techniques — your own private surgical education platform.' },
                     { title: 'Prepping a conference video submission', desc: 'Upload your operative recording, trigger analysis to verify the clinical narrative and tags are accurate, then use the findings to write your video abstract — the same workflow behind the Golden Hysteroscope submission.' },
                     { title: 'Technique comparison across cases', desc: 'Smart-search "robotic isthmocele repair ICG" → pull all matching videos → compare technique variations across your personal archived cases side by side.' },
                 ],
@@ -9029,6 +9279,26 @@
         const pinnedBg = pinnedSection ? pinnedSection.querySelector('.pinned-bg') : null;
         const cinematicIntro = document.getElementById('cinematicIntro');
 
+        // -- Identity Map (mobile navigator) --
+        // Added 2026-05-25 per Identity-Map redesign Option A. Provides a
+        // horizontally-scrolling chooser of 5 identity sections (Surgery,
+        // Research, Apps, Osteopathy, Education) above the long-form
+        // content. Scroll-spy below highlights the active card + pip based
+        // on which identity section is currently in the viewport sweet
+        // spot. Desktop renders the same row as a static 5-col grid; the
+        // scroll-spy logic still runs (cheap), so the active card lifts
+        // wherever the user is on the page.
+        const identityCards = Array.from(document.querySelectorAll('.identity-card'));
+        const identityPips = Array.from(document.querySelectorAll('.identity-pip'));
+        const identitySections = identityCards
+            .map(card => {
+                const id = card.getAttribute('data-identity');
+                const el = id ? document.getElementById(id) : null;
+                return el ? { id, el, card } : null;
+            })
+            .filter(Boolean);
+        let lastIdentityActive = null;
+
         let lastPinnedIdx = -1;
         let ticking = false;
         let heroAnimationComplete = false;
@@ -9127,6 +9397,45 @@
                         const pinnedInView = rect.top < winH && rect.bottom > 0;
                         pinnedBg.style.opacity = pinnedInView ? (0.35 + p * 0.5).toFixed(3) : '0';
                     }
+                }
+            }
+
+            // -- Identity Map scroll-spy --
+            // Each candidate identity section has its top measured against
+            // the viewport midpoint. The section whose top is just above
+            // midpoint (but closest to it) is the "active" one. Midpoint
+            // anchoring (rather than "first section intersecting top") is
+            // more forgiving on long sections: a reader who is two-thirds
+            // through #surgical and approaching #research will see the
+            // navigator switch right when #research's top crosses the
+            // viewport midpoint, not the instant its top touches the
+            // viewport. Cheap — ~5 getBoundingClientRect calls per rAF.
+            if (identitySections.length) {
+                const midpoint = winH * 0.45;
+                let activeId = null;
+                let bestTop = -Infinity;
+                for (const { id, el } of identitySections) {
+                    const top = el.getBoundingClientRect().top;
+                    if (top <= midpoint && top > bestTop) {
+                        bestTop = top;
+                        activeId = id;
+                    }
+                }
+                // If we haven't scrolled into any identity section yet
+                // (still on hero / about / identity-map itself), default
+                // to surgical (first card) so the navigator never looks
+                // empty.
+                if (!activeId && identitySections.length) {
+                    activeId = identitySections[0].id;
+                }
+                if (activeId !== lastIdentityActive) {
+                    identityCards.forEach(card => {
+                        card.classList.toggle('is-active', card.getAttribute('data-identity') === activeId);
+                    });
+                    identityPips.forEach(pip => {
+                        pip.classList.toggle('active', pip.getAttribute('data-target') === activeId);
+                    });
+                    lastIdentityActive = activeId;
                 }
             }
 
