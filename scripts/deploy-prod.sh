@@ -47,6 +47,14 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ]; then
     FAILED=0
     for f in education/*/index.html portal/education/*/index.html ; do
         if [ ! -f "$f" ]; then continue; fi
+        # Skip underscore-prefixed scaffolding directories (e.g. _template/).
+        # These are authoring templates, NOT shipped clinical surfaces, and
+        # by definition won't carry a real §0.8 manifest until they're
+        # cloned + populated for a specific topic. Convention: any dir name
+        # starting with `_` is non-public.
+        case "$f" in
+            education/_*/*|portal/education/_*/*) continue ;;
+        esac
         if ! python3 scripts/verify_kb_anchoring.py "$f" > /tmp/_kbverify.out 2>&1 ; then
             echo "   ❌ $f — KB anchoring gate FAILED:"
             sed -n '/✗/p' /tmp/_kbverify.out | sed 's/^/      /'
