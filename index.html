@@ -5700,10 +5700,22 @@
             .timeline-card:hover,
             .video-card:hover {
                 transform: none;
-           Apple-glass card surfacing + deep-purple hover glow
+            }
+        }
+
+        /* ============================================================
+           SITE-WIDE APPLE-GLASS card surfacing + deep-purple hover glow
            Applies to every card surface on the site. Layered AFTER the
            per-card declarations earlier in this stylesheet so this is
            the final word on background, border, blur, and hover glow.
+           Corrupted-comment bug repaired 2026-05-26: lines 5703-5707
+           were missing the closing braces for .video-card:hover and the
+           parent @media (prefers-reduced-motion: reduce) block, plus the
+           opening `/*` for this very comment. As a result, every CSS
+           rule from this comment through the end of the file was being
+           parsed INSIDE the @media block and never applied to normal-
+           motion browsers — including the site-wide glass treatment, the
+           focus rings, the skip-link, and the Identity Map navigator.
            ============================================================ */
 
         /* Brand glow color — deep violet (replaces the earlier blue accent on hover) */
