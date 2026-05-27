@@ -1,5 +1,23 @@
 # mountzara.com — Autonomous Operation Guide
 
+> ## 🛑 REQUIRED READING — `SYSTEM_MAP.md`
+>
+> Before ANY non-trivial edit to this repo, READ
+> [`./SYSTEM_MAP.md`](./SYSTEM_MAP.md) first.
+>
+> It is the master atlas of every file, what depends on it, and what
+> other files MUST be touched in the same change. It exists because
+> three legacy-code regressions on 2026-05-26 (CSS corruption at line
+> 5703 silently scoping site-wide rules inside `@media (prefers-reduced-motion)`,
+> stale `toggleFeatureSound` reference at line 9854 throwing
+> ReferenceError that halted every script after it, `initSeeAllSheet`
+> IIFE running before end-of-body `<dialog>` was parsed) would all
+> have been preventable with proper cross-file mapping in hand.
+>
+> Same pattern as `ABOGCaseListManager/SYSTEM_MAP.md` per global
+> CLAUDE.md §10.11. **Update SYSTEM_MAP.md in the same commit when a
+> file is added, renamed, deleted, or its responsibility changes.**
+
 This site is fully autonomous. Claude can ship any change end-to-end with **zero user involvement** — code, deploy, R2 uploads, env vars, the whole pipeline.
 
 ## TL;DR — Two commands
