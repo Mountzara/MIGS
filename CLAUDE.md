@@ -17,6 +17,19 @@
 > Same pattern as `ABOGCaseListManager/SYSTEM_MAP.md` per global
 > CLAUDE.md §10.11. **Update SYSTEM_MAP.md in the same commit when a
 > file is added, renamed, deleted, or its responsibility changes.**
+>
+> ---
+>
+> ## 🚫 HARD RULE — Never write to `~/Desktop`
+>
+> Every script, audit, verifier, screenshot capture, JSON report, or
+> anything that needs to land on disk MUST write to
+> `/Users/beans/Documents/` — NEVER `~/Desktop`. The user's Desktop is
+> for their OWN files. Earlier sessions polluted it with ~196 MB of
+> `mz_*` test artifacts on 2026-05-26; never repeat. Per global
+> CLAUDE.md §8.1 centralized layout. If you find yourself writing
+> `~/Desktop/...` or `$HOME/Desktop/...` in a script, STOP and rewrite
+> to `/Users/beans/Documents/`.
 
 This site is fully autonomous. Claude can ship any change end-to-end with **zero user involvement** — code, deploy, R2 uploads, env vars, the whole pipeline.
 

@@ -503,7 +503,7 @@ or it won't be backed up.
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
 | **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py` |
-| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py` |
+| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |
 | **D1** | `_backup_d1_to_r2.sh` (manual; cron does it nightly), `_apply_phase14_migration.sh`, `_verify_phase14_schema.sh` |
