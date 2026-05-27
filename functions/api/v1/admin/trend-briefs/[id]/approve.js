@@ -48,11 +48,17 @@ const ALLOWED_VERDICTS = new Set([
 ]);
 
 const ALLOWED_OVERRIDE_KEYS = new Set([
+    // Editorial framing (added 2026-05-26 per "review content + titles"
+    // directive — these slots were previously templated fallback prose,
+    // identical across every brief).
+    "title", "summary", "lede", "tagline", "tagline_body",
+    // Verdict + audit trail
     "verdict", "verdict_label", "rationale",
+    // §3.8 gold-standard body sections
     "bottom_line", "level_a_items", "pyramid_rows",
     "do_migs_lens", "gap_paragraphs", "counseling",
     "extra_meta_cards", "extra_mech_cards", "deep_dive_content",
-    // Allow free-text "reviewer_notes" so the admin can leave a note
+    // Free-text "reviewer_notes" so the admin can leave a note
     // alongside the override without it being rendered.
     "reviewer_notes",
 ]);

@@ -599,8 +599,30 @@ function buildApproveForm(b) {
         placeholder: "Human prose for the gauge label",
         value: ov.verdict_label || "",
     });
+    const titleIn = el("input", {
+        id: "approve-title", type: "text",
+        placeholder: "Editorial title — replaces the watchlist claim as the H1 + post title",
+        value: ov.title || "",
+    });
+    const summaryTa = el("textarea", {
+        id: "approve-summary", rows: 2,
+        placeholder: "Card / search-snippet summary (≤ 300 chars). Defaults to the claim text.",
+    }, ov.summary || "");
+    const ledeTa = el("textarea", {
+        id: "approve-lede", rows: 3,
+        placeholder: "1–3-sentence editorial framing under the H1. HTML allowed (e.g. <strong>, <em>, <sup class=\"mz-ref\">…</sup>).",
+    }, ov.lede || "");
+    const taglineIn = el("input", {
+        id: "approve-tagline", type: "text",
+        placeholder: "Article-specific H2 (replaces 'What the evidence does and doesn't support')",
+        value: ov.tagline || "",
+    });
+    const taglineBodyTa = el("textarea", {
+        id: "approve-tagline-body", rows: 3,
+        placeholder: "Framing paragraph under the tagline H2. HTML allowed.",
+    }, ov.tagline_body || "");
     const rationaleTa = el("textarea", {
-        id: "approve-rationale",
+        id: "approve-rationale", rows: 3,
         placeholder: "Why this verdict?  This text isn't rendered to the public brief — it's an audit trail.",
     }, ov.rationale || "");
     const labelOnChange = () => {
@@ -613,6 +635,33 @@ function buildApproveForm(b) {
     verdictSel.addEventListener("change", labelOnChange);
 
     card.appendChild(el("div", { class: "form-section" },
+        // ----- Editorial framing -----
+        el("div", { class: "field" },
+            el("label", null, "Editorial title"),
+            titleIn,
+            el("div", { class: "hint" }, "Optional. Replaces the raw watchlist claim on the H1 + post title. Drives /admin/content/ card text and the public surface.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Summary (card / search snippet)"),
+            summaryTa,
+            el("div", { class: "hint" }, "Optional. ≤ 300 chars. Falls back to the claim text.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Lede (under the H1)"),
+            ledeTa,
+            el("div", { class: "hint" }, "Replaces the placeholder \"AWAITING CLINICIAN AUTHORSHIP\" marker. HTML allowed.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Tagline (article-specific H2)"),
+            taglineIn,
+            el("div", { class: "hint" }, "Optional. The §3.8 gold-standard \"article-specific H2\" replacement.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Tagline body paragraph"),
+            taglineBodyTa,
+            el("div", { class: "hint" }, "Optional. HTML allowed.")
+        ),
+        // ----- Verdict -----
         el("div", { class: "field" },
             el("label", null, "Verdict"),
             verdictSel,
@@ -719,15 +768,28 @@ async function submitApprove(id) {
     if (!v)   return toast("Pick a verdict.", "err");
     if (!lbl) return toast("Verdict label required.", "err");
     if (!rat) return toast("Rationale required.", "err");
+    const override = { verdict: v, verdict_label: lbl, rationale: rat };
+    // Editorial framing — only include if non-empty so we don't overwrite
+    // a real value with an empty string.
+    const title       = $("#approve-title").value.trim();
+    const summary     = $("#approve-summary").value.trim();
+    const lede        = $("#approve-lede").value.trim();
+    const tagline     = $("#approve-tagline").value.trim();
+    const taglineBody = $("#approve-tagline-body").value.trim();
+    if (title)       override.title = title;
+    if (summary)     override.summary = summary;
+    if (lede)        override.lede = lede;
+    if (tagline)     override.tagline = tagline;
+    if (taglineBody) override.tagline_body = taglineBody;
+
     const btn = event.target;
     btn.disabled = true;
     try {
-        const res = await api("/" + encodeURIComponent(id) + "/approve", {
+        await api("/" + encodeURIComponent(id) + "/approve", {
             method: "POST",
-            body: { override: { verdict: v, verdict_label: lbl, rationale: rat } },
+            body: { override },
         });
         toast("Approved · override queued for Mac pull");
-        // Re-render after a beat so timeline updates land
         setTimeout(render, 300);
     } catch (e) {
         toast("Approve failed: " + e.message, "err");
