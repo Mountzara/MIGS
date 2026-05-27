@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trend Brief Peer Review · Mount Zara Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="/admin/_nav.js"></script>
+<style>
+:root {
+    --bg-base: #07070a;
+    --fg-strong: #ffffff;
+    --fg-mid: rgba(245, 245, 247, 0.88);
+    --fg-soft: rgba(245, 245, 247, 0.62);
+    --fg-faint: rgba(245, 245, 247, 0.38);
+    --accent: #6d28d9;
+    --accent-soft: #a78bfa;
+    --glow-purple: 167, 139, 250;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --glass: rgba(255, 255, 255, 0.04);
+    --ok: rgba(74, 222, 128, 0.95);
+    --warn: rgba(251, 191, 36, 0.95);
+    --err: rgba(248, 113, 113, 0.95);
+}
+* { box-sizing: border-box; }
+html, body {
+    margin: 0; padding: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.10), transparent 60%),
+        var(--bg-base);
+    color: var(--fg-mid);
+    font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+}
+a { color: var(--accent-soft); text-decoration: none; }
+a:hover { color: var(--fg-strong); }
+
+.wrap { max-width: 1480px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 36px) 80px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 16px; margin: 6px 0 22px; }
+.page-head h1 { margin: 0; font-size: clamp(24px, 2.6vw, 30px); font-weight: 300; letter-spacing: -0.015em; color: var(--fg-strong); }
+.page-head .eyebrow {
+    display: block;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.92);
+    margin-bottom: 6px;
+}
+.page-head p.lede { margin: 6px 0 0; font-size: 14px; color: var(--fg-soft); max-width: 80ch; line-height: 1.55; }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.chip {
+    background: var(--glass); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 12px 14px;
+    transition: transform 0.18s, border-color 0.18s, background 0.18s;
+    cursor: pointer;
+}
+.chip:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.4); }
+.chip.active { border-color: rgba(var(--glow-purple), 0.7); background: rgba(var(--glow-purple), 0.07); }
+.chip .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.85); }
+.chip .nums { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: var(--fg-strong); margin-top: 4px; }
+
+/* Cards */
+.cards { display: grid; gap: 14px; animation: mzRise 0.45s ease both; }
+@keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.card {
+    background: var(--glass);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+    overflow: hidden;
+    transition: transform 0.18s, border-color 0.18s, background 0.18s;
+    cursor: pointer;
+}
+.card:nth-of-type(1) { animation-delay: 0.02s; }
+.card:nth-of-type(2) { animation-delay: 0.06s; }
+.card:nth-of-type(3) { animation-delay: 0.10s; }
+.card:nth-of-type(4) { animation-delay: 0.14s; }
+.card:nth-of-type(5) { animation-delay: 0.18s; }
+.card:hover { border-color: rgba(var(--glow-purple), 0.30); transform: translateY(-1px); }
+
+.card header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.02);
+}
+.card header .date {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--fg-faint);
+}
+.card header .slug {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: rgba(var(--glow-purple), 0.62);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1 1 200px; min-width: 0;
+}
+
+.badge {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06); border: 1px solid var(--hairline);
+    color: var(--fg-soft);
+}
+.badge.status-pending     { background: rgba(var(--glow-purple), 0.15); color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
+.badge.status-approved    { background: rgba(74, 222, 128, 0.12);  color: var(--ok);  border-color: rgba(74, 222, 128, 0.45); }
+.badge.status-rejected    { background: rgba(255, 255, 255, 0.04); color: var(--fg-faint); }
+
+.card .body { padding: 14px 18px 18px; }
+.card .claim {
+    font-size: 16px; line-height: 1.5; color: var(--fg-strong);
+    font-weight: 400; letter-spacing: -0.005em;
+}
+.card .meta {
+    margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+    font-size: 12.5px; color: var(--fg-soft);
+}
+.card .meta b { font-weight: 500; color: var(--fg-mid); }
+.card .meta .audit-state.fail { color: var(--err); }
+.card .meta .audit-state.ok   { color: var(--ok); }
+
+.empty { color: var(--fg-soft); padding: 40px 0; text-align: center; font-size: 14px; }
+.error-bar {
+    background: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.45);
+    color: var(--err); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px;
+    font-size: 13px;
+}
+
+/* Detail view */
+.detail-grid {
+    display: grid; grid-template-columns: 1fr 460px; gap: 22px;
+    align-items: start;
+}
+@media (max-width: 1100px) {
+    .detail-grid { grid-template-columns: 1fr; }
+    .detail-rail { position: static !important; }
+}
+.detail-preview {
+    background: var(--glass);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    overflow: hidden;
+    height: calc(100vh - 180px);
+    min-height: 600px;
+}
+.detail-preview iframe {
+    width: 100%; height: 100%;
+    border: 0; background: transparent;
+}
+.detail-rail {
+    position: sticky; top: 78px;
+    display: flex; flex-direction: column; gap: 14px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.rail-card {
+    background: var(--glass);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+    padding: 16px 18px;
+}
+.rail-card h3 {
+    margin: 0 0 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.92);
+}
+.rail-card .claim-text {
+    font-size: 15px; line-height: 1.5; color: var(--fg-strong);
+    margin: 0 0 10px;
+}
+.rail-card dl {
+    margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px;
+    font-size: 12.5px;
+}
+.rail-card dt { color: var(--fg-soft); }
+.rail-card dd { margin: 0; color: var(--fg-mid); font-family: 'JetBrains Mono', monospace; word-break: break-all; }
+
+/* Audit table */
+.audit-table { display: grid; gap: 4px; font-size: 11.5px; }
+.audit-row {
+    display: grid; grid-template-columns: 14px 1fr 80px;
+    gap: 8px; align-items: center;
+    padding: 4px 0; border-bottom: 1px solid var(--hairline);
+}
+.audit-row:last-child { border-bottom: 0; }
+.audit-row .dot { width: 8px; height: 8px; border-radius: 50%; }
+.audit-row.ok   .dot { background: var(--ok); }
+.audit-row.fail .dot { background: var(--err); box-shadow: 0 0 8px rgba(248, 113, 113, 0.5); }
+.audit-row .label { color: var(--fg-soft); }
+.audit-row.fail .label { color: var(--err); font-weight: 500; }
+.audit-row .obs { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--fg-faint); text-align: right; }
+
+/* Forms */
+.form-section { display: flex; flex-direction: column; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--fg-soft);
+}
+.field select, .field input, .field textarea {
+    font: inherit;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hairline);
+    border-radius: 8px; color: var(--fg-mid); padding: 8px 12px; font-size: 13px;
+    width: 100%;
+}
+.field textarea { resize: vertical; min-height: 64px; line-height: 1.5; font-family: inherit; }
+.field select:focus, .field input:focus, .field textarea:focus {
+    outline: none; border-color: rgba(var(--glow-purple), 0.55);
+    background: rgba(var(--glow-purple), 0.04);
+}
+.field .hint { font-size: 11px; color: var(--fg-faint); }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.btn {
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 9px 18px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--fg-mid);
+    transition: transform 0.18s, border-color 0.18s, background 0.18s;
+}
+.btn:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.45); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.primary {
+    background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+    color: #fff; border: none;
+}
+.btn.primary:hover { box-shadow: 0 8px 22px rgba(var(--glow-purple), 0.32); }
+.btn.danger {
+    background: rgba(248, 113, 113, 0.10);
+    color: var(--err); border-color: rgba(248, 113, 113, 0.35);
+}
+.btn.danger:hover { background: rgba(248, 113, 113, 0.18); }
+
+.back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--fg-soft);
+    margin-bottom: 8px;
+    transition: color 0.18s;
+}
+.back-link:hover { color: var(--fg-strong); }
+.back-link::before { content: "←"; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.tl-row {
+    display: grid; grid-template-columns: 86px 1fr; gap: 10px; align-items: baseline;
+    padding-bottom: 6px; border-bottom: 1px dashed var(--hairline);
+}
+.tl-row:last-child { border-bottom: 0; }
+.tl-ts { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--fg-faint); }
+.tl-row .ek {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.85);
+}
+.tl-row .actor { color: var(--fg-soft); font-size: 11.5px; }
+
+.toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(7, 7, 10, 0.96);
+    border: 1px solid rgba(var(--glow-purple), 0.55);
+    color: var(--fg-strong);
+    padding: 12px 22px; border-radius: 14px;
+    z-index: 999; font-size: 13px;
+    animation: mzToastIn 0.22s ease both;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+.toast.err { border-color: rgba(248, 113, 113, 0.6); }
+@keyframes mzToastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div id="error-bar" class="error-bar" style="display:none"></div>
+    <div id="app"></div>
+</div>
+
+<script>
+const API_BASE = "/api/v1/admin/trend-briefs";
+
+const VERDICTS = [
+    { value: "",                                       label: "— select a verdict —" },
+    { value: "supported",                              label: "Supported" },
+    { value: "partially supported",                    label: "Partially supported" },
+    { value: "equipoise",                              label: "Equipoise" },
+    { value: "mechanism-plausible / not supported",    label: "Mechanism-plausible / not supported" },
+    { value: "refuted",                                label: "Refuted" },
+];
+
+// Suggested labels — start the rationale + label fields with a sensible
+// scaffold the operator can customize, instead of staring at a blank box.
+const VERDICT_LABEL_HINTS = {
+    "supported": "Supported by current evidence — clinically relevant",
+    "partially supported": "Partially supported — qualified by population / dose / design",
+    "equipoise": "Equipoise — comparable arms; clinician + patient preference dominates",
+    "mechanism-plausible / not supported": "Mechanism-plausible; clinical evidence insufficient",
+    "refuted": "Refuted by current evidence",
+};
+
+function $(sel, root) { return (root || document).querySelector(sel); }
+function el(tag, attrs, ...children) {
+    const e = document.createElement(tag);
+    for (const k in (attrs || {})) {
+        if (k === "class") e.className = attrs[k];
+        else if (k === "html") e.innerHTML = attrs[k];
+        else if (k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+        else if (attrs[k] !== null && attrs[k] !== undefined) e.setAttribute(k, attrs[k]);
+    }
+    const append = (c) => {
+        if (c == null || c === false) return;
+        if (Array.isArray(c)) { c.forEach(append); return; }
+        if (c instanceof Node) { e.appendChild(c); return; }
+        // Coerce primitives (number, string, boolean true, etc.) to a text node
+        e.appendChild(document.createTextNode(String(c)));
+    };
+    for (const c of children) append(c);
+    return e;
+}
+
+function showError(msg) {
+    const bar = $("#error-bar");
+    bar.textContent = msg;
+    bar.style.display = "block";
+    setTimeout(() => { bar.style.display = "none"; }, 8000);
+}
+
+function toast(msg, kind) {
+    const t = el("div", { class: "toast" + (kind === "err" ? " err" : "") }, msg);
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+
+function fmtTs(ms) {
+    if (!ms) return "—";
+    const d = new Date(ms);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fmtAgo(ms) {
+    if (!ms) return "—";
+    const dt = Date.now() - ms;
+    const m = Math.floor(dt / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return m + "m ago";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "h ago";
+    const d = Math.floor(h / 24);
+    return d + "d ago";
+}
+
+async function api(path, opts) {
+    opts = opts || {};
+    const res = await fetch(API_BASE + path, {
+        method: opts.method || "GET",
+        headers: opts.body
+            ? { "content-type": "application/json", ...(opts.headers || {}) }
+            : (opts.headers || {}),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        credentials: "include",
+    });
+    let json = null;
+    try { json = await res.json(); } catch {}
+    if (!res.ok) {
+        const msg = (json && json.error) ? json.error : `HTTP ${res.status}`;
+        const err = new Error(msg);
+        err.status = res.status;
+        err.json = json;
+        throw err;
+    }
+    return json;
+}
+
+// ============== Routing ==============
+
+function currentRoute() {
+    const h = window.location.hash || "#";
+    if (h === "#" || h === "" || h === "#/") return { view: "queue" };
+    if (h.startsWith("#/")) return { view: "brief", id: decodeURIComponent(h.slice(2)) };
+    return { view: "queue" };
+}
+
+window.addEventListener("hashchange", render);
+
+// ============== Queue view ==============
+
+let _queueState = null;
+
+async function fetchQueue(includeRecent) {
+    const q = includeRecent ? "?include_done=1&status=pending,approved,rejected" : "";
+    return api("/queue" + q);
+}
+
+async function renderQueue() {
+    const app = $("#app");
+    app.innerHTML = "";
+    app.appendChild(el("div", { class: "page-head" },
+        el("div", null,
+            el("span", { class: "eyebrow" }, "Phase QF · Peer Review Queue"),
+            el("h1", null, "Trend Brief Peer Review"),
+            el("p", { class: "lede" },
+                "Briefs that passed every §3.8 row except the verdict gate. Approve with a verdict to ship a clinician-authored override; the Mac orchestrator picks up the override on its next run, re-renders, and queues the brief as a draft in ",
+                el("a", { href: "/admin/content/" }, "/admin/content/"),
+                "."
+            )
+        ),
+        el("div", { class: "btn-row" },
+            el("button", { class: "btn", onclick: () => { _includeRecent = !_includeRecent; render(); } },
+                _includeRecent ? "Hide recently approved" : "Show recently approved")
+        )
+    ));
+
+    let data;
+    try {
+        data = await fetchQueue(_includeRecent);
+    } catch (e) {
+        showError("Failed to load queue: " + (e.message || e));
+        return;
+    }
+    _queueState = data;
+
+    // Summary chips
+    const sumWrap = el("div", { class: "summary" });
+    const counts = data.summary || {};
+    for (const [k, v] of [
+        ["pending",  counts.pending  || 0],
+        ["approved", counts.approved || 0],
+        ["rejected", counts.rejected || 0],
+    ]) {
+        sumWrap.appendChild(
+            el("div", { class: "chip" },
+                el("div", { class: "label" }, k),
+                el("div", { class: "nums" }, String(v))
+            )
+        );
+    }
+    app.appendChild(sumWrap);
+
+    const cards = el("div", { class: "cards" });
+    if (!data.briefs || data.briefs.length === 0) {
+        app.appendChild(el("div", { class: "empty" },
+            "Nothing in the queue. The orchestrator submits briefs here when §3.8 fails only on the verdict gate."
+        ));
+        return;
+    }
+    for (const b of data.briefs) cards.appendChild(queueCard(b));
+    app.appendChild(cards);
+}
+
+function queueCard(b) {
+    const auditState = b.audit_fail_count === 0
+        ? { cls: "ok", text: `${b.audit_pass_count}/${b.audit_pass_count + b.audit_fail_count} pass` }
+        : { cls: "fail", text: `${b.audit_pass_count}/${b.audit_pass_count + b.audit_fail_count} pass · gate blocked` };
+
+    return el("div", {
+        class: "card",
+        onclick: () => { window.location.hash = "#/" + encodeURIComponent(b.id); },
+    },
+        el("header", null,
+            el("span", { class: "badge status-" + b.status }, b.status),
+            el("span", { class: "date" }, b.brief_date),
+            el("span", { class: "slug" }, b.slug),
+            el("span", { class: "date" }, fmtAgo(b.submitted_at))
+        ),
+        el("div", { class: "body" },
+            el("div", { class: "claim" }, b.claim_text),
+            el("div", { class: "meta" },
+                el("span", null, el("b", null, b.pmids_cited.length), " PMIDs"),
+                el("span", null, el("b", null, b.kb_entries_retrieved.length), " KB"),
+                el("span", null, el("b", null, b.topics_covered.length), " topics"),
+                el("span", { class: "audit-state " + auditState.cls }, auditState.text),
+                b.suggestions_text
+                    ? el("span", { style: "color: rgba(167, 139, 250, 0.9)" }, "✎ suggestions queued")
+                    : null,
+                b.draft_post_id
+                    ? el("span", null, "→ ", el("b", null, b.draft_post_id))
+                    : null,
+            )
+        )
+    );
+}
+
+// ============== Brief detail view ==============
+
+async function renderBrief(id) {
+    const app = $("#app");
+    app.innerHTML = "";
+    app.appendChild(el("a", {
+        class: "back-link",
+        href: "#",
+    }, "Back to queue"));
+
+    let data;
+    try {
+        data = await api("/" + encodeURIComponent(id));
+    } catch (e) {
+        showError("Failed to load brief: " + (e.message || e));
+        return;
+    }
+    const b = data.brief;
+    const events = data.events || [];
+
+    app.appendChild(el("div", { class: "page-head" },
+        el("div", null,
+            el("span", { class: "eyebrow" }, b.brief_date + " · " + b.status),
+            el("h1", null, b.claim_text)
+        )
+    ));
+
+    const grid = el("div", { class: "detail-grid" });
+
+    // Left: rendered iframe preview
+    grid.appendChild(el("div", { class: "detail-preview" },
+        el("iframe", {
+            src: b.preview_url,
+            sandbox: "allow-same-origin",
+            title: "Rendered preview of " + b.slug,
+        })
+    ));
+
+    // Right: sticky rail
+    const rail = el("div", { class: "detail-rail" });
+
+    rail.appendChild(buildMetaCard(b));
+    rail.appendChild(buildAuditCard(b));
+    if (b.status === "pending" || b.status === "approved") {
+        rail.appendChild(buildApproveForm(b));
+        rail.appendChild(buildSuggestForm(b));
+        rail.appendChild(buildRejectForm(b));
+    } else if (b.status === "rejected") {
+        rail.appendChild(buildRejectedCard(b));
+    }
+    rail.appendChild(buildTimelineCard(events));
+
+    grid.appendChild(rail);
+    app.appendChild(grid);
+}
+
+function buildMetaCard(b) {
+    return el("div", { class: "rail-card" },
+        el("h3", null, "Brief metadata"),
+        el("dl", null,
+            el("dt", null, "Slug"),        el("dd", null, b.slug),
+            el("dt", null, "Date"),        el("dd", null, b.brief_date),
+            el("dt", null, "PMIDs"),       el("dd", null, String(b.pmids_cited.length) + " cited"),
+            el("dt", null, "KB entries"),  el("dd", null, String(b.kb_entries_retrieved.length) + " retrieved"),
+            el("dt", null, "Topics"),      el("dd", null, b.topics_covered.join(", ") || "—"),
+            el("dt", null, "Submitted"),   el("dd", null, fmtTs(b.submitted_at)),
+            b.approved_at ? el("dt", null, "Approved") : null,
+            b.approved_at ? el("dd", null, fmtTs(b.approved_at) + " by " + (b.approved_by || "?")) : null,
+            b.rejected_at ? el("dt", null, "Rejected") : null,
+            b.rejected_at ? el("dd", null, fmtTs(b.rejected_at) + " by " + (b.rejected_by || "?")) : null,
+            b.draft_post_id ? el("dt", null, "Draft post") : null,
+            b.draft_post_id ? el("dd", null, b.draft_post_id) : null,
+        )
+    );
+}
+
+function buildAuditCard(b) {
+    const rows = el("div", { class: "audit-table" });
+    for (const r of (b.audit_table || [])) {
+        rows.appendChild(el("div", { class: "audit-row " + (r.ok ? "ok" : "fail") },
+            el("div", { class: "dot" }),
+            el("div", { class: "label" }, r.label),
+            el("div", { class: "obs" }, r.observed)
+        ));
+    }
+    return el("div", { class: "rail-card" },
+        el("h3", null, `§3.8 audit · ${b.audit_pass_count} / ${b.audit_pass_count + b.audit_fail_count} pass`),
+        rows
+    );
+}
+
+function buildApproveForm(b) {
+    const card = el("div", { class: "rail-card" });
+    card.appendChild(el("h3", null, b.status === "approved" ? "Edit approved override" : "Approve · author override"));
+
+    const ov = b.override || {};
+    const verdictSel = el("select", { id: "approve-verdict" });
+    for (const v of VERDICTS) {
+        const opt = el("option", { value: v.value }, v.label);
+        if (v.value === (ov.verdict || "")) opt.setAttribute("selected", "");
+        verdictSel.appendChild(opt);
+    }
+    const labelIn = el("input", {
+        id: "approve-label", type: "text",
+        placeholder: "Human prose for the gauge label",
+        value: ov.verdict_label || "",
+    });
+    const rationaleTa = el("textarea", {
+        id: "approve-rationale",
+        placeholder: "Why this verdict?  This text isn't rendered to the public brief — it's an audit trail.",
+    }, ov.rationale || "");
+    const labelOnChange = () => {
+        const v = verdictSel.value;
+        if (v && !labelIn.value) {
+            const hint = VERDICT_LABEL_HINTS[v];
+            if (hint) labelIn.value = hint;
+        }
+    };
+    verdictSel.addEventListener("change", labelOnChange);
+
+    card.appendChild(el("div", { class: "form-section" },
+        el("div", { class: "field" },
+            el("label", null, "Verdict"),
+            verdictSel,
+            el("div", { class: "hint" }, "Required. Renders as the verdict gauge angle + post-level verdict tag.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Verdict label (gauge prose)"),
+            labelIn,
+            el("div", { class: "hint" }, "Required. ≤ 400 chars. Visible to readers under the verdict gauge.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Rationale (internal)"),
+            rationaleTa,
+            el("div", { class: "hint" }, "Required. ≤ 4000 chars. Audit trail; never rendered to the public brief.")
+        ),
+        el("div", { class: "btn-row" },
+            el("button", { class: "btn primary", onclick: () => submitApprove(b.id) },
+                b.status === "approved" ? "Update override" : "Approve & queue override"),
+            el("button", { class: "btn", onclick: () => window.open("/api/v1/admin/trend-briefs/" + encodeURIComponent(b.id), "_blank") },
+                "View raw JSON")
+        )
+    ));
+    return card;
+}
+
+function buildSuggestForm(b) {
+    const card = el("div", { class: "rail-card" });
+    card.appendChild(el("h3", null, "Refine in Cowork · free-text suggestions"));
+    const ta = el("textarea", {
+        id: "suggest-text",
+        placeholder: "Type corrections, changes, or refinement notes. The Mac orchestrator will materialize a Cowork peer-review bundle on its next run; a clipboard-ready trigger string + macOS notification will surface so you can paste into Cowork.",
+        rows: 4,
+    }, b.suggestions_text || "");
+    card.appendChild(el("div", { class: "form-section" },
+        el("div", { class: "field" },
+            el("label", null, "Suggestions"),
+            ta,
+            el("div", { class: "hint" }, "≤ 12 KB. NO Anthropic API call from this endpoint — inference happens in your Cowork session per §12.1.")
+        ),
+        el("div", { class: "btn-row" },
+            el("button", { class: "btn", onclick: () => submitSuggest(b.id) }, "Send to Cowork")
+        )
+    ));
+    return card;
+}
+
+function buildRejectForm(b) {
+    const card = el("div", { class: "rail-card" });
+    card.appendChild(el("h3", null, "Reject brief"));
+    const ta = el("textarea", {
+        id: "reject-reason",
+        placeholder: "Why is this brief being rejected? (Required for audit trail.)",
+        rows: 3,
+    });
+    card.appendChild(el("div", { class: "form-section" },
+        el("div", { class: "field" },
+            el("label", null, "Rejection reason"),
+            ta,
+            el("div", { class: "hint" }, "Required. ≤ 1000 chars. Rejected briefs persist for audit; the Mac orchestrator ignores them.")
+        ),
+        el("div", { class: "btn-row" },
+            el("button", { class: "btn danger", onclick: () => submitReject(b.id) }, "Reject")
+        )
+    ));
+    return card;
+}
+
+function buildRejectedCard(b) {
+    return el("div", { class: "rail-card" },
+        el("h3", null, "Rejected"),
+        el("p", { style: "margin: 0; font-size: 13px; color: var(--fg-soft);" },
+            b.status_reason || "(no reason recorded)"
+        )
+    );
+}
+
+function buildTimelineCard(events) {
+    if (!events.length) return el("div", { class: "rail-card" },
+        el("h3", null, "Timeline"),
+        el("p", { style: "margin: 0; font-size: 12px; color: var(--fg-faint);" }, "No events yet.")
+    );
+    const tl = el("div", { class: "timeline" });
+    for (const e of events) {
+        tl.appendChild(el("div", { class: "tl-row" },
+            el("div", { class: "tl-ts" }, fmtTs(e.ts)),
+            el("div", null,
+                el("div", { class: "ek" }, e.event_kind),
+                el("div", { class: "actor" }, e.actor + (e.actor_label ? " · " + e.actor_label : ""))
+            )
+        ));
+    }
+    return el("div", { class: "rail-card" },
+        el("h3", null, "Timeline · " + events.length + " event" + (events.length === 1 ? "" : "s")),
+        tl
+    );
+}
+
+// ============== Form submitters ==============
+
+async function submitApprove(id) {
+    const v   = $("#approve-verdict").value;
+    const lbl = $("#approve-label").value;
+    const rat = $("#approve-rationale").value;
+    if (!v)   return toast("Pick a verdict.", "err");
+    if (!lbl) return toast("Verdict label required.", "err");
+    if (!rat) return toast("Rationale required.", "err");
+    const btn = event.target;
+    btn.disabled = true;
+    try {
+        const res = await api("/" + encodeURIComponent(id) + "/approve", {
+            method: "POST",
+            body: { override: { verdict: v, verdict_label: lbl, rationale: rat } },
+        });
+        toast("Approved · override queued for Mac pull");
+        // Re-render after a beat so timeline updates land
+        setTimeout(render, 300);
+    } catch (e) {
+        toast("Approve failed: " + e.message, "err");
+        btn.disabled = false;
+    }
+}
+
+async function submitSuggest(id) {
+    const txt = $("#suggest-text").value.trim();
+    if (!txt) return toast("Type some suggestions first.", "err");
+    const btn = event.target;
+    btn.disabled = true;
+    try {
+        await api("/" + encodeURIComponent(id) + "/suggest", {
+            method: "POST",
+            body: { suggestions: txt },
+        });
+        toast("Suggestions queued for Cowork");
+        setTimeout(render, 300);
+    } catch (e) {
+        toast("Suggest failed: " + e.message, "err");
+        btn.disabled = false;
+    }
+}
+
+async function submitReject(id) {
+    const reason = $("#reject-reason").value.trim();
+    if (!reason) return toast("Rejection reason required.", "err");
+    if (!confirm("Reject this brief? This cannot be undone via the UI.")) return;
+    const btn = event.target;
+    btn.disabled = true;
+    try {
+        await api("/" + encodeURIComponent(id) + "/reject", {
+            method: "POST",
+            body: { reason },
+        });
+        toast("Rejected");
+        setTimeout(() => { window.location.hash = "#"; }, 400);
+    } catch (e) {
+        toast("Reject failed: " + e.message, "err");
+        btn.disabled = false;
+    }
+}
+
+// ============== Bootstrap ==============
+
+let _includeRecent = false;
+
+async function render() {
+    const route = currentRoute();
+    if (route.view === "brief") {
+        await renderBrief(route.id);
+    } else {
+        await renderQueue();
+    }
+}
+render();
+</script>
+</body>
+</html>

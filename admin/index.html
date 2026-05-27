@@ -115,6 +115,8 @@ a:hover { color: var(--fg-strong); }
 .qa { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.30); border-radius: 12px; color: var(--fg-strong); font-size: 13.5px; font-weight: 500; transition: all 0.22s ease; cursor: pointer; }
 .qa:hover { background: rgba(var(--glow-purple), 0.20); transform: translateY(-2px); }
 .qa svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.qa-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px; margin-left: auto; background: rgba(var(--glow-purple), 0.85); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.qa-badge[hidden] { display: none; }
 
 .loading { padding: 40px; text-align: center; color: var(--fg-dim); font-size: 13px; }
 
@@ -202,6 +204,7 @@ a:focus-visible, button:focus-visible, .qa:focus-visible, .attn-item:focus-visib
                         <a class="qa" href="/admin/triage/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Review triage</a>
                         <a class="qa" href="/admin/patients/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Patient roster</a>
                         <a class="qa" href="/admin/content/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Manage content</a>
+                        <a class="qa" href="/admin/trend-briefs/" id="qa-trend-briefs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Trend briefs <span id="qa-trend-briefs-count" class="qa-badge" hidden></span></a>
                     </div>
                 </section>
             </div>
@@ -496,6 +499,26 @@ $("ai-refresh").addEventListener("click", (e) => { e.preventDefault(); refresh(c
 
 refresh(currentWindow, false);
 setInterval(() => refresh(currentWindow, false), 5 * 60 * 1000); // re-sync every 5 min (KV-cached anyway)
+
+// Phase QF — trend-brief peer-review queue badge.
+async function refreshTrendBriefsBadge() {
+    try {
+        const r = await fetch("/api/v1/admin/trend-briefs/queue", { credentials: "include" });
+        if (!r.ok) return;
+        const j = await r.json();
+        const pending = (j && j.summary && j.summary.pending) || 0;
+        const badge = $("qa-trend-briefs-count");
+        if (!badge) return;
+        if (pending > 0) {
+            badge.textContent = String(pending);
+            badge.hidden = false;
+        } else {
+            badge.hidden = true;
+        }
+    } catch {}
+}
+refreshTrendBriefsBadge();
+setInterval(refreshTrendBriefsBadge, 5 * 60 * 1000);
 </script>
 </body>
 </html>

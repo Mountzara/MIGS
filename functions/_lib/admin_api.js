@@ -88,7 +88,7 @@ export async function adminRoute(ctx, handler) {
     const admin = await readAdminIdentity(request, env);
     if (!admin) return unauthorizedAdminJson();
     try {
-        const resp = await handler({ env, request, admin, ctx });
+        const resp = await handler({ env, request, admin, ctx, params: ctx.params });
         if (resp instanceof Response) return resp;
         // Convenience: returning a plain object becomes JSON 200.
         return jsonResponse(resp);

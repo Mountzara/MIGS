@@ -31,6 +31,7 @@
         { key: 'education',  label: 'Education',    href: '/admin/education/',  match: /^\/admin\/education\b/  },
         { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
         { key: 'carousels',  label: 'Carousels',    href: '/admin/carousels/',  match: /^\/admin\/carousels\b/  },
+        { key: 'trendbriefs',label: 'Trend Briefs', href: '/admin/trend-briefs/', match: /^\/admin\/trend-briefs\b/ },
         { key: 'feedback',   label: 'Feedback',     href: '/admin/feedback/',   match: /^\/admin\/feedback\b/   },
         { key: 'debug',      label: 'Debug',        href: '/admin/debug/sessions/', match: /^\/admin\/debug\b/  },
     ];
