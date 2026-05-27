@@ -5999,62 +5999,53 @@
         }
 
         /* ============================================================
-           Mobile overflow trim + "See all" trigger + full-screen sheet
-           (Identity Map Commit 2 — 2026-05-26).
-           Pattern: any grid container with [data-mobile-overflow="N"]
-           hides children beyond N on viewports ≤ 640px. The matching
-           .mz-see-all-trigger button reveals on mobile, and clicking
-           opens the .mz-sheet dialog with a JS-cloned copy of the
-           grid (attribute stripped, so all children render).
+           Mobile horizontal-swipe carousels per section (Identity Map
+           Commit 3 — 2026-05-26). Each grid with [data-mobile-carousel]
+           becomes a horizontal scroll-snap track on viewports ≤ 640px.
+           Every card stays visible; visitors swipe to reveal more.
+           A dynamic pip indicator strip below each grid (built by JS)
+           shows scroll position and accepts tap-to-jump.
+
+           User directive (2026-05-26): "I want all available, maybe a
+           better way to view on mobile device — this app is meant to
+           be visually and interactive engaging, so don't limit or curb
+           these features, make them better please." The earlier trim
+           pattern was reversed in this commit.
            ============================================================ */
 
-        .mz-see-all-trigger {
-            display: none;   /* hidden on desktop; shown via @media below */
-            align-items: center;
+        .mz-grid-pips {
+            display: none;  /* desktop hides pips; mobile @media reveals */
             justify-content: center;
-            gap: 10px;
-            margin: 22px auto 0;
-            padding: 13px 26px;
-            background: linear-gradient(135deg,
-                rgba(167, 139, 250, 0.10) 0%,
-                rgba(109, 40, 217, 0.04) 100%);
-            border: 1px solid rgba(167, 139, 250, 0.32);
-            border-radius: 100px;
-            color: rgba(245, 245, 247, 0.95);
-            font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif;
-            font-size: 13.5px;
-            font-weight: 700;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
+            gap: 8px;
+            margin: 14px auto 0;
+            padding: 0;
+            list-style: none;
+        }
+        .mz-grid-pip {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.20);
+            border: 0;
+            padding: 0;
             cursor: pointer;
             transition: background 0.22s ease,
-                        border-color 0.22s ease,
-                        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
+                        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        width 0.22s ease;
         }
-        .mz-see-all-trigger:hover,
-        .mz-see-all-trigger:focus-visible {
-            background: linear-gradient(135deg,
-                rgba(167, 139, 250, 0.20) 0%,
-                rgba(109, 40, 217, 0.08) 100%);
-            border-color: rgba(167, 139, 250, 0.62);
-            transform: translateY(-2px);
+        .mz-grid-pip.active {
+            background: rgba(var(--glow-purple), 0.95);
+            width: 22px;
+            border-radius: 100px;
         }
-        .mz-see-all-count {
-            color: rgba(var(--glow-purple), 1);
-            font-weight: 700;
-        }
-        .mz-see-all-arrow {
-            font-size: 16px;
-            line-height: 1;
-            transition: transform 0.22s ease;
-        }
-        .mz-see-all-trigger:hover .mz-see-all-arrow {
-            transform: translateX(4px);
+        .mz-grid-pip:hover,
+        .mz-grid-pip:focus-visible {
+            background: rgba(var(--glow-purple), 0.55);
         }
 
-        /* ----- Full-screen sheet modal (mobile-primary, desktop-fallback) ----- */
+        /* Sheet-modal infrastructure kept dormant (no triggers fire it
+           in the current build, but the JS + dialog stay in place in
+           case a future surface wants to reuse the pattern). */
         .mz-sheet {
             position: fixed;
             inset: 0;
@@ -6128,22 +6119,40 @@
            data-mobile-overflow attribute so the :nth-of-type hide rule
            below no longer matches — all children render normally. */
 
-        /* The actual overflow-trim rules — ONLY on viewports ≤ 640px. */
+        /* Mobile horizontal-swipe carousels — viewports ≤ 640px.
+           Every grid with [data-mobile-carousel] becomes a horizontal
+           scroll-snap track. All children stay visible; visitor swipes.
+           Pip indicator strip below each grid (built by JS) reveals on
+           mobile too. Desktop layouts unchanged.
+           User directive 2026-05-26: every card must be reachable. */
         @media (max-width: 640px) {
-            .mz-see-all-trigger {
-                display: inline-flex;
+            [data-mobile-carousel] {
+                display: grid !important;
+                grid-auto-flow: column;
+                grid-auto-columns: min(78vw, 320px);
+                grid-template-columns: none !important;
+                gap: 14px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                margin: 22px -16px 0;
+                padding: 8px 16px 18px;
+                scroll-padding-inline: 16px;
             }
-            [data-mobile-overflow="3"] > *:nth-of-type(n+4) {
-                display: none !important;
+            [data-mobile-carousel]::-webkit-scrollbar {
+                display: none;
             }
-            [data-mobile-overflow="4"] > *:nth-of-type(n+5) {
-                display: none !important;
+            [data-mobile-carousel] > * {
+                scroll-snap-align: center;
+                scroll-snap-stop: always;
+                min-width: 0;  /* override any min-width from desktop rules */
+                width: auto;
+                max-width: none;
             }
-            [data-mobile-overflow="5"] > *:nth-of-type(n+6) {
-                display: none !important;
-            }
-            [data-mobile-overflow="6"] > *:nth-of-type(n+7) {
-                display: none !important;
+            .mz-grid-pips {
+                display: flex;
             }
         }
 
@@ -6521,7 +6530,7 @@
 
             <div class="surgical-hub-eyebrow">Seven clinical practice areas</div>
             <div class="surgical-hub" id="surgical-hub" role="tablist" aria-label="Clinical practice areas">
-                <div class="surgical-hub-grid" data-mobile-overflow="3" data-mobile-overflow-label="surgical focus areas">
+                <div class="surgical-hub-grid" data-mobile-carousel="surgical">
                     <button type="button" class="hub-tile" data-category="endometriosis" role="tab" aria-controls="hub-panel" aria-selected="false">
                         <div class="hub-tile-icon" aria-hidden="true">
                             <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -6636,12 +6645,6 @@
                         </div>
                     </button>
                 </div>
-
-                <button type="button" class="mz-see-all-trigger" data-sheet-section="surgical-hub-grid" hidden>
-                    <span class="mz-see-all-label">See all</span>
-                    <span class="mz-see-all-count" data-mz-count-target></span>
-                    <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
-                </button>
 
                 <!-- Inline expansion panel — content swapped in by JS when a tile is clicked. -->
                 <div class="surgical-hub-panel" id="hub-panel" role="tabpanel" aria-live="polite" hidden>
@@ -6808,7 +6811,7 @@
                  its own deep-content modal. Matches the AI + Apps section
                  pattern: one section header + one card grid, no fan-out
                  sub-sections. Per user 2026-05-16 directive. -->
-            <div class="bento-grid" data-mobile-overflow="3" data-mobile-overflow-label="OMT topics">
+            <div class="bento-grid" data-mobile-carousel="omt">
                 <div class="bento-card omt-bento-clickable" data-omt-modal="philosophy" role="button" tabindex="0" aria-label="Open the osteopathic philosophy">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -6880,12 +6883,6 @@
                     </div>
                 </div>
             </div>
-
-            <button type="button" class="mz-see-all-trigger" data-sheet-section="bento-grid" hidden>
-                <span class="mz-see-all-label">See all</span>
-                <span class="mz-see-all-count" data-mz-count-target></span>
-                <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
-            </button>
 
             <div class="omm-quote-block">
                 <blockquote>"The DO philosophy isn't an alternative to surgery — it's the lens that makes surgical care truly holistic. The best outcomes happen when we understand <em>why</em> the body presents the way it does, not just how to fix the immediate problem."</blockquote>
@@ -7011,7 +7008,7 @@
                 </div>
             </div>
 
-            <div class="apps-bento" data-mobile-overflow="3" data-mobile-overflow-label="apps">
+            <div class="apps-bento" data-mobile-carousel="apps">
                 <!-- Mount Zara Clinical AI -->
                 <div class="app-card-v2" data-app="clinical" role="button" tabindex="0">
                     <div class="app-visual">
@@ -7111,11 +7108,6 @@
                 </div>
             </div>
 
-            <button type="button" class="mz-see-all-trigger" data-sheet-section="apps-bento" hidden>
-                <span class="mz-see-all-label">See all</span>
-                <span class="mz-see-all-count" data-mz-count-target></span>
-                <span class="mz-see-all-arrow" aria-hidden="true">&rarr;</span>
-            </button>
         </div>
     </section>
 
@@ -7139,7 +7131,7 @@
             </div>
 
             <!-- Featured Research Cards -->
-            <div class="research-cards" data-mobile-overflow="4" data-mobile-overflow-label="research presentations">
+            <div class="research-cards" data-mobile-carousel="research">
 
                 <!-- Card 1: Golden Hysteroscope -->
                 <article class="research-card" data-reveal="up">
@@ -9733,6 +9725,88 @@
             document.addEventListener('DOMContentLoaded', initSeeAllSheet);
         } else {
             initSeeAllSheet();
+        }
+
+        // ============================================================
+        // Mobile horizontal-swipe carousels per section
+        // (Identity Map Commit 3 — 2026-05-26). Each grid with
+        // [data-mobile-carousel] gets:
+        //   1. A dynamically-built pip indicator strip below it
+        //   2. A scroll listener that updates the active pip
+        //   3. Click handlers on pips that scroll the matching card
+        //      into view
+        // Only active on viewport ≤ 640px via matchMedia. Desktop layouts
+        // unchanged.
+        // ============================================================
+        function initMobileCarousels() {
+            const grids = Array.from(document.querySelectorAll('[data-mobile-carousel]'));
+            if (!grids.length) return;
+            const mq = window.matchMedia('(max-width: 640px)');
+            grids.forEach(grid => {
+                // Build a <nav class="mz-grid-pips"> right after the grid
+                const cards = Array.from(grid.children).filter(el => el.nodeType === 1);
+                if (cards.length < 2) return;  // No pips needed for ≤1 card
+                let pips = grid.nextElementSibling;
+                if (!pips || !pips.classList.contains('mz-grid-pips')) {
+                    pips = document.createElement('nav');
+                    pips.className = 'mz-grid-pips';
+                    pips.setAttribute('aria-label',
+                        'Scroll position for ' +
+                        (grid.getAttribute('data-mobile-carousel') || 'cards'));
+                    cards.forEach((card, i) => {
+                        const pip = document.createElement('button');
+                        pip.type = 'button';
+                        pip.className = 'mz-grid-pip';
+                        pip.setAttribute('aria-label', 'Show item ' + (i + 1));
+                        pip.dataset.index = String(i);
+                        if (i === 0) pip.classList.add('active');
+                        pip.addEventListener('click', () => {
+                            card.scrollIntoView({
+                                behavior: mq.matches ? 'smooth' : 'auto',
+                                block: 'nearest',
+                                inline: 'center'
+                            });
+                        });
+                        pips.appendChild(pip);
+                    });
+                    grid.parentNode.insertBefore(pips, grid.nextSibling);
+                }
+                // Scroll listener — picks the card whose center is
+                // closest to the grid's scroll-container midpoint.
+                let pending = false;
+                function updateActive() {
+                    pending = false;
+                    if (!mq.matches) return;  // Desktop — no carousel, no pips active state
+                    const gridRect = grid.getBoundingClientRect();
+                    const mid = gridRect.left + gridRect.width / 2;
+                    let bestIdx = 0;
+                    let bestDelta = Infinity;
+                    cards.forEach((c, i) => {
+                        const r = c.getBoundingClientRect();
+                        const cMid = r.left + r.width / 2;
+                        const d = Math.abs(cMid - mid);
+                        if (d < bestDelta) { bestDelta = d; bestIdx = i; }
+                    });
+                    const pipEls = pips.children;
+                    for (let i = 0; i < pipEls.length; i++) {
+                        pipEls[i].classList.toggle('active', i === bestIdx);
+                    }
+                }
+                grid.addEventListener('scroll', () => {
+                    if (!pending) {
+                        pending = true;
+                        requestAnimationFrame(updateActive);
+                    }
+                }, { passive: true });
+                // Initial state + on resize (e.g. mobile→desktop rotate)
+                updateActive();
+                mq.addEventListener('change', updateActive);
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileCarousels);
+        } else {
+            initMobileCarousels();
         }
 
         // Video modal functions
