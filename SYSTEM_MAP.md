@@ -516,23 +516,39 @@ If `agent-platform/` moves, update `deploy-prod.sh::AUDIT` constant.
 
 ## 14. Known gaps + legacy patterns to retire
 
-These are tracked separately so future sessions can prioritize:
+These are tracked separately so future sessions can prioritize. Items
+struck through are RESOLVED — kept in this list as audit history.
 
-1. **`MountZaraResearchDigest/blog_generator.py`** (SIBLING REPO) —
+1. ~~**`MountZaraResearchDigest/blog_generator.py`** (SIBLING REPO) —
    still emits legacy `<div class="deepdive-modal">` instead of
-   canonical `<dialog class="mz-jc-modal">`. Per CLAUDE.md v2.0 changelog.
-2. **§3.10 audit grep-vs-runtime gap** — current audit grep-counts
+   canonical `<dialog class="mz-jc-modal">`.~~
+   **RESOLVED 2026-05-26** by parallel session — now emits
+   `<dialog class="mz-jc-modal deepdive-modal">` with `<dialog>` as
+   the primary tag (W3C-canonical modal semantics: ESC + ::backdrop)
+   and `deepdive-modal` retained as secondary class so the existing
+   CSS keeps matching. Dual-class transition state is acceptable.
+2. ~~**§3.10 audit grep-vs-runtime gap** — current audit grep-counts
    token byte-presence; cannot detect CSS that's bytes-present-but-
-   runtime-absent (the §1.1 incident). Need to extend `regression_audit.py`
-   with headless Chrome `getComputedStyle` runtime checks.
+   runtime-absent (the §1.1 incident).~~
+   **RESOLVED 2026-05-26** by `scripts/audit_runtime_css.py` (28
+   getComputedStyle assertions on homepage covering Identity Map
+   cards × 3 each, 6 site-wide-glass selectors, hero, active pip,
+   4 carousels, body bg blue tokens; plus 3-check audit per education
+   page covering disclaimer visibility + body bg + `--glow-purple`
+   CSS var). Wired into `deploy-prod.sh` as a post-deploy gate.
 3. **§3.7 / §3.11 audit coverage** — `/curriculum/` + `/evidence/`
    wrapper pages not yet covered by KB-anchor gate (currently only
    `/education/*` + `/portal/education/*`).
 4. **`agent-platform` path dependency** — deploy-prod.sh hard-codes
    `/Users/beans/Developer/MountZara/agent-platform/scripts/regression_audit.py`.
    If that repo moves, deploy breaks.
-5. **Mirror drift between `education/<slug>/` and
-   `portal/education/<slug>/`** — no automation enforces byte-similarity.
+5. ~~**Mirror drift between `education/<slug>/` and
+   `portal/education/<slug>/`** — no automation enforces byte-similarity.~~
+   **RESOLVED 2026-05-26** by `scripts/audit_mirror_drift.py` (checks
+   §0.8.1 manifest + §3.12 disclaimer + §3.10 purple tokens on both
+   surfaces; diffs `<main>` region after stripping an allowlist of
+   legitimate divergence patterns; first run confirms 12/12 topics
+   byte-identical). Wired into `deploy-prod.sh` as a pre-deploy gate.
 6. **`index.html` size** — ~10K lines in one file is fragile. Long-
    term: break the inline `<style>` and `<script>` into external files,
    so brace-balance + JS syntax checks can use standard CSS/JS tooling.

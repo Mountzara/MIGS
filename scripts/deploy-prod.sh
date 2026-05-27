@@ -103,6 +103,43 @@ if [ -z "${DEPLOY_SKIP_REGRESSION_AUDIT:-}" ]; then
     fi
 fi
 
+# ---------------------------------------------------------------------------
+# Mirror-drift audit (added 2026-05-26). Per SYSTEM_MAP.md §14: education/
+# <slug>/index.html and portal/education/<slug>/index.html are byte-similar
+# copies. Diffs them with a per-element allowlist and exits 1 on real drift.
+# Soft gate by default — skip with DEPLOY_SKIP_MIRROR_DRIFT_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_MIRROR_DRIFT_AUDIT:-}" ]; then
+    if [ -x scripts/audit_mirror_drift.py ]; then
+        echo "🔍 Mirror-drift audit (education/<slug> vs portal/education/<slug>)..."
+        if /opt/homebrew/bin/python3 scripts/audit_mirror_drift.py > /tmp/_mirror_drift.log 2>&1; then
+            echo "   ✅ no drift across 12 topics"
+        else
+            echo ""
+            echo "🛑 DEPLOY BLOCKED by mirror-drift audit. Diff summary:"
+            grep -E '❌|DRIFT' /tmp/_mirror_drift.log | head -20
+            echo ""
+            echo "   Full log: /tmp/_mirror_drift.log"
+            echo "   Override: DEPLOY_SKIP_MIRROR_DRIFT_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+        echo ""
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Runtime-CSS audit (added 2026-05-26). Closes the §3.10 grep-vs-runtime
+# gap that allowed the 2026-05-26 line 5703 CSS corruption to ship silently
+# (SYSTEM_MAP.md §1.1). Loads each surface via headless WebKit (Playwright)
+# and calls getComputedStyle() to verify design tokens actually apply at
+# runtime, not just that the bytes are present in the source.
+#
+# This audit runs against LIVE mountzara.com so it must run AFTER the
+# wrangler deploy completes (see post-deploy section below). The
+# placeholder here documents the intent; the actual invocation is in
+# the post-deploy block.
+# ---------------------------------------------------------------------------
+
 npx --yes wrangler@latest pages deploy . \
     --project-name="$PROJECT" \
     --branch=main \
@@ -154,5 +191,35 @@ if [ -z "${DEPLOY_SKIP_POST_AUDIT:-}" ]; then
         echo "     (b) re-run with DEPLOY_SKIP_POST_AUDIT=1 only when the"
         echo "         failure is pre-existing and explicitly accepted."
         exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Runtime-CSS post-deploy gate (added 2026-05-26 per SYSTEM_MAP.md §14).
+# Loads live mountzara.com homepage via headless WebKit and runs
+# getComputedStyle assertions on .identity-card, site-wide-glass selectors,
+# hero element, active pip, carousels, and forbidden blue tokens. Catches
+# CSS that is bytes-present-but-runtime-absent (the §1.1 corruption class).
+# Skip with DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1. Requires Playwright +
+# Chromium installed on the deploy-running machine.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_RUNTIME_CSS_AUDIT:-}" ]; then
+    if [ -x scripts/audit_runtime_css.py ]; then
+        echo ""
+        echo "🔍 Runtime-CSS audit — getComputedStyle assertions on live site..."
+        if /usr/bin/python3 scripts/audit_runtime_css.py homepage > /tmp/_runtime_css_audit.log 2>&1; then
+            tail -2 /tmp/_runtime_css_audit.log
+            echo "   ✅ runtime CSS audit passed"
+        else
+            echo ""
+            echo "🛑 RUNTIME-CSS AUDIT FAILED — at least one §3.10 token is"
+            echo "   bytes-present but runtime-absent (the §1.1 corruption class)."
+            echo "   Failed checks:"
+            grep -E '✗|FAIL' /tmp/_runtime_css_audit.log | head -20
+            echo ""
+            echo "   Full log: /tmp/_runtime_css_audit.log"
+            echo "   Override: DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
     fi
 fi
