@@ -9645,7 +9645,7 @@
         // the grid into the .mz-sheet dialog and strips the overflow
         // attribute so the cloned children all render.
         // ============================================================
-        (function initSeeAllSheet() {
+        function initSeeAllSheet() {
             const triggers = Array.from(document.querySelectorAll('.mz-see-all-trigger'));
             const sheet = document.getElementById('mz-sheet');
             const sheetContent = document.getElementById('mz-sheet-content');
@@ -9724,7 +9724,16 @@
                 // ESC fires 'cancel' on <dialog>; let default close happen, then clean up
                 setTimeout(closeSheet, 0);
             });
-        })();
+        }
+        // The <dialog id="mz-sheet"> lives at the end of body, AFTER this
+        // script tag. We must defer initialization until DOM is fully parsed,
+        // otherwise getElementById('mz-sheet') returns null and the whole
+        // initializer early-returns silently. 2026-05-26 fix.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSeeAllSheet);
+        } else {
+            initSeeAllSheet();
+        }
 
         // Video modal functions
         // Force the research-card video previews to autoplay reliably across
