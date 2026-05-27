@@ -163,6 +163,8 @@
             gap: 14px;
             height: 100%;
             padding: 8px 0;
+            flex-shrink: 0;       /* never compress the brand when nav-links is wide */
+            white-space: nowrap;  /* belt-and-suspenders: keep "MOUNT ZARA" inline */
         }
 
         .nav-brand img {
@@ -172,6 +174,7 @@
             filter: brightness(0) invert(1);
             opacity: 0.92;
             transition: opacity 0.2s ease;
+            flex-shrink: 0;
         }
 
         .nav-brand-text {
@@ -181,6 +184,8 @@
             color: var(--white);
             opacity: 0.95;
             transition: opacity 0.2s ease;
+            white-space: nowrap;  /* never wrap to second row — user 2026-05-27 */
+            flex-shrink: 0;
         }
 
         .nav-brand:hover img,
@@ -6275,7 +6280,7 @@
                 <li><a href="#apps">Apps</a></li>
                 <li><a href="#research">Research</a></li>
                 <li><a href="#awards">Awards</a></li>
-                <li><a href="/curriculum/">Curriculum</a></li>
+                <li><a href="#curriculum">Curriculum</a></li>
                 <li><a href="/evidence/">Evidence</a></li>
                 <li><a href="/trending/">Trending</a></li>
                 <li><a href="/portal/" class="nav-portal-link">Member Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
@@ -6314,10 +6319,11 @@
             <h1 class="hero-title">A passion for women's health.</h1>
             <p class="hero-sub">Complex benign and minimally invasive gynecologic surgery, osteopathic care, and AI-driven innovation. <strong>Built by a surgeon, for the future of women's health.</strong></p>
 
-            <div class="cta-row">
-                <a href="#research" class="btn btn-primary">Explore research <span class="arrow"></span></a>
-                <a href="#apps" class="btn btn-secondary">See the apps <span class="arrow"></span></a>
-            </div>
+            <!-- Hero CTAs removed 2026-05-27 per user — listing only two of the
+                 many components (research + apps) was misleading. The new
+                 Identity Map navigator below the about section is the
+                 canonical 5-option entry point into Surgery / Research / Apps
+                 / Osteopathy / Education. -->
 
             <div class="hero-meta">
                 <div class="meta-item">
@@ -7704,7 +7710,7 @@
                 <a href="#apps">Apps</a>
                 <a href="#research">Research</a>
                 <a href="#awards">Awards</a>
-                <a href="/curriculum/">Curriculum</a>
+                <a href="#curriculum">Curriculum</a>
                 <a href="/evidence/">Evidence</a>
                 <a href="/trending/">Trending</a>
                 <a href="/portal/">Member Portal <span class="nav-portal-badge-footer">soon</span></a>
