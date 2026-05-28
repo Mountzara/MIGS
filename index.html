@@ -6475,9 +6475,16 @@
          with an <img src=hero-animation-hd.webp> so the user never
          sees a play button. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
+        <!-- 2026-05-27 — `autoplay` attribute REMOVED. With autoplay, the
+             <video> started playing the instant the element was parsed,
+             which is BEFORE the page loader fades out (~6 seconds later).
+             By the time the user could see the screen, the 8-second
+             drawing animation was nearly complete. preload="auto" keeps
+             the bytes loading in the background so when JS calls .play()
+             in startHeroSequence() (right when the loader hides), the
+             video can start from frame 1 instantly without buffering. -->
         <video class="hero-video"
                id="heroVideo"
-               autoplay
                muted
                playsinline
                webkit-playsinline
@@ -6486,11 +6493,6 @@
                disablepictureinpicture
                disableremoteplayback
                x-webkit-airplay="deny">
-            <!-- 2026-05-27 — `loop` REMOVED. Original WebP behavior was
-                 one-shot animation, freeze on final frame, Ken Burns slow
-                 zoom on that static frame. Loop made the drawing restart
-                 forever which broke the visual rhythm. JS pauses on the
-                 last frame via the 'ended' event. -->
             <source src="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4">
             <source src="https://mountzara.com/media/hero-animation-hd.webm" type="video/webm">
         </video>
@@ -8140,12 +8142,19 @@
                 heroVideo.defaultMuted = true;
                 heroVideo.playsInline = true;
                 heroVideo.setAttribute('webkit-playsinline', 'true');
-                // 2026-05-27 — pause on the final frame when the drawing
-                // animation completes, so Ken Burns can apply to a settled
-                // last frame (matching the original WebP single-shot
-                // behavior, not a perpetual restart of the drawing).
+                // 2026-05-27 — REWIND TO FRAME 1 before play(). Even with
+                // the autoplay attribute removed, some browsers may have
+                // started preload-decoding and advanced currentTime. We
+                // force currentTime=0 so the drawing animation always
+                // starts from the beginning at the exact moment the
+                // loader fades out — not somewhere in the middle.
+                try { heroVideo.pause(); } catch (e) {}
+                try { heroVideo.currentTime = 0; } catch (e) {}
+                // Pause on the final frame when the drawing animation
+                // completes, so Ken Burns can apply to a settled last
+                // frame (matching the original WebP single-shot behavior,
+                // not a perpetual restart of the drawing).
                 heroVideo.addEventListener('ended', () => {
-                    // Seek to the last visible frame and pause.
                     if (Number.isFinite(heroVideo.duration)) {
                         heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
                     }
