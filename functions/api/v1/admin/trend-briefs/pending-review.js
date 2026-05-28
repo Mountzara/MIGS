@@ -206,6 +206,37 @@ export async function onRequestPost(ctx) {
         },
     }));
 
+    // ---- Phase QG: auto-discover every cited PMID into the deep-dive
+    //                authoring queue so the per-brief UI can render the
+    //                per-PMID list immediately, with paper metadata
+    //                pulled from the sidecar's evidence buckets.
+    ctx.waitUntil((async () => {
+        try {
+            const { upsertDiscoveredPmid } = await import("../../../../_lib/deep_dive.js");
+            const seen = new Set();
+            const buckets = ["direct_evidence", "mechanism_evidence", "adjacent_evidence"];
+            for (const bk of buckets) {
+                const hits = Array.isArray(sidecar?.[bk]) ? sidecar[bk] : [];
+                for (const h of hits) {
+                    const pmid = String(h?.pmid || "").trim();
+                    if (!pmid || seen.has(pmid)) continue;
+                    seen.add(pmid);
+                    await upsertDiscoveredPmid(env, {
+                        surfaceKind: "trend_brief",
+                        surfaceKey:  id,
+                        pmid,
+                        paperTitle:  h.title  || null,
+                        paperJournal: h.journal || null,
+                        paperYear:   Number.isFinite(h.year) ? h.year : null,
+                        paperDesign: h.design || null,
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn("deep-dive auto-discover failed (non-fatal)", { id, error: String(e) });
+        }
+    })());
+
     return jsonResponse({
         ok: true,
         id,

@@ -247,6 +247,67 @@ a:hover { color: var(--fg-strong); }
 .back-link:hover { color: var(--fg-strong); }
 .back-link::before { content: "←"; }
 
+/* Phase QG — deep-dive authoring panel */
+.dd-list { display: flex; flex-direction: column; gap: 8px; }
+.dd-row {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 6px 10px; align-items: start;
+    padding: 8px 10px; border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: border-color 0.18s;
+}
+.dd-row:hover { border-color: rgba(var(--glow-purple), 0.30); }
+.dd-row .paper {
+    font-size: 12px; line-height: 1.4; color: var(--fg-mid);
+    grid-column: 1 / 2;
+}
+.dd-row .paper .pt { color: var(--fg-strong); font-weight: 500; }
+.dd-row .paper .pj { color: var(--fg-soft); font-size: 11px; }
+.dd-row .pmid {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: rgba(var(--glow-purple), 0.62);
+    margin-top: 3px;
+}
+.dd-row .actions { grid-column: 2 / 3; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.dd-status {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--fg-soft);
+    white-space: nowrap;
+}
+.dd-status.pending     { background: rgba(var(--glow-purple), 0.08); color: rgba(var(--glow-purple), 0.82); border-color: rgba(var(--glow-purple), 0.32); }
+.dd-status.bundle_requested { background: rgba(245, 158, 11, 0.10); color: var(--warn); border-color: rgba(245, 158, 11, 0.35); }
+.dd-status.bundle_ready{ background: rgba(125, 211, 252, 0.12); color: rgba(125, 211, 252, 0.95); border-color: rgba(125, 211, 252, 0.40); }
+.dd-status.patch_uploaded { background: rgba(125, 211, 252, 0.20); color: rgba(125, 211, 252, 1.0);  border-color: rgba(125, 211, 252, 0.60); }
+.dd-status.authored    { background: rgba(74, 222, 128, 0.15);  color: var(--ok);  border-color: rgba(74, 222, 128, 0.50); }
+
+.dd-btn {
+    font: inherit;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--fg-mid);
+    white-space: nowrap;
+    transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+.dd-btn:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+.dd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.dd-btn.primary {
+    background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+    color: #fff; border: none;
+}
+.dd-summary { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: 11px; color: var(--fg-soft); }
+.dd-summary .chip-sm {
+    padding: 2px 8px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--hairline);
+}
+.dd-empty { font-size: 12px; color: var(--fg-faint); padding: 8px 0; }
+
 /* Timeline */
 .timeline { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
 .tl-row {
@@ -535,6 +596,12 @@ async function renderBrief(id) {
 
     rail.appendChild(buildMetaCard(b));
     rail.appendChild(buildAuditCard(b));
+    // Phase QG — per-PMID deep-dive authoring panel.  Async-fetched so
+    // the panel renders into a placeholder card and updates in place.
+    const ddCard = el("div", { class: "rail-card", id: "dd-card" },
+        el("h3", null, "Deep-dive authoring · loading…"));
+    rail.appendChild(ddCard);
+    loadDeepDivePanel(b.id, ddCard);
     if (b.status === "pending" || b.status === "approved") {
         rail.appendChild(buildApproveForm(b));
         rail.appendChild(buildSuggestForm(b));
@@ -737,6 +804,150 @@ function buildRejectedCard(b) {
         )
     );
 }
+
+// ============== Phase QG — deep-dive authoring panel ==============
+
+async function loadDeepDivePanel(briefId, cardEl) {
+    try {
+        const data = await fetch(
+            "/api/v1/admin/deep-dive/queue?surface_kind=trend_brief&surface_key="
+            + encodeURIComponent(briefId) + "&include_authored=1&limit=200",
+            { credentials: "include" }
+        ).then((r) => r.json());
+        renderDeepDivePanel(briefId, cardEl, data);
+    } catch (e) {
+        cardEl.innerHTML = "";
+        cardEl.appendChild(el("h3", null, "Deep-dive authoring"));
+        cardEl.appendChild(el("div", { class: "dd-empty" },
+            "Failed to load: " + (e.message || e)));
+    }
+}
+
+function renderDeepDivePanel(briefId, cardEl, data) {
+    cardEl.innerHTML = "";
+    const rows = data.rows || [];
+    const summary = data.summary || {};
+
+    cardEl.appendChild(el("h3", null,
+        "Deep-dive authoring · " + rows.length + " PMID" + (rows.length === 1 ? "" : "s")
+    ));
+
+    // Summary chips
+    const sumWrap = el("div", { class: "dd-summary" });
+    const order = ["authored", "patch_uploaded", "bundle_ready", "bundle_requested", "pending"];
+    for (const k of order) {
+        if (summary[k]) {
+            sumWrap.appendChild(el("span", { class: "chip-sm" },
+                el("b", null, String(summary[k])), " " + k
+            ));
+        }
+    }
+    if (sumWrap.children.length > 0) cardEl.appendChild(sumWrap);
+
+    if (rows.length === 0) {
+        cardEl.appendChild(el("div", { class: "dd-empty" },
+            "No PMIDs discovered yet. They auto-register when the producer submits the brief."
+        ));
+        return;
+    }
+
+    const list = el("div", { class: "dd-list" });
+    for (const r of rows) list.appendChild(buildDeepDiveRow(briefId, cardEl, r));
+    cardEl.appendChild(list);
+}
+
+function buildDeepDiveRow(briefId, cardEl, r) {
+    const paperBlock = el("div", { class: "paper" },
+        el("div", { class: "pt" }, r.paper_title || "(untitled)"),
+        el("div", { class: "pj" },
+            (r.paper_journal || "?") +
+            (r.paper_year ? " · " + r.paper_year : "") +
+            (r.paper_design ? " · " + r.paper_design : "")
+        ),
+        el("div", { class: "pmid" }, "PMID " + r.pmid)
+    );
+
+    const actions = el("div", { class: "actions" });
+    actions.appendChild(el("span", { class: "dd-status " + r.status }, r.status.replace("_", " ")));
+
+    // Action buttons depend on status
+    if (r.status === "pending") {
+        actions.appendChild(el("button", {
+            class: "dd-btn primary",
+            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+        }, "Materialize Cowork bundle"));
+    } else if (r.status === "bundle_requested") {
+        actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
+            "Awaiting Mac puller…"));
+        actions.appendChild(el("button", {
+            class: "dd-btn",
+            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+        }, "Re-request"));
+    } else if (r.status === "bundle_ready") {
+        actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
+            "Open Cowork, paste trigger from clipboard."));
+        actions.appendChild(el("button", {
+            class: "dd-btn",
+            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+        }, "Re-materialize"));
+    } else if (r.status === "patch_uploaded") {
+        actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
+            "Awaiting Mac apply…"));
+    } else if (r.status === "authored") {
+        actions.appendChild(el("button", {
+            class: "dd-btn",
+            onclick: () => window.open("/api/v1/admin/deep-dive/" + encodeURIComponent(r.id) + "/patch-json", "_blank"),
+        }, "View content"));
+        actions.appendChild(el("button", {
+            class: "dd-btn",
+            onclick: () => triggerDeepDiveReset(briefId, cardEl, r.id),
+        }, "Reset to pending"));
+    }
+
+    return el("div", { class: "dd-row" }, paperBlock, actions);
+}
+
+async function triggerDeepDivePrep(briefId, cardEl, id) {
+    try {
+        await api("/" + ""); // no-op to keep linter happy; we use direct fetch below
+    } catch {}
+    const event = window.event;
+    const btn = event && event.target;
+    if (btn) btn.disabled = true;
+    try {
+        const r = await fetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/prep", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: "{}",
+        });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        toast("Bundle queued. Run scripts/pull_approved_overrides.py to materialize.");
+        loadDeepDivePanel(briefId, cardEl);
+    } catch (e) {
+        toast("Prep failed: " + (e.message || e), "err");
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function triggerDeepDiveReset(briefId, cardEl, id) {
+    if (!confirm("Reset this PMID to pending? Authored content is preserved as an archive but the row re-enters the queue.")) return;
+    try {
+        const r = await fetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/reset", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ reason: "admin reset from /admin/trend-briefs/" }),
+        });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        toast("Reset to pending.");
+        loadDeepDivePanel(briefId, cardEl);
+    } catch (e) {
+        toast("Reset failed: " + (e.message || e), "err");
+    }
+}
+
+// ============== timeline ==============
 
 function buildTimelineCard(events) {
     if (!events.length) return el("div", { class: "rail-card" },
