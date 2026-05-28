@@ -245,11 +245,9 @@
         becoming aware of it.
     </div>
 
-    <label for="sign-typed-initials">Typed initials (live affirmation, 1–8 letters)</label>
-    <input type="text" id="sign-typed-initials" maxlength="8" placeholder="CRM" style="max-width: 160px;">
-
-    <label for="sign-next-review">Next annual review (optional, YYYY-MM-DD)</label>
-    <input type="date" id="sign-next-review" style="max-width: 200px;">
+    <label for="sign-typed-initials">Typed initials (live affirmation, 2–6 letters)</label>
+    <input type="text" id="sign-typed-initials" maxlength="6" placeholder="CRM" style="max-width: 160px;">
+    <p style="font-size: 11px; color: var(--ink-soft); margin: 6px 0 0;">Next review date is computed automatically from the document's review interval (typically +12 months).</p>
 
     <label for="sign-notes">Notes (optional, ≤ 500 chars)</label>
     <textarea id="sign-notes" maxlength="500" placeholder="e.g. reviewed with counsel YYYY-MM-DD"></textarea>
@@ -483,10 +481,6 @@ function openSignDialog(slug, title) {
     document.getElementById('sign-doc-title-eyebrow').textContent = `Sign · ${slug}`;
     document.getElementById('sign-typed-initials').value = '';
     document.getElementById('sign-notes').value = '';
-    // Default next review = +1 year.
-    const d = new Date();
-    d.setFullYear(d.getFullYear() + 1);
-    document.getElementById('sign-next-review').value = d.toISOString().slice(0, 10);
     refreshSigDropdown();
     signDialog.showModal();
 }
@@ -496,17 +490,16 @@ document.getElementById('sign-cancel').addEventListener('click', () => signDialo
 document.getElementById('sign-confirm').addEventListener('click', async () => {
     const signature_id = document.getElementById('sign-sig-id').value;
     const typed_initials = document.getElementById('sign-typed-initials').value.trim();
-    const next_review_date = document.getElementById('sign-next-review').value || null;
     const notes = document.getElementById('sign-notes').value.trim() || null;
     const typed_attestation = document.getElementById('sign-attest-text').textContent.trim();
     if (!signature_id) { toast('Pick a signature first.', 'error'); return; }
-    if (!/^[A-Za-z .'-]{1,8}$/.test(typed_initials)) { toast('Initials must be 1–8 letters.', 'error'); return; }
+    if (!/^[A-Za-z]{2,6}$/.test(typed_initials)) { toast('Initials must be 2–6 letters.', 'error'); return; }
     const btn = document.getElementById('sign-confirm');
     btn.disabled = true;
     try {
         await fetchJSON(`/api/v1/admin/compliance/docs/${currentSignSlug}`, {
             method: 'POST',
-            body: JSON.stringify({ signature_id, typed_attestation, typed_initials, next_review_date, notes }),
+            body: JSON.stringify({ signature_id, typed_attestation, typed_initials, notes }),
         });
         toast('Document signed.');
         signDialog.close();
