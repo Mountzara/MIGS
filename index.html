@@ -5021,12 +5021,32 @@
             line-height: 1.02;
             letter-spacing: -0.034em;
             margin: 0 0 18px;
+            /* 2026-05-27 — match evidence-page gradient on the pinned-frame
+               headlines "Whole-person care, not just a diagnosis." and
+               "Engineered for the working surgeon." (user feedback: these
+               sections have no gradients). Solid #fff fallback for non-
+               background-clip:text browsers. */
             color: #fff;
-            text-shadow:
-                0 0 60px rgba(0, 0, 0, 0.95),
-                0 4px 32px rgba(0, 0, 0, 0.9),
-                0 2px 8px rgba(0, 0, 0, 0.75),
-                0 1px 3px rgba(0, 0, 0, 0.85);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(167, 139, 250, 0.95) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* text-shadow does not paint through background-clip:text on
+               most engines, so the prior multi-stop dark shadow is no
+               longer effective; drop it to avoid a blurred halo behind
+               the gradient text. */
+        }
+        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+            .pinned-frame .frame-headline {
+                background: transparent;
+                -webkit-text-fill-color: #fff;
+                color: #fff;
+                text-shadow:
+                    0 0 60px rgba(0, 0, 0, 0.95),
+                    0 4px 32px rgba(0, 0, 0, 0.9),
+                    0 2px 8px rgba(0, 0, 0, 0.75),
+                    0 1px 3px rgba(0, 0, 0, 0.85);
+            }
         }
         .pinned-frame .frame-sub {
             font-size: clamp(15px, 1.4vw, 19px);
