@@ -26,6 +26,8 @@ export const VISIT_TYPES = [
         category: "new_patient",
         time_of_day: "morning",
         eras_concerns_required: true,
+        requires_chaperone: true,
+        chaperone_rationale: "Complex CBG/MIGS new-patient visits routinely include pelvic-area history and may include physical examination components. If telehealth is requested, an adult chaperone must be present in the room during any examination portion.",
         description: "First visit with any of: endometriosis flag, prior surgery for chronic pelvic pain, multi-system complaint, imaging showing DIE / large fibroids / adenomyosis."
     },
     {
@@ -36,6 +38,8 @@ export const VISIT_TYPES = [
         category: "new_patient",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Standard new-patient visits are history-focused; physical examination components, if any, are deferred to a clearly indicated in-person follow-up.",
         description: "First visit, single straightforward complaint, no prior gyn surgery."
     },
     {
@@ -46,6 +50,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "morning",
         eras_concerns_required: true,
+        requires_chaperone: true,
+        chaperone_rationale: "Complex pelvic-pain evaluation may require tender-point assessment of the pelvic floor and abdominal wall; tenderness assessment over telehealth requires another person in the room.",
         description: "Established patient, pain ≥6/10, multi-trigger pain, prior endo surgery, or imaging-suggestive."
     },
     {
@@ -56,6 +62,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Routine follow-up on a stable management plan is symptom-tracking and counseling; physical examination is not the primary diagnostic lever and is deferred to a clearly indicated in-person re-evaluation visit.",
         description: "Established patient with endo diagnosis, routine follow-up."
     },
     {
@@ -66,6 +74,8 @@ export const VISIT_TYPES = [
         category: "procedure",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: true,
+        chaperone_rationale: "OMT (osteopathic manipulative treatment) involves hands-on physical contact and is in-person only. Where intimate-region techniques are part of the protocol, clinical workflow requires a chaperone.",
         description: "In-person osteopathic manipulative treatment session. Clusters preferred — room prep efficiency."
     },
     {
@@ -76,6 +86,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "AUB evaluation is history-focused (bleeding pattern, products used, cycle characteristics, anemia screen). Pelvic exam, if indicated, is deferred to a separate in-person follow-up visit.",
         description: "Bleeding-dominant complaint, no major pain."
     },
     {
@@ -86,6 +98,8 @@ export const VISIT_TYPES = [
         category: "procedure",
         time_of_day: "any",
         eras_concerns_required: true,
+        requires_chaperone: false,
+        chaperone_rationale: "Pre-operative visits confirm ERAS perioperative protocols, review consent, and answer surgical questions. Physical examination is not the purpose of the visit.",
         description: "Within 30 days of scheduled surgery date. Confirms ERAS perioperative hold protocols (GLP-1, anticoagulants)."
     },
     {
@@ -96,6 +110,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Early post-operative follow-up is a recovery-tracking check-in (incision check via video, symptom screen, medication confirmation). No GU exam is performed; if symptoms warrant intimate examination, a separate in-person visit is scheduled.",
         description: "Within 2 weeks of OR date."
     },
     {
@@ -106,6 +122,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: true,
+        chaperone_rationale: "Six-week post-operative visit may include pelvic examination to confirm healing after gynecologic surgery; a chaperone is required for any GU exam component.",
         description: "4–8 weeks of OR date."
     },
     {
@@ -116,6 +134,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "afternoon",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Routine follow-up is symptom-tracking and counseling for a stable management plan. Physical examination, if newly indicated, prompts conversion to an in-person evaluation visit.",
         description: "Established patient, stable on current management, check-in."
     },
     {
@@ -126,6 +146,8 @@ export const VISIT_TYPES = [
         category: "procedure",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: true,
+        chaperone_rationale: "Endometrial biopsy, colposcopy, and IUD insertion/removal are all intimate-region office procedures. Clinical workflow always involves a chaperone; this visit type is in-person only.",
         description: "Endometrial biopsy, colposcopy, IUD insertion or removal — requires procedure room."
     },
     {
@@ -136,6 +158,8 @@ export const VISIT_TYPES = [
         category: "established",
         time_of_day: "afternoon",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Quick-concern visits are single-issue history-and-counseling encounters. If physical examination is indicated by the conversation, the visit is converted to in-person and the chaperone rule applies to the new visit.",
         description: "Single acute concern, established patient."
     },
     {
@@ -146,6 +170,8 @@ export const VISIT_TYPES = [
         category: "preventive",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: true,
+        chaperone_rationale: "Annual gynecologic exam includes breast and pelvic examination; chaperone is required and the visit is in-person only.",
         description: "Routine annual gynecologic exam."
     },
     {
@@ -156,6 +182,8 @@ export const VISIT_TYPES = [
         category: "telehealth",
         time_of_day: "any",
         eras_concerns_required: false,
+        requires_chaperone: false,
+        chaperone_rationale: "Telehealth-only consult is by definition history-and-counseling. Any physical-examination indication that surfaces during the visit prompts conversion to a separate in-person visit.",
         description: "Telehealth-only visit; transportation-barrier flag from SDOH."
     },
 ];
@@ -172,10 +200,24 @@ export function isValidVisitTypeKey(key) {
 
 /**
  * For UI dropdowns + JSON API responses. Returns an array with only the
- * fields the client UI needs (no internal flags).
+ * fields the client UI needs (no internal flags). Includes the chaperone
+ * fields so the patient-booking flow can present the chaperone-required
+ * confirmation step at the right moment.
  */
 export function visitTypeOptions() {
-    return VISIT_TYPES.map(({ key, label, duration_min, modality_preferred, category, time_of_day, description }) => ({
+    return VISIT_TYPES.map(({ key, label, duration_min, modality_preferred, category, time_of_day, description, requires_chaperone, chaperone_rationale }) => ({
         key, label, duration_min, modality_preferred, category, time_of_day, description,
+        requires_chaperone: !!requires_chaperone,
+        chaperone_rationale: chaperone_rationale || "",
     }));
+}
+
+/**
+ * Convenience predicate for booking + triage code paths.
+ * Returns true if the visit type requires a chaperone, false otherwise
+ * (including for unknown keys — caller should validate the key first).
+ */
+export function requiresChaperone(key) {
+    const v = KEY_INDEX.get(key);
+    return !!(v && v.requires_chaperone);
 }

@@ -24,7 +24,13 @@
 import { VISIT_TYPES } from "./visit_types.js";
 import { callClaude, AnthropicError } from "./anthropic.js";
 
-export const TRIAGE_PROMPT_VERSION = "triage-v1.0-2026-05-16";
+// 2026-05-27 v2.0 — added requires_chaperone awareness per Phase 17 R1.
+// The Joshi & Welch (2023) GU-exam chaperone rule applies to any CBG/MIGS
+// visit type that may involve pelvic-area physical examination. Claude is
+// now informed of each visit type's chaperone status and must mirror it
+// in its decision; the validator enforces consistency between the chosen
+// visit_type's catalog flag and Claude's chaperone_required output.
+export const TRIAGE_PROMPT_VERSION = "triage-v2.0-2026-05-27";
 
 const ALLOWED_VISIT_KEYS = new Set(VISIT_TYPES.map(v => v.key));
 const ALLOWED_URGENCY = new Set(["urgent", "routine"]);
@@ -231,6 +237,8 @@ function visitTypeCatalogForPrompt() {
         category: v.category,
         time_of_day: v.time_of_day,
         eras_concerns_required: v.eras_concerns_required,
+        requires_chaperone: !!v.requires_chaperone,
+        chaperone_rationale: v.chaperone_rationale || "",
         description: v.description,
     }));
 }
@@ -267,6 +275,13 @@ Urgency:
 
 Secondary concerns: list ERAS / perioperative flags that should reach the clinician PRE-visit. Use the exact field names from the intake. Examples: ["glp1_use_recent", "anticoagulants_in_use", "anemia_documented", "phq2_positive_screen", "transportation_barrier"].
 
+Chaperone rule (Joshi & Welch 2023 p. 51 — applies to CBG/MIGS):
+- Every catalog entry carries a "requires_chaperone" boolean.
+- If you choose a visit type with requires_chaperone=true AND in_person_required=false, you MUST set chaperone_required=true in your response.
+- If you choose a visit type with requires_chaperone=true AND in_person_required=true, set chaperone_required=true (chaperone is needed for the in-person exam portion).
+- If you choose a visit type with requires_chaperone=false, set chaperone_required=false.
+- Never override the catalog's requires_chaperone flag to false; it represents a clinical-safety floor.
+
 You return ONLY a JSON object. No prose before or after. No code fences. The JSON must have exactly these keys:
 {
   "visit_type": "<one of the catalog keys>",
@@ -274,6 +289,7 @@ You return ONLY a JSON object. No prose before or after. No code fences. The JSO
   "urgency": "urgent" | "routine",
   "in_person_required": true | false,
   "preferred_time_of_day": "morning" | "afternoon" | "any",
+  "chaperone_required": true | false,
   "rationale": "<<=500 chars: which decision rule(s) applied and which intake fields drove the choice>",
   "secondary_concerns": ["<flag>", ...]
 }`;
@@ -326,12 +342,28 @@ function validateTriage(obj) {
     const concerns = Array.isArray(obj.secondary_concerns)
         ? obj.secondary_concerns.filter(c => typeof c === "string").slice(0, 20)
         : [];
+
+    // Phase 17 R1 — chaperone consistency check. The catalog's
+    // requires_chaperone is the floor: Claude can set chaperone_required
+    // true even on a flag=false visit type (defensive), but it can NEVER
+    // override a flag=true visit type to chaperone_required=false. If
+    // missing from response, we fall back to the catalog floor.
+    const catalogEntry = VISIT_TYPES.find(v => v.key === obj.visit_type);
+    const catalogFloor = !!(catalogEntry && catalogEntry.requires_chaperone);
+    let chaperone_required;
+    if (typeof obj.chaperone_required === "boolean") {
+        chaperone_required = obj.chaperone_required || catalogFloor;
+    } else {
+        chaperone_required = catalogFloor; // defensive default if Claude omitted
+    }
+
     return {
         visit_type: obj.visit_type,
         duration_min: Math.round(obj.duration_min),
         urgency: obj.urgency,
         in_person_required: obj.in_person_required,
         preferred_time_of_day: obj.preferred_time_of_day,
+        chaperone_required,
         rationale,
         secondary_concerns: concerns,
     };

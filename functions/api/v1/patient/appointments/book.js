@@ -130,6 +130,40 @@ export async function onRequestPost(ctx) {
             "Procedure / OMT visits must be in-person.");
     }
 
+    // Phase 17 R1 — Chaperone enforcement on telehealth bookings.
+    // Per the visit-type catalog requires_chaperone flag (set by the
+    // Joshi & Welch 2023 p. 51 GU-exam chaperone rule), telehealth
+    // bookings of a chaperone-required visit type MUST carry an explicit
+    // chaperone_confirmed attestation from the patient before the row
+    // is written. The attestation captures one of three confirmation
+    // methods. If absent, the booking is refused and the UI prompts
+    // the patient with the chaperone-confirmation modal.
+    const ALLOWED_CHAPERONE_METHODS = new Set([
+        "partner_present", "adult_family_member", "clinic_assistant"
+    ]);
+    const chaperone_required_for_visit = !!(vt && vt.requires_chaperone);
+    const chaperone_confirmed = body.chaperone_confirmed === true;
+    const chaperone_confirmation_method = typeof body.chaperone_confirmation_method === "string"
+        ? body.chaperone_confirmation_method : null;
+    if (chaperone_required_for_visit && modality === "telehealth") {
+        if (!chaperone_confirmed) {
+            return err(409, "chaperone_confirmation_required",
+                "This visit type involves a pelvic-area examination component. " +
+                "Telehealth is offered only if an adult chaperone (partner, family member, or staff) " +
+                "will be present in the room. Please confirm chaperone availability or choose an in-person slot.",
+                { chaperone_rationale: vt.chaperone_rationale || "" });
+        }
+        if (!ALLOWED_CHAPERONE_METHODS.has(chaperone_confirmation_method)) {
+            return err(409, "invalid_chaperone_confirmation_method",
+                "Please indicate who your chaperone will be.",
+                { allowed_methods: Array.from(ALLOWED_CHAPERONE_METHODS) });
+        }
+    }
+    const chaperone_confirmed_at_value = (chaperone_required_for_visit && chaperone_confirmed)
+        ? new Date().toISOString() : null;
+    const chaperone_confirmation_method_value = (chaperone_required_for_visit && chaperone_confirmed)
+        ? chaperone_confirmation_method : null;
+
     // Load the availability block. Verify it's open + on the clinician we expect.
     const block = await env.DB.prepare(`
         SELECT id, clinician_id, date, start_minute_of_day, end_minute_of_day,
@@ -199,12 +233,18 @@ export async function onRequestPost(ctx) {
             INSERT INTO appointments
                 (id, patient_id, clinician_id, visit_type, starts_at, ends_at,
                  duration_min, modality, status, chief_complaint_summary,
-                 doxy_room_url, triage_id, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?, ?, ?, ?)
+                 doxy_room_url, triage_id,
+                 chaperone_required, chaperone_confirmed_at, chaperone_confirmation_method,
+                 created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             id, session.patient_id, CLINICIAN_ID, visit_type, starts_at, ends_at,
             duration_min, modality, chief_complaint_summary, doxy_room_url,
-            triage_id, t, t
+            triage_id,
+            chaperone_required_for_visit ? 1 : 0,
+            chaperone_confirmed_at_value,
+            chaperone_confirmation_method_value,
+            t, t
         ).run();
 
         // Back-link the triage row.
@@ -234,6 +274,9 @@ export async function onRequestPost(ctx) {
             duration_min,
             modality,
             starts_at,
+            chaperone_required: chaperone_required_for_visit,
+            chaperone_confirmed: !!chaperone_confirmed_at_value,
+            chaperone_confirmation_method: chaperone_confirmation_method_value,
         },
     });
 
