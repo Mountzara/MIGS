@@ -7,7 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="video" href="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4" fetchpriority="high">
+    <link rel="preload" as="image" href="https://mountzara.com/media/hero-animation-hd.webp" type="image/webp" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -6462,25 +6462,18 @@
 
     <!-- Hero -->
     <!-- Persistent background animation - spans hero + pinned showcase.
-         2026-05-27 — swapped from <img src="hero-animation.webp"> (1280×720
-         downscaled WebP, 78 KB, visibly pixelated when stretched to hero
-         size) to <video> with full-HD 1920×1080 H.264 + VP9 sources.
-         Same total payload (~120 KB) but native video decode renders
-         crisply at any size without raster upsampling. -->
+         2026-05-27 v3 — reverted from <video> back to <img> because
+         WebKit/Safari kept showing its "tap to play" overlay when
+         autoplay was blocked. <img> cannot render media controls by
+         definition. Animated WebP at full 1920×1080 (1.2 MB, 8× the
+         pixel area of the previous pixelated 78 KB / 1280×720 WebP)
+         gives a sharp render at any size with no overlay risk. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
-        <video class="hero-video"
-               id="heroVideo"
-               autoplay
-               muted
-               loop
-               playsinline
-               preload="auto"
-               aria-label=""
-               disablepictureinpicture
-               disableremoteplayback>
-            <source src="https://mountzara.com/media/hero-animation-hd.webm" type="video/webm">
-            <source src="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4">
-        </video>
+        <img class="hero-video"
+             data-src="https://mountzara.com/media/hero-animation-hd.webp"
+             alt=""
+             id="heroVideo"
+             decoding="async">
         <div class="hero-bg-vignette"></div>
     </div>
 
@@ -8109,39 +8102,12 @@
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
-            // 2026-05-27 — hero element is now a <video> with autoplay+muted+
-            // playsinline. Safari sometimes paints the native "tap to play"
-            // overlay when the autoplay attribute fires before the element
-            // is fully muted in the layout tree. Force-mute and call play()
-            // explicitly to guarantee inline playback without the overlay.
-            // (data-src lookup retained as a no-op for forward compatibility
-            // — the legacy <img data-src=...> path used it.)
+            // Setting src now decodes the animated WebP and starts its
+            // animation from frame 1. The file is already in cache from
+            // the <link rel="preload"> so this is instant.
             const url = heroVideo.dataset.src;
             if (url) {
                 heroVideo.src = url;
-            }
-            if (heroVideo.tagName === 'VIDEO') {
-                heroVideo.muted = true;
-                heroVideo.defaultMuted = true;
-                heroVideo.playsInline = true;
-                const playPromise = heroVideo.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {
-                        // Autoplay was blocked despite muted+playsinline. Try
-                        // again on the first user interaction so the hero
-                        // background recovers without showing the Safari
-                        // play-button overlay (which is already CSS-hidden).
-                        const retry = () => {
-                            heroVideo.play().catch(() => {});
-                            document.removeEventListener('touchstart', retry);
-                            document.removeEventListener('click', retry);
-                            document.removeEventListener('scroll', retry);
-                        };
-                        document.addEventListener('touchstart', retry, { once: true, passive: true });
-                        document.addEventListener('click', retry, { once: true });
-                        document.addEventListener('scroll', retry, { once: true, passive: true });
-                    });
-                }
             }
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the overlay
