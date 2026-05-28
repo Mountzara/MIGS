@@ -7,7 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="https://mountzara.com/media/hero-animation-hd.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="video" href="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -6462,18 +6462,34 @@
 
     <!-- Hero -->
     <!-- Persistent background animation - spans hero + pinned showcase.
-         2026-05-27 v3 — reverted from <video> back to <img> because
-         WebKit/Safari kept showing its "tap to play" overlay when
-         autoplay was blocked. <img> cannot render media controls by
-         definition. Animated WebP at full 1920×1080 (1.2 MB, 8× the
-         pixel area of the previous pixelated 78 KB / 1280×720 WebP)
-         gives a sharp render at any size with no overlay risk. -->
+         2026-05-27 v4 — back to <video> with MP4 (H.264) as the FIRST
+         source (Safari hardware-decodes H.264 = autoplay engages without
+         a "tap to play" overlay; previous v2 deploy had WebM first and
+         Safari software-decoded VP9 which delayed autoplay engagement).
+         Animated WebP at v3 played without an overlay but was choppy
+         because animated WebP is not a real video codec (each frame is
+         a separate compressed image). H.264 has inter-frame compression
+         and plays smoothly at the same file size.
+         Robust fallback at startHeroSequence(): if heroVideo.play()
+         rejects (autoplay genuinely blocked), JS replaces the <video>
+         with an <img src=hero-animation-hd.webp> so the user never
+         sees a play button. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
-        <img class="hero-video"
-             data-src="https://mountzara.com/media/hero-animation-hd.webp"
-             alt=""
-             id="heroVideo"
-             decoding="async">
+        <video class="hero-video"
+               id="heroVideo"
+               autoplay
+               muted
+               loop
+               playsinline
+               webkit-playsinline
+               preload="auto"
+               aria-label=""
+               disablepictureinpicture
+               disableremoteplayback
+               x-webkit-airplay="deny">
+            <source src="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4">
+            <source src="https://mountzara.com/media/hero-animation-hd.webm" type="video/webm">
+        </video>
         <div class="hero-bg-vignette"></div>
     </div>
 
@@ -8102,22 +8118,51 @@
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
-            // Setting src now decodes the animated WebP and starts its
-            // animation from frame 1. The file is already in cache from
-            // the <link rel="preload"> so this is instant.
+            // Legacy <img data-src=...> branch retained for forward
+            // compatibility — currently a no-op (hero is now <video>).
             const url = heroVideo.dataset.src;
             if (url) {
                 heroVideo.src = url;
             }
+            // 2026-05-27 v4 — video plays smoothly with H.264 (the previous
+            // <video> attempt failed because WebM was first and Safari
+            // software-decoded VP9 slowly, missing the autoplay window).
+            // If play() truly rejects (autoplay blocked on user's browser),
+            // swap to <img src=hero-animation-hd.webp> so they never see a
+            // play button overlay. The WebP at full 1920x1080 is the
+            // bulletproof fallback that worked in v3.
+            if (heroVideo.tagName === 'VIDEO') {
+                heroVideo.muted = true;
+                heroVideo.defaultMuted = true;
+                heroVideo.playsInline = true;
+                heroVideo.setAttribute('webkit-playsinline', 'true');
+                const playPromise = heroVideo.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {
+                        // Autoplay blocked. Swap to <img src=webp> so the user
+                        // never sees Safari's "tap to play" overlay.
+                        const fallback = document.createElement('img');
+                        fallback.className = heroVideo.className;  // preserves
+                        fallback.id = heroVideo.id;                 // preserves
+                        fallback.alt = '';
+                        fallback.decoding = 'async';
+                        fallback.src = 'https://mountzara.com/media/hero-animation-hd.webp';
+                        if (heroVideo.parentNode) {
+                            heroVideo.parentNode.replaceChild(fallback, heroVideo);
+                        }
+                    });
+                }
+            }
             // Cascade hero text in Apple-style — past the animation midpoint
-            // so the visual sequence has time to establish before the overlay
-            // appears.
+            // so the visual sequence has time to establish before the
+            // overlay appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
             }, HERO_TEXT_DELAY_MS);
             // Ken Burns after the animation finishes
             setTimeout(() => {
-                heroVideo.classList.add('ken-burns');
+                const liveHero = document.getElementById('heroVideo');
+                if (liveHero) liveHero.classList.add('ken-burns');
             }, ANIMATION_DURATION_MS);
         }
 
