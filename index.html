@@ -9239,6 +9239,25 @@
                     console.warn('surgical-hub: no source content for category', key);
                     return;
                 }
+                // 2026-05-27 — if the source article has EXACTLY ONE domain
+                // CTA, skip the inline expand-panel and open the full
+                // domain modal directly. Tiles with multiple CTAs
+                // (hysterectomy → mis+vnotes, hysteroscopy → operative+
+                // in-office, adhesiolysis → adhesiolysis+cross-specialty)
+                // still use the inline panel so the user can pick which
+                // sub-domain to open. User feedback: "the cards should
+                // open to a modal, the modal should be a new full page
+                // modal, not the modal that opens below the 7 cards".
+                const ctas = sourceArticle.querySelectorAll('.domain-cta-btn[data-domain]');
+                if (ctas.length === 1 && typeof window.openDomainModal === 'function') {
+                    const slug = ctas[0].getAttribute('data-domain');
+                    // Reset tile state so no .active sticks on the previously
+                    // chosen tile while the user is in the full-page modal.
+                    closePanel();
+                    window.openDomainModal(slug);
+                    return;
+                }
+                // Multi-CTA path — fall through to the inline expand-panel.
                 // Clone the article so the source-of-truth stays intact for re-renders.
                 const clone = sourceArticle.cloneNode(true);
                 panelInner.innerHTML = '';
