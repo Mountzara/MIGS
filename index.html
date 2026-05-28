@@ -6479,7 +6479,6 @@
                id="heroVideo"
                autoplay
                muted
-               loop
                playsinline
                webkit-playsinline
                preload="auto"
@@ -6487,6 +6486,11 @@
                disablepictureinpicture
                disableremoteplayback
                x-webkit-airplay="deny">
+            <!-- 2026-05-27 — `loop` REMOVED. Original WebP behavior was
+                 one-shot animation, freeze on final frame, Ken Burns slow
+                 zoom on that static frame. Loop made the drawing restart
+                 forever which broke the visual rhythm. JS pauses on the
+                 last frame via the 'ended' event. -->
             <source src="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4">
             <source src="https://mountzara.com/media/hero-animation-hd.webm" type="video/webm">
         </video>
@@ -8136,14 +8140,25 @@
                 heroVideo.defaultMuted = true;
                 heroVideo.playsInline = true;
                 heroVideo.setAttribute('webkit-playsinline', 'true');
+                // 2026-05-27 — pause on the final frame when the drawing
+                // animation completes, so Ken Burns can apply to a settled
+                // last frame (matching the original WebP single-shot
+                // behavior, not a perpetual restart of the drawing).
+                heroVideo.addEventListener('ended', () => {
+                    // Seek to the last visible frame and pause.
+                    if (Number.isFinite(heroVideo.duration)) {
+                        heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
+                    }
+                    heroVideo.pause();
+                }, { once: true });
                 const playPromise = heroVideo.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch(() => {
                         // Autoplay blocked. Swap to <img src=webp> so the user
                         // never sees Safari's "tap to play" overlay.
                         const fallback = document.createElement('img');
-                        fallback.className = heroVideo.className;  // preserves
-                        fallback.id = heroVideo.id;                 // preserves
+                        fallback.className = heroVideo.className;
+                        fallback.id = heroVideo.id;
                         fallback.alt = '';
                         fallback.decoding = 'async';
                         fallback.src = 'https://mountzara.com/media/hero-animation-hd.webp';
