@@ -6089,18 +6089,36 @@
             color: rgba(var(--glow-purple), 0.95);
         }
         .identity-card-num {
-            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', system-ui, sans-serif;
-            font-size: 56px;
-            font-weight: 200;
-            letter-spacing: -0.04em;
-            line-height: 1;
-            background: linear-gradient(180deg,
-                rgba(167, 139, 250, 1) 0%,
-                rgba(109, 40, 217, 1) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 4px 0 0;
+            /* 2026-05-28: numeric badges → sleek purple line-icons per user
+               directive. SVG uses currentColor stroke so the same purple
+               cascades from the gradient color set below. */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            margin: 6px 0 2px;
+            border-radius: 14px;
+            background: linear-gradient(135deg,
+                rgba(167, 139, 250, 0.14) 0%,
+                rgba(109, 40, 217, 0.10) 100%);
+            border: 1px solid rgba(167, 139, 250, 0.22);
+            color: rgba(167, 139, 250, 0.98);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
+            backdrop-filter: blur(14px) saturate(180%);
+            transition: transform 0.25s, border-color 0.25s, background 0.25s;
+        }
+        .identity-card-num svg {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+        .identity-card:hover .identity-card-num {
+            transform: translateY(-1px);
+            border-color: rgba(167, 139, 250, 0.42);
+            background: linear-gradient(135deg,
+                rgba(167, 139, 250, 0.20) 0%,
+                rgba(109, 40, 217, 0.14) 100%);
         }
         .identity-card-label {
             font-size: 14px;
@@ -6157,7 +6175,8 @@
                 padding: 8px 0 0;
             }
             .identity-card { min-height: 240px; padding: 24px 22px 22px; }
-            .identity-card-num { font-size: 48px; }
+            .identity-card-num { width: 46px; height: 46px; border-radius: 12px; margin: 4px 0 2px; }
+            .identity-card-num svg { width: 24px; height: 24px; }
             .identity-map-pips { display: none; }
         }
 
@@ -6639,36 +6658,36 @@
             <div class="identity-map-track" role="tablist">
                 <a href="#surgical" class="identity-card" data-identity="surgical" role="tab" aria-controls="surgical">
                     <span class="identity-card-eyebrow">Surgery</span>
-                    <span class="identity-card-num">7</span>
-                    <span class="identity-card-label">Clinical practice areas</span>
+                    <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5.5" r="2.4"/><path d="M12 7.9V19"/><path d="M8.5 19h7"/><path d="M9.4 13.1l5.2-2.6"/><path d="M9.4 16l5.2-2.6"/></svg></span>
+                    <span class="identity-card-label">Seven clinical practice areas</span>
                     <span class="identity-card-sub">CBG/MIGS — from endometriosis to robotic myomectomy</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
                 <a href="#research" class="identity-card" data-identity="research" role="tab" aria-controls="research">
                     <span class="identity-card-eyebrow">Research</span>
-                    <span class="identity-card-num">7+</span>
-                    <span class="identity-card-label">Peer-reviewed publications</span>
+                    <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6.2L4.4 18A2 2 0 006.2 21h11.6a2 2 0 001.8-3L15 9.2V3"/><line x1="8" y1="3" x2="16" y2="3"/><line x1="6.5" y1="14" x2="17.5" y2="14"/></svg></span>
+                    <span class="identity-card-label">Seven-plus peer-reviewed publications</span>
                     <span class="identity-card-sub">4 active IRB studies · 2 AAGL Global + CAOG awards</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
                 <a href="#apps" class="identity-card" data-identity="apps" role="tab" aria-controls="apps">
                     <span class="identity-card-eyebrow">Apps</span>
-                    <span class="identity-card-num">5</span>
-                    <span class="identity-card-label">Native clinical apps in development</span>
+                    <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg></span>
+                    <span class="identity-card-label">Five native clinical apps in development</span>
                     <span class="identity-card-sub">macOS suite + iOS — clinical AI, surgical workflow, transcription, research, education</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
                 <a href="#osteopathic" class="identity-card" data-identity="osteopathic" role="tab" aria-controls="osteopathic">
                     <span class="identity-card-eyebrow">Osteopathy</span>
-                    <span class="identity-card-num">6</span>
-                    <span class="identity-card-label">Pillars of integrated OMT</span>
+                    <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4 4-4 13 0 17"/><path d="M12 3.5c4 4 4 13 0 17"/><circle cx="12" cy="12" r="2.2"/></svg></span>
+                    <span class="identity-card-label">Six pillars of integrated OMT</span>
                     <span class="identity-card-sub">DO · MSAEd · AOM fellowship — whole-person care anchored to ACOG-grade evidence</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
                 <a href="#curriculum" class="identity-card" data-identity="curriculum" role="tab" aria-controls="curriculum">
                     <span class="identity-card-eyebrow">Education</span>
-                    <span class="identity-card-num">3</span>
-                    <span class="identity-card-label">Curricula authored</span>
+                    <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5l10-5 10 5-10 5z"/><path d="M6 11.8v4.7c0 1.6 2.7 2.9 6 2.9s6-1.3 6-2.9v-4.7"/><line x1="21.5" y1="9.5" x2="21.5" y2="15.5"/></svg></span>
+                    <span class="identity-card-label">Three curricula authored</span>
                     <span class="identity-card-sub">CBG/MIGS fellowship · Hospice Pilot Rotation · Hospice Care Training</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
