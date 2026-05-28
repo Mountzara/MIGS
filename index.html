@@ -7,7 +7,7 @@
     <title>Mount Zara — Christopher Z. Mabini, DO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="https://mountzara.com/media/hero-animation.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="video" href="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4" fetchpriority="high">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -6434,13 +6434,26 @@
     <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
 
     <!-- Hero -->
-    <!-- Persistent background animation - spans hero + pinned showcase -->
+    <!-- Persistent background animation - spans hero + pinned showcase.
+         2026-05-27 — swapped from <img src="hero-animation.webp"> (1280×720
+         downscaled WebP, 78 KB, visibly pixelated when stretched to hero
+         size) to <video> with full-HD 1920×1080 H.264 + VP9 sources.
+         Same total payload (~120 KB) but native video decode renders
+         crisply at any size without raster upsampling. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
-        <img class="hero-video"
-             data-src="https://mountzara.com/media/hero-animation.webp"
-             alt=""
-             id="heroVideo"
-             decoding="async">
+        <video class="hero-video"
+               id="heroVideo"
+               autoplay
+               muted
+               loop
+               playsinline
+               preload="auto"
+               aria-label=""
+               disablepictureinpicture
+               disableremoteplayback>
+            <source src="https://mountzara.com/media/hero-animation-hd.webm" type="video/webm">
+            <source src="https://mountzara.com/media/hero-animation-hd.mp4" type="video/mp4">
+        </video>
         <div class="hero-bg-vignette"></div>
     </div>
 
