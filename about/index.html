@@ -20,7 +20,15 @@
             --gray-5: #d2d2d7;
             --gray-6: #f5f5f7;
             --white: #ffffff;
-            --accent: #2997ff;
+            /* 2026-05-27 — was Apple system blue #2997ff (stale, never
+               swept during purple migration). Now matches homepage §3.10
+               purple token family. --accent-deep is the brand purple
+               (#6d28d9 = purple-700) for primary CTAs; --accent is the
+               glow-purple for hovers and highlights (#a78bfa = purple-400). */
+            --accent: #a78bfa;
+            --accent-deep: #6d28d9;
+            --glow-purple: 139, 92, 246;
+            --glow-purple-deep: 109, 40, 217;
         }
 
         * {
@@ -857,19 +865,19 @@
         }
 
         .btn-primary:hover {
-            background: #0080ff;
+            background: #6d28d9;
             transform: translateY(-1px);
-            box-shadow: 0 8px 16px -4px rgba(41, 151, 255, 0.4);
+            box-shadow: 0 8px 16px -4px rgba(139, 92, 246, 0.4);
         }
 
         .btn-secondary {
             background: transparent;
             color: var(--accent);
-            border: 1px solid rgba(41, 151, 255, 0.5);
+            border: 1px solid rgba(139, 92, 246, 0.5);
         }
 
         .btn-secondary:hover {
-            background: rgba(41, 151, 255, 0.1);
+            background: rgba(139, 92, 246, 0.1);
             border-color: var(--accent);
             transform: translateY(-1px);
         }
@@ -928,12 +936,12 @@
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
         }
         .cv-badge-primary {
-            background: linear-gradient(135deg, rgba(41, 151, 255, 0.18), rgba(41, 151, 255, 0.05));
-            border-color: rgba(41, 151, 255, 0.32);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(139, 92, 246, 0.05));
+            border-color: rgba(139, 92, 246, 0.32);
         }
         .cv-badge-primary:hover {
-            background: linear-gradient(135deg, rgba(41, 151, 255, 0.26), rgba(41, 151, 255, 0.08));
-            border-color: rgba(41, 151, 255, 0.46);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.26), rgba(139, 92, 246, 0.08));
+            border-color: rgba(139, 92, 246, 0.46);
         }
         .cv-badge-icon {
             flex-shrink: 0;
@@ -946,8 +954,8 @@
             background: rgba(255, 255, 255, 0.06);
         }
         .cv-badge-primary .cv-badge-icon {
-            background: rgba(41, 151, 255, 0.16);
-            color: #5cb6ff;
+            background: rgba(139, 92, 246, 0.16);
+            color: #a78bfa;
         }
         .cv-badge-icon svg {
             width: 20px;
@@ -1007,7 +1015,7 @@
         .credentials {
             padding: 100px clamp(20px, 4vw, 28px) 120px;
             background:
-                radial-gradient(ellipse at 50% 0%, rgba(41, 151, 255, 0.04), transparent 60%),
+                radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.04), transparent 60%),
                 var(--black);
             border-top: 1px solid rgba(255, 255, 255, 0.06);
             position: relative;
@@ -1078,7 +1086,7 @@
         }
 
         .cred-card:hover {
-            border-color: rgba(41, 151, 255, 0.25);
+            border-color: rgba(139, 92, 246, 0.25);
             transform: translateY(-2px);
         }
 
@@ -1186,9 +1194,9 @@
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .footer-social a:hover {
-            color: #5cb6ff;
-            background: rgba(92, 182, 255, 0.12);
-            border-color: rgba(92, 182, 255, 0.32);
+            color: #a78bfa;
+            background: rgba(139, 92, 246, 0.12);
+            border-color: rgba(139, 92, 246, 0.32);
             transform: translateY(-2px);
         }
         .footer-social a svg {

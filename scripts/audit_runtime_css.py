@@ -59,11 +59,19 @@ EDUCATION_TOPICS = [
 
 # Blue tokens forbidden per §3.10. Match against rgb() / rgba() forms
 # the browser returns from getComputedStyle.
+#
+# 2026-05-27 — extended to catch Apple system blues that were lurking on
+# the /about/ page (the §3.10 audit grepped only for the CLAUDE.md-named
+# tokens and missed #2997ff/#0080ff/#5cb6ff). Apple system blue is now
+# explicitly forbidden along with the Tailwind/Material variants.
 BLUE_TOKEN_RGB = [
     "rgb(0, 102, 204)",      # #0066cc
     "rgb(10, 132, 255)",     # #0a84ff
     "rgb(59, 130, 246)",     # #3b82f6
     "rgb(37, 99, 235)",      # #2563eb
+    "rgb(41, 151, 255)",     # #2997ff — Apple system blue accent
+    "rgb(0, 128, 255)",      # #0080ff — Apple system blue hover
+    "rgb(92, 182, 255)",     # #5cb6ff — Apple system blue tint
 ]
 
 
