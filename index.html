@@ -335,6 +335,33 @@
             filter: saturate(1.35) brightness(1.05);
             transform: translate(-50%, -50%) scale(1);
         }
+        /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
+           (the giant "tap to play" button) when the hero <video> first
+           appears. Native controls render in shadow DOM and IGNORE
+           pointer-events on the host, so we have to nuke each pseudo-
+           element explicitly. */
+        .hero-video::-webkit-media-controls,
+        .hero-video::-webkit-media-controls-enclosure,
+        .hero-video::-webkit-media-controls-panel,
+        .hero-video::-webkit-media-controls-overlay-enclosure,
+        .hero-video::-webkit-media-controls-overlay-play-button,
+        .hero-video::-webkit-media-controls-start-playback-button,
+        .hero-video::-webkit-media-controls-play-button,
+        .hero-video::-webkit-media-controls-fullscreen-button,
+        .hero-video::-webkit-media-controls-timeline,
+        .hero-video::-webkit-media-controls-current-time-display,
+        .hero-video::-webkit-media-controls-time-remaining-display,
+        .hero-video::-webkit-media-controls-mute-button,
+        .hero-video::-webkit-media-controls-toggle-closed-captions-button,
+        .hero-video::-webkit-media-controls-volume-slider {
+            display: none !important;
+            -webkit-appearance: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .hero-video::-internal-media-controls-overflow-button {
+            display: none !important;
+        }
 
         .hero-video.ken-burns {
             animation: heroKenBurnsSlow 45s ease-in-out infinite alternate;
@@ -8082,21 +8109,47 @@
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
-            // Setting src now restarts the WebP animation from frame 1
-            // (the file is already cached from preload, so this is instant)
+            // 2026-05-27 — hero element is now a <video> with autoplay+muted+
+            // playsinline. Safari sometimes paints the native "tap to play"
+            // overlay when the autoplay attribute fires before the element
+            // is fully muted in the layout tree. Force-mute and call play()
+            // explicitly to guarantee inline playback without the overlay.
+            // (data-src lookup retained as a no-op for forward compatibility
+            // — the legacy <img data-src=...> path used it.)
             const url = heroVideo.dataset.src;
             if (url) {
-                // Setting src on a fresh <img> element decodes the WebP and
-                // starts its animation from frame 1. The file is already in
-                // cache from the <link rel="preload"> so this is instant.
                 heroVideo.src = url;
             }
-            // Cascade hero text in Apple-style — past the WebP midpoint so
-            // the animation has time to establish before the overlay appears.
+            if (heroVideo.tagName === 'VIDEO') {
+                heroVideo.muted = true;
+                heroVideo.defaultMuted = true;
+                heroVideo.playsInline = true;
+                const playPromise = heroVideo.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {
+                        // Autoplay was blocked despite muted+playsinline. Try
+                        // again on the first user interaction so the hero
+                        // background recovers without showing the Safari
+                        // play-button overlay (which is already CSS-hidden).
+                        const retry = () => {
+                            heroVideo.play().catch(() => {});
+                            document.removeEventListener('touchstart', retry);
+                            document.removeEventListener('click', retry);
+                            document.removeEventListener('scroll', retry);
+                        };
+                        document.addEventListener('touchstart', retry, { once: true, passive: true });
+                        document.addEventListener('click', retry, { once: true });
+                        document.addEventListener('scroll', retry, { once: true, passive: true });
+                    });
+                }
+            }
+            // Cascade hero text in Apple-style — past the animation midpoint
+            // so the visual sequence has time to establish before the overlay
+            // appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
             }, HERO_TEXT_DELAY_MS);
-            // Ken Burns after WebP animation finishes
+            // Ken Burns after the animation finishes
             setTimeout(() => {
                 heroVideo.classList.add('ken-burns');
             }, ANIMATION_DURATION_MS);
