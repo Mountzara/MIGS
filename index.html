@@ -534,12 +534,14 @@
             line-height: 1.02;
             margin-top: 0;
             margin-bottom: 16px;
-            /* 2026-05-27 — brand purple gradient on the hero headline per §3.10
-               (was solid white #ffffff). Same #fff → soft violet → glow-purple
-               ramp as .section-headline.gradient so the hero anchors the brand
-               color story the rest of the page now carries. */
+            /* 2026-05-27 (v2) — MEDIUM-intensity purple gradient. v1 was
+               too subtle to read as purple; v2 saturates the end stop and
+               moves the violet inflection earlier so the gradient is
+               actually visible to a human reader on first paint (before
+               JS splitWords adds .word-reveal which carries its own copy
+               of this gradient). */
             color: #ffffff;
-            background: linear-gradient(135deg, #ffffff 0%, #d8caff 45%, #a78bfa 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 30%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1238,13 +1240,12 @@
         }
 
         .section-headline.gradient {
-            /* 2026-05-27 — restore brand purple gradient per §3.10 design tokens.
-               Previous white→gray Apple-style gradient stripped purple from every
-               homepage section header. User report: "Where is the purple theme
-               in the entire home page??" Replaced with #fff → #c4b5fd → #a78bfa
-               so the gradient signals the brand without losing legibility on the
-               dark sections it lives in. */
-            background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #a78bfa 100%);
+            /* 2026-05-27 (v2) — MEDIUM-intensity purple gradient per §3.10.
+               v1 (#fff → #c4b5fd → #a78bfa) was too pale to read as purple
+               on a real reader's screen. v2 pushes the violet stop earlier
+               and saturates the end stop so the back half of each headline
+               reads as clearly brand-purple. */
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 30%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1555,7 +1556,22 @@
             letter-spacing: -0.025em;
             line-height: 1;
             margin-bottom: 8px;
+            /* 2026-05-27 — apply medium-intensity purple gradient so the
+               stat numerals match the brand purple treatment on the hero
+               and section headlines. Solid color fallback below for
+               browsers without background-clip:text. */
             color: rgba(167, 139, 250, 0.95);
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+            .stat-num {
+                background: transparent;
+                color: rgba(167, 139, 250, 0.95);
+                -webkit-text-fill-color: rgba(167, 139, 250, 0.95);
+            }
         }
 
         .stat-label {
@@ -1583,7 +1599,21 @@
             border-color: rgba(109, 40, 217, 0.50);
         }
         .about-section .stat-num {
+            /* 2026-05-27 — light-theme variant: use saturated purple-to-deep
+               gradient so the numerals stay readable on the cream-cream
+               about-section panel AND signal the brand. */
             color: #6d28d9;
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+            .about-section .stat-num {
+                background: transparent;
+                color: #6d28d9;
+                -webkit-text-fill-color: #6d28d9;
+            }
         }
         .about-section .stat-label {
             color: rgba(31, 22, 17, 0.72);
@@ -1795,7 +1825,11 @@
             letter-spacing: -0.035em;
             line-height: 1;
             margin-bottom: 20px;
-            background: linear-gradient(180deg, #fff 0%, #888 100%);
+            /* 2026-05-27 — was white→gray (#fff → #888), reads as
+               desaturated gray on the dark surgical-section. Swapped to
+               medium-intensity purple gradient so the Zero / >95% callouts
+               carry the brand color like the hero + section headlines. */
+            background: linear-gradient(180deg, #ffffff 0%, #a78bfa 35%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -4363,9 +4397,22 @@
             font-size: clamp(28px, 3vw, 36px);
             font-weight: 200;
             line-height: 1.05;
+            /* 2026-05-27 — apply medium-intensity purple gradient to match
+               .stat-num / .zero-num / .hero-title treatment. */
             color: rgba(167, 139, 250, 0.95);
+            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             letter-spacing: -0.02em;
             margin-bottom: 8px;
+        }
+        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+            .dm-stat-num {
+                background: transparent;
+                color: rgba(167, 139, 250, 0.95);
+                -webkit-text-fill-color: rgba(167, 139, 250, 0.95);
+            }
         }
         .dm-stat-label {
             font-size: 14px;
@@ -4737,14 +4784,15 @@
 
         /* Word-level reveal for headlines (per-word mask) */
         .word-reveal {
-            /* 2026-05-27 — was stripping the parent's gradient
-               (`-webkit-text-fill-color: initial !important; background: none
-               !important; color: var(--white)`) which made the .hero-title
-               render as solid white after JS splitWords() ran. Now apply the
-               brand purple gradient HERE so the gradient survives the JS
-               word-split rewrap. Each .word-mask inherits the gradient via
-               background-clip. */
-            background: linear-gradient(135deg, #ffffff 0%, #d8caff 45%, #a78bfa 100%);
+            /* 2026-05-27 (v2) — MEDIUM-intensity purple gradient per user
+               directive. v1 used #fff → #d8caff → #a78bfa which was too pale
+               to read as purple at normal viewing scale; user could not see
+               the gradient even though getComputedStyle confirmed it. v2
+               pushes the violet stop earlier (20%) and saturates the end
+               stop (#7c3aed = purple-600) so roughly half the headline
+               glyph area reads as clearly violet/purple to a human reader.
+               Still legible-first per design intent. */
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 30%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
