@@ -4819,8 +4819,15 @@
             opacity: 0;
             transition: transform 1.1s cubic-bezier(0.2, 1, 0.3, 1), opacity 1.1s cubic-bezier(0.2, 1, 0.3, 1);
             will-change: transform, opacity;
-            /* Re-apply gradient on each word so the title still has the silver fade */
-            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
+            /* 2026-05-27 — was a per-word silver fade (#fff → #c5c5c7) that
+               overrode every purple gradient I applied to the parent
+               .word-reveal/.hero-title. THIS was the actual rule painting the
+               rendered glyphs. Replaced with the brand purple gradient so the
+               per-word treatment carries the §3.10 purple instead of silver.
+               Each word gets its own gradient axis (white top → violet mid →
+               deep brand purple bottom) so every letter visibly shows the
+               purple regardless of the headline's overall width. */
+            background: linear-gradient(180deg, #ffffff 0%, #c4b5fd 8%, #a78bfa 35%, #7c3aed 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
