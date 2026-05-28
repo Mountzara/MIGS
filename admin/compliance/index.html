@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Compliance — Mount Zara Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap">
+<style>
+    :root {
+        --bg: #0a0610;
+        --bg-soft: #150b1f;
+        --ink: #f5f2ec;
+        --ink-mute: rgba(245, 242, 236, 0.66);
+        --ink-soft: rgba(245, 242, 236, 0.46);
+        --accent: #6d28d9;
+        --accent-light: #a78bfa;
+        --accent-soft: rgba(167, 139, 250, 0.18);
+        --oxblood: #8a3d2d;
+        --amber: #b45309;
+        --amber-bg: rgba(180, 83, 9, 0.18);
+        --green: #15803d;
+        --green-bg: rgba(21, 128, 61, 0.18);
+        --red: #b91c1c;
+        --red-bg: rgba(185, 28, 28, 0.18);
+        --hairline: rgba(245, 242, 236, 0.10);
+        --glass-bg: rgba(255, 255, 255, 0.04);
+        --glass-border: rgba(255, 255, 255, 0.10);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+        margin: 0; padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', system-ui, sans-serif;
+        font-weight: 300;
+        font-size: 15px;
+        line-height: 1.55;
+        font-feature-settings: "ss01", "cv11";
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { color: #c4b5fd; text-decoration: underline; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(20px, 4vw, 48px); }
+    h1, h2, h3 { font-weight: 200; letter-spacing: -0.012em; margin: 0 0 12px; }
+    h1 { font-size: clamp(28px, 4vw, 38px); }
+    h2 { font-size: clamp(20px, 2.4vw, 26px); margin-top: 36px; }
+    h3 { font-size: 17px; font-weight: 500; }
+    .eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(167, 139, 250, 0.95);
+        margin-bottom: 8px;
+    }
+    .card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        padding: 22px;
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        transition: transform 0.22s, border-color 0.22s, background 0.22s;
+        margin: 14px 0;
+    }
+    .card.glow {
+        border-color: rgba(167, 139, 250, 0.28);
+    }
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-left: 8px;
+    }
+    .badge.signed { background: var(--green-bg); color: #86efac; border: 1px solid rgba(134, 239, 172, 0.30); }
+    .badge.unsigned { background: var(--amber-bg); color: #fcd34d; border: 1px solid rgba(252, 211, 77, 0.30); }
+    .badge.review { background: var(--red-bg); color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.30); }
+    .badge.retired { background: rgba(245,242,236,0.06); color: var(--ink-soft); }
+    .btn {
+        display: inline-block;
+        padding: 9px 18px;
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.38);
+        background: var(--accent-soft);
+        color: var(--accent-light);
+        font-weight: 500;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.18s;
+        text-decoration: none;
+    }
+    .btn:hover { background: rgba(167, 139, 250, 0.28); border-color: rgba(167, 139, 250, 0.55); }
+    .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn.primary:hover { background: #7c3aed; }
+    .btn.muted { background: transparent; color: var(--ink-mute); border-color: var(--hairline); }
+    .btn.danger { background: var(--red-bg); color: #fca5a5; border-color: rgba(252, 165, 165, 0.30); }
+    .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+    input[type="text"], input[type="file"], textarea, select, input[type="date"] {
+        background: rgba(0, 0, 0, 0.30);
+        border: 1px solid var(--hairline);
+        border-radius: 8px;
+        padding: 9px 12px;
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 14px;
+        width: 100%;
+    }
+    textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    label { display: block; font-size: 12px; color: var(--ink-mute); margin: 12px 0 6px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .row.between { justify-content: space-between; }
+    .grow { flex: 1; }
+    .pill {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(245, 242, 236, 0.06);
+        color: var(--ink-mute);
+        margin-right: 6px;
+    }
+    .sig-preview {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 8px;
+        padding: 8px;
+        display: inline-block;
+        max-width: 260px;
+    }
+    .sig-preview img { display: block; max-width: 100%; height: auto; }
+    .doc-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--hairline);
+    }
+    .doc-row:last-child { border-bottom: 0; }
+    .signed-block {
+        background: rgba(21, 128, 61, 0.06);
+        border-left: 3px solid rgba(134, 239, 172, 0.40);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 10px 0;
+        font-size: 13px;
+    }
+    .signed-block .meta { color: var(--ink-mute); font-size: 12px; margin-top: 4px; }
+    dialog {
+        background: var(--bg-soft);
+        color: var(--ink);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 28px;
+        max-width: 620px;
+        width: 92%;
+        font-family: inherit;
+    }
+    dialog::backdrop { background: rgba(10, 6, 16, 0.78); backdrop-filter: blur(6px); }
+    .nav-bar {
+        font-size: 12px; color: var(--ink-mute);
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--hairline);
+    }
+    .nav-bar a { color: var(--ink-mute); }
+    .nav-bar a:hover { color: var(--accent-light); }
+    .toast {
+        position: fixed; bottom: 28px; right: 28px;
+        background: var(--bg-soft);
+        border: 1px solid var(--accent);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 13px;
+        max-width: 360px;
+        box-shadow: 0 10px 32px rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+    .toast.error { border-color: rgba(252, 165, 165, 0.55); }
+    .empty { color: var(--ink-soft); font-style: italic; padding: 14px 0; }
+    code, .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: rgba(167, 139, 250, 0.92); }
+    .attest-text {
+        background: rgba(0, 0, 0, 0.30);
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 13px;
+        color: var(--ink-mute);
+        font-style: italic;
+        line-height: 1.55;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="nav-bar">
+        <a href="/admin/">← Mount Zara admin</a>
+        &nbsp;·&nbsp; Compliance &amp; e-signature
+    </div>
+
+    <div class="eyebrow">Phase 17 · Compliance Posture</div>
+    <h1>Compliance documents &amp; e-signature</h1>
+    <p style="color: var(--ink-mute); max-width: 720px;">
+        Manage the clinician signature on file, then sign each compliance policy document. Each signing event records
+        a SHA-256 of the document body at sign time, so future amendments don't silently invalidate the signature.
+        Signatures are envelope-encrypted in <code>mountzara-phi</code> R2 (per <code>_lib/phi.js</code>).
+    </p>
+
+    <h2>Stored signatures</h2>
+    <div id="sig-list" class="card glow"><div class="empty">Loading signatures…</div></div>
+
+    <div class="card">
+        <h3 style="margin-top: 0;">Upload a new signature PNG</h3>
+        <label for="upload-display-name">Display name (shown next to signature in the doc)</label>
+        <input type="text" id="upload-display-name" placeholder="Chris Mabini, DO, FMIGS" value="Chris Mabini, DO, FMIGS">
+        <label for="upload-file">Signature PNG (recommended: transparent background, ≥ 400×100 px)</label>
+        <input type="file" id="upload-file" accept="image/png">
+        <label for="upload-notes">Notes (optional)</label>
+        <input type="text" id="upload-notes" placeholder="e.g. scanned 2026-05-28, blue-pen original">
+        <div class="row" style="margin-top: 14px;">
+            <button class="btn primary" id="upload-btn" disabled>Upload signature</button>
+            <div id="upload-status" style="font-size: 13px; color: var(--ink-mute);"></div>
+        </div>
+    </div>
+
+    <h2>Compliance documents</h2>
+    <div id="docs-list" class="card"><div class="empty">Loading documents…</div></div>
+</div>
+
+<dialog id="sign-dialog">
+    <div class="eyebrow" id="sign-doc-title-eyebrow">Sign document</div>
+    <h2 id="sign-doc-title" style="margin-top: 0;">—</h2>
+    <p style="font-size: 13px; color: var(--ink-mute);">
+        By signing, you attest you have reviewed the document in full and accept the obligations it describes.
+        The document body's SHA-256 is recorded with your signature; future amendments require a re-sign.
+    </p>
+
+    <label for="sign-sig-id">Signature to apply</label>
+    <select id="sign-sig-id"></select>
+
+    <label>Attestation text</label>
+    <div class="attest-text" id="sign-attest-text">
+        I, the undersigned, have reviewed this policy in full. I will operate Mount Zara in accordance with the
+        standards and workflows described above. I will surface any deviation in writing within seven days of
+        becoming aware of it.
+    </div>
+
+    <label for="sign-typed-initials">Typed initials (live affirmation, 1–8 letters)</label>
+    <input type="text" id="sign-typed-initials" maxlength="8" placeholder="CRM" style="max-width: 160px;">
+
+    <label for="sign-next-review">Next annual review (optional, YYYY-MM-DD)</label>
+    <input type="date" id="sign-next-review" style="max-width: 200px;">
+
+    <label for="sign-notes">Notes (optional, ≤ 500 chars)</label>
+    <textarea id="sign-notes" maxlength="500" placeholder="e.g. reviewed with counsel YYYY-MM-DD"></textarea>
+
+    <div class="row between" style="margin-top: 20px;">
+        <button class="btn muted" id="sign-cancel">Cancel</button>
+        <button class="btn primary" id="sign-confirm">Sign &amp; record</button>
+    </div>
+</dialog>
+
+<script>
+const KNOWN_DOC_SLUGS = ['controlled-substances', 'licensure'];
+let currentSignatures = [];
+let currentDocs = [];
+
+function toast(msg, kind = 'info') {
+    const el = document.createElement('div');
+    el.className = 'toast ' + (kind === 'error' ? 'error' : '');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+}
+
+async function fetchJSON(url, opts = {}) {
+    const res = await fetch(url, {
+        credentials: 'include',
+        ...opts,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(opts.headers || {})
+        }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(data?.error || ('HTTP ' + res.status)), { status: res.status, data });
+    return data;
+}
+
+function fmtDateTime(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch { return iso; }
+}
+function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')).toLocaleDateString(undefined, { dateStyle: 'medium' }); }
+    catch { return iso; }
+}
+
+// ---------- Signatures ----------
+async function loadSignatures() {
+    const el = document.getElementById('sig-list');
+    try {
+        const data = await fetchJSON('/api/v1/admin/compliance/signatures');
+        currentSignatures = data.signatures || [];
+        el.innerHTML = renderSignatures();
+        attachSigImages();
+        refreshSigDropdown();
+    } catch (e) {
+        el.innerHTML = '<div class="empty">Failed to load signatures: ' + e.message + '</div>';
+    }
+}
+
+function renderSignatures() {
+    if (!currentSignatures.length) {
+        return '<div class="empty">No signatures stored yet. Upload one below.</div>';
+    }
+    return currentSignatures.map(s => {
+        const retired = !!s.retired_at;
+        const badge = retired ? '<span class="badge retired">Retired</span>' : '<span class="badge signed">Active</span>';
+        return `
+            <div style="display:flex; gap:16px; padding: 10px 0; border-bottom: 1px solid var(--hairline);">
+                <div class="sig-preview" data-sig-id="${s.id}">
+                    <div style="font-size:11px; color:#1f1611; text-align:center; padding:6px;">loading…</div>
+                </div>
+                <div class="grow">
+                    <div><strong>${s.display_name || ''}</strong> ${badge}</div>
+                    <div style="font-size:12px; color:var(--ink-mute); margin-top:4px;">
+                        ${s.width_px || '?'} × ${s.height_px || '?'} px ·
+                        ${(s.bytes_size || 0).toLocaleString()} bytes ·
+                        uploaded ${fmtDateTime(s.created_at)}
+                    </div>
+                    <div style="font-size:11px; color:var(--ink-soft); margin-top:6px;">
+                        <code>id: ${s.id}</code>
+                    </div>
+                    ${retired ? '' : `<button class="btn danger" style="margin-top:10px;" onclick="retireSignature('${s.id}')">Retire this signature</button>`}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function attachSigImages() {
+    // Fetch each PNG separately as binary, build a blob URL.
+    for (const s of currentSignatures) {
+        const tile = document.querySelector(`.sig-preview[data-sig-id="${s.id}"]`);
+        if (!tile) continue;
+        try {
+            const res = await fetch(`/api/v1/admin/compliance/signatures/${s.id}/image`, { credentials: 'include' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            tile.innerHTML = `<img alt="signature ${s.display_name}" src="${url}">`;
+        } catch (e) {
+            tile.innerHTML = '<div style="font-size:11px;color:#b91c1c;padding:6px;">image load failed</div>';
+        }
+    }
+}
+
+async function retireSignature(id) {
+    if (!confirm('Retire this signature? It will no longer be selectable for new signings, but past signings remain valid.')) return;
+    try {
+        await fetchJSON(`/api/v1/admin/compliance/signatures/${id}`, { method: 'DELETE' });
+        toast('Signature retired.');
+        await loadSignatures();
+    } catch (e) {
+        toast('Retire failed: ' + e.message, 'error');
+    }
+}
+window.retireSignature = retireSignature;
+
+// Upload
+const uploadInput = document.getElementById('upload-file');
+const uploadBtn = document.getElementById('upload-btn');
+uploadInput.addEventListener('change', () => {
+    uploadBtn.disabled = !uploadInput.files || uploadInput.files.length === 0;
+});
+uploadBtn.addEventListener('click', async () => {
+    const file = uploadInput.files[0];
+    if (!file) return;
+    if (file.type !== 'image/png') { toast('PNG files only.', 'error'); return; }
+    const displayName = document.getElementById('upload-display-name').value.trim();
+    if (!displayName) { toast('Display name required.', 'error'); return; }
+    const notes = document.getElementById('upload-notes').value.trim();
+    const statusEl = document.getElementById('upload-status');
+    statusEl.textContent = 'Uploading…';
+    uploadBtn.disabled = true;
+    try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('display_name', displayName);
+        if (notes) fd.append('notes', notes);
+        const res = await fetch('/api/v1/admin/compliance/signatures', {
+            method: 'POST', credentials: 'include', body: fd,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || ('HTTP ' + res.status));
+        toast('Signature uploaded.');
+        statusEl.textContent = '';
+        uploadInput.value = '';
+        await loadSignatures();
+    } catch (e) {
+        statusEl.textContent = '';
+        toast('Upload failed: ' + e.message, 'error');
+    } finally {
+        uploadBtn.disabled = false;
+    }
+});
+
+// ---------- Docs ----------
+async function loadDocs() {
+    const el = document.getElementById('docs-list');
+    try {
+        const data = await fetchJSON('/api/v1/admin/compliance/docs');
+        currentDocs = data.docs || [];
+        el.innerHTML = renderDocs();
+    } catch (e) {
+        el.innerHTML = '<div class="empty">Failed to load documents: ' + e.message + '</div>';
+    }
+}
+
+function renderDocs() {
+    if (!currentDocs.length) return '<div class="empty">No compliance docs registered.</div>';
+    return currentDocs.map(d => {
+        const sig = d.active_signature;
+        let badge, signedBlock = '';
+        if (!sig) {
+            badge = '<span class="badge unsigned">Unsigned</span>';
+        } else if (d.next_review_overdue) {
+            badge = '<span class="badge review">Review overdue</span>';
+        } else {
+            badge = '<span class="badge signed">Signed</span>';
+        }
+        if (sig) {
+            signedBlock = `
+                <div class="signed-block">
+                    Signed by <strong>${sig.signed_by_display_name || sig.signature_display_name || ''}</strong>
+                    on ${fmtDateTime(sig.signed_at)}.
+                    Initials: <code>${sig.typed_initials || ''}</code>.
+                    Next review: ${sig.next_review_date ? fmtDate(sig.next_review_date) : 'not set'}.
+                    <div class="meta">document SHA-256 <code>${(sig.document_sha256 || '').slice(0, 12)}…</code></div>
+                </div>
+            `;
+        }
+        return `
+            <div class="doc-row">
+                <div class="grow">
+                    <div style="font-size: 17px;">${d.title} ${badge}</div>
+                    <div style="font-size: 12px; color: var(--ink-mute); margin-top: 4px;">
+                        <code>${d.path}</code>
+                        ${d.annual_review ? '<span class="pill">annual review</span>' : ''}
+                    </div>
+                    ${signedBlock}
+                </div>
+                <div>
+                    <a class="btn muted" href="${d.public_url}" target="_blank" rel="noopener">View</a>
+                    <button class="btn primary" onclick="openSignDialog('${d.slug}', '${d.title.replace(/'/g, "&#39;")}')">${sig ? 'Re-sign' : 'Sign'}</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function refreshSigDropdown() {
+    const sel = document.getElementById('sign-sig-id');
+    const active = currentSignatures.filter(s => !s.retired_at);
+    if (!active.length) {
+        sel.innerHTML = '<option value="">— No active signature; upload one first —</option>';
+    } else {
+        sel.innerHTML = active.map(s =>
+            `<option value="${s.id}">${s.display_name} (${s.width_px || '?'}×${s.height_px || '?'})</option>`
+        ).join('');
+    }
+}
+
+const signDialog = document.getElementById('sign-dialog');
+let currentSignSlug = null;
+
+function openSignDialog(slug, title) {
+    currentSignSlug = slug;
+    document.getElementById('sign-doc-title').textContent = title;
+    document.getElementById('sign-doc-title-eyebrow').textContent = `Sign · ${slug}`;
+    document.getElementById('sign-typed-initials').value = '';
+    document.getElementById('sign-notes').value = '';
+    // Default next review = +1 year.
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    document.getElementById('sign-next-review').value = d.toISOString().slice(0, 10);
+    refreshSigDropdown();
+    signDialog.showModal();
+}
+window.openSignDialog = openSignDialog;
+
+document.getElementById('sign-cancel').addEventListener('click', () => signDialog.close());
+document.getElementById('sign-confirm').addEventListener('click', async () => {
+    const signature_id = document.getElementById('sign-sig-id').value;
+    const typed_initials = document.getElementById('sign-typed-initials').value.trim();
+    const next_review_date = document.getElementById('sign-next-review').value || null;
+    const notes = document.getElementById('sign-notes').value.trim() || null;
+    const typed_attestation = document.getElementById('sign-attest-text').textContent.trim();
+    if (!signature_id) { toast('Pick a signature first.', 'error'); return; }
+    if (!/^[A-Za-z .'-]{1,8}$/.test(typed_initials)) { toast('Initials must be 1–8 letters.', 'error'); return; }
+    const btn = document.getElementById('sign-confirm');
+    btn.disabled = true;
+    try {
+        await fetchJSON(`/api/v1/admin/compliance/docs/${currentSignSlug}`, {
+            method: 'POST',
+            body: JSON.stringify({ signature_id, typed_attestation, typed_initials, next_review_date, notes }),
+        });
+        toast('Document signed.');
+        signDialog.close();
+        await loadDocs();
+    } catch (e) {
+        toast('Sign failed: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+// Boot.
+loadSignatures();
+loadDocs();
+</script>
+</body>
+</html>
