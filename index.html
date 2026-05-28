@@ -4737,10 +4737,26 @@
 
         /* Word-level reveal for headlines (per-word mask) */
         .word-reveal {
-            /* Disable text-fill on the host so child spans control color */
-            -webkit-text-fill-color: initial !important;
-            background: none !important;
+            /* 2026-05-27 — was stripping the parent's gradient
+               (`-webkit-text-fill-color: initial !important; background: none
+               !important; color: var(--white)`) which made the .hero-title
+               render as solid white after JS splitWords() ran. Now apply the
+               brand purple gradient HERE so the gradient survives the JS
+               word-split rewrap. Each .word-mask inherits the gradient via
+               background-clip. */
+            background: linear-gradient(135deg, #ffffff 0%, #d8caff 45%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             color: var(--white);
+        }
+        /* Fallback for browsers without background-clip:text */
+        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+            .word-reveal {
+                background: transparent;
+                color: var(--white);
+                -webkit-text-fill-color: var(--white);
+            }
         }
         .word-reveal .word-mask {
             display: inline-block;
