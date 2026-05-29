@@ -14,8 +14,9 @@
 | **Last updated** | 2026-05-28 by Claude |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
 | **Last commit on branch** | `phase17(sprint1 R5): patient tech-check page + endpoint` |
-| **Deployed to production?** | **PARTIAL** — R4 page + endpoint shipped; schema migration `0018` still pending |
-| **Schema migration `0018` run against D1?** | **NO** — runs as part of Sprint 1 close (item 12) |
+| **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5 page+endpoint, 2026-05-28) |
+| **Deployed to production?** | **YES** — R1+R4+R5 code shipped, schema 0018 applied to D1 (visit_launch_attestations + tech_check_results + licensure_blocks tables live) |
+| **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28 (3 ALTER TABLEs on appointments via Sprint 1 commit + 3 CREATE TABLEs via splitter `/tmp/_mz_0018_part2.sql`) |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
 | **Source benchmark** | Joshi & Welch (2023) *Telehealth Success*, Forbes Books, ISBN 979-8-88750-139-0 |
