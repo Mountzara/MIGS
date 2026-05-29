@@ -14,3 +14,10 @@
 # slash directory navigation in the browser works without falling back to
 # the marketing homepage. _redirects rewrites were unreliable for this
 # pattern — see incident note in CLAUDE.md.
+
+# Phase 17 Sprint 1 R4 — Privacy attestation interstitial. The page is
+# static (portal/visit/launch/index.html); the appointment id is read
+# from the URL path client-side. Pages serves the SPA for any
+# /portal/visit/<id>/launch URL.
+/portal/visit/*/launch /portal/visit/launch/index.html 200
+/portal/visit/*/launch/ /portal/visit/launch/index.html 200

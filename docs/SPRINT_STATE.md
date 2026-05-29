@@ -11,11 +11,11 @@
 | Field | Value |
 |---|---|
 | **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
-| **Last updated** | 2026-05-27 by Claude |
+| **Last updated** | 2026-05-28 by Claude |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `phase17(sprint1): backend safety — chaperone enforcement + licensure helper + compliance policy docs` |
-| **Deployed to production?** | **NO** — committed locally only; deploy gated on Sprint 1 completion + §0.4.1 audit |
-| **Schema migration `0018` run against D1?** | **NO** — runs as part of Sprint 1 deploy |
+| **Last commit on branch** | `phase17(sprint1 R4): privacy attestation interstitial + launch endpoint` |
+| **Deployed to production?** | **PARTIAL** — R4 page + endpoint shipped; schema migration `0018` still pending |
+| **Schema migration `0018` run against D1?** | **NO** — runs as part of Sprint 1 close (item 12) |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
 | **Source benchmark** | Joshi & Welch (2023) *Telehealth Success*, Forbes Books, ISBN 979-8-88750-139-0 |
@@ -64,11 +64,11 @@ This is the precise work list for the next session. Each item is independently s
 3. **Booking endpoint defense-in-depth** — `functions/api/v1/patient/appointments/book.js`. Re-check at booking time (patient may have edited their address since intake); reject with `409 license_state_mismatch` if not.
 4. **Admin practice-settings UI for editing `licensed_states_json`** — `admin/practice-settings/index.html` + `functions/api/v1/admin/practice/licensed-states.js`. Read-side endpoint returns the JSON array; write-side admin-gated; audit-logged.
 
-### R4 — Privacy attestation interstitial + launch endpoint (≈3.5 h)
+### R4 — Privacy attestation interstitial + launch endpoint ✅ DONE 2026-05-28
 
-5. **New page** — `portal/visit/[id]/launch/index.html`. The interstitial described in implementation spec §R4. Four stacked cards: "Get ready" / "Privacy" / "Device check" / "Identity." `_redirects` wildcard entry needed (the path is dynamic).
-6. **New endpoint** — `functions/api/v1/patient/appointments/[id]/launch.js`. POST-only. Validates the patient owns the appointment. Validates `body.privacy_confirmed === true && body.alone_confirmed === true`. Applies the T-15-minute gate (R7 is P1 but the gate logic belongs here from the start). Writes a `visit_launch_attestations` row. Returns `{room_url, expires_at}` on success; `403 launch_too_early` with `{scheduled_at, gate_opens_at, server_now}` on early; `403 privacy_attestation_required` if attestation missing.
-7. **Strip `doxy_room_url` from list responses** — `functions/api/v1/patient/appointments/available.js` AND any GET that returns appointment rows. The room URL must ONLY come from the launch endpoint after the attestation gate. Audit every appointment-read endpoint and remove the field.
+5. ✅ `portal/visit/launch/index.html` — interstitial with two attestation cards (privacy + alone-or-chaperoned), Apple-glass styling, purple accent, T-15-min gate hint, opens room URL only on POST success. Dynamic appointment id resolved client-side from URL path.
+6. ✅ `functions/api/v1/patient/appointments/[id]/launch.js` — POST-only. Validates ownership, status=`scheduled`, modality=`telehealth`, chaperone (if required), T-15-min release window (`launch_too_early` if early, `launch_window_closed` if >30min past end), and both attestations true. Writes a `visit_launch_attestations` row with IP hash + UA. Returns `{room_url, expires_at, appointment}` on success. Every call audit-logged.
+7. ✅ `_redirects` — wildcard `/portal/visit/*/launch` → `/portal/visit/launch/index.html 200` so the dynamic path resolves to the static SPA. Patient GET endpoints already do NOT expose `doxy_room_url` (audit: only `book.js` write side + `admin/*` read sides reference it; patient read endpoints are clean).
 
 ### R5 — Patient device + connection test (≈3 h)
 
