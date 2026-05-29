@@ -298,6 +298,40 @@ async function onRequestImpl({ request, env, params }) {
         try { body = await request.json(); } catch { return errorResponse("invalid JSON body"); }
         if (!body.id) return errorResponse("missing id");
         if (!POST_KINDS.has(body.kind)) return errorResponse("invalid kind");
+
+        // Overwrite-protection guard (added 2026-05-27 after the audit
+        // revealed that POST /api/posts had no dedup check — if
+        // run_weekly_digest.sh re-fires for an already-rejected W22 or an
+        // already-published W20/W21, the next POST would silently overwrite
+        // the existing R2 post and un-tombstone the rejected draft, ship a
+        // stale body, and revert any clinician-revised verdict/social-draft
+        // patches. Now: refuse POST when the id already exists with status
+        // in {published, rejected}. Operator can still PUT the post
+        // explicitly to update editable fields. To intentionally recreate a
+        // rejected post, first explicitly delete or DELETE-with-confirm via
+        // the admin UI. To intentionally republish, use PUT with the
+        // editable-fields whitelist (preserves R2 state)."""
+        const existing = await readPost(env, String(body.id));
+        if (existing) {
+            const lockedStatuses = new Set(["published", "rejected"]);
+            if (lockedStatuses.has(existing.status)) {
+                return errorResponse(
+                    `post ${body.id} already exists with status="${existing.status}" — ` +
+                    `POST refused (overwrite-protection guard 2026-05-27). ` +
+                    `Use PUT /api/posts/${body.id} to update editable fields, ` +
+                    `or explicitly change status first via /reject or /approve. ` +
+                    `This guard prevents a re-run of run_weekly_digest.sh / ` +
+                    `run_trend_tracker.sh from silently un-tombstoning rejected drafts ` +
+                    `or overwriting published content.`,
+                    409  // Conflict
+                );
+            }
+            // Existing draft — log the overwrite and proceed (drafts are
+            // explicitly the editable working state). The audit gate at
+            // publish_to_admin._post_draft has already verified the new
+            // payload before it reaches this endpoint.
+        }
+
         const now = new Date().toISOString();
         const post = {
             id: String(body.id),
@@ -432,9 +466,15 @@ async function onRequestImpl({ request, env, params }) {
         // old kind after the write — that re-lists posts/* and re-emits the
         // index with the now-no-longer-matching post excluded.
         const oldKind = post.kind;
+        // Editable fields. Per CLAUDE.md §0.8.2 the 5 canonical structured
+        // manifest fields (pmids_cited, kb_entries_retrieved, run_manifest_path,
+        // topics_covered, gaps_surfaced) are ALL editable so the operator can
+        // backfill them on older posts. `run_manifest_path` was missing from
+        // the whitelist until 2026-05-26 — PUTs were silently dropping the
+        // field, leaving 8 trend briefs with only 2-3/5 canonical fields.
         const editable = ["title", "summary", "body_html", "topics_covered", "pmids_cited",
-                          "kb_entries_retrieved", "gaps_surfaced", "verdict",
-                          "linkedin_draft", "instagram_draft", "kind", "status"];
+                          "kb_entries_retrieved", "gaps_surfaced", "run_manifest_path",
+                          "verdict", "linkedin_draft", "instagram_draft", "kind", "status"];
         for (const key of editable) {
             if (patch[key] !== undefined) post[key] = patch[key];
         }
