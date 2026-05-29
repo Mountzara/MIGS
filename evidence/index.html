@@ -169,15 +169,25 @@
         .brief-detail-body li { margin: 8px 0; }
         .brief-detail-body a { color: rgba(var(--glow-purple), 0.95); border-bottom: 1px solid rgba(var(--glow-purple), 0.32); transition: color 0.2s ease, border-color 0.2s ease; }
         .brief-detail-body a:hover { color: #fff; border-bottom-color: rgba(var(--glow-purple), 0.95); }
-        .brief-detail-manifest {
-            margin-top: 56px; padding: 22px 24px;
-            background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
-            border: 1px solid rgba(var(--glow-purple), 0.18); border-radius: 16px;
-            font-size: 13px; line-height: 1.65; color: rgba(255, 255, 255, 0.75);
-        }
-        .brief-detail-manifest h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
-        .brief-detail-manifest dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 18px; }
-        .brief-detail-manifest dt { color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+
+        /* §3.8 belt-and-suspenders dialog hide. The browser UA stylesheet
+           rule `dialog:not([open]) { display: none }` already hides closed
+           dialogs natively, but per user directive 2026-05-26 — when posts
+           are innerHTML'd into .brief-detail-body, in some browsers / browser
+           extensions / partial-script-execution paths the UA default has not
+           applied cleanly and the modal contents (TL;DR / PICO / Methods /
+           "Pending review" placeholders / etc.) have leaked visible to readers.
+           This rule force-hides every closed dialog and every deepdive-modal
+           div (legacy) inside the post body. Shows only when JS-opened. */
+        .brief-detail-body dialog:not([open]) { display: none !important; }
+        .brief-detail-body dialog.mz-jc-modal:not([open]) { display: none !important; }
+        .brief-detail-body div.deepdive-modal:not([data-open="true"]) { display: none !important; }
+
+        /* Prominent publication date at top of every post */
+        .brief-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .brief-detail-pubdate::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(var(--glow-purple), 0.92); }
+        .brief-detail-pubdate-label { font-weight: 600; letter-spacing: 0.18em; }
+        .brief-detail-pubdate-date { font-weight: 500; color: rgba(255, 255, 255, 0.78); letter-spacing: 0.06em; }
 
         .loader { text-align: center; padding: clamp(60px, 8vw, 100px); color: rgba(255, 255, 255, 0.5); }
         .loader-spinner { width: 32px; height: 32px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: rgba(var(--glow-purple), 0.95); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
@@ -289,18 +299,6 @@
                 const post = await res.json();
                 document.title = `${post.title || 'Post'} — CBG/MIGS Physician Blog`;
                 const claim = post.summary || '';
-                const manifest = `
-                    <div class="brief-detail-manifest">
-                        <h4>Evidence manifest</h4>
-                        <dl>
-                            <dt>PMIDs cited</dt><dd>${(post.pmids_cited || []).map(esc).join(', ') || '—'}</dd>
-                            <dt>KB entries</dt><dd>${(post.kb_entries_retrieved || []).length || 0} entries retrieved · § 0.8 compliant</dd>
-                            ${(post.gaps_surfaced || []).length ? `<dt>Gaps</dt><dd>${post.gaps_surfaced.map(esc).join(', ')}</dd>` : ''}
-                            <dt>Source</dt><dd>PubMed E-Utilities (§ 3.6 validated API)</dd>
-                            <dt>Published</dt><dd>${esc(fmtDate(post.published_at) || '—')}</dd>
-                        </dl>
-                    </div>
-                `;
                 // Claim block is rendered only when the post has a non-empty
                 // summary. Weekly digests (CBG/MIGS Monday Mornings posts)
                 // intentionally leave summary blank since the hero lede
@@ -312,15 +310,21 @@
                         ${esc(claim)}
                     </div>`
                     : '';
+                // Publication date — prominent at very top of post (per user
+                // directive 2026-05-21). Falls back to created_at if
+                // published_at is absent (draft posts visible to admin).
+                const pubDateStr = fmtDate(post.published_at || post.created_at);
+                const pubBlock = pubDateStr
+                    ? `<p class="brief-detail-pubdate"><span class="brief-detail-pubdate-label">Published</span><span class="brief-detail-pubdate-date">${esc(pubDateStr)}</span></p>`
+                    : '';
                 document.getElementById('detailContent').innerHTML = `
+                    ${pubBlock}
                     <div class="brief-detail-meta">
                         <span class="verdict-badge ${verdictClass(post.verdict)}">${esc(post.verdict || 'Reviewed')}</span>
-                        <span class="brief-date" style="padding-top:7px;">${esc(fmtDate(post.published_at || post.created_at))}</span>
                     </div>
                     <h1 class="brief-detail-title">${esc(post.title)}</h1>
                     ${claimBlock}
                     <div class="brief-detail-body">${post.body_html || ''}</div>
-                    ${manifest}
                 `;
 
                 // Execute any <script> tags that came through innerHTML —

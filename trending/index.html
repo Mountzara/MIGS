@@ -179,6 +179,15 @@
             .post-detail-body h2 { font-size: 21px; margin: 28px 0 10px; }
             .post-detail-body h3 { font-size: 17px; margin: 22px 0 8px; }
         }
+        /* §3.8 belt-and-suspenders dialog hide. Mirrors /evidence/ shell.
+           Browser UA stylesheet hides closed <dialog> natively but per user
+           directive 2026-05-26 the modal content (TL;DR / PICO / Methods /
+           "Pending review" placeholders) has leaked visible after the AI
+           disclaimer on older R2 posts. Force-hide every closed dialog +
+           legacy deepdive-modal div inside the post body. */
+        .post-detail-body dialog:not([open]) { display: none !important; }
+        .post-detail-body dialog.mz-jc-modal:not([open]) { display: none !important; }
+        .post-detail-body div.deepdive-modal:not([data-open="true"]) { display: none !important; }
         .post-card {
             display: flex;
             flex-direction: column;
@@ -386,7 +395,13 @@
             color: rgba(255, 255, 255, 0.74);
             font-style: italic;
         }
-        .post-detail-manifest {
+        /* Prominent publication date at top of every post (per user directive 2026-05-25) */
+        .post-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .post-detail-pubdate::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(var(--glow-purple), 0.92); }
+        .post-detail-pubdate-label { font-weight: 600; letter-spacing: 0.18em; }
+        .post-detail-pubdate-date { font-weight: 500; color: rgba(255, 255, 255, 0.78); letter-spacing: 0.06em; }
+        /* legacy .post-detail-manifest removed 2026-05-25 — leaked §3.7 infra-language onto user-facing surface */
+        .post-detail-manifest_REMOVED {
             margin-top: 56px;
             padding: 22px 24px;
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
@@ -542,27 +557,22 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const post = await res.json();
                 document.title = `${post.title || 'Brief'} — Trend Briefs`;
-                const manifest = `
-                    <div class="post-detail-manifest">
-                        <h4>Evidence manifest</h4>
-                        <dl>
-                            <dt>Topics</dt><dd>${(post.topics_covered || []).map(esc).join(', ') || '—'}</dd>
-                            <dt>PMIDs cited</dt><dd>${(post.pmids_cited || []).map(esc).join(', ') || '—'}</dd>
-                            <dt>KB entries</dt><dd>${(post.kb_entries_retrieved || []).length || 0} entries retrieved · § 0.8 compliant</dd>
-                            ${(post.gaps_surfaced || []).length ? `<dt>Gaps</dt><dd>${post.gaps_surfaced.map(esc).join(', ')}</dd>` : ''}
-                            <dt>Published</dt><dd>${esc(fmtDate(post.published_at) || '—')}</dd>
-                        </dl>
-                    </div>
-                `;
+                // Per user directive 2026-05-25: Evidence manifest card removed
+                // (leaked §3.7 infra-language like "§ 0.8 compliant" onto a
+                // user-facing surface); prominent Published date moved to top
+                // of post via the new .post-detail-pubdate styling.
+                const pubDateStr = fmtDate(post.published_at || post.created_at);
+                const pubBlock = pubDateStr
+                    ? `<p class="post-detail-pubdate"><span class="post-detail-pubdate-label">Published</span><span class="post-detail-pubdate-date">${esc(pubDateStr)}</span></p>`
+                    : '';
                 document.getElementById('detailContent').innerHTML = `
+                    ${pubBlock}
                     <div class="post-detail-meta">
                         <span class="post-badge">${esc(post.week_label || 'Weekly digest')}</span>
-                        <span class="post-date" style="padding-top:7px;">${esc(fmtDate(post.published_at || post.created_at))}</span>
                     </div>
                     <h1 class="post-detail-title">${esc(post.title)}</h1>
                     <p class="post-detail-subtitle">${esc(post.summary)}</p>
                     <div class="post-detail-body">${post.body_html || ''}</div>
-                    ${manifest}
                 `;
             } catch (e) {
                 document.getElementById('detailContent').innerHTML = `<div class="empty">Post not found: ${esc(e.message || String(e))}</div>`;
