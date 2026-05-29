@@ -298,6 +298,11 @@
                 <input id="ps-phone" type="text" placeholder="(555) 555-1234">
                 <button type="button" class="compact" style="margin-top:8px" onclick="saveSetting('phone_office', document.getElementById('ps-phone').value)">Save Phone</button>
 
+                <label style="margin-top:16px">Licensed states — telehealth eligibility</label>
+                <p class="panel-sub" style="margin-top:2px">A patient whose Section 1 state of residence is not checked here is blocked at intake submission, triage, and booking (Phase 17 R3). If never configured, the gate defaults to Illinois only.</p>
+                <div id="ps-states-grid" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px"><span class="empty">Loading…</span></div>
+                <button type="button" class="compact" style="margin-top:10px" onclick="saveLicensedStates()">Save licensed states</button>
+
                 <div id="settings-flash" class="flash"></div>
             </section>
 
@@ -442,6 +447,7 @@
         $('ps-tz').value = s.timezone || '';
         $('ps-addr').value = s.practice_address || '';
         $('ps-phone').value = s.phone_office || '';
+        loadLicensedStates();
     }
     async function saveSetting(key, value) {
         try {
@@ -453,6 +459,40 @@
             const j = await r.json();
             if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
             flash('settings-flash', `Saved ${key}.`, 'ok');
+        } catch (e) {
+            flash('settings-flash', `Save failed: ${e.message}`, 'err');
+        }
+    }
+
+    // -------- Licensed states (Phase 17 R3 telehealth licensure gate) --------
+    const ADMIN_US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+    async function loadLicensedStates() {
+        const grid = $('ps-states-grid');
+        if (!grid) return;
+        let licensed = [];
+        try {
+            const r = await fetch('/api/v1/admin/practice/licensed-states');
+            if (r.ok) { const j = await r.json(); licensed = Array.isArray(j.licensed_states) ? j.licensed_states : []; }
+        } catch {}
+        const set = new Set(licensed);
+        grid.innerHTML = ADMIN_US_STATES.map(code =>
+            `<label style="display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:400;cursor:pointer">`
+            + `<input type="checkbox" value="${code}"${set.has(code) ? ' checked' : ''}> ${code}</label>`
+        ).join('');
+    }
+    async function saveLicensedStates() {
+        const grid = $('ps-states-grid');
+        const states = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+        if (states.length === 0) { flash('settings-flash', 'Select at least one state (use IL to restrict to Illinois).', 'err'); return; }
+        try {
+            const r = await fetch('/api/v1/admin/practice/licensed-states', {
+                method: 'PUT',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ states }),
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error((j.invalid ? `invalid: ${j.invalid.join(', ')}` : null) || j.error || `HTTP ${r.status}`);
+            flash('settings-flash', `Saved ${states.length} licensed state(s): ${states.join(', ')}.`, 'ok');
         } catch (e) {
             flash('settings-flash', `Save failed: ${e.message}`, 'err');
         }

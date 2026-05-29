@@ -22,6 +22,11 @@ import { requireRole, nowMs } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
 import { newId } from "../../../../../_lib/db.js";
 import { runTriage, TRIAGE_PROMPT_VERSION } from "../../../../../_lib/intake_triage.js";
+import {
+    getLicensedStates,
+    isLicensedInState,
+    recordLicensureBlock,
+} from "../../../../../_lib/licensure.js";
 
 const MANUAL_REVIEW_PLACEHOLDER = "manual_review_required";
 
@@ -73,6 +78,27 @@ export async function triageForIntake(ctx, intake_id) {
     for (const row of (sectionsRes?.results || [])) {
         try { sections[row.section_number] = { data: JSON.parse(row.data_json) }; }
         catch { sections[row.section_number] = { data: {} }; }
+    }
+
+    // Phase 17 R3 — short-circuit triage if the clinician is not licensed in
+    // the patient's state of residence (Section 1 address_state). Saves an
+    // Anthropic call for an encounter that cannot lawfully proceed. submit.js
+    // is the primary gate (blocks the submit before this runs); this is
+    // defense-in-depth for the standalone POST /triage path. Only enforced
+    // when a valid state is present — submit.js owns the "state required" rule.
+    const triage_state = (() => {
+        const raw = sections?.[1]?.data?.address_state;
+        const code = typeof raw === "string" ? raw.trim().toUpperCase() : "";
+        return /^[A-Z]{2}$/.test(code) ? code : null;
+    })();
+    if (triage_state && !(await isLicensedInState(env, triage_state))) {
+        const licensed_states = await getLicensedStates(env);
+        await recordLicensureBlock(env, {
+            patient_id: intake.patient_id,
+            state: triage_state,
+            reason: `triage short-circuit — clinician not licensed in ${triage_state}`,
+        });
+        return { ok: false, error: "license_state_mismatch", licensed_states };
     }
 
     const triage_id = newId();

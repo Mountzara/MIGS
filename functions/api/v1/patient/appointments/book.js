@@ -34,6 +34,11 @@ import { logAudit } from "../../../../_lib/audit.js";
 import { newId } from "../../../../_lib/db.js";
 import { getVisitType, isValidVisitTypeKey } from "../../../../_lib/visit_types.js";
 import { dateStringToMs } from "../../../../_lib/scheduling.js";
+import {
+    getLicensedStates,
+    isLicensedInState,
+    recordLicensureBlock,
+} from "../../../../_lib/licensure.js";
 
 const CLINICIAN_ID = "mabini-christopher-z";
 const ALLOWED_MODALITIES = new Set(["in_person", "telehealth"]);
@@ -104,6 +109,44 @@ export async function onRequestPost(ctx) {
         return err(409, "triage_already_booked", "This intake already has an appointment booked.", {
             appointment_id: triage.appointment_id,
         });
+    }
+
+    // Phase 17 R3 — defense-in-depth state-licensure re-check at booking time.
+    // The intake-submit gate is primary; re-verify here in case Section 1
+    // address_state changed or the intake gate was bypassed. State is read
+    // from the triage's intake Section 1. Only blocks when a valid state is
+    // present and the clinician is not licensed there. See _lib/licensure.js.
+    try {
+        const s1 = await env.DB.prepare(`
+            SELECT data_json FROM intake_section_data WHERE intake_id = ? AND section_number = 1
+        `).bind(triage.intake_id).first();
+        let book_state = null;
+        if (s1?.data_json) {
+            const d = JSON.parse(s1.data_json);
+            const raw = typeof d?.address_state === "string" ? d.address_state.trim().toUpperCase() : "";
+            if (/^[A-Z]{2}$/.test(raw)) book_state = raw;
+        }
+        if (book_state && !(await isLicensedInState(env, book_state))) {
+            const licensed_states = await getLicensedStates(env);
+            await recordLicensureBlock(env, {
+                patient_id: session.patient_id,
+                state: book_state,
+                reason: `booking blocked — clinician not licensed in ${book_state}`,
+            });
+            await logAudit(env, {
+                user_id: session.patient_id, user_role: "patient",
+                action: "licensure_block", record_type: "appointment", record_id: triage_id,
+                ip: request.headers.get("CF-Connecting-IP") || "",
+                user_agent: request.headers.get("User-Agent") || "",
+                success: false,
+                details: { stage: "appointment_book", state: book_state, licensed_states },
+            });
+            return err(409, "license_state_mismatch",
+                `Our clinician is not currently licensed to provide care in your state (${book_state}).`,
+                { licensed_states });
+        }
+    } catch (e) {
+        console.warn("appt book licensure check warn", { error: String(e) });
     }
 
     const visit_type = triage.final_visit_type || triage.clinician_override_visit_type || triage.ai_visit_type;

@@ -23,6 +23,11 @@ import {
     buildCareGoalsFromSection4,
     shouldOverwriteCareGoals,
 } from "../../../../../_lib/care_goals_mapper.js";
+import {
+    getLicensedStates,
+    isLicensedInState,
+    recordLicensureBlock,
+} from "../../../../../_lib/licensure.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -58,6 +63,54 @@ export async function onRequestPost(ctx) {
     `).bind(intake_id).first();
     if (!consent) {
         return err(409, "consent_required", "section 2 (consent) must be saved before submit");
+    }
+
+    // Phase 17 R3 — state-licensure gate. Telehealth care is lawful only in
+    // states where the clinician holds an active license (or a valid compact /
+    // temporary-practice authorization). The patient's state of residence is
+    // captured in Section 1 (address_state). If the clinician is not licensed
+    // there, refuse the submit with 422 so no triage / visit is generated for
+    // an out-of-license encounter, and leave the intake in_progress so the
+    // patient can correct it. See docs/compliance/licensure.md + _lib/licensure.js.
+    let address_state = null;
+    try {
+        const s1 = await env.DB.prepare(`
+            SELECT data_json FROM intake_section_data WHERE intake_id = ? AND section_number = 1
+        `).bind(intake_id).first();
+        if (s1?.data_json) {
+            const d = JSON.parse(s1.data_json);
+            const raw = typeof d?.address_state === "string" ? d.address_state.trim().toUpperCase() : "";
+            if (/^[A-Z]{2}$/.test(raw)) address_state = raw;
+        }
+    } catch (e) {
+        console.warn("intake submit address_state parse warn", { error: String(e) });
+    }
+    if (!address_state) {
+        return err(422, "state_required",
+            "Please select your state of residence in Section 1 before submitting — " +
+            "we need it to confirm your clinician is licensed to care for you.");
+    }
+    if (!(await isLicensedInState(env, address_state))) {
+        const licensed_states = await getLicensedStates(env);
+        await recordLicensureBlock(env, {
+            patient_id: session.patient_id,
+            state: address_state,
+            reason: `intake_submit blocked — clinician not licensed in ${address_state}`,
+        });
+        await logAudit(env, {
+            user_id: session.patient_id, user_role: "patient",
+            action: "licensure_block", record_type: "intake", record_id: intake_id,
+            ip: request.headers.get("CF-Connecting-IP") || "",
+            user_agent: request.headers.get("User-Agent") || "",
+            success: false,
+            details: { stage: "intake_submit", state: address_state, licensed_states },
+        });
+        return new Response(JSON.stringify({
+            error: "license_state_mismatch",
+            message: `Our clinician is not currently licensed to provide care in your state (${address_state}). ` +
+                     `Currently licensed: ${licensed_states.join(", ")}. Please contact the office to discuss options.`,
+            licensed_states,
+        }), { status: 422, headers: { "content-type": "application/json", "cache-control": "no-store" } });
     }
 
     // Inspect section 17 (mental health) for flagging.

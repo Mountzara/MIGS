@@ -11,11 +11,11 @@
 | Field | Value |
 |---|---|
 | **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
-| **Last updated** | 2026-05-28 by Claude |
+| **Last updated** | 2026-05-29 by Claude (Cowork) |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `phase17(sprint1 R5): patient tech-check page + endpoint` |
-| **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5 page+endpoint, 2026-05-28) |
-| **Deployed to production?** | **YES** — R1+R4+R5 code shipped, schema 0018 applied to D1 (visit_launch_attestations + tech_check_results + licensure_blocks tables live) |
+| **Last commit on branch** | `phase17(sprint1 R3): state-licensure gate + admin picker` |
+| **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5, 2026-05-28) |
+| **Deployed to production?** | **PARTIAL** — R1+R4+R5 + schema 0018 are live (deploy 5490890b). R3 (state-licensure gate) + 5 pre-sprint compliance commits (§1.2 naming / §3.12 disclaimers / pub-dates / POST overwrite-guard / CI gate) are **committed but NOT yet deployed** — they ride the sprint-close deploy. |
 | **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28 (3 ALTER TABLEs on appointments via Sprint 1 commit + 3 CREATE TABLEs via splitter `/tmp/_mz_0018_part2.sql`) |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
@@ -58,12 +58,18 @@ The Sprint 1 commit lands the **backend safety-critical pieces** of recommendati
 
 This is the precise work list for the next session. Each item is independently scoped; the items can be done in any order except items 11 + 12 + 13 which must come last.
 
-### R3 wiring — 4 small Edits (≈45 min total)
+### R3 wiring — ✅ DONE 2026-05-29 (commit pending sprint-close deploy)
 
-1. **Intake submit endpoint integration** — `functions/api/v1/patient/intake/[intake_id]/submit.js`. Import `isLicensedInState` from `_lib/licensure.js`. Before LLM call, look up the patient's `address_state` from intake section 1; if not licensed, write a `licensure_blocks` row, return `422 license_state_mismatch` with `{licensed_states: [...]}` payload.
-2. **Triage endpoint short-circuit** — `functions/api/v1/patient/intake/[intake_id]/triage.js`. Same import + state check; if not licensed, short-circuit before the Claude API call.
-3. **Booking endpoint defense-in-depth** — `functions/api/v1/patient/appointments/book.js`. Re-check at booking time (patient may have edited their address since intake); reject with `409 license_state_mismatch` if not.
-4. **Admin practice-settings UI for editing `licensed_states_json`** — `admin/practice-settings/index.html` + `functions/api/v1/admin/practice/licensed-states.js`. Read-side endpoint returns the JSON array; write-side admin-gated; audit-logged.
+State-licensure gate fully wired. Patient state of residence is captured in **intake Section 1** via a new `address_state` `<select>` (`portal/intake/index.html` + `US_STATES` const), stored schemaless in `intake_section_data` (no migration needed — confirmed `section/[n].js` accepts any shape). All four touchpoints landed:
+
+1. ✅ **Intake submit gate** — `functions/api/v1/patient/intake/[intake_id]/submit.js`. After the consent check, before status → submitted: reads Section 1 `address_state`; `422 state_required` if absent, else `422 license_state_mismatch` + `recordLicensureBlock` + audit if unlicensed. Leaves intake `in_progress` so the patient can correct it.
+2. ✅ **Triage short-circuit** — `functions/api/v1/patient/intake/[intake_id]/triage.js`. In `triageForIntake`, after sections load + before the Claude call, returns `license_state_mismatch` when state is present-but-unlicensed (saves the LLM call). Defense-in-depth for the standalone `/triage` path.
+3. ✅ **Booking defense-in-depth** — `functions/api/v1/patient/appointments/book.js`. Re-reads Section 1 state via `triage.intake_id`; `409 license_state_mismatch` + block-record + audit if unlicensed.
+4. ✅ **Admin editor** — new validated endpoint `functions/api/v1/admin/practice/licensed-states.js` (GET + PUT, server-side USPS-code validation, refuses empty list, audit-logged) + a Licensed-States checkbox picker in `admin/scheduling/index.html` Practice Settings panel (UI landed there — `admin/practice-settings/` does not exist). `SYSTEM_MAP.md` updated with the `licensure.js` lock-step row + the new route.
+
+Gate default `["IL"]` (fails closed). Node `--check` clean on all 4 JS files; admin picker JS re-read OK. **NOT deployed.**
+
+> **Open — D7:** Dr. Mabini's actual licensed-state list must be entered via the new Practice-Settings picker before public launch. Until then, non-IL intake submissions are blocked — harmless pre-launch (`PORTAL_PUBLIC_LAUNCH=false`, no real patients), but it must be set before the gate is meaningful.
 
 ### R4 — Privacy attestation interstitial + launch endpoint ✅ DONE 2026-05-28
 

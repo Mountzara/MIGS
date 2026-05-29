@@ -374,6 +374,32 @@
                 h('span', null, o.l))));
     }
 
+    // US states + DC — backs the Section 1 `address_state` dropdown
+    // (Phase 17 R3 telehealth-licensure gate). The patient's state of
+    // residence determines whether the clinician is licensed to provide
+    // care; the gate lives in functions/_lib/licensure.js and is enforced
+    // at intake-submit, triage, and booking.
+    const US_STATES = [
+        { v: '', l: 'Select your state…' },
+        { v: 'AL', l: 'Alabama' }, { v: 'AK', l: 'Alaska' }, { v: 'AZ', l: 'Arizona' },
+        { v: 'AR', l: 'Arkansas' }, { v: 'CA', l: 'California' }, { v: 'CO', l: 'Colorado' },
+        { v: 'CT', l: 'Connecticut' }, { v: 'DE', l: 'Delaware' }, { v: 'DC', l: 'District of Columbia' },
+        { v: 'FL', l: 'Florida' }, { v: 'GA', l: 'Georgia' }, { v: 'HI', l: 'Hawaii' },
+        { v: 'ID', l: 'Idaho' }, { v: 'IL', l: 'Illinois' }, { v: 'IN', l: 'Indiana' },
+        { v: 'IA', l: 'Iowa' }, { v: 'KS', l: 'Kansas' }, { v: 'KY', l: 'Kentucky' },
+        { v: 'LA', l: 'Louisiana' }, { v: 'ME', l: 'Maine' }, { v: 'MD', l: 'Maryland' },
+        { v: 'MA', l: 'Massachusetts' }, { v: 'MI', l: 'Michigan' }, { v: 'MN', l: 'Minnesota' },
+        { v: 'MS', l: 'Mississippi' }, { v: 'MO', l: 'Missouri' }, { v: 'MT', l: 'Montana' },
+        { v: 'NE', l: 'Nebraska' }, { v: 'NV', l: 'Nevada' }, { v: 'NH', l: 'New Hampshire' },
+        { v: 'NJ', l: 'New Jersey' }, { v: 'NM', l: 'New Mexico' }, { v: 'NY', l: 'New York' },
+        { v: 'NC', l: 'North Carolina' }, { v: 'ND', l: 'North Dakota' }, { v: 'OH', l: 'Ohio' },
+        { v: 'OK', l: 'Oklahoma' }, { v: 'OR', l: 'Oregon' }, { v: 'PA', l: 'Pennsylvania' },
+        { v: 'RI', l: 'Rhode Island' }, { v: 'SC', l: 'South Carolina' }, { v: 'SD', l: 'South Dakota' },
+        { v: 'TN', l: 'Tennessee' }, { v: 'TX', l: 'Texas' }, { v: 'UT', l: 'Utah' },
+        { v: 'VT', l: 'Vermont' }, { v: 'VA', l: 'Virginia' }, { v: 'WA', l: 'Washington' },
+        { v: 'WV', l: 'West Virginia' }, { v: 'WI', l: 'Wisconsin' }, { v: 'WY', l: 'Wyoming' },
+    ];
+
     // ==========================================================
     // Section renderers. Each returns a card <div>.
     // ==========================================================
@@ -387,6 +413,7 @@
                 field('Date of birth', dateIn('dob', { full: 1, autocomplete: 'bday' })),
                 field('Phone', telIn('phone', { full: 1 })),
                 field('Email', emailIn('email', { full: 1 })),
+                field('State of residence', selectIn('address_state', US_STATES, { full: 1 })),
                 field('Referred by', textIn('referred_by', { full: 1 })),
                 field('Interpreter language (if needed)', textIn('interpreter_language', { full: 1 })),
             ),
