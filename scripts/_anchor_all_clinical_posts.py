@@ -1,4 +1,29 @@
 #!/usr/bin/env python3
+"""DEPRECATED — DO NOT INVOKE.
+
+This script was a legacy KB anchor patcher from the pre-§0.8.1 verify_kb_anchoring.py codification era of the MountZara content
+pipeline. The MountZara codebase audit on 2026-05-26 flagged it as a
+fence-off candidate because it could produce content that violates the
+latest CLAUDE.md §0.4.1 / §3.7.1 / §3.8 / §3.9 / §3.10 / §3.12 hard rules
+if invoked today. Canonical replacement: scripts/verify_kb_anchoring.py (deploy-gate verifier, not a patcher — anchors live in cite_audit/page_anchors.json and are applied via scripts/cite_audit_apply.py).
+
+If you have a reason to read this file (e.g. recover a prior render
+shape, audit a pre-2026-05-26 intermediate state), open it in an editor
+rather than executing it.
+
+To restore execution, remove this guard AND ensure the file's output
+passes `scripts/regression_audit.py --body-html` or `--post-json`
+against the latest CLAUDE.md hard-rule set before any R2 PUT."""
+
+import sys as _sys
+_sys.stderr.write(
+    "\n!! DEPRECATED LEGACY SCRIPT — refusing to run.\n"
+    "!! See module docstring for the canonical replacement.\n"
+    "!! File: /Users/beans/Developer/MountZara/MIGS/scripts/_anchor_all_clinical_posts.py\n\n"
+)
+_sys.exit(2)
+
+
 """
 Inject §0.8.1 KB-anchor manifests into ALL shipped clinical posts in
 mountzara-content R2. Writes posts/<id>.json directly via wrangler r2

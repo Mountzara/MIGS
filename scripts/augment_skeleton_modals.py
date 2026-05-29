@@ -1,4 +1,29 @@
 #!/usr/bin/env python3
+"""DEPRECATED — DO NOT INVOKE.
+
+This script was a legacy modal-skeleton augmenter from the pre-§3.8 codification of canonical 13-section anatomy era of the MountZara content
+pipeline. The MountZara codebase audit on 2026-05-26 flagged it as a
+fence-off candidate because it could produce content that violates the
+latest CLAUDE.md §0.4.1 / §3.7.1 / §3.8 / §3.9 / §3.10 / §3.12 hard rules
+if invoked today. Canonical replacement: rebuild_w21_post.py + apply_w21_deep_dive_patch.py Cowork-peer-review workflow (per §3.9 2026-05-20).
+
+If you have a reason to read this file (e.g. recover a prior render
+shape, audit a pre-2026-05-26 intermediate state), open it in an editor
+rather than executing it.
+
+To restore execution, remove this guard AND ensure the file's output
+passes `scripts/regression_audit.py --body-html` or `--post-json`
+against the latest CLAUDE.md hard-rule set before any R2 PUT."""
+
+import sys as _sys
+_sys.stderr.write(
+    "\n!! DEPRECATED LEGACY SCRIPT — refusing to run.\n"
+    "!! See module docstring for the canonical replacement.\n"
+    "!! File: /Users/beans/Developer/MountZara/MIGS/scripts/augment_skeleton_modals.py\n\n"
+)
+_sys.exit(2)
+
+
 """augment_skeleton_modals.py — §3.8 item 24 / §3.9 skeleton-modal augmenter.
 
 Adds the deep-dive trigger + dialog scaffold to every <article class="mz-cite-card">

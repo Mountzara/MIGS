@@ -245,16 +245,23 @@ def main():
         else:
             abs_missing += 1
             log(f"  [{i:>4}/{len(summaries)}] PMID {pmid}: ⚠️  no abstract returned ({meta['title'][:60]})")
-        # Periodic save every 25 PMIDs for crash safety
+        # Periodic save every 25 PMIDs for crash safety.
+        # Atomic write per PMID_VERIFICATION_MAP.md 2026-05-26 — write to
+        # temp + os.replace() so concurrent readers (regression_audit,
+        # verify_w21_post) never observe a partial file mid-checkpoint.
         if i % 25 == 0:
-            with open(OUT_FILE, "w") as f:
+            tmp = OUT_FILE + f".tmp.{os.getpid()}"
+            with open(tmp, "w") as f:
                 json.dump(verified, f, indent=2)
-            log(f"      [checkpoint: {len(verified)} saved]")
+            os.replace(tmp, OUT_FILE)
+            log(f"      [checkpoint: {len(verified)} saved · atomic]")
         time.sleep(RATE_SLEEP)
 
-    # Final write
-    with open(OUT_FILE, "w") as f:
+    # Final write — atomic per the same rationale as the checkpoint write.
+    tmp = OUT_FILE + f".tmp.{os.getpid()}"
+    with open(tmp, "w") as f:
         json.dump(verified, f, indent=2)
+    os.replace(tmp, OUT_FILE)
     with open(LOG_FILE, "w") as f:
         f.write("\n".join(LOG_LINES) + "\n")
 

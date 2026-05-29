@@ -16,7 +16,10 @@ Codifies the rules from /Users/beans/Documents/CLAUDE.md:
             — purple #6d28d9 reachable (inline body_html OR via the page-shell
             CSS — caller must verify visually per §0.2.1 if shell-supplied)
   §3.12  — Medicolegal AI disclaimer present
-  §0.8   — KB-anchor manifest present (in HTML comment or visible disclosure)
+  §0.8   — KB-anchor manifest present. Canonical location is the post's
+            top-level structured fields (`pmids_cited`, `kb_entries_retrieved`,
+            `run_manifest_path`, `topics_covered`). Legacy HTML-comment
+            embed is accepted as a fallback for W20/W21-era posts.
 
 Usage:
   python3 scripts/audit_live_post.py <post-id-or-URL>
@@ -428,20 +431,66 @@ def audit_post(post: dict) -> PostAudit:
     )
 
     # -- §0.8 manifest -------------------------------------------------------
-    # Require an actual JSON-shaped manifest inside an HTML comment, not
-    # merely the phrase "KB-anchor manifest" anywhere in body. The phrase
-    # appears in placeholder comments and in prose ABOUT the manifest;
-    # only a real manifest counts. Found via negative-test 2026-05-25.
-    manifest_present = False
+    # CANONICAL DETECTION (2026-05-25 update — verified against
+    # functions/api/posts/[[path]].js lines 302-322):
+    #
+    # The §0.8 KB-anchor manifest is stored as STRUCTURED TOP-LEVEL FIELDS
+    # on every post R2 record:
+    #     pmids_cited:           array of PMIDs (required for clinical posts)
+    #     kb_entries_retrieved:  array of KB-chunk synthesis ids
+    #     run_manifest_path:     R2 path to the full pipeline manifest
+    #     topics_covered:        array of clinical topic groups
+    #     gaps_surfaced:         array of evidence gaps surfaced
+    #
+    # These top-level fields are the truth-of-record. The legacy convention
+    # of embedding the same JSON inside an HTML comment (used in W20/W21)
+    # is a duplicative *secondary* surface. Either location satisfies §0.8.
+    #
+    # A pre-2026-05-25 version of this audit only scanned HTML comments
+    # and incorrectly failed every pipeline-rendered draft because the
+    # gold_brief_render.py output writes the structured fields without
+    # the legacy HTML-comment duplicate. Discovered by user 2026-05-25:
+    #   "permanently fix this so if claude.md needs to be updated then
+    #    fucking update it as we go"
+    manifest_in_comment = False
     for cmt in re.finditer(r"<!--(.*?)-->", body, re.DOTALL):
         if KB_MANIFEST_KEYS.search(cmt.group(1)):
-            manifest_present = True
+            manifest_in_comment = True
             break
+
+    # Treat the structured fields as authoritative.
+    pmids_list = post.get("pmids_cited") or []
+    kb_list = post.get("kb_entries_retrieved") or []
+    topics_list = post.get("topics_covered") or []
+    run_manifest = post.get("run_manifest_path") or ""
+    manifest_in_fields = (
+        (isinstance(pmids_list, list) and len(pmids_list) > 0)
+        or (isinstance(kb_list, list) and len(kb_list) > 0)
+        or bool(run_manifest)
+    )
+    manifest_present = manifest_in_comment or manifest_in_fields
+
+    detail_bits: list[str] = []
+    if manifest_in_fields:
+        detail_bits.append(
+            f"top-level fields: pmids_cited={len(pmids_list) if isinstance(pmids_list, list) else '?'}, "
+            f"kb_entries_retrieved={len(kb_list) if isinstance(kb_list, list) else '?'}, "
+            f"topics_covered={len(topics_list) if isinstance(topics_list, list) else '?'}, "
+            f"run_manifest_path={'set' if run_manifest else 'empty'}"
+        )
+    if manifest_in_comment:
+        detail_bits.append("HTML-comment manifest also present")
+    if not manifest_present:
+        detail_bits.append(
+            "absent in BOTH the post's top-level fields "
+            "(pmids_cited / kb_entries_retrieved / run_manifest_path) "
+            "AND in any HTML comment — clinical posts MUST carry the manifest"
+        )
+
     audit.add(
         "§0.8 KB-anchor manifest present",
         manifest_present,
-        "found in HTML comment" if manifest_present
-        else "absent or unstructured — clinical posts MUST carry a JSON manifest with kb_entries_retrieved / pmids_cited / topic_groups_anchored",
+        " · ".join(detail_bits) if detail_bits else "",
     )
 
     # -- §3.8 / §3.9 verdict-label tripwire ---------------------------------
@@ -507,6 +556,30 @@ def audit_post(post: dict) -> PostAudit:
                 True,
                 f"{len(unmatched_dialogs)} dialog(s) with no openDeepDive call",
             )
+
+        # Rule b.1 (added 2026-05-25): the HTML id attribute MUST be unique
+        # per-document — W3C HTML Living Standard §3.2.5.1. A duplicate
+        # `id="dd-<PMID>"` means the browser will only ever target the
+        # FIRST occurrence on `document.getElementById(...)` /
+        # `showModal()` — the others are dead DOM. Discovered on W21
+        # 2026-05-25: 115 actual dialogs, 103 unique PMIDs, 12 dialogs
+        # silently unreachable.
+        all_dialog_ids = re.findall(
+            r'<dialog[^>]*class="[^"]*mz-jc-modal[^"]*"[^>]*id="dd-([^"]+)"',
+            body, re.IGNORECASE,
+        )
+        from collections import Counter as _Counter
+        id_counts = _Counter(all_dialog_ids)
+        dup_ids = {k: v for k, v in id_counts.items() if v > 1}
+        audit.add(
+            "§3.8 item 24 — dialog ids are unique (W3C HTML id-uniqueness)",
+            not dup_ids,
+            (f"{len(dup_ids)} duplicate dd-<PMID> id(s) across "
+             f"{sum(dup_ids.values())} dialog elements: "
+             f"{sorted(dup_ids.items(), key=lambda x: -x[1])[:5]}")
+            if dup_ids else
+            f"{len(all_dialog_ids)} dialogs, {len(id_counts)} unique ids",
+        )
 
         # Rule c: each dialog must contain ALL 13 §3.9 section anchors.
         # Production emits anchors as `id="dd-<PMID>-<suffix>"` per the
@@ -635,11 +708,80 @@ def main(argv: list[str]) -> int:
                         help="Audit every published post returned by /api/posts/?status=published.")
     parser.add_argument("--file", type=Path,
                         help="Audit a local body_html file (post id = filename stem).")
+    parser.add_argument("--pre-put", type=Path,
+                        help="MANDATORY pre-write gate per CLAUDE.md §3.7.1. "
+                        "Pass a JSON file containing the proposed post payload "
+                        "(any subset of title/summary/verdict/linkedin_draft/"
+                        "instagram_draft/body_html). Audit runs against the "
+                        "payload BEFORE any PUT/POST. Non-zero exit = abort write.")
     args = parser.parse_args(argv)
 
     posts: list[dict] = []
 
-    if args.file:
+    # §3.7.1 pre-PUT gate — pipeline scripts call this BEFORE writing to
+    # /api/posts/*. Payload may be any subset of post fields; we audit
+    # the FULL POST STATE AFTER THE PROPOSED PUT (merged with current
+    # live post). This is the truthful audit — if you're only updating
+    # `summary`, body_html stays whatever's live, and we audit what the
+    # post will look like once your PUT lands.
+    if args.pre_put:
+        if not args.pre_put.is_file():
+            log.error("pre-put payload not found: %s", args.pre_put)
+            return 3
+        try:
+            payload = json.loads(args.pre_put.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            log.error("pre-put payload JSON parse failed: %s", e)
+            return 3
+
+        post_id = payload.get("id") or args.pre_put.stem
+        merged: dict
+        if post_id and not post_id.startswith("pre-put"):
+            # Try to fetch the existing post and merge the payload on top.
+            try:
+                live = fetch_post(post_id)
+                merged = dict(live)
+                merged.update({
+                    k: v for k, v in payload.items()
+                    if v is not None and k != "id"
+                })
+                log.info("PRE-PUT GATE: merged proposed payload onto live %s "
+                         "(payload fields: %s)",
+                         post_id,
+                         [k for k in payload if k != "id"])
+            except Exception as e:
+                log.warning("could not fetch live post %s (%s) — auditing "
+                            "payload as-is", post_id, e)
+                merged = {
+                    "id": post_id, "kind": payload.get("kind") or "pre-put",
+                    "title": "", "summary": "", "verdict": "",
+                    "linkedin_draft": "", "instagram_draft": "",
+                    "body_html": "", "week_label": None,
+                }
+                merged.update({k: v for k, v in payload.items() if k != "id"})
+        else:
+            # Synthetic / no-live-post test path. Audit fields as-is. We
+            # PASS THROUGH the full payload (rather than allowlisting a
+            # handful of fields) so the §0.8.2 structured manifest fields
+            # (pmids_cited, kb_entries_retrieved, run_manifest_path,
+            # topics_covered, gaps_surfaced) reach the auditor — without
+            # this, a synthetic payload that legitimately carries the
+            # canonical structured manifest would falsely fail §0.8.
+            # Discovered 2026-05-25 during the §0.8 detection-rule fix.
+            merged = {
+                "id": post_id,
+                "kind": payload.get("kind") or "pre-put",
+                "title": "", "summary": "", "verdict": "",
+                "linkedin_draft": "", "instagram_draft": "",
+                "body_html": "", "week_label": None,
+            }
+            merged.update({k: v for k, v in payload.items() if k != "id"})
+            log.info("PRE-PUT GATE: synthetic payload audit for %s "
+                     "(payload fields: %s)",
+                     post_id,
+                     sorted([k for k in payload if k != "id"]))
+        posts = [merged]
+    elif args.file:
         if not args.file.is_file():
             log.error("file not found: %s", args.file)
             return 3
