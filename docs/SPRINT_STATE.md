@@ -13,7 +13,7 @@
 | **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
 | **Last updated** | 2026-05-28 by Claude |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `phase17(sprint1 R4): privacy attestation interstitial + launch endpoint` |
+| **Last commit on branch** | `phase17(sprint1 R5): patient tech-check page + endpoint` |
 | **Deployed to production?** | **PARTIAL** — R4 page + endpoint shipped; schema migration `0018` still pending |
 | **Schema migration `0018` run against D1?** | **NO** — runs as part of Sprint 1 close (item 12) |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
@@ -70,11 +70,11 @@ This is the precise work list for the next session. Each item is independently s
 6. ✅ `functions/api/v1/patient/appointments/[id]/launch.js` — POST-only. Validates ownership, status=`scheduled`, modality=`telehealth`, chaperone (if required), T-15-min release window (`launch_too_early` if early, `launch_window_closed` if >30min past end), and both attestations true. Writes a `visit_launch_attestations` row with IP hash + UA. Returns `{room_url, expires_at, appointment}` on success. Every call audit-logged.
 7. ✅ `_redirects` — wildcard `/portal/visit/*/launch` → `/portal/visit/launch/index.html 200` so the dynamic path resolves to the static SPA. Patient GET endpoints already do NOT expose `doxy_room_url` (audit: only `book.js` write side + `admin/*` read sides reference it; patient read endpoints are clean).
 
-### R5 — Patient device + connection test (≈3 h)
+### R5 — Patient device + connection test ✅ DONE 2026-05-28
 
-8. **New page** — `portal/tech-check/index.html` + sibling `_app.js`. Four checkpoint cards (camera / microphone / speaker / network). `getUserMedia` for cam+mic; click-to-confirm sound test; 2 MB CDN-fetch speed test. Per-component remediation copy with browser-specific instructions.
-9. **New endpoint** — `functions/api/v1/patient/tech-check.js` (POST). Writes one `tech_check_results` row per successful run. Optional `?appointment_id=` query param to associate with a specific upcoming visit.
-10. **Admin badge** — small badge on each upcoming appointment row in `/admin/cases/[id]/` + `/admin/appointments/`: "Device check passed Mon 4:32pm" / "Device check not yet run" / "Device check FAILED [reason]."
+8. ✅ `portal/tech-check/index.html` — four checkpoint cards (camera / microphone / speaker / network). `getUserMedia` for cam preview + mic level detection (3-sec sample, threshold 3 in 0-128 byte deviation), 440Hz oscillator tone with click-to-confirm hearing, speed test fetches a known CDN asset and computes kbps. Per-component failure copy includes remediation hint. "Run all" button sequences the checks. POSTs to `/api/v1/patient/tech-check` when all 4 have a verdict. §3.10-compliant Apple-glass cards, purple accent.
+9. ✅ `functions/api/v1/patient/tech-check.js` — POST-only. Validates patient session + preview gate. `network_ok = (network_kbps >= 600)` (Doxy.me floor). `overall_ok = AND of all four`. Persists one `tech_check_results` row per call. If `appointment_id` supplied, defense-checks ownership before binding. Audit-logged with the result summary.
+10. **Admin badge** — DEFERRED to Sprint 1 close-out (low risk: tech_check_results table is populated by R5 and admin UI can read it via a follow-up Edit). Sprint 2 R6/R11 also touch admin appointment surfaces.
 
 ### Chaperone-confirm modal UI (≈1 h)
 

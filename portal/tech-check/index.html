@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test your device · Mount Zara</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico">
+<style>
+:root {
+    --bg: #0b0a0d;
+    --ink: #f5f5f7;
+    --ink-mute: rgba(245,245,247,0.72);
+    --ink-faint: rgba(245,245,247,0.46);
+    --accent: #6d28d9;
+    --glow-purple: 167, 139, 250;
+    --hairline: rgba(255,255,255,0.10);
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --err: #f87171;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11"; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+body::before { content: ""; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 100%, rgba(167,139,250,0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(109,40,217,0.06), transparent 60%);
+    pointer-events: none; z-index: 0;
+}
+.shell { position: relative; z-index: 1; max-width: 720px; margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 36px) 60px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+header .mark { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; font-size: 18px; letter-spacing: -0.02em; color: var(--ink); }
+header .sep { color: var(--ink-faint); }
+header .crumb { font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
+h1 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; letter-spacing: -0.022em;
+    font-size: clamp(30px, 4.2vw, 42px); margin: 0 0 8px; color: var(--ink); }
+.lede { font-size: 16px; color: var(--ink-mute); max-width: 60ch; margin: 0 0 24px; }
+.appt-line { font-size: 13px; color: var(--ink-mute); margin-bottom: 28px;
+    padding: 12px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+    display: none; }
+.appt-line.visible { display: block; }
+
+.check { background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
+    -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
+    transition: border-color 0.22s, background 0.22s; }
+.check.ok { border-color: rgba(52, 211, 153, 0.35); }
+.check.fail { border-color: rgba(248, 113, 113, 0.35); }
+.check.running { border-color: rgba(var(--glow-purple), 0.45); }
+.check .row { display: flex; align-items: center; gap: 14px; }
+.check .indicator { flex-shrink: 0; width: 36px; height: 36px;
+    border-radius: 50%; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-mute); font-weight: 700; font-size: 14px; }
+.check.ok .indicator { background: rgba(52, 211, 153, 0.14);
+    border-color: rgba(52, 211, 153, 0.45); color: var(--ok); }
+.check.fail .indicator { background: rgba(248, 113, 113, 0.14);
+    border-color: rgba(248, 113, 113, 0.45); color: var(--err); }
+.check.running .indicator { background: rgba(var(--glow-purple), 0.14);
+    border-color: rgba(var(--glow-purple), 0.45); color: rgba(var(--glow-purple), 1); }
+.check .body { flex: 1 1 auto; min-width: 0; }
+.check .title { font-size: 15px; font-weight: 600; color: var(--ink);
+    margin: 0 0 2px; letter-spacing: -0.005em; }
+.check .detail { font-size: 13px; color: var(--ink-mute); margin: 0; }
+.check.fail .detail { color: rgba(248,113,113,0.92); }
+.check .action { margin-top: 10px; }
+.check .action button { padding: 8px 14px; border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04); color: var(--ink);
+    border-radius: 8px; font-size: 13px; cursor: pointer;
+    transition: background 0.18s; font-family: inherit; }
+.check .action button:hover { background: rgba(255,255,255,0.08); }
+
+.preview-video { display: none; max-width: 200px; margin-top: 12px;
+    border-radius: 10px; border: 1px solid var(--hairline);
+    transform: scaleX(-1); }
+.check.ok .preview-video { display: block; }
+
+.actions { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+.btn-primary { display: inline-flex; align-items: center; justify-content: center;
+    width: 100%; padding: 16px 24px; border: none; border-radius: 12px;
+    background: var(--accent); color: #ffffff; font-weight: 600; font-size: 16px;
+    cursor: pointer; transition: background 0.22s, transform 0.22s;
+    font-family: inherit; }
+.btn-primary:hover:not(:disabled) { background: #7c3aed; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; background: #4c1d95; }
+.btn-secondary { display: inline-flex; align-items: center; justify-content: center;
+    width: 100%; padding: 12px 24px; border: 1px solid var(--hairline);
+    border-radius: 12px; background: transparent; color: var(--ink-mute);
+    font-weight: 500; font-size: 14px; cursor: pointer;
+    transition: border-color 0.22s, color 0.22s; font-family: inherit;
+    text-decoration: none; }
+.btn-secondary:hover { border-color: rgba(255,255,255,0.25); color: var(--ink); }
+
+.summary { margin-top: 26px; padding: 18px 18px; border-radius: 14px;
+    background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.30);
+    display: none; }
+.summary.visible { display: block; }
+.summary.fail { background: rgba(248,113,113,0.06);
+    border-color: rgba(248,113,113,0.30); }
+.summary .title { font-size: 15px; font-weight: 600; color: var(--ink);
+    margin: 0 0 6px; }
+.summary .copy { font-size: 13px; color: var(--ink-mute); margin: 0; }
+
+footer { margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--hairline);
+    font-size: 12px; color: var(--ink-faint); }
+footer a { color: rgba(var(--glow-purple), 0.85); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <span class="mark">Mount Zara</span>
+    <span class="sep">·</span>
+    <span class="crumb">Device check</span>
+  </header>
+
+  <h1>Test your device.</h1>
+  <p class="lede">A quick check of your camera, microphone, speaker, and internet connection so your visit runs smoothly. This takes about 60 seconds.</p>
+
+  <div class="appt-line" id="apptLine"></div>
+
+  <div class="check" id="check-camera">
+    <div class="row">
+      <div class="indicator">1</div>
+      <div class="body">
+        <div class="title">Camera</div>
+        <p class="detail" id="detail-camera">We'll ask for permission to use your camera and show you a preview.</p>
+      </div>
+    </div>
+    <video class="preview-video" id="preview-camera" autoplay muted playsinline></video>
+    <div class="action"><button type="button" id="run-camera">Test camera</button></div>
+  </div>
+
+  <div class="check" id="check-microphone">
+    <div class="row">
+      <div class="indicator">2</div>
+      <div class="body">
+        <div class="title">Microphone</div>
+        <p class="detail" id="detail-microphone">We'll ask for permission to use your microphone and listen for sound.</p>
+      </div>
+    </div>
+    <div class="action"><button type="button" id="run-microphone">Test microphone</button></div>
+  </div>
+
+  <div class="check" id="check-speaker">
+    <div class="row">
+      <div class="indicator">3</div>
+      <div class="body">
+        <div class="title">Speakers / headphones</div>
+        <p class="detail" id="detail-speaker">Click "Play tone" and tap "I hear it" if you hear a short chime.</p>
+      </div>
+    </div>
+    <div class="action">
+      <button type="button" id="run-speaker">Play tone</button>
+      <button type="button" id="confirm-speaker" style="display:none;">I hear it</button>
+    </div>
+  </div>
+
+  <div class="check" id="check-network">
+    <div class="row">
+      <div class="indicator">4</div>
+      <div class="body">
+        <div class="title">Internet connection</div>
+        <p class="detail" id="detail-network">We'll measure your connection speed. Telehealth needs at least 600 kbps.</p>
+      </div>
+    </div>
+    <div class="action"><button type="button" id="run-network">Test connection</button></div>
+  </div>
+
+  <div class="summary" id="summary" role="status" aria-live="polite">
+    <div class="title" id="summary-title"></div>
+    <p class="copy" id="summary-copy"></p>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn-primary" id="btn-runall">Run all checks</button>
+    <a href="/portal/" class="btn-secondary">Back to portal</a>
+  </div>
+
+  <footer>
+    Need help? Email <a href="mailto:info@mountzara.com">info@mountzara.com</a>. If you don't pass a check, you can still attend by phone — call the clinic to coordinate.
+  </footer>
+</div>
+
+<script>
+(function() {
+    var state = {
+        camera_ok: null,
+        microphone_ok: null,
+        speaker_ok: null,
+        network_ok: null,
+        network_kbps: null,
+        failure_reasons: [],
+    };
+
+    // Parse ?appointment_id= from URL
+    var params = new URLSearchParams(window.location.search);
+    var APPT_ID = params.get('appointment_id') || null;
+    if (APPT_ID) {
+        var apptLine = document.getElementById('apptLine');
+        apptLine.textContent = 'Linking results to your upcoming visit.';
+        apptLine.classList.add('visible');
+    }
+
+    function setCheckState(id, kind, detail) {
+        var el = document.getElementById('check-' + id);
+        if (!el) return;
+        el.classList.remove('ok', 'fail', 'running');
+        if (kind) el.classList.add(kind);
+        if (detail != null) {
+            var d = document.getElementById('detail-' + id);
+            if (d) d.textContent = detail;
+        }
+    }
+
+    function pushFailure(component, reason) {
+        state.failure_reasons.push({ component: component, reason: reason });
+    }
+
+    function clearFailures(component) {
+        state.failure_reasons = state.failure_reasons.filter(function(f) {
+            return f.component !== component;
+        });
+    }
+
+    // ----- Camera -----
+    document.getElementById('run-camera').addEventListener('click', async function() {
+        setCheckState('camera', 'running', 'Requesting camera access…');
+        clearFailures('camera');
+        try {
+            var stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            var vid = document.getElementById('preview-camera');
+            vid.srcObject = stream;
+            state.camera_ok = true;
+            setCheckState('camera', 'ok', 'Camera is working. You can see yourself in the preview.');
+        } catch (e) {
+            state.camera_ok = false;
+            var reason = e && e.name === 'NotAllowedError'
+                ? 'Camera permission was denied. In your browser settings, allow camera access for this site, then retry.'
+                : 'Could not access camera (' + (e && e.name ? e.name : 'unknown') + '). Try a different browser if available.';
+            setCheckState('camera', 'fail', reason);
+            pushFailure('camera', reason);
+        }
+    });
+
+    // ----- Microphone -----
+    document.getElementById('run-microphone').addEventListener('click', async function() {
+        setCheckState('microphone', 'running', 'Requesting microphone access… speak softly when prompted.');
+        clearFailures('microphone');
+        try {
+            var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) throw new Error('AudioContext unsupported');
+            var ctx = new AC();
+            var src = ctx.createMediaStreamSource(stream);
+            var analyser = ctx.createAnalyser();
+            analyser.fftSize = 512;
+            src.connect(analyser);
+            var buf = new Uint8Array(analyser.frequencyBinCount);
+            var maxLevel = 0;
+            var startTime = Date.now();
+            // Sample for ~3 seconds
+            var sampleId = setInterval(function() {
+                analyser.getByteTimeDomainData(buf);
+                var sumDeviation = 0;
+                for (var i = 0; i < buf.length; i++) sumDeviation += Math.abs(buf[i] - 128);
+                var level = sumDeviation / buf.length;
+                if (level > maxLevel) maxLevel = level;
+                if (Date.now() - startTime > 3000) {
+                    clearInterval(sampleId);
+                    stream.getTracks().forEach(function(t) { t.stop(); });
+                    ctx.close();
+                    if (maxLevel >= 3) {
+                        state.microphone_ok = true;
+                        setCheckState('microphone', 'ok', 'Microphone is working (detected sound).');
+                    } else {
+                        state.microphone_ok = false;
+                        var reason = 'Microphone connected but no sound detected. Check that the correct microphone is selected and you are not muted.';
+                        setCheckState('microphone', 'fail', reason);
+                        pushFailure('microphone', reason);
+                    }
+                }
+            }, 100);
+            setCheckState('microphone', 'running', 'Listening for sound — try speaking now…');
+        } catch (e) {
+            state.microphone_ok = false;
+            var reason = e && e.name === 'NotAllowedError'
+                ? 'Microphone permission was denied. Allow microphone access in your browser settings and retry.'
+                : 'Could not access microphone (' + (e && e.name ? e.name : 'unknown') + ').';
+            setCheckState('microphone', 'fail', reason);
+            pushFailure('microphone', reason);
+        }
+    });
+
+    // ----- Speaker (user confirms hearing tone) -----
+    document.getElementById('run-speaker').addEventListener('click', function() {
+        clearFailures('speaker');
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            var ctx = new AC();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.frequency.value = 440;
+            gain.gain.value = 0.10;
+            osc.connect(gain).connect(ctx.destination);
+            osc.start();
+            setTimeout(function() {
+                osc.stop();
+                ctx.close();
+            }, 800);
+            setCheckState('speaker', 'running', 'Playing a short tone. If you heard it, click "I hear it".');
+            document.getElementById('confirm-speaker').style.display = 'inline-block';
+        } catch (e) {
+            state.speaker_ok = false;
+            var reason = 'Could not play tone (' + (e && e.message ? e.message : 'unknown') + ').';
+            setCheckState('speaker', 'fail', reason);
+            pushFailure('speaker', reason);
+        }
+    });
+    document.getElementById('confirm-speaker').addEventListener('click', function() {
+        state.speaker_ok = true;
+        setCheckState('speaker', 'ok', 'Speakers confirmed by you.');
+        document.getElementById('confirm-speaker').style.display = 'none';
+    });
+
+    // ----- Network -----
+    // Fetch a known CDN asset, measure throughput.
+    var SPEED_URL = '/media/rpoc-arcuate-reel.mp4';
+    document.getElementById('run-network').addEventListener('click', async function() {
+        setCheckState('network', 'running', 'Measuring connection speed…');
+        clearFailures('network');
+        try {
+            var startMs = performance.now();
+            var resp = await fetch(SPEED_URL + '?cb=' + Date.now(), { cache: 'no-store' });
+            if (!resp.ok) throw new Error('fetch ' + resp.status);
+            var blob = await resp.blob();
+            var elapsedMs = performance.now() - startMs;
+            var bytes = blob.size;
+            var kbps = Math.round((bytes * 8 / 1000) / (elapsedMs / 1000));
+            state.network_kbps = kbps;
+            if (kbps >= 600) {
+                state.network_ok = true;
+                setCheckState('network', 'ok', 'Connection measured at ' + kbps.toLocaleString() + ' kbps — good for telehealth.');
+            } else {
+                state.network_ok = false;
+                var reason = 'Connection measured at ' + kbps.toLocaleString() + ' kbps — below the 600 kbps floor for video.';
+                setCheckState('network', 'fail', reason);
+                pushFailure('network', reason);
+            }
+        } catch (e) {
+            state.network_ok = false;
+            var reason = 'Could not measure connection (' + (e && e.message ? e.message : 'unknown') + ').';
+            setCheckState('network', 'fail', reason);
+            pushFailure('network', reason);
+        }
+        maybeSubmit();
+    });
+
+    // ----- Run all in sequence -----
+    document.getElementById('btn-runall').addEventListener('click', async function() {
+        document.getElementById('btn-runall').disabled = true;
+        document.getElementById('btn-runall').textContent = 'Running…';
+        document.getElementById('run-camera').click();
+        await sleep(1500);
+        document.getElementById('run-microphone').click();
+        await sleep(4000);
+        document.getElementById('run-speaker').click();
+        await sleep(1500);
+        document.getElementById('run-network').click();
+    });
+
+    function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+    function maybeSubmit() {
+        // Submit when all four have a verdict (camera, mic, speaker, network).
+        if (state.camera_ok == null || state.microphone_ok == null ||
+            state.speaker_ok == null || state.network_ok == null) return;
+        var overall = state.camera_ok && state.microphone_ok && state.speaker_ok && state.network_ok;
+        var summary = document.getElementById('summary');
+        var sumTitle = document.getElementById('summary-title');
+        var sumCopy = document.getElementById('summary-copy');
+        summary.classList.add('visible');
+        summary.classList.toggle('fail', !overall);
+        if (overall) {
+            sumTitle.textContent = 'You are ready for your visit.';
+            sumCopy.textContent = 'All four checks passed. You can close this page.';
+        } else {
+            sumTitle.textContent = 'One or more checks failed.';
+            sumCopy.textContent = 'Review the items above. You can still attend by phone if needed — call the clinic to coordinate.';
+        }
+
+        // POST the results.
+        fetch('/api/v1/patient/tech-check', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                camera_ok: state.camera_ok,
+                microphone_ok: state.microphone_ok,
+                speaker_ok: state.speaker_ok,
+                network_kbps: state.network_kbps,
+                appointment_id: APPT_ID,
+                browser: navigator.userAgent,
+                os: navigator.platform || '',
+                failure_reasons: state.failure_reasons,
+            }),
+        }).catch(function() { /* silent — patient already sees the per-check result */ });
+
+        document.getElementById('btn-runall').disabled = false;
+        document.getElementById('btn-runall').textContent = 'Run all checks again';
+    }
+})();
+</script>
+</body>
+</html>
