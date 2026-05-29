@@ -18,6 +18,137 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # §0.4.1 pre-deploy static-surface regression audit (added 2026-05-27).
+      # Closes the "git push main bypasses the local deploy-prod.sh gate"
+      # vector identified by the 2026-05-27 audit. The local
+      # scripts/deploy-prod.sh runs regression_audit.py --all as a
+      # blocking gate, but a `git push main` does NOT exercise that
+      # script — Pages-action just deploys whatever is checked in.
+      #
+      # In CI we can't auth against admin /api/posts/_admin (no Keychain),
+      # so we run inline static-pattern checks on every surface that's
+      # about to be deployed: education pages, portal mirrors, the
+      # /evidence/ and /trending/ shells, and the admin SPAs. Any §3.7
+      # infra-language, §1.2 bare MIGS, §3.10 blue tokens, §3.12
+      # missing-disclaimer, or §0.2.2 DOCTYPE wrap on those files fails
+      # the deploy. Emergency bypass: set DEPLOY_SKIP_REGRESSION_AUDIT
+      # repo variable to a non-empty reason string.
+      - name: §0.4.1 pre-deploy regression-audit gate (static surfaces)
+        env:
+          DEPLOY_SKIP_REGRESSION_AUDIT: ${{ vars.DEPLOY_SKIP_REGRESSION_AUDIT }}
+        run: |
+          set -eu
+          if [ -n "${DEPLOY_SKIP_REGRESSION_AUDIT:-}" ]; then
+            echo "!! §0.4.1 gate SKIPPED via DEPLOY_SKIP_REGRESSION_AUDIT"
+            echo "!! reason: $DEPLOY_SKIP_REGRESSION_AUDIT"
+            echo "!! THIS IS AUDITABLE — bypass only with explicit reason"
+            exit 0
+          fi
+
+          FAILS=0
+          # §3.7 infra-language — the exact list from
+          # regression_audit.py INFRA_LANGUAGE (kept in sync 2026-05-26)
+          # Use grep -F for fixed strings; § needs literal match.
+          FORBIDDEN_PHRASES=(
+            'MountZara KB'
+            'MountZara clinical KB'
+            'MountZara clinical knowledge base'
+            'Mount Zara KB'
+            'Mount Zara clinical KB'
+            'clinical knowledge base'
+            'in this session'
+            'NCBI E-Utilities'
+            'KB-anchored'
+            'CBG/MIGS evidence library'
+            'KB landmark PMID'
+            '(KB landmark'
+            'Already in KB'
+          )
+          # §3.10 blue color tokens (NOT used on mountzara.com)
+          BLUE_TOKENS='(#0066cc|#0a84ff|#3b82f6|#2563eb|rgba\(0, 102, 204|rgba\(10, 132, 255|rgba\(59, 130, 246)'
+
+          # Static surfaces that are about to deploy
+          SURFACES=()
+          for f in education/*/index.html portal/education/*/index.html \
+                   evidence/index.html trending/index.html \
+                   index.html about/index.html; do
+            [ -f "$f" ] && SURFACES+=("$f")
+          done
+          echo "scanning ${#SURFACES[@]} static surface(s) for §0.4.1 hard rules"
+          echo
+
+          for f in "${SURFACES[@]}"; do
+            # §3.7 infra-language — must not appear in static prose
+            for phrase in "${FORBIDDEN_PHRASES[@]}"; do
+              if grep -qF -- "$phrase" "$f"; then
+                # Education pages legitimately reference the rule §-numbers
+                # in HTML comments (§0.8 manifest, etc.). Strip HTML
+                # comments before the check so we only flag visible prose.
+                visible=$(sed -e 's|<!--[^-]*-->||g' "$f")
+                if echo "$visible" | grep -qF -- "$phrase"; then
+                  echo "FAIL §3.7 infra-language in $f: '$phrase'"
+                  FAILS=$((FAILS + 1))
+                fi
+              fi
+            done
+            # §3.10 blue token
+            if grep -qE "$BLUE_TOKENS" "$f"; then
+              hit=$(grep -oE "$BLUE_TOKENS" "$f" | head -1)
+              echo "FAIL §3.10 blue token in $f: $hit"
+              FAILS=$((FAILS + 1))
+            fi
+            # §3.12 disclaimer presence — required on clinical pages only
+            # (education + portal/education). Skip the SPA shells.
+            case "$f" in
+              education/*|portal/education/*)
+                if ! grep -qF -- 'mz-ai-disclaimer' "$f"; then
+                  echo "FAIL §3.12 missing AI disclaimer on $f"
+                  FAILS=$((FAILS + 1))
+                fi
+                ;;
+            esac
+          done
+
+          # §0.4 forbidden generic hero phrase guard (catches W22-pattern
+          # legacy auto-draft regressions in any static-rendered post)
+          FORBIDDEN_HERO="What's new in CBG/MIGS, endometriosis, MHT, and adjacent topics this week"
+          for f in "${SURFACES[@]}"; do
+            if grep -qF -- "$FORBIDDEN_HERO" "$f"; then
+              echo "FAIL §3.9 forbidden generic hero phrase in $f"
+              FAILS=$((FAILS + 1))
+            fi
+          done
+
+          # §10.3.1 admin-auth canonical resolver — refuse to deploy if
+          # any operator script in this repo hard-codes ADMIN_USER='admin'
+          if grep -REn "ADMIN_USER[[:space:]]*=[[:space:]]*['\"]admin['\"]" \
+              scripts/ 2>/dev/null | grep -v '_lib_admin_auth' | head -5; then
+            echo "FAIL §10.3.1 — operator script hard-codes ADMIN_USER='admin'"
+            FAILS=$((FAILS + 1))
+          fi
+
+          # §0.2.2 — body_html files (if any are checked in directly)
+          # must not have DOCTYPE wrap. (R2 posts are dynamic — this
+          # only catches accidentally-checked-in body_html fragments.)
+          for f in $(find . -name '*body_html*.html' 2>/dev/null); do
+            head=$(head -c 200 "$f" | tr 'A-Z' 'a-z')
+            if echo "$head" | grep -qE '<!doctype|<html|<body'; then
+              echo "FAIL §0.2.2 — body_html fragment has DOCTYPE/html/body wrap: $f"
+              FAILS=$((FAILS + 1))
+            fi
+          done
+
+          echo
+          if [ "$FAILS" -gt 0 ]; then
+            echo "❌ §0.4.1 pre-deploy regression-audit: $FAILS HARD FAIL(S)"
+            echo "Deploy BLOCKED — fix the underlying files before re-pushing."
+            echo "Emergency bypass: set repository variable"
+            echo "DEPLOY_SKIP_REGRESSION_AUDIT to a non-empty reason string."
+            exit 1
+          fi
+          echo "✅ §0.4.1 pre-deploy regression-audit: PASS"
+          echo "  ${#SURFACES[@]} static surfaces scanned, 0 hard fails"
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
