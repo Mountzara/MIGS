@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{TOPIC_LABEL}} &mdash; what it is, why it matters, and what we can actually do.</title>
+    <!--
+        SKELETON TEMPLATE for new /education/<slug>/ patient-education pages.
+        Copy this directory to /education/<slug>/, then:
+          1) Replace every {{...}} placeholder with topic-specific content
+          2) Add fact cards, sections, modals, references
+          3) Run scripts/regression_audit.py --file education/<slug>/index.html
+          4) Fix any flagged violations BEFORE first commit
+          5) Mirror to portal/education/<slug>/ via `cp` after audit passes
+        Per CLAUDE.md §0.4.1: a new page is not shippable until comprehensive
+        audit passes. §3.7 / §1.2 / §3.10 / §3.12 are all enforced here at
+        the template level — DO NOT REMOVE the scaffolding lines marked
+        "[required: §X.Y]".
+
+        Per §3.7 — DO NOT add the following phrases anywhere in this file:
+          - "KB-anchored, peer-reviewed"  (in meta description or body)
+          - "retrieved via NCBI E-Utilities"  (in ref-intro)
+          - "MountZara KB" / "clinical knowledge base" / "§0.8" / "RAG"
+          - "in this session"
+        Use plain replacements: "Evidence-based, peer-reviewed.";
+        "Click any abstract to expand the verbatim PubMed record."
+
+        Per §1.2 — Use "CBG/MIGS" not bare "MIGS" everywhere in user-facing prose.
+    -->
+    <!-- [required: §3.7] meta description — Evidence-based, peer-reviewed (NEVER 'KB-anchored, peer-reviewed') -->
+    <meta name="description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}. Evidence-based, peer-reviewed.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07070a;
+            --bg-card: rgba(255,255,255,0.04);
+            --fg-strong: #ffffff;
+            --fg-mid: rgba(245, 245, 247, 0.84);
+            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-dim: rgba(245, 245, 247, 0.46);
+            --border: rgba(255, 255, 255, 0.10);
+            --accent: #6d28d9;
+            --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.18), transparent 60%),
+                radial-gradient(ellipse 60% 50% at 90% 110%, rgba(109, 40, 217, 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 920px; margin: 0 auto; padding: clamp(36px, 6vw, 72px) clamp(20px, 5vw, 40px); }
+        .hero { margin-bottom: 56px; }
+        /* [required: §1.2 + pub-date] eyebrow includes "Patient Education · <Topic> · Published <Date>" */
+        .hero .eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 22px; }
+        .hero h1 { font-family: inherit; font-weight: 200; font-size: clamp(30px, 4.6vw, 50px); letter-spacing: -0.022em; line-height: 1.1; color: var(--fg-strong); margin: 0 0 18px 0; }
+        .hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
+        .hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
+        .hero .byline strong { color: var(--fg-strong); font-weight: 500; }
+        /* @media (prefers-reduced-motion) — [required: §3.10] */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+
+        /* [required: §3.12] Medicolegal AI disclaimer — canonical CSS (do not modify wording) */
+        .mz-ai-disclaimer { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid rgba(255,255,255,0.07); font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: rgba(245,245,247,0.40); text-align: center; }
+        .mz-ai-disclaimer p { margin: 0; }
+        .mz-ai-disclaimer a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+        .mz-ai-disclaimer a:hover, .mz-ai-disclaimer a:focus-visible { color: rgba(201,119,89,0.95); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+
+    <header class="hero">
+        <!-- [required: §1.2 + pub-date] keep "Patient Education · <Topic> · Published <Month Day, Year>" pattern -->
+        <div class="eyebrow">Patient Education &middot; {{TOPIC_LABEL}} &middot; Published {{PUBLICATION_DATE}}</div>
+        <h1>{{HEADLINE_SENTENCE}}</h1>
+        <p class="lede">
+            {{LEDE_TEXT}}
+        </p>
+        <div class="byline">Reviewed by <strong>Christopher Z. Mabini, DO, MSAEd</strong> &middot; AAGL Fellow, Minimally Invasive Gynecologic Surgery</div>
+    </header>
+
+    <!-- ============================================================
+         CONTENT SECTIONS START HERE
+         Add fact cards, narrative sections, modals, references.
+         Source every clinical claim from the §0.8 KB (do NOT use
+         training memory). Cite inline as <sup class="mz-ref">[N]</sup>.
+
+         For the references section's intro paragraph, use exactly:
+            "<p class="ref-intro">Every clinical claim above ties to
+            one of these peer-reviewed sources. Click any abstract to
+            expand the verbatim PubMed record.</p>"
+         (NEVER add "retrieved via NCBI E-Utilities" — §3.7 violation)
+         ============================================================ -->
+    {{CONTENT}}
+
+    </div>
+
+    <!-- [required: §3.12] Medicolegal AI disclaimer — canonical text (verbatim — do not reword) -->
+    <aside class="mz-ai-disclaimer" aria-label="AI-assisted content disclaimer">
+        <p>This page was prepared with AI assistance to organize and improve readability of a high volume of clinical literature. It is provided strictly for educational purposes and is not medical advice. Treatment decisions should always be made together with your physician, based on your individual evaluation. If you spot an error or have a comment about the content, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
+    </aside>
+
+</body>
+</html>
+
+<!-- §0.8 KB-anchor manifest — [required: §0.8.1] fill in after authoring content. Format:
+{
+  "spec": "§0.8.1 KB-anchor manifest (CLAUDE.md)",
+  "surface": "/education/{{SLUG}}/index.html",
+  "topic": "{{TOPIC_LABEL}}",
+  "topic_synthesis_id": "<UUID from kb_chunks/02_topicSyntheses.json>",
+  "kb_documents_loaded": ["<uuid1>", "<uuid2>"],
+  "kb_documents_quoted": [...],
+  "pmids_efetched_in_session": [],
+  "user_docx_sources": [],
+  "not_in_kb_claims": [],
+  "generated_at_utc": "{{ISO_DATETIME_UTC}}"
+}
+-->
