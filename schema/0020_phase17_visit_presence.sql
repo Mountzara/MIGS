@@ -1,0 +1,13 @@
+-- 0020_phase17_visit_presence.sql
+-- Phase 17 R4 enhancement — per-visit physical-presence attestation.
+--
+-- Records the US state the patient confirmed they were physically located in
+-- at launch time. For telehealth, jurisdiction is the patient's point-of-care
+-- physical location (which can differ from the state declared at intake if the
+-- patient has travelled). The launch endpoint re-verifies this state against
+-- the clinician's licensed states and fails closed.
+--
+-- NOTE: ALTER TABLE ADD COLUMN is NOT idempotent (no IF NOT EXISTS on SQLite
+-- columns). Run exactly once. If a partial apply leaves the column present,
+-- re-running errors with "duplicate column name" — that is safe to ignore.
+ALTER TABLE visit_launch_attestations ADD COLUMN current_state TEXT;

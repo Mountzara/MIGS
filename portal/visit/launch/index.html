@@ -67,6 +67,12 @@ h1 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
 .card .body .title { font-size: 15px; font-weight: 600; color: var(--ink);
     margin: 0 0 4px; letter-spacing: -0.005em; }
 .card .body .copy { font-size: 13px; color: var(--ink-mute); margin: 0; line-height: 1.55; }
+.card select { width: 100%; margin-top: 12px; padding: 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.25);
+    color: var(--ink); font-family: inherit; font-size: 14px; cursor: pointer;
+    transition: border-color 0.18s; }
+.card select:focus { outline: none; border-color: rgba(var(--glow-purple), 0.6); }
+.card select option { color: #111; }
 .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
 .btn-primary { display: inline-flex; align-items: center; justify-content: center;
     width: 100%; padding: 16px 24px; border: none; border-radius: 12px;
@@ -130,6 +136,16 @@ footer a:hover { text-decoration: underline; }
       </label>
     </div>
 
+    <div class="card" id="card-location">
+      <div class="body" style="width:100%">
+        <div class="title">Which U.S. state are you in right now?</div>
+        <p class="copy">For telehealth, your clinician must be licensed in the state where you are physically located during this visit. Please confirm your current location.</p>
+        <select id="sel-state" aria-label="State you are currently located in" required>
+          <option value="">Select the state you are in…</option>
+        </select>
+      </div>
+    </div>
+
     <div class="actions">
       <button type="submit" class="btn-primary" id="btnJoin" disabled>
         Join visit
@@ -161,9 +177,22 @@ footer a:hover { text-decoration: underline; }
     var chkAlone = document.getElementById('chk-alone');
     var cardPrivacy = document.getElementById('card-privacy');
     var cardAlone = document.getElementById('card-alone');
+    var cardLocation = document.getElementById('card-location');
+    var selState = document.getElementById('sel-state');
     var btnJoin = document.getElementById('btnJoin');
     var statusEl = document.getElementById('status');
     var form = document.getElementById('launchForm');
+
+    // Phase 17 R4 — populate the current-location selector (telehealth
+    // jurisdiction = where the patient is physically located right now).
+    var US_STATES = [["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"]];
+    if (selState) {
+        US_STATES.forEach(function(s) {
+            var o = document.createElement('option');
+            o.value = s[0]; o.textContent = s[1];
+            selState.appendChild(o);
+        });
+    }
 
     function setStatus(kind, msg) {
         statusEl.className = 'status ' + kind;
@@ -171,12 +200,14 @@ footer a:hover { text-decoration: underline; }
     }
 
     function syncJoinEnabled() {
-        btnJoin.disabled = !(chkPrivacy.checked && chkAlone.checked);
+        btnJoin.disabled = !(chkPrivacy.checked && chkAlone.checked && selState.value);
         cardPrivacy.classList.toggle('checked', chkPrivacy.checked);
         cardAlone.classList.toggle('checked', chkAlone.checked);
+        cardLocation.classList.toggle('checked', !!selState.value);
     }
     chkPrivacy.addEventListener('change', syncJoinEnabled);
     chkAlone.addEventListener('change', syncJoinEnabled);
+    selState.addEventListener('change', syncJoinEnabled);
 
     function fmtDateTime(ts) {
         try {
@@ -228,6 +259,7 @@ footer a:hover { text-decoration: underline; }
             body: JSON.stringify({
                 privacy_confirmed: chkPrivacy.checked,
                 alone_confirmed: chkAlone.checked,
+                current_state: selState.value,
             }),
         }).then(function(r) {
             return r.json().then(function(j) { return { ok: r.ok, status: r.status, body: j }; });

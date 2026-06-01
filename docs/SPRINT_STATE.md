@@ -17,6 +17,7 @@
 | **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5, 2026-05-28) |
 | **Deployed to production?** | **PARTIAL** — R1+R4+R5 + schema 0018 are live (deploy 5490890b). R3 (state-licensure gate) + 5 pre-sprint compliance commits (§1.2 naming / §3.12 disclaimers / pub-dates / POST overwrite-guard / CI gate) are **committed but NOT yet deployed** — they ride the sprint-close deploy. |
 | **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28 (3 ALTER TABLEs on appointments via Sprint 1 commit + 3 CREATE TABLEs via splitter `/tmp/_mz_0018_part2.sql`) |
+| **Schema migration `0020` run against D1?** | **NO** — `0020_phase17_visit_presence.sql` (ALTER `visit_launch_attestations` ADD `current_state`) created for the R4 presence enhancement; **apply at sprint-close deploy** before/with the code push. |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
 | **Source benchmark** | Joshi & Welch (2023) *Telehealth Success*, Forbes Books, ISBN 979-8-88750-139-0 |
@@ -78,6 +79,8 @@ Gate default `["IL"]` (fails closed). Node `--check` clean on all 4 JS files; ad
 5. ✅ `portal/visit/launch/index.html` — interstitial with two attestation cards (privacy + alone-or-chaperoned), Apple-glass styling, purple accent, T-15-min gate hint, opens room URL only on POST success. Dynamic appointment id resolved client-side from URL path.
 6. ✅ `functions/api/v1/patient/appointments/[id]/launch.js` — POST-only. Validates ownership, status=`scheduled`, modality=`telehealth`, chaperone (if required), T-15-min release window (`launch_too_early` if early, `launch_window_closed` if >30min past end), and both attestations true. Writes a `visit_launch_attestations` row with IP hash + UA. Returns `{room_url, expires_at, appointment}` on success. Every call audit-logged.
 7. ✅ `_redirects` — wildcard `/portal/visit/*/launch` → `/portal/visit/launch/index.html 200` so the dynamic path resolves to the static SPA. Patient GET endpoints already do NOT expose `doxy_room_url` (audit: only `book.js` write side + `admin/*` read sides reference it; patient read endpoints are clean).
+
+**R4 enhancement — per-visit physical-presence attestation ✅ 2026-05-31.** The launch interstitial adds a third gate: a *"Which U.S. state are you in right now?"* selector. `launch.js` re-verifies licensure against the patient's **current** location (the gold-standard telehealth jurisdiction = point-of-care location, which can differ from the intake-declared state if the patient travelled) and **fails closed**: `403 location_attestation_required` if not confirmed, `422 license_state_mismatch` if the clinician isn't licensed there. The confirmed state is persisted on the `visit_launch_attestations` row + audit log, with a `licensure_blocks` row on block. **Requires schema migration `0020_phase17_visit_presence.sql` (apply at sprint-close deploy).** `node --check` clean (endpoint + interstitial inline JS). NOT deployed.
 
 ### R5 — Patient device + connection test ✅ DONE 2026-05-28
 

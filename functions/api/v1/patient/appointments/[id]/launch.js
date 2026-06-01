@@ -33,6 +33,11 @@
 import { previewAccess, preLaunchNotFound } from "../../../../../_lib/preview_gate.js";
 import { requireRole } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
+import {
+    getLicensedStates,
+    isLicensedInState,
+    recordLicensureBlock,
+} from "../../../../../_lib/licensure.js";
 
 const CLINICIAN_ID = "mabini-christopher-z";
 const LAUNCH_WINDOW_MS = 15 * 60 * 1000;   // T-15 minutes
@@ -81,6 +86,8 @@ export async function onRequestPost(ctx) {
     catch { return jerr(400, "invalid_json", "Body must be JSON."); }
     const privacy_confirmed = body.privacy_confirmed === true;
     const alone_confirmed = body.alone_confirmed === true;
+    const current_state = typeof body.current_state === "string"
+        ? body.current_state.trim().toUpperCase() : "";
     const device_check_passed =
         body.device_check_passed === true ? 1 :
         body.device_check_passed === false ? 0 : null;
@@ -166,6 +173,39 @@ export async function onRequestPost(ctx) {
             });
     }
 
+    // Phase 17 R4 enhancement — per-visit physical-presence attestation.
+    // Telehealth jurisdiction is the patient's physical location at the time of
+    // care, which can differ from the state declared at intake (the patient may
+    // have travelled). Re-confirm the current state and re-verify licensure.
+    // FAIL CLOSED: no valid state, or a state the clinician isn't licensed in,
+    // blocks the room from opening. See docs/compliance/licensure.md.
+    if (!/^[A-Z]{2}$/.test(current_state)) {
+        return jerr(403, "location_attestation_required",
+            "Please confirm the U.S. state you are physically located in right now before joining.");
+    }
+    if (!(await isLicensedInState(env, current_state))) {
+        let licensed_states = [];
+        try { licensed_states = await getLicensedStates(env); } catch {}
+        await recordLicensureBlock(env, {
+            patient_id: session.patient_id,
+            state: current_state,
+            reason: `visit launch blocked — patient located in ${current_state}, clinician not licensed`,
+        });
+        await logAudit(env, {
+            actor_role: "patient",
+            actor_id: session.patient_id,
+            action: "visit_launch_blocked_licensure",
+            target_type: "appointment",
+            target_id: appointment_id,
+            outcome: "license_state_mismatch",
+            details_json: JSON.stringify({ current_state, licensed_states }),
+        }, ctx);
+        return jerr(422, "license_state_mismatch",
+            `Dr. Mabini isn't licensed to provide care in the state you're currently in (${current_state}). ` +
+            `This visit can't take place from your current location — please contact the office.`,
+            { licensed_states });
+    }
+
     // Look up the practice's Doxy room URL.
     const practice = await env.DB.prepare(`
         SELECT doxy_room_url
@@ -186,14 +226,15 @@ export async function onRequestPost(ctx) {
         await env.DB.prepare(`
             INSERT INTO visit_launch_attestations
               (appointment_id, patient_id, privacy_confirmed, alone_confirmed,
-               device_check_passed, attested_at, ip_hash, user_agent)
-            VALUES (?, ?, ?, ?, ?, datetime('now'), ?, ?)
+               device_check_passed, current_state, attested_at, ip_hash, user_agent)
+            VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
         `).bind(
             appointment_id,
             session.patient_id,
             privacy_confirmed ? 1 : 0,
             alone_confirmed ? 1 : 0,
             device_check_passed,
+            current_state,
             ip_hash,
             user_agent,
         ).run();
@@ -221,6 +262,7 @@ export async function onRequestPost(ctx) {
         details_json: JSON.stringify({
             privacy_confirmed,
             alone_confirmed,
+            current_state,
             device_check_passed,
             modality: appt.modality,
         }),
