@@ -232,6 +232,15 @@ export async function onRequestPost(ctx) {
 
     const result = await triageForIntake(ctx, intake_id);
     if (!result.ok) {
+        // Surface the licensure block as 422 (consistent with submit + book),
+        // distinguished by error code, with the licensed-states for the UI.
+        if (result.error === "license_state_mismatch") {
+            return new Response(JSON.stringify({
+                error: "license_state_mismatch",
+                message: "Dr. Mabini isn't currently licensed to provide care to patients located in your state. Please contact the office.",
+                licensed_states: result.licensed_states || [],
+            }), { status: 422, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+        }
         return err(409, result.error, "could not triage");
     }
 

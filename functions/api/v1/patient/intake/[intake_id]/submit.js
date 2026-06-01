@@ -107,8 +107,8 @@ export async function onRequestPost(ctx) {
         });
         return new Response(JSON.stringify({
             error: "license_state_mismatch",
-            message: `Our clinician is not currently licensed to provide care in your state (${address_state}). ` +
-                     `Currently licensed: ${licensed_states.join(", ")}. Please contact the office to discuss options.`,
+            message: `Dr. Mabini isn't currently licensed to provide telehealth care to patients located in ${address_state}. ` +
+                     `Please contact the office and we'll help you explore your options.`,
             licensed_states,
         }), { status: 422, headers: { "content-type": "application/json", "cache-control": "no-store" } });
     }

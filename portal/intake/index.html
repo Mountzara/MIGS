@@ -413,7 +413,7 @@
                 field('Date of birth', dateIn('dob', { full: 1, autocomplete: 'bday' })),
                 field('Phone', telIn('phone', { full: 1 })),
                 field('Email', emailIn('email', { full: 1 })),
-                field('State of residence', selectIn('address_state', US_STATES, { full: 1 })),
+                field('State where you will be located for visits', selectIn('address_state', US_STATES, { full: 1 }), 'For telehealth, your clinician must be licensed in the state where you are physically located during the visit.'),
                 field('Referred by', textIn('referred_by', { full: 1 })),
                 field('Interpreter language (if needed)', textIn('interpreter_language', { full: 1 })),
             ),
