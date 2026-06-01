@@ -191,6 +191,11 @@ export async function onRequestGet(ctx) {
             urgency: triage.ai_urgency,
             in_person_required,
             preferred_time_of_day,
+            // Phase 17 R1 — surface the chaperone policy so the booking UI can
+            // prompt the patient before a telehealth booking of a
+            // chaperone-required visit type (book.js enforces it server-side).
+            requires_chaperone: !!(vt && vt.requires_chaperone),
+            chaperone_rationale: (vt && vt.chaperone_rationale) || null,
         },
         modality_effective: modality,
         window: { from, to },

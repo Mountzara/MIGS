@@ -11,9 +11,9 @@
 | Field | Value |
 |---|---|
 | **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
-| **Last updated** | 2026-05-29 by Claude (Cowork) |
+| **Last updated** | 2026-05-31 by Claude (Cowork) |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `phase17(sprint1 R3): state-licensure gate + admin picker` |
+| **Last commit on branch** | `phase17(sprint1 R1): chaperone-confirm modal in booking` (also landed since: R3 refine `adfc0f7`, R4 presence `85890b0`) |
 | **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5, 2026-05-28) |
 | **Deployed to production?** | **PARTIAL** — R1+R4+R5 + schema 0018 are live (deploy 5490890b). R3 (state-licensure gate) + 5 pre-sprint compliance commits (§1.2 naming / §3.12 disclaimers / pub-dates / POST overwrite-guard / CI gate) are **committed but NOT yet deployed** — they ride the sprint-close deploy. |
 | **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28 (3 ALTER TABLEs on appointments via Sprint 1 commit + 3 CREATE TABLEs via splitter `/tmp/_mz_0018_part2.sql`) |
@@ -90,7 +90,7 @@ Gate default `["IL"]` (fails closed). Node `--check` clean on all 4 JS files; ad
 
 ### Chaperone-confirm modal UI (≈1 h)
 
-11. **`portal/appointments/book/index.html`** — when the user selects a telehealth slot for a `requires_chaperone` visit type, intercept the "Confirm" click. Open a small modal with the verbatim copy from the implementation specs R1 UI section: three radio buttons + a "Switch to in-person" button + a "Cancel" button. On confirmation, the existing book.js POST already accepts `chaperone_confirmed + chaperone_confirmation_method` — just pass through.
+11. ✅ **Chaperone-confirm modal — DONE 2026-05-31.** `portal/appointments/book/index.html` intercepts the Confirm click when a telehealth slot is selected for a `requires_chaperone` visit type and opens a §3.10 modal (3 radio methods — `partner_present` / `adult_family_member` / `clinic_assistant` — plus "Switch to an in-person visit" + "Cancel"). Continue passes `chaperone_confirmed` + `chaperone_confirmation_method` through the existing book.js POST (refactored into `doBook(extra)`); "Switch to in-person" flips the modality toggle + reloads slots. `available.js` now surfaces `requires_chaperone` + `chaperone_rationale` on the triage response. `node --check` clean (available.js + book inline JS); 0 blue tokens. NOT deployed.
 
 ### Sprint-close (must come last)
 

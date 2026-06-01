@@ -307,6 +307,36 @@
             border: 1px solid rgba(var(--glow-purple), 0.40);
         }
         .confirm-card.show { display: block; }
+        .modal-overlay { position: fixed; inset: 0; z-index: 60; display: none;
+            align-items: center; justify-content: center; padding: 20px;
+            background: rgba(7,7,10,0.72);
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+        .modal-overlay.show { display: flex; }
+        .modal { width: 100%; max-width: 460px; background: #131217;
+            border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+            -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
+        .modal h2 { font-weight: 300; font-size: 20px; letter-spacing: -0.012em;
+            color: var(--fg-strong); margin: 0 0 8px; }
+        .modal .modal-sub { font-size: 14px; line-height: 1.55; color: var(--fg-soft); margin: 0 0 18px; }
+        .chap-option { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
+            border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s; }
+        .chap-option:hover { border-color: rgba(var(--glow-purple), 0.4); }
+        .chap-option.selected { border-color: rgba(var(--glow-purple), 0.6); background: rgba(167,139,250,0.07); }
+        .chap-option input { margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; }
+        .chap-option .co-title { display: block; font-size: 14px; font-weight: 600; color: var(--fg-strong); }
+        .chap-option .co-sub { display: block; font-size: 12.5px; color: var(--fg-soft); margin-top: 2px; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+        .modal-actions .btn-primary { width: 100%; padding: 14px; border: none; border-radius: 10px;
+            background: var(--accent); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer;
+            font-family: inherit; transition: background 0.2s, opacity 0.2s; }
+        .modal-actions .btn-primary:hover:not(:disabled) { background: #7c3aed; }
+        .modal-actions .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .modal-actions .btn-ghost { width: 100%; padding: 11px; border: 1px solid var(--border);
+            border-radius: 10px; background: transparent; color: var(--fg-soft); font-weight: 500;
+            font-size: 13.5px; cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s; }
+        .modal-actions .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--fg-strong); }
+        @media (prefers-reduced-motion: reduce) { .modal-overlay, .modal, .chap-option, .modal-actions button { transition: none !important; } }
         .confirm-card .when {
             font-size: 18px;
             color: var(--fg-strong);
@@ -417,6 +447,31 @@
                 <a class="ghost" style="display:inline-block; text-decoration:none;" href="/portal/">Back to portal</a>
             </div>
         </section>
+    </div>
+
+    <!-- Phase 17 R1 — chaperone confirmation modal -->
+    <div class="modal-overlay" id="chaperone-modal" role="dialog" aria-modal="true" aria-labelledby="chap-title">
+      <div class="modal">
+        <h2 id="chap-title">This visit needs a chaperone.</h2>
+        <p class="modal-sub" id="chap-rationale">Per our practice policy and to follow standard-of-care for women's health, an adult support person needs to be present in the room with you during this visit.</p>
+        <label class="chap-option" data-method="partner_present">
+          <input type="radio" name="chap-method" value="partner_present">
+          <span><span class="co-title">My partner or spouse</span><span class="co-sub">An adult partner will be in the room with me.</span></span>
+        </label>
+        <label class="chap-option" data-method="adult_family_member">
+          <input type="radio" name="chap-method" value="adult_family_member">
+          <span><span class="co-title">An adult family member</span><span class="co-sub">An adult relative will be in the room with me.</span></span>
+        </label>
+        <label class="chap-option" data-method="clinic_assistant">
+          <input type="radio" name="chap-method" value="clinic_assistant">
+          <span><span class="co-title">A clinic-provided medical assistant</span><span class="co-sub">A Mount Zara staff member will join the call.</span></span>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="chap-continue" disabled>Continue</button>
+          <button type="button" class="btn-ghost" id="chap-switch">Switch to an in-person visit</button>
+          <button type="button" class="btn-ghost" id="chap-cancel">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -607,6 +662,9 @@
                 const qs = state.modalityChoice ? `?modality=${state.modalityChoice}` : '';
                 const data = await fetchJson(`/api/v1/patient/appointments/available${qs}`);
                 state.slotsByDate = data.slots_by_date || {};
+                // Phase 17 R1 — capture the chaperone policy for the booking gate.
+                state.requiresChaperone = !!(data.triage && data.triage.requires_chaperone);
+                state.chaperoneRationale = (data.triage && data.triage.chaperone_rationale) || '';
                 state.dates = buildDateRange(data.window.from, data.window.to);
                 if (!state.selectedDate || !state.dates.includes(state.selectedDate)) {
                     state.selectedDate = firstDateWithSlots(state.dates, state.slotsByDate) || state.dates[0];
@@ -712,7 +770,21 @@
             $('confirm-card').classList.remove('show');
             document.querySelectorAll('.slot.active').forEach(s => s.classList.remove('active'));
         });
-        $('btn-book').addEventListener('click', async () => {
+        $('btn-book').addEventListener('click', () => {
+            const s = state.selectedSlot;
+            const t = state.triage;
+            if (!s || !t) return;
+            // Phase 17 R1 — a telehealth booking of a chaperone-required visit
+            // type must collect a chaperone confirmation before booking
+            // (book.js enforces this server-side; this is the prompt).
+            if (s.modality === 'telehealth' && state.requiresChaperone) {
+                openChaperoneModal();
+                return;
+            }
+            doBook({});
+        });
+
+        async function doBook(extra) {
             const s = state.selectedSlot;
             const t = state.triage;
             if (!s || !t) return;
@@ -720,13 +792,13 @@
             try {
                 const data = await fetchJson('/api/v1/patient/appointments/book', {
                     method: 'POST',
-                    body: JSON.stringify({
+                    body: JSON.stringify(Object.assign({
                         triage_id: t.id,
                         block_id: s.block_id,
                         start_minute_of_day: s.start_minute_of_day,
                         duration_min: t.duration_min,
                         modality: s.modality,
-                    }),
+                    }, extra || {})),
                 });
                 $('confirm-card').classList.remove('show');
                 $('picker-card').style.display = 'none';
@@ -746,6 +818,48 @@
                 }
                 $('btn-book').disabled = false;
             }
+        }
+
+        // -------- Chaperone confirmation modal (Phase 17 R1) --------
+        const chapModal = $('chaperone-modal');
+        let chapMethod = null;
+        function openChaperoneModal() {
+            chapMethod = null;
+            $('chap-continue').disabled = true;
+            chapModal.querySelectorAll('.chap-option').forEach(o => {
+                o.classList.remove('selected');
+                const inp = o.querySelector('input'); if (inp) inp.checked = false;
+            });
+            if (state.chaperoneRationale) $('chap-rationale').textContent = state.chaperoneRationale;
+            chapModal.classList.add('show');
+        }
+        function closeChaperoneModal() { chapModal.classList.remove('show'); }
+        chapModal.querySelectorAll('.chap-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                chapMethod = opt.getAttribute('data-method');
+                chapModal.querySelectorAll('.chap-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                const inp = opt.querySelector('input'); if (inp) inp.checked = true;
+                $('chap-continue').disabled = false;
+            });
+        });
+        $('chap-continue').addEventListener('click', () => {
+            if (!chapMethod) return;
+            closeChaperoneModal();
+            doBook({ chaperone_confirmed: true, chaperone_confirmation_method: chapMethod });
+        });
+        $('chap-cancel').addEventListener('click', closeChaperoneModal);
+        $('chap-switch').addEventListener('click', () => {
+            closeChaperoneModal();
+            // Switch the booking to in-person: flip the modality toggle + reload.
+            state.modalityChoice = 'in_person';
+            const tog = $('modality-toggle');
+            if (tog) {
+                tog.querySelectorAll('.modality-chip').forEach(x =>
+                    x.classList.toggle('active', x.getAttribute('data-modality') === 'in_person'));
+            }
+            $('confirm-card').classList.remove('show');
+            loadSlots();
         });
 
         function escapeHtml(s) {
