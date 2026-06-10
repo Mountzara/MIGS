@@ -541,6 +541,39 @@ If `agent-platform/` moves, update `deploy-prod.sh::AUDIT` constant.
 
 ---
 
+## 13.5 HARD RULE — dynamic-segment routes are served by Pages Functions, NEVER `_redirects` (codified 2026-06-10)
+
+**The failure mode (hit THREE times now):** a `_redirects` wildcard rewrite
+for a dynamic-segment path (`/admin/cases/<id>/` 2026-05-21,
+`/portal/visit/<id>/launch/` since 2026-05-28, `/portal/nps/<token>/`
+2026-06-10) silently falls through to the **marketing homepage**. The page
+"ships," its API endpoints pass curl smoketests, and the route itself is
+unreachable — invisible until someone loads the URL in a browser (§0.2.1).
+The R4 launch interstitial was unreachable BY URL for 13 days this way.
+
+**The rule.** Any route with a dynamic path segment that must serve a
+static SPA/HTML file gets a **Pages Function** that fetches the asset via
+`env.ASSETS` and stamps an **`x-mz-route` response header** (see
+`functions/portal/nps/[token].js` for the canonical ~20-line pattern).
+Never add a `_redirects` wildcard for such a route.
+
+**The enforcement (3 layers — all must be done for any NEW dynamic route):**
+1. Create the Pages Function with a unique `x-mz-route` header value.
+2. Add a `check_route` assertion to `scripts/smoketest_phase17.sh` §0b
+   (asserts the header for BOTH trailing-slash forms; a missing header
+   means homepage fallthrough).
+3. §0.2.1 visual VERIFY the URL in a real/headless browser post-deploy —
+   API-only smoketests structurally CANNOT catch this class.
+
+**Sibling rule — frontends never reference nonexistent endpoints.** The
+launch page fetched `GET /api/v1/patient/appointments/<id>` for 13 days
+before the endpoint existed (the catch swallowed it). When shipping a page
+that calls an API, curl that exact API in the same session; "best-effort"
+fetches still need a real backend. The smoketest §0b content-type check
+covers the known instance.
+
+---
+
 ## 14. Known gaps + legacy patterns to retire
 
 These are tracked separately so future sessions can prioritize. Items

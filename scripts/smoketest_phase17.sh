@@ -154,6 +154,37 @@ else
 fi
 
 # ---------------------------------------------------------------------
+section "0b) Dynamic-route reachability — pages must NOT fall through to the homepage"
+# Codified 2026-06-10 after the Sprint 2 batch-1 visual VERIFY found that
+# the _redirects wildcards for /portal/visit/<id>/launch and /portal/nps/
+# <token> silently served the MARKETING HOMEPAGE (the same trailing-slash
+# failure documented for /admin/cases/<id>/). Dynamic-segment portal
+# routes are served by Pages Functions which stamp an x-mz-route response
+# header — these assertions fail loudly if any future change (a _redirects
+# edit, a Functions routing change, a renamed asset) regresses the route.
+check_route() { # name, url, expected x-mz-route value
+    local name="$1" url="$2" want="$3"
+    local hdr
+    hdr=$(curl -sS -o /dev/null -u "$MZ_ADMIN_USER:$MZ_ADMIN_PASS" -D - "$BASE$url" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-mz-route"{print $2}')
+    if [ "$hdr" = "$want" ]; then
+        echo "  $(c_grn PASS)  $name  (x-mz-route=$hdr)"; PASS=$((PASS+1))
+    else
+        echo "  $(c_red FAIL)  $name  (expected x-mz-route=$want, got '${hdr:-<none — likely homepage fallthrough>}')"; FAIL=$((FAIL+1)); FAILED_NAMES+=("$name")
+    fi
+}
+check_route "launch page route (no slash)"  "/portal/visit/smoke-route-check/launch"  "visit-launch-interstitial"
+check_route "launch page route (slash)"     "/portal/visit/smoke-route-check/launch/" "visit-launch-interstitial"
+check_route "NPS page route (no slash)"     "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"  "nps-survey"
+check_route "NPS page route (slash)"        "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/" "nps-survey"
+# The patient appointment GET must return JSON, never HTML (it didn't
+# exist until 2026-06-10 — requests fell through to the homepage).
+ct=$(curl -sS -o /dev/null -b "$JAR" -D - "$BASE/api/v1/patient/appointments/smoke-route-check" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2}')
+case "$ct" in
+    application/json*) echo "  $(c_grn PASS)  patient appointment GET returns JSON  ($ct)"; PASS=$((PASS+1)) ;;
+    *) echo "  $(c_red FAIL)  patient appointment GET returns '$ct' (expected application/json — endpoint missing?)"; FAIL=$((FAIL+1)); FAILED_NAMES+=("appointment GET json") ;;
+esac
+
+# ---------------------------------------------------------------------
 section "A) Preview gate — anonymous traffic gets 404 (never a PHI surface)"
 assert_code "anon tech-check -> 404"        404 "$(anon_post /api/v1/patient/tech-check '{"camera_ok":true}')"
 assert_code "anon booking -> 404"           404 "$(anon_post /api/v1/patient/appointments/book '{"triage_id":"x"}')"
