@@ -223,3 +223,36 @@ if [ -z "${DEPLOY_SKIP_RUNTIME_CSS_AUDIT:-}" ]; then
         fi
     fi
 fi
+
+# ---------------------------------------------------------------------------
+# Route-render audit (added 2026-06-10 per SYSTEM_MAP.md §13.5). Converts
+# §0.2.1 visual VERIFY into a HARD GATE: loads every route in
+# scripts/route_render_manifest.json on live production in headless Chromium
+# and asserts title + DOM selector — catching (a) the _redirects/Functions
+# fallthrough-to-homepage class that left the R4 launch interstitial
+# unreachable for 13 days, and (b) page JS that silently fails to build the
+# DOM. The discovery contract also FAILS the deploy if a static SPA route
+# exists in the repo with no manifest entry — a new page cannot ship without
+# its render assertions (or a conscious `unaudited` row) in the same commit.
+# Skip with DEPLOY_SKIP_ROUTE_RENDER_AUDIT=1 — dangerous, document why.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_ROUTE_RENDER_AUDIT:-}" ]; then
+    if [ -f scripts/audit_route_render.py ]; then
+        echo ""
+        echo "🔍 Route-render audit — every registered route loaded + DOM-asserted on live site..."
+        if /usr/bin/python3 scripts/audit_route_render.py > /tmp/_route_render_audit.log 2>&1; then
+            tail -1 /tmp/_route_render_audit.log
+            echo "   ✅ route-render audit passed"
+        else
+            echo ""
+            echo "🛑 ROUTE-RENDER AUDIT FAILED — a page route is serving the wrong"
+            echo "   content (homepage fallthrough / broken page JS), or a new route"
+            echo "   shipped without a scripts/route_render_manifest.json entry."
+            grep -E '✗' /tmp/_route_render_audit.log | head -20
+            echo ""
+            echo "   Full log: /tmp/_route_render_audit.log"
+            echo "   Override: DEPLOY_SKIP_ROUTE_RENDER_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+    fi
+fi

@@ -192,6 +192,15 @@ the target element is in a section ABOVE the script tag.
 6. **All-fields audit gate** — `scripts/audit_live_post.py --list` runs
    the §3.7.1 / §1.2 / §3.7 / §3.11 / §3.12 audit on every published R2
    post. Exits 1 on any FAIL.
+7. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
+   (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
+   class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.
+8. **Route-render audit (added 2026-06-10)** —
+   `scripts/audit_route_render.py` per §13.5: every manifest route loaded
+   in headless Chromium on live + title/selector asserted (homepage-
+   fallthrough + broken-page-JS classes), PLUS the discovery contract
+   (any repo route absent from `scripts/route_render_manifest.json`
+   fails the deploy). Skip: `DEPLOY_SKIP_ROUTE_RENDER_AUDIT=1`.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 
@@ -529,7 +538,7 @@ or it won't be backed up.
 | **Phase deploys** | `_deploy_phase14_a/b/c/d.sh`, `_deploy_phase15.sh`, `_deploy_phase_qa/qb/qc.sh`, `_deploy_p25a.sh`, `_redeploy_phase14_*_fix.sh` |
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
-| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py` |
+| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #8), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
 | **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |
@@ -562,8 +571,18 @@ Never add a `_redirects` wildcard for such a route.
 2. Add a `check_route` assertion to `scripts/smoketest_phase17.sh` §0b
    (asserts the header for BOTH trailing-slash forms; a missing header
    means homepage fallthrough).
-3. §0.2.1 visual VERIFY the URL in a real/headless browser post-deploy —
-   API-only smoketests structurally CANNOT catch this class.
+3. Add the route to `scripts/route_render_manifest.json` with title +
+   selector assertions — `scripts/audit_route_render.py` is a HARD
+   post-deploy gate in `deploy-prod.sh` (gate #8) that loads every
+   manifest route in headless Chromium and fails the deploy on a wrong
+   title, homepage fallthrough, or missing DOM selector. Its discovery
+   contract also fails the deploy when ANY static SPA route exists in
+   the repo without a manifest entry — so a new page physically cannot
+   ship without its render assertions (or a conscious, diff-visible
+   `unaudited` row) in the same commit. The visual-VERIFY discipline is
+   thereby a machine check, not a memory. (Negative-tested 2026-06-10:
+   an unregistered `/portal/route-gate-negative-test/` was correctly
+   flagged as an orphan.)
 
 **Sibling rule — frontends never reference nonexistent endpoints.** The
 launch page fetched `GET /api/v1/patient/appointments/<id>` for 13 days
