@@ -73,7 +73,9 @@ export async function onRequestGet(ctx) {
         const patient = await env.DB.prepare(`
             SELECT id, email, phone, first_name, last_name, preferred_name,
                    dob, mrn, pronouns, preferred_language, timezone,
-                   email_verified_at, status, created_at, updated_at
+                   email_verified_at, status, created_at, updated_at,
+                   identity_verified_at, identity_verified_method,
+                   identity_verification_notes
             FROM patients WHERE id = ?
         `).bind(patient_id).first();
         if (!patient) return jsonError("patient_not_found", 404);

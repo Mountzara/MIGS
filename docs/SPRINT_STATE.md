@@ -30,7 +30,7 @@ Canonical spec: `/Users/beans/Documents/MountZara_Telehealth_Implementation_Spec
 
 | Rec | Item | Status |
 |---|---|---|
-| R6 | First-visit photo-ID verification (migration 0021; admin id-verify endpoint + cases banner; launch prep copy) | pending |
+| R6 | First-visit photo-ID verification | ✅ 2026-06-10 — migration `0021_phase18_id_verify.sql` (apply BEFORE code deploy — keystone SELECT references new columns); `functions/api/v1/admin/patients/[id]/id-verify.js` (GET + POST, 5 methods, deferred-requires-notes, audit-logged); cases keystone returns identity fields; `admin/cases/_t/index.html::renderIdVerify` purple banner (first-visit or deferred) → one-tap verify → green badge; launch interstitial photo-ID prep copy. `node --check` clean ×4. NOT deployed. |
 | R7 | T-15 launch-gate countdown UI (server gate live since R4) | ✅ 2026-06-10 — live countdown on `portal/visit/launch/`, proactive from `starts_at`, re-anchored to server `{gate_opens_at, server_now}` on 403, auto-unlocks Join at gate-open; server-time basis line; `node --check` clean; 0 blue tokens. Visual VERIFY at sprint-close deploy. |
 | R8 | Messaging response-window SLA (migration 0022; urgency on compose; sla_due_at; admin badges; 15-min sweep cron) | pending |
 | R9 | NPS post-visit survey (migration 0023; token page; respond endpoint; analytics card; daily dispatch cron) | pending |
