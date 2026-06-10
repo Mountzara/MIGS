@@ -36,9 +36,9 @@ Canonical spec: `/Users/beans/Documents/MountZara_Telehealth_Implementation_Spec
 | R9 | NPS post-visit survey (migration 0023; token page; respond endpoint; analytics card; daily dispatch cron) | pending |
 | R10 | Patient-facing visit summary, template fallback per D6 (migration 0024; draft/edit/send; portal view) | pending |
 | R11 | Homepage telehealth value-prop + visit-type matrix | pending |
-| R12 | `docs/compliance/standard-of-care.md` (§B.3 template; needs signature) | pending |
-| R13 | Malpractice carrier letter template + coverage file (§B.4; Chris sends) | pending |
-| R14 | `docs/compliance/doxy-config.md` skeleton (needs D8 panel walk) | pending |
+| R12 | `docs/compliance/standard-of-care.md` | ✅ 2026-06-10 — created from Implementation Specs §B.3 (7 sections + signature page). **Awaits Dr. Mabini signature** (Section 5 row added). January review cadence with R2/R3. |
+| R13 | Malpractice carrier confirmation | ✅ docs 2026-06-10 — `malpractice-carrier-letter-template.md` (§B.4, states corrected to IL+CA per D7) + `malpractice-coverage-2026.md` awaiting file. **Chris action: fill carrier/policy fields + send; file response.** |
+| R14 | `docs/compliance/doxy-config.md` | ✅ skeleton 2026-06-10 — 8-step walkthrough checklist + setting-by-setting baseline table. **Awaits D8: Dr. Mabini walks the Doxy admin panel + files the BAA PDF.** |
 
 ---
 
@@ -166,9 +166,9 @@ The following compliance documents are content-complete but the signature pages 
 |---|---|---|
 | `docs/compliance/controlled-substances.md` | Blank | Dr. Mabini review + (recommended) counsel review + sign + date |
 | `docs/compliance/licensure.md` | Blank | Dr. Mabini fills in §1 active-license table from actual records + signs §10 |
-| `docs/compliance/standard-of-care.md` | **NOT YET CREATED** | Sprint 2 R12 work — Implementation Specs §B.3 has the verbatim template |
-| `docs/compliance/doxy-config.md` | **NOT YET CREATED** | Sprint 2 R14 — Dr. Mabini walks Doxy panel, fills template |
-| `docs/compliance/malpractice-coverage-2026.md` | **NOT YET CREATED** | Sprint 2 R13 — Dr. Mabini sends letter using template in Implementation Specs §B.4 |
+| `docs/compliance/standard-of-care.md` | Created 2026-06-10 (§B.3); signature line blank | Dr. Mabini review + sign §Signature page |
+| `docs/compliance/doxy-config.md` | Skeleton created 2026-06-10 | D8: Dr. Mabini walks Doxy panel, fills the baseline table, files BAA PDF |
+| `docs/compliance/malpractice-coverage-2026.md` | Skeleton created 2026-06-10 (+ letter template) | Dr. Mabini fills carrier/policy fields, sends letter, files written response |
 | `docs/clinician/webside-standard.md` | **NOT YET CREATED** | Sprint 3 R15 — Implementation Specs §B.5 has the verbatim template |
 
 ---
