@@ -127,49 +127,67 @@ def main():
         print("ROUTE-RENDER AUDIT: FAIL (playwright missing)")
         return 1
 
+    def audit_route(page, r):
+        """Returns None on pass, or a failure string."""
+        path = r["path"]
+        url = args.base.rstrip("/") + path
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            page.wait_for_timeout(700)
+            # Some SPAs client-redirect on load (e.g. /portal/ ->
+            # /portal/login/ without a patient session). Reading the
+            # title mid-navigation throws "Execution context was
+            # destroyed" — settle and retry once before judging.
+            try:
+                title = page.title() or ""
+            except Exception:
+                page.wait_for_load_state("load", timeout=15000)
+                page.wait_for_timeout(1000)
+                title = page.title() or ""
+            if r.get("title_contains") and r["title_contains"] not in title:
+                return f"RENDER {path}: title '{title}' missing '{r['title_contains']}'"
+            if title.strip() == homepage_title and not r.get("allow_homepage_title"):
+                return f"RENDER {path}: served the MARKETING HOMEPAGE (route fallthrough)"
+            sel = r.get("selector")
+            if sel:
+                try:
+                    page.wait_for_selector(sel, timeout=15000, state="attached")
+                except Exception:
+                    return f"RENDER {path}: selector '{sel}' never appeared (page JS broken?)"
+            return None
+        except Exception as e:
+            return f"RENDER {path}: load failed — {str(e)[:160]}"
+
     with sync_playwright() as p:
         browser = p.chromium.launch()
         ctx = browser.new_context(
             viewport={"width": 1280, "height": 1200},
             extra_http_headers={"Authorization": f"Basic {auth}"})
         page = ctx.new_page()
+        # Pass 1, then ONE retry pass for failures. Real regressions
+        # (fallthrough, missing selector, wrong title) are deterministic
+        # and fail both passes; transient network slowness (observed
+        # 2026-06-10: three independent 30s timeouts in one window) is
+        # absorbed instead of poisoning the deploy gate — a flaky hard
+        # gate trains operators to skip it, which is worse than the wait.
+        retry = []
         for r in m["routes"]:
-            path = r["path"]
-            url = args.base.rstrip("/") + path
-            label = f"{path}"
-            try:
-                page.goto(url, wait_until="domcontentloaded", timeout=30000)
-                page.wait_for_timeout(700)
-                # Some SPAs client-redirect on load (e.g. /portal/ ->
-                # /portal/login/ without a patient session). Reading the
-                # title mid-navigation throws "Execution context was
-                # destroyed" — settle and retry once before judging.
-                try:
-                    title = page.title() or ""
-                except Exception:
-                    page.wait_for_load_state("load", timeout=15000)
-                    page.wait_for_timeout(1000)
-                    title = page.title() or ""
-                if r.get("title_contains") and r["title_contains"] not in title:
-                    failures.append(f"RENDER {label}: title '{title}' missing '{r['title_contains']}'")
-                    log(f"✗ {label} — bad title: {title!r}")
-                    continue
-                if title.strip() == homepage_title and not r.get("allow_homepage_title"):
-                    failures.append(f"RENDER {label}: served the MARKETING HOMEPAGE (route fallthrough)")
-                    log(f"✗ {label} — homepage fallthrough")
-                    continue
-                sel = r.get("selector")
-                if sel:
-                    try:
-                        page.wait_for_selector(sel, timeout=15000, state="attached")
-                    except Exception:
-                        failures.append(f"RENDER {label}: selector '{sel}' never appeared (page JS broken?)")
-                        log(f"✗ {label} — selector missing: {sel}")
-                        continue
-                log(f"✓ {label} — title ok{' · selector ok' if sel else ''}")
-            except Exception as e:
-                failures.append(f"RENDER {label}: load failed — {str(e)[:160]}")
-                log(f"✗ {label} — load error: {str(e)[:160]}")
+            err = audit_route(page, r)
+            if err is None:
+                log(f"✓ {r['path']}")
+            else:
+                log(f"… {r['path']} — first attempt failed, will retry: {err[:120]}")
+                retry.append(r)
+        if retry:
+            log(f"retry pass: {len(retry)} route(s)")
+            page.wait_for_timeout(3000)
+            for r in retry:
+                err = audit_route(page, r)
+                if err is None:
+                    log(f"✓ {r['path']} (on retry)")
+                else:
+                    failures.append(err)
+                    log(f"✗ {r['path']} — failed twice: {err[:140]}")
         browser.close()
 
     print()
