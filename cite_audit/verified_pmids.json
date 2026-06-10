@@ -27233,5 +27233,49 @@
     "abstract": "BACKGROUND: Data suggest that estrogen-containing hormone therapy is associated with beneficial effects with regard to cardiovascular disease when the therapy is initiated temporally close to menopause but not when it is initiated later. However, the hypothesis that the cardiovascular effects of postmenopausal hormone therapy vary with the timing of therapy initiation (the hormone-timing hypothesis) has not been tested. METHODS: A total of 643 healthy postmenopausal women were stratified according to time since menopause (<6 years [early postmenopause] or \u226510 years [late postmenopause]) and were randomly assigned to receive either oral 17\u03b2-estradiol (1 mg per day, plus progesterone [45 mg] vaginal gel administered sequentially [i.e., once daily for 10 days of each 30-day cycle] for women with a uterus) or placebo (plus sequential placebo vaginal gel for women with a uterus). The primary outcome was the rate of change in carotid-artery intima-media thickness (CIMT), which was measured every 6 months. Secondary outcomes included an assessment of coronary atherosclerosis by cardiac computed tomography (CT), which was performed when participants completed the randomly assigned regimen. RESULTS: After a median of 5 years, the effect of estradiol, with or without progesterone, on CIMT progression differed between the early and late postmenopause strata (P=0.007 for the interaction). Among women who were less than 6 years past menopause at the time of randomization, the mean CIMT increased by 0.0078 mm per year in the placebo group versus 0.0044 mm per year in the estradiol group (P=0.008). Among women who were 10 or more years past menopause at the time of randomization, the rates of CIMT progression in the placebo and estradiol groups were similar (0.0088 and 0.0100 mm per year, respectively; P=0.29). CT measures of coronary-artery calcium, total stenosis, and plaque did not differ significantly between the placebo group and the estradiol group in either postmenopause stratum. CONCLUSIONS: Oral estradiol therapy was associated with less progression of subclinical atherosclerosis (measured as CIMT) than was placebo when therapy was initiated within 6 years after menopause but not when it was initiated 10 or more years after menopause. Estradiol had no significant effect on cardiac CT measures of atherosclerosis in either postmenopause stratum. (Funded by the National Institute on Aging, National Institutes of Health; ELITE ClinicalTrials.gov number, NCT00114517.).",
     "verified_at_utc": "2026-05-28T02:33:49Z",
     "verified_by": "scripts/_verify_mht_social_draft_pmids.py (\u00a73.6)"
+  },
+  "23467955": {
+    "title": "The Combined therapy myo-inositol plus D-Chiro-inositol, in a physiological ratio, reduces the cardiovascular risk by improving the lipid profile in PCOS patients.",
+    "authors": [
+      "Minozzi M",
+      "Nordio M",
+      "Pajalich R"
+    ],
+    "journal": "Eur Rev Med Pharmacol Sci",
+    "year": "2013",
+    "volume": "17",
+    "issue": "4",
+    "pages": "537-40",
+    "doi": "",
+    "pub_types": [
+      "Journal Article"
+    ],
+    "abstract": "BACKGROUND: Women with Polycystic Ovarian Syndrome (PCOS) present several factors that increase the cardiovascular risk, such as insulin resistance and dyslipidemia. Myo-inositol and D-chiro-inositol have been shown to improve insulin resistance, hyperandrogenism and to induce ovulation in PCOS women. However, their effects on dyslipidemia are less clear. The aim of the present study was to evaluate whether the combined therapy myo-inositol plus D-chiro-inositol (in a in a physiological ratio of 40:1) improve the metabolic profile, therefore, reducing cardiovascular risk in PCOS patients.\n\nPATIENTS AND METHODS: Twenty obese PCOS patients [BMI 33.7 \u00b1 6 kg/m2 (mean \u00b1 SD)] were recruited. The lipid profile was assessed by measuring total cholesterol, LDL, HDL and triglycerides before and after 6 months treatment with the combined therapy. Secondary end points included changes in BMI, waist-hip ratio, percentage of body fat, HOMA-IR and blood pressure.\n\nRESULTS: The combined therapy myo-inositol and D-chiro-inositol improved LDL levels (3.50 \u00b1 0.8 mmol/L versus, 3 \u00b1 1.2 mmol/L p < 0.05), HDL (1.1 mmol/L \u00b1 0.3 versus 1.6 mmol/L \u00b1 0.4 p < 0.05) and triglycerides (2.3 \u00b1 1.5 mmol/L versus 1.75 \u00b1 1.9 mmol/L p < 0.05). Furthermore, significant improvements in HOMA-IR were also observed.\n\nCONCLUSIONS: The combined therapy myo-inositol plus D-chiro-inositol is able to improve the metabolic profile of PCOS women, therefore, reducing the cardiovascular risk.",
+    "mesh_terms": [
+      "Adult",
+      "Cardiovascular Diseases",
+      "Dose-Response Relationship, Drug",
+      "Drug Therapy, Combination",
+      "Female",
+      "Humans",
+      "Inositol",
+      "Lipid Metabolism",
+      "Lipids",
+      "Longitudinal Studies",
+      "Obesity",
+      "Polycystic Ovary Syndrome",
+      "Risk Factors",
+      "Stereoisomerism",
+      "Treatment Outcome"
+    ],
+    "kb_sources": [
+      {
+        "page_slug": "blog-2026-W24",
+        "kb_source_doc": "Expression of Concern \u2014 Eur Rev Med Pharmacol Sci 2026 May;30(5):153",
+        "kb_field": "mondaymornings:pcos:eoc-referenced-original-article",
+        "kb_context_snippet": "Original 2013 article that is the subject of a 2026 Expression of Concern surfaced by the W24 PCOS scan; its PMID is printed in the digest body when reporting the EoC. Verified in-session via NCBI E-Utilities per CLAUDE.md \u00a73.6.1."
+      }
+    ],
+    "verified_at_utc": "2026-06-09T06:02:16.867052+00:00"
   }
 }
