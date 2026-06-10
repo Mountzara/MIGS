@@ -478,6 +478,7 @@ create the SPA dir.
 | `0020_phase17_visit_presence.sql` | Phase 17 | ALTER `visit_launch_attestations` ADD `current_state` (R4 per-visit presence). **Applied to D1 2026-06-09.** |
 | `0021_phase18_id_verify.sql` | Phase 18 | ALTER `patients` ADD `identity_verified_at` / `identity_verified_method` / `identity_verification_notes` (R6 first-visit photo-ID verification). **Not idempotent — apply ONCE, BEFORE deploying the Sprint 2 code (the cases keystone SELECT references the new columns).** |
 | `0022_phase18_messaging_sla.sql` | Phase 18 | ALTER `message_threads` ADD `urgency` / `sla_due_at` / `sla_breached` + partial index (R8 response-window SLA). **Not idempotent — apply ONCE, BEFORE code deploy (startThread INSERT references the columns). The 15-min sweep also requires a separate `cd cron-worker && wrangler deploy`.** |
+| `0023_phase18_nps.sql` | Phase 18 | `nps_dispatches` + `nps_responses` (R9 post-visit NPS). Idempotent. Lock-step: `/api/v1/internal/nps/dispatch` (pipeline-token) ← cron-worker `0 11 * * *` (needs `PIPELINE_TOKEN` secret on the worker); `/api/v1/patient/nps/respond` (token-is-auth, 14-day TTL); `portal/nps/index.html` + `_redirects` wildcard; `/api/v1/admin/nps/{scores,responses}`; analytics NPS cards; cron-worker backup TABLES list. |
 
 Apply: `wrangler d1 execute mountzara-clinical --remote
 --file=schema/<file>.sql`

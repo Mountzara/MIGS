@@ -58,6 +58,22 @@ const TABLES = [
     // Practice config
     "practice_settings",
 
+    // Phase 17 telehealth safety (schema 0018 — added to backup 2026-06-10;
+    // pre-existing gap: these were missing from this list since 2026-05-28)
+    "visit_launch_attestations",
+    "tech_check_results",
+    "licensure_blocks",
+
+    // Phase 18 R9 NPS (schema 0023)
+    "nps_dispatches",
+    "nps_responses",
+
+    // KNOWN GAP (2026-06-10): tables from migrations 0006–0017 (triage is
+    // covered above, but session_trace, preview_invites, member_feedback,
+    // wizard_state, PROMs, billing, snapshots, deep-dive authoring) are NOT
+    // yet enumerated — audit against `PRAGMA table_list` and backfill in a
+    // follow-up. runBackup logs per-table errors so additions are safe.
+
     // BAA ledger (when migrated to a table — currently in docs/)
     // "baa_ledger",
 ];
@@ -117,6 +133,32 @@ async function runSlaSweep(env, meta) {
     return { scanned: rows.length, flagged };
 }
 
+// =====================================================================
+// Phase 18 R9 — NPS survey dispatcher (daily, 11:00 UTC ≈ 6:00am CT)
+// =====================================================================
+// Delegates to the Pages endpoint /api/v1/internal/nps/dispatch
+// (X-Pipeline-Token) because secure-message delivery needs the
+// envelope-encryption + messaging libs that only exist in the Pages
+// runtime. This Worker just fires the trigger and logs the outcome.
+// Requires the PIPELINE_TOKEN secret on THIS worker:
+//   cd cron-worker && npx wrangler secret put PIPELINE_TOKEN
+async function runNpsDispatch(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("R9 NPS dispatch: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/nps/dispatch", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN },
+        });
+        const body = await r.text();
+        console.log(`R9 NPS dispatch: HTTP ${r.status} ${body.slice(0, 400)}`);
+    } catch (e) {
+        console.error("R9 NPS dispatch failed", { error: String(e?.message || e) });
+    }
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
@@ -125,6 +167,10 @@ export default {
     async scheduled(event, env, ctx) {
         if (event.cron === "*/15 * * * *") {
             ctx.waitUntil(runSlaSweep(env, { source: "cron", scheduledTime: event.scheduledTime }));
+            return;
+        }
+        if (event.cron === "0 11 * * *") {
+            ctx.waitUntil(runNpsDispatch(env));
             return;
         }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));

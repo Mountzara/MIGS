@@ -21,3 +21,8 @@
 # /portal/visit/<id>/launch URL.
 /portal/visit/*/launch /portal/visit/launch/index.html 200
 /portal/visit/*/launch/ /portal/visit/launch/index.html 200
+
+# Phase 18 Sprint 2 R9 — NPS survey page. Static (portal/nps/index.html);
+# the one-time token is read from the URL path client-side. The bare
+# /portal/nps/ directory already resolves to the same file.
+/portal/nps/* /portal/nps/index.html 200

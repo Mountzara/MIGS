@@ -275,6 +275,18 @@
                 <div id="audit-by-action"></div>
             </div>
         </div>
+
+        <!-- Phase 18 Sprint 2 R9 — rolling NPS -->
+        <div class="grid-2 split">
+            <div class="panel">
+                <h2>Patient NPS</h2>
+                <div id="nps-scores" style="font-size: 13px; color: var(--fg-soft);">Loading…</div>
+            </div>
+            <div class="panel">
+                <h2>NPS — why this score?</h2>
+                <div id="nps-why" style="font-size: 13px; color: var(--fg-soft);">Loading…</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -335,6 +347,46 @@
                 render();
             } catch (e) {
                 $('kpis').innerHTML = `<div class="empty-state">Could not load analytics: ${escapeHtml(e.message)}</div>`;
+            }
+            loadNps(); // R9 — independent endpoints; failure here never blocks the main board
+        }
+
+        // ----- Phase 18 Sprint 2 R9 — rolling NPS card -----
+        async function loadNps() {
+            try {
+                const s = await fetchJson('/api/v1/admin/nps/scores?days=30');
+                const w = s.windows || {};
+                const cell = (win, label) => {
+                    const v = win && win.nps;
+                    const col = v == null ? 'var(--fg-dim)'
+                              : v >= 50 ? 'rgba(110,231,183,0.95)'
+                              : v >= 0 ? 'var(--accent-soft, rgba(167,139,250,0.95))'
+                              : 'rgba(252,165,165,0.95)';
+                    return `<div style="flex:1;min-width:110px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);text-align:center;">
+                        <div style="font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-dim);font-weight:700;">${label}</div>
+                        <div style="font-size:30px;font-weight:200;color:${col};margin:4px 0 2px;">${v == null ? '—' : v}</div>
+                        <div style="font-size:11px;color:var(--fg-dim);">${win ? win.responses : 0} responses${win && win.response_rate_pct != null ? ' · ' + win.response_rate_pct + '% rate' : ''}</div>
+                    </div>`;
+                };
+                $('nps-scores').innerHTML =
+                    `<div style="display:flex;gap:10px;flex-wrap:wrap;">${cell(w.d30, '30 day')}${cell(w.d90, '90 day')}${cell(w.d365, '365 day')}</div>
+                     <p style="font-size:11.5px;color:var(--fg-dim);margin:12px 0 0;">NPS = % promoters (9–10) − % detractors (0–6). Healthcare benchmarks run 27 (commercial insurance) to 58 (concierge). A response rate under 30% is a survey-design tripwire.</p>`;
+                const r = await fetchJson('/api/v1/admin/nps/responses?days=90&limit=25');
+                if (!r.responses || r.responses.length === 0) {
+                    $('nps-why').innerHTML = '<div class="empty-state">No responses yet. Surveys go out the morning after each completed visit.</div>';
+                    return;
+                }
+                $('nps-why').innerHTML = r.responses.map(x => {
+                    const col = x.score >= 9 ? 'rgba(110,231,183,0.95)' : x.score <= 6 ? 'rgba(252,165,165,0.95)' : 'var(--accent-soft, rgba(167,139,250,0.95))';
+                    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+                        <span style="display:inline-block;min-width:28px;font-weight:700;color:${col};">${x.score}</span>
+                        <span style="color:var(--fg-dim);font-size:11px;">· ${escapeHtml(String(x.responded_at).slice(0, 10))} · ${escapeHtml(x.patient_hash)}</span>
+                        ${x.why ? `<div style="margin-top:4px;color:var(--fg-mid);line-height:1.5;">${escapeHtml(x.why)}</div>` : ''}
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                $('nps-scores').innerHTML = `<div class="empty-state">NPS unavailable: ${escapeHtml(e.message)}</div>`;
+                $('nps-why').innerHTML = '';
             }
         }
 

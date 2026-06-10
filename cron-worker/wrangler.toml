@@ -28,10 +28,17 @@ workers_dev = false
 #   */15 * * * *  — Phase 18 R8 messaging-SLA breach sweep: flags
 #                   message_threads whose sla_due_at has passed
 #                   (sla_breached=1 + audit row); /admin/messages/
-#                   surfaces the breach badge. Routed by event.cron
-#                   in index.js::scheduled().
+#                   surfaces the breach badge.
+#   0 11 * * *    — Phase 18 R9 NPS dispatcher (11:00 UTC ≈ 6:00am CT):
+#                   POSTs to mountzara.com/api/v1/internal/nps/dispatch
+#                   with X-Pipeline-Token (secret PIPELINE_TOKEN — set via
+#                   `wrangler secret put PIPELINE_TOKEN` on THIS worker,
+#                   same value as the Pages secret). The Pages endpoint
+#                   owns the secure-message delivery (envelope-encryption
+#                   libs live there).
+#                   All routed by event.cron in index.js::scheduled().
 [triggers]
-crons = ["0 9 * * *", "*/15 * * * *"]
+crons = ["0 9 * * *", "*/15 * * * *", "0 11 * * *"]
 
 # Same D1 binding as the Pages project so the Worker reads from the
 # canonical patient store.

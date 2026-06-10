@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One quick question · Mount Zara</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico">
+<style>
+:root {
+    --bg: #0b0a0d;
+    --ink: #f5f5f7;
+    --ink-mute: rgba(245,245,247,0.72);
+    --ink-faint: rgba(245,245,247,0.46);
+    --accent: #6d28d9;
+    --glow-purple: 167, 139, 250;
+    --hairline: rgba(255,255,255,0.10);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11"; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 100%, rgba(167,139,250,0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(109,40,217,0.06), transparent 60%);
+    pointer-events: none; z-index: 0; }
+.shell { position: relative; z-index: 1; max-width: 620px; margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 36px) 60px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+header .mark { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; font-size: 18px; letter-spacing: -0.02em; }
+header .sep { color: var(--ink-faint); }
+header .crumb { font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
+h1 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; letter-spacing: -0.022em;
+    font-size: clamp(26px, 4vw, 36px); margin: 0 0 10px; }
+.lede { font-size: 15.5px; color: var(--ink-mute); max-width: 56ch; margin: 0 0 26px; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 20px 18px;
+    -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
+    margin-bottom: 14px; }
+.scale { display: grid; grid-template-columns: repeat(11, 1fr); gap: 6px; margin: 14px 0 6px; }
+.scale button { aspect-ratio: 1; min-width: 0; border-radius: 9px; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.18);
+    color: var(--ink); font-family: inherit; font-size: 14.5px; font-weight: 600;
+    transition: background 0.18s, border-color 0.18s, transform 0.18s; }
+.scale button:hover { border-color: rgba(var(--glow-purple), 0.6); transform: translateY(-2px); }
+.scale button.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+.scale-ends { display: flex; justify-content: space-between; font-size: 11.5px;
+    color: var(--ink-faint); margin-bottom: 4px; }
+textarea { width: 100%; min-height: 110px; margin-top: 10px; padding: 12px;
+    border-radius: 10px; background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.2); color: var(--ink);
+    font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical; }
+textarea:focus { outline: none; border-color: rgba(var(--glow-purple), 0.6); }
+.q-label { font-size: 15px; font-weight: 600; margin: 0; }
+.btn { display: inline-flex; align-items: center; justify-content: center; width: 100%;
+    margin-top: 18px; padding: 15px 24px; border: none; border-radius: 12px;
+    background: var(--accent); color: #fff; font-weight: 600; font-size: 15.5px;
+    cursor: pointer; font-family: inherit; transition: background 0.22s, transform 0.22s; }
+.btn:hover:not(:disabled) { background: #7c3aed; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.status { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 13px; display: none; }
+.status.error { display: block; background: rgba(220,38,38,0.08); color: #f87171;
+    border: 1px solid rgba(220,38,38,0.25); }
+#thanks { display: none; text-align: center; padding: 30px 18px; }
+#thanks h2 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; font-size: 28px; margin: 0 0 10px; }
+#thanks p { color: var(--ink-mute); font-size: 15px; }
+#thanks a { color: rgba(var(--glow-purple), 0.95); }
+footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hairline);
+    font-size: 12px; color: var(--ink-faint); }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <span class="mark">Mount Zara</span>
+    <span class="sep">·</span>
+    <span class="crumb">Quick question</span>
+  </header>
+
+  <div id="survey">
+    <h1>Thanks for visiting Mount Zara.</h1>
+    <p class="lede">One question: how likely would you be to recommend Dr.&nbsp;Mabini to a friend or family member? Then — if you'd like — tell us why. Your honest answer makes the practice better.</p>
+
+    <div class="card">
+      <p class="q-label">0 = not at all &nbsp;·&nbsp; 10 = definitely</p>
+      <div class="scale" id="scale" role="radiogroup" aria-label="Likelihood to recommend, 0 to 10"></div>
+      <div class="scale-ends"><span>Not at all</span><span>Definitely</span></div>
+    </div>
+
+    <div class="card">
+      <p class="q-label">Why this score? <span style="font-weight:400;color:var(--ink-faint);">(optional)</span></p>
+      <textarea id="why" maxlength="2000" placeholder="Anything at all — what worked, what didn't, what would make the next visit better."></textarea>
+    </div>
+
+    <button class="btn" id="btnSubmit" disabled>Send answer</button>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+
+  <div id="thanks">
+    <h2>Thank you.</h2>
+    <p>Your answer landed with Dr. Mabini — it genuinely shapes how the practice runs.</p>
+    <p>While you're here: <a href="/trending/">see what Dr. Mabini is reading this week →</a></p>
+  </div>
+
+  <footer>
+    Your response is reviewed by Dr. Mabini only. This link is unique to you and expires 14 days after your visit.
+  </footer>
+</div>
+
+<script>
+(function() {
+    function token() {
+        var m = window.location.pathname.match(/\/portal\/nps\/([0-9a-fA-F]{32,64})\/?/);
+        return m ? m[1] : null;
+    }
+    var TOKEN = token();
+    var selected = null;
+    var scaleEl = document.getElementById('scale');
+    var btn = document.getElementById('btnSubmit');
+    var statusEl = document.getElementById('status');
+
+    if (!TOKEN) {
+        document.getElementById('survey').innerHTML =
+            '<h1>Link incomplete.</h1><p class="lede">This survey link is missing its code. Please open the link exactly as it appears in your message from Mount Zara.</p>';
+        return;
+    }
+
+    for (var i = 0; i <= 10; i++) {
+        (function(n) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = n;
+            b.setAttribute('role', 'radio');
+            b.setAttribute('aria-checked', 'false');
+            b.addEventListener('click', function() {
+                selected = n;
+                scaleEl.querySelectorAll('button').forEach(function(x) {
+                    x.classList.toggle('sel', x.textContent === String(n));
+                    x.setAttribute('aria-checked', x.textContent === String(n) ? 'true' : 'false');
+                });
+                btn.disabled = false;
+            });
+            scaleEl.appendChild(b);
+        })(i);
+    }
+
+    btn.addEventListener('click', function() {
+        if (selected === null) return;
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+        fetch('/api/v1/patient/nps/respond', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+                token: TOKEN,
+                score: selected,
+                why: document.getElementById('why').value.trim() || undefined,
+            }),
+        }).then(function(r) {
+            return r.json().then(function(j) { return { ok: r.ok, body: j }; });
+        }).then(function(res) {
+            if (res.ok) {
+                document.getElementById('survey').style.display = 'none';
+                document.getElementById('thanks').style.display = 'block';
+                return;
+            }
+            statusEl.className = 'status error';
+            statusEl.textContent = (res.body && res.body.message) ||
+                'Could not save your answer — please try again, or just reply to the message we sent you.';
+            btn.disabled = false;
+            btn.textContent = 'Send answer';
+        }).catch(function() {
+            statusEl.className = 'status error';
+            statusEl.textContent = 'Network error — please check your connection and try again.';
+            btn.disabled = false;
+            btn.textContent = 'Send answer';
+        });
+    });
+})();
+</script>
+</body>
+</html>
