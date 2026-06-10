@@ -399,6 +399,11 @@ as the first argument so `getSession`'s `last_seen_at` UPDATE goes via
 `index.html` (~10K lines — see §3, §4), `about/`, `evidence/`, `trending/`,
 `cv/`, `curriculum/` (`cbg-migs/`, `hospice-clerkship/`, `hospice-training/`)
 
+**R11 lock-step (2026-06-10):** the homepage `#how-you-visit` section carries
+a hand-aligned 14-row visit-type → modality matrix mirroring
+`functions/_lib/visit_types.js`. Any visit-type add/rename or modality/
+chaperone change MUST update that matrix in the same commit.
+
 ### 8.2 Education (gated by `EDUCATION_PUBLIC_LAUNCH` + middleware)
 
 12 topics × 2 surfaces (public + portal mirror):

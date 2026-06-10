@@ -7769,6 +7769,58 @@
         </div>
     </section>
 
+    <!-- Phase 18 Sprint 2 R11 — telehealth value proposition + visit-type
+         modality matrix. The matrix mirrors functions/_lib/visit_types.js
+         (the single source of truth) and is hand-aligned: review this table
+         at EVERY visit-type or modality change. Cards use the Apple-glass
+         recipe inline so the shared style block needed no edits (this file's
+         style block is brace-balance-sensitive; see SYSTEM_MAP.md). -->
+    <section id="how-you-visit" aria-label="How you see Dr. Mabini" style="padding: clamp(60px, 8vw, 110px) 0;">
+        <div class="container">
+            <span class="section-eyebrow">In Person &amp; Telehealth</span>
+            <h2 class="section-headline gradient">How you see Dr.&nbsp;Mabini.</h2>
+            <p class="section-sub">Mount Zara is built around the patient's convenience, not the clinician's. Some visits need hands-on attention &mdash; surgical consultations, pelvic examinations, office procedures &mdash; and those are always in person. Others are at least as good over a private video call, and often better, because you can be at home, with the people who support you, without taking half a day off work.</p>
+            <p class="section-sub" style="margin-top: 10px;">The table below shows what kind of visit fits each modality. Where it says &ldquo;either,&rdquo; you choose &mdash; Dr.&nbsp;Mabini's standard of care doesn't change with the modality.</p>
+
+            <div style="max-width: 880px; margin: 34px auto 0; border-radius: 14px; overflow: hidden;
+                        background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.10);
+                        backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;" aria-label="Visit types and their modality">
+                    <thead>
+                        <tr style="background: rgba(109, 40, 217, 0.10);">
+                            <th scope="col" style="text-align: left; padding: 14px 18px; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(167, 139, 250, 0.95);">Visit type</th>
+                            <th scope="col" style="text-align: left; padding: 14px 18px; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(167, 139, 250, 0.95);">How you're seen</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: rgba(245, 245, 247, 0.80);">
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">New patient &mdash; complex</td><td style="padding: 11px 18px;">In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">New patient &mdash; standard</td><td style="padding: 11px 18px;">In person preferred</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Complex pelvic pain / endometriosis evaluation</td><td style="padding: 11px 18px;">In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Endometriosis follow-up</td><td style="padding: 11px 18px;">Either &mdash; you choose</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">OMT treatment</td><td style="padding: 11px 18px;">In person (hands-on care)</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Heavy bleeding evaluation</td><td style="padding: 11px 18px;">Either &mdash; you choose</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Pre-operative visit</td><td style="padding: 11px 18px;">Either &mdash; you choose</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Post-op check (1&ndash;2 weeks)</td><td style="padding: 11px 18px;">Either &mdash; you choose</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Post-op visit (6 weeks)</td><td style="padding: 11px 18px;">In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Routine follow-up</td><td style="padding: 11px 18px;">Either &mdash; you choose</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Office procedure (IUD &middot; biopsy &middot; colposcopy)</td><td style="padding: 11px 18px;">In person (procedure room)</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Quick concern / sick visit</td><td style="padding: 11px 18px;">Telehealth preferred</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Annual exam</td><td style="padding: 11px 18px;">In person (examination visit)</td></tr>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.07);"><td style="padding: 11px 18px;">Telehealth consult</td><td style="padding: 11px 18px;">Telehealth</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="max-width: 880px; margin: 18px auto 0; font-size: 13.5px; line-height: 1.6; color: rgba(245, 245, 247, 0.62);">
+                If you're unsure, the intake form's built-in scheduling assistant will recommend a modality based on what you tell us. You always have the final say.
+                Visits with an examination component offered over video require an adult chaperone present in the room with you &mdash; your clinician will explain when this applies.
+            </p>
+            <p style="max-width: 880px; margin: 14px auto 0; font-size: 14px;">
+                <a href="/portal/" style="color: rgba(167, 139, 250, 0.95); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(167, 139, 250, 0.45);">Become a patient &mdash; the member portal opens soon &rarr;</a>
+            </p>
+        </div>
+    </section>
+
     <!-- Curriculum Design -->
     <section id="curriculum" class="curriculum-section">
         <div class="container">
