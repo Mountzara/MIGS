@@ -87,6 +87,18 @@ h1 { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
     font-weight: 500; font-size: 14px; cursor: pointer;
     transition: border-color 0.22s, color 0.22s; font-family: inherit; }
 .btn-secondary:hover { border-color: rgba(255,255,255,0.25); color: var(--ink); }
+/* Phase 18 R7 — pre-window countdown (T-15-minute launch gate) */
+.countdown { display: none; margin-top: 18px; padding: 20px 18px;
+    border-radius: 14px; text-align: center;
+    background: rgba(167,139,250,0.06); border: 1px solid rgba(var(--glow-purple), 0.35);
+    -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
+.countdown.show { display: block; }
+.countdown .cd-lead { font-size: 14px; color: var(--ink-mute); margin: 0 0 6px; }
+.countdown .cd-time { font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 200; font-size: clamp(34px, 6vw, 48px); letter-spacing: -0.02em;
+    color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.countdown .cd-sub { font-size: 13px; color: var(--ink-mute); margin: 8px 0 0; }
+.countdown .cd-basis { font-size: 11px; color: var(--ink-faint); margin: 10px 0 0; }
 .status { margin-top: 18px; padding: 12px 14px; border-radius: 10px;
     font-size: 13px; display: none; }
 .status.error { display: block; background: rgba(220, 38, 38, 0.08);
@@ -146,6 +158,13 @@ footer a:hover { text-decoration: underline; }
       </div>
     </div>
 
+    <div class="countdown" id="countdown">
+      <p class="cd-lead">You're early — that's great. Your visit with Dr. Mabini opens in</p>
+      <div class="cd-time" id="cdTime" aria-hidden="true">--:--</div>
+      <p class="cd-sub">Use this time to confirm your privacy setup above and make sure your device is ready. The Join button unlocks automatically.</p>
+      <p class="cd-basis" id="cdBasis"></p>
+    </div>
+
     <div class="actions">
       <button type="submit" class="btn-primary" id="btnJoin" disabled>
         Join visit
@@ -199,8 +218,61 @@ footer a:hover { text-decoration: underline; }
         statusEl.textContent = msg;
     }
 
+    // Phase 18 R7 — T-15-minute launch-gate countdown. Server time is the
+    // source of truth: when the launch endpoint returns 403 launch_too_early
+    // we re-anchor the countdown using its {gate_opens_at, server_now} so
+    // patient clock drift cannot mislead. Before any POST we estimate from
+    // the appointment's starts_at using the local clock (display only — the
+    // server still enforces the window).
+    var cdEl = document.getElementById('countdown');
+    var cdTime = document.getElementById('cdTime');
+    var cdBasis = document.getElementById('cdBasis');
+    var cdTimer = null;
+    var cdGateMs = null;     // gate_opens_at in SERVER ms
+    var cdDriftMs = 0;       // server_now - client_now (0 until a server answer)
+    var gateOpen = true;     // assumed open until we learn otherwise
+
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    function fmtCd(ms) {
+        var s = Math.max(0, Math.ceil(ms / 1000));
+        var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+        return h > 0 ? (h + ':' + pad2(m) + ':' + pad2(ss)) : (m + ':' + pad2(ss));
+    }
+    function stopCountdown() {
+        if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+        cdEl.classList.remove('show');
+        gateOpen = true;
+        syncJoinEnabled();
+    }
+    function startCountdown(gateOpensAtMs, serverNowMs) {
+        cdGateMs = gateOpensAtMs;
+        if (typeof serverNowMs === 'number' && isFinite(serverNowMs)) {
+            cdDriftMs = serverNowMs - Date.now();
+            cdBasis.textContent = 'Countdown is based on the clinic server’s clock ('
+                + new Date(serverNowMs).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+                + ' at last check).';
+        } else {
+            cdBasis.textContent = 'Estimated from your appointment time — the clinic server has the final say.';
+        }
+        gateOpen = false;
+        cdEl.classList.add('show');
+        syncJoinEnabled();
+        function tick() {
+            var remaining = cdGateMs - (Date.now() + cdDriftMs);
+            if (remaining <= 0) {
+                stopCountdown();
+                setStatus('info', 'Your visit window is open — you can join now.');
+                return;
+            }
+            cdTime.textContent = fmtCd(remaining);
+        }
+        if (cdTimer) clearInterval(cdTimer);
+        tick();
+        cdTimer = setInterval(tick, 1000);
+    }
+
     function syncJoinEnabled() {
-        btnJoin.disabled = !(chkPrivacy.checked && chkAlone.checked && selState.value);
+        btnJoin.disabled = !gateOpen || !(chkPrivacy.checked && chkAlone.checked && selState.value);
         cardPrivacy.classList.toggle('checked', chkPrivacy.checked);
         cardAlone.classList.toggle('checked', chkAlone.checked);
         cardLocation.classList.toggle('checked', !!selState.value);
@@ -241,6 +313,13 @@ footer a:hover { text-decoration: underline; }
         var when = a.starts_at ? fmtDateTime(a.starts_at) : '';
         apptLine.innerHTML = (a.visit_type_label ? a.visit_type_label + ' &middot; ' : '')
             + '<strong>' + (when || 'Scheduled time') + '</strong>';
+        // R7 — proactive countdown when the T-15 window hasn't opened yet
+        // (local-clock estimate; re-anchored to server time on any 403).
+        var startsMs = Number(a.starts_at);
+        if (isFinite(startsMs) && startsMs > 0) {
+            var gateMs = startsMs - 15 * 60 * 1000;
+            if (Date.now() < gateMs) startCountdown(gateMs, null);
+        }
     }).catch(function() {
         apptLine.innerHTML = '<strong>Appointment ' + APPT_ID + '</strong>';
     });
@@ -273,16 +352,19 @@ footer a:hover { text-decoration: underline; }
             var code = res.body && res.body.error;
             var msg = res.body && res.body.message;
             if (code === 'launch_too_early' && res.body.gate_opens_at) {
+                // R7 — anchor the countdown to the server's clock and let it
+                // unlock the Join button automatically at gate-open.
+                startCountdown(Number(res.body.gate_opens_at), Number(res.body.server_now));
                 msg = 'Your visit room opens at ' + fmtDateTime(res.body.gate_opens_at)
-                    + '. Please come back then.';
+                    + ' — the countdown above will unlock the Join button automatically.';
             } else if (code === 'chaperone_confirmation_required') {
                 msg = 'An adult chaperone needs to be present before this visit can start. Please contact the clinic.';
             } else if (!msg) {
                 msg = 'Could not open the visit room. Please contact the clinic.';
             }
             setStatus('error', msg);
-            btnJoin.disabled = false;
             btnJoin.textContent = 'Join visit';
+            syncJoinEnabled();   // respects the R7 gate state — stays locked mid-countdown
         }).catch(function(e) {
             setStatus('error', 'Network error. Please check your connection and try again.');
             btnJoin.disabled = false;

@@ -24,6 +24,24 @@
 
 ---
 
+## Section 0A — Phase 18 Sprint 2 work tracker (ACTIVE — R6–R14, 9 × P1)
+
+Canonical spec: `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` (the docx numbering is authoritative; the 2026-05-28 handoff §3 paraphrase drifted). Migration numbering note: the docx's proposed 0019/0020/0021/0022 collide with shipped Phase 17 files — Sprint 2 migrations start at **0021**. No outbound email exists yet (mailer deferred since Phase 2) — R8/R9 notifications ride secure messaging + admin UI; email is a tracked KNOWN GAP. Cron triggers are implemented as `mountzara-cron` → internal `PIPELINE_TOKEN`-authed Pages endpoints so envelope-encryption/audit logic stays in one place.
+
+| Rec | Item | Status |
+|---|---|---|
+| R6 | First-visit photo-ID verification (migration 0021; admin id-verify endpoint + cases banner; launch prep copy) | pending |
+| R7 | T-15 launch-gate countdown UI (server gate live since R4) | ✅ 2026-06-10 — live countdown on `portal/visit/launch/`, proactive from `starts_at`, re-anchored to server `{gate_opens_at, server_now}` on 403, auto-unlocks Join at gate-open; server-time basis line; `node --check` clean; 0 blue tokens. Visual VERIFY at sprint-close deploy. |
+| R8 | Messaging response-window SLA (migration 0022; urgency on compose; sla_due_at; admin badges; 15-min sweep cron) | pending |
+| R9 | NPS post-visit survey (migration 0023; token page; respond endpoint; analytics card; daily dispatch cron) | pending |
+| R10 | Patient-facing visit summary, template fallback per D6 (migration 0024; draft/edit/send; portal view) | pending |
+| R11 | Homepage telehealth value-prop + visit-type matrix | pending |
+| R12 | `docs/compliance/standard-of-care.md` (§B.3 template; needs signature) | pending |
+| R13 | Malpractice carrier letter template + coverage file (§B.4; Chris sends) | pending |
+| R14 | `docs/compliance/doxy-config.md` skeleton (needs D8 panel walk) | pending |
+
+---
+
 ## Section 1 — Phase 17 Sprint 1 — Completed (committed, NOT deployed)
 
 The Sprint 1 commit lands the **backend safety-critical pieces** of recommendations R1, R2, R3 from the telehealth audit. UI + endpoint plumbing for R3 wiring + R4 + R5 + the chaperone-confirm modal is the remaining Sprint 1 follow-up work (see Section 2).
