@@ -1,6 +1,6 @@
 # Mount Zara — State Licensure Policy and Tracker
 
-**Status:** DRAFT — pending Dr. Mabini review and verification of active license inventory
+**Status:** DRAFT — active states (IL, CA) confirmed by Dr. Mabini 2026-06-09; license numbers / DEA / expiry dates still pending
 **Document owner:** Chris Mabini, DO
 **Created:** 2026-05-27
 **Last reviewed:** [pending first review]
@@ -14,8 +14,11 @@ Dr. Chris Mabini, DO, holds active medical licenses in the states listed below. 
 
 | State | License number | Active dates | DEA registration | Compact status |
 |---|---|---|---|---|
-| Illinois | _[to fill]_ | _[from]_ – _[renewal date]_ | _[number]_ | Compact member state |
+| Illinois (home/base state) | _[to fill]_ | _[from]_ – _[renewal date]_ | _[number]_ | Compact member state |
+| California | _[to fill]_ | _[from]_ – _[renewal date]_ | _[number]_ | **Not** an IMLC member state (CA has not joined the compact) |
 | _[Add additional states as licensure expands]_ | | | | |
+
+> **Confirmed 2026-06-09 (D7):** Dr. Mabini's active telehealth-eligible states are **Illinois** (home/base) and **California**. The per-state intake/booking/launch gate is set to `["IL","CA"]` via `practice_settings.licensed_states_json` (the `/admin/scheduling/` → Practice Settings → Licensed states picker, or `PUT /api/v1/admin/practice/licensed-states`). License numbers, DEA registrations, and renewal dates remain to be filled in by Dr. Mabini from his records. Note California is **not** an IMLC member state, so the CA license is maintained independently of the compact path described in §2.
 
 ---
 
@@ -72,6 +75,7 @@ The list is stored at `practice_settings.licensed_states_json` as a JSON array o
 | State | License renewal due | Action lead time | DEA renewal due |
 |---|---|---|---|
 | Illinois | _[date]_ | 60 days | _[date]_ |
+| California | _[date]_ | 60 days | _[date]_ |
 | _[Add additional states]_ | | | |
 
 A calendar entry for each renewal is set at 60 days before the due date. Failure to renew on time means immediate suspension of patient bookings in that state (the `licensure.js` helper reads the active-states list dynamically; removing a state from the list is a one-line admin change).
