@@ -140,7 +140,16 @@ def main():
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=30000)
                 page.wait_for_timeout(700)
-                title = page.title() or ""
+                # Some SPAs client-redirect on load (e.g. /portal/ ->
+                # /portal/login/ without a patient session). Reading the
+                # title mid-navigation throws "Execution context was
+                # destroyed" — settle and retry once before judging.
+                try:
+                    title = page.title() or ""
+                except Exception:
+                    page.wait_for_load_state("load", timeout=15000)
+                    page.wait_for_timeout(1000)
+                    title = page.title() or ""
                 if r.get("title_contains") and r["title_contains"] not in title:
                     failures.append(f"RENDER {label}: title '{title}' missing '{r['title_contains']}'")
                     log(f"✗ {label} — bad title: {title!r}")
