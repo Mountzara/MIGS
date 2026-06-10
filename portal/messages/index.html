@@ -346,6 +346,19 @@
                 <label for="new-body">Your message</label>
                 <textarea id="new-body" placeholder="Describe your question or update…"></textarea>
             </div>
+            <!-- Phase 18 R8 — response-window SLA urgency selection -->
+            <div class="field-row" id="urgency-row">
+                <label>How urgent is your question?</label>
+                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);cursor:pointer;font-weight:400;">
+                    <input type="radio" name="new-urgency" value="urgent" style="margin-top:3px;accent-color:#6d28d9;">
+                    <span style="font-size:13.5px;line-height:1.5;"><strong>Urgent (same business day)</strong> — Dr. Mabini will respond by close of the next business day. Use this for new symptoms or concerns about your care plan.</span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);cursor:pointer;font-weight:400;">
+                    <input type="radio" name="new-urgency" value="non_urgent" style="margin-top:3px;accent-color:#6d28d9;">
+                    <span style="font-size:13.5px;line-height:1.5;"><strong>Not urgent (within 48 business hours)</strong> — Use this for prescription refills, scheduling, billing, or general questions.</span>
+                </label>
+                <p style="font-size:12px;margin:10px 0 0;color:rgba(245,245,247,0.55);">For a life-threatening emergency, call 911 or go to the nearest ER. We do not monitor messages 24/7.</p>
+            </div>
             <div class="actions">
                 <button id="btn-send-new">Send</button>
                 <button id="btn-cancel-new" class="ghost">Cancel</button>
@@ -496,6 +509,7 @@
         $('btn-new').addEventListener('click', () => {
             $('new-subject').value = '';
             $('new-body').value = '';
+            document.querySelectorAll('input[name="new-urgency"]').forEach(r => { r.checked = false; });
             showView('new');
             setTimeout(() => $('new-subject').focus(), 50);
         });
@@ -504,13 +518,15 @@
         $('btn-send-new').addEventListener('click', async () => {
             const subject = $('new-subject').value.trim();
             const body = $('new-body').value.trim();
+            const urgencyEl = document.querySelector('input[name="new-urgency"]:checked');
             if (!subject) { showToast('Subject is required', true); return; }
             if (!body) { showToast('Message body is required', true); return; }
+            if (!urgencyEl) { showToast('Please choose urgent or not urgent', true); return; }
             $('btn-send-new').disabled = true;
             try {
                 const data = await fetchJson('/api/v1/patient/messages', {
                     method: 'POST',
-                    body: JSON.stringify({ subject, body }),
+                    body: JSON.stringify({ subject, body, urgency: urgencyEl.value }),
                 });
                 showToast('Sent.');
                 await loadThreads();

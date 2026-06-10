@@ -23,9 +23,15 @@ compatibility_date = "2025-01-15"
 # only when MANUAL_BACKUP_TOKEN is set + a custom route binds the Worker.
 workers_dev = false
 
-# Nightly trigger.
+# Triggers:
+#   0 9 * * *     — nightly D1 -> R2 backup (09:00 UTC)
+#   */15 * * * *  — Phase 18 R8 messaging-SLA breach sweep: flags
+#                   message_threads whose sla_due_at has passed
+#                   (sla_breached=1 + audit row); /admin/messages/
+#                   surfaces the breach badge. Routed by event.cron
+#                   in index.js::scheduled().
 [triggers]
-crons = ["0 9 * * *"]
+crons = ["0 9 * * *", "*/15 * * * *"]
 
 # Same D1 binding as the Pages project so the Worker reads from the
 # canonical patient store.

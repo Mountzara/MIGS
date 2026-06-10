@@ -39,6 +39,68 @@ function clipPreview(s) {
     return trimmed.length > PREVIEW_LEN ? trimmed.slice(0, PREVIEW_LEN - 1) + "…" : trimmed;
 }
 
+// ---------------------------------------------------------------------
+// Phase 18 R8 — response-window SLA (Joshi & Welch 2023).
+// Windows (America/Chicago business days, Mon–Fri, close-of-business
+// 17:00 CT): URGENT = close of the NEXT business day; NON_URGENT = within
+// 48 business hours = close of the SECOND business day after the message.
+// Patient-originated messages start the clock; a clinician reply clears
+// it. The 15-minute mountzara-cron sweep flips sla_breached.
+// ---------------------------------------------------------------------
+export const ALLOWED_URGENCIES = new Set(["urgent", "non_urgent"]);
+const SLA_TZ = "America/Chicago";
+const SLA_CLOSE_HOUR = 17; // 5:00 pm local
+
+function tzParts(ms) {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: SLA_TZ, year: "numeric", month: "2-digit",
+        day: "2-digit", hour: "2-digit", weekday: "short", hour12: false,
+    });
+    const p = {};
+    for (const part of fmt.formatToParts(new Date(ms))) p[part.type] = part.value;
+    return {
+        y: parseInt(p.year, 10), m: parseInt(p.month, 10), d: parseInt(p.day, 10),
+        h: parseInt(p.hour, 10) % 24, wd: p.weekday, // 'Mon'..'Sun'
+    };
+}
+
+// UTC ms for 17:00 America/Chicago on the local date that `ms` falls on,
+// shifted forward by `addDays` calendar days. Offset (CST -6 / CDT -5) is
+// derived from the formatter itself, so DST transitions are handled.
+function chicagoCloseOnDate(ms, addDays) {
+    const base = tzParts(ms);
+    // Walk forward in 24h steps from local noon to dodge DST edge hours.
+    let probe = Date.UTC(base.y, base.m - 1, base.d, 18, 0, 0); // ~local noon
+    probe += addDays * 24 * 60 * 60 * 1000;
+    const target = tzParts(probe);
+    // Find the UTC hour that renders as SLA_CLOSE_HOUR local on the target date.
+    const guess = Date.UTC(target.y, target.m - 1, target.d, SLA_CLOSE_HOUR + 6, 0, 0); // assume CST
+    const seen = tzParts(guess);
+    const drift = (SLA_CLOSE_HOUR - seen.h) * 60 * 60 * 1000; // 0 (CST) or +1h (CDT)
+    return { dueMs: guess + drift, wd: target.wd };
+}
+
+function isWeekendWd(wd) { return wd === "Sat" || wd === "Sun"; }
+
+/**
+ * Compute the SLA deadline (ms epoch) for a patient message sent at fromMs.
+ * urgent     -> close of the next business day.
+ * non_urgent -> close of the second business day after fromMs.
+ */
+export function computeSlaDueAt(urgency, fromMs) {
+    const wanted = urgency === "urgent" ? 1 : 2;
+    let found = 0;
+    for (let add = 1; add <= 10; add++) {
+        const { dueMs, wd } = chicagoCloseOnDate(fromMs, add);
+        if (!isWeekendWd(wd)) {
+            found += 1;
+            if (found === wanted) return dueMs;
+        }
+    }
+    // Unreachable for sane inputs; fail open with +3 calendar days.
+    return fromMs + 3 * 24 * 60 * 60 * 1000;
+}
+
 /**
  * Create a brand-new thread + its first message.
  *
@@ -48,6 +110,10 @@ function clipPreview(s) {
 export async function startThread(env, args) {
     const { patient_id, from_role, from_user_id, subject, body,
             related_appointment_id, related_intake_id } = args;
+    // R8 — urgency is meaningful on patient-originated threads (the SLA
+    // tracks the clinician's response). Clinician/staff threads default
+    // non_urgent with no running clock.
+    const urgency = ALLOWED_URGENCIES.has(args.urgency) ? args.urgency : "non_urgent";
     if (!patient_id) return { ok: false, error: "missing_patient_id" };
     if (!ALLOWED_FROM_ROLES.has(from_role)) return { ok: false, error: "invalid_from_role" };
     if (!from_user_id) return { ok: false, error: "missing_from_user_id" };
@@ -78,6 +144,9 @@ export async function startThread(env, args) {
     const patient_unread = from_role === "patient" ? 0 : 1;
     const clinician_unread = from_role === "patient" ? 1 : 0;
 
+    // R8 — patient-originated thread starts the response clock.
+    const sla_due_at = from_role === "patient" ? computeSlaDueAt(urgency, t) : null;
+
     try {
         await env.DB.prepare(`
             INSERT INTO message_threads
@@ -85,13 +154,15 @@ export async function startThread(env, args) {
                  last_message_at, last_message_from_role, last_message_preview,
                  patient_unread_count, clinician_unread_count,
                  status, related_appointment_id, related_intake_id,
+                 urgency, sla_due_at, sla_breached,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, 0, ?, ?)
         `).bind(
             thread_id, patient_id, CLINICIAN_ID, cleanSubject,
             t, from_role, preview,
             patient_unread, clinician_unread,
             related_appointment_id || null, related_intake_id || null,
+            urgency, sla_due_at,
             t, t
         ).run();
 
@@ -128,7 +199,7 @@ export async function replyInThread(env, args) {
 
     // Verify the thread exists and is accessible to this patient_id.
     const thread = await env.DB.prepare(`
-        SELECT id, patient_id, status, subject FROM message_threads WHERE id = ?
+        SELECT id, patient_id, status, subject, urgency FROM message_threads WHERE id = ?
     `).bind(thread_id).first();
     if (!thread) return { ok: false, error: "thread_not_found" };
     if (thread.patient_id !== patient_id) return { ok: false, error: "thread_not_owned" };
@@ -159,21 +230,26 @@ export async function replyInThread(env, args) {
         ).run();
 
         // Bump thread: update last_message + increment the OTHER side's unread.
+        // R8 SLA clock: a patient reply (re)starts the response clock at the
+        // thread's urgency window; a clinician/staff reply clears it (met).
         if (from_role === "patient") {
+            const sla_due_at = computeSlaDueAt(thread.urgency || "non_urgent", t);
             await env.DB.prepare(`
                 UPDATE message_threads
                 SET last_message_at = ?, last_message_from_role = ?,
                     last_message_preview = ?,
                     clinician_unread_count = clinician_unread_count + 1,
+                    sla_due_at = ?, sla_breached = 0,
                     updated_at = ?
                 WHERE id = ?
-            `).bind(t, from_role, preview, t, thread_id).run();
+            `).bind(t, from_role, preview, sla_due_at, t, thread_id).run();
         } else {
             await env.DB.prepare(`
                 UPDATE message_threads
                 SET last_message_at = ?, last_message_from_role = ?,
                     last_message_preview = ?,
                     patient_unread_count = patient_unread_count + 1,
+                    sla_due_at = NULL,
                     updated_at = ?
                 WHERE id = ?
             `).bind(t, from_role, preview, t, thread_id).run();
@@ -284,6 +360,7 @@ export async function listThreads(env, args) {
                    last_message_at, last_message_from_role, last_message_preview,
                    patient_unread_count AS unread_count,
                    status, related_appointment_id, related_intake_id,
+                   urgency, sla_due_at, sla_breached,
                    created_at, updated_at
             FROM message_threads
             WHERE patient_id = ?
@@ -298,6 +375,7 @@ export async function listThreads(env, args) {
                    t.last_message_at, t.last_message_from_role, t.last_message_preview,
                    t.clinician_unread_count AS unread_count,
                    t.status, t.related_appointment_id, t.related_intake_id,
+                   t.urgency, t.sla_due_at, t.sla_breached,
                    t.created_at, t.updated_at,
                    p.first_name AS patient_first_name,
                    p.last_name  AS patient_last_name,

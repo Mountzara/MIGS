@@ -62,11 +62,71 @@ const TABLES = [
     // "baa_ledger",
 ];
 
+// =====================================================================
+// Phase 18 R8 — messaging response-window SLA breach sweep (every 15 min)
+// =====================================================================
+// Flags message_threads whose committed response window (sla_due_at, set
+// by functions/_lib/messaging.js when a patient message starts the clock)
+// has passed without a clinician reply. Each breach flips sla_breached=1
+// exactly once and writes an audit_log row; /admin/messages/ renders the
+// red "SLA BREACHED" badge from the flag.
+// KNOWN GAP: no outbound email/SMS exists yet (mailer deferred since
+// Phase 2), so clinician notification is the admin-queue badge + audit
+// trail. Wire email here when a mailer lands.
+async function runSlaSweep(env, meta) {
+    const now = Date.now();
+    const due = await env.DB.prepare(`
+        SELECT id, patient_id, urgency, sla_due_at
+        FROM message_threads
+        WHERE sla_breached = 0
+          AND sla_due_at IS NOT NULL
+          AND sla_due_at < ?
+          AND status != 'closed'
+        LIMIT 200
+    `).bind(now).all();
+    const rows = due?.results || [];
+    let flagged = 0;
+    for (const t of rows) {
+        try {
+            await env.DB.prepare(`
+                UPDATE message_threads
+                SET sla_breached = 1, updated_at = ?
+                WHERE id = ? AND sla_breached = 0
+            `).bind(now, t.id).run();
+            await env.DB.prepare(`
+                INSERT INTO audit_log
+                    (id, ts, user_id, user_role, action, record_type, record_id,
+                     ip, user_agent, success, details_json)
+                VALUES (?, ?, NULL, 'app', 'message_sla_breached', 'message', ?, '', 'mountzara-cron', 1, ?)
+            `).bind(
+                crypto.randomUUID(), now, t.id,
+                JSON.stringify({
+                    urgency: t.urgency,
+                    sla_due_at: t.sla_due_at,
+                    flagged_at: now,
+                    overdue_ms: now - Number(t.sla_due_at),
+                    source: meta?.source || "cron",
+                })
+            ).run();
+            flagged += 1;
+        } catch (e) {
+            console.error("sla sweep row failed", { thread_id: t.id, error: String(e?.message || e) });
+        }
+    }
+    console.log(`R8 SLA sweep: scanned=${rows.length} flagged=${flagged} at=${new Date(now).toISOString()}`);
+    return { scanned: rows.length, flagged };
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
+     * Routed by which cron expression fired (event.cron).
      */
     async scheduled(event, env, ctx) {
+        if (event.cron === "*/15 * * * *") {
+            ctx.waitUntil(runSlaSweep(env, { source: "cron", scheduledTime: event.scheduledTime }));
+            return;
+        }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));
     },
 

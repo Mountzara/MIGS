@@ -11,7 +11,7 @@
 
 import { previewAccess, preLaunchNotFound } from "../../../_lib/preview_gate.js";
 import { requireRole } from "../../../_lib/auth.js";
-import { listThreads, startThread, auditMessage } from "../../../_lib/messaging.js";
+import { listThreads, startThread, auditMessage, ALLOWED_URGENCIES } from "../../../_lib/messaging.js";
 
 function err(status, code, message, extra = {}) {
     return new Response(JSON.stringify({ error: code, message, ...extra }), {
@@ -53,12 +53,24 @@ export async function onRequestPost(ctx) {
     let body;
     try { body = await request.json(); } catch { return err(400, "invalid_json_body"); }
 
+    // Phase 18 R8 — every patient-originated thread carries an urgency so
+    // the response-window SLA clock can start. Urgent = same business day
+    // (due close of next business day); non-urgent = within 48 business
+    // hours. Required — the compose UI presents the two radios.
+    const urgency = String(body.urgency || "");
+    if (!ALLOWED_URGENCIES.has(urgency)) {
+        return err(400, "urgency_required",
+            "Please tell us whether this is urgent (same business day) or not urgent (within 48 business hours).",
+            { allowed: ["urgent", "non_urgent"] });
+    }
+
     const out = await startThread(env, {
         patient_id: session.patient_id,
         from_role: "patient",
         from_user_id: session.patient_id,
         subject: body.subject,
         body: body.body,
+        urgency,
         related_appointment_id: body.related_appointment_id || null,
         related_intake_id: body.related_intake_id || null,
     });
