@@ -11,13 +11,12 @@
 | Field | Value |
 |---|---|
 | **Active sprint** | **Phase 18 Sprint 2 — R6–R14 (9 × P1)** — the gate before `PORTAL_PUBLIC_LAUNCH=true`. (Phase 17 Sprint 1 **CLOSED 2026-06-09** — see Section 1 + Section 8.) |
-| **Last updated** | 2026-06-09 by Claude (Cowork, Fable) — **Sprint 1 CLOSED + deployed.** Tasks 10 (device-check badge), 11 (smoketest), 12 (deploy) done; D7 resolved (IL+CA); R4 launch doxy-lookup 500 fixed. |
+| **Last updated** | 2026-06-10 by Claude (Cowork, Fable) — **Sprint 2 batch 1 (R6–R9, R11–R14) DEPLOYED.** Remaining in Sprint 2: R10 (patient visit summary). Three latent routing/endpoint bugs found by the batch verify and fixed (see Section 0A notes). |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `fix(sprint1 R4): launch doxy lookup uses key-value practice_settings (was 500)` `a974ba9` (pushed to origin) |
-| **Last production deploy** | CF Pages `9414b044.mountzara.pages.dev` (Sprint 1 close, 2026-06-09) — supersedes `5490890b`. |
-| **Deployed to production?** | **YES** — full Sprint 1 (R1–R5 + R3 licensure gate + R4 presence + Task 10 badge + Task 11 smoketest + 5 pre-sprint compliance commits) live at `9414b044`. Smoketest `scripts/smoketest_phase17.sh` = **28/28 PASS** against production; §0.2.1 visual VERIFY of the device-check badge captured. |
-| **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28. |
-| **Schema migration `0020` run against D1?** | **YES** — applied 2026-06-09 (`current_state` column added to `visit_launch_attestations`; verified via `PRAGMA table_info`). |
+| **Last commit on branch** | `fix(sprint2): add missing GET /api/v1/patient/appointments/[id]` `c8c14f3` (pushed to origin) |
+| **Last production deploy** | CF Pages `26770717.mountzara.pages.dev` (Sprint 2 batch 1, 2026-06-10) — supersedes `9414b044` (Sprint 1 close, 2026-06-09). |
+| **Deployed to production?** | **YES (through Sprint 2 batch 1)** — Sprint 1 complete + Sprint 2 R6/R7/R8/R9/R11 code + R12–R14 docs live at `26770717`. All deploy gates green (§0.4.1 audit TOTAL FAILS: 0, runtime CSS, mirror-drift, R2-post, §3 post-audit). Phase 17 smoketest **28/28 PASS** post-deploy; §0.2.1 visual VERIFY captured for the R11 homepage section, R9 NPS page, R7 countdown ("19:26", Join locked), R8 admin SLA badge ("URGENT · reply in 37h 42m"). New-endpoint contracts spot-checked live (R8 400 urgency_required; R9 404/200/404; R6 id-verify GET 200). **mountzara-cron** redeployed with 3 schedules (backup, 15-min SLA sweep, daily NPS dispatch) + `PIPELINE_TOKEN` secret set. |
+| **Schema migrations applied to D1** | 0018 ✅ (2026-05-28) · 0020 ✅ (2026-06-09) · **0021 + 0022 + 0023 ✅ (2026-06-10, verified via pragma checks)** |
 | **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) — flips to `true` only after Sprint 2 (Phase 18) closes. |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
 | **Source benchmark** | Joshi & Welch (2023) *Telehealth Success*, Forbes Books, ISBN 979-8-88750-139-0 |
@@ -39,6 +38,13 @@ Canonical spec: `/Users/beans/Documents/MountZara_Telehealth_Implementation_Spec
 | R12 | `docs/compliance/standard-of-care.md` | ✅ 2026-06-10 — created from Implementation Specs §B.3 (7 sections + signature page). **Awaits Dr. Mabini signature** (Section 5 row added). January review cadence with R2/R3. |
 | R13 | Malpractice carrier confirmation | ✅ docs 2026-06-10 — `malpractice-carrier-letter-template.md` (§B.4, states corrected to IL+CA per D7) + `malpractice-coverage-2026.md` awaiting file. **Chris action: fill carrier/policy fields + send; file response.** |
 | R14 | `docs/compliance/doxy-config.md` | ✅ skeleton 2026-06-10 — 8-step walkthrough checklist + setting-by-setting baseline table. **Awaits D8: Dr. Mabini walks the Doxy admin panel + files the BAA PDF.** |
+
+**Batch 1 deployed 2026-06-10 (`26770717`).** Three latent bugs found and fixed during the batch verify:
+1. **`/portal/visit/<id>/launch/` and `/portal/nps/<token>/` fell through to the marketing homepage** — the `_redirects` wildcard rewrites never worked (same trailing-slash failure documented for `/admin/cases/<id>/`). The R4 interstitial had been unreachable BY URL since 2026-05-28 (its API worked; the page route didn't — API-only smoketests missed it; §0.2.1 visual VERIFY caught it). Fixed with Pages Functions `functions/portal/visit/[id]/launch.js` + `functions/portal/nps/[token].js` serving the static assets (the established `/admin/cases/` pattern); both URL forms verified live.
+2. **`GET /api/v1/patient/appointments/<id>` never existed** — the launch page has fetched it since R4 as its appointment lookup (silently falling back). Created `functions/api/v1/patient/appointments/[id]/index.js` (ownership-checked; deliberately excludes `doxy_room_url` — the room URL stays launch-gated). Unblocked the R7 proactive countdown.
+3. Sprint 1's launch doxy-lookup 500 (fixed 2026-06-09) — same family: success paths must be exercised end-to-end, not just error ladders.
+
+**Remaining Sprint 2 work:** R10 patient-facing visit summary (migration `0024_phase18_patient_summary.sql`; draft endpoint with template fallback per D6, Claude path stubbed until Anthropic BAA; clinician side-by-side review/edit/send UI; portal summary view + home card; secure-message delivery; `patient_viewed_at` tracking). Largest item (~2 dev-days) — take it fresh next session; read the R10 section of the Implementation Specs docx + `_lib/patient_briefing.js` + the Phase 9 snapshot schema first.
 
 ---
 
