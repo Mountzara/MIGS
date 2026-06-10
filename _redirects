@@ -15,14 +15,10 @@
 # the marketing homepage. _redirects rewrites were unreliable for this
 # pattern — see incident note in CLAUDE.md.
 
-# Phase 17 Sprint 1 R4 — Privacy attestation interstitial. The page is
-# static (portal/visit/launch/index.html); the appointment id is read
-# from the URL path client-side. Pages serves the SPA for any
-# /portal/visit/<id>/launch URL.
-/portal/visit/*/launch /portal/visit/launch/index.html 200
-/portal/visit/*/launch/ /portal/visit/launch/index.html 200
-
-# Phase 18 Sprint 2 R9 — NPS survey page. Static (portal/nps/index.html);
-# the one-time token is read from the URL path client-side. The bare
-# /portal/nps/ directory already resolves to the same file.
-/portal/nps/* /portal/nps/index.html 200
+# Phase 17 R4 launch interstitial + Phase 18 R9 NPS survey page:
+# these dynamic-segment routes are served by Pages Functions
+# (functions/portal/visit/[id]/launch.js and functions/portal/nps/
+# [token].js), NOT by _redirects rewrites. The wildcard rewrites that
+# previously lived here fell through to the marketing homepage — the
+# same trailing-slash failure documented above for /admin/cases/<id>/.
+# Discovered 2026-06-10 during the Sprint 2 batch-1 visual VERIFY.
