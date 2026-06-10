@@ -206,14 +206,25 @@ export async function onRequestPost(ctx) {
             { licensed_states });
     }
 
-    // Look up the practice's Doxy room URL.
-    const practice = await env.DB.prepare(`
-        SELECT doxy_room_url
-        FROM practice_settings
-        WHERE clinician_id = ?
+    // Look up the practice's Doxy room URL. practice_settings is a
+    // key-value table (clinician_id, key, value_json) — the room URL lives
+    // in the row key='doxy_room_url' with a JSON-string value, exactly as
+    // book.js::getDoxyRoomUrl reads it. (A prior version of this endpoint
+    // selected a non-existent `doxy_room_url` column, which threw at runtime
+    // and 500'd the launch success path — caught by smoketest_phase17.sh.)
+    const practiceRow = await env.DB.prepare(`
+        SELECT value_json FROM practice_settings
+        WHERE clinician_id = ? AND key = 'doxy_room_url'
     `).bind(appt.clinician_id || CLINICIAN_ID).first();
+    let doxy_room_url = "";
+    if (practiceRow?.value_json) {
+        try {
+            const v = JSON.parse(practiceRow.value_json);
+            doxy_room_url = typeof v === "string" ? v : "";
+        } catch { doxy_room_url = ""; }
+    }
 
-    if (!practice?.doxy_room_url) {
+    if (!doxy_room_url) {
         return jerr(503, "doxy_not_configured",
             "Telehealth room is not configured. Please contact the clinic.");
     }
@@ -269,7 +280,7 @@ export async function onRequestPost(ctx) {
     }, ctx);
 
     return new Response(JSON.stringify({
-        room_url: practice.doxy_room_url,
+        room_url: doxy_room_url,
         expires_at: now + ROOM_URL_TTL_MS,
         appointment: {
             id: appointment_id,
