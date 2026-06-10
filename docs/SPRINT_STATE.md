@@ -10,15 +10,15 @@
 
 | Field | Value |
 |---|---|
-| **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
-| **Last updated** | 2026-06-09 by Claude (Cowork, Fable) — Task 10 admin device-check badge landed; cite-cache commit reconciled; Tasks 11–12 in progress |
+| **Active sprint** | **Phase 18 Sprint 2 — R6–R14 (9 × P1)** — the gate before `PORTAL_PUBLIC_LAUNCH=true`. (Phase 17 Sprint 1 **CLOSED 2026-06-09** — see Section 1 + Section 8.) |
+| **Last updated** | 2026-06-09 by Claude (Cowork, Fable) — **Sprint 1 CLOSED + deployed.** Tasks 10 (device-check badge), 11 (smoketest), 12 (deploy) done; D7 resolved (IL+CA); R4 launch doxy-lookup 500 fixed. |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
-| **Last commit on branch** | `phase17(sprint1 R1): chaperone-confirm modal in booking` (also landed since: R3 refine `adfc0f7`, R4 presence `85890b0`) |
-| **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5, 2026-05-28) |
-| **Deployed to production?** | **PARTIAL** — R1+R4+R5 + schema 0018 are live (deploy 5490890b). R3 (state-licensure gate) + 5 pre-sprint compliance commits (§1.2 naming / §3.12 disclaimers / pub-dates / POST overwrite-guard / CI gate) are **committed but NOT yet deployed** — they ride the sprint-close deploy. |
-| **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28 (3 ALTER TABLEs on appointments via Sprint 1 commit + 3 CREATE TABLEs via splitter `/tmp/_mz_0018_part2.sql`) |
-| **Schema migration `0020` run against D1?** | **NO** — `0020_phase17_visit_presence.sql` (ALTER `visit_launch_attestations` ADD `current_state`) created for the R4 presence enhancement; **apply at sprint-close deploy** before/with the code push. |
-| **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) |
+| **Last commit on branch** | `fix(sprint1 R4): launch doxy lookup uses key-value practice_settings (was 500)` `a974ba9` (pushed to origin) |
+| **Last production deploy** | CF Pages `9414b044.mountzara.pages.dev` (Sprint 1 close, 2026-06-09) — supersedes `5490890b`. |
+| **Deployed to production?** | **YES** — full Sprint 1 (R1–R5 + R3 licensure gate + R4 presence + Task 10 badge + Task 11 smoketest + 5 pre-sprint compliance commits) live at `9414b044`. Smoketest `scripts/smoketest_phase17.sh` = **28/28 PASS** against production; §0.2.1 visual VERIFY of the device-check badge captured. |
+| **Schema migration `0018` run against D1?** | **YES** — applied 2026-05-28. |
+| **Schema migration `0020` run against D1?** | **YES** — applied 2026-06-09 (`current_state` column added to `visit_launch_attestations`; verified via `PRAGMA table_info`). |
+| **PORTAL_PUBLIC_LAUNCH state** | `false` (preview gate active per §11.5.2) — flips to `true` only after Sprint 2 (Phase 18) closes. |
 | **Reference docs** | `/Users/beans/Documents/MountZara_Telehealth_Audit_2026-05-27.docx` · `/Users/beans/Documents/MountZara_Telehealth_Implementation_Specs_2026-05-27.docx` |
 | **Source benchmark** | Joshi & Welch (2023) *Telehealth Success*, Forbes Books, ISBN 979-8-88750-139-0 |
 
@@ -116,8 +116,8 @@ The full 22-recommendation roadmap is in `/Users/beans/Documents/MountZara_Teleh
 
 | Sprint | Phase | Items | Effort estimate | Gate |
 |---|---|---|---|---|
-| Sprint 1 (active) | Phase 17 | R1–R5 (5 × P0) | 6 dev-days + 3 clin-days | First real patient visit cannot proceed without these |
-| Sprint 2 | Phase 18 | R6–R14 (9 × P1) | 7 dev-days + 3 clin/admin-days | Public launch (PORTAL_PUBLIC_LAUNCH=true) cannot proceed without these |
+| Sprint 1 ✅ **CLOSED 2026-06-09** | Phase 17 | R1–R5 (5 × P0) | 6 dev-days + 3 clin-days | First real patient visit cannot proceed without these — **met; deployed `9414b044`** |
+| Sprint 2 (**ACTIVE**) | Phase 18 | R6–R14 (9 × P1) | 7 dev-days + 3 clin/admin-days | Public launch (PORTAL_PUBLIC_LAUNCH=true) cannot proceed without these |
 | Sprint 3 | Phase 19 | R15–R20 (6 × P2) | 6 dev-days + 4 clin-days + ongoing | Mid-quarter NPS / SLA / false-positive check at week 12 |
 | Sprint 4+ | Phase 20+ | R21–R22 (2 × P3) | 2.5 dev-days | Opportunistic |
 
