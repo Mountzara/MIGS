@@ -95,7 +95,7 @@ Gate default `["IL"]` (fails closed). Node `--check` clean on all 4 JS files; ad
 ### Sprint-close (must come last)
 
 12. **Schema migration deploy** — `wrangler d1 execute mountzara-clinical --remote --file=schema/0018_phase17_telehealth_safety.sql`. Idempotent (every CREATE uses IF NOT EXISTS) so re-runs are safe.
-13. **Smoketests** — new `scripts/smoketest_phase17.sh` covering:
+13. ✅ **BUILT 2026-06-09 (Task 11)** — `scripts/smoketest_phase17.sh` (sources `_lib_admin_auth.sh::resolve_admin_auth` §10.3.1; logs in as the seeded Jane via the operator-preview gate path; uses wrangler D1 for the released-triage + telehealth-appt fixtures with teardown). `bash -n` clean; the non-mutating live subset (anonymous-gate 404s + R5 tech-check 200) passes 9/9 against production. The R3/R4 fixture assertions (licensure 422s, chaperone 409, launch ladder) run green only once the unpushed R3/R4 code is deployed — that's the authoritative run at Task 12 step 5. **Smoketests** — coverage:
     - Chaperone-required telehealth booking rejected without confirmation (curl)
     - Chaperone-required telehealth booking accepted with confirmation (curl)
     - Out-of-license-state intake submission rejected (curl)
