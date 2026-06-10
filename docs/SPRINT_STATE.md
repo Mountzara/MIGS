@@ -11,7 +11,7 @@
 | Field | Value |
 |---|---|
 | **Active sprint** | Phase 17 Sprint 1 — Telehealth Compliance Foundation (P0 items R1–R5) |
-| **Last updated** | 2026-05-31 by Claude (Cowork) |
+| **Last updated** | 2026-06-09 by Claude (Cowork, Fable) — Task 10 admin device-check badge landed; cite-cache commit reconciled; Tasks 11–12 in progress |
 | **Branch** | `claude/setup-mountzara-landing-01M5e6zmrBbv1hX9jmgH6xz8` |
 | **Last commit on branch** | `phase17(sprint1 R1): chaperone-confirm modal in booking` (also landed since: R3 refine `adfc0f7`, R4 presence `85890b0`) |
 | **Last production deploy** | CF Pages `5490890b.mountzara.pages.dev` (R5, 2026-05-28) |
@@ -86,7 +86,7 @@ Gate default `["IL"]` (fails closed). Node `--check` clean on all 4 JS files; ad
 
 8. ✅ `portal/tech-check/index.html` — four checkpoint cards (camera / microphone / speaker / network). `getUserMedia` for cam preview + mic level detection (3-sec sample, threshold 3 in 0-128 byte deviation), 440Hz oscillator tone with click-to-confirm hearing, speed test fetches a known CDN asset and computes kbps. Per-component failure copy includes remediation hint. "Run all" button sequences the checks. POSTs to `/api/v1/patient/tech-check` when all 4 have a verdict. §3.10-compliant Apple-glass cards, purple accent.
 9. ✅ `functions/api/v1/patient/tech-check.js` — POST-only. Validates patient session + preview gate. `network_ok = (network_kbps >= 600)` (Doxy.me floor). `overall_ok = AND of all four`. Persists one `tech_check_results` row per call. If `appointment_id` supplied, defense-checks ownership before binding. Audit-logged with the result summary.
-10. **Admin badge** — DEFERRED to Sprint 1 close-out (low risk: tech_check_results table is populated by R5 and admin UI can read it via a follow-up Edit). Sprint 2 R6/R11 also touch admin appointment surfaces.
+10. ✅ **Admin device-check badge — DONE 2026-06-09 (Task 10).** `functions/api/v1/admin/appointments.js` (GET list) + `functions/api/v1/admin/cases/[patient_id].js` (keystone, `upcoming` only) LEFT-JOIN the most-recent `tech_check_results` row per appointment (correlated subquery on `idx_tech_check_appointment`; no N+1) and emit a compact `device_check` `{status, checked_at, network_kbps, failures}` per row. Rendered as an inline badge — "Device check passed · <time>" (green) / "Device check FAILED · <components>" (red) / "Device check not yet run" (neutral) — by `admin/scheduling/index.html::deviceCheckBadge` (scheduled telehealth rows) + `admin/cases/_t/index.html::deviceCheckBadge` (upcoming telehealth rows). `node --check` clean on all 4 files; no blue tokens (§3.10). `SYSTEM_MAP.md` §6 + §10 updated same-commit. **Visual VERIFY deferred to the post-deploy step (§0.2.1) — badge needs admin auth + seeded tech-check data on the deployed env.** NOT deployed.
 
 ### Chaperone-confirm modal UI (≈1 h)
 

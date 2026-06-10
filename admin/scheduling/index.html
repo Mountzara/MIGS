@@ -645,6 +645,30 @@
     }
 
     // -------- Appointments --------
+    // Phase 17 R5 — device/connection tech-check badge. The appointments
+    // API attaches a.device_check ({status, checked_at, network_kbps,
+    // failures} or null) per row. Shown for telehealth appts only.
+    function fmtCheckTime(s) {
+        if (!s) return '';
+        const d = new Date(String(s).replace(' ', 'T') + 'Z');
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+    function deviceCheckBadge(a) {
+        if (a.modality !== 'telehealth') return '';
+        if (typeof a.device_check === 'undefined') return '';
+        const base = 'display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap;';
+        const dc = a.device_check;
+        if (!dc) {
+            return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.05);color:rgba(235,235,240,0.62);border:1px solid rgba(255,255,255,0.12);">Device check not yet run</span>`;
+        }
+        if (dc.status === 'passed') {
+            return `<span title="Camera, microphone, speaker, and network all passed." style="${base}background:rgba(16,185,129,0.12);color:rgba(110,231,183,0.95);border:1px solid rgba(16,185,129,0.45);">Device check passed · ${escapeHtml(fmtCheckTime(dc.checked_at))}</span>`;
+        }
+        const comps = (dc.failures || []).map(f => f && f.component).filter(Boolean);
+        const reason = comps.length ? comps.join(', ') : 'see patient';
+        return `<span title="One or more components failed the pre-visit check." style="${base}background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.95);border:1px solid rgba(239,68,68,0.45);">Device check FAILED · ${escapeHtml(reason)}</span>`;
+    }
     async function loadAppointments() {
         const from = $('ap-from').value || todayIso();
         const d = new Date(from + 'T00:00:00');
@@ -673,6 +697,7 @@
                         <span class="pill ${escapeAttr(a.status)}">${escapeHtml(a.status)}</span>
                         <span class="pill ${escapeAttr(a.modality)}">${a.modality === 'telehealth' ? 'telehealth' : 'in person'}</span>
                         <span>${escapeHtml(vt ? vt.label : a.visit_type)} · ${a.duration_min} min</span>
+                        ${a.status === 'scheduled' ? deviceCheckBadge(a) : ''}
                         ${a.chief_complaint_summary ? `<span style="opacity:0.75">— ${escapeHtml(a.chief_complaint_summary)}</span>` : ''}
                     </div>
                     <div class="appt-actions">

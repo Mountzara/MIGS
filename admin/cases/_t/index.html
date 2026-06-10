@@ -654,6 +654,31 @@
             $('triage-body').innerHTML = rows || '<div class="empty-state">No triage runs yet.</div>';
         }
 
+        // Phase 17 R5 — device/connection tech-check badge. The cases API
+        // attaches a.device_check ({status, checked_at, network_kbps,
+        // failures} or null) to each UPCOMING appointment (past visits have
+        // no device_check key). Shown for telehealth appts only.
+        function fmtCheckTime(s) {
+            if (!s) return '';
+            const dt = new Date(String(s).replace(' ', 'T') + 'Z');
+            if (isNaN(dt.getTime())) return '';
+            return dt.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        }
+        function deviceCheckBadge(a) {
+            if (a.modality !== 'telehealth') return '';
+            if (typeof a.device_check === 'undefined') return '';
+            const base = 'display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap;';
+            const dc = a.device_check;
+            if (!dc) {
+                return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.05);color:rgba(235,235,240,0.62);border:1px solid rgba(255,255,255,0.12);">Device check not yet run</span>`;
+            }
+            if (dc.status === 'passed') {
+                return `<span title="Camera, microphone, speaker, and network all passed." style="${base}background:rgba(16,185,129,0.12);color:rgba(110,231,183,0.95);border:1px solid rgba(16,185,129,0.45);">Device check passed · ${escapeHtml(fmtCheckTime(dc.checked_at))}</span>`;
+            }
+            const comps = (dc.failures || []).map(f => f && f.component).filter(Boolean);
+            const reason = comps.length ? comps.join(', ') : 'see patient';
+            return `<span title="One or more components failed the pre-visit check." style="${base}background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.95);border:1px solid rgba(239,68,68,0.45);">Device check FAILED · ${escapeHtml(reason)}</span>`;
+        }
         function renderAppointments(d) {
             const up = d.appointments.upcoming || [];
             const past = d.appointments.past || [];
@@ -671,6 +696,7 @@
                                 <span><span class="k">Modality</span> ${escapeHtml(a.modality)}</span>
                                 ${a.doxy_room_url ? `<span><a href="${escapeHtml(a.doxy_room_url)}" target="_blank">Doxy room</a></span>` : ''}
                                 ${a.chief_complaint_summary ? `<span><span class="k">CC</span> ${escapeHtml(a.chief_complaint_summary)}</span>` : ''}
+                                ${deviceCheckBadge(a)}
                             </div>
                         </div>
                         <span class="badge ${cls}">${a.status}</span>

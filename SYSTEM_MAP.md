@@ -353,6 +353,15 @@ See `functions/api/v1/` filesystem for full per-file. Grouped by domain:
   `phi/rotate`, `practice-settings`, `practice/licensed-states` (R3 licensure gate),
   `preview-invite`, `proms/*`,
   `snapshots/[patient_id]`, `trend-briefs/*`, `triage/*`, `visit-types`
+  - **Phase 17 R5 device-check badge:** `admin/appointments.js` (GET list) +
+    `admin/cases/[patient_id].js` (keystone, `upcoming` only) LEFT-JOIN the
+    latest `tech_check_results` row per appointment (correlated subquery on
+    `idx_tech_check_appointment`) and emit a compact `device_check`
+    `{status,checked_at,network_kbps,failures}` per row. Rendered as an inline
+    badge in `admin/scheduling/index.html::deviceCheckBadge` +
+    `admin/cases/_t/index.html::deviceCheckBadge` (telehealth rows only).
+    Lock-step: the `device_check` shape is shared across both endpoints + both
+    SPA badge helpers — change one, change all four.
 - **`billing/stripe/`** — webhook receiver + checkout flows
 - **`sync/`** — `clinical-ai/cases`, `ios/encounters`, `patients/lookup`,
   `surgical/cases`, `transcription/notes` (cross-app surfaces; see §11)
@@ -459,6 +468,10 @@ create the SPA dir.
 | `0014_phase_qb_feedback.sql` | Phase QB | member_feedback + audit_events |
 | `0015_phase_qc_wizard.sql` | Phase QC | wizard_state |
 | `0016_phase14_humanization.sql` | Phase 14 | patient profile photo + nickname + care_goals |
+| `0017_deep_dive_authoring.sql` | — | deep-dive modal authoring storage (trend-brief §3.8) |
+| `0018_phase17_telehealth_safety.sql` | Phase 17 | R1 chaperone cols on `appointments`; `visit_launch_attestations` (R4); `tech_check_results` (R5 — read by the admin appointments + cases device-check badge); `licensure_blocks` (R3). **Applied to D1 2026-05-28.** |
+| `0019_phase17_signatures.sql` | Phase 17 | compliance-doc signature storage |
+| `0020_phase17_visit_presence.sql` | Phase 17 | ALTER `visit_launch_attestations` ADD `current_state` (R4 per-visit presence). **Apply at sprint-close deploy — not idempotent.** |
 
 Apply: `wrangler d1 execute mountzara-clinical --remote
 --file=schema/<file>.sql`

@@ -132,13 +132,26 @@ export async function onRequestGet(ctx) {
         // 4. Appointments split into upcoming + past.
         // ============================================================
         const nowMs = Date.now();
+        // Phase 17 R5 (Sprint 1 close-out): join the most-recent device/
+        // connection tech-check per UPCOMING appointment so the case page
+        // can show a "device check passed / failed / not yet run" badge.
+        // Correlated subquery on idx_tech_check_appointment — one row each,
+        // no N+1. Past appointments don't need it (the visit already ran).
         const upcomingRes = await env.DB.prepare(`
-            SELECT id, visit_type, starts_at, ends_at, duration_min, modality,
-                   status, doxy_room_url, doxy_join_logged_at,
-                   chief_complaint_summary, triage_id, created_at
-            FROM appointments
-            WHERE patient_id = ? AND starts_at >= ?
-            ORDER BY starts_at ASC LIMIT 20
+            SELECT a.id, a.visit_type, a.starts_at, a.ends_at, a.duration_min, a.modality,
+                   a.status, a.doxy_room_url, a.doxy_join_logged_at,
+                   a.chief_complaint_summary, a.triage_id, a.created_at,
+                   tc.overall_ok AS tc_overall_ok, tc.network_kbps AS tc_network_kbps,
+                   tc.failure_reasons_json AS tc_failure_reasons_json,
+                   tc.checked_at AS tc_checked_at
+            FROM appointments a
+            LEFT JOIN tech_check_results tc ON tc.id = (
+                SELECT id FROM tech_check_results
+                WHERE appointment_id = a.id
+                ORDER BY checked_at DESC, id DESC LIMIT 1
+            )
+            WHERE a.patient_id = ? AND a.starts_at >= ?
+            ORDER BY a.starts_at ASC LIMIT 20
         `).bind(patient_id, nowMs).all();
         const pastRes = await env.DB.prepare(`
             SELECT id, visit_type, starts_at, ends_at, duration_min, modality,
@@ -300,7 +313,7 @@ export async function onRequestGet(ctx) {
             } : null,
             triage_history,
             appointments: {
-                upcoming: upcomingRes?.results || [],
+                upcoming: (upcomingRes?.results || []).map(withDeviceCheck),
                 past: pastRes?.results || [],
             },
             messages: {
@@ -324,3 +337,24 @@ export async function onRequestGet(ctx) {
 }
 
 function safeJson(s) { try { return JSON.parse(s); } catch { return null; } }
+
+// Phase 17 R5 — fold the joined latest-tech-check columns (tc_*) into a
+// compact `device_check` object and strip the raw columns from the row.
+// Returns { status: "passed"|"failed", checked_at, network_kbps, failures }
+// or null when no tech-check has been run for the appointment.
+function withDeviceCheck(row) {
+    const { tc_overall_ok, tc_network_kbps, tc_failure_reasons_json, tc_checked_at, ...rest } = row;
+    let device_check = null;
+    if (tc_checked_at != null) {
+        let failures = [];
+        const parsed = safeJson(tc_failure_reasons_json);
+        if (Array.isArray(parsed)) failures = parsed.slice(0, 6);
+        device_check = {
+            status: tc_overall_ok ? "passed" : "failed",
+            checked_at: tc_checked_at,
+            network_kbps: tc_network_kbps,
+            failures,
+        };
+    }
+    return { ...rest, device_check };
+}

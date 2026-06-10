@@ -21,6 +21,29 @@ const ALLOWED_STATUSES = new Set(["scheduled", "completed", "no_show", "cancelle
 
 function validateDateString(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
 
+// Phase 17 R5 — fold the joined latest-tech-check columns (tc_*) into a
+// compact `device_check` object and strip the raw columns from the row.
+// Returns { status: "passed"|"failed", checked_at, network_kbps, failures }
+// or null when no tech-check has been run for the appointment.
+function withDeviceCheck(row) {
+    const { tc_overall_ok, tc_network_kbps, tc_failure_reasons_json, tc_checked_at, ...rest } = row;
+    let device_check = null;
+    if (tc_checked_at != null) {
+        let failures = [];
+        try {
+            const parsed = JSON.parse(tc_failure_reasons_json || "[]");
+            if (Array.isArray(parsed)) failures = parsed.slice(0, 6);
+        } catch { /* malformed JSON — treat as no detail */ }
+        device_check = {
+            status: tc_overall_ok ? "passed" : "failed",
+            checked_at: tc_checked_at,
+            network_kbps: tc_network_kbps,
+            failures,
+        };
+    }
+    return { ...rest, device_check };
+}
+
 async function getDoxyRoomUrl(env) {
     const row = await env.DB.prepare(`
         SELECT value_json FROM practice_settings
@@ -47,14 +70,27 @@ export async function onRequestGet(ctx) {
         if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
             return jsonError("date_parse_failed", 400);
         }
+        // Phase 17 R5 (Sprint 1 close-out): join the most-recent device/
+        // connection tech-check per appointment so the admin appointment
+        // list can surface a "device check passed / failed / not yet run"
+        // badge. The correlated subquery uses idx_tech_check_appointment +
+        // idx_tech_check_checked_at; one row per appointment, no N+1.
         let sql = `
             SELECT a.id, a.patient_id, a.clinician_id, a.visit_type, a.starts_at, a.ends_at,
                    a.duration_min, a.modality, a.status, a.cancellation_reason,
                    a.chief_complaint_summary, a.doxy_room_url, a.doxy_join_logged_at,
                    a.created_at, a.updated_at,
-                   p.first_name AS patient_first_name, p.last_name AS patient_last_name
+                   p.first_name AS patient_first_name, p.last_name AS patient_last_name,
+                   tc.overall_ok AS tc_overall_ok, tc.network_kbps AS tc_network_kbps,
+                   tc.failure_reasons_json AS tc_failure_reasons_json,
+                   tc.checked_at AS tc_checked_at
             FROM appointments a
             LEFT JOIN patients p ON p.id = a.patient_id
+            LEFT JOIN tech_check_results tc ON tc.id = (
+                SELECT id FROM tech_check_results
+                WHERE appointment_id = a.id
+                ORDER BY checked_at DESC, id DESC LIMIT 1
+            )
             WHERE a.clinician_id = ?
               AND a.starts_at >= ?
               AND a.starts_at <= ?
@@ -66,7 +102,8 @@ export async function onRequestGet(ctx) {
         }
         sql += ` ORDER BY a.starts_at ASC`;
         const res = await env.DB.prepare(sql).bind(...binds).all();
-        return jsonResponse({ from, to, status: status || null, appointments: res?.results || [] });
+        const appointments = (res?.results || []).map(withDeviceCheck);
+        return jsonResponse({ from, to, status: status || null, appointments });
     });
 }
 
