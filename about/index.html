@@ -667,6 +667,18 @@
             text-transform: uppercase;
             margin-bottom: 26px;
             display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @media (prefers-reduced-transparency: reduce) {
+            .chapter-num {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
         }
 
         .chapter h2 {
