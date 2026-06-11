@@ -79,14 +79,25 @@ def _strip_pending(block: str) -> str:
     return block
 
 
-def _apply_text(block: str, inner: str) -> tuple[str, bool]:
-    """Template-agnostic: replace the inner of the FIRST content <p> after the
-    section's <h3>. Works for W21's classed <p class="mz-jc-bottom">… and W20's
-    bare <p><span …>Pending review</span></p> placeholder alike."""
+_BLOCK_START = re.compile(r'^\s*<(ul|ol|dl|div|table|p)\b', re.IGNORECASE)
+
+
+def _apply_text(block: str, content: str) -> tuple[str, bool]:
+    """Template-agnostic content insert after the section's <h3>.
+    - Inline/prose content → replace the inner of the FIRST content <p>
+      (keeps W21's classed <p class="mz-jc-bottom">… and W20's bare <p> wrapper).
+    - Block-level content (starts with <ul>/<ol>/<dl>/…, e.g. discussion prompts)
+      → replace the ENTIRE following <p>…</p> placeholder with the block so we
+      never nest a block inside <p> (invalid HTML)."""
+    if _BLOCK_START.match(content):
+        pat = re.compile(r'(<h3\b.*?</h3>\s*)<p\b[^>]*>.*?</p>', re.DOTALL)
+        if not pat.search(block):
+            return block, False
+        return pat.sub(lambda m: m.group(1) + content, block, count=1), True
     pat = re.compile(r'(<h3\b.*?</h3>\s*<p\b[^>]*>).*?(</p>)', re.DOTALL)
     if not pat.search(block):
         return block, False
-    return pat.sub(lambda m: m.group(1) + inner + m.group(2), block, count=1), True
+    return pat.sub(lambda m: m.group(1) + content + m.group(2), block, count=1), True
 
 
 def _build_pico_dl(fields: dict) -> str:
