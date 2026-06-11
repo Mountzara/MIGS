@@ -169,6 +169,42 @@ ARTICLE_CARD = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 
+# §1.2b — subspecialty relevance gate (added 2026-06-11 after the W21/W20 audit
+# found the digest pipeline's keyword over-matching had pulled non-gynecologic
+# papers into Monday posts: ophthalmology, men's bone/ortho, dermatology keloids,
+# rheumatology, hepatology, preclinical nanomedicine — 15 in W21, 12 in W20).
+# A cite card is ON-TOPIC for CBG/MIGS only if the paper's OWN text (title +
+# meta + abstract, NOT the pipeline-assigned "where it fits" bucket label)
+# carries >=1 SUBSPECIALTY_ANCHOR. The anchor set deliberately EXCLUDES the
+# over-broad tokens that caused the contamination (bare "scar", "ICG",
+# "hormone", "testosterone"); it DOES include the bowel/bladder/ureter terms
+# that complex MIGS legitimately operates on (deep infiltrating endometriosis).
+# OFFTOPIC_DENY overrides an incidental anchor match for terms that are never
+# the primary subject of a CBG/MIGS paper (e.g. a mouse "bladder cancer"
+# nanomedicine paper tripping the "bladder" anchor). Validated to flag 27/27
+# known contaminants across W20+W21 with zero false-positives on 199 cards.
+SUBSPECIALTY_ANCHORS = re.compile(
+    r'endometrio|adenomyos|fibroid|leiomyom|\bmyoma|uter(us|ine|o)|cervi(x|cal)|'
+    r'vagin|vulva|ovar(y|ian|ies)|fallopian|adnex|salping|oophor|myomectom|'
+    r'hysterectom|hysteroscop|endometri(um|al)|menstru|dysmenorr|menorrhag|'
+    r'amenorr|abnormal uterine bleeding|\baub\b|pelvic pain|dyspareun|'
+    r'polycystic ovar|\bpcos\b|menopaus|climacteric|vasomotor|\bhot flash|'
+    r'genitourinary syndrome|fertilit|infertil|\bivf\b|oocyte|embryo|blastocyst|'
+    r'ovulat|follicul|ovarian reserve|contracept|pregnan|cesarean|caesarean|'
+    r'c-section|isthmocele|\bniche\b|placenta|obstetric|antenatal|peripartum|'
+    r'gestational|gyn(a)?ecolog|\bpelvi(c|s)\b|prolapse|incontinen|urogyn|'
+    r'ureter|bladder|vesic|urinary|\bbowel\b|rectal|rectovaginal|colorect|'
+    r'sigmoid|anastomos|anterior resection|abdominoperineal|\bcolon\b',
+    re.IGNORECASE,
+)
+OFFTOPIC_DENY = re.compile(
+    r'phototherm|gas vesicle|phototherap|nanoparticle|nanomedicin',
+    re.IGNORECASE,
+)
+CITE_FITS = re.compile(r'<p class="mz-cite-fits">.*?</p>', re.IGNORECASE | re.DOTALL)
+CITE_PMID = re.compile(r'pubmed\.ncbi\.nlm\.nih\.gov/(\d+)')
+CITE_TITLE = re.compile(r'class="mz-cite-title">(.*?)<', re.IGNORECASE | re.DOTALL)
+
 # §3.8 — section structure markers
 VERDICT_GAUGE = re.compile(r"mz-verdict-gauge|verdict-gauge", re.IGNORECASE)
 EVIDENCE_PYRAMID = re.compile(r"mz-evidence-pyramid|evidence-pyramid", re.IGNORECASE)
@@ -311,6 +347,27 @@ _MZ_ABSTRACT_ELEMENT = re.compile(
     r'<details[^>]*class="[^"]*mz-abstract[^"]*"[^>]*>',
     re.IGNORECASE,
 )
+
+
+def offtopic_cards(article_contents: Iterable[str]) -> list[tuple[str, str]]:
+    """§1.2b: return [(pmid, title)] for cite cards whose own text carries no
+    CBG/MIGS subspecialty anchor (or is overridden by an off-topic deny term).
+    The pipeline-assigned "where it fits" bucket label is stripped first — it is
+    the wrong-classification artifact, so anchoring on it would mask the very
+    contamination this gate exists to catch."""
+    flagged: list[tuple[str, str]] = []
+    for c in article_contents:
+        own = CITE_FITS.sub(" ", c)
+        text = HTML_TAG.sub(" ", own)
+        on_topic = bool(SUBSPECIALTY_ANCHORS.search(text)) and not OFFTOPIC_DENY.search(text)
+        if on_topic:
+            continue
+        pm = CITE_PMID.search(c)
+        tm = CITE_TITLE.search(c)
+        pmid = pm.group(1) if pm else "?"
+        title = HTML_TAG.sub(" ", tm.group(1)).strip()[:90] if tm else "?"
+        flagged.append((pmid, title))
+    return flagged
 
 
 def cards_with_abstracts(article_contents: Iterable[str]) -> int:
@@ -522,6 +579,28 @@ def audit_post(post: dict) -> PostAudit:
             True,
             "0 cards (post has no cite-card surface — n/a for this post type)",
         )
+
+    # -- §1.2b subspecialty relevance (no off-topic papers) -----------------
+    # Catches the digest pipeline's keyword-over-match contamination at the
+    # gate, before a fix or republish ships it. Lists flagged PMIDs so a human
+    # confirms each is genuinely off-topic before pruning. FAILS the audit so
+    # a contaminated post halts for review rather than silently re-publishing.
+    if cards_n > 0:
+        offtopic = offtopic_cards(cards)
+        if offtopic:
+            preview = "; ".join(f"{p} {t}" for p, t in offtopic[:8])
+            more = f" (+{len(offtopic)-8} more)" if len(offtopic) > 8 else ""
+            audit.add(
+                "§1.2b subspecialty relevance (no off-topic papers)",
+                False,
+                f"{len(offtopic)} non-CBG/MIGS suspect card(s) — review/prune: {preview}{more}",
+            )
+        else:
+            audit.add(
+                "§1.2b subspecialty relevance (no off-topic papers)",
+                True,
+                f"all {cards_n} cards carry a CBG/MIGS subspecialty anchor",
+            )
 
     # -- §3.8 item 24 + §3.9 deep-dive modal coverage -----------------------
     # Trend briefs AND Monday Morning posts require every cite card to have

@@ -190,8 +190,15 @@ the target element is in a section ABOVE the script tag.
    verifies every R2-served clinical post still carries its KB-anchor
    manifest in the structured fields.
 6. **All-fields audit gate** — `scripts/audit_live_post.py --list` runs
-   the §3.7.1 / §1.2 / §3.7 / §3.11 / §3.12 audit on every published R2
-   post. Exits 1 on any FAIL.
+   the §3.7.1 / §1.2 / §1.2b / §3.7 / §3.11 / §3.12 audit on every
+   published R2 post. Exits 1 on any FAIL. The **§1.2b subspecialty-
+   relevance gate** (added 2026-06-11) flags cite cards with no CBG/MIGS
+   anchor in the paper's own title/meta/abstract — catches the digest
+   pipeline's keyword over-match contamination (W21 had 15 off-topic
+   papers, W20 has 12: ophthalmology, men's ortho, dermatology keloids,
+   rheumatology, hepatology, preclinical nanomedicine). The real fix is
+   upstream in the `MountZaraResearchDigest` classifier (sibling repo on
+   the Mac); this gate is the in-repo safety net.
 7. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
    (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
    class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.
