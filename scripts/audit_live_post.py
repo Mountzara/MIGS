@@ -201,9 +201,17 @@ PAPER_CARD_PMID = re.compile(r"openDeepDive\(['\"]dd-(\d+)['\"]\)", re.IGNORECAS
 # the primary subject of a CBG/MIGS paper (e.g. a mouse "bladder cancer"
 # nanomedicine paper tripping the "bladder" anchor). Validated to flag 27/27
 # known contaminants across W20+W21 with zero false-positives on 199 cards.
+#
+# Substring anchors are blunt: 2026-06-11 a revision-rhinoplasty paper passed
+# W20 because the title word "sal-VAGIN-g" (Salvaging) matched bare `vagin`.
+# The `\b(?:trans|endo)?vagin` form requires a word-boundary vagina term while
+# still admitting transvaginal/endovaginal (and rectovaginal stays covered by
+# its own token) — it drops the "salvaging"/"invagination" false hits. This is
+# why the gate is only a flag-for-human TRIPWIRE: a clinician read caught the
+# rhinoplasty paper the regex missed.
 SUBSPECIALTY_ANCHORS = re.compile(
     r'endometrio|adenomyos|fibroid|leiomyom|\bmyoma|uter(us|ine|o)|cervi(x|cal)|'
-    r'vagin|vulva|ovar(y|ian|ies)|fallopian|adnex|salping|oophor|myomectom|'
+    r'\b(?:trans|endo)?vagin|vulva|ovar(y|ian|ies)|fallopian|adnex|salping|oophor|myomectom|'
     r'hysterectom|hysteroscop|endometri(um|al)|menstru|dysmenorr|menorrhag|'
     r'amenorr|abnormal uterine bleeding|\baub\b|pelvic pain|dyspareun|'
     r'polycystic ovar|\bpcos\b|menopaus|climacteric|vasomotor|\bhot flash|'

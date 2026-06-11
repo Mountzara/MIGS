@@ -40,9 +40,16 @@ import json, re, sys
 #   42087414 polynucleotide injections for scar prevention (derm/plastics)
 #   42090012 caregiver perceptions of FGS in pediatric oncology (peds-onc survey)
 #   42088026 ICG imaging sensitivity limit vs tissue autofluorescence (optics physics)
+#   42091325 revision-rhinoplasty soft-tissue salvage (plastic surgery) — the 13th,
+#            caught 2026-06-11: the §1.2b gate's bare `vagin` anchor false-matched
+#            "salVAGINg" in the title; a clinician title-read flagged it. The
+#            first 12-paper purge ALSO left every topic-distribution count stale
+#            (chart, %, bars, study-design breakdown, group headers) — this pass
+#            recounts all of them from the true post-removal totals.
 PURGE = ['42116353','42108328','42089747','42113943','42112383','42108543',
-         '42098529','42095960','42088054','42087414','42090012','42088026']
-assert len(PURGE) == 12
+         '42098529','42095960','42088054','42087414','42090012','42088026',
+         '42091325']
+assert len(PURGE) == 13
 
 d = json.load(open('/tmp/w20_live.json'))
 html = d['body_html']
@@ -176,10 +183,88 @@ if old_synth in html:
 else:
     prose_errs.append("ICG synthesis paragraph exact-match failed")
 
-# --- 3) count references in body intro + summary headline ---
-# Body intro lede: "84 peer-reviewed papers across 11 topics" -> 72
-html, n_intro = re.subn(r'\b84 peer-reviewed papers across 11 topics',
-                        '72 peer-reviewed papers across 11 topics', html)
+# --- 3) RECOUNT every distribution/count reference -------------------------
+# Removing 13 papers: total cite-cards 84 -> 71 (intro convention); unique
+# papers 80 -> 67 (summary convention). Only three topics lost papers:
+#   Menopausal Hormone Therapy 13 -> 10 (3 men's-health/RA papers)
+#   C-Section Scar             16 ->  8 (8 derm/keloid/rhinoplasty papers)
+#   ICG Fluorescence            4 ->  2 (2 peds-onc/imaging-physics papers)
+n_recount = 0
+
+def _sub1(pat, repl):
+    global html, n_recount
+    html, k = re.subn(pat, repl, html, count=1)
+    n_recount += k
+    if k != 1:
+        prose_errs.append(f"recount miss: {pat[:48]!r} matched {k}x (want 1)")
+
+# 3a) intro lede (card convention): 84 -> 71
+_sub1(r'\b84 peer-reviewed papers across 11 topics',
+      '71 peer-reviewed papers across 11 topics')
+
+# 3b) distribution prose narrative + "All N papers grouped" + chart aria
+_sub1(r'All 84 papers grouped', 'All 71 papers grouped')
+_sub1(r"Topic distribution across this week's 84 papers",
+      "Topic distribution across this week's 71 papers")
+_sub1(
+    re.escape('Female infertility (25 papers, 30%) and C-section / pregnancy '
+              'pathology (16 papers, 19%) dominated this week; menopausal hormone '
+              'therapy (13, 16%) and benign hysterectomy (9, 11%) followed. The '
+              'remaining 21 papers spread across seven other gynecologic topics.'),
+    'Female infertility (25 papers, 35%) dominated this week; menopausal hormone '
+    'therapy (10, 14%), benign hysterectomy (9, 13%), and C-section / pregnancy '
+    'pathology (8, 11%) followed. The remaining 19 papers spread across seven '
+    'other gynecologic topics.')
+
+# 3c) study-design breakdown (n=84 -> 71): -2 RCT, -1 retrospective,
+# -1 cross-sectional, -1 systematic review, -8 untyped "Journal Article".
+_sub1(
+    re.escape('Study designs represented (n = 84): 11 retrospective cohorts, 8 '
+              'cross-sectional, 5 randomized controlled trials, 4 case reports, 2 '
+              'population-based cohorts (including the Ontario endometriosis-'
+              'anomalies cohort, n = 1,460,564 births), 2 narrative reviews, 1 '
+              'prospective cohort, and 1 systematic review. The remaining 50 are '
+              'PubMed-typed simply "Journal Article"'),
+    'Study designs represented (n = 71): 10 retrospective cohorts, 7 '
+    'cross-sectional, 3 randomized controlled trials, 4 case reports, 2 '
+    'population-based cohorts (including the Ontario endometriosis-anomalies '
+    'cohort, n = 1,460,564 births), 2 narrative reviews, and 1 prospective '
+    'cohort. The remaining 42 are PubMed-typed simply "Journal Article"')
+
+# 3d) topic-distribution shape-chart: rebuild rows, re-sorted by volume.
+new_dist = [  # (chart label, count) sorted descending
+    ('Female Infertility', 25), ('Menopausal Hormone Therapy', 10),
+    ('Hysterectomy', 9), ('C-Section Scar &amp; Pregnancy Pathology', 8),
+    ('Endometriosis', 5), ('Chronic Pelvic Pain', 5),
+    ('Polycystic Ovary Syndrome', 3),
+    ('ICG Fluorescence in Gynecologic Surgery', 2),
+    ('Operative Hysteroscopy', 2), ('Adenomyosis', 1), ('Uterine Fibroids', 1),
+]
+assert sum(c for _, c in new_dist) == 71, "shape-chart counts must sum to 71"
+rows = []
+for label, c in new_dist:
+    bar = round(c / 71 * 100, 1)
+    rows.append(f'<div class="mz-shape-row" style="--mz-bar: {bar}%;">'
+                f'<span class="mz-shape-label">{label}</span>'
+                f'<span class="mz-shape-count">{c}</span></div>')
+new_chart = ('<div class="mz-shape-chart" aria-label="Topic distribution across '
+             "this week's 71 papers\">" + '\n        '.join(rows) + '</div>')
+html, k = re.subn(
+    r'<div class="mz-shape-chart"[^>]*>.*?</div></div>(?=<p class="mz-section-intro" style="margin-top:1\.5rem)',
+    lambda _m: new_chart, html, count=1, flags=re.DOTALL)
+n_recount += k
+if k != 1:
+    prose_errs.append(f"shape-chart replace matched {k}x (want 1)")
+
+# 3e) per-topic section header counts (mz-topic-count spans)
+for title, old_c, new_c in [
+        ('Menopausal Hormone Therapy', 13, 10),
+        ('C-Section Scar (Pregnancy &amp; Pathology)', 16, 8),
+        ('ICG Fluorescence in Gynecologic Surgery', 4, 2)]:
+    _sub1(re.escape(f'{title} <span class="mz-topic-count">{old_c} papers</span>'),
+          f'{title} <span class="mz-topic-count">{new_c} papers</span>')
+
+n_intro = 1  # subsumed into the recount above; keep the downstream check happy
 
 # --- 3) verification ---
 after = {
@@ -189,10 +274,10 @@ after = {
     'sup': count(r'<sup class="mz-ref">', html),
 }
 errs = list(prose_errs)
-if n_cards != 12: errs.append(f"removed {n_cards} cards (want 12)")
-if n_modals != 12: errs.append(f"removed {n_modals} modals (want 12)")
-if n_refli != 12: errs.append(f"removed {n_refli} ref-li (want 12)")
-if n_intro != 1: errs.append(f"intro count line replaced {n_intro}x (want 1)")
+if n_cards != 13: errs.append(f"removed {n_cards} cards (want 13)")
+if n_modals != 13: errs.append(f"removed {n_modals} modals (want 13)")
+if n_refli != 13: errs.append(f"removed {n_refli} ref-li (want 13)")
+if n_recount != 9: errs.append(f"recount edits applied {n_recount}x (want 9)")
 
 # inline prose sups must remain sequential 1..N with no gaps/dupes after renumber
 disp = sorted(int(x) for x in re.findall(r'<sup class="mz-ref"[^>]*data-ref="(\d+)"', html))
@@ -202,8 +287,21 @@ dref = re.findall(r'data-ref="(\d+)"><a href="#mz-ref-\d+">\[(\d+)\]', html)
 mism = [(a, b) for a, b in dref if a != b]
 if mism:
     errs.append(f"data-ref != display-[N] after renumber: {mism}")
-if after['cards'] != before['cards']-12: errs.append("card count mismatch")
-if after['modals'] != before['modals']-12: errs.append("modal count mismatch")
+if after['cards'] != before['cards']-13: errs.append("card count mismatch")
+if after['modals'] != before['modals']-13: errs.append("modal count mismatch")
+
+# no stale totals may remain anywhere in displayed content
+for stale in ['84 peer-reviewed papers', 'All 84 papers', "week's 84 papers",
+              'n = 84):', '<span class="mz-topic-count">13 papers</span>',
+              '<span class="mz-topic-count">16 papers</span>',
+              '<span class="mz-topic-count">4 papers</span>']:
+    if stale in html:
+        errs.append(f"stale count remains: {stale!r}")
+# shape-chart counts must sum to 71
+chart = re.search(r'<div class="mz-shape-chart".*?</div></div>', html, re.DOTALL)
+if chart:
+    s = sum(int(x) for x in re.findall(r'mz-shape-count">(\d+)<', chart.group(0)))
+    if s != 71: errs.append(f"shape-chart counts sum to {s} (want 71)")
 
 # orphan checks: purged pmids must survive ONLY inside the §0.8 KB-anchor
 # manifest comment (immutable provenance/fetch-log audit record of the
@@ -242,11 +340,11 @@ for k in before: print(f"  {k}: {before[k]} -> {after[k]}")
 print(f"removed: cards={n_cards} modals={n_modals} ref_li={n_refli} intro_line={n_intro}")
 print(f"body length: {orig_len} -> {len(html)} (delta {len(html)-orig_len})")
 
-# summary headline "Eighty peer-reviewed papers" -> "Sixty-eight"
+# summary headline "Eighty peer-reviewed papers" -> "Sixty-seven" (80 unique - 13)
 if 'Eighty peer-reviewed papers' in d['summary']:
     d['summary'] = d['summary'].replace('Eighty peer-reviewed papers',
-                                        'Sixty-eight peer-reviewed papers', 1)
-    print("summary headline updated Eighty -> Sixty-eight")
+                                        'Sixty-seven peer-reviewed papers', 1)
+    print("summary headline updated Eighty -> Sixty-seven")
 else:
     print("WARN: summary headline 'Eighty peer-reviewed papers' not found; left as-is")
 
