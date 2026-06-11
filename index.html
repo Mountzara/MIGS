@@ -8242,7 +8242,14 @@
         const heroContent = document.querySelector('.hero-content-delayed');
         const pageLoader = document.getElementById('pageLoader');
         const heroBgStage = document.getElementById('heroBgStage');
-        const ANIMATION_DURATION_MS = 6762; // 161 frames * 42ms
+        // 2026-06-11 — corrected from a stale 6762ms (161 frames) to the
+        // ACTUAL duration of hero-animation-hd-v2.mp4: 193 frames ≈ 8042ms.
+        // The stale value fired the Ken Burns zoom ~1.3s BEFORE the drawing
+        // finished, so the slow zoom started mid-draw instead of on the
+        // settled final frame (user: "supposed to have a ken burns subtle
+        // effect"). Text-cascade delay derives from this, so fixing the
+        // constant restores both to their intended ~55%-through timing.
+        const ANIMATION_DURATION_MS = 8042; // 193 frames @ ~24fps (measured)
 
         function preloadImageURL(url) {
             // Use fetch instead of new Image() — we want the bytes in the HTTP
@@ -8302,18 +8309,31 @@
                         heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
                     }
                     heroVideo.pause();
+                    // Start Ken Burns at the TRUE settle moment (the frame the
+                    // drawing actually finished on), not on a fixed timer that
+                    // can drift from the real video length. The setTimeout
+                    // below remains a backstop for the image-fallback path.
+                    heroVideo.classList.add('ken-burns');
                 }, { once: true });
                 const playPromise = heroVideo.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch(() => {
-                        // Autoplay blocked. Swap to <img src=webp> so the user
-                        // never sees Safari's "tap to play" overlay.
+                        // Autoplay blocked (common on mobile). 2026-06-11 — the
+                        // old fallback was hero-animation-hd.webp, an ANIMATED
+                        // WebP that loops forever and cannot be frozen on its
+                        // last frame, so on phones the drawing replayed
+                        // endlessly (user: "the animation keeps repeating after
+                        // it ends"). Swap to a STATIC final-frame poster instead
+                        // — it shows the settled drawing and the CSS Ken Burns
+                        // applies to it via the setTimeout backstop below, exactly
+                        // matching the play-once-then-zoom behavior of the video
+                        // path. No "tap to play" overlay, no loop.
                         const fallback = document.createElement('img');
                         fallback.className = heroVideo.className;
                         fallback.id = heroVideo.id;
                         fallback.alt = '';
                         fallback.decoding = 'async';
-                        fallback.src = 'https://mountzara.com/media/hero-animation-hd.webp';
+                        fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
                         if (heroVideo.parentNode) {
                             heroVideo.parentNode.replaceChild(fallback, heroVideo);
                         }
@@ -9891,10 +9911,31 @@
                         revealObs.unobserve(e.target);
                     }
                 });
-            }, { threshold: 0, rootMargin: '0px 0px -22% 0px' });
+            // 2026-06-11 — bottom margin loosened from -22% to -8% (matching the
+            // sibling observers above). On short mobile viewports the -22% trim
+            // meant elements in the bottom ~22% of the final scroll position
+            // never crossed the trigger line and stayed stuck at opacity:0
+            // (user: "elegant appear is not working in mobile view"). -8% reveals
+            // them as soon as they're genuinely on screen.
+            }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
             reveals.forEach(el => revealObs.observe(el));
             // Reveal hero title immediately on load (it's already in view)
             if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
+            // Belt-and-suspenders: nothing must ever stay invisible. When the
+            // user reaches the bottom of the page, force-reveal any element the
+            // observer hasn't caught (e.g. very short pages, fast flings on
+            // mobile, or layout shifts that move an element past the root before
+            // a callback fires).
+            const revealRemaining = () => {
+                if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+                    document.querySelectorAll('[data-reveal]:not(.in)').forEach(el => {
+                        el.classList.add('in');
+                        revealObs.unobserve(el);
+                    });
+                    window.removeEventListener('scroll', revealRemaining);
+                }
+            };
+            window.addEventListener('scroll', revealRemaining, { passive: true });
         }
 
         // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
