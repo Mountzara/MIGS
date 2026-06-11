@@ -1033,4 +1033,172 @@ AUTHORED = {
     "prompts": "<ol><li>How does this inform your counseling on ovarian conservation versus removal at benign hysterectomy?</li><li>Where does opportunistic salpingectomy fit for these patients?</li><li>How much should claims-based cancer ascertainment temper the estimate?</li></ol>",
 },
 
+# ============================ POLYCYSTIC OVARY SYNDROME ============================
+
+# Shared PCOS/T2DM immune-inflammatory gene networks — bioinformatics
+"42109727": {
+    "bottom": "Bioinformatics study mining public datasets (GSE34526, GSE25724) for immune/inflammation genes shared between PCOS and type 2 diabetes, with drug prediction and some experimental validation. It supports the well-established PCOS&ndash;T2DM metabolic link at a molecular level but is hypothesis-generating target-discovery, not clinical evidence &mdash; nothing to order or prescribe.",
+    "question": "<strong>The clinical problem.</strong> PCOS and type 2 diabetes are bidirectionally linked, but the shared molecular drivers &mdash; and whether they reveal druggable targets &mdash; are incompletely understood. <strong>The question.</strong> What immune/inflammation-related genes and pathways are shared between PCOS and T2DM, and do they predict candidate therapeutics?",
+    "pico": {
+        "P": "Public PCOS and T2DM transcriptomic datasets (GSE34526, GSE25724).",
+        "I": "Bioinformatic identification of shared differentially-expressed genes; drug prediction.",
+        "C": "Disease vs control groups within datasets.",
+        "O": "Shared immune/inflammatory genes/pathways; candidate drugs; partial experimental validation.",
+        "D": "Bioinformatics with experimental validation.",
+        "S": "Public microarray datasets.",
+    },
+    "methods": "Differential-expression and pathway analysis across public PCOS and T2DM datasets to find shared immune/inflammatory genes, network and drug-prediction analyses, with some experimental validation. In-silico-led, dataset-dependent.",
+    "findings": "The study identifies shared immune/inflammation-related genes and pathways linking PCOS and T2DM and predicts candidate drugs targeting them, with partial experimental corroboration.",
+    "rob": "Preclinical/bioinformatic limits: reliance on small public datasets, batch/heterogeneity effects, and the long gap between predicted targets and clinical utility. Hypothesis-generating only.",
+    "strengths": "Integrates transcriptomic, network, and drug-prediction analyses with some validation to give a mechanistic account of a real clinical comorbidity.",
+    "applicability": "No bedside applicability; relevant only as target discovery for the PCOS&ndash;metabolic axis.",
+    "kb": "Adds molecular detail to the firmly-established PCOS&ndash;T2DM metabolic-comorbidity literature.",
+    "equity": "No population/equity dimension; the clinical reality it reflects &mdash; metabolic comorbidity in PCOS &mdash; has major long-term-health-equity implications.",
+    "monday": "Hold / counsel. Mechanistic bioinformatics &mdash; nothing to order. The actionable clinical reality it underlines is unchanged: screen PCOS patients for metabolic risk and manage T2DM risk proactively.",
+    "prompts": "<ol><li>How aggressively do you screen and manage metabolic risk in your PCOS patients?</li><li>What would move a predicted drug target from bioinformatics toward a trial?</li><li>Does shared inflammatory biology change how you frame PCOS as a systemic condition?</li></ol>",
+},
+
+# AutoPCOS ML diagnostic framework
+"42095178": {
+    "bottom": "Machine-learning proof-of-concept (AutoPCOS) building stepwise multimodal PCOS-prediction models (clinical, +laboratory, +ultrasound) on a public Kaggle dataset, with Random Forest as the primary classifier. It demonstrates a flexible diagnostic-support concept for resource-limited settings, but Kaggle-dataset training and absent external validation mean it is not a clinical tool.",
+    "question": "<strong>The clinical problem.</strong> PCOS diagnosis requires multimodal evaluation (clinical, labs, ultrasound) that is time-consuming, costly, and resource-dependent, limiting access. <strong>The question.</strong> Can a stepwise multimodal machine-learning framework support PCOS risk stratification flexibly based on whatever data are available?",
+    "pico": {
+        "P": "Public Kaggle PCOS dataset (clinical, laboratory, ultrasound features).",
+        "I": "AutoPCOS stepwise multimodal ML (Random Forest primary).",
+        "C": "Logistic regression, SVM, decision tree, and partial-modality models.",
+        "O": "Predictive performance across data-availability tiers.",
+        "D": "Retrospective machine-learning modeling.",
+        "S": "Public dataset (sample per Kaggle source).",
+    },
+    "methods": "Feature categorization into clinical/laboratory/ultrasound modalities, four predictive models by data availability, Random Forest primary with comparator algorithms, evaluated on a public Kaggle dataset. Single open dataset, internal evaluation.",
+    "findings": "The multimodal models supported PCOS risk stratification with performance increasing as more data modalities were added; the framework is designed to function flexibly when only partial data are available.",
+    "rob": "High for clinical deployment. Public Kaggle dataset (quality/provenance limits), no external/prospective validation, and risk of optimistic internal performance. A methods demonstration.",
+    "strengths": "A pragmatic, modality-flexible design aimed at low-resource access, and head-to-head algorithm comparison.",
+    "applicability": "Not clinically usable as-is; conceptually interesting for resource-limited diagnostic support pending real-world validation.",
+    "kb": "Part of the expanding ML-in-gynecology literature, most of which remains proof-of-concept on public datasets.",
+    "equity": "Explicitly motivated by access &mdash; a flexible tool for resource-limited settings &mdash; but Kaggle-trained models risk poor transportability to the very populations they aim to serve.",
+    "monday": "Hold. A proof-of-concept PCOS ML framework on a public dataset &mdash; not a validated diagnostic tool. Continue diagnosing PCOS by established (Rotterdam/guideline) criteria; watch ML diagnostics but demand external validation.",
+    "prompts": "<ol><li>What real-world validation would a PCOS diagnostic-support model need before clinical use?</li><li>Does modality-flexible prediction genuinely help access, or risk under-evaluation?</li><li>How do Kaggle-trained models risk failing in real, diverse populations?</li></ol>",
+},
+
+# AMH-based PCOS diagnostic strategy (JSOG + Rotterdam), n=270
+"42092744": {
+    "bottom": "Japanese nationwide-survey study (270 women with oligomenorrhea and antral follicle count &ge;10) evaluating an AMH cut-off to reclassify PCOS in patients who fail the endocrine-based JSOG 2024 criteria, combining JSOG with Rotterdam/international 2023 criteria. It addresses a real diagnostic-criteria gap: AMH may capture PCOS patients missed by criteria requiring endocrinologic abnormalities.",
+    "question": "<strong>The clinical problem.</strong> PCOS diagnostic criteria differ internationally, and the Japanese (JSOG) criteria require endocrinologic abnormalities, potentially missing patients the Rotterdam/international criteria would capture; AMH (a marker of follicle number) might bridge that gap. <strong>The question.</strong> Does an AMH cut-off, combined with JSOG 2024 and Rotterdam/IEBG 2023 criteria, improve PCOS diagnosis in patients who fail JSOG criteria?",
+    "pico": {
+        "P": "270 women with irregular cycles and antral follicle count &ge; 10 (Japan).",
+        "I": "AMH cut-off (level 2) combined with JSOG 2024 + Rotterdam/IEBG 2023 criteria.",
+        "C": "JSOG 2024 criteria alone.",
+        "O": "Proportion reclassified/diagnosed as PCOS.",
+        "D": "Nationwide cross-sectional survey.",
+        "S": "270.",
+    },
+    "methods": "Nationwide-survey data on 270 patients assessed against JSOG 2024 criteria, with an AMH cut-off applied to those failing JSOG to estimate additional diagnoses under a combined criteria approach. Diagnostic-criteria reclassification study.",
+    "findings": "Of 270, 78.9% met JSOG 2024 criteria via endocrine abnormalities; among the 21.1% who did not, a majority (63.2%) were additionally identified using the AMH cut-off, supporting a combined JSOG + Rotterdam/AMH approach.",
+    "rob": "Moderate. Cross-sectional reclassification without an external gold standard for PCOS, AMH-assay/cut-off standardization concerns, and Japan-specific criteria limit transportability.",
+    "strengths": "Tackles a concrete diagnostic-criteria harmonization problem with a clinically-available marker (AMH) and a nationwide sample.",
+    "applicability": "Most relevant to Japanese practice reconciling JSOG with international criteria; the AMH-as-PCOS-marker concept is broadly topical but assay-dependent.",
+    "kb": "Contributes to the ongoing international PCOS-criteria harmonization debate and the role of AMH within it.",
+    "equity": "Criteria differences create diagnostic inequities across health systems; AMH-assay availability and standardization shape who gets correctly diagnosed.",
+    "monday": "Inform / consider. Reinforces the role of AMH in PCOS diagnosis where standard criteria fall short, within the international move toward harmonized (Rotterdam/IEBG) criteria. Most directly relevant to settings using JSOG criteria; assay standardization is the caveat.",
+    "prompts": "<ol><li>Where does AMH currently fit in your PCOS diagnostic workflow, given assay variability?</li><li>How should differing national criteria be reconciled for consistent diagnosis?</li><li>What are the risks of over-diagnosing PCOS by lowering the diagnostic threshold?</li></ol>",
+},
+
+# ============================ OPERATIVE HYSTEROSCOPY ============================
+
+# Esketamine dose-response on propofol for hysteroscopy — RCT, n=112
+"42112091": {
+    "bottom": "Well-designed randomized, double-blind dose-response RCT (112 women, five esketamine doses 0&ndash;0.4 mg/kg) measuring how esketamine reduces the propofol effect-site concentration needed to suppress movement during cervical dilation in operative hysteroscopy. A rigorous anesthesia-optimization study: esketamine as a propofol-sparing adjunct could reduce the respiratory/hemodynamic risks of deep propofol anesthesia for hysteroscopy.",
+    "question": "<strong>The clinical problem.</strong> Operative hysteroscopy under propofol often requires high propofol concentrations to suppress movement during painful cervical dilation, raising respiratory and hemodynamic risk; a propofol-sparing adjunct would improve safety. <strong>The question.</strong> Does esketamine dose-dependently reduce the propofol effect-site concentration required to suppress cervical-dilation movement during operative hysteroscopy?",
+    "pico": {
+        "P": "112 adult women undergoing elective operative hysteroscopy.",
+        "I": "Esketamine 0.1, 0.2, 0.3, or 0.4 mg/kg before induction.",
+        "C": "Esketamine 0 mg/kg (placebo).",
+        "O": "Propofol effect-site concentration suppressing cervical-dilation movement (dose-response).",
+        "D": "Randomized, double-blind, parallel-group dose-response trial.",
+        "S": "112.",
+    },
+    "methods": "Prospective randomized, double-blind, parallel-group dose-response trial across five esketamine doses with target-controlled propofol infusion, measuring the effect-site concentration suppressing movement at cervical dilation. Strong design for the pharmacodynamic question.",
+    "findings": "The trial quantifies a dose-dependent reduction in required propofol effect-site concentration with increasing esketamine dose, characterizing esketamine&apos;s propofol-sparing effect during hysteroscopic cervical dilation (specific dose-response in the full results).",
+    "rob": "Low for the pharmacodynamic question: randomized, double-blind, placebo-anchored dose-response. Single-center and a surrogate endpoint (movement suppression) rather than patient-centered safety outcomes are the main limits.",
+    "strengths": "Rigorous randomized double-blind dose-response design directly answering a practical anesthesia-safety question for a common gynecologic procedure.",
+    "applicability": "Relevant to anesthesia practice for operative hysteroscopy &mdash; supports esketamine as a propofol-sparing adjunct; informs your anesthesia colleagues more than surgical technique.",
+    "kb": "Adds high-quality dose-response data to the propofol-adjunct/esketamine literature in procedural sedation.",
+    "equity": "Esketamine availability and anesthesia-protocol sophistication vary by setting, affecting who benefits from propofol-sparing techniques.",
+    "monday": "Inform (anesthesia-facing). High-quality evidence that esketamine spares propofol during operative hysteroscopy, potentially improving cardiorespiratory safety. Worth raising with your anesthesia team for hysteroscopy sedation protocols. Not a surgical-technique change.",
+    "prompts": "<ol><li>Could a propofol-sparing adjunct improve safety in your higher-risk hysteroscopy patients?</li><li>Does a movement-suppression surrogate translate to fewer real respiratory/hemodynamic events?</li><li>What esketamine dose best balances propofol sparing against its own side effects?</li></ol>",
+},
+
+# Hysteroscopic evacuation vs Femoston for retained products of conception, n=75
+"42093117": {
+    "bottom": "Prospective comparative study (75 women with retained products of conception after abortion) of hysteroscopic evacuation versus oral estrogen-progestogen (Femoston). The medical (Femoston) group had shorter bleeding, earlier menses, thicker post-treatment endometrium, and fewer adverse outcomes (infection, adhesions). It suggests medical management may be a reasonable, less-invasive first option for selected RPOC &mdash; but allocation was by patient preference, a major bias.",
+    "question": "<strong>The clinical problem.</strong> Retained products of conception after abortion cause bleeding and infection and traditionally prompt instrumental/hysteroscopic evacuation, which risks intrauterine adhesions (Asherman syndrome). A medical alternative could spare the uterus. <strong>The question.</strong> How does hysteroscopic evacuation compare with oral estrogen-progestogen therapy for resolving RPOC and avoiding complications?",
+    "pico": {
+        "P": "75 women with post-abortion retained products of conception.",
+        "I": "Oral estrogen-progestogen therapy (Femoston).",
+        "C": "Hysteroscopic evacuation.",
+        "O": "Bleeding duration, time to menses, endometrial thickness, success, adverse outcomes (infection, adhesions).",
+        "D": "Prospective comparative (preference-allocated).",
+        "S": "75.",
+    },
+    "methods": "Prospective comparison with treatment allocated by informed patient preference (38 Femoston, 37 hysteroscopy), comparing bleeding, menstrual resumption, endometrial thickness, success, and adverse events. Preference-based allocation is the key bias.",
+    "findings": "The Femoston group had shorter bleeding, earlier menstrual resumption, greater post-treatment endometrial thickness, and fewer adverse outcomes (including infection and adhesions); both groups improved clinically.",
+    "rob": "Moderate-to-high. Preference-based (non-randomized) allocation introduces selection bias (likely milder RPOC chose medical management), single-center, and modest sample. The adhesion-avoidance signal is plausible but confounded.",
+    "strengths": "Prospective design addressing a clinically-meaningful trade-off (uterine-sparing medical therapy vs instrumentation and adhesion risk) with relevant endometrial outcomes.",
+    "applicability": "Supports considering medical management for selected, stable RPOC to avoid instrumentation and adhesion risk &mdash; relevant to MIGS/benign gynecology &mdash; with appropriate patient selection.",
+    "kb": "Adds to the RPOC-management literature weighing expectant/medical versus surgical (hysteroscopic) approaches and Asherman-risk mitigation.",
+    "equity": "Access to hysteroscopy versus medical therapy varies; a low-tech oral option could widen access where hysteroscopic resources are limited.",
+    "monday": "Consider / counsel &mdash; MIGS-relevant. For selected stable RPOC, medical management (estrogen-progestogen) may avoid instrumentation and reduce adhesion risk, with faster recovery. Preference-allocated and small, so it informs shared decision-making rather than mandating a switch; hysteroscopic evacuation remains appropriate when indicated.",
+    "prompts": "<ol><li>Which RPOC patients are suitable for medical rather than hysteroscopic management?</li><li>How much does preference-based allocation undermine the comparison?</li><li>How heavily does adhesion (Asherman) risk weigh in your RPOC management choice?</li></ol>",
+},
+
+# ============================ ICG FLUORESCENCE IN GYNECOLOGIC SURGERY ============================
+# (Pelvic reconstructive / bowel-bladder cases relevant to complex MIGS technique transfer.)
+
+# Robot-assisted sigmoid colon conduit urinary diversion — case report
+"42119081": {
+    "bottom": "Single case report of a single-stage robot-assisted sigmoid-colon-conduit urinary diversion that avoids bowel anastomosis, in a 46-year-old with a devastating post-radiation pelvis (rectovaginal fistula with loop colostomy, bilateral ureteral strictures, radiation cystitis, parastomal hernia). It is squarely in the complex-MIGS technique-transfer space &mdash; ureteric and bladder reconstruction in the irradiated pelvis is exactly the deep-endometriosis/oncologic terrain MIGS surgeons enter, and minimally-invasive diversion that avoids a bowel anastomosis is a useful conceptual tool.",
+    "question": "<strong>The clinical problem.</strong> Late radiation injury after pelvic-malignancy treatment can require both urinary and fecal diversion, and a standard ileal conduit adds a bowel anastomosis with its leak risk &mdash; especially hazardous in a frail, irradiated, multiply-operated pelvis. <strong>The question.</strong> Can a robot-assisted sigmoid-colon-conduit urinary diversion provide effective diversion while avoiding a new bowel anastomosis?",
+    "pico": {
+        "P": "46-year-old woman with prior pelvic chemoradiation and severe genitourinary/GI sequelae.",
+        "I": "Single-stage robot-assisted sigmoid colon conduit urinary diversion (using existing colostomy limb).",
+        "C": "None (case report).",
+        "O": "Feasibility; avoidance of bowel anastomosis; morbidity.",
+        "D": "Single case report.",
+        "S": "n = 1.",
+    },
+    "methods": "Descriptive single case report detailing the clinical course and a single-stage robotic sigmoid-colon-conduit diversion leveraging a pre-existing loop colostomy to avoid a new bowel anastomosis. Technique illustration, no comparator.",
+    "findings": "The report demonstrates feasibility of a minimally-invasive sigmoid-colon-conduit urinary diversion that avoids bowel anastomosis in a hostile, irradiated pelvis, proposing reduced morbidity for frail/previously-irradiated patients.",
+    "rob": "n=1; feasibility/illustrative only, with publication bias toward successful novel reconstructions. No outcome rate or comparison.",
+    "strengths": "A clever reconstructive solution to a genuinely hard problem, demonstrating minimally-invasive feasibility where morbidity is otherwise high.",
+    "applicability": "Conceptually relevant to complex MIGS and gyn-onc reconstruction in the irradiated/hostile pelvis &mdash; the ureteric/bladder-reconstruction skill set MIGS surgeons share with urology in deep endometriosis and oncologic cases.",
+    "kb": "Sits in the complex pelvic-reconstruction literature; reinforces that minimally-invasive diversion avoiding bowel anastomosis is feasible in selected hostile pelvises.",
+    "equity": "Robotic reconstructive expertise for these rare, complex cases is concentrated in tertiary centers, limiting access for affected patients.",
+    "monday": "Watch / counsel &mdash; complex-MIGS adjacent. Not an everyday technique, but a useful conceptual tool for the irradiated/hostile pelvis: minimally-invasive urinary diversion avoiding a bowel anastomosis. Relevant to the ureteric/bladder-reconstruction skills MIGS surgeons draw on in deep endometriosis and oncologic work; refer or collaborate with reconstructive urology for these cases.",
+    "prompts": "<ol><li>When does avoiding a bowel anastomosis justify a more complex diversion in an irradiated pelvis?</li><li>How do you build the ureteric/bladder-reconstruction collaboration (urology) your complex deep-endometriosis cases need?</li><li>What makes a frail, irradiated patient a candidate for a minimally-invasive versus open reconstruction?</li></ol>",
+},
+
+# APR vs LAR morbidity/mortality in rectal cancer — retrospective, n=226
+"42112223": {
+    "bottom": "Single-center retrospective cohort (226 rectal-cancer patients) comparing abdominoperineal resection (APR) with low anterior resection (LAR), focused on postoperative sepsis/septic complications. APR trended toward higher septic complications (wide, non-significant CIs). For MIGS, the relevance is technique-transfer: deep-infiltrating-endometriosis bowel work spans the same low-rectal resection spectrum, and the resection-level morbidity gradient informs how aggressively to take the bowel.",
+    "question": "<strong>The clinical problem.</strong> The choice and level of rectal resection (APR for very low tumors vs sphincter-preserving LAR) carries different septic-complication and morbidity profiles, which matter wherever low-rectal surgery is performed &mdash; including bowel-endometriosis resection. <strong>The question.</strong> What are the risk factors for, and the comparative rates of, postoperative septic complications after APR versus LAR for rectal cancer?",
+    "pico": {
+        "P": "226 rectal-cancer patients undergoing surgery (2018&ndash;2023).",
+        "I": "Abdominoperineal resection (tumors &lt; 5 cm from anal verge).",
+        "C": "Low anterior resection.",
+        "O": "Early/late/overall septic complications (fistula, abscess); morbidity/mortality.",
+        "D": "Retrospective cohort.",
+        "S": "226.",
+    },
+    "methods": "Single-center retrospective cohort comparing APR and LAR with analysis of septic-complication risk factors (age, comorbidity, approach, tumor location). Observational, with confounding by tumor level (APR reserved for lowest tumors).",
+    "findings": "APR was associated with higher odds of early (OR 1.84), late (OR 2.75), and overall septic complications, but the confidence intervals were wide and crossed 1 (not statistically significant), reflecting limited power; the resection-level morbidity gradient is directional.",
+    "rob": "Moderate-to-high. Retrospective, single-center, underpowered (non-significant wide CIs), and inherently confounded because APR is selected for the lowest, most adverse tumors. Directional rather than definitive.",
+    "strengths": "Addresses a clinically-relevant morbidity gradient by resection level with explicit septic-complication endpoints.",
+    "applicability": "For colorectal surgery directly; for MIGS, relevant as technique-transfer &mdash; informs how the resection level in low-rectal/bowel-endometriosis surgery relates to septic morbidity and informs how aggressively to resect.",
+    "kb": "Consistent with the colorectal literature that lower, more radical rectal resections carry higher septic morbidity; the MIGS relevance is the shared low-pelvic bowel-surgery terrain in deep endometriosis.",
+    "equity": "Single-center; access to sphincter-preserving (LAR) versus APR and to specialized colorectal collaboration affects outcomes and quality of life.",
+    "monday": "Inform &mdash; complex-MIGS adjacent. Not gynecologic per se, but the resection-level morbidity gradient is directly relevant when planning bowel resection for deep infiltrating endometriosis (shaving vs discoid vs segmental/low-anterior resection): lower, more radical resections carry more septic morbidity. Reinforces multidisciplinary planning with colorectal surgery.",
+    "prompts": "<ol><li>How does the resection-level morbidity gradient inform your shaving-vs-discoid-vs-segmental decision in bowel endometriosis?</li><li>When do you involve colorectal surgery, and how early?</li><li>How do you weigh radicality against septic-complication and quality-of-life risk in low-rectal endometriosis?</li></ol>",
+},
+
 }
