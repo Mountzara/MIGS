@@ -76,16 +76,27 @@ Two load-bearing facts:
 
 ## 4. The plan
 
-### Phase 0 — Build the APPLY tool (Claude can do this now, on-VM)
+### Phase 0 — Build the APPLY tool (Claude can do this now, on-VM) ✅ DONE
 `scripts/_authoring/apply_authored.py`: given an authored mapping (the
 `w21_authored.py` shape) + a post's `body_html`, replace each pending section's
 `mz-jc-pending` block with the authored markup, keyed by `dd-<PMID>-<section>`.
-Integrity checks mirror the purge scripts:
-- every targeted section existed and was pending before, authored after;
-- no `mz-jc-pending` left for any PMID/section the mapping claims to cover;
-- modal/section counts and tag balance unchanged;
-- a dry-run diff for clinician review before any R2 upload.
+Handles the five judgment sections (`bottom`, `monday`, `pico` P/I/C/O,
+`question`, `equity`); strips the section's pending class + the "PENDING REVIEW"
+h3 badge. Integrity checks mirror the purge scripts:
+- modal/section counts unchanged (edits in place, never adds/removes);
+- tag balance preserved across section/p/dl/dt/dd/dialog;
+- every applied (PMID, section) carries no pending tag afterward;
+- **DRY-RUN by default** — prints a per-section diff and writes nothing; `--apply`
+  writes a new JSON but still never uploads to R2 (deploy stays a separate,
+  explicit, post-sign-off step).
 This tool only ever *applies* accepted content — it generates nothing.
+
+**Dry-run finding (2026-06-11):** running it against `w21_authored.py` applies
+231 sections (bottom/monday/pico × 95 PMIDs minus the 3 purged off-topic ones,
+correctly skipped) and leaves **zero pending content sections** — the only
+residual `mz-jc-pending` strings are the CSS selectors in the `<style>` block.
+So W21 is one clinician sign-off away from fully-authored on those three
+sections. NOT applied — `w21_authored.py` is still an un-certified WIP draft.
 
 ### Phase 1 — W21 (drafted → done)
 1. Clinician (Chris) reviews `w21_authored.py` as drafts and accepts/edits —
