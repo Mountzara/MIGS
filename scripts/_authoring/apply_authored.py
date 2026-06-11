@@ -61,19 +61,19 @@ def _load_authored(path: str) -> dict:
 
 def _find_section(body: str, pmid: str, section: str) -> tuple[int, int, str] | None:
     """Return (start, end, html) of the <section …id="dd-<PMID>-<section>">…</section>
-    block, or None. Matches the single section element (no nesting of <section>
-    inside these blocks)."""
+    block, or None. Matches across all three template eras (mz-jc-section for
+    W20/W21, dd-section for W23/W24)."""
     pat = re.compile(
-        rf'<section class="mz-jc-section[^"]*" id="dd-{re.escape(pmid)}-{section}">.*?</section>',
+        rf'<section class="(?:mz-jc-section|dd-section)[^"]*" id="dd-{re.escape(pmid)}-{section}">.*?</section>',
         re.DOTALL)
     m = pat.search(body)
     return (m.start(), m.end(), m.group(0)) if m else None
 
 
 def _strip_pending(block: str) -> str:
-    """Remove the pending class token (W21) and any pending badge/placeholder
-    span (W20 and W21), so an applied section carries no pending marker."""
-    block = re.sub(r'(<section class="mz-jc-section[^"]*?)\s*' + PENDING_CLASS + r'(["\s])',
+    """Remove the pending class token (W21/W23/W24) and any pending badge/
+    placeholder span, so an applied section carries no pending marker."""
+    block = re.sub(r'(<section class="(?:mz-jc-section|dd-section)[^"]*?)\s*' + PENDING_CLASS + r'(["\s])',
                    r'\1\2', block, count=1)
     block = PENDING_PLACEHOLDER_RE.sub('', block)
     return block
@@ -89,12 +89,14 @@ def _apply_text(block: str, content: str) -> tuple[str, bool]:
     - Block-level content (starts with <ul>/<ol>/<dl>/…, e.g. discussion prompts)
       → replace the ENTIRE following <p>…</p> placeholder with the block so we
       never nest a block inside <p> (invalid HTML)."""
+    # Optional wrapper between <h3> and the content <p> (W23/W24: <div class="dd-body">).
+    after_h3 = r'(<h3\b.*?</h3>\s*(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?'
     if _BLOCK_START.match(content):
-        pat = re.compile(r'(<h3\b.*?</h3>\s*)<p\b[^>]*>.*?</p>', re.DOTALL)
+        pat = re.compile(after_h3 + r')<p\b[^>]*>.*?</p>', re.DOTALL)
         if not pat.search(block):
             return block, False
         return pat.sub(lambda m: m.group(1) + content, block, count=1), True
-    pat = re.compile(r'(<h3\b.*?</h3>\s*<p\b[^>]*>).*?(</p>)', re.DOTALL)
+    pat = re.compile(after_h3 + r'<p\b[^>]*>).*?(</p>)', re.DOTALL)
     if not pat.search(block):
         return block, False
     return pat.sub(lambda m: m.group(1) + content + m.group(2), block, count=1), True
@@ -126,8 +128,11 @@ def _apply_pico(block: str, fields: dict) -> tuple[str, bool]:
                 block = pat.sub(lambda m: m.group(1) + text + m.group(2), block, count=1)
                 ok_any = True
         return block, ok_any
-    # bare-<p> placeholder: replace the whole content <p>…</p> with the <dl>
-    pat = re.compile(r'(<h3\b.*?</h3>\s*)<p\b[^>]*>.*?</p>', re.DOTALL)
+    # bare-<p> placeholder: replace the whole content <p>…</p> with the <dl>.
+    # Allow an optional dd-body wrapper (W23/W24) between <h3> and the <p>.
+    pat = re.compile(
+        r'(<h3\b.*?</h3>\s*(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?)<p\b[^>]*>.*?</p>',
+        re.DOTALL)
     if not pat.search(block):
         return block, False
     dl = _build_pico_dl(fields)
