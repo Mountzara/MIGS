@@ -266,6 +266,12 @@
             50%  { transform: scale(1.06) translate(-1.5%, 1%); opacity: 1; }
             100% { transform: scale(1.02) translate(1.5%, -1%); opacity: 0.92; }
         }
+        @media (prefers-reduced-motion: reduce) {
+            .cinematic-intro .intro-gradient,
+            .cinematic-intro .intro-color {
+                animation: none;
+            }
+        }
         .cinematic-intro .intro-tint {
             position: absolute;
             inset: 0;
@@ -853,6 +859,24 @@
             line-height: 1.65;
             color: var(--gray-2);
             margin: 0;
+        }
+        .curriculum-consult-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            background: rgba(167, 139, 250, 0.22);
+            border: 1px solid rgba(167, 139, 250, 0.55);
+            color: #fff;
+            border-radius: 999px;
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.22s ease;
+        }
+        .curriculum-consult-link:hover {
+            background: rgba(167, 139, 250, 0.34);
+            border-color: rgba(167, 139, 250, 0.8);
         }
         .curriculum-cta {
             margin-top: 48px;
@@ -7860,7 +7884,7 @@
                 <div class="curriculum-cta-inner">
                     <h3>Curriculum design consulting available.</h3>
                     <p>Curriculum design grounded in Malcolm Knowles' Adult Learning Theory, David Kolb's Experiential Learning Cycle, Robert Gagné's Nine Events of Instruction, and Dick & Carey's systems approach. Engagements range from a curriculum audit to a full multi-year fellowship build — for fellowships, residencies, and clinician training programs.</p>
-                    <p style="margin-top: 18px;"><a href="/curriculum/" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; background: rgba(167, 139, 250, 0.22); border: 1px solid rgba(167, 139, 250, 0.55); color: #fff; border-radius: 999px; font-weight: 500; font-size: 14px; text-decoration: none; transition: all 0.22s ease;">Explore curriculum consulting →</a></p>
+                    <p style="margin-top: 18px;"><a href="/curriculum/" class="curriculum-consult-link">Explore curriculum consulting →</a></p>
                 </div>
             </div>
         </div>
@@ -9718,6 +9742,18 @@
             // Excellence cite + research extras
             { sel: '.excellence-cite-divider', kind: 'fade' },
             { sel: '.aagl-divider', kind: 'fade' },
+            // Coverage gaps (2026-06-11 audit): elements that previously
+            // never revealed — about stats, safety record, hub tiles,
+            // identity cards, curriculum cards/CTA.
+            { sel: '.stats-row > *', kind: 'up' },
+            { sel: '.zero-eyebrow', kind: 'up' },
+            { sel: '.zero-card', kind: 'scale' },
+            { sel: '.surgical-hub-eyebrow', kind: 'up' },
+            { sel: '.hub-tile', kind: 'scale' },
+            { sel: '.identity-card', kind: 'scale' },
+            { sel: '.curriculum-card', kind: 'scale' },
+            { sel: '.curriculum-grid > *', kind: 'scale' },
+            { sel: '.curriculum-cta-inner', kind: 'up' },
         ];
         revealMap.forEach(({ sel, kind }) => {
             document.querySelectorAll(sel).forEach((el) => {

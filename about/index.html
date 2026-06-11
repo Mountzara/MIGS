@@ -1671,6 +1671,7 @@
         }, { threshold: 0.08 });
 
         document.querySelectorAll('.chapter, .pull-quote, .interlude, .closing').forEach(el => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             el.classList.add('reveal');
             observer.observe(el);
         });
