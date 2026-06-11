@@ -178,7 +178,7 @@ AUTHORED = {
 # COH protocols adenomyosis IVF — retrospective, n=1486
 "42120313": {
     "bottom": "Real-world retrospective of 1,486 IVF-ET cycles in adenomyosis: the long/ultra-long (and short-acting long) protocols gave the best fresh-cycle and cumulative pregnancy rates, while the antagonist protocol underperformed overall — EXCEPT in women &lt;35 with normal AMH, where antagonist matched long protocols using far less gonadotropin. A protocol-individualization signal for the adenomyosis-IVF patient.",
-    "monday": "Counsel / refer. For reproductive-endocrinology colleagues and for counseling adenomyosis patients pursuing IVF: long/ultra-long down-regulation remains the higher-yield default, but young normal-reserve patients can reasonably use a gentler antagonist protocol without sacrificing cumulative success. Not a MIGS procedural change — a fertility-pathway counseling point.",
+    "monday": "Counsel / refer. For reproductive-endocrinology colleagues and for counseling adenomyosis patients pursuing IVF: long/ultra-long down-regulation remains the higher-yield default, but young normal-reserve patients can reasonably use a gentler antagonist protocol without sacrificing cumulative success. Not a CBG/MIGS procedural change — a fertility-pathway counseling point.",
     "pico": {
         "P": "Adenomyosis patients undergoing IVF-ET (1,486 cycles, 2018-2021).",
         "I": "Long / ultra-long and short-acting long controlled-ovarian-hyperstimulation protocols.",
@@ -456,7 +456,7 @@ AUTHORED = {
 # CC/letrozole antagonist protocols — retrospective, n=565
 "42130742": {
     "bottom": "Retrospective IVF cohort (565 cycles): modified antagonist protocols adding clomiphene or letrozole shortened gonadotropin duration and cut total gonadotropin dose and antagonist use versus conventional antagonist, in normal-reserve patients. A cost- and OHSS-conscious stimulation refinement — pregnancy outcomes need the full text to confirm non-inferiority.",
-    "monday": "Counsel — REI-facing. Supports oral-agent-augmented (CC or letrozole) antagonist protocols as a gonadotropin-sparing, potentially OHSS-reducing option in normal-reserve IVF. A stimulation-protocol consideration for reproductive endocrinology, not a MIGS practice change.",
+    "monday": "Counsel — REI-facing. Supports oral-agent-augmented (CC or letrozole) antagonist protocols as a gonadotropin-sparing, potentially OHSS-reducing option in normal-reserve IVF. A stimulation-protocol consideration for reproductive endocrinology, not a CBG/MIGS practice change.",
     "pico": {
         "P": "565 IVF/ICSI cycles in patients with normal ovarian reserve.",
         "I": "Antagonist protocol combined with clomiphene (n=217) or letrozole (n=148).",
@@ -526,7 +526,7 @@ AUTHORED = {
 # Psychiatric history & IUI distress — n=90
 "42117558": {
     "bottom": "Cross-sectional study (n=90): 37% of women starting IUI had a lifetime Axis I disorder (mostly mood/anxiety), and those women reported significantly higher baseline depression and stress. Argues for psychological screening at the start of fertility treatment, when distress is already elevated.",
-    "monday": "Counsel / screen. Reasonable to incorporate brief psychological screening at fertility-treatment onset, since a third of patients carry a psychiatric history that predicts higher treatment-related distress. Low-cost, supports timely mental-health referral. Not a MIGS change.",
+    "monday": "Counsel / screen. Reasonable to incorporate brief psychological screening at fertility-treatment onset, since a third of patients carry a psychiatric history that predicts higher treatment-related distress. Low-cost, supports timely mental-health referral. Not a CBG/MIGS change.",
     "pico": {
         "P": "90 women initiating intrauterine insemination at an academic center.",
         "I": "Structured psychiatric interview (SCID) plus BDI/PSS distress measures.",
@@ -1282,8 +1282,8 @@ AUTHORED = {
 
 # NIR-II ICG bowel perfusion — n=17 (relevant to bowel-endometriosis anastomosis assessment)
 "42126680": {
-    "bottom": "Surgical study (17 cases): intraoperative NIR-II ICG fluorescence angiography assessed bowel vascular morphology and inflammatory severity, giving clearer microvascular visualization than NIR-I (higher signal-to-background) and correlating with histopathologic inflammatory grade. Directly relevant to the MIGS surgeon who resects bowel for deep infiltrating endometriosis — ICG perfusion assessment of the bowel segment and anastomosis is exactly this technology, and NIR-II promises deeper, cleaner perfusion mapping than the NIR-I/ICG we use today.",
-    "monday": "Watch / counsel. For bowel-endometriosis work — segmental resection, discoid excision, low anterior resection — ICG fluorescence angiography to confirm anastomotic perfusion is already an established adjunct, and NIR-II is the next-generation upgrade worth tracking. Not yet a change to your perfusion-assessment workflow, but squarely within MIGS bowel-surgery practice rather than a curiosity.",
+    "bottom": "Surgical study (17 cases): intraoperative NIR-II ICG fluorescence angiography assessed bowel vascular morphology and inflammatory severity, giving clearer microvascular visualization than NIR-I (higher signal-to-background) and correlating with histopathologic inflammatory grade. Directly relevant to the CBG/MIGS surgeon who resects bowel for deep infiltrating endometriosis — ICG perfusion assessment of the bowel segment and anastomosis is exactly this technology, and NIR-II promises deeper, cleaner perfusion mapping than the NIR-I/ICG we use today.",
+    "monday": "Watch / counsel. For bowel-endometriosis work — segmental resection, discoid excision, low anterior resection — ICG fluorescence angiography to confirm anastomotic perfusion is already an established adjunct, and NIR-II is the next-generation upgrade worth tracking. Not yet a change to your perfusion-assessment workflow, but squarely within CBG/MIGS bowel-surgery practice rather than a curiosity.",
     "pico": {
         "P": "17 children with Hirschsprung's disease undergoing pull-through surgery.",
         "I": "Intraoperative NIR-II ICG fluorescence angiography.",
@@ -1294,10 +1294,10 @@ AUTHORED = {
     },
 },
 
-# Robot sigmoid conduit urinary diversion — case report (relevant to MIGS urinary-tract work)
+# Robot sigmoid conduit urinary diversion — case report (relevant to CBG/MIGS urinary-tract work)
 "42119081": {
-    "bottom": "Case report of robot-assisted sigmoid colon conduit urinary diversion that avoided a bowel anastomosis in a patient with prior loop colostomy and pelvic radiation — 95-minute operative time, 100 mL blood loss, oral intake on POD1, discharge POD3, preserved renal function with no obstruction at 6 months. Relevant to the complex MIGS surgeon: urinary-tract reconstruction in the irradiated/frozen pelvis is the same territory we enter for ureterolysis, ureteral reimplantation, and bladder resection in deep endometriosis.",
-    "monday": "Counsel / technique-awareness. For the hostile post-radiation or severe-endometriosis pelvis, a robotic anastomosis-sparing diversion is a reconstructive option worth knowing for multidisciplinary planning with urology. A single case, so awareness rather than a protocol change — but firmly within the bowel/bladder/ureter scope of complex MIGS.",
+    "bottom": "Case report of robot-assisted sigmoid colon conduit urinary diversion that avoided a bowel anastomosis in a patient with prior loop colostomy and pelvic radiation — 95-minute operative time, 100 mL blood loss, oral intake on POD1, discharge POD3, preserved renal function with no obstruction at 6 months. Relevant to the complex CBG/MIGS surgeon: urinary-tract reconstruction in the irradiated/frozen pelvis is the same territory we enter for ureterolysis, ureteral reimplantation, and bladder resection in deep endometriosis.",
+    "monday": "Counsel / technique-awareness. For the hostile post-radiation or severe-endometriosis pelvis, a robotic anastomosis-sparing diversion is a reconstructive option worth knowing for multidisciplinary planning with urology. A single case, so awareness rather than a protocol change — but firmly within the bowel/bladder/ureter scope of complex CBG/MIGS.",
     "pico": {
         "P": "Patient with prior loop colostomy and pelvic radiation needing urinary diversion.",
         "I": "Robot-assisted sigmoid colon conduit (no bowel anastomosis).",
@@ -1324,7 +1324,7 @@ AUTHORED = {
 
 # APR vs LAR rectal resection morbidity — retrospective, n=226 (relevant to bowel-endometriosis surgery)
 "42112223": {
-    "bottom": "Retrospective study (226 patients): abdominoperineal resection trended toward higher post-operative septic complications (fistula, abscess) than low anterior resection, though the confidence intervals crossed 1. Relevant to the MIGS surgeon operating on rectal/rectosigmoid deep infiltrating endometriosis — the resection-level morbidity gradient (and its septic-complication drivers: comorbidity, tumor/lesion height, surgical approach) informs how we counsel and plan segmental low rectal resection vs. more conservative disc/shave techniques.",
+    "bottom": "Retrospective study (226 patients): abdominoperineal resection trended toward higher post-operative septic complications (fistula, abscess) than low anterior resection, though the confidence intervals crossed 1. Relevant to the CBG/MIGS surgeon operating on rectal/rectosigmoid deep infiltrating endometriosis — the resection-level morbidity gradient (and its septic-complication drivers: comorbidity, tumor/lesion height, surgical approach) informs how we counsel and plan segmental low rectal resection vs. more conservative disc/shave techniques.",
     "monday": "Counsel / surgical-planning. The takeaway for bowel-endometriosis surgery: lower, more radical rectal resections carry a higher septic-complication burden, which strengthens the case for the least-aggressive adequate technique (shave or discoid over segmental where disease allows) and for multidisciplinary planning with colorectal surgery on low lesions. Context for shared decision-making, not a single-paper practice change.",
     "pico": {
         "P": "226 rectal-cancer patients undergoing APR or LAR (2018-2023).",

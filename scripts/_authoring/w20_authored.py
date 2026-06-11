@@ -167,7 +167,7 @@ AUTHORED = {
     "findings": "The short-acting long protocol had the highest live-birth (47.9%) and cumulative pregnancy (68.8%) rates. The antagonist protocol had lower fresh-cycle, live-birth, and cumulative rates than long/ultra-long overall; protocol independently predicted outcomes. In patients &lt;35 with AMH &ge; 1.2, antagonist matched long protocol with less gonadotropin.",
     "rob": "Moderate. Retrospective and non-randomized, so protocol selection likely tracks prognosis (confounding by indication); cycle-level counting can double-count patients; single-center practice patterns limit transport. Regression adjustment mitigates but cannot remove allocation bias.",
     "strengths": "Large real-world sample, clinically-relevant cumulative endpoints, multivariable adjustment, and an actionable age/reserve subgroup that nuances a one-size answer.",
-    "applicability": "Directly relevant to REI and to MIGS surgeons co-managing adenomyosis fertility patients, with a practical message for protocol selection by prognosis.",
+    "applicability": "Directly relevant to REI and to CBG/MIGS surgeons co-managing adenomyosis fertility patients, with a practical message for protocol selection by prognosis.",
     "kb": "Adds a sizable real-world dataset to the contested adenomyosis-IVF protocol literature, broadly supporting long down-regulation while refining the antagonist niche.",
     "equity": "Single-center cohort without socioeconomic or ancestry detail. Gonadotropin cost is an equity lever the subgroup finding highlights &mdash; an antagonist option with less drug could widen access for younger good-prognosis patients.",
     "monday": "Counsel / inform (REI-facing). For adenomyosis patients in IVF, long/ultra-long protocols remain the better-outcome default, but younger patients with normal ovarian reserve can reasonably use an antagonist protocol with less gonadotropin and similar cumulative results. It&apos;s retrospective, so hypothesis-supporting rather than definitive.",
@@ -224,7 +224,7 @@ AUTHORED = {
 
 # Negative laparoscopy for pelvic pain by training level, n=1309
 "42104671": {
-    "bottom": "Five-year retrospective cohort (1,309 women) of laparoscopy for pelvic pain. The negative-laparoscopy rate was 13% overall but 2.5&times; higher among non-fellowship-trained gynecologists than fellowship-trained ones (OR 2.48), and there was a 56% discordance between intraoperative visual impression and histopathology. It is a strong argument for both fellowship-level (MIGS) training and routine biopsy in pelvic-pain laparoscopy.",
+    "bottom": "Five-year retrospective cohort (1,309 women) of laparoscopy for pelvic pain. The negative-laparoscopy rate was 13% overall but 2.5&times; higher among non-fellowship-trained gynecologists than fellowship-trained ones (OR 2.48), and there was a 56% discordance between intraoperative visual impression and histopathology. It is a strong argument for both fellowship-level (CBG/MIGS) training and routine biopsy in pelvic-pain laparoscopy.",
     "question": "<strong>The clinical problem.</strong> Laparoscopy for pelvic pain that returns &apos;negative&apos; carries real surgical morbidity, cost, and diagnostic dead-ends &mdash; and a visually &apos;normal&apos; pelvis may still harbor biopsy-proven endometriosis. <strong>The question.</strong> What is the incidence of negative laparoscopy for pelvic pain, and does it vary by surgeon training level and the use of biopsy?",
     "pico": {
         "P": "1,309 women undergoing laparoscopy for pelvic pain (Australian tertiary public + private).",
@@ -238,10 +238,10 @@ AUTHORED = {
     "findings": "174/1,309 (13%) were negative. Non-fellowship-trained surgeons had a higher negative rate (OR 2.48, 95% CI 1.76&ndash;3.43). Visually-negative-only assessments (no biopsy) were concentrated in the public sector and among non-fellowship surgeons; visual-histologic findings were discordant in 56% of cases.",
     "rob": "Moderate. Retrospective and single-network, with case-mix and referral differences between fellowship and non-fellowship surgeons that could partly explain the gap. The biopsy-discordance finding is, however, hard to explain away and is the most actionable result.",
     "strengths": "Large, multi-year, real-world surgical cohort directly comparing training levels and biopsy practice, with a clinically piercing discordance statistic that reframes &apos;visual&apos; diagnosis.",
-    "applicability": "Highly applicable to MIGS practice and referral patterns &mdash; it supports biopsy-confirmed assessment and fellowship-level surgery for complex pelvic pain.",
-    "kb": "Reinforces the established teaching that visual-only laparoscopy under-detects and misclassifies endometriosis, and links diagnostic yield to surgeon training &mdash; central to the case for MIGS subspecialization.",
+    "applicability": "Highly applicable to CBG/MIGS practice and referral patterns &mdash; it supports biopsy-confirmed assessment and fellowship-level surgery for complex pelvic pain.",
+    "kb": "Reinforces the established teaching that visual-only laparoscopy under-detects and misclassifies endometriosis, and links diagnostic yield to surgeon training &mdash; central to the case for CBG/MIGS subspecialization.",
     "equity": "The public-vs-private and training-level gradient is itself an access-equity finding: patients in the public sector were more likely to receive visual-only, lower-yield laparoscopy &mdash; a disparity in diagnostic quality.",
-    "monday": "Change / reinforce &mdash; squarely MIGS. Two actionable points: take biopsies (visual-only assessment missed or misclassified disease in over half of cases), and recognize that negative-laparoscopy rates are training-dependent &mdash; a concrete argument for referring complex pelvic pain to fellowship-trained surgeons. It validates biopsy-confirmed excisional practice over &apos;look and see.&apos;",
+    "monday": "Change / reinforce &mdash; squarely CBG/MIGS. Two actionable points: take biopsies (visual-only assessment missed or misclassified disease in over half of cases), and recognize that negative-laparoscopy rates are training-dependent &mdash; a concrete argument for referring complex pelvic pain to fellowship-trained surgeons. It validates biopsy-confirmed excisional practice over &apos;look and see.&apos;",
     "prompts": "<ol><li>Should biopsy of a visually &apos;normal&apos; pelvis be standard in every pelvic-pain laparoscopy?</li><li>How should this training-level gradient influence referral pathways for complex pelvic pain?</li><li>What share of the negative-laparoscopy gap is training versus case selection, and how would you test that?</li></ol>",
 },
 
@@ -383,7 +383,7 @@ AUTHORED = {
     "applicability": "Relevant to embryology-lab practice and REI; the intermediate-endpoint gains support microfluidic adoption pending clearer live-birth data.",
     "kb": "Adds a large dataset to the contested microfluidic-vs-gradient literature, favoring microfluidic preparation on laboratory endpoints.",
     "equity": "Cost of microfluidic devices versus standard gradient prep is an access consideration for clinics and self-funded patients, unaddressed here.",
-    "monday": "Inform (REI/lab-facing). Evidence favoring microfluidic sperm sorting on lab endpoints (less DNA fragmentation, more blastocysts), but it&apos;s retrospective and the live-birth advantage isn&apos;t established. A consideration for lab protocols, not a MIGS-surgical issue.",
+    "monday": "Inform (REI/lab-facing). Evidence favoring microfluidic sperm sorting on lab endpoints (less DNA fragmentation, more blastocysts), but it&apos;s retrospective and the live-birth advantage isn&apos;t established. A consideration for lab protocols, not a CBG/MIGS-surgical issue.",
     "prompts": "<ol><li>Do intermediate gains in blastulation justify the added cost of microfluidic sorting without a clear live-birth benefit?</li><li>How much should retrospective allocation temper enthusiasm here?</li><li>Which patients (e.g., high sperm DNA fragmentation) might benefit most?</li></ol>",
 },
 
@@ -475,7 +475,7 @@ AUTHORED = {
     "applicability": "Directly relevant to FET laboratory/clinical protocols; supports tailoring progesterone duration to blastocyst expansion stage for day-6 embryos.",
     "kb": "Refines the endometrial-receptivity/synchrony literature by adding an embryo-stage dimension to progesterone-exposure timing.",
     "equity": "No explicit equity dimension; protocol optimization is broadly applicable across FET programs.",
-    "monday": "Inform (REI-facing). A nuance for FET timing: for early-stage day-6 blastocysts, longer (day-7) progesterone exposure may reduce live birth, so match progesterone duration to expansion stage. Retrospective, so confirmatory data would help. Not a MIGS issue.",
+    "monday": "Inform (REI-facing). A nuance for FET timing: for early-stage day-6 blastocysts, longer (day-7) progesterone exposure may reduce live birth, so match progesterone duration to expansion stage. Retrospective, so confirmatory data would help. Not a CBG/MIGS issue.",
     "prompts": "<ol><li>How robust is a pre-specified interaction effect in a retrospective cohort, and would you change protocols on it?</li><li>How might embryo-stage-specific progesterone timing be tested prospectively?</li><li>What other synchrony variables interact with progesterone duration?</li></ol>",
 },
 
@@ -567,7 +567,7 @@ AUTHORED = {
     "applicability": "Relevant to male-infertility and ART counseling, especially unexplained infertility or recurrent loss with normal semen analysis; assay/threshold variability tempers direct application.",
     "kb": "Consolidates the SDF literature at a moment of rising clinical use and partial guideline recognition; standardization remains the open problem.",
     "equity": "Assay availability and cost vary widely, so access to SDF testing &mdash; and to interventions if abnormal &mdash; is uneven; not addressed directly.",
-    "monday": "Inform (REI/andrology-facing). SDF testing is worth considering in unexplained infertility or recurrent loss with normal semen analysis, but assay and threshold variability limit how decisively it changes management. Not a MIGS-surgical issue.",
+    "monday": "Inform (REI/andrology-facing). SDF testing is worth considering in unexplained infertility or recurrent loss with normal semen analysis, but assay and threshold variability limit how decisively it changes management. Not a CBG/MIGS-surgical issue.",
     "prompts": "<ol><li>In which couples does SDF testing actually change management versus add cost?</li><li>How do you handle assay-dependent thresholds when counseling on an elevated result?</li><li>What interventions for high SDF have real outcome evidence?</li></ol>",
 },
 
@@ -682,7 +682,7 @@ AUTHORED = {
     "applicability": "Directly informs ovarian-stimulation protocol selection in ART, especially weighing live-birth benefit against OHSS risk in relevant subgroups.",
     "kb": "Sits at the top of the evidence hierarchy for the LH-activity-versus-rFSH question, consolidating decades of RCTs.",
     "equity": "Cost differences between LH-activity preparations and rFSH affect access; subgroup applicability (e.g., poor responders, advanced age) shapes who benefits.",
-    "monday": "Inform / consider (REI-facing). The best-evidence synthesis on adding LH activity to ovarian stimulation &mdash; worth incorporating into protocol decisions, weighing live-birth outcomes against OHSS. Not a MIGS-surgical issue, but the strongest infertility evidence this week.",
+    "monday": "Inform / consider (REI-facing). The best-evidence synthesis on adding LH activity to ovarian stimulation &mdash; worth incorporating into protocol decisions, weighing live-birth outcomes against OHSS. Not a CBG/MIGS-surgical issue, but the strongest infertility evidence this week.",
     "prompts": "<ol><li>In which patients does adding LH activity most plausibly change live-birth outcomes?</li><li>How do you weigh efficacy against OHSS risk and cost in protocol selection?</li><li>How much does between-trial heterogeneity limit applying a pooled estimate to your patient?</li></ol>",
 },
 
@@ -874,7 +874,7 @@ AUTHORED = {
 
 # Opioid-free anesthesia + ERAS for laparoscopic total hysterectomy, n=255
 "42120170": {
-    "bottom": "Retrospective cohort (255 laparoscopic total hysterectomies) comparing traditional opioid-based anesthesia with opioid-free anesthesia plus ERAS. The OFA+ERAS group had better recovery-quality metrics (pain, PONV, cognition, recovery scores). It supports the broader ERAS/opioid-sparing direction in benign MIGS hysterectomy, though confounded by being a combined (OFA + ERAS) intervention and retrospective.",
+    "bottom": "Retrospective cohort (255 laparoscopic total hysterectomies) comparing traditional opioid-based anesthesia with opioid-free anesthesia plus ERAS. The OFA+ERAS group had better recovery-quality metrics (pain, PONV, cognition, recovery scores). It supports the broader ERAS/opioid-sparing direction in benign CBG/MIGS hysterectomy, though confounded by being a combined (OFA + ERAS) intervention and retrospective.",
     "question": "<strong>The clinical problem.</strong> Opioid-based anesthesia in laparoscopic hysterectomy contributes to PONV, ileus, and cognitive effects that slow recovery, and opioid-sparing pathways are increasingly favored. <strong>The question.</strong> Does opioid-free anesthesia combined with an ERAS protocol improve postoperative recovery quality after laparoscopic total hysterectomy?",
     "pico": {
         "P": "255 patients undergoing laparoscopic total hysterectomy (2023&ndash;2025).",
@@ -888,10 +888,10 @@ AUTHORED = {
     "findings": "The OFA+ERAS group showed improved recovery-quality outcomes &mdash; lower pain and PONV, better cognitive and quality-of-recovery scores &mdash; versus opioid-based anesthesia.",
     "rob": "Moderate. Retrospective allocation, single-center, and a bundled intervention (cannot separate OFA from ERAS effects). Adjustment mitigates but does not remove confounding.",
     "strengths": "Validated multidimensional recovery outcomes, reasonable sample, and alignment with the well-supported ERAS movement in gynecologic surgery.",
-    "applicability": "Supports opioid-sparing, ERAS-based pathways for benign laparoscopic hysterectomy &mdash; directly relevant to MIGS perioperative practice.",
+    "applicability": "Supports opioid-sparing, ERAS-based pathways for benign laparoscopic hysterectomy &mdash; directly relevant to CBG/MIGS perioperative practice.",
     "kb": "Reinforces the substantial ERAS/opioid-sparing evidence base in gynecologic and laparoscopic surgery.",
     "equity": "ERAS implementation requires institutional resources and protocols; access to optimized perioperative pathways varies between centers.",
-    "monday": "Consider / reinforce &mdash; MIGS-relevant. Adds support for opioid-free anesthesia within an ERAS pathway for laparoscopic hysterectomy, with better recovery metrics. Retrospective and bundled, so confirmatory, not decisive &mdash; but consistent with where benign-hysterectomy perioperative care is already heading.",
+    "monday": "Consider / reinforce &mdash; CBG/MIGS-relevant. Adds support for opioid-free anesthesia within an ERAS pathway for laparoscopic hysterectomy, with better recovery metrics. Retrospective and bundled, so confirmatory, not decisive &mdash; but consistent with where benign-hysterectomy perioperative care is already heading.",
     "prompts": "<ol><li>How much of the benefit is OFA versus the ERAS bundle, and does it matter if both are adopted together?</li><li>What are the barriers to implementing opioid-free anesthesia in your hysterectomy pathway?</li><li>Which recovery outcomes matter most to your patients and your discharge planning?</li></ol>",
 },
 
@@ -934,10 +934,10 @@ AUTHORED = {
     "findings": "Robotic use rose from 6.1% to 38.2% of hysterectomies (and to 55.9% for cervical cancer by 2024). Robotic and laparoscopic approaches yielded similar operative and complication outcomes, but robotic surgery incurred additional cost.",
     "rob": "Moderate. Single-center and retrospective; propensity matching addresses measured confounders. Cervical-cancer adoption data should be read against the LACC-trial evidence cautioning against minimally-invasive radical hysterectomy for cervical cancer.",
     "strengths": "Large sample, decade-long trend data, and propensity matching &mdash; a useful real-world picture of robotic adoption and its cost-outcome trade-off.",
-    "applicability": "Directly relevant to MIGS approach selection and value discussions; supports that robotic offers similar benign outcomes at higher cost.",
+    "applicability": "Directly relevant to CBG/MIGS approach selection and value discussions; supports that robotic offers similar benign outcomes at higher cost.",
     "kb": "Consistent with the broad literature showing comparable benign-hysterectomy outcomes for robotic vs laparoscopic with a cost premium; the oncologic application warrants LACC-aware caution.",
     "equity": "Higher robotic cost has health-system value implications; access to robotic platforms is itself unevenly distributed.",
-    "monday": "Counsel / value-aware. For benign hysterectomy, robotic offers outcomes similar to laparoscopy at higher cost &mdash; a value, not an outcome, decision. For cervical cancer, weigh rising minimally-invasive adoption against LACC-trial evidence favoring open radical hysterectomy. Squarely a MIGS approach-selection issue.",
+    "monday": "Counsel / value-aware. For benign hysterectomy, robotic offers outcomes similar to laparoscopy at higher cost &mdash; a value, not an outcome, decision. For cervical cancer, weigh rising minimally-invasive adoption against LACC-trial evidence favoring open radical hysterectomy. Squarely a CBG/MIGS approach-selection issue.",
     "prompts": "<ol><li>For benign hysterectomy, what justifies the robotic cost premium when outcomes match laparoscopy?</li><li>How do you reconcile rising minimally-invasive radical hysterectomy use with LACC-trial findings?</li><li>How should value (cost-per-outcome) enter your approach selection?</li></ol>",
 },
 
@@ -966,7 +966,7 @@ AUTHORED = {
 
 # vNOTES hysterectomy reduces laparotomy conversion in class III obesity, n=134
 "42113611": {
-    "bottom": "Retrospective comparison (134 obese patients: 70 laparoscopic, 64 vNOTES hysterectomy) stratified by obesity class. vNOTES took longer (205 vs 178 min) with similar major-complication rates, but the standout finding is reduced laparotomy conversion in class III obesity (BMI &ge; 40). A genuinely MIGS-relevant signal: vNOTES may be a valuable route to avoid open conversion in the most challenging-access obese patients.",
+    "bottom": "Retrospective comparison (134 obese patients: 70 laparoscopic, 64 vNOTES hysterectomy) stratified by obesity class. vNOTES took longer (205 vs 178 min) with similar major-complication rates, but the standout finding is reduced laparotomy conversion in class III obesity (BMI &ge; 40). A genuinely CBG/MIGS-relevant signal: vNOTES may be a valuable route to avoid open conversion in the most challenging-access obese patients.",
     "question": "<strong>The clinical problem.</strong> Severe (class III) obesity makes laparoscopic hysterectomy technically difficult and raises the risk of conversion to laparotomy, with its added morbidity; vaginal natural-orifice (vNOTES) approaches may bypass the abdominal-access problem. <strong>The question.</strong> In obese patients, how do laparoscopic and vNOTES hysterectomy compare for operative outcomes and laparotomy conversion, by obesity class?",
     "pico": {
         "P": "134 patients (BMI &ge; 30) undergoing benign hysterectomy (70 laparoscopic, 64 vNOTES).",
@@ -979,17 +979,17 @@ AUTHORED = {
     "methods": "Single-center retrospective review of obese patients undergoing LH or vNOTES hysterectomy (2020&ndash;2024), with outcomes stratified by obesity class (I/II/III). Retrospective allocation and modest, class-III subgroup sizes are limitations.",
     "findings": "vNOTES had longer median operative time (205 vs 178 min, P&lt;0.01) with similar overall major-complication rates; the key finding was reduced laparotomy conversion with vNOTES in class III obesity (BMI &ge; 40).",
     "rob": "Moderate. Retrospective, single-center, non-randomized (selection bias in approach choice), and the headline benefit rests on a class III subgroup of limited size. Hypothesis-supporting.",
-    "strengths": "Addresses a real, difficult MIGS problem (access in severe obesity) with class-stratified outcomes and a clinically-meaningful endpoint (avoiding open conversion).",
-    "applicability": "Directly relevant to MIGS route selection in obese patients; supports considering vNOTES to reduce open conversion in class III obesity, accepting longer operative time.",
+    "strengths": "Addresses a real, difficult CBG/MIGS problem (access in severe obesity) with class-stratified outcomes and a clinically-meaningful endpoint (avoiding open conversion).",
+    "applicability": "Directly relevant to CBG/MIGS route selection in obese patients; supports considering vNOTES to reduce open conversion in class III obesity, accepting longer operative time.",
     "kb": "Adds to the growing vNOTES literature, extending its potential value to the technically-hard severe-obesity population.",
     "equity": "vNOTES requires specific training and is not universally available; severely obese patients &mdash; who may benefit most &mdash; could face access barriers to surgeons offering it.",
-    "monday": "Consider &mdash; MIGS-relevant. For benign hysterectomy in class III obesity, vNOTES may reduce laparotomy conversion versus laparoscopy, at the cost of longer operative time and similar complications. Retrospective, so a reasonable option to weigh and discuss, not a mandate &mdash; squarely in the MIGS toolkit for difficult-access patients.",
+    "monday": "Consider &mdash; CBG/MIGS-relevant. For benign hysterectomy in class III obesity, vNOTES may reduce laparotomy conversion versus laparoscopy, at the cost of longer operative time and similar complications. Retrospective, so a reasonable option to weigh and discuss, not a mandate &mdash; squarely in the CBG/MIGS toolkit for difficult-access patients.",
     "prompts": "<ol><li>In which obese patients would you preferentially consider vNOTES to avoid open conversion?</li><li>How do you weigh longer operative time against a lower conversion risk?</li><li>What training/credentialing is needed before adding vNOTES for this population?</li></ol>",
 },
 
 # Iatrogenic ureteric injuries post-hysterectomy — 2 case reports
 "42103338": {
-    "bottom": "Two case reports of ureterovaginal fistula after hysterectomy, managed differently (one with double-J stent/PCN/conservative care, one requiring definitive surgery after recurrence). It is a clean reminder of one of the most feared MIGS/gynecologic-surgery complications &mdash; ureteric injury &mdash; and that early recognition plus individualized, escalation-ready management drives outcomes.",
+    "bottom": "Two case reports of ureterovaginal fistula after hysterectomy, managed differently (one with double-J stent/PCN/conservative care, one requiring definitive surgery after recurrence). It is a clean reminder of one of the most feared CBG/MIGS/gynecologic-surgery complications &mdash; ureteric injury &mdash; and that early recognition plus individualized, escalation-ready management drives outcomes.",
     "question": "<strong>The clinical problem.</strong> Ureteric injury is among the most serious complications of hysterectomy, and ureterovaginal fistula can follow unrecognized or delayed-recognition injury; optimal management (conservative vs surgical) depends on severity and timing. <strong>The question.</strong> How should post-hysterectomy ureteric injuries/ureterovaginal fistulas be recognized and managed?",
     "pico": {
         "P": "Two women (mid-40s) with post-hysterectomy ureterovaginal fistula.",
@@ -1003,10 +1003,10 @@ AUTHORED = {
     "findings": "One patient resolved with stenting/PCN/conservative care; the other recurred after PCN and required definitive surgical repair &mdash; illustrating that individualized, escalation-ready management is needed and that conservative and surgical approaches each have a role.",
     "rob": "n=2; illustrative only, with selection toward instructive cases. No incidence or comparative-effectiveness inference.",
     "strengths": "A practical management teaching case for a high-stakes complication, spanning the conservative-to-surgical spectrum.",
-    "applicability": "Directly relevant to MIGS practice: reinforces intraoperative ureteric awareness, early postoperative recognition of injury, and a graded management pathway.",
+    "applicability": "Directly relevant to CBG/MIGS practice: reinforces intraoperative ureteric awareness, early postoperative recognition of injury, and a graded management pathway.",
     "kb": "Consistent with established teaching on ureteric-injury recognition and management after gynecologic surgery; a reinforcing exemplar rather than new evidence.",
     "equity": "Access to interventional uroradiology (stent/PCN) and reconstructive urology shapes management options and outcomes after ureteric injury.",
-    "monday": "Counsel / caution &mdash; core MIGS complication. Reinforces ureteric vigilance: know the ureter&apos;s course, consider intraoperative assessment in difficult cases, and recognize postoperative fistula early. Management is individualized &mdash; conservative stenting/PCN for some, definitive repair for others. A teaching reminder, not new evidence.",
+    "monday": "Counsel / caution &mdash; core CBG/MIGS complication. Reinforces ureteric vigilance: know the ureter&apos;s course, consider intraoperative assessment in difficult cases, and recognize postoperative fistula early. Management is individualized &mdash; conservative stenting/PCN for some, definitive repair for others. A teaching reminder, not new evidence.",
     "prompts": "<ol><li>In which hysterectomies do you take specific steps (ureterolysis, stents, cystoscopy) to protect or confirm the ureter?</li><li>What postoperative findings should trigger immediate evaluation for ureteric injury?</li><li>How do you decide between conservative and surgical management of a ureterovaginal fistula?</li></ol>",
 },
 
@@ -1029,7 +1029,7 @@ AUTHORED = {
     "applicability": "Informs counseling about ovarian-cancer risk after ovary-sparing benign hysterectomy and contributes to opportunistic-salpingectomy discussions.",
     "kb": "Adds Asian-population evidence to the literature on hysterectomy, ovarian conservation, and ovarian-cancer risk, where opportunistic salpingectomy is increasingly standard.",
     "equity": "National-insurance data improve representativeness within Korea and add geographic diversity to a literature dominated by Western cohorts.",
-    "monday": "Counsel / inform &mdash; MIGS-relevant. Useful national-cohort data for counseling about ovarian-cancer risk after benign hysterectomy, and for framing opportunistic salpingectomy decisions. Observational, so it informs counseling rather than mandating a change.",
+    "monday": "Counsel / inform &mdash; CBG/MIGS-relevant. Useful national-cohort data for counseling about ovarian-cancer risk after benign hysterectomy, and for framing opportunistic salpingectomy decisions. Observational, so it informs counseling rather than mandating a change.",
     "prompts": "<ol><li>How does this inform your counseling on ovarian conservation versus removal at benign hysterectomy?</li><li>Where does opportunistic salpingectomy fit for these patients?</li><li>How much should claims-based cancer ascertainment temper the estimate?</li></ol>",
 },
 
@@ -1145,19 +1145,19 @@ AUTHORED = {
     "findings": "The Femoston group had shorter bleeding, earlier menstrual resumption, greater post-treatment endometrial thickness, and fewer adverse outcomes (including infection and adhesions); both groups improved clinically.",
     "rob": "Moderate-to-high. Preference-based (non-randomized) allocation introduces selection bias (likely milder RPOC chose medical management), single-center, and modest sample. The adhesion-avoidance signal is plausible but confounded.",
     "strengths": "Prospective design addressing a clinically-meaningful trade-off (uterine-sparing medical therapy vs instrumentation and adhesion risk) with relevant endometrial outcomes.",
-    "applicability": "Supports considering medical management for selected, stable RPOC to avoid instrumentation and adhesion risk &mdash; relevant to MIGS/benign gynecology &mdash; with appropriate patient selection.",
+    "applicability": "Supports considering medical management for selected, stable RPOC to avoid instrumentation and adhesion risk &mdash; relevant to CBG/MIGS/benign gynecology &mdash; with appropriate patient selection.",
     "kb": "Adds to the RPOC-management literature weighing expectant/medical versus surgical (hysteroscopic) approaches and Asherman-risk mitigation.",
     "equity": "Access to hysteroscopy versus medical therapy varies; a low-tech oral option could widen access where hysteroscopic resources are limited.",
-    "monday": "Consider / counsel &mdash; MIGS-relevant. For selected stable RPOC, medical management (estrogen-progestogen) may avoid instrumentation and reduce adhesion risk, with faster recovery. Preference-allocated and small, so it informs shared decision-making rather than mandating a switch; hysteroscopic evacuation remains appropriate when indicated.",
+    "monday": "Consider / counsel &mdash; CBG/MIGS-relevant. For selected stable RPOC, medical management (estrogen-progestogen) may avoid instrumentation and reduce adhesion risk, with faster recovery. Preference-allocated and small, so it informs shared decision-making rather than mandating a switch; hysteroscopic evacuation remains appropriate when indicated.",
     "prompts": "<ol><li>Which RPOC patients are suitable for medical rather than hysteroscopic management?</li><li>How much does preference-based allocation undermine the comparison?</li><li>How heavily does adhesion (Asherman) risk weigh in your RPOC management choice?</li></ol>",
 },
 
 # ============================ ICG FLUORESCENCE IN GYNECOLOGIC SURGERY ============================
-# (Pelvic reconstructive / bowel-bladder cases relevant to complex MIGS technique transfer.)
+# (Pelvic reconstructive / bowel-bladder cases relevant to complex CBG/MIGS technique transfer.)
 
 # Robot-assisted sigmoid colon conduit urinary diversion — case report
 "42119081": {
-    "bottom": "Single case report of a single-stage robot-assisted sigmoid-colon-conduit urinary diversion that avoids bowel anastomosis, in a 46-year-old with a devastating post-radiation pelvis (rectovaginal fistula with loop colostomy, bilateral ureteral strictures, radiation cystitis, parastomal hernia). It is squarely in the complex-MIGS technique-transfer space &mdash; ureteric and bladder reconstruction in the irradiated pelvis is exactly the deep-endometriosis/oncologic terrain MIGS surgeons enter, and minimally-invasive diversion that avoids a bowel anastomosis is a useful conceptual tool.",
+    "bottom": "Single case report of a single-stage robot-assisted sigmoid-colon-conduit urinary diversion that avoids bowel anastomosis, in a 46-year-old with a devastating post-radiation pelvis (rectovaginal fistula with loop colostomy, bilateral ureteral strictures, radiation cystitis, parastomal hernia). It is squarely in the complex-CBG/MIGS technique-transfer space &mdash; ureteric and bladder reconstruction in the irradiated pelvis is exactly the deep-endometriosis/oncologic terrain CBG/MIGS surgeons enter, and minimally-invasive diversion that avoids a bowel anastomosis is a useful conceptual tool.",
     "question": "<strong>The clinical problem.</strong> Late radiation injury after pelvic-malignancy treatment can require both urinary and fecal diversion, and a standard ileal conduit adds a bowel anastomosis with its leak risk &mdash; especially hazardous in a frail, irradiated, multiply-operated pelvis. <strong>The question.</strong> Can a robot-assisted sigmoid-colon-conduit urinary diversion provide effective diversion while avoiding a new bowel anastomosis?",
     "pico": {
         "P": "46-year-old woman with prior pelvic chemoradiation and severe genitourinary/GI sequelae.",
@@ -1171,16 +1171,16 @@ AUTHORED = {
     "findings": "The report demonstrates feasibility of a minimally-invasive sigmoid-colon-conduit urinary diversion that avoids bowel anastomosis in a hostile, irradiated pelvis, proposing reduced morbidity for frail/previously-irradiated patients.",
     "rob": "n=1; feasibility/illustrative only, with publication bias toward successful novel reconstructions. No outcome rate or comparison.",
     "strengths": "A clever reconstructive solution to a genuinely hard problem, demonstrating minimally-invasive feasibility where morbidity is otherwise high.",
-    "applicability": "Conceptually relevant to complex MIGS and gyn-onc reconstruction in the irradiated/hostile pelvis &mdash; the ureteric/bladder-reconstruction skill set MIGS surgeons share with urology in deep endometriosis and oncologic cases.",
+    "applicability": "Conceptually relevant to complex CBG/MIGS and gyn-onc reconstruction in the irradiated/hostile pelvis &mdash; the ureteric/bladder-reconstruction skill set CBG/MIGS surgeons share with urology in deep endometriosis and oncologic cases.",
     "kb": "Sits in the complex pelvic-reconstruction literature; reinforces that minimally-invasive diversion avoiding bowel anastomosis is feasible in selected hostile pelvises.",
     "equity": "Robotic reconstructive expertise for these rare, complex cases is concentrated in tertiary centers, limiting access for affected patients.",
-    "monday": "Watch / counsel &mdash; complex-MIGS adjacent. Not an everyday technique, but a useful conceptual tool for the irradiated/hostile pelvis: minimally-invasive urinary diversion avoiding a bowel anastomosis. Relevant to the ureteric/bladder-reconstruction skills MIGS surgeons draw on in deep endometriosis and oncologic work; refer or collaborate with reconstructive urology for these cases.",
+    "monday": "Watch / counsel &mdash; complex-CBG/MIGS adjacent. Not an everyday technique, but a useful conceptual tool for the irradiated/hostile pelvis: minimally-invasive urinary diversion avoiding a bowel anastomosis. Relevant to the ureteric/bladder-reconstruction skills CBG/MIGS surgeons draw on in deep endometriosis and oncologic work; refer or collaborate with reconstructive urology for these cases.",
     "prompts": "<ol><li>When does avoiding a bowel anastomosis justify a more complex diversion in an irradiated pelvis?</li><li>How do you build the ureteric/bladder-reconstruction collaboration (urology) your complex deep-endometriosis cases need?</li><li>What makes a frail, irradiated patient a candidate for a minimally-invasive versus open reconstruction?</li></ol>",
 },
 
 # APR vs LAR morbidity/mortality in rectal cancer — retrospective, n=226
 "42112223": {
-    "bottom": "Single-center retrospective cohort (226 rectal-cancer patients) comparing abdominoperineal resection (APR) with low anterior resection (LAR), focused on postoperative sepsis/septic complications. APR trended toward higher septic complications (wide, non-significant CIs). For MIGS, the relevance is technique-transfer: deep-infiltrating-endometriosis bowel work spans the same low-rectal resection spectrum, and the resection-level morbidity gradient informs how aggressively to take the bowel.",
+    "bottom": "Single-center retrospective cohort (226 rectal-cancer patients) comparing abdominoperineal resection (APR) with low anterior resection (LAR), focused on postoperative sepsis/septic complications. APR trended toward higher septic complications (wide, non-significant CIs). For CBG/MIGS, the relevance is technique-transfer: deep-infiltrating-endometriosis bowel work spans the same low-rectal resection spectrum, and the resection-level morbidity gradient informs how aggressively to take the bowel.",
     "question": "<strong>The clinical problem.</strong> The choice and level of rectal resection (APR for very low tumors vs sphincter-preserving LAR) carries different septic-complication and morbidity profiles, which matter wherever low-rectal surgery is performed &mdash; including bowel-endometriosis resection. <strong>The question.</strong> What are the risk factors for, and the comparative rates of, postoperative septic complications after APR versus LAR for rectal cancer?",
     "pico": {
         "P": "226 rectal-cancer patients undergoing surgery (2018&ndash;2023).",
@@ -1194,10 +1194,10 @@ AUTHORED = {
     "findings": "APR was associated with higher odds of early (OR 1.84), late (OR 2.75), and overall septic complications, but the confidence intervals were wide and crossed 1 (not statistically significant), reflecting limited power; the resection-level morbidity gradient is directional.",
     "rob": "Moderate-to-high. Retrospective, single-center, underpowered (non-significant wide CIs), and inherently confounded because APR is selected for the lowest, most adverse tumors. Directional rather than definitive.",
     "strengths": "Addresses a clinically-relevant morbidity gradient by resection level with explicit septic-complication endpoints.",
-    "applicability": "For colorectal surgery directly; for MIGS, relevant as technique-transfer &mdash; informs how the resection level in low-rectal/bowel-endometriosis surgery relates to septic morbidity and informs how aggressively to resect.",
-    "kb": "Consistent with the colorectal literature that lower, more radical rectal resections carry higher septic morbidity; the MIGS relevance is the shared low-pelvic bowel-surgery terrain in deep endometriosis.",
+    "applicability": "For colorectal surgery directly; for CBG/MIGS, relevant as technique-transfer &mdash; informs how the resection level in low-rectal/bowel-endometriosis surgery relates to septic morbidity and informs how aggressively to resect.",
+    "kb": "Consistent with the colorectal literature that lower, more radical rectal resections carry higher septic morbidity; the CBG/MIGS relevance is the shared low-pelvic bowel-surgery terrain in deep endometriosis.",
     "equity": "Single-center; access to sphincter-preserving (LAR) versus APR and to specialized colorectal collaboration affects outcomes and quality of life.",
-    "monday": "Inform &mdash; complex-MIGS adjacent. Not gynecologic per se, but the resection-level morbidity gradient is directly relevant when planning bowel resection for deep infiltrating endometriosis (shaving vs discoid vs segmental/low-anterior resection): lower, more radical resections carry more septic morbidity. Reinforces multidisciplinary planning with colorectal surgery.",
+    "monday": "Inform &mdash; complex-CBG/MIGS adjacent. Not gynecologic per se, but the resection-level morbidity gradient is directly relevant when planning bowel resection for deep infiltrating endometriosis (shaving vs discoid vs segmental/low-anterior resection): lower, more radical resections carry more septic morbidity. Reinforces multidisciplinary planning with colorectal surgery.",
     "prompts": "<ol><li>How does the resection-level morbidity gradient inform your shaving-vs-discoid-vs-segmental decision in bowel endometriosis?</li><li>When do you involve colorectal surgery, and how early?</li><li>How do you weigh radicality against septic-complication and quality-of-life risk in low-rectal endometriosis?</li></ol>",
 },
 
@@ -1592,7 +1592,7 @@ AUTHORED = {
     "applicability": "Relevant to intrapartum counseling and planning for women with HDP attempting vaginal delivery; supports individualized, subtype-aware management.",
     "kb": "Adds subtype-stratified intrapartum data to the HDP-delivery literature, where standardized frameworks are lacking.",
     "equity": "Single-center; access to close intrapartum monitoring (which enables safe vaginal trials in HDP) varies between settings.",
-    "monday": "Counsel / inform. Supports offering and planning vaginal delivery in HDP with subtype-aware attention to emergency-cesarean risk factors &mdash; useful for intrapartum counseling. Observational, so it refines rather than dictates management. Obstetric, not MIGS-surgical.",
+    "monday": "Counsel / inform. Supports offering and planning vaginal delivery in HDP with subtype-aware attention to emergency-cesarean risk factors &mdash; useful for intrapartum counseling. Observational, so it refines rather than dictates management. Obstetric, not CBG/MIGS-surgical.",
     "prompts": "<ol><li>How does HDP subtype shape your intrapartum plan and emergency-cesarean preparedness?</li><li>Which risk factors most predict needing emergency cesarean in HDP?</li><li>What monitoring makes a vaginal trial safe across HDP classifications?</li></ol>",
 },
 
