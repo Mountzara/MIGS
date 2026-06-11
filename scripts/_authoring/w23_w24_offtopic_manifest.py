@@ -1,49 +1,60 @@
 # -*- coding: utf-8 -*-
 """
-w23_w24_offtopic_manifest.py — off-topic papers identified by individual
-title+abstract review in the draft posts blog-2026-W23 and blog-2026-W24.
+w23_w24_offtopic_manifest.py — SUPERSEDED / CORRECTED 2026-06-11.
 
-WHY A MANUAL MANIFEST: the §1.2b subspecialty-relevance gate passes nearly all
-of these because the newer pipeline writes an auto-generated "Monday-clinic
-framing" sentence into each card that name-drops gynecologic terms (e.g.
-"Every cesarean scar reorganizes…", "mediators traditional gynecology rarely…")
-to justify the paper's inclusion. That framing is exactly the classification
-artifact the gate strips for cite labels — but here it lives in the card body,
-so the keyword anchors match and the gate is blind. A human title+abstract read
-is the only reliable filter, as it was for the W20 rhinoplasty paper.
+An earlier version of this file flagged ~26 papers in blog-2026-W23/W24 as
+"off-topic contamination" to be purged. THAT WAS WRONG, and the repo record is
+corrected here.
 
-Each entry: PMID -> short reason. Adjudicated by reading the verbatim abstract.
-Borderline-but-kept papers are NOT listed here.
+W23/W24 are CBG/MIGS Monday-Mornings digests authored through an explicit
+"DO + CBG/MIGS lens": each of the 9 topic groups carries a systems-level THESIS,
+and cross-disciplinary mechanism / biochemistry / surgical-technology papers are
+deliberately included as theoretical and technology-transfer SUPPORT for that
+thesis — even when the paper's own field is not gynecology. This is the same
+editorial logic that KEPT the bowel/bladder/colorectal/urinary ICG papers in
+W20 (technology transfer), applied consistently. Per the operator: "if it
+supports the thesis and theories behind the [trend] claims, then it needs to be
+there."
+
+Topic theses (from the per-card DO-lens framing):
+  csection_scar       — fascial continuity + somatic dysfunction (scar reorganizes
+                        fascia/vascular/visceral for life) -> scar-FIBROSIS BIOLOGY
+                        papers (keloid epigenetics, hypertrophic-scar mechanism,
+                        silicone-gel/scar treatment) are mechanistic support.
+  endometriosis       — body unity + neuro-immuno-endocrine systems thinking.
+  fibroids            — structure governs function (contractility, fibrotic
+                        stiffness, vascular remodeling) -> focused-ultrasound
+                        (MRgFUS) technology papers are technology transfer (MRgFUS
+                        is a uterine-fibroid therapy).
+  hysterectomy        — preserve structure + autonomic relay; robotic surgical-
+                        vision/skill papers are technology transfer.
+  icg_fluorescence    — make structure visible to preserve function -> ANY
+                        ICG/near-infrared fluorescence paper (flap perfusion,
+                        tumor-margin probes) is fluorescence-technology transfer,
+                        exactly like the W20 colorectal/urinary ICG papers.
+  infertility         — infertility is a systems condition (stress-axis, autonomic,
+                        inflammation, mechanical load, sleep) -> ovarian-physiology
+                        mechanism papers (incl. animal models) support it.
+  mht                 — menopause is a systems transition, not an estrogen deficit
+                        -> osteoimmunology/metabolic/body-composition mechanism
+                        papers support the systems view.
+  pcos                — endocrine + HPA + neuro-immune integration.
+  pelvic_pain         — visceral-somatic + central sensitization.
+  operative_hysteroscopy — minimally invasive aligns with osteopathic preservation.
+
+CONCLUSION: do NOT purge these. Author each deep-dive framing the paper honestly
+as mechanistic / technology-transfer support for its topic thesis, with explicit
+appraisal of how DIRECT or indirect that support is (bench, animal, cross-
+specialty) so the journal-club reader can weigh it.
+
+The ONE genuine exception to flag for the operator (not a research study at all):
+  42237957 — "Expression of Concern on '…myo-inositol plus D-Chiro-inositol…in
+             PCOS patients'." This is a journal publishing-integrity NOTICE about
+             a 2013 paper, not a study to journal-club. Operator decision: keep
+             (as a note on the inositol-for-PCOS evidence base) or drop.
 """
 
-W23_OFFTOPIC = {
-    "42210897": "dermatology — cosmetic outcome of postsurgical facial scars",
-    "42195168": "dermatology — surgical excision/adjuvant therapy for keloids",
-    "42195064": "pediatric nephrology/urology — kidney scarring after febrile UTI",
-    "42187001": "plastic surgery — skin retraction after laser liposuction/lipolysis",
-    "42183685": "dermatology — silicone gels for hypertrophic scars",
-    "42216342": "plastic surgery — anterolateral thigh free-flap ICG perfusion",
-    "42204046": "urology — robotic prostate-cancer surgery (eye-hand coordination)",
-    "42196473": "neurosurgery — fluorescent probes for glioblastoma/brain tumors",
-    "42192608": "ophthalmology — ICG angiography/eplerenone, central serous chorioretinopathy",
-    "42213691": "GI oncology/epidemiology — BMI trajectories and gastric-cancer risk",
-    "42216386": "ophthalmology — amniotic membrane for fat-adherence syndrome",
-    "42212370": "dermatology/plastic — epigenetics of cutaneous-fibrosis scar formation",
-    "42195251": "general surgery — contrast timing in small-bowel obstruction",
-    "42192607": "ophthalmology — anti-VEGF response analysis (135 eyes)",
-    "42178533": "ENT/surgical oncology — EpCAM NIR antibodies in head & neck SCC",
-    "42213185": "veterinary — rFSH/eCG ovarian response in guinea pig",
-    "42204934": "men's health — testosterone replacement + exercise in hypogonadal men",
-    "42181197": "endocrine genetics — INSR-variant hyperinsulinemic hypoglycemia syndromes",
-    "42208006": "general oncology — broad early-onset-cancer survivorship review (not gyn-specific)",
-}
-
-W24_OFFTOPIC = {
-    "42226083": "dermatology/plastic — MSC exosomal miR-29a-3p for hypertrophic scar",
-    "42220969": "neurology/neurosurgery — MRgFUS thalamotomy for essential tremor",
-    "42220967": "neurology/neurosurgery — tremor recurrence after MRgFUS thalamotomy",
-    "42223723": "plastic surgery — breast-reconstruction decision-making (breast cancer)",
-    "42222069": "musculoskeletal/osteoimmunology — whole-body-vibration bone remodeling",
-    "42237957": "publishing notice — Expression of Concern (not a research study)",
-    "42223563": "breast-cancer epidemiology — estrogen exposure & breast-cancer subtype",
+# Retained only as the operator-decision item; nothing here is auto-purged.
+FLAG_FOR_OPERATOR = {
+    "42237957": "publishing-integrity notice (Expression of Concern), not a study — keep or drop?",
 }
