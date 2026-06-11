@@ -1433,4 +1433,167 @@ AUTHORED = {
     "prompts": "<ol><li>Could brief psychological-vulnerability awareness help you anticipate symptom burden?</li><li>How do you integrate psychological support with MHT/symptom management?</li><li>How much does shared affective-reporting bias inflate the temperament&ndash;symptom link?</li></ol>",
 },
 
+# ==================== C-SECTION SCAR (PREGNANCY & PATHOLOGY) ====================
+
+# US-guided regional anesthesia for post-caesarean analgesia — narrative review
+"42101317": {
+    "bottom": "Narrative review of ultrasound-guided regional (abdominal-wall block) techniques for post-caesarean analgesia, positioned for when intrathecal morphine &mdash; the gold standard &mdash; is omitted or undesirable. It supports abdominal-wall blocks as effective, opioid-sparing somatic analgesia within multimodal ERAS pathways. Practical obstetric-anesthesia guidance, not new trial data.",
+    "question": "<strong>The clinical problem.</strong> Intrathecal morphine is the gold standard for post-caesarean analgesia but isn&apos;t always feasible or desirable (side effects, contraindications), leaving a need for effective opioid-sparing alternatives. <strong>The question.</strong> What is the role and efficacy of ultrasound-guided regional anaesthesia (abdominal-wall blocks) for post-caesarean analgesia, especially when neuraxial opioids are omitted?",
+    "pico": {
+        "P": "Women undergoing caesarean delivery (post-operative analgesia).",
+        "I": "Ultrasound-guided regional anaesthesia (abdominal-wall blocks).",
+        "C": "Intrathecal morphine / within multimodal pathways.",
+        "O": "Analgesic efficacy; opioid-sparing.",
+        "D": "Narrative review.",
+        "S": "Literature synthesis.",
+    },
+    "methods": "Narrative synthesis of evidence on ultrasound-guided abdominal-wall block techniques for post-caesarean analgesia, emphasizing anatomical rationale, efficacy, and their role without neuraxial opioids. Non-systematic.",
+    "findings": "Abdominal-wall blocks provide effective somatic analgesia and meaningful opioid-sparing, particularly when intrathecal morphine is not used; technique selection and integration into multimodal pathways are key.",
+    "rob": "Narrative review without systematic grading; conclusions reflect synthesized expert evidence rather than pooled trial estimates.",
+    "strengths": "Practical, anatomy-grounded guidance aligned with obstetric ERAS and opioid-sparing priorities.",
+    "applicability": "Relevant to obstetric-anaesthesia and caesarean ERAS practice; informs your anaesthesia colleagues more than surgical technique.",
+    "kb": "Consolidates the regional-analgesia-for-caesarean literature within multimodal/ERAS frameworks.",
+    "equity": "Regional-block expertise and ultrasound availability vary; where intrathecal morphine is unavailable, abdominal-wall blocks may widen access to good analgesia.",
+    "monday": "Inform (obstetric-anaesthesia-facing). Supports ultrasound-guided abdominal-wall blocks as effective opioid-sparing analgesia after caesarean, especially when intrathecal morphine isn&apos;t used. Useful for caesarean ERAS protocols with your anaesthesia team. Not a surgical-technique change.",
+    "prompts": "<ol><li>When intrathecal morphine is omitted, which abdominal-wall block fits your caesarean pathway?</li><li>How do regional blocks integrate with the rest of your multimodal analgesia?</li><li>Where block expertise is limited, how do you ensure adequate post-caesarean analgesia?</li></ol>",
+},
+
+# Prior gestational diabetes & adverse pregnancy outcomes, PSM, n=1326
+"42100195": {
+    "bottom": "Retrospective propensity-matched study (332 prior-GDM vs 994 controls) confirming that a history of gestational diabetes raises risks in subsequent pregnancies &mdash; notably GDM recurrence (50.0% vs 11.8%), cesarean delivery (32.8% vs 26.9%), and gestational hypertension. Solid confirmatory data supporting early screening and closer surveillance in women with prior GDM.",
+    "question": "<strong>The clinical problem.</strong> Gestational diabetes tends to recur and may flag broader pregnancy risk, but quantifying the independent association with adverse outcomes in subsequent pregnancies sharpens management of this high-risk group. <strong>The question.</strong> Is a history of GDM independently associated with adverse maternal-fetal outcomes in subsequent pregnancies?",
+    "pico": {
+        "P": "1,326 women delivering at a Shenzhen hospital (332 prior GDM, 994 controls).",
+        "I": "Not applicable &mdash; prior-GDM history as exposure.",
+        "C": "Propensity-matched women without prior GDM.",
+        "O": "GDM recurrence, cesarean delivery, gestational hypertension, other adverse outcomes.",
+        "D": "Retrospective cohort with propensity matching.",
+        "S": "1,326.",
+    },
+    "methods": "Single-center retrospective cohort (2015&ndash;2025) with propensity-score matching and logistic regression for the independent association between prior GDM and adverse pregnancy outcomes. Observational, single-center.",
+    "findings": "Prior GDM was associated with markedly higher GDM recurrence (50.0% vs 11.8%), more cesarean delivery (32.8% vs 26.9%), and higher gestational hypertension, confirming elevated risk in subsequent pregnancies.",
+    "rob": "Moderate. Retrospective and single-center; propensity matching addresses measured confounders but residual confounding (shared metabolic risk) persists. The recurrence association is large and robust.",
+    "strengths": "Reasonable sample, propensity matching, and clinically-clear, actionable risk estimates for a common condition.",
+    "applicability": "Directly supports early GDM screening and closer surveillance in women with prior GDM &mdash; standard obstetric risk management.",
+    "kb": "Consistent with the established literature on GDM recurrence and subsequent-pregnancy risk.",
+    "equity": "Single-center Chinese data; access to early screening and metabolic optimization between pregnancies varies and shapes recurrence risk.",
+    "monday": "Counsel / reinforce. Confirms prior GDM strongly predicts recurrence and other adverse outcomes &mdash; reinforces early screening, preconception/interpregnancy metabolic optimization, and closer surveillance. Standard obstetric practice, reinforced.",
+    "prompts": "<ol><li>How early do you screen for GDM in a woman with a prior affected pregnancy?</li><li>What interpregnancy interventions could reduce recurrence risk?</li><li>How do you counsel about the 50% recurrence figure without causing fatalism?</li></ol>",
+},
+
+# Companions & providers in pregnancy/childbirth, Burkina Faso — qualitative, n=24
+"42097646": {
+    "bottom": "Qualitative interview study (24 postpartum women, urban Burkina Faso) exploring how companions and providers help women navigate the vulnerability of pregnancy and childbirth, set in hospitals using a shared-decision-making caesarean intervention. It centers respectful, supported care and shared decision-making around caesarean &mdash; a health-systems/experience contribution rather than clinical evidence.",
+    "question": "<strong>The clinical problem.</strong> Appropriate caesarean use and respectful maternity care depend on how women experience support and decision-making, which is under-studied in low-resource settings. <strong>The question.</strong> How do women in urban Burkina Faso experience care and support from companions and providers across pregnancy and childbirth, particularly around caesarean decisions?",
+    "pico": {
+        "P": "24 postpartum women in two urban Burkina Faso public hospitals.",
+        "I": "Not applicable &mdash; qualitative exploration (within a shared-decision caesarean intervention).",
+        "C": "Not applicable.",
+        "O": "Themes on support, vulnerability, and decision-making.",
+        "D": "Qualitative (reflexive thematic analysis).",
+        "S": "24.",
+    },
+    "methods": "Exploratory qualitative study with in-depth interviews of purposively-sampled postpartum women and reflexive thematic analysis, in hospitals running a quality-decision-making caesarean intervention. Small purposive sample; transferable, not generalizable.",
+    "findings": "Two themes describe how women rely on providers and companions to navigate uncertainty and vulnerability, underscoring the value of companionship and supported, shared decision-making around caesarean.",
+    "rob": "Appropriate qualitative methodology; the limitation is transferability (single setting, n=24) rather than bias in the quantitative sense.",
+    "strengths": "Centers patient experience and respectful-care/shared-decision themes in an under-represented low-resource setting.",
+    "applicability": "Supports companionship in labour and shared decision-making for caesarean; experiential rather than clinical-outcome evidence.",
+    "kb": "Contributes to the respectful-maternity-care and appropriate-caesarean-use literature, especially in low-resource contexts.",
+    "equity": "Directly equity-relevant &mdash; it amplifies the experiences of women in a low-resource setting and supports interventions (companionship, shared decision-making) that improve care quality and dignity.",
+    "monday": "Counsel / reflect. Reinforces labour companionship and genuine shared decision-making around caesarean &mdash; care-quality and dignity practices worth examining in your own setting. Experiential evidence, not a clinical protocol change.",
+    "prompts": "<ol><li>How well does your service support labour companionship and shared caesarean decisions?</li><li>What would respectful, supported caesarean decision-making look like in your setting?</li><li>How do you weigh transferable qualitative insight against generalizable quantitative data?</li></ol>",
+},
+
+# Type A aortic dissection in pregnancy — case report
+"42096376": {
+    "bottom": "Case report of a 37-year-old pregnant woman with acute Type A aortic dissection managed by combined emergent cesarean section and aortic repair. A rare, life-threatening obstetric emergency where survival of mother and fetus depends on rapid multidisciplinary surgery. Illustrative of high-acuity obstetric crisis management, not generalizable evidence.",
+    "question": "<strong>The clinical problem.</strong> Acute Type A aortic dissection in pregnancy is rare and frequently fatal, and simultaneous management of the obstetric and cardiovascular emergencies is exceptionally challenging, demanding coordinated multidisciplinary surgery. <strong>The question.</strong> How can a pregnant patient with acute Type A aortic dissection be managed to optimize maternal and fetal survival?",
+    "pico": {
+        "P": "37-year-old pregnant woman (G3P1) with acute Type A aortic dissection.",
+        "I": "Combined emergent cesarean section and aortic-dissection repair.",
+        "C": "None (case report).",
+        "O": "Maternal and fetal survival; surgical management lessons.",
+        "D": "Single case report.",
+        "S": "n = 1.",
+    },
+    "methods": "Descriptive single case report of combined cesarean and aortic repair with shared clinical experience and insights. No comparator or generalizable rate.",
+    "findings": "The report details simultaneous cesarean delivery and Type A aortic-dissection repair, emphasizing rapid diagnosis, comprehensive preoperative assessment, and coordinated multidisciplinary surgery to address both mother and fetus.",
+    "rob": "n=1; illustrative only, with publication bias toward instructive/successful crisis cases.",
+    "strengths": "A vivid, well-coordinated account of an extreme obstetric-cardiovascular emergency, useful for crisis preparedness.",
+    "applicability": "Rare scenario; the transferable lesson is the value of rapid multidisciplinary mobilization for catastrophic obstetric emergencies.",
+    "kb": "Adds to the small case literature on aortic dissection in pregnancy and combined obstetric-cardiac surgery.",
+    "equity": "Such combined emergency capability exists only at well-resourced centers, a stark access disparity for catastrophic obstetric emergencies.",
+    "monday": "Counsel / awareness. A rare but lethal emergency &mdash; keep aortic dissection on the differential for severe chest/back pain in pregnancy and know your institution&apos;s rapid multidisciplinary (obstetric + cardiac surgery) pathway. A preparedness reminder, not a routine practice change.",
+    "prompts": "<ol><li>Would aortic dissection enter your differential for a pregnant patient with sudden severe chest/back pain?</li><li>Does your institution have a pathway for combined obstetric-cardiac surgical emergencies?</li><li>What preparedness steps make catastrophic obstetric emergencies survivable?</li></ol>",
+},
+
+# Knee-to-chest flexion maneuver acceptability (neonatal RDS post-CS) — qualitative, n=15
+"42091518": {
+    "bottom": "Qualitative study (15 obstetricians/residents, Tanzania) on the acceptability of a novel low-resource knee-to-chest flexion maneuver intended to reduce neonatal respiratory distress after elective cesarean by aiding lung-fluid expulsion. It assesses provider perceptions of a feasible, safe technique &mdash; an early implementation/acceptability study, not efficacy evidence.",
+    "question": "<strong>The clinical problem.</strong> Planned cesarean (without labour) raises neonatal respiratory distress from retained lung fluid; a low-resource maneuver mimicking uterine contraction could help, but its uptake depends on provider acceptability. <strong>The question.</strong> How do healthcare providers perceive and accept the knee-to-chest flexion maneuver for preventing neonatal respiratory distress after planned cesarean?",
+    "pico": {
+        "P": "15 obstetricians and resident doctors (tertiary hospital, Moshi, Tanzania).",
+        "I": "Not applicable &mdash; qualitative acceptability assessment of the knee-to-chest flexion maneuver.",
+        "C": "Not applicable.",
+        "O": "Provider perceptions and acceptability.",
+        "D": "Exploratory qualitative (semi-structured interviews).",
+        "S": "15.",
+    },
+    "methods": "Exploratory qualitative study with semi-structured interviews of providers who had observed/performed the maneuver, analyzed thematically. Single-center, small purposive sample; acceptability not efficacy.",
+    "findings": "The study characterizes provider perceptions and acceptability of the knee-to-chest flexion maneuver, complementing prior feasibility/safety data and informing whether the technique could be adopted.",
+    "rob": "Appropriate qualitative design; limitation is transferability (n=15, single center) and that acceptability says nothing about clinical efficacy.",
+    "strengths": "Addresses the implementation/acceptability step needed before adopting a low-cost technique, in a relevant low-resource setting.",
+    "applicability": "Relevant to low-resource obstetric/neonatal care if efficacy is confirmed; provider acceptability is one prerequisite for adoption.",
+    "kb": "Adds an implementation-science data point to the nascent literature on the knee-to-chest maneuver for post-cesarean neonatal respiratory distress.",
+    "equity": "A low-resource, equipment-free technique with clear appeal for settings lacking neonatal respiratory support &mdash; an equity-oriented innovation if proven effective.",
+    "monday": "Hold / watch. An acceptability study of a novel low-resource neonatal maneuver &mdash; promising for under-resourced settings, but efficacy isn&apos;t established here. Nothing to adopt yet; worth watching for outcome trials. Not a gynecologic-surgical issue.",
+    "prompts": "<ol><li>What efficacy evidence would you need before adopting the knee-to-chest maneuver?</li><li>How does provider acceptability shape whether a feasible technique is actually used?</li><li>Where do low-resource innovations fit alongside established neonatal-RDS prevention?</li></ol>",
+},
+
+# Intention-for-cesarean scale — Turkish validation, n=300
+"42090689": {
+    "bottom": "Methodological validation of a Turkish-language Theory-Based Intention for Cesarean Section scale (300 pregnant women). It provides a validated tool to measure birth-mode intention &mdash; useful for research and interventions aimed at reducing non-indicated cesareans &mdash; but it is an instrument-development study, not clinical evidence.",
+    "question": "<strong>The clinical problem.</strong> Cesarean rates are rising globally, and understanding and shifting birth-mode intention during pregnancy is key to reducing non-indicated cesareans &mdash; which requires validated measurement tools across languages. <strong>The question.</strong> Is the Turkish adaptation of the Theory-Based Intention for Cesarean Section scale valid and reliable?",
+    "pico": {
+        "P": "300 pregnant women (Turkey).",
+        "I": "Not applicable &mdash; psychometric validation of the intention-for-cesarean scale.",
+        "C": "Not applicable.",
+        "O": "Validity (content, construct) and reliability of the Turkish scale.",
+        "D": "Methodological validation study.",
+        "S": "300.",
+    },
+    "methods": "Translation/back-translation, content validity (9 experts, Davis technique), pilot testing (n=30), and construct-validity/reliability analysis (SPSS, AMOS) in 300 pregnant women. Standard psychometric methodology.",
+    "findings": "The study reports the Turkish scale&apos;s validity and reliability for measuring theory-based intention for cesarean section, yielding a usable instrument.",
+    "rob": "Appropriate for a validation study; limitations are single-language-population scope and that a scale measures intention, not behaviour or outcomes.",
+    "strengths": "Rigorous psychometric process (expert content validity, pilot, construct validity) producing a research-ready tool.",
+    "applicability": "Useful for research and intention-modifying interventions to reduce non-indicated cesareans in Turkish-speaking populations; no direct individual-patient action.",
+    "kb": "Adds a validated measurement instrument to the cesarean-reduction/birth-preference literature.",
+    "equity": "Language-specific validation improves research inclusion for Turkish-speaking women; reducing non-indicated cesareans has population health-equity value.",
+    "monday": "Hold / inform. An instrument-validation study &mdash; nothing to apply at the bedside. Relevant to researchers and programs working to understand and reduce non-indicated cesareans. Not a clinical practice change.",
+    "prompts": "<ol><li>Could measuring birth-mode intention help target counseling to reduce non-indicated cesareans?</li><li>How does intention relate to actual birth-mode behaviour and outcomes?</li><li>What drives rising cesarean rates in your own setting?</li></ol>",
+},
+
+# Vaginal trial outcomes & emergency CS in hypertensive disorders of pregnancy, n=894
+"42086488": {
+    "bottom": "Single-center retrospective cohort (894 women with hypertensive disorders of pregnancy undergoing a vaginal trial: 584 gestational hypertension, 216 pre-eclampsia, 94 chronic hypertension) examining vaginal-trial outcomes and emergency-cesarean risk factors across HDP classifications. It begins to fill a real gap &mdash; there is no standardized framework for vaginal delivery across HDP subtypes &mdash; supporting individualized intrapartum planning.",
+    "question": "<strong>The clinical problem.</strong> Most women with hypertensive disorders of pregnancy can attempt vaginal delivery, but outcomes and emergency-cesarean risk likely differ across HDP subtypes, and no standardized framework guides this. <strong>The question.</strong> How do vaginal-trial outcomes and emergency-cesarean risk factors differ across HDP classifications?",
+    "pico": {
+        "P": "894 women with HDP undergoing a vaginal trial (584 gestational HTN, 216 pre-eclampsia, 94 chronic HTN).",
+        "I": "Not applicable &mdash; vaginal trial of labour.",
+        "C": "Across HDP classifications.",
+        "O": "Vaginal-trial success; emergency-cesarean risk factors; maternal/perinatal outcomes.",
+        "D": "Retrospective cohort.",
+        "S": "894.",
+    },
+    "methods": "Single-center retrospective cohort comparing maternal and perinatal outcomes and emergency-cesarean risk factors across three HDP classifications among women attempting vaginal delivery. Observational, single-center.",
+    "findings": "The study compares vaginal-trial outcomes and identifies emergency-cesarean risk factors across HDP subtypes (specific success rates and predictors in the full results), supporting subtype-aware intrapartum planning.",
+    "rob": "Moderate. Retrospective and single-center, with unequal subgroup sizes (chronic HTN n=94) limiting power; useful descriptive risk-stratification.",
+    "strengths": "Reasonable sample, clinically-relevant HDP-subtype stratification, and a focus on the under-framed question of vaginal delivery across HDP types.",
+    "applicability": "Relevant to intrapartum counseling and planning for women with HDP attempting vaginal delivery; supports individualized, subtype-aware management.",
+    "kb": "Adds subtype-stratified intrapartum data to the HDP-delivery literature, where standardized frameworks are lacking.",
+    "equity": "Single-center; access to close intrapartum monitoring (which enables safe vaginal trials in HDP) varies between settings.",
+    "monday": "Counsel / inform. Supports offering and planning vaginal delivery in HDP with subtype-aware attention to emergency-cesarean risk factors &mdash; useful for intrapartum counseling. Observational, so it refines rather than dictates management. Obstetric, not MIGS-surgical.",
+    "prompts": "<ol><li>How does HDP subtype shape your intrapartum plan and emergency-cesarean preparedness?</li><li>Which risk factors most predict needing emergency cesarean in HDP?</li><li>What monitoring makes a vaginal trial safe across HDP classifications?</li></ol>",
+},
+
 }
