@@ -1280,10 +1280,10 @@ AUTHORED = {
     },
 },
 
-# NIR-II Hirschsprung ICG — pediatric surgery, n=17
+# NIR-II ICG bowel perfusion — n=17 (relevant to bowel-endometriosis anastomosis assessment)
 "42126680": {
-    "bottom": "Pediatric-surgery study (17 children): intraoperative NIR-II ICG fluorescence angiography during Hirschsprung pull-through gave clearer microvascular visualization than NIR-I and correlated with histopathologic inflammatory grade. A fluorescence-guided-surgery proof-of-concept — adjacent technology to gyn-surgery ICG perfusion assessment, but pediatric-colorectal in scope.",
-    "monday": "Hold / watch. No direct gynecologic action, but part of the broader NIR/ICG fluorescence-guided-surgery wave relevant to perfusion assessment in pelvic surgery. Worth tracking as NIR-II imaging matures; nothing to adopt today.",
+    "bottom": "Surgical study (17 cases): intraoperative NIR-II ICG fluorescence angiography assessed bowel vascular morphology and inflammatory severity, giving clearer microvascular visualization than NIR-I (higher signal-to-background) and correlating with histopathologic inflammatory grade. Directly relevant to the MIGS surgeon who resects bowel for deep infiltrating endometriosis — ICG perfusion assessment of the bowel segment and anastomosis is exactly this technology, and NIR-II promises deeper, cleaner perfusion mapping than the NIR-I/ICG we use today.",
+    "monday": "Watch / counsel. For bowel-endometriosis work — segmental resection, discoid excision, low anterior resection — ICG fluorescence angiography to confirm anastomotic perfusion is already an established adjunct, and NIR-II is the next-generation upgrade worth tracking. Not yet a change to your perfusion-assessment workflow, but squarely within MIGS bowel-surgery practice rather than a curiosity.",
     "pico": {
         "P": "17 children with Hirschsprung's disease undergoing pull-through surgery.",
         "I": "Intraoperative NIR-II ICG fluorescence angiography.",
@@ -1294,10 +1294,10 @@ AUTHORED = {
     },
 },
 
-# Robot sigmoid conduit urinary diversion — case report
+# Robot sigmoid conduit urinary diversion — case report (relevant to MIGS urinary-tract work)
 "42119081": {
-    "bottom": "Case report of robot-assisted sigmoid colon conduit urinary diversion avoiding bowel anastomosis in a patient with prior colostomy and pelvic radiation — 95-minute operative time, day-3 discharge, preserved renal function at 6 months. Urologic reconstructive technique relevant to complex post-radiation pelvic surgery.",
-    "monday": "Counsel / awareness. For complex pelvic cases with prior radiation and diversion, this illustrates a robotic anastomosis-sparing reconstructive option worth knowing exists for multidisciplinary planning. A single case in urology scope — context, not a gynecologic practice change.",
+    "bottom": "Case report of robot-assisted sigmoid colon conduit urinary diversion that avoided a bowel anastomosis in a patient with prior loop colostomy and pelvic radiation — 95-minute operative time, 100 mL blood loss, oral intake on POD1, discharge POD3, preserved renal function with no obstruction at 6 months. Relevant to the complex MIGS surgeon: urinary-tract reconstruction in the irradiated/frozen pelvis is the same territory we enter for ureterolysis, ureteral reimplantation, and bladder resection in deep endometriosis.",
+    "monday": "Counsel / technique-awareness. For the hostile post-radiation or severe-endometriosis pelvis, a robotic anastomosis-sparing diversion is a reconstructive option worth knowing for multidisciplinary planning with urology. A single case, so awareness rather than a protocol change — but firmly within the bowel/bladder/ureter scope of complex MIGS.",
     "pico": {
         "P": "Patient with prior loop colostomy and pelvic radiation needing urinary diversion.",
         "I": "Robot-assisted sigmoid colon conduit (no bowel anastomosis).",
@@ -1322,10 +1322,10 @@ AUTHORED = {
     },
 },
 
-# APR vs LAR rectal cancer sepsis — retrospective, n=226
+# APR vs LAR rectal resection morbidity — retrospective, n=226 (relevant to bowel-endometriosis surgery)
 "42112223": {
-    "bottom": "Retrospective colorectal study (226 patients): abdominoperineal resection trended toward higher septic complications than low anterior resection, though confidence intervals crossed 1. Colorectal-surgery scope — relevant to gyn-oncology only as adjacent pelvic-surgery morbidity context.",
-    "monday": "Hold — outside core gynecologic scope. Colorectal-surgery morbidity data with no direct gynecologic-practice change; useful only as pelvic-surgery context for multidisciplinary cases.",
+    "bottom": "Retrospective study (226 patients): abdominoperineal resection trended toward higher post-operative septic complications (fistula, abscess) than low anterior resection, though the confidence intervals crossed 1. Relevant to the MIGS surgeon operating on rectal/rectosigmoid deep infiltrating endometriosis — the resection-level morbidity gradient (and its septic-complication drivers: comorbidity, tumor/lesion height, surgical approach) informs how we counsel and plan segmental low rectal resection vs. more conservative disc/shave techniques.",
+    "monday": "Counsel / surgical-planning. The takeaway for bowel-endometriosis surgery: lower, more radical rectal resections carry a higher septic-complication burden, which strengthens the case for the least-aggressive adequate technique (shave or discoid over segmental where disease allows) and for multidisciplinary planning with colorectal surgery on low lesions. Context for shared decision-making, not a single-paper practice change.",
     "pico": {
         "P": "226 rectal-cancer patients undergoing APR or LAR (2018-2023).",
         "I": "Abdominoperineal resection.",
