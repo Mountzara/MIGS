@@ -169,6 +169,24 @@ ARTICLE_CARD = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 
+# §1.2b — the NEWER post template (blog-2026-W23+ auto-draft path) renders cite
+# cards as <article class="paper-card"> with the PMID carried only in the card's
+# openDeepDive('dd-<PMID>') trigger and the title in <h3 class="title">. The
+# §3.8 cite-card COUNT checks stay scoped to mz-cite-card (that template's
+# abstract/grid structure differs), but the §1.2b subspecialty-relevance scan
+# must see paper-card cards too — otherwise contamination in the new template
+# ships unflagged (3 nanomedicine/phototherapy bench papers reached draft W23
+# exactly this way before 2026-06-11). This is a flag-for-human tripwire: it
+# FAILS the audit and lists candidates so a clinician confirms each cut — it
+# never auto-prunes and is never the authority on clinical relevance.
+PAPER_CARD = re.compile(
+    r'<article[^>]*class="[^"]*paper-card[^"]*"[^>]*>(.*?)</article>',
+    re.IGNORECASE | re.DOTALL,
+)
+PAPER_CARD_TITLE = re.compile(r'<h3[^>]*class="[^"]*title[^"]*"[^>]*>(.*?)</h3>',
+                              re.IGNORECASE | re.DOTALL)
+PAPER_CARD_PMID = re.compile(r"openDeepDive\(['\"]dd-(\d+)['\"]\)", re.IGNORECASE)
+
 # §1.2b — subspecialty relevance gate (added 2026-06-11 after the W21/W20 audit
 # found the digest pipeline's keyword over-matching had pulled non-gynecologic
 # papers into Monday posts: ophthalmology, men's bone/ortho, dermatology keloids,
@@ -343,6 +361,14 @@ def article_cards(body_html: str) -> list[str]:
     return ARTICLE_CARD.findall(body_html)
 
 
+def relevance_cards(body_html: str) -> list[str]:
+    """Return every cite-card body the §1.2b relevance scan should see, across
+    BOTH templates: the canonical mz-cite-card and the newer paper-card. Kept
+    separate from article_cards() so the §3.8 cite-card COUNT (which is
+    mz-cite-card-only by spec) is unaffected."""
+    return ARTICLE_CARD.findall(body_html) + PAPER_CARD.findall(body_html)
+
+
 _MZ_ABSTRACT_ELEMENT = re.compile(
     r'<details[^>]*class="[^"]*mz-abstract[^"]*"[^>]*>',
     re.IGNORECASE,
@@ -362,8 +388,11 @@ def offtopic_cards(article_contents: Iterable[str]) -> list[tuple[str, str]]:
         on_topic = bool(SUBSPECIALTY_ANCHORS.search(text)) and not OFFTOPIC_DENY.search(text)
         if on_topic:
             continue
-        pm = CITE_PMID.search(c)
-        tm = CITE_TITLE.search(c)
+        # PMID: mz-cite-card has a PubMed link; paper-card carries it only in
+        # the openDeepDive('dd-<PMID>') trigger. Title: mz-cite-title vs the
+        # paper-card's <h3 class="title">.
+        pm = CITE_PMID.search(c) or PAPER_CARD_PMID.search(c)
+        tm = CITE_TITLE.search(c) or PAPER_CARD_TITLE.search(c)
         pmid = pm.group(1) if pm else "?"
         title = HTML_TAG.sub(" ", tm.group(1)).strip()[:90] if tm else "?"
         flagged.append((pmid, title))
@@ -585,8 +614,11 @@ def audit_post(post: dict) -> PostAudit:
     # gate, before a fix or republish ships it. Lists flagged PMIDs so a human
     # confirms each is genuinely off-topic before pruning. FAILS the audit so
     # a contaminated post halts for review rather than silently re-publishing.
-    if cards_n > 0:
-        offtopic = offtopic_cards(cards)
+    # Scans BOTH cite-card templates (mz-cite-card AND the newer paper-card),
+    # so the count below can exceed the §3.8 mz-cite-card-only `cards_n`.
+    rel_cards = relevance_cards(body)
+    if rel_cards:
+        offtopic = offtopic_cards(rel_cards)
         if offtopic:
             preview = "; ".join(f"{p} {t}" for p, t in offtopic[:8])
             more = f" (+{len(offtopic)-8} more)" if len(offtopic) > 8 else ""
@@ -599,7 +631,7 @@ def audit_post(post: dict) -> PostAudit:
             audit.add(
                 "§1.2b subspecialty relevance (no off-topic papers)",
                 True,
-                f"all {cards_n} cards carry a CBG/MIGS subspecialty anchor",
+                f"all {len(rel_cards)} cards carry a CBG/MIGS subspecialty anchor",
             )
 
     # -- §3.8 item 24 + §3.9 deep-dive modal coverage -----------------------

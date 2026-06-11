@@ -195,10 +195,21 @@ the target element is in a section ABOVE the script tag.
    relevance gate** (added 2026-06-11) flags cite cards with no CBG/MIGS
    anchor in the paper's own title/meta/abstract — catches the digest
    pipeline's keyword over-match contamination (W21 had 15 off-topic
-   papers, W20 has 12: ophthalmology, men's ortho, dermatology keloids,
-   rheumatology, hepatology, preclinical nanomedicine). The real fix is
-   upstream in the `MountZaraResearchDigest` classifier (sibling repo on
-   the Mac); this gate is the in-repo safety net.
+   papers, W20 had 12, draft W23 had 3: ophthalmology, men's ortho,
+   dermatology keloids, rheumatology, hepatology, preclinical
+   nanomedicine/phototherapy). It scans BOTH cite-card templates — the
+   canonical `mz-cite-card` AND the newer `paper-card` (blog-2026-W23+
+   auto-draft path, PMID in the `openDeepDive('dd-<PMID>')` trigger),
+   via `relevance_cards()` — so contamination in either template halts
+   the audit. It is a flag-for-human TRIPWIRE: it FAILS and lists
+   candidate PMIDs for a clinician to confirm; it never auto-prunes and
+   is never the authority on clinical relevance (the keyword anchors are
+   a blunt instrument — false +/− are expected, so a human reads each
+   flagged abstract before any cut). The real fix is upstream in the
+   `MountZaraResearchDigest` classifier (sibling repo on the Mac); this
+   gate is the in-repo safety net. Purge tooling for already-shipped
+   contamination: `scripts/_authoring/purge_w2{0,1,3}_offtopic.py`
+   (mechanical HTML-block removal with full integrity checks).
 7. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
    (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
    class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.
