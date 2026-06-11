@@ -36,7 +36,13 @@ import argparse, importlib.util, json, re, sys
 from html import escape
 
 PENDING_CLASS = "mz-jc-pending"
-PENDING_TAG_RE = re.compile(r'\s*<span class="mz-jc-pending-tag">PENDING REVIEW</span>')
+# Two template eras carry the pending marker differently:
+#   W21: section class token `mz-jc-pending` + an h3 badge <span ...>PENDING REVIEW</span>
+#   W20: NO section-class token; a bare placeholder <p><span ...>Pending review</span></p>
+# Strip the badge span regardless of inner-text casing, and the class token if present.
+PENDING_TAG_RE = re.compile(r'\s*<span class="mz-jc-pending-tag">[^<]*</span>')
+PENDING_PLACEHOLDER_RE = re.compile(
+    r'<span class="mz-jc-pending-tag">[^<]*</span>', re.IGNORECASE)
 
 
 def _load_authored(path: str) -> dict:
@@ -65,42 +71,56 @@ def _find_section(body: str, pmid: str, section: str) -> tuple[int, int, str] | 
 
 
 def _strip_pending(block: str) -> str:
-    """Remove the pending class token and the PENDING REVIEW h3 badge."""
+    """Remove the pending class token (W21) and any pending badge/placeholder
+    span (W20 and W21), so an applied section carries no pending marker."""
     block = re.sub(r'(<section class="mz-jc-section[^"]*?)\s*' + PENDING_CLASS + r'(["\s])',
                    r'\1\2', block, count=1)
-    block = PENDING_TAG_RE.sub('', block, count=1)
+    block = PENDING_PLACEHOLDER_RE.sub('', block)
     return block
 
 
-def _apply_para(block: str, p_class: str, inner: str) -> tuple[str, bool]:
-    """Replace the inner HTML of <p class="p_class">…</p> within block."""
-    pat = re.compile(rf'(<p class="{re.escape(p_class)}">).*?(</p>)', re.DOTALL)
+def _apply_text(block: str, inner: str) -> tuple[str, bool]:
+    """Template-agnostic: replace the inner of the FIRST content <p> after the
+    section's <h3>. Works for W21's classed <p class="mz-jc-bottom">… and W20's
+    bare <p><span …>Pending review</span></p> placeholder alike."""
+    pat = re.compile(r'(<h3\b.*?</h3>\s*<p\b[^>]*>).*?(</p>)', re.DOTALL)
     if not pat.search(block):
         return block, False
     return pat.sub(lambda m: m.group(1) + inner + m.group(2), block, count=1), True
 
 
+def _build_pico_dl(fields: dict) -> str:
+    """Render a P/I/C/O/D/S dict into a <dl> for templates whose pico section is
+    a bare <p> placeholder (W20)."""
+    label = [("P", "Population"), ("I", "Intervention / Exposure"),
+             ("C", "Comparator"), ("O", "Outcome"),
+             ("D", "Design"), ("S", "Sample")]
+    rows = "".join(f"<dt>{lab}</dt><dd>{fields[k]}</dd>"
+                   for k, lab in label if k in fields)
+    return f"<dl>{rows}</dl>"
+
+
 def _apply_pico(block: str, fields: dict) -> tuple[str, bool]:
-    """Replace the <dd> after each named <dt> in the PICO <dl>. Only P/I/C/O are
-    touched; Design/Sample <dd>s are left untouched (auto-derived per §3.7)."""
-    label = {"P": "Population", "I": "Intervention / Exposure",
-             "C": "Comparator", "O": "Outcome"}
-    ok_any = False
-    for key, text in fields.items():
-        if key not in label:
-            continue
-        pat = re.compile(rf'(<dt>{re.escape(label[key])}</dt><dd>).*?(</dd>)', re.DOTALL)
-        if pat.search(block):
-            block = pat.sub(lambda m: m.group(1) + text + m.group(2), block, count=1)
-            ok_any = True
-    return block, ok_any
-
-
-# Section → (paragraph class) for the simple single-<p> sections.
-PARA_SECTIONS = {
-    "bottom": "mz-jc-bottom",
-    "monday": "mz-jc-monday-take",
-}
+    """W21 path: replace the <dd> after each named <dt> in an existing PICO <dl>.
+    W20 path: the section is a bare <p> placeholder — swap it for a built <dl>."""
+    if "<dl>" in block:
+        label = {"P": "Population", "I": "Intervention / Exposure",
+                 "C": "Comparator", "O": "Outcome"}
+        ok_any = False
+        for key, text in fields.items():
+            if key not in label:
+                continue
+            pat = re.compile(rf'(<dt>{re.escape(label[key])}</dt><dd>).*?(</dd>)', re.DOTALL)
+            if pat.search(block):
+                block = pat.sub(lambda m: m.group(1) + text + m.group(2), block, count=1)
+                ok_any = True
+        return block, ok_any
+    # bare-<p> placeholder: replace the whole content <p>…</p> with the <dl>
+    pat = re.compile(r'(<h3\b.*?</h3>\s*)<p\b[^>]*>.*?</p>', re.DOTALL)
+    if not pat.search(block):
+        return block, False
+    dl = _build_pico_dl(fields)
+    return pat.sub(lambda m: m.group(1) + dl, block, count=1), True
 
 
 def apply_to_body(body: str, authored: dict) -> tuple[str, list[str], list[str]]:
@@ -114,25 +134,11 @@ def apply_to_body(body: str, authored: dict) -> tuple[str, list[str], list[str]]
                 warnings.append(f"{pmid}/{section}: no section block found — skipped")
                 continue
             start, end, block = loc
-            was_pending = PENDING_CLASS in block
-            if section in PARA_SECTIONS:
-                new_block, ok = _apply_para(block, PARA_SECTIONS[section], content)
-            elif section == "pico":
+            was_pending = (PENDING_CLASS in block) or ('mz-jc-pending-tag' in block)
+            if isinstance(content, dict):  # pico
                 new_block, ok = _apply_pico(block, content)
-            elif section in ("question", "equity"):
-                # Replace the section's content paragraphs after the intro <p>.
-                # We swap the LAST <p>…</p> (the content para) for these.
-                pat = re.compile(r'(.*<p class="mz-jc-section-intro">.*?</p>\s*)(.*)(</section>)',
-                                 re.DOTALL)
-                mm = pat.match(block)
-                if mm:
-                    new_block = mm.group(1) + content + mm.group(3)
-                    ok = True
-                else:
-                    new_block, ok = block, False
             else:
-                warnings.append(f"{pmid}/{section}: unsupported section — skipped")
-                continue
+                new_block, ok = _apply_text(block, content)
             if not ok:
                 warnings.append(f"{pmid}/{section}: content slot not found — skipped")
                 continue
@@ -155,11 +161,12 @@ def integrity_checks(before: str, after: str, authored: dict) -> list[str]:
         o = len(re.findall(rf'<{tag}[ >]', after)); c = len(re.findall(rf'</{tag}>', after))
         if o != c:
             errs.append(f"<{tag}> balance {o} open / {c} close")
-    # every applied (pmid, section) must no longer carry a pending tag
+    # every applied (pmid, section) must no longer carry a pending marker
+    # (class token OR placeholder span), across both template eras.
     for pmid, sections in authored.items():
         for section in sections:
             loc = _find_section(after, pmid, section)
-            if loc and PENDING_CLASS in loc[2]:
+            if loc and (PENDING_CLASS in loc[2] or 'mz-jc-pending-tag' in loc[2]):
                 errs.append(f"{pmid}/{section}: still marked pending after apply")
     return errs
 
