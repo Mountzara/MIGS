@@ -19,3 +19,7 @@ assets/videos/*.mov
 .env
 .env.*
 !.env.example
+
+# Python bytecode cache
+__pycache__/
+*.pyc
