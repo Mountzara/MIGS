@@ -400,27 +400,37 @@
                object-fit:cover then trims the landscape extremities rather than
                letterboxing. object-position keeps the composed centre in frame. */
             .hero-video {
-                /* Force the box to the full stage (100vw × 100vh) and let
-                   object-fit:cover SCALE the drawing down to cover it. Using
-                   width/height:auto here would leave the video at its natural
-                   1920px and show only its centre ~20% on a phone — too zoomed;
-                   explicit 100%/100% makes cover scale-to-fit-then-crop. */
+                /* 2026-06-12 (rev3) — DRAWING edge-to-edge. The artwork is
+                   composed with empty margins inside its 16:9 frame, so plain
+                   contain left visible "padding at the edges" (user). cover
+                   over-zoomed to full height ("too expanded"). The fix: contain
+                   the frame to viewport width, then scale ~1.65 so the DRAWING
+                   content (not the empty frame margins) spans edge-to-edge —
+                   measured against the live render so the line-art touches both
+                   screen edges while the monogram + MOUNT ZARA wordmark stay
+                   fully visible. Stays a prominent centred band, not a
+                   full-height crop. */
                 width: 100%;
-                height: 100%;
-                object-fit: cover;
+                height: auto;
+                object-fit: contain;
                 object-position: center center;
-                transform: translate(-50%, -50%) scale(1.0);
+                transform: translate(-50%, -50%) scale(1.65);
             }
             .hero-video.ken-burns {
                 animation: heroKenBurnsSlowMobile 45s ease-in-out infinite alternate;
             }
             @keyframes heroKenBurnsSlowMobile {
                 0% {
-                    transform: translate(-50%, -50%) scale(1.0);
+                    transform: translate(-50%, -50%) scale(1.65);
                 }
                 100% {
-                    transform: translate(-50%, -50%) scale(1.10);
+                    transform: translate(-50%, -50%) scale(1.78);
                 }
+            }
+            /* monogram size is handled responsively on the base rule
+               (max-width: min(400px, 54vw)) so it stays proportional here. */
+            .monogram-stage {
+                margin-bottom: 18px;
             }
         }
 
@@ -489,10 +499,45 @@
             to { transform: rotate(360deg); }
         }
 
+        /* ============ Apple glass — the REAL frosted recipe ============
+           The .frame-eyebrow pill reads as genuine Apple glass because it
+           actually FROSTS what's behind it (backdrop-filter blur+saturate),
+           carries a hairline light border, and — the key tell — an inset top
+           highlight that mimics light catching the top edge of a glass slab.
+           Most other backings were plain translucent fills (no backdrop-filter)
+           so they looked flat. This reusable utility brings the real thing, and
+           sits BEHIND text so copy stays readable over the busy hero drawing. */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(22px) saturate(180%);
+            -webkit-backdrop-filter: blur(22px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 20px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.20);
+        }
+
         /* ============ Hero content reveal (Apple-style staggered) ============ */
         .hero-content-delayed {
             opacity: 1; /* container visible, children animate in individually */
         }
+        /* Frost the drawing behind the hero copy so the title + subtitle read
+           cleanly (user screenshot: subtitle was lost in the pink line-art).
+           Real glass, not a flat scrim. */
+        .hero-title,
+        .hero-sub {
+            position: relative;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(18px) saturate(170%);
+            -webkit-backdrop-filter: blur(18px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 10px 22px;
+        }
+        .hero-title { padding: 14px 26px; }
         .hero-content-delayed > * {
             opacity: 0;
             transform: translateY(24px);
@@ -514,7 +559,11 @@
         .monogram-stage {
             position: relative;
             width: 100%;
-            max-width: 400px;
+            /* 2026-06-12 — responsive cap so the mz·MOUNT ZARA monogram stays
+               proportional to the headline on phones. 400px on desktop/tablet,
+               but ~54vw (≈210px) on a ~390px phone where the old flat 400px
+               filled almost the entire screen width and dwarfed the copy. */
+            max-width: min(400px, 54vw);
             margin: 0 auto 25px;
             display: flex;
             align-items: center;
