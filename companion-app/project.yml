@@ -1,0 +1,40 @@
+# XcodeGen spec — generates MZAdmin.xcodeproj (a SwiftUI multiplatform app:
+# iPhone + iPad + Mac from one target). On your Mac:
+#   brew install xcodegen
+#   cd companion-app && xcodegen generate && open MZAdmin.xcodeproj
+# (Or skip XcodeGen entirely — see README "Manual Xcode setup".)
+name: MZAdmin
+options:
+  bundleIdPrefix: com.mountzara
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""            # set your Apple Developer Team ID in Xcode
+    CODE_SIGN_STYLE: Automatic
+    GENERATE_INFOPLIST_FILE: YES
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  MZAdmin:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: MZAdmin/Sources
+      - path: MZAdmin/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mountzara.admin
+        PRODUCT_NAME: MZ Admin
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ENABLE_PREVIEWS: YES
+        INFOPLIST_KEY_CFBundleDisplayName: MZ Admin
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.medical
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        # macOS network client entitlement (sandbox) — harmless on iOS
+        INFOPLIST_KEY_NSAppTransportSecurity: ""

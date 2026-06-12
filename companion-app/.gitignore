@@ -1,0 +1,9 @@
+# Xcode / build artifacts
+MZAdmin.xcodeproj/
+*.xcworkspace/
+DerivedData/
+build/
+.build/
+*.xcuserstate
+xcuserdata/
+.DS_Store
