@@ -289,6 +289,10 @@ DEEPDIVE_SECTION_ANCHORS = [
 # §3.9 — Monday Morning markers
 SUBSPECIALTY_PARA = re.compile(r"subspecialty|per-subspecialty|per-group", re.IGNORECASE)
 PENDING_PLACEHOLDER = re.compile(r"\[\s*pending\s*\]", re.IGNORECASE)
+# The literal author-pending placeholder text left in unfilled §3.9 deep-dive
+# sections (e.g. "Pending Dr. Mabini's manual journal-club review"). A published
+# post must carry NONE of these.
+PENDING_AUTHOR_PLACEHOLDER = re.compile(r"Pending\s+Dr\.\s*\w+[^<]*review", re.IGNORECASE)
 MZ_REF_SUPS = re.compile(r'class="[^"]*mz-ref[^"]*"', re.IGNORECASE)
 
 # HTML comment stripper — §0.8 manifest lives in <!-- ... --> comments
@@ -828,6 +832,19 @@ def audit_post(post: dict, relevance_advisory: bool = False) -> PostAudit:
             "§3.9 NO '[ pending ]' visible placeholders",
             not PENDING_PLACEHOLDER.search(visible),
             "found visible [ pending ] placeholder" if PENDING_PLACEHOLDER.search(visible) else "",
+        )
+        # The deep-dive sections that haven't been authored carry the literal
+        # "Pending Dr. Mabini's … review" placeholder text. The check above only
+        # matched a "[ pending ]" token in `visible`, which EXCLUDES the hidden
+        # <dialog> modal bodies — exactly where these placeholders live — so W21
+        # shipped PUBLISHED with ~80 of them (authored content mis-applied to the
+        # intro <p> by the _apply_text bug). Scan `body` (includes the modals).
+        pending_author = len(PENDING_AUTHOR_PLACEHOLDER.findall(body))
+        audit.add(
+            "§3.9 NO unfilled 'Pending …review' deep-dive placeholders",
+            pending_author == 0,
+            f"{pending_author} deep-dive section(s) still hold the author-pending placeholder"
+            if pending_author else "",
         )
         audit.add(
             "§3.9 mz-ref superscripts present",

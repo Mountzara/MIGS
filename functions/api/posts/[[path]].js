@@ -261,6 +261,13 @@ async function onRequestImpl({ request, env, params }) {
         for (const k of kinds) {
             const idx = await readIndex(env, k);
             for (const p of idx.posts) {
+                // PUBLIC listing is PUBLISHED-ONLY. Previously this returned
+                // every status, so draft + rejected post metadata (titles,
+                // summaries, the "trash-pipeline-test" ids) leaked to anyone who
+                // GET /api/posts. Drafts/rejected are admin-only via the
+                // authenticated /_admin listing. A `status` query param can only
+                // NARROW within published — it can never expose non-published.
+                if (p.status !== "published") continue;
                 if (status && p.status !== status) continue;
                 combined.push(p);
             }

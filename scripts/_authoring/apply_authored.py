@@ -83,14 +83,27 @@ _BLOCK_START = re.compile(r'^\s*<(ul|ol|dl|div|table|p)\b', re.IGNORECASE)
 
 
 def _apply_text(block: str, content: str) -> tuple[str, bool]:
-    """Template-agnostic content insert after the section's <h3>.
-    - Inline/prose content → replace the inner of the FIRST content <p>
-      (keeps W21's classed <p class="mz-jc-bottom">… and W20's bare <p> wrapper).
+    """Template-agnostic content insert into the section's CONTENT <p>.
+    - Inline/prose content → replace the inner of the content <p>.
     - Block-level content (starts with <ul>/<ol>/<dl>/…, e.g. discussion prompts)
       → replace the ENTIRE following <p>…</p> placeholder with the block so we
-      never nest a block inside <p> (invalid HTML)."""
-    # Optional wrapper between <h3> and the content <p> (W23/W24: <div class="dd-body">).
-    after_h3 = r'(<h3\b.*?</h3>\s*(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?'
+      never nest a block inside <p> (invalid HTML).
+
+    CRITICAL: the content <p> is NOT always the first <p> after the <h3>.
+    W21 sections lead with an editorial scaffold paragraph
+    <p class="mz-jc-section-intro">…</p> and the real content lives in the
+    following classed paragraph (<p class="mz-jc-monday-take">,
+    <p class="mz-jc-bottom">, …). Targeting the first <p> put authored content
+    into the intro slot and left the real slot's "Pending Dr. Mabini"
+    placeholder behind (the W21 live-incomplete bug). So skip an optional
+    leading section-intro paragraph before matching the content <p>. W20's bare
+    <p> placeholder and W23/W24's <div class="dd-body"> have no intro, so the
+    optional skip consumes nothing and they are unaffected."""
+    # After the <h3>: optional dd-body wrapper (W23/W24), then optionally skip a
+    # leading mz-jc-section-intro paragraph (W21), then target the content <p>.
+    after_h3 = (r'(<h3\b.*?</h3>\s*'
+                r'(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?'
+                r'(?:<p[^>]*class="[^"]*mz-jc-section-intro[^"]*"[^>]*>.*?</p>\s*)?')
     if _BLOCK_START.match(content):
         pat = re.compile(after_h3 + r')<p\b[^>]*>.*?</p>', re.DOTALL)
         if not pat.search(block):
