@@ -8315,30 +8315,40 @@
                     // below remains a backstop for the image-fallback path.
                     heroVideo.classList.add('ken-burns');
                 }, { once: true });
+                // Swap the hero <video> for a STATIC final-frame poster. Used
+                // both when play() rejects AND when Low Power Mode leaves play()
+                // un-rejected but the video stuck (see the stuck-check below).
+                // 2026-06-11 — fallback is a static last-frame webp (not the
+                // animated webp, which looped forever on phones). Ken Burns
+                // applies to it via the setTimeout backstop. Idempotent.
+                let heroPosterSwapped = false;
+                function swapHeroToPoster() {
+                    const live = document.getElementById('heroVideo');
+                    if (heroPosterSwapped || !live || live.tagName !== 'VIDEO') return;
+                    heroPosterSwapped = true;
+                    const fallback = document.createElement('img');
+                    fallback.className = live.className;
+                    fallback.id = live.id;
+                    fallback.alt = '';
+                    fallback.decoding = 'async';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+                    if (live.parentNode) live.parentNode.replaceChild(fallback, live);
+                }
                 const playPromise = heroVideo.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {
-                        // Autoplay blocked (common on mobile). 2026-06-11 — the
-                        // old fallback was hero-animation-hd.webp, an ANIMATED
-                        // WebP that loops forever and cannot be frozen on its
-                        // last frame, so on phones the drawing replayed
-                        // endlessly (user: "the animation keeps repeating after
-                        // it ends"). Swap to a STATIC final-frame poster instead
-                        // — it shows the settled drawing and the CSS Ken Burns
-                        // applies to it via the setTimeout backstop below, exactly
-                        // matching the play-once-then-zoom behavior of the video
-                        // path. No "tap to play" overlay, no loop.
-                        const fallback = document.createElement('img');
-                        fallback.className = heroVideo.className;
-                        fallback.id = heroVideo.id;
-                        fallback.alt = '';
-                        fallback.decoding = 'async';
-                        fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
-                        if (heroVideo.parentNode) {
-                            heroVideo.parentNode.replaceChild(fallback, heroVideo);
-                        }
-                    });
+                    playPromise.catch(swapHeroToPoster);
                 }
+                // LOW POWER MODE resilience: iOS may NOT reject play() yet still
+                // refuse to advance the video (it sits paused at frame 1). The
+                // catch above never fires in that case, so verify ~900ms later:
+                // if the hero is still stuck near the start, swap to the poster
+                // so the user never sees a frozen black box.
+                setTimeout(() => {
+                    const live = document.getElementById('heroVideo');
+                    if (live && live.tagName === 'VIDEO' && live.paused && live.currentTime < 0.3) {
+                        swapHeroToPoster();
+                    }
+                }, 900);
             }
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the
@@ -8374,6 +8384,26 @@
             // Small breath between loader fade and hero start, feels more deliberate
             setTimeout(startHeroSequence, 250);
         });
+
+        // LOW POWER MODE resilience for autoplay videos.
+        // iOS Low Power Mode blocks autoplay (the hero and the four
+        // .video-preview loops sit paused even though play() was issued).
+        // iOS DOES permit play() inside a user-gesture handler even in Low
+        // Power Mode, so on the first interaction we retry every paused
+        // autoplay video once. Passive + { once:true } so it never costs
+        // scroll performance and never fights a deliberate user pause.
+        function recoverPausedVideos() {
+            document.querySelectorAll('video').forEach(v => {
+                const wantsAutoplay = v.autoplay || v.id === 'heroVideo' ||
+                                      v.classList.contains('video-preview');
+                if (wantsAutoplay && v.paused && v.tagName === 'VIDEO') {
+                    const p = v.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                }
+            });
+        }
+        ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(ev =>
+            window.addEventListener(ev, recoverPausedVideos, { once: true, passive: true }));
 
         // Fade out persistent bg after user scrolls past the pinned showcase
         if (heroBgStage) {
