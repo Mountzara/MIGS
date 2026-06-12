@@ -54,3 +54,22 @@ were never populated (placeholder titles, blank design, "n = —"), and one pape
 (42145021) had cross-contaminated metadata. The content below the headers is
 correct; the headers are the defect. It also catches a *botched fix* — when a
 rebuild left a duplicate cite line, the gate flagged it before publish.
+
+## Visual / interactive runtime gate (audit_visual_runtime.py) — iPhone-faithful
+Drives REAL browsers against the live site and verifies what the reader SEES:
+images loaded, autoplay videos actually playing (polled — loop-wrap and momentary
+mid-load states don't false-fail), the opening #heroVideo drawing animation starts
+ON TIME and covers the screen edge-to-edge, the Ken-Burns animation is applied AND
+actually moving (transform changes), and the opening fade-in completes.
+
+Tested on the engines REAL users run — desktop on Chromium, and **iPhone on
+WebKit (Safari's engine) with a real iPhone device descriptor**, plus an
+**iPhone + Reduce-Motion** profile (the hero must still present, not go blank).
+A Chromium-with-a-small-viewport test is NOT a faithful iPhone test; WebKit has
+different autoplay/animation behavior. Also checks the iOS autoplay PREREQUISITE
+(every autoplay/JS-played video is muted + playsinline — without which iOS simply
+won't play it). Calibration with a live run found that .ken-burns is JS-added
+after the 8s drawing animation (so the check polls for it), and fixed several of
+its own false positives (loop-wrap negative Δt, single-sample timing). Stable:
+24/24 across repeated runs. Wired into deploy-prod.sh as a soft gate; promote to
+hard with DEPLOY_VISUAL_GATE_HARD=1.

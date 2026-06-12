@@ -41,16 +41,27 @@ except ImportError:
 
 BASE = "https://mountzara.com"
 
-# (label, viewport) — check desktop and an iPhone-class viewport
-VIEWPORTS = [("desktop", {"width": 1440, "height": 900}),
-             ("mobile",  {"width": 430, "height": 932})]
+# Test on the engines that REAL users run. iPhone uses Safari/WebKit — NOT
+# Chromium — and WebKit has different video-autoplay and animation behavior, so
+# a Chromium-with-a-small-viewport test is not a faithful iPhone test. We run
+# desktop on Chromium and the iPhone profile on WebKit with a real device
+# descriptor (UA, DPR, touch, is_mobile).
+#   (label, engine, device-name-or-None, viewport-or-None, extra-context-opts)
+PROFILES = [
+    ("desktop · chromium",         "chromium", None, {"width": 1440, "height": 900}, {}),
+    ("iPhone · webkit",            "webkit",   "iPhone 14 Pro Max", None, {}),
+    # Reduce Motion is a common iOS accessibility setting; the hero must still
+    # present sensibly (not blank) with it on.
+    ("iPhone reduce-motion · webkit", "webkit", "iPhone 14 Pro Max", None,
+     {"reduced_motion": "reduce"}),
+]
 
 
 def chk(name, ok, detail=""):
     return {"name": name, "pass": bool(ok), "detail": detail}
 
 
-def audit(page, label) -> list[dict]:
+def audit(page, label, reduce_motion=False) -> list[dict]:
     page.goto(f"{BASE}/?cb={int(time.time())}", wait_until="domcontentloaded", timeout=30000)
     # ORCHESTRATION-AWARE WAIT. The hero is deliberately sequenced: the page
     # loader shows ~6s, then startHeroSequence() hides it, calls #heroVideo.play()
@@ -77,48 +88,97 @@ def audit(page, label) -> list[dict]:
     res.append(chk(f"[{label}] all visible images loaded", not broken,
                    f"{len(broken)} broken: {broken}" if broken else "ok"))
 
-    # 2) AUTOPLAY videos actually playing
-    t0 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
-        .filter(v => v.offsetParent !== null)
-        .map((v,i) => ({i, t: v.currentTime, paused: v.paused, ready: v.readyState}))""")
-    page.wait_for_timeout(1200)
-    t1 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
-        .filter(v => v.offsetParent !== null)
-        .map((v,i) => ({i, t: v.currentTime, paused: v.paused, ready: v.readyState}))""")
-    bad = []
-    for a, b in zip(t0, t1):
-        if a["paused"] or b["paused"] or b["ready"] < 2 or b["t"] <= a["t"]:
-            bad.append(f"video#{a['i']}(paused={b['paused']},Δt={b['t']-a['t']:.2f},ready={b['ready']})")
-    res.append(chk(f"[{label}] autoplay videos are playing", not bad and len(t1) > 0,
-                   f"{len(bad)} not playing: {bad}" if bad else f"{len(t1)} playing"))
+    # 2a) iOS AUTOPLAY PREREQUISITE — iOS Safari only autoplays a video that is
+    # muted AND playsinline. A video that's set to autoplay/JS-played but lacks
+    # either will simply NOT play on iPhone (the failure that's invisible on
+    # desktop). Checked on every autoplay video and the JS-played hero.
+    badprereq = page.evaluate("""() => [...document.querySelectorAll('video')]
+        .filter(v => (v.autoplay || v.id === 'heroVideo') &&
+                     (!v.muted || !(v.hasAttribute('playsinline') || v.hasAttribute('webkit-playsinline'))))
+        .map(v => `${v.id||v.className}(muted=${v.muted},inline=${v.hasAttribute('playsinline')})`)""")
+    res.append(chk(f"[{label}] videos meet iOS autoplay prereqs (muted+playsinline)", not badprereq,
+                   f"would NOT autoplay on iPhone: {badprereq}" if badprereq else "ok"))
 
-    # 3) HERO video plays + covers the screen edge-to-edge
+    # 2) AUTOPLAY videos actually playing. POLL for up to ~8s for every autoplay
+    # video to reach a playing state (not paused, ready, time advancing) — this
+    # gives them a fair chance to start and avoids failing on a momentary mid-
+    # load sample, while still catching a video that GENUINELY never autoplays
+    # on this engine (the real iOS/WebKit autoplay-reliability failure).
+    try:
+        page.wait_for_function("""() => {
+            const vs=[...document.querySelectorAll('video[autoplay]')].filter(v=>v.offsetParent!==null);
+            return vs.length>0 && vs.every(v=>!v.paused && v.readyState>=2);
+        }""", timeout=8000)
+    except Exception:
+        pass
+    # confirm time is advancing (not frozen) with a short two-sample check
+    s0 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
+        .filter(v=>v.offsetParent!==null).map((v,i)=>({i,t:v.currentTime,paused:v.paused,ready:v.readyState}))""")
+    page.wait_for_timeout(700)
+    s1 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
+        .filter(v=>v.offsetParent!==null).map((v,i)=>({i,t:v.currentTime,paused:v.paused,ready:v.readyState}))""")
+    bad = []
+    for a, b in zip(s0, s1):
+        frozen = abs(b["t"] - a["t"]) < 0.02   # loop-wrap (t1<t0) is fine; frozen is not
+        if b["paused"] or b["ready"] < 2 or frozen:
+            bad.append(f"video#{a['i']}(paused={b['paused']},Δt={b['t']-a['t']:.2f})")
+    res.append(chk(f"[{label}] autoplay videos are playing", not bad and len(s1) > 0,
+                   f"{len(bad)} not playing after 8s: {bad}" if bad else f"{len(s1)} playing"))
+
+    # 3) HERO video plays + covers the screen edge-to-edge. Under Reduce Motion
+    # the hero legitimately pauses at the end of the drawing (handled in 4); for
+    # normal motion, poll for it to be playing (fair window), then confirm it's
+    # not frozen.
+    if not reduce_motion:
+        try:
+            page.wait_for_function("""() => { const v=document.querySelector('#heroVideo');
+                return v && !v.paused && v.readyState>=2; }""", timeout=8000)
+        except Exception:
+            pass
     hero0 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
         const r=v.getBoundingClientRect();
         return {paused:v.paused, t:v.currentTime, ready:v.readyState,
                 w:r.width, vw:window.innerWidth, h:r.height}; }""")
-    page.wait_for_timeout(1000)
+    page.wait_for_timeout(700)
     hero1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
         return {paused:v.paused, t:v.currentTime}; }""")
     if hero0 is None:
         res.append(chk(f"[{label}] hero video present", False, "#heroVideo not found"))
-    else:
-        playing = (not hero1["paused"]) and hero1["t"] > hero0["t"] and hero0["ready"] >= 2
+    elif not reduce_motion:
+        moved = abs(hero1["t"] - hero0["t"]) >= 0.02
+        playing = (not hero1["paused"]) and moved and hero0["ready"] >= 2
         res.append(chk(f"[{label}] hero video playing", playing,
                        f"paused={hero1['paused']} Δt={hero1['t']-hero0['t']:.2f} ready={hero0['ready']}"))
         edge = hero0["w"] >= hero0["vw"] * 0.98
         res.append(chk(f"[{label}] hero video covers screen edge-to-edge", edge,
                        f"video width {hero0['w']:.0f}px vs viewport {hero0['vw']}px"))
 
-    # 4) KEN BURNS animating (transform changes) + applied
+    # 4) KEN BURNS animating (transform changes) + applied. CALIBRATED: the
+    # .ken-burns class is added to #heroVideo only AFTER the ~8s drawing
+    # animation, so we POLL for it (up to 14s) rather than check immediately.
+    try:
+        page.wait_for_selector(".ken-burns", timeout=14000, state="attached")
+    except Exception:
+        pass
     kb0 = page.evaluate("""() => { const e=document.querySelector('.ken-burns'); if(!e) return null;
         const cs=getComputedStyle(e);
         return {name:cs.animationName, state:cs.animationPlayState, transform:cs.transform}; }""")
     page.wait_for_timeout(1500)
     kb1 = page.evaluate("""() => { const e=document.querySelector('.ken-burns'); if(!e) return null;
         return {transform:getComputedStyle(e).transform}; }""")
-    if kb0 is None:
-        res.append(chk(f"[{label}] ken-burns element present", False, ".ken-burns not found"))
+    if reduce_motion:
+        # Under Reduce Motion, the Ken-Burns zoom is intentionally suppressed —
+        # so we DON'T require motion; we require the hero to still PRESENT (the
+        # drawing completes and stays visible, not blank).
+        vis = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
+            const cs=getComputedStyle(v); const r=v.getBoundingClientRect();
+            return {opacity:+cs.opacity, display:cs.display, w:r.width, vw:window.innerWidth}; }""")
+        ok = vis and vis["display"] != "none" and vis["opacity"] >= 0.95 and vis["w"] >= vis["vw"]*0.98
+        res.append(chk(f"[{label}] hero presents under Reduce Motion (graceful deg- not blank)", bool(ok),
+                       str(vis)))
+    elif kb0 is None:
+        res.append(chk(f"[{label}] ken-burns animation present", False,
+                       ".ken-burns never applied within 14s (drawing-animation may have stalled)"))
     else:
         applied = "kenburns" in kb0["name"].lower() and kb0["state"] == "running"
         res.append(chk(f"[{label}] ken-burns animation applied + running", applied,
@@ -147,15 +207,26 @@ def main():
     a = ap.parse_args()
     all_res = []
     with sync_playwright() as p:
-        browser = p.chromium.launch()
-        for label, vp in VIEWPORTS:
-            page = browser.new_page(viewport=vp)
+        for label, engine, device, vp, extra in PROFILES:
             try:
-                all_res += audit(page, label)
+                browser = getattr(p, engine).launch()
+            except Exception as e:
+                all_res.append(chk(f"[{label}] engine available", False,
+                                   f"{engine} could not launch: {str(e)[:80]}"))
+                continue
+            # ignore_https_errors: harmless for our own site on the deploy
+            # machine; required where the network does TLS interception.
+            opts = {"ignore_https_errors": True}
+            opts.update(p.devices[device] if device else {"viewport": vp})
+            opts.update(extra)
+            ctx = browser.new_context(**opts)
+            page = ctx.new_page()
+            try:
+                all_res += audit(page, label, reduce_motion=extra.get("reduced_motion") == "reduce")
             except Exception as e:
                 all_res.append(chk(f"[{label}] audit ran", False, f"exception: {e}"))
-            page.close()
-        browser.close()
+            ctx.close()
+            browser.close()
     fails = [r for r in all_res if not r["pass"]]
     for r in all_res:
         print(f"   {'✓' if r['pass'] else '✗'}  {r['name']}  · {r['detail']}")
