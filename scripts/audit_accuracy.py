@@ -40,11 +40,22 @@ _NOT_TRIAL = ("review", "meta-analysis", "guideline", "consensus", "protocol")
 def strip(s): return re.sub(r'\s+', ' ', HTML.sub(' ', s or '')).strip()
 
 
+# Thousands separators vary across journals: comma, plain space, non-breaking
+# space ( ), narrow no-break space ( ). Normalize ALL digit-group
+# separators away so "1,460,564" / "1 460 564" / "1460564" all compare equal.
+_SEP = re.compile(r'(?<=\d)[,\s  ](?=\d)')
+def denum(s): return _SEP.sub('', s)
+
+
 def nums(s):
+    # Capture CLEAN single tokens: digits with comma-thousands and an optional
+    # decimal — NOT spaces (so "1.84, 95% CI" yields '1.84' and '95', not one
+    # blob). Space-separated thousands in the SOURCE are handled by denum() at
+    # match time, not here.
     out = set()
-    for n in re.findall(r'\b\d[\d,\.]*\b', s):
-        c = n.replace(',', '').replace('.', '')
-        if len(c) < 3 or re.fullmatch(r'(19|20)\d\d', n.replace(',', '')):
+    for n in re.findall(r'\d+(?:,\d{3})*(?:\.\d+)?', s):
+        digits = n.replace(',', '').replace('.', '')
+        if len(digits) < 3 or re.fullmatch(r'(19|20)\d\d', n.replace(',', '')):
             continue
         out.add(n)
     return out
@@ -82,7 +93,7 @@ def audit_post(post: dict) -> list[tuple]:
                 continue
             flags.append((pmid, "info-offline-fallback",
                           "NCBI unavailable — checked against the stored verbatim abstract"))
-        ab_nc = ab.replace(",", "")
+        ab_nc = denum(ab)          # separators-normalized abstract for digit matching
         parts, design = [], ""
         for sec in AUTHORED_SECS:
             sm = re.search(r'id="dd-'+pmid+'-'+sec+r'"[^>]*>(.*?)</section>', body, re.DOTALL)
@@ -98,7 +109,7 @@ def audit_post(post: dict) -> list[tuple]:
                     design = strip(dm.group(1)).lower()
         text = " ".join(parts)
         for n in nums(text):
-            if n in ab or n.replace(",", "") in ab_nc:
+            if denum(n) in ab_nc:          # compare with all separators removed
                 continue
             flags.append((pmid, "number-not-in-pubmed-abstract", n))
         for phrase, cues in DESIGN_RULE.items():
