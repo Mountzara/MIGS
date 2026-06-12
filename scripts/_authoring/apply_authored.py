@@ -141,10 +141,15 @@ def _apply_pico(block: str, fields: dict) -> tuple[str, bool]:
                 block = pat.sub(lambda m: m.group(1) + text + m.group(2), block, count=1)
                 ok_any = True
         return block, ok_any
-    # bare-<p> placeholder: replace the whole content <p>…</p> with the <dl>.
-    # Allow an optional dd-body wrapper (W23/W24) between <h3> and the <p>.
+    # bare-<p> placeholder: replace the CONTENT <p>…</p> with the <dl>. Allow an
+    # optional dd-body wrapper (W23/W24) AND skip an optional leading
+    # mz-jc-section-intro <p> (trend briefs lead with one — same fix as
+    # _apply_text; without the skip the <dl> overwrote the intro and the real
+    # placeholder <p> survived).
     pat = re.compile(
-        r'(<h3\b.*?</h3>\s*(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?)<p\b[^>]*>.*?</p>',
+        r'(<h3\b.*?</h3>\s*'
+        r'(?:<div[^>]*class="[^"]*dd-body[^"]*"[^>]*>\s*)?'
+        r'(?:<p[^>]*class="[^"]*mz-jc-section-intro[^"]*"[^>]*>.*?</p>\s*)?)<p\b[^>]*>.*?</p>',
         re.DOTALL)
     if not pat.search(block):
         return block, False
