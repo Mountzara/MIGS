@@ -23,3 +23,6 @@ assets/videos/*.mov
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# Cached PubMed abstract records (regenerated on demand from NCBI)
+scripts/_authoring/.pubmed_cache/
