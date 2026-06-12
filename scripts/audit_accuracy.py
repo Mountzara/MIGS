@@ -99,8 +99,24 @@ def audit_post(post: dict) -> list[tuple]:
             flags.append((pmid, "header-title-placeholder", f"modal title is '{shown_title or '(empty)'}'"))
         elif real_title and _norm(shown_title) not in _norm(real_title) \
                 and _norm(real_title) not in _norm(shown_title):
-            flags.append((pmid, "header-title-mismatch",
-                          f"header '{shown_title[:40]}' != PubMed '{real_title[:40]}'"))
+            # Not a clean substring match — but a header may legitimately
+            # ABBREVIATE ("MRI" for "magnetic resonance imaging"), add an
+            # article, or paraphrase. Only flag a TRUE cross-contamination
+            # (the header is a DIFFERENT paper) by measuring significant-word
+            # overlap: if few of the shorter title's content words are shared,
+            # it is the wrong paper; if most are shared, it's the same paper
+            # rendered differently. (The W21 swaps shared ~0 words; "MRI" vs
+            # "magnetic resonance imaging" shares the whole rest of the title.)
+            def _words(s):
+                s = _h.unescape(HTML.sub('', s or '')).lower()
+                return {w for w in re.findall(r'[a-z0-9]{4,}', s)}
+            sw, rw = _words(shown_title), _words(real_title)
+            shared = sw & rw
+            ratio = len(shared) / min(len(sw), len(rw)) if (sw and rw) else 0.0
+            if ratio < 0.4:
+                flags.append((pmid, "header-title-mismatch",
+                              f"header '{shown_title[:40]}' != PubMed '{real_title[:40]}' "
+                              f"(only {len(shared)} shared word(s))"))
         # a header that still says "n = —" or carries a duplicate cite is unfinished
         hdr = body[:body.find('</header>')] if '</header>' in body else body[:600]
         if re.search(r'n\s*=\s*—', hdr):

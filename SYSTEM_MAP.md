@@ -215,15 +215,48 @@ the target element is in a section ABOVE the script tag.
    the ingestion endpoint — see **`UPSTREAM_FIXES.md`** for the full
    issue→root-cause→fix table (incl. the ingestion `pmids_cited`
    auto-backfill now in `functions/api/posts/[[path]].js`).
-7. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
+7. **Structural-integrity gate (added 2026-06-12)** —
+   `scripts/audit_deploy_gate.py` fetches every published post and
+   hard-fails on the STRUCTURAL defect class that the prose-focused
+   §3 gate (#6) does not cover and that let the W21 regression ship:
+   placeholder modal titles (`Foundational reference`), cross-
+   contaminated header metadata (a different paper's title/cite/n on a
+   modal header — e.g. W21 PMID 42145021 carrying "Management of
+   Symptomatic Uterine Leiomyomas / Case Series / n=23,986" instead of
+   the real "Benign metastasizing leiomyoma" review), `n = —`
+   unpopulated headers, broken inline-reference popovers (truncated /
+   empty / author-byline / wrong-paper synopsis), and unfilled
+   `Foundational reference` reference-list entries. It REUSES the
+   existing auditors (`audit_accuracy.audit_post` header-* flags +
+   `audit_inline_refs.audit_post`) so rules can't drift, and gates ONLY
+   unambiguous structural defects — advisory judgment calls
+   (number-not-in-abstract derived sums, mechanism hedging, bottom-line
+   phrasing) are deliberately NOT gated so the gate never cries wolf.
+   The header-title-mismatch check (in `audit_accuracy.py`) uses
+   significant-word OVERLAP (flag only when <40% of the shorter title's
+   content words are shared), so legitimate abbreviation ("MRI" for
+   "magnetic resonance imaging"), an added article, or paraphrase do NOT
+   false-fire — only a genuinely different paper does.
+   Skip: `DEPLOY_SKIP_STRUCTURAL_GATE=1` (non-clinical shell pushes only).
+8. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
    (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
    class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.
-8. **Route-render audit (added 2026-06-10)** —
+9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
    in headless Chromium on live + title/selector asserted (homepage-
    fallthrough + broken-page-JS classes), PLUS the discovery contract
    (any repo route absent from `scripts/route_render_manifest.json`
    fails the deploy). Skip: `DEPLOY_SKIP_ROUTE_RENDER_AUDIT=1`.
+   **Environment resilience (2026-06-12):** no longer Mac-only. When the
+   admin password is unavailable (env `ADMIN_PASS`/`MZ_ADMIN_PASS` or
+   macOS Keychain), it DEGRADES GRACEFULLY — hard-audits the 4 PUBLIC
+   routes (`/`, `/about/`, `/evidence/`, `/trending/`, no auth needed,
+   where a homepage-fallthrough actually hurts) and SKIPS the 10 gated
+   `/admin/*` + `/portal/*` routes with an advisory (set `ADMIN_PASS`
+   to include them). The browser context sets `ignore_https_errors=True`
+   so a sandbox/CI TLS-MITM (self-signed root → `ERR_CERT_AUTHORITY_
+   INVALID`) doesn't block the gate. Orphan-discovery still enforced
+   in all environments.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 
@@ -561,7 +594,7 @@ or it won't be backed up.
 | **Phase deploys** | `_deploy_phase14_a/b/c/d.sh`, `_deploy_phase15.sh`, `_deploy_phase_qa/qb/qc.sh`, `_deploy_p25a.sh`, `_redeploy_phase14_*_fix.sh` |
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
-| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #8), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
+| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_deploy_gate.py` (structural-integrity hard gate — deploy gate #7; reuses `audit_accuracy.py` header-* + `audit_inline_refs.py`), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #9, env-resilient), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
 | **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |
@@ -596,7 +629,7 @@ Never add a `_redirects` wildcard for such a route.
    means homepage fallthrough).
 3. Add the route to `scripts/route_render_manifest.json` with title +
    selector assertions — `scripts/audit_route_render.py` is a HARD
-   post-deploy gate in `deploy-prod.sh` (gate #8) that loads every
+   post-deploy gate in `deploy-prod.sh` (gate #9) that loads every
    manifest route in headless Chromium and fails the deploy on a wrong
    title, homepage fallthrough, or missing DOM selector. Its discovery
    contract also fails the deploy when ANY static SPA route exists in

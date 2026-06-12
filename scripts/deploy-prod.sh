@@ -228,6 +228,29 @@ if [ -z "${DEPLOY_SKIP_POST_AUDIT:-}" ]; then
     fi
 fi
 
+# STRUCTURAL-INTEGRITY post-deploy gate (added 2026-06-12). The §3 gate above
+# checks prose rules but NOT the structural defect class that let the W21
+# regression ship: placeholder modal titles ("Foundational reference"),
+# cross-contaminated header metadata (wrong paper's title/n), "n = —" headers,
+# broken inline-reference popovers (truncated / empty / wrong-paper synopsis),
+# and unfilled "Foundational reference" reference-list entries. audit_deploy_gate
+# reuses the accuracy + inline-ref auditors and hard-fails on any of these.
+# Advisory judgment calls (derived sums, hedging) are intentionally NOT gated.
+# Skip with DEPLOY_SKIP_STRUCTURAL_GATE=1 only for non-clinical shell pushes.
+if [ -z "${DEPLOY_SKIP_STRUCTURAL_GATE:-}" ]; then
+    echo ""
+    echo "🔒 structural-integrity gate — modal headers, inline refs, reference lists..."
+    if ! python3 scripts/audit_deploy_gate.py ; then
+        echo ""
+        echo "🛑 STRUCTURAL-INTEGRITY GATE FAILED — a published post has a"
+        echo "   placeholder/contaminated modal header, a broken inline-reference"
+        echo "   popover, or an unfilled reference-list entry. Fix the post body in"
+        echo "   R2 (author each from the real PubMed record) and re-run. Override:"
+        echo "   DEPLOY_SKIP_STRUCTURAL_GATE=1 ./scripts/deploy-prod.sh '<reason>'"
+        exit 1
+    fi
+fi
+
 # ---------------------------------------------------------------------------
 # Runtime-CSS post-deploy gate (added 2026-05-26 per SYSTEM_MAP.md §14).
 # Loads live mountzara.com homepage via headless WebKit and runs
