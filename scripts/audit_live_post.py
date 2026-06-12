@@ -846,10 +846,19 @@ def audit_post(post: dict, relevance_advisory: bool = False) -> PostAudit:
             f"{pending_author} deep-dive section(s) still hold the author-pending placeholder"
             if pending_author else "",
         )
+        # §3.9 requires inline citations. TWO valid formats coexist: the original
+        # mz-ref superscripts (W20/W21, evidence posts) AND the newer paper-card
+        # deep-dives (W23+, openDeepDive('dd-<PMID>') with PubMed links). The
+        # original check only recognized mz-ref, so well-cited W23/W24 (108
+        # paper-cards, 500+ PubMed links each) falsely failed. Accept either.
+        has_mzref = bool(MZ_REF_SUPS.search(body))
+        has_papercards = (("paper-card" in body) or ("openDeepDive(" in body)) \
+            and ("pubmed.ncbi.nlm.nih.gov" in body)
         audit.add(
-            "§3.9 mz-ref superscripts present",
-            bool(MZ_REF_SUPS.search(body)),
-            "",
+            "§3.9 inline citations present (mz-ref superscripts or paper-card deep-dives)",
+            has_mzref or has_papercards,
+            "" if (has_mzref or has_papercards)
+            else "no mz-ref superscripts and no paper-card deep-dive citations found",
         )
 
     return audit
