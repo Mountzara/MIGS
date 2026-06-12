@@ -139,7 +139,7 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         const r=v.getBoundingClientRect();
         return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,
                 kb:v.classList.contains('ken-burns'), ended:v.ended,
-                w:r.width, vw:window.innerWidth, h:r.height}; }""")
+                w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight}; }""")
     page.wait_for_timeout(700)
     hero1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
         return {paused:v.paused, t:v.currentTime, dur:v.duration,
@@ -166,6 +166,14 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         edge = hero0["w"] >= hero0["vw"] * 0.98
         res.append(chk(f"[{label}] hero video covers screen edge-to-edge", edge,
                        f"video width {hero0['w']:.0f}px vs viewport {hero0['vw']}px"))
+        # The drawing must ALSO fill the screen top-to-bottom — a 16:9 source
+        # sized width:100%/height:auto letterboxes into a ~33%-height band on a
+        # tall phone (user: "opening animation … should fit the entire screen").
+        # Require the video box to cover the viewport height too (object-fit:
+        # cover then trims the landscape extremities rather than compressing).
+        covh = hero0["h"] >= hero0["vh"] * 0.98
+        res.append(chk(f"[{label}] hero video covers screen top-to-bottom", covh,
+                       f"video height {hero0['h']:.0f}px vs viewport {hero0['vh']}px"))
 
     # 4) KEN BURNS animating (transform changes) + applied. CALIBRATED: the
     # .ken-burns class is added to #heroVideo only AFTER the ~8s drawing
@@ -212,6 +220,48 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     faded_in = all(v >= 0.95 for v in seq.values()) if seq else False
     res.append(chk(f"[{label}] opening fade-in animations completed", faded_in,
                    str(seq) if seq else "no monogram/fade elements found"))
+
+    # 6) APPLE 'APPEAR' REVEAL COMPLETENESS — fast-fling the page and assert no
+    # reveal-eligible element is left stuck invisible. IntersectionObserver can
+    # skip elements scrolled past between sample frames on a fast scroll (user
+    # on iPhone: "only some show, some don't"); the page's safety net must still
+    # reveal them. We deliberately fling in big jumps with tiny pauses — the
+    # adversarial case the slow auto-scroll would mask.
+    try:
+        sh = page.evaluate("document.documentElement.scrollHeight")
+        vh2 = page.evaluate("window.innerHeight") or 700
+        y = 0
+        while y < sh:
+            page.evaluate(f"window.scrollTo(0,{y})")
+            page.wait_for_timeout(70)
+            y += int(vh2 * 2.5)
+            sh = page.evaluate("document.documentElement.scrollHeight")
+        # Land at the very bottom (fires the page's atBottom safety sweep) and
+        # settle GENEROUSLY: the reveal transition is 900ms + up to ~480ms
+        # stagger, so a shorter wait would catch in-flight fades and false-fail.
+        # We do NOT scroll back to top — at the bottom every element has been
+        # scrolled past, so a still-INVISIBLE one (opacity<0.5) is genuinely
+        # stuck, not mid-transition. (Verified: stuck count 67→1→0 across the
+        # settle window; permanently-stuck would stay >0.)
+        page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+        page.wait_for_timeout(2600)
+        stuck = page.evaluate(r"""() => {
+            const sels=['[data-reveal]','.word-reveal','.evidence-card','.surgical-card','.reveal'];
+            const set=new Set(); sels.forEach(s=>document.querySelectorAll(s).forEach(e=>set.add(e)));
+            let n=0, ex='';
+            set.forEach(el=>{ const cs=getComputedStyle(el); const r=el.getBoundingClientRect();
+                if(r.width<2||r.height<2) return;
+                // <0.5 = clearly not revealed (a mid-transition fade is >0.5 by now)
+                if(parseFloat(cs.opacity)<0.5 || cs.visibility==='hidden'){
+                    n++; if(!ex) ex=(''+(el.className.baseVal!==undefined?el.className.baseVal:el.className)).slice(0,40);
+                }});
+            return {n, ex}; }""")
+        res.append(chk(f"[{label}] Apple reveal effect — every element appears after a fast scroll",
+                       stuck["n"] == 0,
+                       "all reveal elements visible" if stuck["n"] == 0
+                       else f"{stuck['n']} stuck invisible (e.g. <{stuck['ex']}>)"))
+    except Exception as e:
+        res.append(chk(f"[{label}] Apple reveal effect", False, f"probe error: {str(e)[:80]}"))
     return res
 
 

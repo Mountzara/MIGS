@@ -390,11 +390,25 @@
            crop its extremities. Per user mobile audit 2026-05-21:
            "animation is again not scaled to fit from end to end of screen". */
         @media (max-width: 640px) and (orientation: portrait) {
+            /* 2026-06-12 — the drawing must FILL the screen end-to-end, not sit
+               as a short band. The previous override (width:100%; height:auto)
+               sized the 16:9 video to viewport-width × ~9/16 height (≈219px on
+               an iPhone), leaving ~67% of the tall stage black above/below
+               (user: "opening animation seems compressed … should fit the
+               entire screen"). Restore the desktop COVER technique so the video
+               grows to cover the full 100vh hero-bg-stage in BOTH dimensions;
+               object-fit:cover then trims the landscape extremities rather than
+               letterboxing. object-position keeps the composed centre in frame. */
             .hero-video {
-                min-width: 100%;
-                min-height: auto;
+                /* Force the box to the full stage (100vw × 100vh) and let
+                   object-fit:cover SCALE the drawing down to cover it. Using
+                   width/height:auto here would leave the video at its natural
+                   1920px and show only its centre ~20% on a phone — too zoomed;
+                   explicit 100%/100% makes cover scale-to-fit-then-crop. */
                 width: 100%;
-                height: auto;
+                height: 100%;
+                object-fit: cover;
+                object-position: center center;
                 transform: translate(-50%, -50%) scale(1.0);
             }
             .hero-video.ken-burns {
@@ -9951,21 +9965,46 @@
             reveals.forEach(el => revealObs.observe(el));
             // Reveal hero title immediately on load (it's already in view)
             if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
-            // Belt-and-suspenders: nothing must ever stay invisible. When the
-            // user reaches the bottom of the page, force-reveal any element the
-            // observer hasn't caught (e.g. very short pages, fast flings on
-            // mobile, or layout shifts that move an element past the root before
-            // a callback fires).
-            const revealRemaining = () => {
-                if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
-                    document.querySelectorAll('[data-reveal]:not(.in)').forEach(el => {
+            // FLING-PROOF SAFETY NET — nothing must ever stay invisible.
+            // IntersectionObserver can MISS elements during a fast scroll: an
+            // element flung past between the observer's sample frames never
+            // reports isIntersecting and would stay stuck at opacity:0 (user on
+            // iPhone: "only some show, some don't"). The old net only fired at
+            // the exact page bottom AND only covered [data-reveal] — so cards
+            // (.evidence-card/.surgical-card) and .word-reveal flung past were
+            // never recovered. This rAF-throttled scroll pass reveals ANY
+            // reveal-eligible element that has entered the viewport, across all
+            // four mechanisms (.in for data-reveal/word-reveal/cards, .visible
+            // for .reveal), plus a hard sweep at the bottom. The CSS stagger
+            // still plays because it keys off the .in/.visible class.
+            const REVEAL_IN = '[data-reveal]:not(.in), .word-reveal:not(.in), '
+                            + '.evidence-card:not(.in), .surgical-card:not(.in)';
+            const REVEAL_VIS = '.reveal:not(.visible)';
+            let revealTick = false;
+            const revealVisible = () => {
+                revealTick = false;
+                const vh = window.innerHeight;
+                const atBottom = window.scrollY + vh
+                    >= document.documentElement.scrollHeight - 4;
+                document.querySelectorAll(REVEAL_IN).forEach(el => {
+                    if (atBottom || el.getBoundingClientRect().top < vh * 0.95) {
                         el.classList.add('in');
                         revealObs.unobserve(el);
-                    });
-                    window.removeEventListener('scroll', revealRemaining);
-                }
+                    }
+                });
+                document.querySelectorAll(REVEAL_VIS).forEach(el => {
+                    if (atBottom || el.getBoundingClientRect().top < vh * 0.95) {
+                        el.classList.add('visible');
+                    }
+                });
             };
-            window.addEventListener('scroll', revealRemaining, { passive: true });
+            window.addEventListener('scroll', () => {
+                if (!revealTick) { revealTick = true; requestAnimationFrame(revealVisible); }
+            }, { passive: true });
+            // run once after first paint and again after layout settles, so
+            // anything already on screen (or above it) can't be left hidden.
+            requestAnimationFrame(revealVisible);
+            setTimeout(revealVisible, 1200);
         }
 
         // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
