@@ -44,7 +44,12 @@ ANCHOR = ["study", "trial", "review", "abstract", "evidence", "found", "shows", 
           "mechanism", "data", "analysis", "randomi", "cohort", "case", "meta-analysis",
           "rct", "pre-clinical", "animal", "mice", "in vitro", "association", "results",
           "statement", "guidance", "position", "consensus", "society", "recommend",
-          "confirms", "paper", "research", "cochrane", "guideline"]
+          "confirms", "paper", "research", "cochrane", "guideline",
+          # study-design terms that anchor a bottom line just as well as "cohort"
+          "retrospective", "prospective", "feasibility", "evaluation", "comparison",
+          "observational", "real-world", "registry", "pilot", "series", "cross-sectional",
+          # the sample itself is an evidence anchor (e.g. "1,486 cycles", "10 participants")
+          "patients", "participants", "cycles", "subjects", "embryos"]
 SECTIONS = ("bottom", "applicability", "monday", "findings", "question", "strengths")
 
 
@@ -78,7 +83,10 @@ def audit_post(post: dict) -> list[tuple]:
             bl = strip(re.sub(r'<h3\b.*?</h3>', ' ', bm.group(1), flags=re.DOTALL)).lower()
             has_stat = bool(re.search(r'\bn\s*=\s*\d|\br\s*=|\bp\s*[=<>]|\d\s*%|95%|\bci\b|'
                                       r'\bhr\b|\bor\b|\brr\b|\bauc\b|correlat|hazard|odds|'
-                                      r'\bn\b\s*of\s*\d|=\s*0?\.\d', bl))
+                                      r'\bn\b\s*of\s*\d|[=~]\s*0?\.\d|\bkappa\b|'
+                                      # an explicit sample size anchors the line
+                                      r'\b\d[\d,]*\s*(?:patients?|participants?|cycles?|women|'
+                                      r'men|subjects?|cases?|embryos?|couples?)\b', bl))
             if len(bl) > 60 and not has_stat and not any(a in bl for a in ANCHOR):
                 flags.append((pmid, "bottom-line-not-evidence-anchored",
                               "bottom line doesn't reference the study/finding/evidence"))

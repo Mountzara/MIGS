@@ -43,7 +43,12 @@ OVERCLAIM = [r"\bproves?\b", r"\bproven to (?:treat|cure|prevent)\b", r"\bcures?
 HEDGE = ["not yet", "in people", "in humans", "pre-clinical", "preclinical", "mechanism",
          "mechanistic", "association", "not proven", "outside a trial", "hypothesis",
          "doesn't (?:measure|show)", "isn't evidence", "not a (?:treatment|trial)",
-         "no (?:study|evidence|trial)", "plausib", "rationale", "future trials", "uncertain"]
+         "no (?:study|evidence|trial)", "plausib", "rationale", "future trials", "uncertain",
+         # explicitly labelling the work as lab/bench-stage IS the not-yet-in-people
+         # qualifier (e.g. "In-vitro bioengineering … still bench-stage; a
+         # translational step toward …")
+         "bench-stage", "bench", "in vitro", "in-vitro", "translational",
+         "proof of concept", "proof-of-concept", "experimental", "ex vivo", "ex-vivo"]
 VERDICT_WORDS = ["supported", "partially supported", "insufficient", "contested",
                  "mechanism-plausible", "unproven", "payer-rejected"]
 
