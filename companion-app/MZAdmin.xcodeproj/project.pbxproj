@@ -19,6 +19,12 @@
 		B1000000000000000000000A /* PostListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* PostListView.swift */; };
 		B1000000000000000000000B /* PostDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000B /* PostDetailView.swift */; };
 		B1000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000C /* Assets.xcassets */; };
+		B1000000000000000000000E /* AdminModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000E /* AdminModels.swift */; };
+		B1000000000000000000000F /* TriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000F /* TriageView.swift */; };
+		B10000000000000000000010 /* TriageDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000010 /* TriageDetailView.swift */; };
+		B10000000000000000000011 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000011 /* MessagesView.swift */; };
+		B10000000000000000000012 /* ThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000012 /* ThreadView.swift */; };
+		B10000000000000000000013 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000013 /* ScheduleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +41,12 @@
 		F1000000000000000000000B /* PostDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDetailView.swift; sourceTree = "<group>"; };
 		F1000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F1000000000000000000000D /* MZAdmin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MZAdmin.entitlements; sourceTree = "<group>"; };
+		F1000000000000000000000E /* AdminModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminModels.swift; sourceTree = "<group>"; };
+		F1000000000000000000000F /* TriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriageView.swift; sourceTree = "<group>"; };
+		F10000000000000000000010 /* TriageDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriageDetailView.swift; sourceTree = "<group>"; };
+		F10000000000000000000011 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
+		F10000000000000000000012 /* ThreadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadView.swift; sourceTree = "<group>"; };
+		F10000000000000000000013 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -93,6 +105,7 @@
 				F10000000000000000000004 /* Post.swift */,
 				F10000000000000000000005 /* AuthStore.swift */,
 				F10000000000000000000006 /* AdminAPI.swift */,
+				F1000000000000000000000E /* AdminModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -105,6 +118,11 @@
 				F10000000000000000000009 /* LoginView.swift */,
 				F1000000000000000000000A /* PostListView.swift */,
 				F1000000000000000000000B /* PostDetailView.swift */,
+				F1000000000000000000000F /* TriageView.swift */,
+				F10000000000000000000010 /* TriageDetailView.swift */,
+				F10000000000000000000011 /* MessagesView.swift */,
+				F10000000000000000000012 /* ThreadView.swift */,
+				F10000000000000000000013 /* ScheduleView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -197,6 +215,12 @@
 				B10000000000000000000009 /* LoginView.swift in Sources */,
 				B1000000000000000000000A /* PostListView.swift in Sources */,
 				B1000000000000000000000B /* PostDetailView.swift in Sources */,
+				B1000000000000000000000E /* AdminModels.swift in Sources */,
+				B1000000000000000000000F /* TriageView.swift in Sources */,
+				B10000000000000000000010 /* TriageDetailView.swift in Sources */,
+				B10000000000000000000011 /* MessagesView.swift in Sources */,
+				B10000000000000000000012 /* ThreadView.swift in Sources */,
+				B10000000000000000000013 /* ScheduleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

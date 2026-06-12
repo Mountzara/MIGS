@@ -586,10 +586,11 @@ admin (NO separate backend; §7 middleware applies).
 | `MZAdmin/Sources/MZAdminApp.swift` | `@main` App; injects `AuthStore`. |
 | `MZAdmin/Sources/Theme.swift` | Site-matching dark palette + glass card. |
 | `MZAdmin/Sources/Models/Post.swift` | Codable mirror of the R2 post envelope (type-checked on Linux CI/VM, pure Foundation). |
-| `MZAdmin/Sources/Models/AdminAPI.swift` | async URLSession client, Basic auth; centralizes errors (type-checked on Linux w/ FoundationNetworking shim). |
+| `MZAdmin/Sources/Models/AdminModels.swift` | Codable mirrors of triage / messaging / scheduling / visit-type JSON (`/api/v1/admin/*`). |
+| `MZAdmin/Sources/Models/AdminAPI.swift` | async URLSession client, Basic auth; posts + triage (list/save/release) + messages (threads/detail/reply) + appointments + visit-types. Centralizes errors (type-checked on Linux w/ FoundationNetworking shim). |
 | `MZAdmin/Sources/Models/AuthStore.swift` | Keychain-backed credentials (`import Security` — Apple-only). |
-| `MZAdmin/Sources/Models/AppModel.swift` | Observable state + approve/reject/refresh actions. |
-| `MZAdmin/Sources/Views/*` | RootView (split nav), LoginView, PostListView, PostDetailView (WKWebView body render), FlowLayout (topic chips). |
+| `MZAdmin/Sources/Models/AppModel.swift` | Observable state + approve/reject/refresh actions (posts). |
+| `MZAdmin/Sources/Views/*` | RootView → `MainTabs` (Posts / Triage / Messages / Schedule TabView). PostListView + PostDetailView (WKWebView). TriageView + TriageDetailView (AI rec + override + Save/Release). MessagesView + ThreadView (SLA badges, reply, stale-response seq guard). ScheduleView (30-day appt list by day). LoginView, FlowLayout. |
 
 **Lock-step rules:**
 - Add/rename/delete a Swift file → update BOTH `MZAdmin.xcodeproj/project.pbxproj`

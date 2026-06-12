@@ -102,8 +102,20 @@ cd companion-app && xcodegen generate && open MZAdmin.xcodeproj
   `CODE_SIGN_ENTITLEMENTS[sdk=macosx*]`. iOS needs nothing extra.
 - All traffic is HTTPS to `mountzara.com`, so default App Transport Security passes.
 
+## Screens
+The signed-in app is a four-tab shell (`MainTabs`):
+- **Posts** — review queue; open a draft, preview the rendered body, Approve/Reject.
+- **Triage** — pending appointment-requests; open one to see the AI recommendation,
+  override visit type / duration / urgency / in-person / time-of-day, **Save**
+  (persists, survives reload — schema 0024) or **Release** to the patient.
+- **Messages** — secure patient threads with SLA badges + unread counts; open a
+  thread to read the conversation and reply (server decrypts bodies; the list
+  uses a sequence guard so a stale fetch can't overwrite a newer one).
+- **Schedule** — the next 30 days of appointments grouped by day.
+
 ## Extending it
-The app is intentionally structured so the rest of the admin (scheduling,
-messages, analytics, patients) drops in as new `Models/*API.swift` + `Views/*`
-against the existing `/api/v1/admin/*` endpoints. `AdminAPI` already centralizes
-auth + error handling.
+The rest of the admin (billing, analytics, patients/cases) drops in the same way:
+add Codable mirrors to `AdminModels.swift`, endpoints to `AdminAPI.swift`, a
+`Model` + `View`, and a tab in `MainTabs`. `AdminAPI` centralizes auth + errors.
+Lock-step: new Swift files must be added to BOTH `MZAdmin.xcodeproj/project.pbxproj`
+and `project.yml` (or re-run `xcodegen generate`).
