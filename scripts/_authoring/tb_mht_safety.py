@@ -10,7 +10,7 @@ AUTHORED = {
 
 # 35797481 — NAMS 2022 hormone therapy position statement (the guidance pillar)
 "35797481": {
-    "bottom": "The <strong>North American Menopause Society's 2022 position statement</strong> — the field's current consensus guidance, and the clearest professional statement that hormone therapy's benefits outweigh its risks for most healthy women under 60 or within 10 years of menopause. <strong>For patients:</strong> the leading menopause society explicitly supports hormone therapy for appropriate candidates — a direct, authoritative counter to the lingering 'hormones are too risky' message. <strong>For clinicians:</strong> the governing guidance that ties together the timing-window, route, and risk evidence in this brief.",
+    "bottom": "The <strong>North American Menopause Society's 2022 position statement</strong> — the field's current consensus guidance, and the clearest professional statement that hormone therapy's benefits outweigh its risks for most healthy women under 60 or within 10 years of menopause. In other words, the leading menopause society explicitly supports hormone therapy for appropriate candidates — a direct, authoritative counter to the lingering 'hormones are too risky' message — and it's the guidance that ties together the timing-window, route, and risk evidence in this brief.",
     "question": "<strong>The problem.</strong> After two decades of cautious practice, clinicians and patients needed an up-to-date, balanced position on when hormone therapy is appropriate and how to use it safely. <strong>The question:</strong> what is the current evidence-based position on the benefits, risks, and appropriate use of menopausal hormone therapy?",
     "pico": {"P": "Menopausal women considering hormone therapy.",
              "I": "Menopausal hormone therapy, individualized by age, timing, route, and regimen.",
@@ -22,7 +22,7 @@ AUTHORED = {
     "findings": "For healthy symptomatic women under 60 or within 10 years of menopause, the benefits of hormone therapy generally outweigh the risks; benefit-risk shifts with later initiation, longer duration, regimen (combined vs estrogen-only), and route. This is the consensus basis for 'safer than the WHI era suggested, and under-used'.",
     "rob": "Consensus guidance inherits the underlying evidence's gaps and requires individualized application; its central conclusions for symptomatic younger initiators are well supported.",
     "strengths": "Authoritative, current, and nuanced about the window and individualized risk — the practical anchor for re-evaluating hormone therapy.",
-    "applicability": "<strong>For patients:</strong> a reason to have an informed hormone-therapy conversation rather than ruling it out by reputation. <strong>For clinicians:</strong> the reference for individualized prescribing within the window, by route and regimen.",
+    "applicability": "It's a reason to have an informed hormone-therapy conversation rather than ruling it out by reputation, and the reference point for individualizing the decision by timing, route, and regimen.",
     "kb": "The guidance pillar of the brief, integrating the mortality (28898378), timing (27028912), route (VTE), regimen (progestogen), and risk (breast-cancer) evidence. Shared with the vasomotor-symptoms brief.",
     "equity": "Clear, balanced guidance helps reverse the post-WHI under-treatment of menopausal symptoms while keeping prescribing individualized and safe.",
     "monday": "<strong>Offer within the window.</strong> For appropriate candidates, discuss and offer hormone therapy individualized by age, timing, route, and regimen; reserve non-hormonal options for contraindications or preference.",
@@ -31,7 +31,7 @@ AUTHORED = {
 
 # 28898378 — MHT and long-term all-cause/cause-specific mortality (JAMA, WHI follow-up)
 "28898378": {
-    "bottom": "A <strong>long-term follow-up of the Women's Health Initiative</strong> (the very trial whose 2002 headlines made a generation wary of hormones) looking at deaths over ~18 years. The reassuring result: hormone therapy was <strong>not associated with increased all-cause, cardiovascular, or cancer mortality</strong>. <strong>For patients:</strong> this is central to why the 'menopause hormones are dangerous' message was an overcorrection — over the long run, hormone therapy didn't raise the risk of dying. <strong>For clinicians:</strong> high-quality mortality data supporting the brief's claim, within the age/timing nuances the trial itself showed.",
+    "bottom": "A <strong>long-term follow-up of the Women's Health Initiative</strong> — the very trial whose 2002 headlines made a generation wary of hormones — looking at deaths over about 18 years. The reassuring result: hormone therapy was <strong>not associated with a higher risk of dying</strong> from any cause, or specifically from heart disease or cancer. This is central to why the 'menopause hormones are dangerous' message was an overcorrection — and it's high-quality mortality data, read within the age- and timing-nuances the trial itself showed.",
     "question": "<strong>The problem.</strong> The WHI's initial reports led many women and clinicians to abandon hormone therapy out of fear of harm, including death from heart disease or cancer. Long-term mortality data were needed to judge whether that fear was warranted. <strong>The question:</strong> over long-term follow-up, is menopausal hormone therapy associated with all-cause or cause-specific mortality?",
     "pico": {"P": "Postmenopausal women in the WHI trials.",
              "I": "Conjugated equine estrogen ± medroxyprogesterone acetate.",
@@ -43,7 +43,7 @@ AUTHORED = {
     "findings": "Hormone therapy was not associated with increased all-cause, cardiovascular, or cancer mortality over the follow-up period. This directly tempers the WHI-era fear that hormone therapy increases the risk of dying, and is a cornerstone of the 'safer than suggested' message.",
     "rob": "Strong randomized design; the main caveats are that it used specific older oral formulations and average starting ages older than today's typical initiator, so results are reassuring but should be read alongside the timing-window and route evidence.",
     "strengths": "Randomized, long-term, mortality-level evidence from the same trial that caused the alarm — uniquely persuasive for re-evaluating the risk narrative.",
-    "applicability": "<strong>For patients:</strong> strong reassurance that hormone therapy doesn't raise overall mortality, which is what the scary headlines implied. <strong>For clinicians:</strong> supports re-opening the hormone-therapy conversation for appropriate candidates, individualized by age, timing, and route.",
+    "applicability": "It's strong reassurance that hormone therapy doesn't raise the overall risk of dying — the thing the alarming headlines implied — and a reason to re-open the hormone-therapy conversation for appropriate candidates, individualized by age, timing, and route.",
     "kb": "A foundational pillar of the brief and the most direct rebuttal to the 'hormones are deadly' interpretation. Complemented by the timing (ELITE), route (VTE), and risk (breast-cancer) papers.",
     "equity": "The WHI overcorrection led to widespread under-treatment of menopausal symptoms; clear mortality data help restore appropriate access — while individualized risk assessment keeps it safe.",
     "monday": "<strong>Update counseling.</strong> Use this to correct the lingering 'hormones increase mortality' belief and to offer hormone therapy to suitable candidates, framed by age-window and route. It supports re-evaluation, not blanket prescribing.",
@@ -52,7 +52,7 @@ AUTHORED = {
 
 # 27028912 — ELITE: vascular effects of early vs late postmenopausal estradiol
 "27028912": {
-    "bottom": "The <strong>ELITE randomized trial</strong> — the cleanest test of the 'timing window' idea: that estrogen helps blood-vessel health when started <em>early</em> after menopause but not when started late. It found estradiol slowed atherosclerosis progression in women within ~6 years of menopause, but not in those more than 10 years out. <strong>For patients:</strong> this is why <em>when</em> you start hormone therapy matters — early is different from late. <strong>For clinicians:</strong> randomized support for the timing-hypothesis caveat in the brief's verdict.",
+    "bottom": "The <strong>ELITE randomized trial</strong> — the cleanest test of the 'timing window' idea: that estrogen helps blood-vessel health when started <em>early</em> after menopause but not when started late. It found estradiol slowed the progression of artery thickening in women within about 6 years of menopause, but not in those more than 10 years out. This is why <em>when</em> you start hormone therapy matters — early is different from late — and it's randomized support for the timing caveat in this brief's verdict.",
     "question": "<strong>The problem.</strong> The WHI enrolled many women long past menopause and found cardiovascular harm, while observational studies of younger initiators suggested benefit — the apparent contradiction needed a direct test. <strong>The question:</strong> do the vascular effects of estradiol depend on how early after menopause it's started?",
     "pico": {"P": "Postmenopausal women stratified as early (<6 yrs) vs late (>10 yrs) since menopause.",
              "I": "Oral estradiol (with progesterone as needed).",
@@ -64,7 +64,7 @@ AUTHORED = {
     "findings": "Estradiol slowed atherosclerosis progression in women who started within ~6 years of menopause, but not in those who started more than 10 years out — providing randomized support for the timing/'window of opportunity' concept that reconciles the earlier conflicting data.",
     "rob": "Surrogate vascular endpoint (imaging, not clinical events) and oral estradiol; nonetheless a rigorous, prespecified randomized test of the timing question.",
     "strengths": "Turns the timing hypothesis from explanation-after-the-fact into prospectively-tested, randomized evidence — the scientific basis for the age-window caveat.",
-    "applicability": "<strong>For patients:</strong> starting hormone therapy near menopause is biologically different from starting many years later; timing is part of the safety conversation. <strong>For clinicians:</strong> supports initiating within the window and caution about starting de novo in late postmenopause.",
+    "applicability": "Starting hormone therapy near menopause is biologically different from starting many years later, so timing is part of the safety conversation — favoring starting within the window, and being cautious about starting it for the first time well into later postmenopause.",
     "kb": "Supplies the 'age-window caveat' in the verdict; pairs with the mortality and route evidence to define <em>when</em> and <em>how</em> hormone therapy is safest.",
     "equity": "The window concept argues for timely menopause care rather than delay — relevant for women whose symptoms are dismissed until they're past the optimal window.",
     "monday": "<strong>Apply the window.</strong> Favor initiation near menopause for appropriate candidates; be cautious starting systemic estrogen for the first time well past 60/10 years out. Individualize.",
@@ -73,7 +73,7 @@ AUTHORED = {
 
 # 17309934 — HT and VTE: impact of route (transdermal vs oral)
 "17309934": {
-    "bottom": "A study showing that the <strong>route</strong> of estrogen matters for blood-clot (venous thromboembolism, VTE) risk: <strong>oral estrogen raises clot risk, while transdermal (skin) estrogen appears much safer</strong>. <strong>For patients:</strong> a patch or gel is generally safer than a pill for clots — route is a real lever, not a detail. <strong>For clinicians:</strong> evidence for the 'route caveat' and a practical way to lower risk.",
+    "bottom": "A study showing that the <strong>route</strong> of estrogen matters for blood-clot (venous thromboembolism, or VTE) risk: <strong>the oral (pill) form raises clot risk, while the skin (transdermal) form appears much safer</strong>. A patch or gel is generally safer than a pill for clots — route is a real lever, not a detail — which is the practical way the 'route caveat' lowers risk.",
     "question": "<strong>The problem.</strong> VTE emerged as a key risk of oral estrogen; if transdermal delivery (which bypasses first-pass liver metabolism) avoids that, route choice could make hormone therapy substantially safer. <strong>The question:</strong> does VTE risk with hormone therapy differ by route of estrogen administration?",
     "pico": {"P": "Postmenopausal women using hormone therapy.",
              "I": "Transdermal estrogen.",
@@ -85,7 +85,7 @@ AUTHORED = {
     "findings": "Oral estrogen was associated with increased VTE risk, whereas transdermal estrogen showed little or no increase — supporting transdermal delivery as a safer route, especially for women with baseline clot risk.",
     "rob": "Observational, so residual confounding (e.g., prescribing healthier patients transdermal) is possible; however, the mechanistic plausibility and replication across studies make it credible.",
     "strengths": "Identifies a concrete, actionable safety lever (route) that materially changes the risk profile — central to 'safer than WHI suggested'.",
-    "applicability": "<strong>For patients:</strong> ask about a patch/gel rather than a pill, particularly if you have clot risk factors. <strong>For clinicians:</strong> prefer transdermal estrogen to reduce VTE risk, especially in higher-risk women.",
+    "applicability": "It's worth asking about a patch or gel rather than a pill, particularly if you have clot risk factors — the skin route is preferred to reduce clot risk, especially for those at higher risk.",
     "kb": "Supplies the 'route caveat'; together with the second VTE paper it makes route a core part of safe modern prescribing.",
     "equity": "Transdermal options are sometimes costlier or less covered — an access barrier to the safer route worth addressing.",
     "monday": "<strong>Default to transdermal where possible.</strong> Choose transdermal estrogen to lower VTE risk, especially with baseline risk factors; reserve oral when appropriate and after counseling.",
@@ -94,7 +94,7 @@ AUTHORED = {
 
 # 25223916 — hormones and VTE among postmenopausal women (review)
 "25223916": {
-    "bottom": "A <strong>review consolidating the evidence that VTE is the most prevalent serious risk of oral estrogen</strong> in midlife women, and that simple factors (obesity, prior clot history) identify higher-risk women, with transdermal estrogen as a safer alternative. <strong>For patients:</strong> a clear picture of who is higher-risk and how route reduces it. <strong>For clinicians:</strong> a practical risk-stratification and route guide reinforcing the brief's route caveat.",
+    "bottom": "A <strong>review consolidating the evidence that blood clots are the most common serious risk of oral (pill) estrogen</strong> in midlife women, that simple factors like obesity and a prior clot identify who's at higher risk, and that the skin (transdermal) route is the safer alternative. It gives a clear picture of who is higher-risk and how route reduces it — a practical way to think about risk and route that reinforces this brief's route caveat.",
     "question": "<strong>The problem.</strong> Clinicians need a usable framework for VTE risk in hormone therapy — who is at risk and how to mitigate it. <strong>The question:</strong> what is the VTE risk of hormone therapy in postmenopausal women, and how is it modified by route and patient factors?",
     "pico": {"P": "Postmenopausal women considering/using hormone therapy.",
              "I": "Estrogen therapy (oral vs transdermal).",
@@ -106,7 +106,7 @@ AUTHORED = {
     "findings": "Oral estrogen is the principal driver of hormone-therapy VTE risk; obesity and prior VTE flag higher-risk women; transdermal estrogen is the safer route. Genetic screening isn't cost-effective for general use. This operationalizes safer prescribing.",
     "rob": "Narrative review; weight individual claims by their primary evidence. The route and risk-factor messages are well supported.",
     "strengths": "Translates the VTE evidence into a practical who-and-how framework for safer hormone therapy.",
-    "applicability": "<strong>For patients:</strong> understand your personal clot risk and that route can reduce it. <strong>For clinicians:</strong> stratify by obesity/VTE history and default to transdermal in higher-risk women.",
+    "applicability": "Understanding your personal clot risk — and that the route can reduce it — is the key takeaway; for those with obesity or a prior clot, the skin route is the safer default.",
     "kb": "Reinforces the route caveat and adds risk-stratification; complements the route-specific VTE study.",
     "equity": "Risk-based, route-aware prescribing makes hormone therapy safely available to more women rather than excluding them by blanket fear.",
     "monday": "<strong>Stratify and route-select.</strong> Identify higher-VTE-risk women and prefer transdermal estrogen; avoid blanket avoidance of hormone therapy.",
@@ -115,7 +115,7 @@ AUTHORED = {
 
 # 12927427 — breast cancer and HRT in the Million Women Study
 "12927427": {
-    "bottom": "The <strong>Million Women Study</strong> — a very large UK cohort that documented an increased breast-cancer risk with hormone therapy, especially combined (estrogen + progestogen) use. This is the <strong>important caveat side</strong> of the brief: 'safer than WHI suggested' does not mean 'risk-free', and breast cancer is the real trade-off to weigh. <strong>For patients:</strong> the honest counterpoint — combined hormone therapy does carry some increased breast-cancer risk, which must be balanced against benefits. <strong>For clinicians:</strong> a major risk dataset that keeps the brief's 'supported' claim appropriately bounded.",
+    "bottom": "The <strong>Million Women Study</strong> — a very large UK cohort that documented an increased breast-cancer risk with hormone therapy, especially combined (estrogen + progestogen) use. This is the <strong>important caveat side</strong> of the brief: 'safer than the WHI era suggested' does not mean 'risk-free', and breast cancer is the real trade-off to weigh. Honestly stated, combined hormone therapy does carry some increased breast-cancer risk that has to be balanced against its benefits — a major dataset that keeps the 'supported' claim appropriately bounded.",
     "question": "<strong>The problem.</strong> Estrogen-sensitive breast cancer is the most emotionally and clinically weighty risk of hormone therapy; quantifying it at scale is essential to honest counseling. <strong>The question:</strong> is hormone therapy associated with breast-cancer incidence and mortality, and does it differ by regimen?",
     "pico": {"P": "1,084,110 UK women aged 50–64.",
              "I": "Hormone therapy (estrogen-only and combined estrogen-progestogen).",
@@ -127,7 +127,7 @@ AUTHORED = {
     "findings": "Current hormone-therapy use, particularly combined estrogen-progestogen, was associated with increased breast-cancer incidence (and the analysis addressed mortality). Risk was greater for combined than estrogen-only therapy — the central caveat any 'MHT is safe' message must include.",
     "rob": "Observational design with recognized biases (self-report, detection, healthy-user/duration effects) and short early follow-up; the breast-cancer association is nonetheless consistent across large studies and biologically expected for combined regimens.",
     "strengths": "Unmatched scale for detecting a real but modest risk and for distinguishing combined from estrogen-only regimens — essential for balanced counseling.",
-    "applicability": "<strong>For patients:</strong> hormone therapy has real benefits AND a real, modest breast-cancer trade-off (more with combined regimens); the decision is individual. <strong>For clinicians:</strong> include breast-cancer risk explicitly, consider regimen (estrogen-only when uterus absent), duration, and personal risk.",
+    "applicability": "Hormone therapy has real benefits <em>and</em> a real, modest breast-cancer trade-off (greater with combined regimens), so the decision is individual — weighing the regimen (estrogen-only is an option when the uterus has been removed), how long it's used, and personal and family risk.",
     "kb": "The counterweight that keeps the brief honest: 'supported with caveats' — not a clean bill of health. Balances the mortality-neutral and timing/route reassurances.",
     "equity": "Breast-cancer risk communication must be clear and non-coercive so women can make informed, values-based choices rather than being scared off entirely or reassured falsely.",
     "monday": "<strong>Counsel the trade-off.</strong> Present the modest breast-cancer risk (greater with combined regimens, longer duration) alongside benefits; individualize by regimen, duration, and personal/family risk. This is the caveat, not a contraindication for most.",
@@ -136,7 +136,7 @@ AUTHORED = {
 
 # 24430001 — KEEPS-Cognitive and Affective Study (baseline)
 "24430001": {
-    "bottom": "Baseline data from the <strong>KEEPS-Cognitive and Affective study</strong>, examining how vascular risk factors relate to cognition in recently menopausal women — part of the effort to understand hormone therapy's brain effects in the right (early) window. <strong>For patients:</strong> context for the menopause–brain-health question that drives a lot of interest in hormones. <strong>For clinicians:</strong> framing for the cognition strand; baseline associations, not a treatment outcome.",
+    "bottom": "Baseline data from the <strong>KEEPS-Cognitive and Affective study</strong>, examining how vascular (blood-vessel) risk factors relate to thinking and memory in recently menopausal women — part of the effort to understand hormone therapy's effects on the brain in the early window. It's context for the menopause–brain-health question that drives a lot of interest in hormones, but it reports baseline associations, not a treatment result.",
     "question": "<strong>The problem.</strong> Estrogen loss at menopause is linked to cognitive and vascular changes, and whether early hormone therapy protects cognition is a major open question. <strong>The question:</strong> at baseline, how do vascular risk factors relate to cognition in recently menopausal women?",
     "pico": {"P": "Recently menopausal women in the KEEPS cognitive/affective substudy.",
              "I": "Baseline characterization (pre-randomization) of vascular risk and cognition.",
@@ -148,7 +148,7 @@ AUTHORED = {
     "findings": "Vascular risk factors were associated with cognitive measures at baseline, supporting the vascular-brain link that motivates studying early hormone therapy for cognitive outcomes. It sets up, but does not answer, whether hormones protect cognition.",
     "rob": "Cross-sectional baseline data — association only, no causal or treatment inference; cognition measures and confounding apply.",
     "strengths": "Part of a rigorous randomized program specifically designed to study early-window hormone therapy and the brain — important for interpreting the cognition claims responsibly.",
-    "applicability": "<strong>For patients:</strong> the menopause–brain question is being studied seriously; this is groundwork, not proof that hormones protect memory. <strong>For clinicians:</strong> temper cognitive claims; manage vascular risk regardless.",
+    "applicability": "The menopause–brain question is being studied seriously, but this is groundwork, not proof that hormones protect memory — so claims about cognitive protection should be tempered, while managing vascular risk is worthwhile regardless.",
     "kb": "Adds the cognition/vascular strand to the brief; reminds readers that some popular hormone-therapy-for-the-brain claims rest on associations and trials still maturing.",
     "equity": "Cognitive-aging research in women is under-developed; rigorous early-window studies help address that gap responsibly.",
     "monday": "<strong>Hold on cognition claims.</strong> Don't promise cognitive protection from hormone therapy; manage vascular risk and follow the maturing trial evidence. Use for prescribing decisions only within established indications.",
@@ -157,7 +157,7 @@ AUTHORED = {
 
 # 40378875 — progestogens in MHT: a double-edged sword (review)
 "40378875": {
-    "bottom": "A <strong>review of the progestogen component</strong> of hormone therapy — the part added to protect the uterine lining, which also influences breast-cancer and other risks differently depending on which progestogen and route is used. Its 'double-edged sword' framing captures that the <em>choice</em> of progestogen matters, not just whether one is used. <strong>For patients:</strong> the specific hormones in your regimen matter — micronized progesterone differs from older synthetic progestins. <strong>For clinicians:</strong> guidance on tailoring the progestogen to balance endometrial protection against risk.",
+    "bottom": "A <strong>review of the progestogen component</strong> of hormone therapy — the part added to protect the uterine lining, which also influences breast-cancer and other risks differently depending on which progestogen and route is used. Its 'double-edged sword' framing captures that the <em>choice</em> of progestogen matters, not just whether one is used: the specific hormones in a regimen make a difference (micronized progesterone differs from older synthetic progestins), and the progestogen can be tailored to balance lining protection against risk.",
     "question": "<strong>The problem.</strong> Estrogen needs a progestogen for endometrial protection in women with a uterus, but progestogens vary in their breast and metabolic effects, complicating the safety equation. <strong>The question:</strong> how do different progestogens and routes affect the benefit-risk balance of hormone therapy?",
     "pico": {"P": "Women on combined hormone therapy (estrogen + progestogen).",
              "I": "Different progestogens (micronized progesterone, dydrogesterone, MPA, norethisterone, levonorgestrel, drospirenone, etc.) and routes.",
@@ -169,7 +169,7 @@ AUTHORED = {
     "findings": "Progestogens provide essential endometrial protection but differ in breast and metabolic risk; some (e.g., micronized progesterone, dydrogesterone) may carry a more favorable profile than older synthetic progestins, and route (e.g., intrauterine) offers options. The 'which progestogen' choice is a real safety lever.",
     "rob": "Narrative review; comparative risk estimates between progestogens come largely from observational data, so conclusions are reasoned guidance, not definitive ranking.",
     "strengths": "Refines the safety conversation beyond 'estrogen yes/no' to the clinically actionable progestogen choice — part of why modern hormone therapy can be safer than older regimens.",
-    "applicability": "<strong>For patients:</strong> the type of progestogen in your regimen matters and can be tailored. <strong>For clinicians:</strong> consider micronized progesterone/dydrogesterone or intrauterine options to optimize the risk profile while protecting the endometrium.",
+    "applicability": "The type of progestogen in a regimen matters and can be tailored — options like micronized progesterone, dydrogesterone, or intrauterine (IUD) delivery can optimize the risk profile while still protecting the uterine lining.",
     "kb": "Adds regimen-level nuance to the brief: 'safer than WHI suggested' is partly because modern estrogen routes AND progestogen choices differ from the older combined regimen the WHI tested.",
     "equity": "Newer/better-tolerated progestogens may be costlier or less available — an access consideration in optimizing safety.",
     "monday": "<strong>Tailor the progestogen.</strong> Choose the progestogen and route to balance endometrial protection with breast/metabolic risk (consider micronized progesterone, dydrogesterone, or intrauterine delivery); don't treat all combined regimens as equivalent.",

@@ -11,7 +11,7 @@ AUTHORED = {
 
 # 39542180 — GLP-1 ↔ estrogen interaction in lipid/adipose metabolism (mechanism)
 "39542180": {
-    "bottom": "The <strong>biochemical/mechanistic paper</strong> that grounds this claim. It studies how GLP-1 and estrogen <em>interact</em> to regulate fat and lipid metabolism — the kind of basic-science finding that explains <em>why</em> a GLP-1 drug might plausibly influence an estrogen-dependent, inflammation-driven disease like endometriosis. <strong>For patients:</strong> this is the laboratory rationale behind the growing interest in GLP-1 (Ozempic-class) drugs for endometriosis — a real mechanistic thread, not yet a treatment study. <strong>For clinicians:</strong> it establishes biological plausibility at the molecular level; it does not measure endometriosis lesions or symptoms.",
+    "bottom": "The <strong>biochemical/mechanistic paper</strong> that grounds this claim. It studies how GLP-1 and estrogen <em>interact</em> to regulate fat and lipid metabolism — the kind of basic-science finding that explains <em>why</em> a GLP-1 drug might plausibly influence an estrogen-dependent, inflammation-driven disease like endometriosis. This is the laboratory rationale behind the growing interest in GLP-1 (Ozempic-class) drugs for endometriosis: a real mechanistic thread that establishes biological plausibility at the molecular level. But it doesn't measure endometriosis lesions or symptoms, so it's a basis for the idea, not yet a treatment study.",
     "question": "<strong>The problem.</strong> Endometriosis is estrogen-dependent and linked to metabolic and inflammatory signaling; GLP-1 receptor agonists affect estrogen-related metabolism, raising the question of a mechanistic overlap. <strong>The question:</strong> how do GLP-1 and estrogen interact to regulate lipid and adipose-tissue metabolism?",
     "pico": {"P": "Adipose-tissue/metabolic models (sex-specific fat distribution and estrogen signaling).",
              "I": "Study of GLP-1 ↔ estrogen interaction on lipid/adipose regulation.",
@@ -23,7 +23,7 @@ AUTHORED = {
     "findings": "GLP-1 and estrogen interact in regulating lipid and adipose metabolism, intersecting pathways (estrogen signaling, insulin resistance, inflammation) that are also implicated in endometriosis biology. This is the mechanistic bridge connecting a metabolic drug class to an estrogen-dependent gynecologic disease.",
     "rob": "Pre-clinical and metabolism-focused; the link to endometriosis lesion burden is inferential, not measured. It supports plausibility, not efficacy.",
     "strengths": "Provides a concrete molecular rationale (the estrogen–GLP-1 intersection) that elevates the GLP-1–endometriosis idea above pure speculation — the bench foundation of the evidence pyramid for this claim.",
-    "applicability": "<strong>For patients:</strong> explains the scientific reason GLP-1 drugs are being discussed for endometriosis, while making clear no study yet shows they shrink lesions or relieve endometriosis pain. <strong>For clinicians:</strong> mechanistic justification for future trials; not a basis for prescribing GLP-1 agonists for endometriosis.",
+    "applicability": "It explains the scientific reason GLP-1 drugs are being discussed for endometriosis, while making clear that no study yet shows they shrink lesions or relieve endometriosis pain. It's a justification for future trials — not a basis for using GLP-1 drugs for endometriosis now.",
     "kb": "The mechanistic anchor that makes the verdict 'partially supported': there is a genuine biochemical basis, but direct endometriosis (lesion/symptom) evidence — the clinical top of the pyramid — is absent.",
     "equity": "Mechanism study (no demographics). GLP-1 drugs are costly and access-limited; any endometriosis use, if proven, would raise real equity/access questions.",
     "monday": "<strong>Hold / counsel.</strong> Tell patients there's a plausible metabolic-estrogen mechanism being explored, but no evidence GLP-1 drugs treat endometriosis lesions or pain — and they shouldn't be used off-label for that. Track for trials.",
@@ -32,7 +32,7 @@ AUTHORED = {
 
 # 33095458 — laparoscopic surgery for endometriosis (Cochrane) — context
 "33095458": {
-    "bottom": "The <strong>Cochrane review of laparoscopic surgery for endometriosis</strong> — the established, evidence-based treatment that any new adjunct like a GLP-1 drug would have to <em>add value</em> on top of. <strong>For patients:</strong> surgery is a proven mainstay; GLP-1 drugs are not a replacement. <strong>For clinicians:</strong> the standard-of-care baseline for the brief.",
+    "bottom": "The <strong>Cochrane review of laparoscopic surgery for endometriosis</strong> — the established, evidence-based treatment that any new add-on like a GLP-1 drug would have to <em>add value</em> on top of. Surgery is a proven mainstay; GLP-1 drugs are not a replacement for it. It's the standard-of-care baseline for this brief.",
     "question": "<strong>The problem.</strong> Effective endometriosis treatment for pain and fertility is needed; laparoscopic surgery anchors care. <strong>The question:</strong> what is the effect of laparoscopic surgery on endometriosis pain and subfertility?",
     "pico": {"P": "People with endometriosis (pain/subfertility).", "I": "Laparoscopic surgical treatment.",
              "C": "Diagnostic laparoscopy/no treatment.", "O": "Pain and fertility outcomes.",
@@ -41,7 +41,7 @@ AUTHORED = {
     "findings": "Laparoscopic surgery improves endometriosis pain and can improve fertility versus no treatment — the effective standard against which adjuncts are measured (and, per the recurrence review, not a permanent cure).",
     "rob": "Cochrane methods limit bias; standard-of-care conclusion robust.",
     "strengths": "Authoritative baseline for evaluating any add-on claim's incremental value.",
-    "applicability": "<strong>For patients:</strong> surgery is proven; GLP-1 wouldn't replace it. <strong>For clinicians:</strong> the bar an adjunct must clear.",
+    "applicability": "Surgery is proven, and a GLP-1 drug wouldn't replace it — it's the bar any add-on would have to clear.",
     "kb": "Defines standard-of-care context shared across the endometriosis briefs.",
     "equity": "Access to skilled endometriosis surgery is uneven.",
     "monday": "<strong>Standard of care.</strong> Surgery remains evidence-based; frame GLP-1 as an unproven potential adjunct, not a substitute.",
@@ -50,7 +50,7 @@ AUTHORED = {
 
 # 33020832 — recurrence after post-op hormonal suppression — context
 "33020832": {
-    "bottom": "A <strong>systematic review</strong> documenting high endometriosis recurrence after surgery and limited evidence that post-operative hormonal suppression prevents it — the unmet-need context driving interest in novel adjuncts like GLP-1 agonists. <strong>For patients:</strong> surgery often isn't curative, which is why new options are sought. <strong>For clinicians:</strong> the gap that motivates the GLP-1 question.",
+    "bottom": "A <strong>systematic review</strong> documenting high endometriosis recurrence after surgery and limited evidence that post-operative hormonal suppression prevents it — the unmet-need context driving interest in newer add-ons like GLP-1 drugs. Surgery often isn't curative, which is why new options are sought; that gap is what motivates the GLP-1 question.",
     "question": "<strong>The problem.</strong> Recurrence after endometriosis surgery is common and prevention is uncertain. <strong>The question:</strong> does post-operative medical therapy reduce recurrence?",
     "pico": {"P": "Post-surgical endometriosis patients.", "I": "Post-operative hormonal suppression.",
              "C": "No suppression/placebo/other.", "O": "Recurrence.",
@@ -59,7 +59,7 @@ AUTHORED = {
     "findings": "Recurrence is high and the benefit of post-op suppression uncertain — a real unmet need that legitimizes exploring better-evidenced adjuncts.",
     "rob": "Heterogeneity and observational components weaken certainty; high-recurrence finding is well recognized.",
     "strengths": "Frames the recurrence problem motivating new adjunct research.",
-    "applicability": "<strong>For patients:</strong> realistic expectations about surgery and adjuncts. <strong>For clinicians:</strong> context for individualized management and interest in novel options.",
+    "applicability": "It sets realistic expectations about surgery and add-on therapies, and it's the context behind individualized management and the interest in newer options.",
     "kb": "The 'why seek new adjuncts' context for the GLP-1 claim; shared with the antihistamine-endometriosis brief.",
     "equity": "Recurrence/repeat-surgery burden falls on patients with limited specialist access.",
     "monday": "<strong>Counsel.</strong> Discuss recurrence risk and modest suppression evidence; this motivates but doesn't justify unproven GLP-1 use.",
@@ -68,7 +68,7 @@ AUTHORED = {
 
 # 36948440 — endometriosis/adenomyosis with pregnancy and infertility — context
 "36948440": {
-    "bottom": "A <strong>review of endometriosis/adenomyosis effects on fertility and pregnancy</strong> — reproductive-stakes context. It matters specifically for GLP-1 drugs because <strong>GLP-1 agonists are generally avoided in pregnancy/conception</strong>, so reproductive goals strongly shape whether they could ever fit endometriosis care. <strong>For patients:</strong> fertility plans are central to treatment choices. <strong>For clinicians:</strong> a key safety lens for the GLP-1 question.",
+    "bottom": "A <strong>review of endometriosis/adenomyosis effects on fertility and pregnancy</strong> — the reproductive-stakes context. It matters specifically for GLP-1 drugs because <strong>they are generally avoided around pregnancy and conception</strong>, so fertility plans strongly shape whether these drugs could ever fit endometriosis care. That makes reproductive goals central to the treatment choice, and a key safety lens for the GLP-1 question.",
     "question": "<strong>The problem.</strong> Endometriosis/adenomyosis impair fertility and complicate pregnancy. <strong>The question:</strong> how are they associated with infertility and adverse pregnancy outcomes?",
     "pico": {"P": "People with endometriosis/adenomyosis and reproductive goals.",
              "I": "Review of disease–fertility/pregnancy associations.", "C": "Unaffected reproduction.",
@@ -77,7 +77,7 @@ AUTHORED = {
     "findings": "Both conditions are associated with infertility and adverse pregnancy outcomes, making fertility-/pregnancy-safe management a priority — directly relevant given GLP-1 agonists' pregnancy cautions.",
     "rob": "Narrative review; associations with confounding.",
     "strengths": "Clarifies reproductive stakes and a concrete safety constraint for any endometriosis adjunct.",
-    "applicability": "<strong>For patients:</strong> if pregnancy is a goal, GLP-1 drugs carry specific cautions. <strong>For clinicians:</strong> reproductive safety is a gating consideration for GLP-1 in reproductive-age endometriosis patients.",
+    "applicability": "If pregnancy is a goal, GLP-1 drugs carry specific cautions — reproductive safety is a gating consideration for using them in reproductive-age people with endometriosis.",
     "kb": "Reproductive-stakes + safety context for the GLP-1 claim; shared with the antihistamine-endometriosis brief.",
     "equity": "Fertility-care access disparities compound the reproductive burden.",
     "monday": "<strong>Context / counsel.</strong> Weigh fertility goals and GLP-1 pregnancy cautions before any consideration; this is a real barrier to GLP-1 use in reproductive-age patients.",
