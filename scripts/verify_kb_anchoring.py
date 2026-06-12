@@ -297,6 +297,15 @@ def verify_remote_post(post_id: str):
         except Exception as e2:
             return 1, [], [f"FETCH FAILED — {post_id}: {e2}"]
 
+    # A post that is no longer publicly served (retired/superseded/draft →
+    # /api/posts/<id> returns {"error": "not found"}) is NOT a live clinical
+    # surface, so the KB-anchoring requirement does not apply. Skip it (pass)
+    # rather than misreading the empty body as a missing manifest. (2026-06-12:
+    # this is what failed the deploy after the 2026-05-13 briefs were superseded
+    # by the 2026-05-19 versions.)
+    if post.get("error") or not post.get("body_html"):
+        return 0, [f"skipped — {post_id} is not published (no longer a live surface)"], []
+
     body = post.get("body_html") or ""
     issues = []
     passes = []
