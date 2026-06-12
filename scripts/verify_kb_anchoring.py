@@ -352,11 +352,28 @@ def verify_remote_post(post_id: str):
 
 # Clinical R2-served posts that should be gated on every deploy. Add to
 # this list as new clinical evidence/blog posts ship through /api/posts.
+# Current published clinical posts that use THIS gate's single-comment manifest
+# format (`<!-- §0.8 KB-anchor manifest\n{json}\n-->`): W20 + the 8 refined
+# 2026-05-19 trend briefs (manifests backfilled 2026-06-12 from each post's own
+# kb_entries_retrieved + pmids_cited envelope). The 2026-05-13 briefs were
+# superseded (retired → auto-skipped by the not-published guard).
+#
+# NOTE: the Monday-Morning blog-2026-W21/W23/W24 posts carry their manifest in a
+# DIFFERENT two-comment format (`<!-- §0.8 KB-anchor manifest -->` + a separate
+# `<!-- {json} -->`), which MANIFEST_RE here does not match. They are validated
+# instead by the §3 deploy gate (audit_live_post.py, which detects their
+# HTML-comment manifest), so they are intentionally NOT listed here to avoid a
+# false "missing manifest". (Follow-up: unify the two manifest formats.)
 GATED_R2_POSTS = [
     "blog-2026-W20",
-    "evidence-2026-05-13-h1-and-h2-antihistamines-treat-endometriosis-pain",
-    "evidence-2026-05-13-glp-1-receptor-agonists-reduce-endometriosis-lesion-burden",
-    "evidence-2026-05-13-antihistamines-improve-menopausal-vasomotor-symptoms",
+    "evidence-2026-05-19-antihistamines-improve-menopausal-vasomotor-symptoms",
+    "evidence-2026-05-19-glp-1-receptor-agonists-reduce-endometriosis-lesion-burden",
+    "evidence-2026-05-19-h1-and-h2-antihistamines-treat-endometriosis-pain",
+    "evidence-2026-05-19-mast-cell-activation-drives-endometriosis-pelvic-pain",
+    "evidence-2026-05-19-mcas-pots-and-ehlers-danlos-hypermobility-form-a-triad-in-wo",
+    "evidence-2026-05-19-menopausal-hormone-therapy-is-safer-than-the-whi-era-suggest",
+    "evidence-2026-05-19-pelvic-congestion-syndrome-causes-chronic-pelvic-pain-and-em",
+    "evidence-2026-05-19-testosterone-therapy-improves-perimenopause-symptoms-beyond",
 ]
 
 
