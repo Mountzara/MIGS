@@ -200,16 +200,21 @@ the target element is in a section ABOVE the script tag.
    nanomedicine/phototherapy). It scans BOTH cite-card templates — the
    canonical `mz-cite-card` AND the newer `paper-card` (blog-2026-W23+
    auto-draft path, PMID in the `openDeepDive('dd-<PMID>')` trigger),
-   via `relevance_cards()` — so contamination in either template halts
-   the audit. It is a flag-for-human TRIPWIRE: it FAILS and lists
-   candidate PMIDs for a clinician to confirm; it never auto-prunes and
-   is never the authority on clinical relevance (the keyword anchors are
-   a blunt instrument — false +/− are expected, so a human reads each
-   flagged abstract before any cut). The real fix is upstream in the
-   `MountZaraResearchDigest` classifier (sibling repo on the Mac); this
-   gate is the in-repo safety net. Purge tooling for already-shipped
-   contamination: `scripts/_authoring/purge_w2{0,1,3}_offtopic.py`
-   (mechanical HTML-block removal with full integrity checks).
+   via `relevance_cards()`. It strips the pipeline's `lens-callout`
+   "DO + CBG/MIGS lens" framing (and the `mz-cite-fits` label) BEFORE
+   checking anchors, so it reads the paper's OWN title/citation/abstract
+   — without that strip the framing's gyn name-dropping made off-topic
+   papers pass (the W23/W24 false-negative). It is a flag-for-human
+   TRIPWIRE: it FAILS and lists candidate PMIDs; a flagged paper is
+   either genuine contamination OR a deliberate cross-disciplinary
+   mechanism/tech-transfer inclusion (the W23/W24 model) — the operator
+   decides. Also new: **§0.8.3 cross-post duplicate-citation check** (in
+   `--list` mode) flags any PMID journal-clubbed in >1 post (the W23/W24
+   cross-week dup class). Purge tooling: `scripts/_authoring/purge_w2*_offtopic.py`.
+   The real upstream cures live in `MountZaraResearchDigest` (Mac) and
+   the ingestion endpoint — see **`UPSTREAM_FIXES.md`** for the full
+   issue→root-cause→fix table (incl. the ingestion `pmids_cited`
+   auto-backfill now in `functions/api/posts/[[path]].js`).
 7. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
    (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
    class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.

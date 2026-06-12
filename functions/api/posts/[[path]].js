@@ -123,6 +123,33 @@ function isPipelineRequest(request, env) {
     return mismatch === 0;
 }
 
+// §0.8.2 manifest completeness — the MountZaraResearchDigest pipeline writes
+// only the FEATURED paper per topic group into pmids_cited (≈one per topic),
+// not the full citation set. The authoritative "papers in this post" list is
+// the set of deep-dive modal ids (dd-<PMID>). Backfill pmids_cited to that full
+// set at ingestion so every draft carries a complete manifest with zero
+// pipeline changes. Only ever EXPAND (never shrink to empty): a post with no
+// modals (e.g. a non-cite-card surface) keeps whatever the pipeline supplied.
+function citedPmidsFromBody(bodyHtml) {
+    if (typeof bodyHtml !== "string") return [];
+    const ids = new Set();
+    const re = /id="dd-(\d+)"/g;
+    let m;
+    while ((m = re.exec(bodyHtml)) !== null) ids.add(m[1]);
+    return [...ids].sort();
+}
+
+function backfillManifest(post) {
+    const cited = citedPmidsFromBody(post.body_html);
+    if (cited.length === 0) return post;            // nothing authoritative to add
+    const supplied = Array.isArray(post.pmids_cited) ? post.pmids_cited : [];
+    // Use the full modal set when the pipeline supplied fewer (the usual case),
+    // or union if it somehow supplied extras (defensive — never lose a PMID).
+    const union = new Set([...cited, ...supplied.map(String)]);
+    if (union.size > supplied.length) post.pmids_cited = [...union].sort();
+    return post;
+}
+
 async function readPost(env, id) {
     const obj = await env.CONTENT.get(`posts/${id}.json`);
     if (!obj) return null;
@@ -354,6 +381,7 @@ async function onRequestImpl({ request, env, params }) {
             published_at: null,
             updated_at: now,
         };
+        backfillManifest(post);   // §0.8.2: complete pmids_cited from the post's modals
         await writePost(env, post);
         await upsertIndexEntry(env, post);
         return jsonResponse({ ok: true, id: post.id }, 201);
@@ -497,6 +525,7 @@ async function onRequestImpl({ request, env, params }) {
         } else if (patch.status !== undefined && patch.status !== "published") {
             post.published_at = null;
         }
+        backfillManifest(post);   // §0.8.2: keep pmids_cited complete after body edits
         await writePost(env, post);
         await upsertIndexEntry(env, post);
         if (post.kind !== oldKind) {

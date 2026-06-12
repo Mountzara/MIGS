@@ -186,6 +186,12 @@ PAPER_CARD = re.compile(
 PAPER_CARD_TITLE = re.compile(r'<h3[^>]*class="[^"]*title[^"]*"[^>]*>(.*?)</h3>',
                               re.IGNORECASE | re.DOTALL)
 PAPER_CARD_PMID = re.compile(r"openDeepDive\(['\"]dd-(\d+)['\"]\)", re.IGNORECASE)
+# The paper-card's trailing "DO + CBG/MIGS lens" framing block. It carries the
+# pipeline's per-topic editorializing (gyn-name-dropping) that must be excluded
+# from the §1.2b subspecialty-anchor check — see offtopic_cards().
+LENS_CALLOUT = re.compile(r'<div[^>]*class="[^"]*lens-callout[^"]*"', re.IGNORECASE)
+# Authoritative "papers in this post" set: the deep-dive modal ids.
+DD_MODAL_ID = re.compile(r'<dialog[^>]*id="dd-(\d+)"', re.IGNORECASE)
 
 # §1.2b — subspecialty relevance gate (added 2026-06-11 after the W21/W20 audit
 # found the digest pipeline's keyword over-matching had pulled non-gynecologic
@@ -386,12 +392,24 @@ _MZ_ABSTRACT_ELEMENT = re.compile(
 def offtopic_cards(article_contents: Iterable[str]) -> list[tuple[str, str]]:
     """§1.2b: return [(pmid, title)] for cite cards whose own text carries no
     CBG/MIGS subspecialty anchor (or is overridden by an off-topic deny term).
-    The pipeline-assigned "where it fits" bucket label is stripped first — it is
-    the wrong-classification artifact, so anchoring on it would mask the very
-    contamination this gate exists to catch."""
+
+    The check must see ONLY the paper's own metadata (title / citation /
+    abstract), never the pipeline's editorializing. Two such artifacts are
+    stripped first:
+      • the mz-cite-card "where it fits" bucket label (CITE_FITS), and
+      • the paper-card <div class="lens-callout"> "DO + CBG/MIGS lens" framing,
+        which name-drops gyn terms ("Every cesarean scar reorganizes…",
+        "mediators traditional gynecology rarely measure…") onto EVERY card in a
+        topic group regardless of the paper. Before this strip, that framing
+        made off-topic papers (ophthalmology, neurosurgery, dermatology in
+        W23/W24) match the anchors and pass the gate — the exact false-negative
+        this gate exists to prevent. The lens-callout is the trailing block of
+        the card, so truncating at it keeps title+citation+badges+abstract.
+    """
     flagged: list[tuple[str, str]] = []
     for c in article_contents:
-        own = CITE_FITS.sub(" ", c)
+        own = LENS_CALLOUT.split(c, 1)[0]   # drop the lens-callout framing block
+        own = CITE_FITS.sub(" ", own)
         text = HTML_TAG.sub(" ", own)
         on_topic = bool(SUBSPECIALTY_ANCHORS.search(text)) and not OFFTOPIC_DENY.search(text)
         if on_topic:
@@ -617,13 +635,19 @@ def audit_post(post: dict) -> PostAudit:
             "0 cards (post has no cite-card surface — n/a for this post type)",
         )
 
-    # -- §1.2b subspecialty relevance (no off-topic papers) -----------------
-    # Catches the digest pipeline's keyword-over-match contamination at the
-    # gate, before a fix or republish ships it. Lists flagged PMIDs so a human
-    # confirms each is genuinely off-topic before pruning. FAILS the audit so
-    # a contaminated post halts for review rather than silently re-publishing.
-    # Scans BOTH cite-card templates (mz-cite-card AND the newer paper-card),
-    # so the count below can exceed the §3.8 mz-cite-card-only `cards_n`.
+    # -- §1.2b subspecialty relevance (human-review tripwire) ---------------
+    # Flags every card whose OWN metadata (title/citation/abstract — the
+    # pipeline lens-callout framing is stripped in offtopic_cards) carries no
+    # CBG/MIGS subspecialty anchor. This is a HALT-FOR-HUMAN tripwire, not an
+    # auto-prune: a flagged paper is either genuine contamination (the W20
+    # ophthalmology / W21 dermatology errors) OR a DELIBERATE cross-disciplinary
+    # mechanism / technology-transfer inclusion (the W23/W24 scar-biology, ICG,
+    # MRgFUS papers). The gate can't tell intent apart — that is the operator's
+    # call — so it FAILS and lists candidates for confirmation. The real
+    # upstream cure is to TAG intentional cross-disciplinary inclusions in the
+    # MountZaraResearchDigest pipeline (see UPSTREAM_FIXES.md §1) so future
+    # untagged non-gyn cards stand out as true contamination.
+    # Scans BOTH cite-card templates (mz-cite-card AND the newer paper-card).
     rel_cards = relevance_cards(body)
     if rel_cards:
         offtopic = offtopic_cards(rel_cards)
@@ -631,15 +655,16 @@ def audit_post(post: dict) -> PostAudit:
             preview = "; ".join(f"{p} {t}" for p, t in offtopic[:8])
             more = f" (+{len(offtopic)-8} more)" if len(offtopic) > 8 else ""
             audit.add(
-                "§1.2b subspecialty relevance (no off-topic papers)",
+                "§1.2b subspecialty relevance (confirm intentional vs contamination)",
                 False,
-                f"{len(offtopic)} non-CBG/MIGS suspect card(s) — review/prune: {preview}{more}",
+                f"{len(offtopic)} card(s) non-CBG/MIGS by own metadata — confirm each is a "
+                f"deliberate cross-disciplinary inclusion, not contamination: {preview}{more}",
             )
         else:
             audit.add(
-                "§1.2b subspecialty relevance (no off-topic papers)",
+                "§1.2b subspecialty relevance (confirm intentional vs contamination)",
                 True,
-                f"all {len(rel_cards)} cards carry a CBG/MIGS subspecialty anchor",
+                f"all {len(rel_cards)} cards carry a CBG/MIGS subspecialty anchor in their own metadata",
             )
 
     # -- §3.8 item 24 + §3.9 deep-dive modal coverage -----------------------
@@ -942,6 +967,29 @@ def main(argv: list[str]) -> int:
         audit = audit_post(p)
         print_audit(audit)
         total_fails += audit.fails
+
+    # -- §0.8.3 cross-post duplicate-citation check (when auditing >1 post) ---
+    # The pipeline has no dedup against PRIOR weeks, so the same PMID can be
+    # journal-clubbed in consecutive Monday-Mornings posts (W23/W24 shared 3).
+    # Across all audited posts, flag any PMID whose deep-dive appears in more
+    # than one post — the operator drops it from all but one. Real upstream cure
+    # is a rolling cited-PMID ledger in the pipeline (see UPSTREAM_FIXES.md §3).
+    if len(posts) > 1:
+        seen: dict[str, list[str]] = {}
+        for p in posts:
+            for pmid in sorted(set(DD_MODAL_ID.findall(p.get("body_html", "")))):
+                seen.setdefault(pmid, []).append(p.get("id", "?"))
+        dups = {pmid: ids for pmid, ids in seen.items() if len(ids) > 1}
+        if dups:
+            total_fails += 1
+            print("\n--- cross-post integrity ---")
+            print(f"    ✗  §0.8.3 no cross-post duplicate citations  "
+                  f"· {len(dups)} PMID(s) cited in >1 post:")
+            for pmid, ids in sorted(dups.items()):
+                print(f"         {pmid}: {', '.join(ids)}")
+        else:
+            print("\n--- cross-post integrity ---")
+            print("    ✓  §0.8.3 no cross-post duplicate citations")
 
     print(f"=== TOTAL FAILS: {total_fails} ===")
     return 0 if total_fails == 0 else 2
