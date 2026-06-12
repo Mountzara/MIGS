@@ -263,6 +263,42 @@ if [ -z "${DEPLOY_SKIP_RUNTIME_CSS_AUDIT:-}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Visual / interactive runtime audit (audit_visual_runtime.py). Verifies that
+# what the reader SEES works at runtime in a real headless browser: images
+# loaded, autoplay videos playing, the hero drawing video starts on time and
+# covers the screen, the Ken-Burns animation is applied + actually moving, and
+# the opening fade-in sequence completes.
+#
+# SOFT GATE for now (reports, does NOT block) — it must be calibrated against a
+# live render on a browser-equipped machine before being promoted to a hard
+# gate. Promote by setting DEPLOY_VISUAL_GATE_HARD=1 once calibrated.
+# Skip entirely with DEPLOY_SKIP_VISUAL_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_VISUAL_AUDIT:-}" ] && [ -f scripts/audit_visual_runtime.py ]; then
+    if ! py_has_module playwright; then
+        echo ""
+        echo "⏭️  Visual/interactive audit SKIPPED — Playwright not installed."
+    else
+        echo ""
+        echo "🔍 Visual/interactive runtime audit (images/videos/Ken-Burns/animations)..."
+        if "$PY" scripts/audit_visual_runtime.py > /tmp/_visual_audit.log 2>&1; then
+            tail -1 /tmp/_visual_audit.log
+            echo "   ✅ visual/interactive audit passed"
+        else
+            echo ""
+            echo "⚠️  VISUAL/INTERACTIVE audit reported failures (SOFT gate — not blocking):"
+            grep -E '✗' /tmp/_visual_audit.log | head -20
+            echo "   Full log: /tmp/_visual_audit.log"
+            if [ -n "${DEPLOY_VISUAL_GATE_HARD:-}" ]; then
+                echo "🛑 DEPLOY_VISUAL_GATE_HARD set — blocking."
+                exit 1
+            fi
+            echo "   (Calibrate against a live render, then set DEPLOY_VISUAL_GATE_HARD=1 to enforce.)"
+        fi
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Route-render audit (added 2026-06-10 per SYSTEM_MAP.md §13.5). Converts
 # §0.2.1 visual VERIFY into a HARD GATE: loads every route in
 # scripts/route_render_manifest.json on live production in headless Chromium
