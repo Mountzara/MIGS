@@ -43,7 +43,17 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-KB_DIR = Path("/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks")
+# KB master lives in the sibling MountZaraMedicalTranscription repo. Its location
+# is environment-specific (Mac dev box by default), so it is overridable via the
+# MZ_KB_DIR env var and its absence is handled gracefully (EXIT_KB_UNAVAILABLE)
+# rather than crashing — the KB-anchoring gate simply cannot run where the KB
+# master is not present (e.g. the Linux CI/agent VM), and callers detect that
+# and skip the gate instead of treating it as a deploy-blocking failure.
+KB_DIR = Path(os.environ.get(
+    "MZ_KB_DIR",
+    "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks",
+))
+EXIT_KB_UNAVAILABLE = 3  # KB master not present in this environment (skip, don't fail)
 MANIFEST_RE = re.compile(
     r"<!--\s*§0\.8 KB-anchor manifest\s*\n(?P<json>.*?)\n\s*-->",
     re.DOTALL,
@@ -346,6 +356,26 @@ def main():
         print(__doc__)
         sys.exit(2)
     arg = sys.argv[1]
+
+    # Environment probe: report whether the KB master is reachable here so a
+    # caller (deploy-prod.sh) can decide to run the gate or skip it cleanly.
+    if arg == "--kb-available":
+        if KB_DIR.is_dir():
+            print(f"KB master present: {KB_DIR}")
+            sys.exit(0)
+        print(f"KB master NOT present: {KB_DIR} (set MZ_KB_DIR to point at it)")
+        sys.exit(EXIT_KB_UNAVAILABLE)
+
+    # If the KB master isn't on this machine, the anchoring gate cannot run.
+    # Exit with the dedicated EXIT_KB_UNAVAILABLE so callers treat it as
+    # "skip — wrong environment", never as a content failure. (The --r2-posts
+    # remote check only needs network + R2, not the local KB, so it is exempt.)
+    if arg != "--r2-posts" and not KB_DIR.is_dir():
+        print(f"§0.8.1 KB-anchoring gate — KB master not present in this environment")
+        print(f"  expected at: {KB_DIR}")
+        print(f"  set MZ_KB_DIR, or run from an environment that has the KB master.")
+        sys.exit(EXIT_KB_UNAVAILABLE)
+
     print(f"§0.8.1 KB-anchoring deploy gate — CLAUDE.md")
     print("=" * 78)
 

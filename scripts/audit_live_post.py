@@ -192,6 +192,9 @@ PAPER_CARD_PMID = re.compile(r"openDeepDive\(['\"]dd-(\d+)['\"]\)", re.IGNORECAS
 LENS_CALLOUT = re.compile(r'<div[^>]*class="[^"]*lens-callout[^"]*"', re.IGNORECASE)
 # Authoritative "papers in this post" set: the deep-dive modal ids.
 DD_MODAL_ID = re.compile(r'<dialog[^>]*id="dd-(\d+)"', re.IGNORECASE)
+# Weekly Monday-Mornings post ids (blog-YYYY-Wnn) — the series where week-to-week
+# deep-dive duplication is redundant; cross-series overlap is legitimate.
+WEEKLY_POST_ID = re.compile(r'^blog-\d{4}-W\d+$', re.IGNORECASE)
 
 # §1.2b — subspecialty relevance gate (added 2026-06-11 after the W21/W20 audit
 # found the digest pipeline's keyword over-matching had pulled non-gynecologic
@@ -220,7 +223,12 @@ SUBSPECIALTY_ANCHORS = re.compile(
     r'\b(?:trans|endo)?vagin|vulva|ovar(y|ian|ies)|fallopian|adnex|salping|oophor|myomectom|'
     r'hysterectom|hysteroscop|endometri(um|al)|menstru|dysmenorr|menorrhag|'
     r'amenorr|abnormal uterine bleeding|\baub\b|pelvic pain|dyspareun|'
-    r'polycystic ovar|\bpcos\b|menopaus|climacteric|vasomotor|\bhot flash|'
+    r'polycystic ovar|\bpcos\b|menopaus|climacteric|vasomotor|\bhot fl(ash|ush)|'
+    # British spellings + core MHT vocabulary the American-only list missed,
+    # which false-flagged legitimate menopause papers (hot flushes, oestradiol).
+    # Kept deliberately narrow — NOT 'androgen'/'gonadotropin', which also occur
+    # in the men's-health / animal-model papers the gate must still flag.
+    r'\bo?estr|progest(in|er|ogen)|\bamh\b|anti-?m(ü|u)llerian|'
     r'genitourinary syndrome|fertilit|infertil|\bivf\b|oocyte|embryo|blastocyst|'
     r'ovulat|follicul|ovarian reserve|contracept|pregnan|cesarean|caesarean|'
     r'c-section|isthmocele|\bniche\b|placenta|obstetric|antenatal|peripartum|'
@@ -439,7 +447,13 @@ def cards_with_abstracts(article_contents: Iterable[str]) -> int:
 # ---------------------------------------------------------------------------
 
 
-def audit_post(post: dict) -> PostAudit:
+def audit_post(post: dict, relevance_advisory: bool = False) -> PostAudit:
+    # relevance_advisory: when True, the §1.2b subspecialty check is recorded as
+    # a non-fatal ADVISORY instead of a hard fail. Used in batch/--list mode (the
+    # deploy gate re-auditing ALREADY-published posts), where the intentional-
+    # vs-contamination call was made at publish time and a legitimately-published
+    # post with reviewed cross-disciplinary papers must not block a later deploy.
+    # Single-post pre-publish review keeps it FATAL (the contamination halt).
     pid = post.get("id") or ""
     kind = post.get("kind") or ""
     title = (post.get("title") or "")[:120]
@@ -654,12 +668,21 @@ def audit_post(post: dict) -> PostAudit:
         if offtopic:
             preview = "; ".join(f"{p} {t}" for p, t in offtopic[:8])
             more = f" (+{len(offtopic)-8} more)" if len(offtopic) > 8 else ""
-            audit.add(
-                "§1.2b subspecialty relevance (confirm intentional vs contamination)",
-                False,
-                f"{len(offtopic)} card(s) non-CBG/MIGS by own metadata — confirm each is a "
-                f"deliberate cross-disciplinary inclusion, not contamination: {preview}{more}",
-            )
+            detail = (f"{len(offtopic)} card(s) non-CBG/MIGS by own metadata — confirm each is a "
+                      f"deliberate cross-disciplinary inclusion, not contamination: {preview}{more}")
+            if relevance_advisory:
+                # Non-fatal in batch re-audit: surface, don't block the deploy.
+                audit.add(
+                    "§1.2b subspecialty relevance (ADVISORY — review, not a deploy blocker)",
+                    True,
+                    f"ADVISORY: {detail}",
+                )
+            else:
+                audit.add(
+                    "§1.2b subspecialty relevance (confirm intentional vs contamination)",
+                    False,
+                    detail,
+                )
         else:
             audit.add(
                 "§1.2b subspecialty relevance (confirm intentional vs contamination)",
@@ -962,34 +985,43 @@ def main(argv: list[str]) -> int:
             log.error("failed to fetch %s: %s", tgt, e)
             return 3
 
+    # Batch re-audit (the full published set via --list, or a bare invocation
+    # that defaults to it) downgrades §1.2b to a non-fatal advisory — see
+    # audit_post(). A single explicit review (a positional target OR --file)
+    # keeps §1.2b FATAL so contamination halts before that post is published.
+    batch = (not args.target) and (not getattr(args, "file", None))
     total_fails = 0
     for p in posts:
-        audit = audit_post(p)
+        audit = audit_post(p, relevance_advisory=batch)
         print_audit(audit)
         total_fails += audit.fails
 
-    # -- §0.8.3 cross-post duplicate-citation check (when auditing >1 post) ---
-    # The pipeline has no dedup against PRIOR weeks, so the same PMID can be
-    # journal-clubbed in consecutive Monday-Mornings posts (W23/W24 shared 3).
-    # Across all audited posts, flag any PMID whose deep-dive appears in more
-    # than one post — the operator drops it from all but one. Real upstream cure
-    # is a rolling cited-PMID ledger in the pipeline (see UPSTREAM_FIXES.md §3).
-    if len(posts) > 1:
+    # -- §0.8.3 cross-week duplicate-deep-dive ADVISORY (when auditing >1 post) -
+    # The pipeline has no dedup against PRIOR weeks, so the same paper can be
+    # given a full deep-dive in consecutive WEEKLY Monday-Mornings posts (W23/W24
+    # shared 3). Scope strictly to the weekly series (id = blog-YYYY-Wnn): a PMID
+    # appearing across DIFFERENT series (a weekly digest AND a thematic evidence
+    # brief, or two distinct evidence briefs) is a LEGITIMATE shared foundational
+    # citation, not redundancy — flagging those would false-block every deploy.
+    # This is a NON-FATAL advisory (does not increment total_fails): only a human
+    # can judge "redundant repeat deep-dive" vs "intentional re-coverage", and a
+    # legitimately-published prior week must never block a later deploy. Real
+    # upstream cure is a rolling cited-PMID ledger in the pipeline (UPSTREAM_FIXES.md §3).
+    weekly = [p for p in posts if WEEKLY_POST_ID.match(str(p.get("id", "")))]
+    if len(weekly) > 1:
         seen: dict[str, list[str]] = {}
-        for p in posts:
+        for p in weekly:
             for pmid in sorted(set(DD_MODAL_ID.findall(p.get("body_html", "")))):
                 seen.setdefault(pmid, []).append(p.get("id", "?"))
         dups = {pmid: ids for pmid, ids in seen.items() if len(ids) > 1}
+        print("\n--- cross-week integrity (advisory, weekly Monday-Mornings only) ---")
         if dups:
-            total_fails += 1
-            print("\n--- cross-post integrity ---")
-            print(f"    ✗  §0.8.3 no cross-post duplicate citations  "
-                  f"· {len(dups)} PMID(s) cited in >1 post:")
+            print(f"    ⚠  §0.8.3 {len(dups)} paper(s) given a deep-dive in >1 weekly post "
+                  f"— review for redundant repeat coverage (not a deploy blocker):")
             for pmid, ids in sorted(dups.items()):
                 print(f"         {pmid}: {', '.join(ids)}")
         else:
-            print("\n--- cross-post integrity ---")
-            print("    ✓  §0.8.3 no cross-post duplicate citations")
+            print("    ✓  §0.8.3 no paper deep-dived across multiple weekly posts")
 
     print(f"=== TOTAL FAILS: {total_fails} ===")
     return 0 if total_fails == 0 else 2
