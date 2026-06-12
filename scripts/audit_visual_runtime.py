@@ -137,18 +137,32 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             pass
     hero0 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
         const r=v.getBoundingClientRect();
-        return {paused:v.paused, t:v.currentTime, ready:v.readyState,
+        return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,
+                kb:v.classList.contains('ken-burns'), ended:v.ended,
                 w:r.width, vw:window.innerWidth, h:r.height}; }""")
     page.wait_for_timeout(700)
     hero1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
-        return {paused:v.paused, t:v.currentTime}; }""")
+        return {paused:v.paused, t:v.currentTime, dur:v.duration,
+                kb:v.classList.contains('ken-burns'), ended:v.ended}; }""")
     if hero0 is None:
         res.append(chk(f"[{label}] hero video present", False, "#heroVideo not found"))
     elif not reduce_motion:
         moved = abs(hero1["t"] - hero0["t"]) >= 0.02
-        playing = (not hero1["paused"]) and moved and hero0["ready"] >= 2
+        advancing = (not hero1["paused"]) and moved and hero0["ready"] >= 2
+        # The hero is DESIGNED to pause on its final frame once the ~8s drawing
+        # completes, so Ken Burns animates a settled frame. On a fast render the
+        # animation can finish inside this sample window — a hero that PLAYED and
+        # then settled on/near its last frame (ended, near-duration, or with the
+        # .ken-burns class applied) is correct, not frozen. Only a hero stuck
+        # paused near the START with no Ken Burns is the real "frozen box" defect.
+        dur = hero1.get("dur") or 0
+        settled = hero1["paused"] and (hero1.get("ended") or hero1.get("kb")
+                  or (dur and hero1["t"] >= dur - 0.5))
+        playing = advancing or settled
         res.append(chk(f"[{label}] hero video playing", playing,
-                       f"paused={hero1['paused']} Δt={hero1['t']-hero0['t']:.2f} ready={hero0['ready']}"))
+                       f"paused={hero1['paused']} Δt={hero1['t']-hero0['t']:.2f} "
+                       f"ready={hero0['ready']} t={hero1['t']:.1f}/{dur:.1f} "
+                       f"{'settled-on-final-frame' if settled and not advancing else 'advancing' if advancing else 'STUCK'}"))
         edge = hero0["w"] >= hero0["vw"] * 0.98
         res.append(chk(f"[{label}] hero video covers screen edge-to-edge", edge,
                        f"video width {hero0['w']:.0f}px vs viewport {hero0['vw']}px"))
