@@ -571,6 +571,38 @@ sync route has a per-app permissions filter.
 
 ---
 
+## 11.5 `companion-app/` — native SwiftUI admin app (iPhone / iPad / Mac)
+
+"MZ Admin" — one SwiftUI codebase, three platforms. Talks to the SAME
+`/api/posts/*` + `/api/v1/admin/*` HTTP Basic-auth endpoints as the web
+admin (NO separate backend; §7 middleware applies).
+
+| File | Role |
+|---|---|
+| `MZAdmin.xcodeproj/` | COMMITTED Xcode project (hand-generated 2026-06-12, machine-verified). Open-and-⌘R on a Mac — no XcodeGen needed. Shared scheme `MZAdmin` → CLI `xcodebuild -scheme MZAdmin` works. |
+| `build-mac.sh` | One-command Mac build: `sim` (default, no signing), `mac`, `device`. |
+| `project.yml` | XcodeGen spec, kept in lock-step with the .xcodeproj (only needed to REGENERATE after restructuring). |
+| `MZAdmin/MZAdmin.entitlements` | macOS App Sandbox + outbound network. Wired via `CODE_SIGN_ENTITLEMENTS[sdk=macosx*]` in BOTH pbxproj and project.yml. |
+| `MZAdmin/Sources/MZAdminApp.swift` | `@main` App; injects `AuthStore`. |
+| `MZAdmin/Sources/Theme.swift` | Site-matching dark palette + glass card. |
+| `MZAdmin/Sources/Models/Post.swift` | Codable mirror of the R2 post envelope (type-checked on Linux CI/VM, pure Foundation). |
+| `MZAdmin/Sources/Models/AdminAPI.swift` | async URLSession client, Basic auth; centralizes errors (type-checked on Linux w/ FoundationNetworking shim). |
+| `MZAdmin/Sources/Models/AuthStore.swift` | Keychain-backed credentials (`import Security` — Apple-only). |
+| `MZAdmin/Sources/Models/AppModel.swift` | Observable state + approve/reject/refresh actions. |
+| `MZAdmin/Sources/Views/*` | RootView (split nav), LoginView, PostListView, PostDetailView (WKWebView body render), FlowLayout (topic chips). |
+
+**Lock-step rules:**
+- Add/rename/delete a Swift file → update BOTH `MZAdmin.xcodeproj/project.pbxproj`
+  (or re-run `xcodegen generate`) AND `project.yml`, same commit.
+- API shape changes in `functions/api/posts/[[path]].js` or
+  `functions/api/v1/admin/*` → mirror in `Post.swift`/`AdminAPI.swift`.
+- Build verification possible on this Linux VM: `swiftc -parse` all sources +
+  `swiftc -typecheck` the Models data layer (toolchain at
+  `/tmp/swift-toolchain/`, re-downloadable from swift.org). SwiftUI views
+  type-check only on a Mac (`./build-mac.sh`).
+
+---
+
 ## 12. `cron-worker/` — standalone Worker
 
 Separate `wrangler.toml` deploy (`cd cron-worker && wrangler deploy`).

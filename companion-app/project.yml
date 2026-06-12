@@ -36,5 +36,6 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: MZ Admin
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.medical
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        # macOS network client entitlement (sandbox) — harmless on iOS
-        INFOPLIST_KEY_NSAppTransportSecurity: ""
+        # macOS App Sandbox + outbound network (scoped to macOS; iOS ignores it)
+        CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: MZAdmin/MZAdmin.entitlements
+        ENABLE_HARDENED_RUNTIME[sdk=macosx*]: YES

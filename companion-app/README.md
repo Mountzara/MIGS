@@ -23,8 +23,11 @@ with the same HTTP Basic login, stored in the device Keychain.
 ## Project layout
 ```
 companion-app/
-  project.yml                     # XcodeGen spec (optional, generates the .xcodeproj)
+  MZAdmin.xcodeproj/              # COMMITTED, ready to open — no XcodeGen needed
+  build-mac.sh                    # one-command CLI build (sim / mac / device)
+  project.yml                     # XcodeGen spec (kept in sync; only needed to regenerate)
   MZAdmin/
+    MZAdmin.entitlements          # macOS sandbox + outbound network (scoped to macOS)
     Sources/
       MZAdminApp.swift            # @main App
       Theme.swift                 # palette + glass card
@@ -40,6 +43,25 @@ companion-app/
       Assets.xcassets/            # AppIcon (mz monogram) + AccentColor
 ```
 
+## Build it (fastest path)
+The Xcode project is **already committed** — no XcodeGen, no manual setup:
+
+```bash
+cd /path/to/MIGS/companion-app
+open MZAdmin.xcodeproj         # then press ⌘R (pick iPhone simulator or My Mac)
+# — or headless —
+./build-mac.sh                 # iOS Simulator build (no signing required)
+./build-mac.sh mac             # native macOS app
+./build-mac.sh device          # real iPhone (set your Team in Xcode once first)
+```
+
+Pre-flight validation already done (on the Linux dev VM, Swift 5.10.1):
+all 11 sources parse clean with the real Swift compiler, the data layer
+(`Post.swift` + `AdminAPI.swift`) fully **type-checks**, and the
+`.xcodeproj` was machine-verified (valid plist; every file reference
+resolves; target/phases/configs correct). The SwiftUI views need the
+macOS SDK to type-check, which only exists on a Mac — that's what ⌘B does.
+
 ## Build it on your Mac with Claude Code (recommended)
 There is **no native Xcode plugin** for Claude Code — the supported, native path
 is the Claude Code CLI in Terminal, which drives `xcodebuild`/`xcrun` to build and
@@ -54,7 +76,8 @@ cd /path/to/MIGS/companion-app
 claude
 ```
 Then just ask Claude, e.g.:
-- "generate the Xcode project and build the iOS app in the simulator"
+- "run ./build-mac.sh and fix anything that fails"
+- "build and run the iOS app in the simulator"
 - "run the Mac app"
 - "the approve button isn't refreshing — fix it and rebuild"
 
@@ -63,23 +86,20 @@ To skip the prompts, add to `~/.claude/settings.json`:
 { "permissions": { "allow": ["Bash(xcodebuild *)", "Bash(xcrun *)", "Bash(swift *)", "Bash(xcodegen *)"] } }
 ```
 
-## Build it by hand (two options)
-
-**A. XcodeGen (one command):**
+## Regenerating the project (only if you restructure files)
+The committed `.xcodeproj` already matches the sources. If you add/rename
+files you can either add them in Xcode normally, or regenerate from spec:
 ```bash
 brew install xcodegen
 cd companion-app && xcodegen generate && open MZAdmin.xcodeproj
 ```
 
-**B. No XcodeGen** — in Xcode: File ▸ New ▸ Project ▸ **Multiplatform ▸ App**
-("MZAdmin"), then delete its starter files and drag `MZAdmin/Sources` and
-`MZAdmin/Resources` into the project (Create groups, add to the app target).
-Set the App Icon to `AppIcon`. Build & run.
-
 ### Signing / entitlements
-- Set your **Team** in Signing & Capabilities (Automatic).
-- For the **Mac** target, add the **App Sandbox** capability with
-  *Outgoing Connections (Client)* checked (network access). iOS needs nothing extra.
+- Set your **Team** in Signing & Capabilities (Automatic). Simulator and
+  macOS builds work with no team at all.
+- The **Mac** build already carries `MZAdmin/MZAdmin.entitlements`
+  (App Sandbox + *Outgoing Connections (Client)*), wired in via
+  `CODE_SIGN_ENTITLEMENTS[sdk=macosx*]`. iOS needs nothing extra.
 - All traffic is HTTPS to `mountzara.com`, so default App Transport Security passes.
 
 ## Extending it
