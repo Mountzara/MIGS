@@ -54,10 +54,33 @@ KB_DIR = Path(os.environ.get(
     "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks",
 ))
 EXIT_KB_UNAVAILABLE = 3  # KB master not present in this environment (skip, don't fail)
+# Two manifest formats coexist in the corpus:
+#  (1) single-comment — `<!-- §0.8 KB-anchor manifest\n{json}\n-->`
+#      (W20, the evidence/trend-brief posts)
+#  (2) split — a marker comment then a SEPARATE json comment:
+#      `<!-- §0.8 KB-anchor manifest -->\n<!-- {json} -->`
+#      (the Monday-Morning blog-2026-W21/W23/W24 posts)
+# Recognize both so neither family false-fails the gate. find_manifest_json()
+# below returns the JSON text from whichever format is present.
 MANIFEST_RE = re.compile(
     r"<!--\s*§0\.8 KB-anchor manifest\s*\n(?P<json>.*?)\n\s*-->",
     re.DOTALL,
 )
+MANIFEST_RE_SPLIT = re.compile(
+    r"<!--\s*§0\.8 KB-anchor manifest\s*-->\s*<!--\s*(?P<json>\{.*?\})\s*-->",
+    re.DOTALL,
+)
+
+
+def find_manifest_json(body: str):
+    """Return the raw manifest JSON string from either supported format, or None."""
+    m = MANIFEST_RE.search(body)
+    if m:
+        return m.group("json")
+    m = MANIFEST_RE_SPLIT.search(body)
+    if m:
+        return m.group("json")
+    return None
 ANCHOR_INLINE_RE = re.compile(
     r"<!--\s*§0\.8 anchor:\s*kb_doc_id=(?P<doc>[a-zA-Z0-9-]+);\s*field=(?P<field>\w+);\s*idx=(?P<idx>\d+)"
     r"(?:;\s*excerpt=\"(?P<excerpt>[^\"]*)\")?\s*-->"
@@ -310,17 +333,18 @@ def verify_remote_post(post_id: str):
     issues = []
     passes = []
 
-    m = MANIFEST_RE.search(body)
-    if not m:
+    manifest_json = find_manifest_json(body)
+    if not manifest_json:
         issues.append(
             f"MANIFEST MISSING in body_html — R2 post {post_id} has no "
-            f"'<!-- §0.8 KB-anchor manifest --> ... -->' block."
+            f"'<!-- §0.8 KB-anchor manifest --> ... -->' block (neither the "
+            f"single-comment nor the split two-comment format)."
         )
         return 1, passes, issues
     passes.append(f"Manifest present in body_html (post {post_id}).")
 
     try:
-        manifest = json.loads(m.group("json"))
+        manifest = json.loads(manifest_json)
     except Exception as e:
         issues.append(f"MANIFEST MALFORMED JSON in body_html: {e}")
         return 1, passes, issues
@@ -352,20 +376,17 @@ def verify_remote_post(post_id: str):
 
 # Clinical R2-served posts that should be gated on every deploy. Add to
 # this list as new clinical evidence/blog posts ship through /api/posts.
-# Current published clinical posts that use THIS gate's single-comment manifest
-# format (`<!-- §0.8 KB-anchor manifest\n{json}\n-->`): W20 + the 8 refined
-# 2026-05-19 trend briefs (manifests backfilled 2026-06-12 from each post's own
-# kb_entries_retrieved + pmids_cited envelope). The 2026-05-13 briefs were
-# superseded (retired → auto-skipped by the not-published guard).
-#
-# NOTE: the Monday-Morning blog-2026-W21/W23/W24 posts carry their manifest in a
-# DIFFERENT two-comment format (`<!-- §0.8 KB-anchor manifest -->` + a separate
-# `<!-- {json} -->`), which MANIFEST_RE here does not match. They are validated
-# instead by the §3 deploy gate (audit_live_post.py, which detects their
-# HTML-comment manifest), so they are intentionally NOT listed here to avoid a
-# false "missing manifest". (Follow-up: unify the two manifest formats.)
+# Current published clinical set (2026-06-12). find_manifest_json() now accepts
+# BOTH manifest formats — the single-comment one (W20 + the 8 refined 2026-05-19
+# trend briefs, backfilled from each post's own kb_entries_retrieved + pmids_cited
+# envelope) and the split two-comment one (the Monday-Morning blog-2026-W21/W23/W24
+# posts) — so every live clinical post is enforced here. The 2026-05-13 briefs
+# were superseded (retired → auto-skipped by the not-published guard).
 GATED_R2_POSTS = [
     "blog-2026-W20",
+    "blog-2026-W21",
+    "blog-2026-W23",
+    "blog-2026-W24",
     "evidence-2026-05-19-antihistamines-improve-menopausal-vasomotor-symptoms",
     "evidence-2026-05-19-glp-1-receptor-agonists-reduce-endometriosis-lesion-burden",
     "evidence-2026-05-19-h1-and-h2-antihistamines-treat-endometriosis-pain",

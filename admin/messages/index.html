@@ -456,12 +456,23 @@
                 .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
+        // 2026-06-12: stale-response guards. Clicking thread A then quickly
+        // thread B fired two fetches and whichever RESPONSE landed last won —
+        // the reader could show the wrong thread. Same class of race between
+        // the 90s auto-refresh / manual refresh / background loadThreads():
+        // an older thread-list response could overwrite a newer one. Each
+        // request takes a sequence token; only the latest may apply state.
+        let threadsSeq = 0;
+        let openSeq = 0;
         async function loadThreads() {
+            const seq = ++threadsSeq;
             try {
                 const data = await fetchJson('/api/v1/admin/messages');
+                if (seq !== threadsSeq) return;   // a newer request superseded this one
                 state.threads = data.threads || [];
                 renderList();
             } catch (e) {
+                if (seq !== threadsSeq) return;
                 $('thread-list').innerHTML = `<div class="empty-state">Could not load threads: ${escapeHtml(e.message)}</div>`;
             }
         }
@@ -531,8 +542,10 @@
         }
 
         async function openThread(thread_id) {
+            const seq = ++openSeq;
             try {
                 const data = await fetchJson(`/api/v1/admin/messages/${thread_id}`);
+                if (seq !== openSeq) return;   // user already clicked a different thread
                 state.currentThreadId = thread_id;
                 state.currentThread = data.thread;
                 state.messages = data.messages;
@@ -550,6 +563,7 @@
                 // refresh threads in bg
                 loadThreads();
             } catch (e) {
+                if (seq !== openSeq) return;   // superseded — don't toast about a stale request
                 showToast('Could not open thread: ' + e.message, true);
             }
         }
@@ -578,16 +592,19 @@
         $('btn-send-reply').addEventListener('click', async () => {
             const body = $('reply-body').value.trim();
             if (!body) { showToast('Reply cannot be empty', true); return; }
-            if (!state.currentThreadId) return;
+            // Pin the target thread at send-start so a mid-send thread switch
+            // can't misroute the POST or re-open the wrong conversation.
+            const tid = state.currentThreadId;
+            if (!tid) return;
             $('btn-send-reply').disabled = true;
             try {
-                await fetchJson(`/api/v1/admin/messages/${state.currentThreadId}`, {
+                await fetchJson(`/api/v1/admin/messages/${tid}`, {
                     method: 'POST',
                     body: JSON.stringify({ body }),
                 });
-                $('reply-body').value = '';
+                if (state.currentThreadId === tid) $('reply-body').value = '';
                 showToast('Reply sent to patient.');
-                openThread(state.currentThreadId);
+                openThread(tid);
             } catch (e) {
                 showToast('Reply failed: ' + e.message, true);
             } finally {
