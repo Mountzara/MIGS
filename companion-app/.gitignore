@@ -1,5 +1,9 @@
-# Xcode / build artifacts
-MZAdmin.xcodeproj/
+# Xcode / build artifacts.
+# NOTE (2026-06-12): MZAdmin.xcodeproj is COMMITTED (pbxproj + shared scheme)
+# so the Mac step is open-and-build with no XcodeGen. Only user-specific
+# state and build products are ignored.
+MZAdmin.xcodeproj/project.xcworkspace/
+MZAdmin.xcodeproj/xcuserdata/
 *.xcworkspace/
 DerivedData/
 build/
