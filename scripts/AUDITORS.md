@@ -41,3 +41,16 @@ failure of one never disables another (no single point of failure):
 `pubmed_fetch.fetch()` never raises: it serves from cache, attempts NCBI, and
 marks anything unresolved `_offline` so callers degrade gracefully instead of
 crashing. Offline runs emit an informational notice (•), not a failure.
+
+## Header-integrity check (added after the W21 finding)
+`audit_accuracy.py` also checks each modal HEADER against the live PubMed record:
+- `header-title-placeholder` — header title is a placeholder ("Foundational
+  reference", "—", empty).
+- `header-title-mismatch` — header title doesn't match the real PubMed title for
+  that PMID (entity/tag-normalized, so encoding differences don't false-flag).
+- `header-meta-unpopulated` — header still shows "n = —".
+This caught a real defect: all 88 deep-dive modal headers on the live W21 post
+were never populated (placeholder titles, blank design, "n = —"), and one paper
+(42145021) had cross-contaminated metadata. The content below the headers is
+correct; the headers are the defect. It also catches a *botched fix* — when a
+rebuild left a duplicate cite line, the gate flagged it before publish.

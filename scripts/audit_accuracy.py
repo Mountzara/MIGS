@@ -79,10 +79,32 @@ def audit_post(post: dict) -> list[tuple]:
         modals[md.group(1)] = md.group(2)
     recs = fetch(list(modals))
     flags = []
+    # whole-post title map (for the header-integrity check below)
+    title_map = dict(re.findall(r'id="dd-(\d+)-title"[^>]*>(.*?)</h2>', h, re.DOTALL))
+    import html as _h
+    def _norm(s):  # unescape entities FIRST, then strip tags/punctuation
+        return re.sub(r'[^a-z0-9]', '', _h.unescape(HTML.sub('', _h.unescape(s or ''))).lower())
+    PLACEHOLDER = ("foundational reference", "—", "")
     for pmid, body in modals.items():
         rec = recs.get(pmid, {})
         ab = (rec.get("abstract") or "").lower()
         ptypes = " ; ".join(rec.get("publication_types") or []).lower()
+        # HEADER INTEGRITY — the W21-class defect: a modal whose header title is
+        # a placeholder, or doesn't match the real PubMed title for its PMID, or
+        # whose meta is unpopulated ("n = —"). Caught BEFORE publish so neither a
+        # stale pipeline header nor a botched fix can ship silently.
+        shown_title = HTML.sub('', title_map.get(pmid, '')).strip()
+        real_title = rec.get("title", "")
+        if shown_title.lower() in PLACEHOLDER:
+            flags.append((pmid, "header-title-placeholder", f"modal title is '{shown_title or '(empty)'}'"))
+        elif real_title and _norm(shown_title) not in _norm(real_title) \
+                and _norm(real_title) not in _norm(shown_title):
+            flags.append((pmid, "header-title-mismatch",
+                          f"header '{shown_title[:40]}' != PubMed '{real_title[:40]}'"))
+        # a header that still says "n = —" or carries a duplicate cite is unfinished
+        hdr = body[:body.find('</header>')] if '</header>' in body else body[:600]
+        if re.search(r'n\s*=\s*—', hdr):
+            flags.append((pmid, "header-meta-unpopulated", "modal header shows 'n = —'"))
         offline = rec.get("_offline") or rec.get("_missing") or len(ab) < 40
         if offline:
             # FALL BACK to the post's stored verbatim abstract — never skip.
