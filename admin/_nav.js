@@ -175,3 +175,66 @@
         build();
     }
 })();
+
+// =====================================================================
+// SHARED ADMIN AUTH (2026-06-12) — automatic Basic-auth for /api calls
+// =====================================================================
+// Root cause of "the admin doesn't work": /admin/* is Basic-auth-gated by
+// functions/admin/_middleware.js, but the browser does NOT re-send that
+// Authorization header to /api/v1/admin/* or /api/posts (a different URL
+// prefix → different protection space, RFC 7617). Only the Content and
+// Trend-Briefs SPAs sent an explicit header; the other ~11 admin pages sent
+// none, so every API call 401'd and the page looked broken.
+//
+// This installs ONE fetch interceptor (loaded on every page via _nav.js) that
+// attaches `Authorization: Basic <cached>` to same-origin admin API requests
+// and reprompts once on 401 — fixing all pages at once, without touching each
+// page's own fetch helper. Pages that already set their own Authorization
+// header are passed through untouched (we never override a caller's header,
+// and never reprompt on their behalf).
+(function () {
+    if (window.__mzAdminAuthInstalled) return;
+    window.__mzAdminAuthInstalled = true;
+    var KEY = 'mz_admin_basic';
+    var declined = false;          // user cancelled the prompt → stop auto-prompting
+    function cached() { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } }
+    function ensure(force) {
+        if (!force) { var c = cached(); if (c) return c; }
+        if (declined && !force) return null;
+        var u = window.prompt('Admin email:', 'chris.mabini@gmail.com');
+        if (!u) { declined = true; return null; }
+        var p = window.prompt('Admin password:');
+        if (!p) { declined = true; return null; }
+        var b = btoa(u + ':' + p);
+        try { sessionStorage.setItem(KEY, b); } catch (e) {}
+        declined = false;
+        return b;
+    }
+    function isAdminAPI(url) {
+        try {
+            var u = new URL(url, location.origin);
+            return u.origin === location.origin && /^\/api\/(v1\/admin|posts)\b/.test(u.pathname);
+        } catch (e) { return false; }
+    }
+    var orig = window.fetch.bind(window);
+    window.fetch = async function (input, init) {
+        var url = (typeof input === 'string') ? input : (input && input.url) || '';
+        if (!isAdminAPI(url)) return orig(input, init);
+        init = init || {};
+        var headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || undefined);
+        var hadAuth = headers.has('Authorization');   // caller manages its own auth
+        if (!hadAuth) {
+            var c = cached() || ensure(false);
+            if (c) headers.set('Authorization', 'Basic ' + c);
+        }
+        var res = await orig(input, Object.assign({}, init, { headers: headers }));
+        if (res.status === 401 && !hadAuth && !declined) {
+            try { sessionStorage.removeItem(KEY); } catch (e) {}
+            var c2 = ensure(true);
+            if (c2) { headers.set('Authorization', 'Basic ' + c2); res = await orig(input, Object.assign({}, init, { headers: headers })); }
+        }
+        return res;
+    };
+    // Shared sign-out other pages can call.
+    window.mzAdminSignOut = function () { try { sessionStorage.removeItem(KEY); } catch (e) {} declined = false; };
+})();

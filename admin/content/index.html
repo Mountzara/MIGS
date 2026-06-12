@@ -423,26 +423,25 @@
             return b;
         }
 
-        async function api(method, path, body) {
+        // `noPrompt` (used by the silent 30s auto-refresh) means: never pop a
+        // credential prompt. Without it, a user who hit Cancel on the login
+        // prompt got re-prompted every 30 seconds forever (the auto-refresh
+        // 401'd → reprompted on a loop). Now the background refresh fails quietly
+        // and only a user-initiated action re-prompts.
+        async function api(method, path, body, { noPrompt = false } = {}) {
             const opts = { method, headers: {} };
             if (body !== undefined) {
                 opts.headers['content-type'] = 'application/json';
                 opts.body = JSON.stringify(body);
             }
-            let creds = await ensureAdminCreds(false);
+            let creds = sessionStorage.getItem('mz_admin_basic')
+                || (noPrompt ? null : await ensureAdminCreds(false));
             if (creds) opts.headers['Authorization'] = 'Basic ' + creds;
             let res = await fetch(`${API}${path}`, opts);
-            // On a fresh 401, the cached creds are stale (or never were valid).
-            // Wipe + reprompt ONCE and retry. If that still 401s, surface the
-            // error to the dashboard as a toast so the user can see it.
-            if (res.status === 401 && creds) {
+            // On a 401 the cached creds are stale/absent. Reprompt ONCE and retry
+            // — but NEVER during a silent background refresh (noPrompt).
+            if (res.status === 401 && !noPrompt) {
                 sessionStorage.removeItem('mz_admin_basic');
-                creds = await ensureAdminCreds(true);
-                if (creds) {
-                    opts.headers['Authorization'] = 'Basic ' + creds;
-                    res = await fetch(`${API}${path}`, opts);
-                }
-            } else if (res.status === 401 && !creds) {
                 creds = await ensureAdminCreds(true);
                 if (creds) {
                     opts.headers['Authorization'] = 'Basic ' + creds;
@@ -466,7 +465,7 @@
             const silent = opts && opts.silent === true;
             const savedScrollY = silent ? window.scrollY : null;
             try {
-                const data = await api('GET', `/_admin?kind=${encodeURIComponent(state.kind)}`);
+                const data = await api('GET', `/_admin?kind=${encodeURIComponent(state.kind)}`, undefined, { noPrompt: silent });
                 const prevStatus = state.selectedId
                     ? (state.posts.find(p => p.id === state.selectedId) || {}).status
                     : null;
@@ -675,15 +674,16 @@
                         ${post.body_html || ''}
                     </div></body></html>
                 `;
-                // sandbox allows scripts + same-origin so interactive post components
-                // (SVG charts, entrance animations, scroll-reveal IntersectionObserver,
-                // evidence pyramids, etc.) render the same in the admin preview as
-                // they will on the public page. Both flags are required: srcdoc
-                // content runs as an opaque origin without `allow-same-origin`,
-                // which would break some script behaviors we rely on. The iframe
-                // itself remains sandboxed against top-frame navigation and form
-                // submission, which is the security-relevant property here.
-                c.innerHTML = `<iframe class="preview-frame" srcdoc="${esc(previewDoc)}" sandbox="allow-same-origin allow-scripts"></iframe>`;
+                // SECURITY (2026-06-12): allow-scripts WITHOUT allow-same-origin.
+                // This preview renders not-yet-approved draft body_html, so it must
+                // NOT run in the admin's origin — with both flags, a script in an
+                // unreviewed draft could read the admin session/DOM (stored-XSS /
+                // privilege escalation in the exact tool meant to vet that content).
+                // Dropping allow-same-origin runs the srcdoc as an opaque origin:
+                // self-contained post scripts (SVG charts, CSS/RAF animations,
+                // IntersectionObserver scroll-reveal) still execute and preview
+                // faithfully, but they can no longer touch the admin session.
+                c.innerHTML = `<iframe class="preview-frame" srcdoc="${esc(previewDoc)}" sandbox="allow-scripts"></iframe>`;
             }
         }
 
@@ -735,7 +735,11 @@
         loadPosts();
         // gentle auto-refresh every 30s — silent so it doesn't reset
         // the user's scroll position while they're reading a draft.
-        setInterval(() => loadPosts({ silent: true }), 30000);
+        // Only auto-refresh while signed in — a signed-out/cancelled state must
+        // not trigger background calls (which previously re-prompted on a loop).
+        setInterval(() => {
+            if (sessionStorage.getItem('mz_admin_basic')) loadPosts({ silent: true });
+        }, 30000);
     </script>
 </body>
 </html>

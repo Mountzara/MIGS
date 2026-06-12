@@ -166,9 +166,24 @@ async function writePost(env, post) {
 
 async function readIndex(env, kind) {
     const obj = await env.CONTENT.get(`_index/${kind}.json`);
-    if (!obj) return { posts: [] };
-    const text = await obj.text();
-    try { return JSON.parse(text); } catch { return { posts: [] }; }
+    if (obj) {
+        try {
+            const parsed = JSON.parse(await obj.text());
+            if (parsed && Array.isArray(parsed.posts)) return parsed;
+        } catch { /* corrupt blob — fall through to self-heal */ }
+    }
+    // SELF-HEAL (2026-06-12): the index is missing or unparseable. Returning an
+    // empty list here would silently hide EVERY post of this kind from the site
+    // (a lost/garbled `_index/<kind>.json` = catastrophic-but-invisible outage).
+    // Rebuild it from the posts/ objects instead. This path only runs when the
+    // index is actually absent/corrupt — never on the normal read path — so it
+    // adds no steady-state cost while guaranteeing the listing can't vanish.
+    try {
+        const entries = await rebuildIndex(env, kind);
+        return { posts: entries, rebuilt_at: new Date().toISOString(), self_healed: true };
+    } catch {
+        return { posts: [] };
+    }
 }
 
 async function writeIndex(env, kind, index) {

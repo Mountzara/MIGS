@@ -422,16 +422,53 @@ function fmtAgo(ms) {
     return d + "d ago";
 }
 
-async function api(path, opts) {
+// AUTH (2026-06-12 fix): the /api/v1/admin/* routes require HTTP Basic auth
+// (functions/_lib/admin_api.js reads ONLY the Authorization header). This page
+// previously sent cookies (credentials:"include") and NO Authorization header,
+// so every request 401'd and the whole page was non-functional. We now attach
+// `Authorization: Basic` from sessionStorage — the SAME key the Content admin
+// uses (`mz_admin_basic`), so one sign-in works across both admin tools.
+function ensureAdminCreds(force) {
+    if (!force) {
+        const cached = sessionStorage.getItem("mz_admin_basic");
+        if (cached) return cached;
+    }
+    const u = prompt("Admin email:", "chris.mabini@gmail.com");
+    if (!u) return null;
+    const p = prompt("Admin password:");
+    if (!p) return null;
+    const b = btoa(`${u}:${p}`);
+    sessionStorage.setItem("mz_admin_basic", b);
+    return b;
+}
+
+// Generic authenticated fetch for ANY admin URL (trend-briefs AND deep-dive
+// endpoints share the same Basic-auth backend). Attaches the header and
+// reprompts once on 401. Use this instead of raw fetch(..., credentials:"include")
+// anywhere on this page.
+async function authFetch(url, opts) {
     opts = opts || {};
-    const res = await fetch(API_BASE + path, {
+    const build = (creds) => ({
         method: opts.method || "GET",
-        headers: opts.body
-            ? { "content-type": "application/json", ...(opts.headers || {}) }
-            : (opts.headers || {}),
+        headers: {
+            ...(opts.body ? { "content-type": "application/json" } : {}),
+            ...(creds ? { "Authorization": "Basic " + creds } : {}),
+            ...(opts.headers || {}),
+        },
         body: opts.body ? JSON.stringify(opts.body) : undefined,
-        credentials: "include",
     });
+    let creds = ensureAdminCreds(false);
+    let res = await fetch(url, build(creds));
+    if (res.status === 401) {
+        sessionStorage.removeItem("mz_admin_basic");
+        creds = ensureAdminCreds(true);
+        if (creds) res = await fetch(url, build(creds));
+    }
+    return res;
+}
+
+async function api(path, opts) {
+    const res = await authFetch(API_BASE + path, opts);
     let json = null;
     try { json = await res.json(); } catch {}
     if (!res.ok) {
@@ -745,7 +782,7 @@ function buildApproveForm(b) {
             el("div", { class: "hint" }, "Required. ≤ 4000 chars. Audit trail; never rendered to the public brief.")
         ),
         el("div", { class: "btn-row" },
-            el("button", { class: "btn primary", onclick: () => submitApprove(b.id) },
+            el("button", { class: "btn primary", onclick: (e) => submitApprove(b.id, e) },
                 b.status === "approved" ? "Update override" : "Approve & queue override"),
             el("button", { class: "btn", onclick: () => window.open("/api/v1/admin/trend-briefs/" + encodeURIComponent(b.id), "_blank") },
                 "View raw JSON")
@@ -769,7 +806,7 @@ function buildSuggestForm(b) {
             el("div", { class: "hint" }, "≤ 12 KB. NO Anthropic API call from this endpoint — inference happens in your Cowork session per §12.1.")
         ),
         el("div", { class: "btn-row" },
-            el("button", { class: "btn", onclick: () => submitSuggest(b.id) }, "Send to Cowork")
+            el("button", { class: "btn", onclick: (e) => submitSuggest(b.id, e) }, "Send to Cowork")
         )
     ));
     return card;
@@ -790,7 +827,7 @@ function buildRejectForm(b) {
             el("div", { class: "hint" }, "Required. ≤ 1000 chars. Rejected briefs persist for audit; the Mac orchestrator ignores them.")
         ),
         el("div", { class: "btn-row" },
-            el("button", { class: "btn danger", onclick: () => submitReject(b.id) }, "Reject")
+            el("button", { class: "btn danger", onclick: (e) => submitReject(b.id, e) }, "Reject")
         )
     ));
     return card;
@@ -809,10 +846,9 @@ function buildRejectedCard(b) {
 
 async function loadDeepDivePanel(briefId, cardEl) {
     try {
-        const data = await fetch(
+        const data = await authFetch(
             "/api/v1/admin/deep-dive/queue?surface_kind=trend_brief&surface_key="
-            + encodeURIComponent(briefId) + "&include_authored=1&limit=200",
-            { credentials: "include" }
+            + encodeURIComponent(briefId) + "&include_authored=1&limit=200"
         ).then((r) => r.json());
         renderDeepDivePanel(briefId, cardEl, data);
     } catch (e) {
@@ -874,21 +910,21 @@ function buildDeepDiveRow(briefId, cardEl, r) {
     if (r.status === "pending") {
         actions.appendChild(el("button", {
             class: "dd-btn primary",
-            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+            onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
         }, "Materialize Cowork bundle"));
     } else if (r.status === "bundle_requested") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
             "Awaiting Mac puller…"));
         actions.appendChild(el("button", {
             class: "dd-btn",
-            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+            onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
         }, "Re-request"));
     } else if (r.status === "bundle_ready") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
             "Open Cowork, paste trigger from clipboard."));
         actions.appendChild(el("button", {
             class: "dd-btn",
-            onclick: () => triggerDeepDivePrep(briefId, cardEl, r.id),
+            onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
         }, "Re-materialize"));
     } else if (r.status === "patch_uploaded") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
@@ -907,19 +943,13 @@ function buildDeepDiveRow(briefId, cardEl, r) {
     return el("div", { class: "dd-row" }, paperBlock, actions);
 }
 
-async function triggerDeepDivePrep(briefId, cardEl, id) {
-    try {
-        await api("/" + ""); // no-op to keep linter happy; we use direct fetch below
-    } catch {}
-    const event = window.event;
-    const btn = event && event.target;
+async function triggerDeepDivePrep(briefId, cardEl, id, ev) {
+    const btn = ev && ev.currentTarget;   // explicit — no reliance on window.event
     if (btn) btn.disabled = true;
     try {
-        const r = await fetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/prep", {
+        const r = await authFetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/prep", {
             method: "POST",
-            headers: { "content-type": "application/json" },
-            credentials: "include",
-            body: "{}",
+            body: {},
         });
         if (!r.ok) throw new Error("HTTP " + r.status);
         toast("Bundle queued. Run scripts/pull_approved_overrides.py to materialize.");
@@ -933,11 +963,9 @@ async function triggerDeepDivePrep(briefId, cardEl, id) {
 async function triggerDeepDiveReset(briefId, cardEl, id) {
     if (!confirm("Reset this PMID to pending? Authored content is preserved as an archive but the row re-enters the queue.")) return;
     try {
-        const r = await fetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/reset", {
+        const r = await authFetch("/api/v1/admin/deep-dive/" + encodeURIComponent(id) + "/reset", {
             method: "POST",
-            headers: { "content-type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ reason: "admin reset from /admin/trend-briefs/" }),
+            body: { reason: "admin reset from /admin/trend-briefs/" },
         });
         if (!r.ok) throw new Error("HTTP " + r.status);
         toast("Reset to pending.");
@@ -972,7 +1000,7 @@ function buildTimelineCard(events) {
 
 // ============== Form submitters ==============
 
-async function submitApprove(id) {
+async function submitApprove(id, ev) {
     const v   = $("#approve-verdict").value;
     const lbl = $("#approve-label").value;
     const rat = $("#approve-rationale").value;
@@ -993,8 +1021,8 @@ async function submitApprove(id) {
     if (tagline)     override.tagline = tagline;
     if (taglineBody) override.tagline_body = taglineBody;
 
-    const btn = event.target;
-    btn.disabled = true;
+    const btn = ev && ev.currentTarget;
+    if (btn) btn.disabled = true;
     try {
         await api("/" + encodeURIComponent(id) + "/approve", {
             method: "POST",
@@ -1004,15 +1032,15 @@ async function submitApprove(id) {
         setTimeout(render, 300);
     } catch (e) {
         toast("Approve failed: " + e.message, "err");
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
-async function submitSuggest(id) {
+async function submitSuggest(id, ev) {
     const txt = $("#suggest-text").value.trim();
     if (!txt) return toast("Type some suggestions first.", "err");
-    const btn = event.target;
-    btn.disabled = true;
+    const btn = ev && ev.currentTarget;
+    if (btn) btn.disabled = true;
     try {
         await api("/" + encodeURIComponent(id) + "/suggest", {
             method: "POST",
@@ -1022,16 +1050,16 @@ async function submitSuggest(id) {
         setTimeout(render, 300);
     } catch (e) {
         toast("Suggest failed: " + e.message, "err");
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
-async function submitReject(id) {
+async function submitReject(id, ev) {
     const reason = $("#reject-reason").value.trim();
     if (!reason) return toast("Rejection reason required.", "err");
     if (!confirm("Reject this brief? This cannot be undone via the UI.")) return;
-    const btn = event.target;
-    btn.disabled = true;
+    const btn = ev && ev.currentTarget;
+    if (btn) btn.disabled = true;
     try {
         await api("/" + encodeURIComponent(id) + "/reject", {
             method: "POST",
@@ -1041,7 +1069,7 @@ async function submitReject(id) {
         setTimeout(() => { window.location.hash = "#"; }, 400);
     } catch (e) {
         toast("Reject failed: " + e.message, "err");
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 

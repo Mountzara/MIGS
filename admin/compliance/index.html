@@ -192,6 +192,7 @@
 </style>
 </head>
 <body>
+<script src="/admin/_nav.js"></script>
 <div class="wrap">
     <div class="nav-bar">
         <a href="/admin/">← Mount Zara admin</a>
@@ -421,23 +422,24 @@ async function loadDocs() {
 function renderDocs() {
     if (!currentDocs.length) return '<div class="empty">No compliance docs registered.</div>';
     return currentDocs.map(d => {
-        const sig = d.active_signature;
-        let badge, signedBlock = '';
-        if (!sig) {
-            badge = '<span class="badge unsigned">Unsigned</span>';
-        } else if (d.next_review_overdue) {
-            badge = '<span class="badge review">Review overdue</span>';
-        } else {
-            badge = '<span class="badge signed">Signed</span>';
-        }
-        if (sig) {
+        // 2026-06-12: read the ACTUAL backend shape (docs/index.js) — flat fields
+        // + a `status` enum — not a nested `active_signature` object (which the
+        // endpoint never returned, so every doc rendered "Unsigned" with a dead
+        // "View" link to `undefined`).
+        const isSigned = d.status && d.status !== 'unsigned';
+        let badge;
+        if (d.status === 'review_overdue')      badge = '<span class="badge review">Review overdue</span>';
+        else if (d.status === 'review_due_soon') badge = `<span class="badge review">Review due${d.due_in_days != null ? ' in ' + d.due_in_days + 'd' : ' soon'}</span>`;
+        else if (isSigned)                       badge = '<span class="badge signed">Signed</span>';
+        else                                     badge = '<span class="badge unsigned">Unsigned</span>';
+        let signedBlock = '';
+        if (isSigned) {
             signedBlock = `
                 <div class="signed-block">
-                    Signed by <strong>${sig.signed_by_display_name || sig.signature_display_name || ''}</strong>
-                    on ${fmtDateTime(sig.signed_at)}.
-                    Initials: <code>${sig.typed_initials || ''}</code>.
-                    Next review: ${sig.next_review_date ? fmtDate(sig.next_review_date) : 'not set'}.
-                    <div class="meta">document SHA-256 <code>${(sig.document_sha256 || '').slice(0, 12)}…</code></div>
+                    Signed by <strong>${d.signed_by || d.signature_display_name || ''}</strong>
+                    ${d.signed_at ? 'on ' + fmtDateTime(d.signed_at) + '.' : ''}
+                    Next review: ${d.next_review_date ? fmtDate(d.next_review_date) : 'not set'}.
+                    ${d.document_sha256_at_signing ? `<div class="meta">document SHA-256 <code>${d.document_sha256_at_signing.slice(0, 12)}…</code></div>` : ''}
                 </div>
             `;
         }
@@ -447,13 +449,14 @@ function renderDocs() {
                     <div style="font-size: 17px;">${d.title} ${badge}</div>
                     <div style="font-size: 12px; color: var(--ink-mute); margin-top: 4px;">
                         <code>${d.path}</code>
-                        ${d.annual_review ? '<span class="pill">annual review</span>' : ''}
+                        ${d.review_interval_months ? `<span class="pill">review every ${d.review_interval_months}mo</span>` : ''}
+                        ${d.counsel_review_recommended ? '<span class="pill">counsel review</span>' : ''}
                     </div>
                     ${signedBlock}
                 </div>
                 <div>
-                    <a class="btn muted" href="${d.public_url}" target="_blank" rel="noopener">View</a>
-                    <button class="btn primary" onclick="openSignDialog('${d.slug}', '${d.title.replace(/'/g, "&#39;")}')">${sig ? 'Re-sign' : 'Sign'}</button>
+                    <a class="btn muted" href="${d.path}" target="_blank" rel="noopener">View</a>
+                    <button class="btn primary" onclick="openSignDialog('${d.slug}', '${d.title.replace(/'/g, "&#39;")}')">${isSigned ? 'Re-sign' : 'Sign'}</button>
                 </div>
             </div>
         `;
