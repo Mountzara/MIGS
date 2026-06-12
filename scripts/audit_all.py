@@ -15,7 +15,7 @@ import argparse, subprocess, sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-AUDITORS = ["audit_accuracy.py", "audit_validation.py", "audit_voice.py"]
+AUDITORS = ["audit_accuracy.py", "audit_validation.py", "audit_voice.py", "audit_inline_refs.py"]
 
 
 def main():
