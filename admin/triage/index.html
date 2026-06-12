@@ -592,9 +592,13 @@
                 `<span class="concern-chip">${escapeHtml(c)}</span>`
             ).join('');
 
-            const visitTypeOptions = state.visitTypes.map(vt =>
-                `<option value="${vt.key}" ${vt.key === row.ai_visit_type ? 'selected' : ''}>${escapeHtml(vt.label)} · ${vt.duration_min} min</option>`
-            ).join('');
+            // 2026-06-12: if visit types failed to load, show it instead of a
+            // silently-empty dropdown that would submit an invalid override.
+            const visitTypeOptions = state.visitTypes.length
+                ? state.visitTypes.map(vt =>
+                    `<option value="${vt.key}" ${vt.key === row.ai_visit_type ? 'selected' : ''}>${escapeHtml(vt.label)} · ${vt.duration_min} min</option>`
+                  ).join('')
+                : '<option value="">⚠ visit types failed to load — refresh</option>';
 
             const chiefBlock = row.chief_complaint_summary
                 ? `<div class="chief-complaint">
@@ -780,6 +784,7 @@
         async function doSave(id, btn) {
             const article = btn.closest('article.triage-card');
             const f = gatherFields(article);
+            if (!f.visit_type) { showToast('Pick a visit type first (the list may not have loaded — refresh).', true); return; }
             btn.disabled = true;
             try {
                 await fetchJson(`/api/v1/admin/triage/${id}`, {
@@ -805,6 +810,7 @@
         async function doRelease(id, btn) {
             const article = btn.closest('article.triage-card');
             const f = gatherFields(article);
+            if (!f.visit_type) { showToast('Pick a visit type first (the list may not have loaded — refresh).', true); return; }
             btn.disabled = true;
             try {
                 await fetchJson(`/api/v1/admin/triage/${id}/release`, {

@@ -444,8 +444,8 @@
             <div class="kpi purple"><div class="label">Open claims</div><div class="value" id="kpi-open">—</div><div class="sub" id="kpi-open-sub">awaiting review</div></div>
             <div class="kpi alert" id="kpi-flags-card"><div class="label">Compliance flags</div><div class="value" id="kpi-flags">—</div><div class="sub" id="kpi-flags-sub">unresolved errors</div></div>
             <div class="kpi good"><div class="label">Upcoding</div><div class="value" id="kpi-upcode">—</div><div class="sub" id="kpi-upcode-sub">opportunities pending</div></div>
-            <div class="kpi"><div class="label">Total wRVU</div><div class="value" id="kpi-wrvu">—</div><div class="sub">last 60 days</div></div>
-            <div class="kpi"><div class="label">Expected $</div><div class="value" id="kpi-expected">—</div><div class="sub">last 60 days</div></div>
+            <div class="kpi"><div class="label">Total wRVU</div><div class="value" id="kpi-wrvu">—</div><div class="sub" id="kpi-wrvu-sub">shown claims</div></div>
+            <div class="kpi"><div class="label">Expected $</div><div class="value" id="kpi-expected">—</div><div class="sub" id="kpi-expected-sub">shown claims</div></div>
         </div>
 
         <!-- Layout -->
@@ -553,6 +553,14 @@
             document.getElementById('kpi-upcode').textContent = upcode;
             document.getElementById('kpi-wrvu').textContent = fmtWRVU(wrvu);
             document.getElementById('kpi-expected').textContent = fmtMoney(expected);
+            // 2026-06-12: these sum the SHOWN page, not a 60-day window — label
+            // them honestly so the number matches its caption.
+            const n = state.claims.length;
+            const scope = (state.total && state.total > n) ? `${n} of ${state.total} shown` : `${n} shown`;
+            const wsub = document.getElementById('kpi-wrvu-sub');
+            const esub = document.getElementById('kpi-expected-sub');
+            if (wsub) wsub.textContent = scope;
+            if (esub) esub.textContent = scope;
             document.getElementById('kpi-open-sub').textContent = state.total > pendingOpen
                 ? `of ${state.total} matching`
                 : 'awaiting review';

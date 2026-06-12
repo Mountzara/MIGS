@@ -55,7 +55,10 @@ async function loadRow(env, id) {
             t.ai_in_person_required, t.ai_preferred_time_of_day,
             t.ai_rationale, t.ai_prompt_version, t.ai_secondary_concerns_json,
             t.clinician_override_visit_type, t.clinician_override_duration_min,
-            t.clinician_override_reason, t.clinician_reviewed_at,
+            t.clinician_override_reason,
+            t.clinician_override_urgency, t.clinician_override_in_person_required,
+            t.clinician_override_preferred_time_of_day,
+            t.clinician_reviewed_at,
             t.clinician_reviewer_id, t.final_visit_type, t.final_duration_min,
             t.created_at AS triage_created_at, t.updated_at,
             ir.submitted_at AS intake_submitted_at,
@@ -94,6 +97,10 @@ function shapeRow(r, chief) {
         clinician_override_visit_type: r.clinician_override_visit_type,
         clinician_override_duration_min: r.clinician_override_duration_min,
         clinician_override_reason: r.clinician_override_reason,
+        clinician_override_urgency: r.clinician_override_urgency,
+        clinician_override_in_person_required: r.clinician_override_in_person_required == null
+            ? null : !!r.clinician_override_in_person_required,
+        clinician_override_preferred_time_of_day: r.clinician_override_preferred_time_of_day,
         clinician_reviewed_at: r.clinician_reviewed_at,
         clinician_reviewer_id: r.clinician_reviewer_id,
         final_visit_type: r.final_visit_type,
@@ -193,6 +200,20 @@ export async function onRequestPatch(ctx) {
             ? ovr.duration_min
             : (ovr.duration_min === undefined ? before.clinician_override_duration_min : null);
         const setReason = ovr.reason !== undefined ? (ovr.reason || null) : before.clinician_override_reason;
+        // 2026-06-12 (schema 0024): persist urgency / in-person / time-of-day
+        // overrides too — same "NULL when same as AI" convention. Previously
+        // validated then silently dropped ("save that doesn't save").
+        const aiInPerson = before.ai_in_person_required ? 1 : 0;
+        const ovrInPerson = ovr.in_person_required === undefined ? undefined : (ovr.in_person_required ? 1 : 0);
+        const setUrgency = ovr.urgency !== undefined && ovr.urgency !== before.ai_urgency
+            ? ovr.urgency
+            : (ovr.urgency === undefined ? before.clinician_override_urgency : null);
+        const setInPerson = ovrInPerson !== undefined && ovrInPerson !== aiInPerson
+            ? ovrInPerson
+            : (ovrInPerson === undefined ? before.clinician_override_in_person_required : null);
+        const setTimeOfDay = ovr.preferred_time_of_day !== undefined && ovr.preferred_time_of_day !== before.ai_preferred_time_of_day
+            ? ovr.preferred_time_of_day
+            : (ovr.preferred_time_of_day === undefined ? before.clinician_override_preferred_time_of_day : null);
 
         // Update only the override columns; reviewed_at/final_* happen on /release.
         const t = Date.now();
@@ -201,9 +222,12 @@ export async function onRequestPatch(ctx) {
             SET clinician_override_visit_type = ?,
                 clinician_override_duration_min = ?,
                 clinician_override_reason = ?,
+                clinician_override_urgency = ?,
+                clinician_override_in_person_required = ?,
+                clinician_override_preferred_time_of_day = ?,
                 updated_at = ?
             WHERE id = ?
-        `).bind(setVisit, setDur, setReason, t, id).run();
+        `).bind(setVisit, setDur, setReason, setUrgency, setInPerson, setTimeOfDay, t, id).run();
 
         await logAudit(env, {
             user_id: admin.user, user_role: admin.role,

@@ -558,11 +558,29 @@
     // -------- Visit types --------
     let VISIT_TYPES = [];
     async function loadVisitTypes() {
-        const r = await fetch('/api/v1/admin/visit-types');
-        if (!r.ok) return;
+        const sel = $('ap-visit');
+        // 2026-06-12: a silent `if(!r.ok) return` left the <select> empty, so
+        // bookings submitted an invalid empty visit_type with no hint why.
+        // Surface the failure and mark the field so the operator knows.
+        let r;
+        try { r = await fetch('/api/v1/admin/visit-types'); }
+        catch (e) {
+            sel.innerHTML = '<option value="">⚠ could not load — network error</option>';
+            flash('appt-flash', 'Could not load visit types (network) — booking disabled until it loads.', 'err');
+            return;
+        }
+        if (!r.ok) {
+            sel.innerHTML = `<option value="">⚠ could not load (HTTP ${r.status})</option>`;
+            flash('appt-flash', `Could not load visit types (HTTP ${r.status}) — booking disabled until it loads.`, 'err');
+            return;
+        }
         const data = await r.json();
         VISIT_TYPES = data.visit_types || [];
-        const sel = $('ap-visit');
+        if (!VISIT_TYPES.length) {
+            sel.innerHTML = '<option value="">⚠ no visit types configured</option>';
+            flash('appt-flash', 'No visit types are configured — booking disabled.', 'err');
+            return;
+        }
         sel.innerHTML = VISIT_TYPES.map(v => `<option value="${escapeAttr(v.key)}" data-duration="${v.duration_min}" data-modality="${v.modality_preferred}">${escapeHtml(v.label)} (${v.duration_min} min)</option>`).join('');
         sel.addEventListener('change', () => {
             const opt = sel.options[sel.selectedIndex];
@@ -719,6 +737,8 @@
             const date = $('ap-date').value;
             const time = $('ap-time').value;
             if (!date || !time) throw new Error('date + time required');
+            if (!$('ap-patient').value) throw new Error('select a patient first');
+            if (!$('ap-visit').value) throw new Error('select a visit type first (the list may not have loaded — refresh)');
             const starts_at = Date.parse(`${date}T${time}`);
             if (!Number.isFinite(starts_at)) throw new Error('date/time parse failed');
             const body = {
