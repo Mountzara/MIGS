@@ -29,3 +29,15 @@ interpretation (CLAUDE.md §3.9) — that final judgment stays human.
   `verdict-incoherence` inside a brief whose soft verdict applies to the *trend
   claim*, not to that context paper. That flag is a prompt to confirm the
   settled reading is intentional — which, for context papers, it is.
+
+## Independence & resilience guarantee
+Each auditor **always runs**, with its own self-contained source of truth, so a
+failure of one never disables another (no single point of failure):
+- **Accuracy** prefers the live NCBI record; if NCBI is unreachable it falls back
+  to the post's own stored verbatim abstract and still checks every statistic.
+- **Validation** prefers NCBI publication-types; if unavailable it judges
+  evidence-strength from the authored PICO design label + stored abstract.
+- **Voice** is pure text analysis — no network dependency at all.
+`pubmed_fetch.fetch()` never raises: it serves from cache, attempts NCBI, and
+marks anything unresolved `_offline` so callers degrade gracefully instead of
+crashing. Offline runs emit an informational notice (•), not a failure.

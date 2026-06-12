@@ -43,30 +43,44 @@ def _parse_article(art: ET.Element) -> dict:
 
 
 def fetch(pmids: list[str], force: bool = False) -> dict[str, dict]:
+    """Return {pmid: record}. NEVER raises: serves from cache first, attempts
+    NCBI for the rest, and on any network/parse failure marks the unresolved
+    PMIDs `_offline` so callers can fall back to their own source instead of
+    crashing. This keeps the auditors that use it independently runnable even
+    when NCBI is unreachable."""
     out, need = {}, []
     for p in pmids:
         cf = CACHE / f"{p}.json"
         if cf.is_file() and not force:
-            out[p] = json.loads(cf.read_text())
-        else:
-            need.append(p)
+            try:
+                out[p] = json.loads(cf.read_text())
+                continue
+            except Exception:
+                pass
+        need.append(p)
     for i in range(0, len(need), 150):
         chunk = need[i:i+150]
-        data = urllib.parse.urlencode({"db": "pubmed", "id": ",".join(chunk),
-                                       "rettype": "abstract", "retmode": "xml"}).encode()
-        req = urllib.request.Request(EFETCH, data=data, headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=60) as r:
-            root = ET.fromstring(r.read())
-        for art in root.findall(".//PubmedArticle"):
-            pmid_el = art.find(".//PMID")
-            if pmid_el is None:
-                continue
-            pmid = pmid_el.text.strip()
-            rec = _parse_article(art)
-            (CACHE / f"{pmid}.json").write_text(json.dumps(rec, ensure_ascii=False))
-            out[pmid] = rec
-        time.sleep(0.4)
-    # mark any that PubMed didn't return
+        try:
+            data = urllib.parse.urlencode({"db": "pubmed", "id": ",".join(chunk),
+                                           "rettype": "abstract", "retmode": "xml"}).encode()
+            req = urllib.request.Request(EFETCH, data=data, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                root = ET.fromstring(r.read())
+            for art in root.findall(".//PubmedArticle"):
+                pmid_el = art.find(".//PMID")
+                if pmid_el is None:
+                    continue
+                pmid = pmid_el.text.strip()
+                rec = _parse_article(art)
+                (CACHE / f"{pmid}.json").write_text(json.dumps(rec, ensure_ascii=False))
+                out[pmid] = rec
+            time.sleep(0.4)
+        except Exception as e:  # network down, timeout, parse error, etc.
+            for p in chunk:
+                out.setdefault(p, {"title": "", "abstract": "", "publication_types": [],
+                                   "journal": "", "year": "", "mesh": [],
+                                   "_offline": True, "_error": str(e)[:80]})
+    # mark any still-unresolved (PubMed returned nothing) as missing
     for p in pmids:
         out.setdefault(p, {"title": "", "abstract": "", "publication_types": [],
                            "journal": "", "year": "", "mesh": [], "_missing": True})

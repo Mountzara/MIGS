@@ -60,9 +60,13 @@ def audit_post(post: dict) -> list[tuple]:
     for pmid, body in modals.items():
         rec = recs.get(pmid, {})
         ptypes = " ".join(rec.get("publication_types") or []).lower()
-        # author-stated design
+        # author-stated design — the SELF-CONTAINED signal this auditor relies on,
+        # so its logic still runs when NCBI publication-types are unavailable.
         dm = re.search(r'design</dt>\s*<dd>(.*?)</dd>', body, re.I | re.DOTALL)
         design = strip(dm.group(1)) if dm else ""
+        if (rec.get("_offline") or rec.get("_missing")) and not ptypes:
+            flags.append((pmid, "info-offline-fallback",
+                          "NCBI types unavailable — evidence-logic judged from the authored design label"))
         # interpretive text = bottom + applicability + monday + findings
         txt = ""
         for sec in ("bottom", "applicability", "monday", "findings"):
@@ -115,12 +119,13 @@ def main():
         if "body_html" not in post:
             continue
         flags = audit_post(post)
-        print(f"\n[VALIDATION] {post.get('id')} — {len(flags)} flag(s)")
+        real = [x for x in flags if x[1] != "info-offline-fallback"]
+        print(f"\n[VALIDATION] {post.get('id')} — {len(real)} flag(s)")
         for pmid, kind, detail in flags:
-            print(f"   ⚠ {pmid}  {kind}: {detail}")
-        if not flags:
+            print(f"   {'•' if kind=='info-offline-fallback' else '⚠'} {pmid}  {kind}: {detail}")
+        if not real:
             print("   ✓ claim strength matches evidence level; hedging + verdict coherent")
-        total += len(flags)
+        total += len(real)
     print(f"\n[VALIDATION] TOTAL flags: {total}  (advisory — judgment calls for clinician review)")
     return 2 if (a.strict and total) else 0
 

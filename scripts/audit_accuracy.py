@@ -50,6 +50,17 @@ def nums(s):
     return out
 
 
+def _stored_abstract(body: str, pmid: str) -> str:
+    """The post's own §3.7 verbatim 'abstract' section — the self-contained
+    fallback so this auditor still runs when NCBI is unreachable."""
+    sm = re.search(r'id="dd-'+pmid+r'-abstract"[^>]*>(.*?)</section>', body, re.DOTALL)
+    if not sm:
+        return ""
+    seg = re.sub(r'<h3\b.*?</h3>', ' ', sm.group(1), flags=re.DOTALL)
+    seg = re.sub(r'<p[^>]*mz-jc-section-intro[^>]*>.*?</p>', ' ', seg, flags=re.DOTALL)
+    return strip(seg).lower()
+
+
 def audit_post(post: dict) -> list[tuple]:
     h = post["body_html"]
     modals = {}
@@ -61,9 +72,16 @@ def audit_post(post: dict) -> list[tuple]:
         rec = recs.get(pmid, {})
         ab = (rec.get("abstract") or "").lower()
         ptypes = " ; ".join(rec.get("publication_types") or []).lower()
-        if rec.get("_missing") or len(ab) < 40:
-            flags.append((pmid, "no-ncbi-abstract", "PubMed returned no abstract"))
-            continue
+        offline = rec.get("_offline") or rec.get("_missing") or len(ab) < 40
+        if offline:
+            # FALL BACK to the post's stored verbatim abstract — never skip.
+            ab = _stored_abstract(body, pmid)
+            if len(ab) < 40:
+                flags.append((pmid, "no-abstract-available",
+                              "neither NCBI nor a stored abstract to check against"))
+                continue
+            flags.append((pmid, "info-offline-fallback",
+                          "NCBI unavailable — checked against the stored verbatim abstract"))
         ab_nc = ab.replace(",", "")
         parts, design = [], ""
         for sec in AUTHORED_SECS:
@@ -111,10 +129,11 @@ def main():
         if "body_html" not in post:
             continue
         flags = audit_post(post)
-        real = [x for x in flags if x[1] != "no-ncbi-abstract"]
+        INFO = ("no-abstract-available", "info-offline-fallback")
+        real = [x for x in flags if x[1] not in INFO]
         print(f"\n[ACCURACY] {post.get('id')} — {len(real)} flag(s)")
         for pmid, kind, detail in flags:
-            print(f"   {'•' if kind=='no-ncbi-abstract' else '⚠'} {pmid}  {kind}: {detail}")
+            print(f"   {'•' if kind in INFO else '⚠'} {pmid}  {kind}: {detail}")
         if not flags:
             print("   ✓ all statistics + design labels consistent with the live PubMed record")
         total += len(real)
