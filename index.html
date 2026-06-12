@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mount Zara — Christopher Z. Mabini, DO, MSAEd. Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery (CBG/MIGS), Osteopathic Care, and AI Innovation.">
-    <title>Mount Zara — Christopher Z. Mabini, DO</title>
+    <meta name="description" content="Mount Zara — Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery (CBG/MIGS), Osteopathic Care, and AI Innovation.">
+    <title>Mount Zara — Complex Benign Gynecology &amp; MIGS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="video" href="https://mountzara.com/media/hero-animation-hd-v2.mp4" type="video/mp4" fetchpriority="high">
@@ -137,10 +137,14 @@
             left: 0;
             right: 0;
             z-index: 9999;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: saturate(180%) blur(24px);
-            -webkit-backdrop-filter: saturate(180%) blur(24px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            /* 2026-06-12 — TRUE glass. The old rgba(0,0,0,0.7) fill was so opaque
+               it hid the frost and read as a flat dark bar. A light tint (like
+               the .frame-eyebrow pill) lets backdrop-filter actually frost the
+               content scrolling underneath — real Apple glass. */
+            background: rgba(0, 0, 0, 0.28);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
             height: 64px;
             display: flex;
             align-items: center;
@@ -499,42 +503,60 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ============ Apple glass — the REAL frosted recipe ============
-           The .frame-eyebrow pill reads as genuine Apple glass because it
-           actually FROSTS what's behind it (backdrop-filter blur+saturate),
-           carries a hairline light border, and — the key tell — an inset top
-           highlight that mimics light catching the top edge of a glass slab.
-           Most other backings were plain translucent fills (no backdrop-filter)
-           so they looked flat. This reusable utility brings the real thing, and
-           sits BEHIND text so copy stays readable over the busy hero drawing. */
+        /* ============ Apple glass — THE EXACT .frame-eyebrow recipe ============
+           The user pointed to the "THE FOUNDATION"/"THE INNOVATION" pill as the
+           one real Apple-glass element and asked for THAT effect everywhere.
+           So this is its recipe verbatim (light white fill that lets the frost
+           show — NOT a heavy dark fill, which is why the nav read as a flat bar
+           and earlier attempts looked merely see-through), exposed as a reusable
+           class to apply behind text, on badges, and the nav. */
+        .glass,
         .glass-panel {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(22px) saturate(180%);
-            -webkit-backdrop-filter: blur(22px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 20px;
-            box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.22),
-                inset 0 1px 0 rgba(255, 255, 255, 0.20);
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+        }
+        /* 2026-06-12 — these badges/pills had a translucent FILL but no
+           backdrop-filter, so they read as flat see-through chips, not glass
+           (user: "your other badges … are just translucent effect not apple
+           glass"). The missing ingredient is the FROST — add the exact
+           .frame-eyebrow blur so every badge becomes real Apple glass. */
+        .section-eyebrow,
+        .research-badge,
+        .hub-badge,
+        .tech-pill,
+        .platform-pill,
+        .meta-label,
+        .pillar-cite,
+        .dm-stat-label,
+        .evidence-expect-col-label,
+        .app-modal-section-eyebrow,
+        .app-modal-tag,
+        .app-modal-tagline,
+        .nav-portal-badge,
+        .nav-portal-badge-footer,
+        .video-preview-label {
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
         }
 
         /* ============ Hero content reveal (Apple-style staggered) ============ */
         .hero-content-delayed {
             opacity: 1; /* container visible, children animate in individually */
         }
-        /* Frost the drawing behind the hero copy so the title + subtitle read
-           cleanly (user screenshot: subtitle was lost in the pink line-art).
-           Real glass, not a flat scrim. */
+        /* Glass behind the hero copy — same recipe as the badge the user liked,
+           so the title + subtitle sit on real frosted glass over the drawing. */
         .hero-title,
         .hero-sub {
             position: relative;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(18px) saturate(170%);
-            -webkit-backdrop-filter: blur(18px) saturate(170%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
-            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
             padding: 10px 22px;
         }
         .hero-title { padding: 14px 26px; }
