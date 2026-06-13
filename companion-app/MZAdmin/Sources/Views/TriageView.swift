@@ -66,7 +66,11 @@ struct TriageView: View {
                         Button { selected = row } label: { TriageRowView(row: row, model: model) }
                             .buttonStyle(.plain)
                     }
+                    #if os(macOS)
+                    .listStyle(.inset)
+                    #else
                     .listStyle(.insetGrouped)
+                    #endif
                 }
             }
             .navigationTitle("Triage")

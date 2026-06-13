@@ -50,7 +50,11 @@ struct MessagesView: View {
                         Button { selected = thread } label: { ThreadRowView(thread: thread) }
                             .buttonStyle(.plain)
                     }
+                    #if os(macOS)
+                    .listStyle(.inset)
+                    #else
                     .listStyle(.insetGrouped)
+                    #endif
                 }
             }
             .navigationTitle("Messages")

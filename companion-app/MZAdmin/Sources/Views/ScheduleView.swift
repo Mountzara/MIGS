@@ -60,7 +60,11 @@ struct ScheduleView: View {
                             }
                         }
                     }
+                    #if os(macOS)
+                    .listStyle(.inset)
+                    #else
                     .listStyle(.insetGrouped)
+                    #endif
                 }
             }
             .navigationTitle("Schedule")

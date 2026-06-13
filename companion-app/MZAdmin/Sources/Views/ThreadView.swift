@@ -62,7 +62,7 @@ struct ThreadView: View {
     private func load() async {
         loading = true; error = nil
         do { messages = try await api.thread(id: thread.id).messages }
-        catch { error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription }
+        catch let e { error = (e as? AdminAPI.APIError)?.errorDescription ?? e.localizedDescription }
         loading = false
     }
 
@@ -75,8 +75,8 @@ struct ThreadView: View {
             reply = ""
             await load()
             onChange()   // refresh the thread list (unread/preview/SLA)
-        } catch {
-            error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        } catch let e {
+            error = (e as? AdminAPI.APIError)?.errorDescription ?? e.localizedDescription
         }
         sending = false
     }
