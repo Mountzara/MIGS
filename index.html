@@ -503,26 +503,24 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ============ Apple glass — THE EXACT .frame-eyebrow recipe ============
-           The user pointed to the "THE FOUNDATION"/"THE INNOVATION" pill as the
-           one real Apple-glass element and asked for THAT effect everywhere.
-           So this is its recipe verbatim (light white fill that lets the frost
-           show — NOT a heavy dark fill, which is why the nav read as a flat bar
-           and earlier attempts looked merely see-through), exposed as a reusable
-           class to apply behind text, on badges, and the nav. */
+        /* ============ Apple glass — TRUE iOS-compatible recipe ============
+           Real Apple glass requires saturate() + blur() together — without
+           saturation it's just soft blur, not frosted glass. Increased background
+           opacity (0.04 → 0.08) so the glass is visible on both light and dark
+           areas of the varying hero video background. This matches the nav bar
+           recipe that actually works on iPhone. */
         .glass,
         .glass-panel {
-            background: rgba(255, 255, 255, 0.04);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 14px;
         }
-        /* 2026-06-12 — these badges/pills had a translucent FILL but no
-           backdrop-filter, so they read as flat see-through chips, not glass
-           (user: "your other badges … are just translucent effect not apple
-           glass"). The missing ingredient is the FROST — add the exact
-           .frame-eyebrow blur so every badge becomes real Apple glass. */
+        /* 2026-06-13 — these badges/pills need SATURATION + blur for real Apple
+           glass on iOS. Plain blur() looks soft/muddy on iPhone; saturate(180%)
+           + blur() gives the crisp frosted effect. Applied to all badges/pills
+           that have rgba backgrounds. */
         .section-eyebrow,
         .research-badge,
         .hub-badge,
@@ -538,23 +536,25 @@
         .nav-portal-badge,
         .nav-portal-badge-footer,
         .video-preview-label {
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
         }
 
         /* ============ Hero content reveal (Apple-style staggered) ============ */
         .hero-content-delayed {
             opacity: 1; /* container visible, children animate in individually */
         }
-        /* Glass behind the hero copy — same recipe as the badge the user liked,
-           so the title + subtitle sit on real frosted glass over the drawing. */
+        /* Glass behind the hero copy — true iOS frosted glass that works on
+           varying backgrounds. saturate(180%) + blur(20px) is the Apple formula;
+           plain blur() looks muddy on iPhone. Higher opacity (0.04 → 0.1) ensures
+           the glass is visible on both light and dark areas of the video. */
         .hero-title,
         .hero-sub {
             position: relative;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.04);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
             padding: 10px 22px;
@@ -1357,9 +1357,9 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
         /* Light-background sections need dark-tint glass or the chip vanishes */
         .about-section .section-eyebrow {
@@ -2298,8 +2298,8 @@
             padding: 3px 9px;
             border-radius: 999px;
             background: rgba(167, 139, 250, 0.10);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(167, 139, 250, 0.22);
             color: rgba(167, 139, 250, 0.95);
         }
@@ -3968,9 +3968,9 @@
             text-transform: uppercase;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             color: rgba(255, 255, 255, 0.75);
         }
@@ -4424,8 +4424,8 @@
             color: rgba(255, 255, 255, 0.85);
             padding: 6px 12px;
             background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 999px;
             margin-bottom: 16px;
@@ -4463,9 +4463,9 @@
             font-weight: 500;
             color: rgba(255, 255, 255, 0.78);
             padding: 7px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 999px;
         }
@@ -4893,9 +4893,9 @@
             font-weight: 500;
             color: rgba(255, 255, 255, 0.82);
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 999px;
             letter-spacing: 0.005em;
@@ -5148,8 +5148,8 @@
             text-transform: uppercase;
             color: rgba(var(--glow-purple), 0.95);
             background: rgba(var(--glow-purple), 0.10);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(var(--glow-purple), 0.42);
             border-radius: 999px;
             padding: 2px 7px;
@@ -5167,8 +5167,8 @@
             text-transform: uppercase;
             color: rgba(var(--glow-purple), 0.90);
             background: rgba(var(--glow-purple), 0.10);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(var(--glow-purple), 0.38);
             border-radius: 999px;
             padding: 1px 6px;
@@ -5223,9 +5223,9 @@
             padding: 8px 16px;
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: 999px;
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
         .pinned-frame .frame-headline {
             font-size: clamp(40px, 6vw, 84px);
