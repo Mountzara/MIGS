@@ -17,9 +17,9 @@
     "Parameterized Function-served routes (launch, NPS, admin cases) are",
     "audited via tokenized paths below; their static dirs sit in unaudited."
   ],
-  "homepage_title": "Mount Zara — Christopher Z. Mabini, DO",
+  "homepage_title": "Mount Zara — Complex Benign Gynecology & MIGS",
   "routes": [
-    { "path": "/", "title_contains": "Christopher Z. Mabini", "selector": "#how-you-visit", "allow_homepage_title": true },
+    { "path": "/", "title_contains": "Complex Benign Gynecology", "selector": "#how-you-visit", "allow_homepage_title": true },
     { "path": "/about/", "title_contains": "The Story" },
     { "path": "/evidence/", "title_contains": "Physician Blog" },
     { "path": "/trending/", "title_contains": "Trend Briefs" },
