@@ -544,22 +544,40 @@
         .hero-content-delayed {
             opacity: 1; /* container visible, children animate in individually */
         }
-        /* Glass behind the hero copy — true iOS frosted glass that works on
-           varying backgrounds. saturate(180%) + blur(20px) is the Apple formula;
-           plain blur() looks muddy on iPhone. Higher opacity (0.04 → 0.1) ensures
-           the glass is visible on both light and dark areas of the video. */
-        .hero-title,
+        /* ===== Hero glass: ONLY the body copy gets a card =====
+           2026-06-13 — Titles/headings never sit on a glass card; only BODY copy
+           does. So the TITLE is plain gradient text and the SUBTITLE (body) gets
+           the real Apple frosted-glass card. What makes it read as GLASS: it
+           frosts the line-art animation behind it (that contrast IS the glass) AND
+           it must NOT carry a transform itself — iOS Safari silently drops
+           backdrop-filter on any element that also has a transform, which is why
+           the reveal's translateY turned it into a flat "wannabe-glass" card. */
+        /* The TITLE is just text — NO glass card behind it (titles/headings never
+           sit on a card; only body copy does). A soft shadow keeps the gradient
+           legible directly over the video. */
+        .hero-title {
+            position: relative;
+            display: inline-block;
+            padding: 0;
+        }
+        /* The BODY copy is the element that gets the real Apple frosted-glass
+           card — the exact light recipe of the approved "THE FOUNDATION" pill (a
+           light white fill that lets the frost show + saturated blur), plus a lit
+           top edge and a lift shadow. It frosts the line-art animation behind it,
+           which is the contrast that makes it read as glass. */
         .hero-sub {
             position: relative;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             backdrop-filter: saturate(180%) blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 10px 22px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 16px 24px;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.35),
+                0 14px 40px -14px rgba(0, 0, 0, 0.50);
         }
-        .hero-title { padding: 14px 26px; }
         .hero-content-delayed > * {
             opacity: 0;
             transform: translateY(24px);
@@ -570,12 +588,23 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* CRITICAL iOS fix: Safari/WebKit drops backdrop-filter on any element
+           that ALSO has a transform. The reveal above puts transform:translateY
+           on every child — including the glass body card — which silently kills
+           its frost on iPhone (it renders as a flat translucent card, the exact
+           "wannabe glass" bug). So the body card reveals with OPACITY ONLY: no
+           transform on the element itself, keeping the real frosted glass. */
+        .hero-content-delayed > .hero-sub,
+        .hero-content-delayed.visible > .hero-sub {
+            transform: none;
+        }
         /* Stagger each child for a cascading Apple-style reveal */
         .hero-content-delayed.visible > *:nth-child(1) { transition-delay: 0ms; }
         .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 140ms; }
         .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 280ms; }
         .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 420ms; }
         .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 560ms; }
+
 
         /* Monogram stage */
         .monogram-stage {
@@ -664,6 +693,10 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-shadow: none;
+            /* No card behind the title (titles never sit on glass) — a soft
+               drop-shadow keeps the gradient legible directly over the video.
+               drop-shadow (not text-shadow) works with background-clip:text. */
+            filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55));
         }
         /* Fallback for browsers without background-clip:text support */
         @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
