@@ -22,7 +22,10 @@ struct AdminAPI {
     }
 
     private func request(_ path: String, method: String = "GET", body: Data? = nil) -> URLRequest {
-        var req = URLRequest(url: baseURL.appendingPathComponent(path))
+        // Concat instead of appendingPathComponent so query strings like "?kind=blog"
+        // are preserved instead of being URL-encoded into the path (%3Fkind=blog → 404).
+        let url = URL(string: baseURL.absoluteString + path) ?? baseURL
+        var req = URLRequest(url: url)
         req.httpMethod = method
         if let token { req.setValue("Basic \(token)", forHTTPHeaderField: "Authorization") }
         if let body {
@@ -75,8 +78,17 @@ struct AdminAPI {
     }
 
     /// Verify credentials by hitting the authenticated listing once.
-    func verify() async -> Bool {
-        (try? await listPosts(kind: .blog)) != nil
+    /// Returns nil on success or the specific APIError so the caller can
+    /// distinguish 401 (wrong password) from offline / server / decoding.
+    func verifyDescribingError() async -> APIError? {
+        do {
+            _ = try await listPosts(kind: .blog)
+            return nil
+        } catch let e as APIError {
+            return e
+        } catch {
+            return .offline
+        }
     }
 
     // MARK: - Decoding helper

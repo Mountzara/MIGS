@@ -14,8 +14,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-if ! command -v xcodebuild >/dev/null; then
-    echo "xcodebuild not found — install Xcode from the App Store, then:"
+# Prefer release Xcode, fall back to Xcode-beta — works without sudo xcode-select.
+if [[ -z "${DEVELOPER_DIR:-}" ]]; then
+    if [[ -d /Applications/Xcode.app ]]; then
+        export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+    elif [[ -d /Applications/Xcode-beta.app ]]; then
+        export DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
+    fi
+fi
+
+if ! xcodebuild -version >/dev/null 2>&1; then
+    echo "xcodebuild not usable — install Xcode (or Xcode beta) from the App Store, then:"
     echo "  sudo xcode-select -s /Applications/Xcode.app"
     exit 1
 fi

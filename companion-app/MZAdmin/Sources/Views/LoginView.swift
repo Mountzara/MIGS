@@ -33,7 +33,9 @@ struct LoginView: View {
                 SecureField("Admin password", text: $password)
                     .textContentType(.password)
                     .padding(12).glassCard()
+                    #if os(iOS)
                     .onSubmit(signIn)
+                    #endif
 
                 if let error {
                     Text(error).font(.footnote).foregroundStyle(Theme.red)
@@ -66,10 +68,10 @@ struct LoginView: View {
         verifying = true; error = nil
         Task {
             let api = AdminAPI(token: Data("\(email):\(password)".utf8).base64EncodedString())
-            if await api.verify() {
-                auth.signIn(email: email, password: password)
+            if let err = await api.verifyDescribingError() {
+                error = err.errorDescription ?? "Sign-in failed."
             } else {
-                error = "Wrong email or password, or no connection."
+                auth.signIn(email: email, password: password)
             }
             verifying = false
         }

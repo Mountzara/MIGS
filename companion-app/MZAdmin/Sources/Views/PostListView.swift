@@ -20,7 +20,11 @@ struct PostListView: View {
                         section("Live", model.published)
                         section("Rejected", model.rejected)
                     }
+                    #if os(macOS)
+                    .listStyle(.inset)
+                    #else
                     .listStyle(.insetGrouped)
+                    #endif
                 }
             }
             .navigationTitle(model.kind.title)
