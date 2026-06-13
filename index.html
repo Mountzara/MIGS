@@ -342,7 +342,11 @@
             object-fit: cover;
             opacity: 1;
             pointer-events: none;
-            filter: saturate(1.35) brightness(1.05);
+            /* 2026-06-13 — the line-art read as DULLED/gray, giving the frosted
+               glass nothing with contrast to frost. Push saturation + contrast +
+               brightness so the drawing is vivid: that vivid animation IS the
+               contrast that makes the body-copy glass card read as real glass. */
+            filter: saturate(1.7) brightness(1.18) contrast(1.18);
             transform: translate(-50%, -50%) scale(1);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
@@ -569,13 +573,13 @@
             position: relative;
             display: inline-block;
             background: rgba(255, 255, 255, 0.08);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            backdrop-filter: saturate(180%) blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            -webkit-backdrop-filter: saturate(185%) blur(22px);
+            backdrop-filter: saturate(185%) blur(22px);
+            border: 1px solid rgba(255, 255, 255, 0.20);
             border-radius: 18px;
             padding: 16px 24px;
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45),
                 0 14px 40px -14px rgba(0, 0, 0, 0.50);
         }
         .hero-content-delayed > * {
