@@ -12,6 +12,15 @@ struct RootView: View {
                 LoginView()
             }
         }
+        #if os(iOS)
+        .task(id: auth.isAuthenticated) {
+            // Once signed in, bind auth so token registration POSTs can authenticate,
+            // then ask for notification permission + register for remote notifications.
+            guard auth.isAuthenticated else { return }
+            PushNotifications.shared.bind(authStore: auth)
+            await PushNotifications.shared.requestAndRegister()
+        }
+        #endif
     }
 }
 

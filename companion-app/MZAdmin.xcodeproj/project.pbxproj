@@ -25,6 +25,7 @@
 		B10000000000000000000011 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000011 /* MessagesView.swift */; };
 		B10000000000000000000012 /* ThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000012 /* ThreadView.swift */; };
 		B10000000000000000000013 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000013 /* ScheduleView.swift */; };
+		B10000000000000000000014 /* PushNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000014 /* PushNotifications.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		F10000000000000000000011 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
 		F10000000000000000000012 /* ThreadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadView.swift; sourceTree = "<group>"; };
 		F10000000000000000000013 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
+		F10000000000000000000014 /* PushNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotifications.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -106,6 +108,7 @@
 				F10000000000000000000005 /* AuthStore.swift */,
 				F10000000000000000000006 /* AdminAPI.swift */,
 				F1000000000000000000000E /* AdminModels.swift */,
+				F10000000000000000000014 /* PushNotifications.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -221,6 +224,7 @@
 				B10000000000000000000011 /* MessagesView.swift in Sources */,
 				B10000000000000000000012 /* ThreadView.swift in Sources */,
 				B10000000000000000000013 /* ScheduleView.swift in Sources */,
+				B10000000000000000000014 /* PushNotifications.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

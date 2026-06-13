@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- iOS-only (scoped via CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]).
+	     Enables APNs registration for the dev-signed iPhone build.
+	     Switch to "production" when promoting to TestFlight/App Store. -->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

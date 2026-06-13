@@ -1,4 +1,9 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+import UserNotifications
+import os
+#endif
 
 /// Mount Zara — Admin Mission Control.
 /// One SwiftUI codebase → iPhone, iPad, and Mac. Talks to the existing
@@ -6,6 +11,9 @@ import SwiftUI
 @main
 struct MZAdminApp: App {
     @StateObject private var auth = AuthStore()
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
 
     var body: some Scene {
         WindowGroup {
@@ -19,3 +27,44 @@ struct MZAdminApp: App {
         #endif
     }
 }
+
+#if os(iOS)
+/// Bridges UIKit notification callbacks into PushNotifications.shared.
+/// SwiftUI app lifecycle exposes these via UIApplicationDelegateAdaptor.
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    private let log = Logger(subsystem: "com.mountzara.admin", category: "appdelegate")
+
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        log.info("did finish launching; UN delegate wired")
+        return true
+    }
+
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        log.info("APNs device token granted (len=\(token.count))")
+        Task { @MainActor in await PushNotifications.shared.handleDeviceToken(token) }
+    }
+
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        log.error("APNs registration failed: \(error.localizedDescription)")
+    }
+
+    // Show notifications while the app is foregrounded.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification) async
+                                -> UNNotificationPresentationOptions {
+        return [.banner, .sound, .badge]
+    }
+
+    // Tap handling — deep-link routing comes in Phase 1d once payloads exist.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse) async {
+        let info = response.notification.request.content.userInfo
+        log.info("notification tapped: \(info as NSDictionary)")
+    }
+}
+#endif

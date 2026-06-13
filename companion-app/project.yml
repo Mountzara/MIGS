@@ -39,3 +39,6 @@ targets:
         # macOS App Sandbox + outbound network (scoped to macOS; iOS ignores it)
         CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: MZAdmin/MZAdmin.entitlements
         ENABLE_HARDENED_RUNTIME[sdk=macosx*]: YES
+        # iOS APNs entitlement (aps-environment) — requires PAID Apple Developer Program.
+        # Re-enable when team `3LWCM6H9MM` is upgraded from free to paid:
+        # CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]: MZAdmin/MZAdmin-iOS.entitlements
