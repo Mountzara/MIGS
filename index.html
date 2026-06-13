@@ -347,7 +347,10 @@
                brightness so the drawing is vivid: that vivid animation IS the
                contrast that makes the body-copy glass card read as real glass. */
             filter: saturate(1.7) brightness(1.18) contrast(1.18);
-            transform: translate(-50%, -50%) scale(1);
+            /* Scaled up so the drawing's strokes are THICK and DENSE behind the
+               hero copy — the body-glass card needs substantial line-art behind
+               it to frost into real glass (like the pinned-frame pill does). */
+            transform: translate(-50%, -50%) scale(1.35);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
            (the giant "tap to play" button) when the hero <video> first
@@ -383,10 +386,10 @@
 
         @keyframes heroKenBurnsSlow {
             0% {
-                transform: translate(-50%, -50%) scale(1);
+                transform: translate(-50%, -50%) scale(1.35);
             }
             100% {
-                transform: translate(-50%, -50%) scale(1.15);
+                transform: translate(-50%, -50%) scale(1.5);
             }
         }
 
@@ -572,15 +575,22 @@
         .hero-sub {
             position: relative;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.08);
-            -webkit-backdrop-filter: saturate(185%) blur(22px);
-            backdrop-filter: saturate(185%) blur(22px);
-            border: 1px solid rgba(255, 255, 255, 0.20);
+            /* Real frosted glass: a heavy blur dissolves the line-art behind the
+               card until it's INDISTINGUISHABLE, and a milky white fill +
+               saturation/brightness give it the frosted-glass body so it reads as
+               glass across its WHOLE area (the pill's 0.08 fill only works because
+               it sits on dense lines; this large card spans the drawing's gaps, so
+               it needs more body to stay glass over them). Verified over the real
+               backdrop behind this card. */
+            background: rgba(255, 255, 255, 0.18);
+            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.2);
+            backdrop-filter: blur(40px) saturate(200%) brightness(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 18px;
             padding: 16px 24px;
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.45),
-                0 14px 40px -14px rgba(0, 0, 0, 0.50);
+                inset 0 1px 0 rgba(255, 255, 255, 0.55),
+                0 16px 46px -16px rgba(0, 0, 0, 0.55);
         }
         .hero-content-delayed > * {
             opacity: 0;
