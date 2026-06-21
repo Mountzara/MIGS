@@ -34,6 +34,9 @@
 		B1000000000000000000001A /* FeedbackDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001A /* FeedbackDetailView.swift */; };
 		B1000000000000000000001B /* CarouselsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001B /* CarouselsView.swift */; };
 		B1000000000000000000001C /* CarouselDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001C /* CarouselDetailView.swift */; };
+		B1000000000000000000001D /* OnDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001D /* OnDeviceModel.swift */; };
+		B1000000000000000000001E /* AdminSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001E /* AdminSpotlight.swift */; };
+		B1000000000000000000001F /* MZAdminIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001F /* MZAdminIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +68,9 @@
 		F1000000000000000000001A /* FeedbackDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackDetailView.swift; sourceTree = "<group>"; };
 		F1000000000000000000001B /* CarouselsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselsView.swift; sourceTree = "<group>"; };
 		F1000000000000000000001C /* CarouselDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselDetailView.swift; sourceTree = "<group>"; };
+		F1000000000000000000001D /* OnDeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceModel.swift; sourceTree = "<group>"; };
+		F1000000000000000000001E /* AdminSpotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminSpotlight.swift; sourceTree = "<group>"; };
+		F1000000000000000000001F /* MZAdminIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MZAdminIntents.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -112,8 +118,19 @@
 				F10000000000000000000002 /* Theme.swift */,
 				610000000000000000000005 /* Models */,
 				610000000000000000000006 /* Views */,
+				610000000000000000000008 /* Services */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		610000000000000000000008 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F1000000000000000000001D /* OnDeviceModel.swift */,
+				F1000000000000000000001E /* AdminSpotlight.swift */,
+				F1000000000000000000001F /* MZAdminIntents.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		610000000000000000000005 /* Models */ = {
@@ -257,6 +274,9 @@
 				B1000000000000000000001A /* FeedbackDetailView.swift in Sources */,
 				B1000000000000000000001B /* CarouselsView.swift in Sources */,
 				B1000000000000000000001C /* CarouselDetailView.swift in Sources */,
+				B1000000000000000000001D /* OnDeviceModel.swift in Sources */,
+				B1000000000000000000001E /* AdminSpotlight.swift in Sources */,
+				B1000000000000000000001F /* MZAdminIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

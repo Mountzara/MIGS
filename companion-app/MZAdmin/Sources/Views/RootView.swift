@@ -21,6 +21,16 @@ struct RootView: View {
             await PushNotifications.shared.requestAndRegister()
         }
         #endif
+        // OS-27 Rule 28: index non-PHI surfaces (posts / trend briefs /
+        // carousels) into the Spotlight semantic index so Siri can answer
+        // from the operator's queue on-device. PHI tabs (Messages / Triage /
+        // Patients) are NEVER indexed — see CLAUDE.md §6.
+        .task(id: auth.isAuthenticated) {
+            if #available(macOS 15.0, iOS 17.0, *) {
+                guard auth.isAuthenticated, let token = auth.basicToken else { return }
+                await AdminSpotlight.indexAll(api: AdminAPI(token: token))
+            }
+        }
     }
 }
 
