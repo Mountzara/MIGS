@@ -171,6 +171,32 @@ struct AdminAPI {
     func markCaseViewed(patientId: String) async throws {
         _ = try await send(request("/api/v1/admin/cases/\(patientId)/whats-new", method: "POST", body: Data("{}".utf8)))
     }
+
+    // MARK: - Trend Briefs
+    func listTrendBriefs(includeDone: Bool = false) async throws -> [TrendBrief] {
+        var path = "/api/v1/admin/trend-briefs/queue"
+        if includeDone { path += "?include_done=1" }
+        let data = try await send(request(path))
+        return try decode(TrendBriefsQueueResponse.self, data).briefs
+    }
+
+    func trendBrief(id: String) async throws -> TrendBrief {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let data = try await send(request("/api/v1/admin/trend-briefs/\(encoded)"))
+        return try decode(TrendBriefDetailResponse.self, data).brief
+    }
+
+    func approveTrendBrief(id: String, _ body: TrendBriefApproveBody) async throws {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let payload = try JSONEncoder().encode(body)
+        _ = try await send(request("/api/v1/admin/trend-briefs/\(encoded)/approve", method: "POST", body: payload))
+    }
+
+    func rejectTrendBrief(id: String, reason: String) async throws {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let payload = try JSONSerialization.data(withJSONObject: ["reason": reason])
+        _ = try await send(request("/api/v1/admin/trend-briefs/\(encoded)/reject", method: "POST", body: payload))
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

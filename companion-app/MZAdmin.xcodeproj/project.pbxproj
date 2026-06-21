@@ -28,6 +28,8 @@
 		B10000000000000000000014 /* PushNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000014 /* PushNotifications.swift */; };
 		B10000000000000000000015 /* PatientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000015 /* PatientsView.swift */; };
 		B10000000000000000000016 /* PatientDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000016 /* PatientDetailView.swift */; };
+		B10000000000000000000017 /* TrendBriefsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000017 /* TrendBriefsView.swift */; };
+		B10000000000000000000018 /* TrendBriefDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000018 /* TrendBriefDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +55,8 @@
 		F10000000000000000000014 /* PushNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotifications.swift; sourceTree = "<group>"; };
 		F10000000000000000000015 /* PatientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientsView.swift; sourceTree = "<group>"; };
 		F10000000000000000000016 /* PatientDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientDetailView.swift; sourceTree = "<group>"; };
+		F10000000000000000000017 /* TrendBriefsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendBriefsView.swift; sourceTree = "<group>"; };
+		F10000000000000000000018 /* TrendBriefDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendBriefDetailView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -132,6 +136,8 @@
 				F10000000000000000000013 /* ScheduleView.swift */,
 				F10000000000000000000015 /* PatientsView.swift */,
 				F10000000000000000000016 /* PatientDetailView.swift */,
+				F10000000000000000000017 /* TrendBriefsView.swift */,
+				F10000000000000000000018 /* TrendBriefDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -233,6 +239,8 @@
 				B10000000000000000000014 /* PushNotifications.swift in Sources */,
 				B10000000000000000000015 /* PatientsView.swift in Sources */,
 				B10000000000000000000016 /* PatientDetailView.swift in Sources */,
+				B10000000000000000000017 /* TrendBriefsView.swift in Sources */,
+				B10000000000000000000018 /* TrendBriefDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -352,6 +352,72 @@ struct WhatsNewResponse: Codable, Hashable {
     }
 }
 
+// ---------- Trend Briefs ----------
+/// Row returned by GET /api/v1/admin/trend-briefs/queue and
+/// (per-id) /api/v1/admin/trend-briefs/<id>. Mirrors `rowToWire` in
+/// functions/_lib/trend_briefs.js.
+struct TrendBrief: Identifiable, Codable, Hashable {
+    let id: String
+    var slug: String?
+    var briefDate: String?
+    var claimText: String?
+    var influencer: String?
+    var topicsCovered: [String]?
+    var pmidsCited: [String]?
+    var auditPassCount: Int?
+    var auditFailCount: Int?
+    var status: String                // "pending" | "approved" | "rejected"
+    var statusReason: String?
+    var hasOverride: Bool?
+    var submittedAt: Int?
+    var approvedAt: Int?
+    var rejectedAt: Int?
+    var suggestionsText: String?
+
+    var isPending: Bool { status == "pending" }
+    var isApproved: Bool { status == "approved" }
+    var isRejected: Bool { status == "rejected" }
+
+    enum CodingKeys: String, CodingKey {
+        case id, slug, influencer, status
+        case briefDate = "brief_date"
+        case claimText = "claim_text"
+        case topicsCovered = "topics_covered"
+        case pmidsCited = "pmids_cited"
+        case auditPassCount = "audit_pass_count"
+        case auditFailCount = "audit_fail_count"
+        case statusReason = "status_reason"
+        case hasOverride = "has_override"
+        case submittedAt = "submitted_at"
+        case approvedAt = "approved_at"
+        case rejectedAt = "rejected_at"
+        case suggestionsText = "suggestions_text"
+    }
+}
+
+struct TrendBriefsQueueResponse: Codable {
+    let briefs: [TrendBrief]
+    let summary: [String: Int]?
+    let count: Int?
+}
+
+struct TrendBriefDetailResponse: Codable {
+    let brief: TrendBrief
+}
+
+/// Minimal approval override — matches what gold_brief_render.py needs at a minimum.
+/// Richer override editing (level_a_items, gap_paragraphs, extra_meta_cards, etc.)
+/// stays on the web admin for now.
+struct TrendBriefApproveBody: Codable {
+    let verdict: String           // supported | partially supported | equipoise | mechanism-plausible / not supported | refuted
+    let verdictLabel: String
+    let rationale: String
+    enum CodingKeys: String, CodingKey {
+        case verdict, rationale
+        case verdictLabel = "verdict_label"
+    }
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

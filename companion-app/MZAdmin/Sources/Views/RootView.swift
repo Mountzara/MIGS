@@ -42,6 +42,8 @@ struct MainTabs: View {
                 .tabItem { Label("Schedule", systemImage: "calendar") }
             PatientsView(auth: auth)
                 .tabItem { Label("Patients", systemImage: "person.2") }
+            TrendBriefsView(auth: auth)
+                .tabItem { Label("Briefs", systemImage: "chart.line.uptrend.xyaxis") }
         }
         .tint(Theme.accentSoft)
     }
