@@ -498,6 +498,44 @@ struct FeedbackDetailResponse: Codable {
     let feedback: Feedback
 }
 
+// ---------- Carousels ----------
+/// Summary row from GET /api/v1/admin/carousels (the `summarize()` shape).
+struct Carousel: Identifiable, Codable, Hashable {
+    let slug: String
+    var title: String?
+    var handleLine: String?
+    var postTopic: String?
+    var weekLabel: String?
+    var status: String              // draft | approved | rejected | published
+    var slideCount: Int?
+    var coverPngUrl: String?
+    var readyToPublish: Bool?
+    var createdAt: Int?
+    var approvedAt: Int?
+    var rejectedAt: Int?
+
+    var id: String { slug }
+    var isDraft: Bool { status == "draft" }
+    var isApproved: Bool { status == "approved" }
+    var isRejected: Bool { status == "rejected" }
+    var isPublished: Bool { status == "published" }
+
+    enum CodingKeys: String, CodingKey {
+        case slug, title, status
+        case handleLine = "handle_line"
+        case postTopic = "post_topic"
+        case weekLabel = "week_label"
+        case slideCount = "slide_count"
+        case coverPngUrl = "cover_png_url"
+        case readyToPublish = "ready_to_publish"
+        case createdAt = "created_at"
+        case approvedAt = "approved_at"
+        case rejectedAt = "rejected_at"
+    }
+}
+struct CarouselsListResponse: Codable { let carousels: [Carousel] }
+struct CarouselDetailResponse: Codable { let carousel: Carousel }
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

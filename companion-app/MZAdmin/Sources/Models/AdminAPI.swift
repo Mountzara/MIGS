@@ -234,6 +234,33 @@ struct AdminAPI {
     func feedbackScreenshot(id: String) async throws -> Data {
         try await send(request("/api/v1/admin/feedback/\(id)/screenshot"))
     }
+
+    // MARK: - Carousels
+    func listCarousels(status: String? = nil) async throws -> [Carousel] {
+        var path = "/api/v1/admin/carousels"
+        if let status, !status.isEmpty { path += "?status=\(status)" }
+        let data = try await send(request(path))
+        return try decode(CarouselsListResponse.self, data).carousels
+    }
+
+    func carousel(slug: String) async throws -> Carousel {
+        let data = try await send(request("/api/v1/admin/carousels/\(slug)"))
+        return try decode(CarouselDetailResponse.self, data).carousel
+    }
+
+    /// Approve only succeeds when the §3.11.6 deploy gate marked the
+    /// carousel ready_to_publish=true. Reject takes a short admin memo.
+    func setCarouselDecision(slug: String, action: String, memo: String?) async throws {
+        var obj: [String: Any] = ["action": action]
+        if let memo, !memo.isEmpty { obj["admin_memo"] = memo }
+        let payload = try JSONSerialization.data(withJSONObject: obj)
+        _ = try await send(request("/api/v1/admin/carousels/\(slug)", method: "POST", body: payload))
+    }
+
+    /// Authenticated bytes for a carousel asset (e.g. cover PNG, slide PNG, PDF).
+    func carouselAsset(slug: String, file: String) async throws -> Data {
+        try await send(request("/api/v1/admin/carousels/\(slug)/asset/\(file)"))
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

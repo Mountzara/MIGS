@@ -32,6 +32,8 @@
 		B10000000000000000000018 /* TrendBriefDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000018 /* TrendBriefDetailView.swift */; };
 		B10000000000000000000019 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000019 /* FeedbackView.swift */; };
 		B1000000000000000000001A /* FeedbackDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001A /* FeedbackDetailView.swift */; };
+		B1000000000000000000001B /* CarouselsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001B /* CarouselsView.swift */; };
+		B1000000000000000000001C /* CarouselDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001C /* CarouselDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +63,8 @@
 		F10000000000000000000018 /* TrendBriefDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendBriefDetailView.swift; sourceTree = "<group>"; };
 		F10000000000000000000019 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
 		F1000000000000000000001A /* FeedbackDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackDetailView.swift; sourceTree = "<group>"; };
+		F1000000000000000000001B /* CarouselsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselsView.swift; sourceTree = "<group>"; };
+		F1000000000000000000001C /* CarouselDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselDetailView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -144,6 +148,8 @@
 				F10000000000000000000018 /* TrendBriefDetailView.swift */,
 				F10000000000000000000019 /* FeedbackView.swift */,
 				F1000000000000000000001A /* FeedbackDetailView.swift */,
+				F1000000000000000000001B /* CarouselsView.swift */,
+				F1000000000000000000001C /* CarouselDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -249,6 +255,8 @@
 				B10000000000000000000018 /* TrendBriefDetailView.swift in Sources */,
 				B10000000000000000000019 /* FeedbackView.swift in Sources */,
 				B1000000000000000000001A /* FeedbackDetailView.swift in Sources */,
+				B1000000000000000000001B /* CarouselsView.swift in Sources */,
+				B1000000000000000000001C /* CarouselDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
