@@ -197,6 +197,43 @@ struct AdminAPI {
         let payload = try JSONSerialization.data(withJSONObject: ["reason": reason])
         _ = try await send(request("/api/v1/admin/trend-briefs/\(encoded)/reject", method: "POST", body: payload))
     }
+
+    // MARK: - Feedback
+    func listFeedback(statuses: [String]? = nil) async throws -> [Feedback] {
+        var path = "/api/v1/admin/feedback"
+        if let statuses, !statuses.isEmpty {
+            path += "?status=\(statuses.joined(separator: ","))"
+        }
+        let data = try await send(request(path))
+        return try decode(FeedbackListResponse.self, data).feedback
+    }
+
+    func feedback(id: String) async throws -> Feedback {
+        let data = try await send(request("/api/v1/admin/feedback/\(id)"))
+        return try decode(FeedbackDetailResponse.self, data).feedback
+    }
+
+    func approveFeedback(id: String, note: String?) async throws {
+        var obj: [String: Any] = [:]
+        if let note, !note.isEmpty { obj["note"] = note }
+        let payload = try JSONSerialization.data(withJSONObject: obj)
+        _ = try await send(request("/api/v1/admin/feedback/\(id)/approve", method: "POST", body: payload))
+    }
+
+    /// kind = "rejected" (considered, won't act now) or "wont_fix" (out of scope).
+    func rejectFeedback(id: String, reason: String?, kind: String = "rejected") async throws {
+        var obj: [String: Any] = ["kind": kind]
+        if let reason, !reason.isEmpty { obj["reason"] = reason }
+        let payload = try JSONSerialization.data(withJSONObject: obj)
+        _ = try await send(request("/api/v1/admin/feedback/\(id)/reject", method: "POST", body: payload))
+    }
+
+    /// Authenticated PNG/JPEG bytes for the screenshot of a feedback row.
+    /// Used by FeedbackDetailView to render an `Image(uiImage:)` directly
+    /// (AsyncImage can't carry custom headers).
+    func feedbackScreenshot(id: String) async throws -> Data {
+        try await send(request("/api/v1/admin/feedback/\(id)/screenshot"))
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

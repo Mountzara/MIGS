@@ -44,6 +44,8 @@ struct MainTabs: View {
                 .tabItem { Label("Patients", systemImage: "person.2") }
             TrendBriefsView(auth: auth)
                 .tabItem { Label("Briefs", systemImage: "chart.line.uptrend.xyaxis") }
+            FeedbackView(auth: auth)
+                .tabItem { Label("Feedback", systemImage: "ellipsis.bubble") }
         }
         .tint(Theme.accentSoft)
     }

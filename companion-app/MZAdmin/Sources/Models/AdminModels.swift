@@ -418,6 +418,86 @@ struct TrendBriefApproveBody: Codable {
     }
 }
 
+// ---------- Member feedback ----------
+/// Beta-tester feedback row from GET /api/v1/admin/feedback.
+/// Mirrors the JSON fields written by functions/api/v1/admin/feedback/index.js.
+struct Feedback: Identifiable, Codable, Hashable {
+    let id: String
+    var patientId: String?
+    var inviteLabel: String?
+    var route: String?
+    var feedbackType: String?       // "bug" | "idea" | "request"
+    var severity: String?           // "urgent" | "high" | "medium" | "low"
+    var commentText: String?
+    var status: String              // new | ai_analyzed | approved | rejected | wont_fix | implemented
+    var statusReason: String?
+    var aiGeneratedAt: Int?
+    var approvedAt: Int?
+    var approvedBy: String?
+    var implementedAt: Int?
+    var implementedInCommit: String?
+    var createdAt: Int?
+    var updatedAt: Int?
+    var hasScreenshot: Bool?
+    var aiRecommendation: AIRecommendation?
+
+    var isPending: Bool { status == "new" || status == "ai_analyzed" }
+    var isApproved: Bool { status == "approved" }
+    var isImplemented: Bool { status == "implemented" }
+    var isDeclined: Bool { status == "rejected" || status == "wont_fix" }
+
+    enum CodingKeys: String, CodingKey {
+        case id, route, severity, status
+        case patientId = "patient_id"
+        case inviteLabel = "invite_label"
+        case feedbackType = "feedback_type"
+        case commentText = "comment_text"
+        case statusReason = "status_reason"
+        case aiGeneratedAt = "ai_generated_at"
+        case approvedAt = "approved_at"
+        case approvedBy = "approved_by"
+        case implementedAt = "implemented_at"
+        case implementedInCommit = "implemented_in_commit"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case hasScreenshot = "has_screenshot"
+        case aiRecommendation = "ai_recommendation"
+    }
+
+    /// Claude-generated implementation recommendation embedded in the row.
+    struct AIRecommendation: Codable, Hashable {
+        var summary: String?
+        var rootCause: String?
+        var proposedChange: String?
+        var filesToEdit: [String]?
+        var severity: String?
+        var effort: String?
+        var rationale: String?
+        var confidence: Double?
+        var aiModel: String?
+        var tags: [String]?
+        var generatedAt: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case summary, severity, effort, rationale, confidence, tags
+            case rootCause = "root_cause"
+            case proposedChange = "proposed_change"
+            case filesToEdit = "files_to_edit"
+            case aiModel = "ai_model"
+            case generatedAt = "generated_at"
+        }
+    }
+}
+
+struct FeedbackListResponse: Codable {
+    let feedback: [Feedback]
+    let summary: [String: Int]?
+}
+
+struct FeedbackDetailResponse: Codable {
+    let feedback: Feedback
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }
