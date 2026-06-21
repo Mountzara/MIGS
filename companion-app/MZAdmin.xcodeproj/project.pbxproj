@@ -26,6 +26,8 @@
 		B10000000000000000000012 /* ThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000012 /* ThreadView.swift */; };
 		B10000000000000000000013 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000013 /* ScheduleView.swift */; };
 		B10000000000000000000014 /* PushNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000014 /* PushNotifications.swift */; };
+		B10000000000000000000015 /* PatientsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000015 /* PatientsView.swift */; };
+		B10000000000000000000016 /* PatientDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000016 /* PatientDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +51,8 @@
 		F10000000000000000000012 /* ThreadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadView.swift; sourceTree = "<group>"; };
 		F10000000000000000000013 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		F10000000000000000000014 /* PushNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotifications.swift; sourceTree = "<group>"; };
+		F10000000000000000000015 /* PatientsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientsView.swift; sourceTree = "<group>"; };
+		F10000000000000000000016 /* PatientDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientDetailView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -126,6 +130,8 @@
 				F10000000000000000000011 /* MessagesView.swift */,
 				F10000000000000000000012 /* ThreadView.swift */,
 				F10000000000000000000013 /* ScheduleView.swift */,
+				F10000000000000000000015 /* PatientsView.swift */,
+				F10000000000000000000016 /* PatientDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -225,6 +231,8 @@
 				B10000000000000000000012 /* ThreadView.swift in Sources */,
 				B10000000000000000000013 /* ScheduleView.swift in Sources */,
 				B10000000000000000000014 /* PushNotifications.swift in Sources */,
+				B10000000000000000000015 /* PatientsView.swift in Sources */,
+				B10000000000000000000016 /* PatientDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

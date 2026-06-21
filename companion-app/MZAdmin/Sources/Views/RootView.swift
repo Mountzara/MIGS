@@ -40,6 +40,8 @@ struct MainTabs: View {
                 .tabItem { Label("Messages", systemImage: "bubble.left.and.bubble.right") }
             ScheduleView(auth: auth)
                 .tabItem { Label("Schedule", systemImage: "calendar") }
+            PatientsView(auth: auth)
+                .tabItem { Label("Patients", systemImage: "person.2") }
         }
         .tint(Theme.accentSoft)
     }

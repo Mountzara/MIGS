@@ -156,6 +156,202 @@ struct Appointment: Identifiable, Codable, Hashable {
 }
 struct AppointmentsResponse: Codable { let appointments: [Appointment] }
 
+// ---------- Patients ----------
+/// Row returned by GET /api/v1/admin/patients (list).
+struct Patient: Identifiable, Codable, Hashable {
+    let id: String
+    var email: String
+    var firstName: String?
+    var lastName: String?
+    var dob: String?
+    var phone: String?
+    var status: String?
+    var createdAt: String?
+
+    var displayName: String {
+        [firstName, lastName].compactMap { $0 }.joined(separator: " ").ifEmpty(email)
+    }
+    enum CodingKeys: String, CodingKey {
+        case id, email, dob, phone, status
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case createdAt = "created_at"
+    }
+}
+struct PatientsListResponse: Codable {
+    let q: String?
+    let patients: [Patient]
+}
+
+/// Inner patient block from GET /api/v1/admin/patients/:id.
+struct PatientFull: Codable, Hashable {
+    let id: String
+    var email: String
+    var phone: String?
+    var firstName: String?
+    var lastName: String?
+    var preferredName: String?
+    var dob: String?
+    var mrn: String?
+    var pronouns: String?
+    var preferredLanguage: String?
+    var timezone: String?
+    var hasPassword: Bool?
+    var emailVerifiedAt: String?
+    var status: String?
+    var createdAt: String?
+    var updatedAt: String?
+    var ageYears: Int?
+    var displayName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, email, phone, dob, mrn, pronouns, timezone, status
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case preferredName = "preferred_name"
+        case preferredLanguage = "preferred_language"
+        case hasPassword = "has_password"
+        case emailVerifiedAt = "email_verified_at"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case ageYears = "age_years"
+        case displayName = "display_name"
+    }
+}
+
+struct PatientSummary: Codable, Hashable {
+    var intake: IntakeSummary?
+    var triage: TriageSummary?
+    var nextAppointment: AppointmentSummary?
+    var lastAppointment: AppointmentSummary?
+    var messages: MessageSummary?
+    var symptoms: SymptomsSummary?
+    var documents: DocumentsSummary?
+
+    enum CodingKeys: String, CodingKey {
+        case intake, triage, messages, symptoms, documents
+        case nextAppointment = "next_appointment"
+        case lastAppointment = "last_appointment"
+    }
+
+    struct IntakeSummary: Codable, Hashable {
+        let id: String
+        var status: String?
+        var startedAt: String?
+        var submittedAt: String?
+        var completionPct: Double?
+        enum CodingKeys: String, CodingKey {
+            case id, status
+            case startedAt = "started_at"
+            case submittedAt = "submitted_at"
+            case completionPct = "completion_pct"
+        }
+    }
+    struct TriageSummary: Codable, Hashable {
+        let id: String
+        var visitType: String?
+        var urgency: String?
+        var reviewed: Bool?
+        var booked: Bool?
+        var createdAt: String?
+        enum CodingKeys: String, CodingKey {
+            case id, urgency, reviewed, booked
+            case visitType = "visit_type"
+            case createdAt = "created_at"
+        }
+    }
+    struct AppointmentSummary: Codable, Hashable {
+        let id: String
+        var visitType: String?
+        var startsAt: Int?
+        var endsAt: Int?
+        var modality: String?
+        var status: String?
+        var doxyRoomUrl: String?
+        enum CodingKeys: String, CodingKey {
+            case id, modality, status
+            case visitType = "visit_type"
+            case startsAt = "starts_at"
+            case endsAt = "ends_at"
+            case doxyRoomUrl = "doxy_room_url"
+        }
+    }
+    struct MessageSummary: Codable, Hashable {
+        var threadCount: Int?
+        var unreadForClinician: Int?
+        enum CodingKeys: String, CodingKey {
+            case threadCount = "thread_count"
+            case unreadForClinician = "unread_for_clinician"
+        }
+    }
+    struct SymptomsSummary: Codable, Hashable {
+        var entryCount: Int?
+        var latestEntryDate: String?
+        var earliestEntryDate: String?
+        enum CodingKeys: String, CodingKey {
+            case entryCount = "entry_count"
+            case latestEntryDate = "latest_entry_date"
+            case earliestEntryDate = "earliest_entry_date"
+        }
+    }
+    struct DocumentsSummary: Codable, Hashable {
+        var count: Int?
+    }
+}
+
+struct PatientDetailResponse: Codable, Hashable {
+    let patient: PatientFull
+    let summary: PatientSummary?
+}
+
+// ---------- Cases — "what's new" event feed ----------
+/// One row from `encounter_events`, materialized by listEventsForPatient
+/// and surfaced via /api/v1/admin/cases/:id/whats-new.
+struct CaseEvent: Identifiable, Codable, Hashable {
+    let id: String
+    var eventType: String
+    var eventSummary: String?
+    var severity: String?       // "urgent" | "warning" | "info"
+    var refKind: String?
+    var refId: String?
+    var occurredAt: String?     // ISO8601
+
+    enum CodingKeys: String, CodingKey {
+        case id, severity
+        case eventType = "event_type"
+        case eventSummary = "event_summary"
+        case refKind = "ref_kind"
+        case refId = "ref_id"
+        case occurredAt = "occurred_at"
+    }
+}
+
+struct WhatsNewCounts: Codable, Hashable {
+    var total: Int?
+    var bySeverity: [String: Int]?
+    enum CodingKeys: String, CodingKey {
+        case total
+        case bySeverity = "by_severity"
+    }
+}
+
+struct WhatsNewResponse: Codable, Hashable {
+    let ok: Bool?
+    let clinicianId: String?
+    let patientId: String?
+    let since: String?
+    let firstVisit: Bool?
+    let counts: WhatsNewCounts?
+    let events: [CaseEvent]?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, since, counts, events
+        case clinicianId = "clinician_id"
+        case patientId = "patient_id"
+        case firstVisit = "first_visit"
+    }
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

@@ -143,6 +143,34 @@ struct AdminAPI {
         let data = try await send(request("/api/v1/admin/appointments?from=\(from)&to=\(to)"))
         return try decode(AppointmentsResponse.self, data).appointments
     }
+
+    // MARK: - Patients
+    func listPatients(query: String = "", limit: Int = 50) async throws -> [Patient] {
+        var path = "/api/v1/admin/patients?limit=\(limit)"
+        if !query.isEmpty {
+            let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+            path += "&q=\(q)"
+        }
+        let data = try await send(request(path))
+        return try decode(PatientsListResponse.self, data).patients
+    }
+
+    func patient(id: String) async throws -> PatientDetailResponse {
+        let data = try await send(request("/api/v1/admin/patients/\(id)"))
+        return try decode(PatientDetailResponse.self, data)
+    }
+
+    // MARK: - Cases (what's new)
+    func caseWhatsNew(patientId: String) async throws -> WhatsNewResponse {
+        let data = try await send(request("/api/v1/admin/cases/\(patientId)/whats-new"))
+        return try decode(WhatsNewResponse.self, data)
+    }
+
+    /// Marks the case as just-viewed so subsequent whats-new responses only
+    /// surface events that arrived after now.
+    func markCaseViewed(patientId: String) async throws {
+        _ = try await send(request("/api/v1/admin/cases/\(patientId)/whats-new", method: "POST", body: Data("{}".utf8)))
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the
