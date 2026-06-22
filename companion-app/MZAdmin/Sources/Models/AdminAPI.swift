@@ -267,6 +267,34 @@ struct AdminAPI {
         let data = try await send(request("/api/v1/admin/analytics?window=\(windowDays)"))
         return try decode(AdminAnalytics.self, data)
     }
+
+    // MARK: - Compliance
+    func listComplianceDocs() async throws -> [ComplianceDoc] {
+        let data = try await send(request("/api/v1/admin/compliance/docs"))
+        return try decode(ComplianceDocsResponse.self, data).docs
+    }
+
+    // MARK: - Briefings
+    func listBriefings(date: String? = nil, range: String? = nil) async throws -> [Briefing] {
+        var params: [String] = []
+        if let date { params.append("date=\(date)") }
+        if let range { params.append("range=\(range)") }
+        let path = "/api/v1/admin/briefings" + (params.isEmpty ? "" : "?" + params.joined(separator: "&"))
+        let data = try await send(request(path))
+        return try decode(BriefingsResponse.self, data).briefings
+    }
+
+    // MARK: - Education
+    func listEducation(status: String = "all") async throws -> [EducationMaterial] {
+        let data = try await send(request("/api/v1/admin/education?status=\(status)"))
+        return try decode(EducationListResponse.self, data).materials
+    }
+
+    // MARK: - Debug sessions
+    func listDebugSessions(limit: Int = 100) async throws -> DebugSessionsResponse {
+        let data = try await send(request("/api/v1/admin/debug/sessions?limit=\(limit)"))
+        return try decode(DebugSessionsResponse.self, data)
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

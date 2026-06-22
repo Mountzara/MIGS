@@ -60,6 +60,14 @@ struct MainTabs: View {
                 .tabItem { Label("Carousels", systemImage: "rectangle.stack") }
             AnalyticsView(auth: auth)
                 .tabItem { Label("Analytics", systemImage: "chart.bar") }
+            BriefingsView(auth: auth)
+                .tabItem { Label("Briefings", systemImage: "list.bullet.clipboard") }
+            EducationView(auth: auth)
+                .tabItem { Label("Education", systemImage: "book") }
+            ComplianceView(auth: auth)
+                .tabItem { Label("Compliance", systemImage: "doc.badge.gearshape") }
+            DebugView(auth: auth)
+                .tabItem { Label("Debug", systemImage: "ladybug") }
         }
         .tint(Theme.accentSoft)
     }

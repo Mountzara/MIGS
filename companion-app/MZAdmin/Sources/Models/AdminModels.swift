@@ -669,6 +669,129 @@ struct AdminAnalytics: Codable, Hashable {
     }
 }
 
+// ---------- Compliance ----------
+struct ComplianceDoc: Identifiable, Codable, Hashable {
+    let slug: String
+    var title: String
+    var status: String                 // signed | unsigned | review_due_soon | review_overdue
+    var signedAt: String?
+    var signedBy: String?
+    var nextReviewDate: String?
+    var dueInDays: Int?
+    var reviewIntervalMonths: Int?
+    var counselReviewRecommended: Bool?
+    var path: String?
+    var id: String { slug }
+    enum CodingKeys: String, CodingKey {
+        case slug, title, status, path
+        case signedAt = "signed_at"
+        case signedBy = "signed_by"
+        case nextReviewDate = "next_review_date"
+        case dueInDays = "due_in_days"
+        case reviewIntervalMonths = "review_interval_months"
+        case counselReviewRecommended = "counsel_review_recommended"
+    }
+}
+struct ComplianceDocsResponse: Codable { let docs: [ComplianceDoc] }
+
+// ---------- Briefings ----------
+struct Briefing: Identifiable, Codable, Hashable {
+    let id: String                     // typically patient_id-appointment_id
+    var patientId: String?
+    var patientName: String?
+    var appointmentId: String?
+    var visitType: String?
+    var startsAt: Int?
+    var modality: String?
+    var summary: String?               // briefing text composed by the backend
+    var hasNewSinceLastView: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case id, summary, modality
+        case patientId = "patient_id"
+        case patientName = "patient_name"
+        case appointmentId = "appointment_id"
+        case visitType = "visit_type"
+        case startsAt = "starts_at"
+        case hasNewSinceLastView = "has_new_since_last_view"
+    }
+}
+struct BriefingsResponse: Codable {
+    let briefings: [Briefing]
+    let window: BriefingWindow?
+}
+struct BriefingWindow: Codable, Hashable {
+    var startsAtMin: Int?
+    var startsAtMax: Int?
+    enum CodingKeys: String, CodingKey {
+        case startsAtMin = "starts_at_min"
+        case startsAtMax = "starts_at_max"
+    }
+}
+
+// ---------- Education ----------
+struct EducationMaterial: Identifiable, Codable, Hashable {
+    let id: String
+    var slug: String
+    var title: String
+    var summary: String?
+    var topicTags: [String]?
+    var targetAudience: String?
+    var status: String                 // draft | published | archived
+    var version: Int?
+    var publishedAt: Int?
+    var createdAt: Int?
+    var updatedAt: Int?
+    var hasInlineBody: Bool?
+    var hasR2Body: Bool?
+    enum CodingKeys: String, CodingKey {
+        case id, slug, title, summary, status, version
+        case topicTags = "topic_tags"
+        case targetAudience = "target_audience"
+        case publishedAt = "published_at"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case hasInlineBody = "has_inline_body"
+        case hasR2Body = "has_r2_body"
+    }
+}
+struct EducationListResponse: Codable {
+    let materials: [EducationMaterial]
+    let count: Int?
+}
+
+// ---------- Debug session traces ----------
+struct DebugSessionEvent: Identifiable, Codable, Hashable {
+    let id: String
+    var ts: Int?
+    var inviteLabel: String?
+    var patientId: String?
+    var route: String?
+    var outcome: String?               // ok | blocked | error
+    var statusCode: Int?
+    var hashedIp: String?
+    var userAgent: String?
+    var note: String?
+    enum CodingKeys: String, CodingKey {
+        case id, ts, route, outcome, note
+        case inviteLabel = "invite_label"
+        case patientId = "patient_id"
+        case statusCode = "status_code"
+        case hashedIp = "hashed_ip"
+        case userAgent = "user_agent"
+    }
+}
+struct DebugSessionsResponse: Codable {
+    let events: [DebugSessionEvent]
+    let summary: [String: DebugSessionLabelSummary]?
+    let count: Int?
+}
+struct DebugSessionLabelSummary: Codable, Hashable {
+    var count: Int?
+    var errors: Int?
+    var blocked: Int?
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

@@ -38,6 +38,10 @@
 		B1000000000000000000001E /* AdminSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001E /* AdminSpotlight.swift */; };
 		B1000000000000000000001F /* MZAdminIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001F /* MZAdminIntents.swift */; };
 		B10000000000000000000020 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000020 /* AnalyticsView.swift */; };
+		B10000000000000000000021 /* ComplianceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000021 /* ComplianceView.swift */; };
+		B10000000000000000000022 /* BriefingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000022 /* BriefingsView.swift */; };
+		B10000000000000000000023 /* EducationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000023 /* EducationView.swift */; };
+		B10000000000000000000024 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000024 /* DebugView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +77,10 @@
 		F1000000000000000000001E /* AdminSpotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminSpotlight.swift; sourceTree = "<group>"; };
 		F1000000000000000000001F /* MZAdminIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MZAdminIntents.swift; sourceTree = "<group>"; };
 		F10000000000000000000020 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		F10000000000000000000021 /* ComplianceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplianceView.swift; sourceTree = "<group>"; };
+		F10000000000000000000022 /* BriefingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefingsView.swift; sourceTree = "<group>"; };
+		F10000000000000000000023 /* EducationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EducationView.swift; sourceTree = "<group>"; };
+		F10000000000000000000024 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -170,6 +178,10 @@
 				F1000000000000000000001B /* CarouselsView.swift */,
 				F1000000000000000000001C /* CarouselDetailView.swift */,
 				F10000000000000000000020 /* AnalyticsView.swift */,
+				F10000000000000000000021 /* ComplianceView.swift */,
+				F10000000000000000000022 /* BriefingsView.swift */,
+				F10000000000000000000023 /* EducationView.swift */,
+				F10000000000000000000024 /* DebugView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -281,6 +293,10 @@
 				B1000000000000000000001E /* AdminSpotlight.swift in Sources */,
 				B1000000000000000000001F /* MZAdminIntents.swift in Sources */,
 				B10000000000000000000020 /* AnalyticsView.swift in Sources */,
+				B10000000000000000000021 /* ComplianceView.swift in Sources */,
+				B10000000000000000000022 /* BriefingsView.swift in Sources */,
+				B10000000000000000000023 /* EducationView.swift in Sources */,
+				B10000000000000000000024 /* DebugView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
