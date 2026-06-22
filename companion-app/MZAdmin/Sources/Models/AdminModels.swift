@@ -792,6 +792,145 @@ struct DebugSessionLabelSummary: Codable, Hashable {
     var blocked: Int?
 }
 
+// ---------- Billing ----------
+struct BillingClaim: Identifiable, Codable, Hashable {
+    let id: String
+    var patientId: String?
+    var encounterId: String?
+    var visitDate: String?
+    var visitType: String?
+    var emCode: String?
+    var emMdmLevel: String?
+    var emWrvu: Double?
+    var emConfidence: Double?
+    var totalChargeCents: Int?
+    var expectedCollectionCents: Int?
+    var complianceStatus: String?
+    var status: String                 // pending_review | edited | ready_to_submit | submitted | paid | denied | …
+    var statusReason: String?
+    var payerName: String?
+    var payerKind: String?
+    var patientFirstName: String?
+    var patientLastName: String?
+    var unresolvedErrors: Int?
+    var unresolvedWarnings: Int?
+    var unacceptedUpcoding: Int?
+    var unappliedHighDocsugg: Int?
+    var createdAt: Int?
+
+    var patientName: String {
+        [patientFirstName, patientLastName].compactMap { $0 }.joined(separator: " ").ifEmpty("Patient")
+    }
+    var isPending: Bool { status == "pending_review" || status == "edited" }
+    var isReady: Bool { status == "ready_to_submit" }
+    var isPaid: Bool { status == "paid" || status == "partially_paid" }
+    var isDenied: Bool { status == "denied" || status == "rejected" }
+
+    enum CodingKeys: String, CodingKey {
+        case id, status
+        case patientId = "patient_id"
+        case encounterId = "encounter_id"
+        case visitDate = "visit_date"
+        case visitType = "visit_type"
+        case emCode = "em_code"
+        case emMdmLevel = "em_mdm_level"
+        case emWrvu = "em_wrvu"
+        case emConfidence = "em_confidence"
+        case totalChargeCents = "total_charge_cents"
+        case expectedCollectionCents = "expected_collection_cents"
+        case complianceStatus = "compliance_status"
+        case statusReason = "status_reason"
+        case payerName = "payer_name"
+        case payerKind = "payer_kind"
+        case patientFirstName = "patient_first_name"
+        case patientLastName = "patient_last_name"
+        case unresolvedErrors = "unresolved_errors"
+        case unresolvedWarnings = "unresolved_warnings"
+        case unacceptedUpcoding = "unaccepted_upcoding"
+        case unappliedHighDocsugg = "unapplied_high_docsugg"
+        case createdAt = "created_at"
+    }
+}
+struct BillingClaimsResponse: Codable {
+    let claims: [BillingClaim]
+    let total: Int?
+}
+
+struct BillingReportSummary: Codable, Hashable {
+    var period: Period?
+    var income: Income?
+    var byService: [ServiceRow]?
+    var byMonth: [MonthRow]?
+    enum CodingKeys: String, CodingKey {
+        case period, income
+        case byService = "by_service"
+        case byMonth = "by_month"
+    }
+    struct Period: Codable, Hashable {
+        var from: String?
+        var to: String?
+        var days: Int?
+    }
+    struct Income: Codable, Hashable {
+        var grossCents: Int?
+        var refundsCents: Int?
+        var netReceiptsCents: Int?
+        var stripeFeesCents: Int?
+        var bankDepositsCents: Int?
+        var invoiceCount: Int?
+        var paymentCount: Int?
+        var refundCount: Int?
+        enum CodingKeys: String, CodingKey {
+            case grossCents = "gross_cents"
+            case refundsCents = "refunds_cents"
+            case netReceiptsCents = "net_receipts_cents"
+            case stripeFeesCents = "stripe_fees_cents"
+            case bankDepositsCents = "bank_deposits_cents"
+            case invoiceCount = "invoice_count"
+            case paymentCount = "payment_count"
+            case refundCount = "refund_count"
+        }
+    }
+    struct ServiceRow: Codable, Hashable, Identifiable {
+        var serviceCode: String
+        var displayName: String?
+        var grossCents: Int?
+        var paymentCount: Int?
+        var id: String { serviceCode }
+        enum CodingKeys: String, CodingKey {
+            case serviceCode = "service_code"
+            case displayName = "display_name"
+            case grossCents = "gross_cents"
+            case paymentCount = "payment_count"
+        }
+    }
+    struct MonthRow: Codable, Hashable, Identifiable {
+        var month: String
+        var grossCents: Int?
+        var feesCents: Int?
+        var refundsCents: Int?
+        var netCents: Int?
+        var id: String { month }
+        enum CodingKeys: String, CodingKey {
+            case month
+            case grossCents = "gross_cents"
+            case feesCents = "fees_cents"
+            case refundsCents = "refunds_cents"
+            case netCents = "net_cents"
+        }
+    }
+}
+
+/// Format cents → "$1,234.56".
+func fmtCents(_ cents: Int?) -> String {
+    guard let cents else { return "—" }
+    let dollars = Double(cents) / 100.0
+    let f = NumberFormatter()
+    f.numberStyle = .currency
+    f.currencyCode = "USD"
+    return f.string(from: NSNumber(value: dollars)) ?? "$\(dollars)"
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

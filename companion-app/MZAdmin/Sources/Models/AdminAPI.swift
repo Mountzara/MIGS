@@ -295,6 +295,36 @@ struct AdminAPI {
         let data = try await send(request("/api/v1/admin/debug/sessions?limit=\(limit)"))
         return try decode(DebugSessionsResponse.self, data)
     }
+
+    // MARK: - Billing
+    func listBillingClaims(statuses: [String]? = nil, days: Int = 60, limit: Int = 50) async throws -> [BillingClaim] {
+        var params: [String] = ["days=\(days)", "limit=\(limit)"]
+        if let statuses, !statuses.isEmpty { params.append("status=\(statuses.joined(separator: ","))") }
+        let path = "/api/v1/admin/billing/claims?" + params.joined(separator: "&")
+        let data = try await send(request(path))
+        return try decode(BillingClaimsResponse.self, data).claims
+    }
+
+    func approveBillingClaim(id: String, notes: String?, force: Bool = false) async throws {
+        var obj: [String: Any] = ["force": force]
+        if let notes, !notes.isEmpty { obj["notes"] = notes }
+        let payload = try JSONSerialization.data(withJSONObject: obj)
+        _ = try await send(request("/api/v1/admin/billing/claims/\(id)/approve", method: "POST", body: payload))
+    }
+
+    func rejectBillingClaim(id: String, reason: String) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: ["reason": reason])
+        _ = try await send(request("/api/v1/admin/billing/claims/\(id)/reject", method: "POST", body: payload))
+    }
+
+    func billingReportSummary(from: String? = nil, to: String? = nil) async throws -> BillingReportSummary {
+        var params: [String] = []
+        if let from { params.append("from=\(from)") }
+        if let to { params.append("to=\(to)") }
+        let path = "/api/v1/admin/billing/reports/summary" + (params.isEmpty ? "" : "?" + params.joined(separator: "&"))
+        let data = try await send(request(path))
+        return try decode(BillingReportSummary.self, data)
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

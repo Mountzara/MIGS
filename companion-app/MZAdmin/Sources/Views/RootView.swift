@@ -68,6 +68,8 @@ struct MainTabs: View {
                 .tabItem { Label("Compliance", systemImage: "doc.badge.gearshape") }
             DebugView(auth: auth)
                 .tabItem { Label("Debug", systemImage: "ladybug") }
+            BillingView(auth: auth)
+                .tabItem { Label("Billing", systemImage: "creditcard") }
         }
         .tint(Theme.accentSoft)
     }

@@ -42,6 +42,8 @@
 		B10000000000000000000022 /* BriefingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000022 /* BriefingsView.swift */; };
 		B10000000000000000000023 /* EducationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000023 /* EducationView.swift */; };
 		B10000000000000000000024 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000024 /* DebugView.swift */; };
+		B10000000000000000000025 /* BillingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000025 /* BillingView.swift */; };
+		B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000026 /* BillingClaimDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +83,8 @@
 		F10000000000000000000022 /* BriefingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefingsView.swift; sourceTree = "<group>"; };
 		F10000000000000000000023 /* EducationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EducationView.swift; sourceTree = "<group>"; };
 		F10000000000000000000024 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
+		F10000000000000000000025 /* BillingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingView.swift; sourceTree = "<group>"; };
+		F10000000000000000000026 /* BillingClaimDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingClaimDetailView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -182,6 +186,8 @@
 				F10000000000000000000022 /* BriefingsView.swift */,
 				F10000000000000000000023 /* EducationView.swift */,
 				F10000000000000000000024 /* DebugView.swift */,
+				F10000000000000000000025 /* BillingView.swift */,
+				F10000000000000000000026 /* BillingClaimDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -297,6 +303,8 @@
 				B10000000000000000000022 /* BriefingsView.swift in Sources */,
 				B10000000000000000000023 /* EducationView.swift in Sources */,
 				B10000000000000000000024 /* DebugView.swift in Sources */,
+				B10000000000000000000025 /* BillingView.swift in Sources */,
+				B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
