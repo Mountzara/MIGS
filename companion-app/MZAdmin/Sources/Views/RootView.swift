@@ -58,6 +58,8 @@ struct MainTabs: View {
                 .tabItem { Label("Feedback", systemImage: "ellipsis.bubble") }
             CarouselsView(auth: auth)
                 .tabItem { Label("Carousels", systemImage: "rectangle.stack") }
+            AnalyticsView(auth: auth)
+                .tabItem { Label("Analytics", systemImage: "chart.bar") }
         }
         .tint(Theme.accentSoft)
     }

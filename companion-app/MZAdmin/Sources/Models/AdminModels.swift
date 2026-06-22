@@ -536,6 +536,139 @@ struct Carousel: Identifiable, Codable, Hashable {
 struct CarouselsListResponse: Codable { let carousels: [Carousel] }
 struct CarouselDetailResponse: Codable { let carousel: Carousel }
 
+// ---------- Analytics ----------
+/// Wire shape from GET /api/v1/admin/analytics. Decodes the fields used by
+/// the iOS dashboard view; ignores everything else (Codable is permissive
+/// on missing keys for Optional values).
+struct AdminAnalytics: Codable, Hashable {
+    var totals: Totals?
+    var intakeFunnel: IntakeFunnel?
+    var triage: TriageBreakdown?
+    var appointments: AppointmentsBreakdown?
+    var messagingActivity: MessagingActivity?
+    var symptomSignals: SymptomSignals?
+    var auditSignals: AuditSignals?
+
+    enum CodingKeys: String, CodingKey {
+        case totals, triage, appointments
+        case intakeFunnel = "intake_funnel"
+        case messagingActivity = "messaging_activity"
+        case symptomSignals = "symptom_signals"
+        case auditSignals = "audit_signals"
+    }
+
+    struct Totals: Codable, Hashable {
+        var patients: Int?
+        var intakesInProgress: Int?
+        var intakesSubmitted: Int?
+        var appointmentsTotal: Int?
+        var appointmentsUpcoming: Int?
+        var appointmentsCompleted: Int?
+        var messagesThreads: Int?
+        var messagesUnreadForClinician: Int?
+        var symptomEntriesWindow: Int?
+        var documents: Int?
+        var educationPublished: Int?
+        var educationAssigned: Int?
+        enum CodingKeys: String, CodingKey {
+            case patients, documents
+            case intakesInProgress = "intakes_in_progress"
+            case intakesSubmitted = "intakes_submitted"
+            case appointmentsTotal = "appointments_total"
+            case appointmentsUpcoming = "appointments_upcoming"
+            case appointmentsCompleted = "appointments_completed"
+            case messagesThreads = "messages_threads"
+            case messagesUnreadForClinician = "messages_unread_for_clinician"
+            case symptomEntriesWindow = "symptom_entries_window"
+            case educationPublished = "education_published"
+            case educationAssigned = "education_assigned"
+        }
+    }
+
+    struct IntakeFunnel: Codable, Hashable {
+        var started: Int?
+        var inProgress: Int?
+        var submitted: Int?
+        var reviewed: Int?
+        enum CodingKeys: String, CodingKey {
+            case started, submitted, reviewed
+            case inProgress = "in_progress"
+        }
+    }
+
+    struct CountedKey: Codable, Hashable, Identifiable {
+        var visitType: String?
+        var urgency: String?
+        var status: String?
+        var modality: String?
+        var action: String?
+        var count: Int
+        var id: String { visitType ?? urgency ?? status ?? modality ?? action ?? UUID().uuidString }
+        enum CodingKeys: String, CodingKey {
+            case count, urgency, status, modality, action
+            case visitType = "visit_type"
+        }
+    }
+
+    struct TriageBreakdown: Codable, Hashable {
+        var total: Int?
+        var pending: Int?
+        var released: Int?
+        var booked: Int?
+        var manualReviewRequired: Int?
+        var byVisitType: [CountedKey]?
+        var byUrgency: [CountedKey]?
+        enum CodingKeys: String, CodingKey {
+            case total, pending, released, booked
+            case manualReviewRequired = "manual_review_required"
+            case byVisitType = "by_visit_type"
+            case byUrgency = "by_urgency"
+        }
+    }
+
+    struct AppointmentsBreakdown: Codable, Hashable {
+        var byStatus: [CountedKey]?
+        var byVisitType: [CountedKey]?
+        enum CodingKeys: String, CodingKey {
+            case byStatus = "by_status"
+            case byVisitType = "by_visit_type"
+        }
+    }
+
+    struct MessagingActivity: Codable, Hashable {
+        var messagesWindow: Int?
+        var clinicianRepliesWindow: Int?
+        var threadsWithUnread: Int?
+        var oldestUnreadThreadMs: Int?
+        enum CodingKeys: String, CodingKey {
+            case messagesWindow = "messages_window"
+            case clinicianRepliesWindow = "clinician_replies_window"
+            case threadsWithUnread = "threads_with_unread"
+            case oldestUnreadThreadMs = "oldest_unread_thread_ms"
+        }
+    }
+
+    struct SymptomSignals: Codable, Hashable {
+        var uniquePatientsLogging: Int?
+        var recentPainAvg: Double?
+        var recentPainHighCount: Int?
+        enum CodingKeys: String, CodingKey {
+            case uniquePatientsLogging = "unique_patients_logging"
+            case recentPainAvg = "recent_pain_avg"
+            case recentPainHighCount = "recent_pain_high_count"
+        }
+    }
+
+    struct AuditSignals: Codable, Hashable {
+        var eventsWindowTotal: Int?
+        var byAction: [CountedKey]?
+        enum CodingKeys: String, CodingKey {
+            case eventsWindowTotal = "events_window_total"
+            case byAction = "by_action"
+        }
+    }
+}
+
 // ---------- small helpers ----------
 extension String {
     func ifEmpty(_ fallback: String) -> String { isEmpty ? fallback : self }

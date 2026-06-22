@@ -261,6 +261,12 @@ struct AdminAPI {
     func carouselAsset(slug: String, file: String) async throws -> Data {
         try await send(request("/api/v1/admin/carousels/\(slug)/asset/\(file)"))
     }
+
+    // MARK: - Analytics
+    func analytics(windowDays: Int = 30) async throws -> AdminAnalytics {
+        let data = try await send(request("/api/v1/admin/analytics?window=\(windowDays)"))
+        return try decode(AdminAnalytics.self, data)
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

@@ -37,6 +37,7 @@
 		B1000000000000000000001D /* OnDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001D /* OnDeviceModel.swift */; };
 		B1000000000000000000001E /* AdminSpotlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001E /* AdminSpotlight.swift */; };
 		B1000000000000000000001F /* MZAdminIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001F /* MZAdminIntents.swift */; };
+		B10000000000000000000020 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000020 /* AnalyticsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +72,7 @@
 		F1000000000000000000001D /* OnDeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceModel.swift; sourceTree = "<group>"; };
 		F1000000000000000000001E /* AdminSpotlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminSpotlight.swift; sourceTree = "<group>"; };
 		F1000000000000000000001F /* MZAdminIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MZAdminIntents.swift; sourceTree = "<group>"; };
+		F10000000000000000000020 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -167,6 +169,7 @@
 				F1000000000000000000001A /* FeedbackDetailView.swift */,
 				F1000000000000000000001B /* CarouselsView.swift */,
 				F1000000000000000000001C /* CarouselDetailView.swift */,
+				F10000000000000000000020 /* AnalyticsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 				B1000000000000000000001D /* OnDeviceModel.swift in Sources */,
 				B1000000000000000000001E /* AdminSpotlight.swift in Sources */,
 				B1000000000000000000001F /* MZAdminIntents.swift in Sources */,
+				B10000000000000000000020 /* AnalyticsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
