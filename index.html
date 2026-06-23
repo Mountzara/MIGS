@@ -324,11 +324,8 @@
             background: #000;
             transition: opacity 0.8s ease-out;
         }
-        /* The drawing stays present the whole way down (not faded to black) so
-           every translucent section below the hero has real texture for its
-           glass chips to frost — the contrast that makes glass read as glass. */
         .hero-bg-stage.faded {
-            opacity: 0.5;
+            opacity: 0.18;
         }
         .hero-bg-vignette {
             display: none; /* Removed entirely - let the animation colors shine */
@@ -527,13 +524,10 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 14px;
         }
-        /* 2026-06-13 — Real Apple glass: saturate(180%) + blur(20px). These now
-           frost the permanent drawing that shows through the translucent
-           sections (same as the .frame-eyebrow pills over .pinned-showcase). */
-        .section-eyebrow,
-        .research-badge,
-        .hub-badge,
-        .tech-pill,
+        /* 2026-06-13 — Real Apple glass for elements that sit over the hero
+           animation or in modals/overlays. Saturation + blur gives the crisp
+           frosted effect on iOS. Section badges/eyebrows stripped — they sit
+           over solid backgrounds where there's no texture to frost. */
         .platform-pill,
         .meta-label,
         .pillar-cite,
@@ -751,7 +745,7 @@
         /* ========== Awards & Recognition Section ========== */
         .awards-section {
             padding: clamp(80px, 10vw, 140px) 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(10,10,12,0.62) 100%);
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
         }
         .awards-grid {
             display: grid;
@@ -849,7 +843,7 @@
         /* ========== Contact Section ========== */
         .contact-section {
             padding: clamp(100px, 12vw, 160px) 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(10,10,12,0.62) 100%);
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
             text-align: center;
         }
         .contact-section .container {
@@ -878,7 +872,7 @@
         /* ========== Education / Training Section ========== */
         .education-section {
             padding: clamp(80px, 10vw, 140px) 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(10,10,12,0.62) 100%);
+            background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
         }
         .education-section .section-headline {
             margin-bottom: clamp(16px, 2vw, 24px);
@@ -887,7 +881,7 @@
         /* ========== Curriculum Design Section ========== */
         .curriculum-section {
             padding: clamp(80px, 10vw, 140px) 0;
-            background: linear-gradient(180deg, rgba(10,10,12,0.62) 0%, rgba(0,0,0,0.62) 100%);
+            background: linear-gradient(180deg, #0a0a0c 0%, #000000 100%);
         }
         .curriculum-grid {
             display: grid;
@@ -1406,15 +1400,10 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
-        /* Light (white-veil) sections: dark-tint glass so the chip reads as
-           frosted against the pale drawing instead of vanishing. */
+        /* Light-background sections need dark border */
         .about-section .section-eyebrow {
             border-color: rgba(0, 0, 0, 0.12);
-            background: rgba(0, 0, 0, 0.05);
         }
 
         .section-headline {
@@ -1466,7 +1455,7 @@
             padding: clamp(80px, 10vw, 140px) 0 clamp(80px, 10vw, 140px);
             background:
                 radial-gradient(ellipse 70% 80% at 50% 0%, rgba(109, 40, 217, 0.04), transparent 70%),
-                rgba(10, 10, 12, 0.6);
+                #0a0a0c;
             color: var(--white);
             position: relative;
             z-index: 3;
@@ -1663,7 +1652,7 @@
 
         /* ========== About / Stats ========== */
         .about-section {
-            background: rgba(245, 245, 247, 0.82);
+            background: var(--bg-light);
             color: var(--dark);
         }
 
@@ -1831,7 +1820,7 @@
 
         /* ========== Surgical Excellence Section ========== */
         .excellence-section {
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--black);
             position: relative;
             overflow: hidden;
         }
@@ -1999,9 +1988,6 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
 
         .zero-grid {
@@ -2219,7 +2205,7 @@
            ========================================================== */
         .surgical-unified-section {
             padding: clamp(60px, 8vw, 120px) 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--black);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -2245,9 +2231,6 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
 
         .surgical-hub {
@@ -2347,9 +2330,6 @@
             text-transform: uppercase;
             padding: 3px 9px;
             border-radius: 999px;
-            background: rgba(167, 139, 250, 0.10);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(167, 139, 250, 0.22);
             color: rgba(167, 139, 250, 0.95);
         }
@@ -2533,7 +2513,7 @@
 
         /* ========== OMM Section ========== */
         .omm-section {
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--black);
             position: relative;
         }
 
@@ -3403,7 +3383,7 @@
 
         /* ========== Apps (Bento Layout, Apple-style) ========== */
         .apps-section {
-            background: rgba(245, 245, 247, 0.82);
+            background: var(--bg-light);
             color: var(--dark);
         }
 
@@ -3638,7 +3618,7 @@
 
         /* ========== Research Section ========== */
         .research-section {
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--black);
         }
 
         .aagl-accepted-banner {
@@ -4018,9 +3998,6 @@
             text-transform: uppercase;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             color: rgba(255, 255, 255, 0.75);
         }
@@ -4943,9 +4920,6 @@
             font-weight: 500;
             color: rgba(255, 255, 255, 0.82);
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 999px;
             letter-spacing: 0.005em;
@@ -6231,7 +6205,7 @@
            about block as a navigational eyebrow row.
            ============================================================ */
         .identity-map-section {
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--black);
             position: relative;
         }
         .identity-map-section::before {
