@@ -524,14 +524,10 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 14px;
         }
-        /* 2026-06-13 — these badges/pills need SATURATION + blur for real Apple
-           glass on iOS. Plain blur() looks soft/muddy on iPhone; saturate(180%)
-           + blur() gives the crisp frosted effect. Applied to all badges/pills
-           that have rgba backgrounds. */
-        .section-eyebrow,
-        .research-badge,
-        .hub-badge,
-        .tech-pill,
+        /* 2026-06-13 — Real Apple glass for elements that sit over the hero
+           animation or in modals/overlays. Saturation + blur gives the crisp
+           frosted effect on iOS. Section badges/eyebrows stripped — they sit
+           over solid backgrounds where there's no texture to frost. */
         .platform-pill,
         .meta-label,
         .pillar-cite,
@@ -1404,14 +1400,10 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
-        /* Light-background sections need dark-tint glass or the chip vanishes */
+        /* Light-background sections need dark border */
         .about-section .section-eyebrow {
             border-color: rgba(0, 0, 0, 0.12);
-            background: rgba(0, 0, 0, 0.045);
         }
 
         .section-headline {
@@ -1996,9 +1988,6 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
 
         .zero-grid {
@@ -2242,9 +2231,6 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
 
         .surgical-hub {
@@ -2344,9 +2330,6 @@
             text-transform: uppercase;
             padding: 3px 9px;
             border-radius: 999px;
-            background: rgba(167, 139, 250, 0.10);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(167, 139, 250, 0.22);
             color: rgba(167, 139, 250, 0.95);
         }
@@ -4015,9 +3998,6 @@
             text-transform: uppercase;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             color: rgba(255, 255, 255, 0.75);
         }
@@ -4940,9 +4920,6 @@
             font-weight: 500;
             color: rgba(255, 255, 255, 0.82);
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 999px;
             letter-spacing: 0.005em;
