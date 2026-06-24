@@ -10130,13 +10130,46 @@
                     }
                 });
             };
-            window.addEventListener('scroll', () => {
+            // 2026-06-24 — HARDENED reveal triggers. A scroll-ONLY net left
+            // sections permanently blank on iOS Safari: during a momentum
+            // fling Safari coalesces/delays `scroll` events, so the rAF pass
+            // sampled a stale position and never crossed the trigger line —
+            // the headline/eyebrow/paragraph stayed at opacity:0 forever
+            // (user: "the autoappear when scrolling" is broken; blank About
+            // section on iPhone). Fix: also trigger on the gestures that DO
+            // fire continuously during a real scroll (wheel on desktop,
+            // touchmove on mobile) and on `scrollend` (fires once iOS momentum
+            // settles), plus a short self-stopping poll as a hard backstop so
+            // no element that has entered the viewport can stay hidden. None
+            // of these reveal below-fold content early, so the staggered
+            // scroll animation is preserved everywhere it already worked.
+            const queueReveal = () => {
                 if (!revealTick) { revealTick = true; requestAnimationFrame(revealVisible); }
-            }, { passive: true });
-            // run once after first paint and again after layout settles, so
+            };
+            window.addEventListener('scroll', queueReveal, { passive: true });
+            window.addEventListener('wheel', queueReveal, { passive: true });
+            window.addEventListener('touchmove', queueReveal, { passive: true });
+            window.addEventListener('scrollend', revealVisible, { passive: true });
+            window.addEventListener('resize', queueReveal, { passive: true });
+            window.addEventListener('orientationchange', () => setTimeout(revealVisible, 80));
+            // run after first paint and again as fonts/layout settle, so
             // anything already on screen (or above it) can't be left hidden.
             requestAnimationFrame(revealVisible);
-            setTimeout(revealVisible, 1200);
+            [400, 1200, 2500].forEach(ms => setTimeout(revealVisible, ms));
+            // Self-stopping backstop poll — catches any element the observer
+            // AND every gesture handler somehow missed (the historical
+            // "only some show, some don't" iPhone bug). Cheap: the selectors
+            // shrink to empty as elements reveal, and getBoundingClientRect is
+            // only called on the not-yet-revealed set. Stops itself the moment
+            // nothing reveal-eligible remains in/above the viewport, or after a
+            // generous cap, so it never costs idle battery.
+            let revealPolls = 0;
+            const revealPoll = setInterval(() => {
+                revealVisible();
+                const remaining = document.querySelectorAll(REVEAL_IN).length
+                                + document.querySelectorAll(REVEAL_VIS).length;
+                if (remaining === 0 || ++revealPolls > 120) clearInterval(revealPoll);
+            }, 250);
         }
 
         // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
