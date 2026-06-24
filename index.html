@@ -332,38 +332,39 @@
             transition: opacity 0.8s ease-out;
         }
         .hero-bg-stage.faded {
-            /* 2026-06-24 — was 0.18, which (composited under 0.86-alpha sections)
-               left the drawing mathematically invisible (~2.5%), so glass cards
-               frosted near-black. Raised to 0.5 so the persistent drawing is a
-               genuine visible presence that the now-lower-alpha sections let
-               bleed through — giving every glass card real texture to frost,
-               like the FOUNDATION/INNOVATION pills over the full-opacity video. */
-            opacity: 0.5;
+            /* 2026-06-24 — persistent drawing must be VIVID enough to frost into
+               real Apple glass. Was 0.5, but that left the texture too faint for
+               strong frosting. Raised to 0.75 so the line-art is a bold visible
+               presence that every glass card can saturate/blur into actual glass. */
+            opacity: 0.75;
         }
         .hero-bg-vignette {
             display: none; /* Removed entirely - let the animation colors shine */
         }
         .hero-video {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
+            /* 2026-06-24 — span diagonally bottom-left to top-right so the drawing
+               fills the entire viewport without cropping. Anchor bottom-left and
+               scale from that origin to expand toward top-right. */
+            bottom: 0;
+            left: 0;
+            /* Make it large enough to cover the diagonal */
+            width: 141.4vh;  /* sqrt(2) × 100vh to span the diagonal of a square viewport */
+            height: 141.4vh;
             z-index: 1;
             object-fit: cover;
             opacity: 1;
             pointer-events: none;
+            transform-origin: bottom left;
             /* 2026-06-13 — the line-art read as DULLED/gray, giving the frosted
                glass nothing with contrast to frost. Push saturation + contrast +
                brightness so the drawing is vivid: that vivid animation IS the
                contrast that makes the body-copy glass card read as real glass. */
-            filter: saturate(1.7) brightness(1.18) contrast(1.18);
+            filter: saturate(2.0) brightness(1.28) contrast(1.28);
             /* Scaled up so the drawing's strokes are THICK and DENSE behind the
                hero copy — the body-glass card needs substantial line-art behind
                it to frost into real glass (like the pinned-frame pill does). */
-            transform: translate(-50%, -50%) scale(1.35);
+            transform: scale(1.0);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
            (the giant "tap to play" button) when the hero <video> first
@@ -399,10 +400,10 @@
 
         @keyframes heroKenBurnsSlow {
             0% {
-                transform: translate(-50%, -50%) scale(1.35);
+                transform: scale(1.0);
             }
             100% {
-                transform: translate(-50%, -50%) scale(1.5);
+                transform: scale(1.12);
             }
         }
 
@@ -414,41 +415,22 @@
            crop its extremities. Per user mobile audit 2026-05-21:
            "animation is again not scaled to fit from end to end of screen". */
         @media (max-width: 640px) and (orientation: portrait) {
-            /* 2026-06-12 — the drawing must FILL the screen end-to-end, not sit
-               as a short band. The previous override (width:100%; height:auto)
-               sized the 16:9 video to viewport-width × ~9/16 height (≈219px on
-               an iPhone), leaving ~67% of the tall stage black above/below
-               (user: "opening animation seems compressed … should fit the
-               entire screen"). Restore the desktop COVER technique so the video
-               grows to cover the full 100vh hero-bg-stage in BOTH dimensions;
-               object-fit:cover then trims the landscape extremities rather than
-               letterboxing. object-position keeps the composed centre in frame. */
+            /* 2026-06-24 — diagonal span on mobile too. On portrait phones, the
+               viewport is taller than wide, so we need a larger diagonal. */
             .hero-video {
-                /* 2026-06-12 (rev3) — DRAWING edge-to-edge. The artwork is
-                   composed with empty margins inside its 16:9 frame, so plain
-                   contain left visible "padding at the edges" (user). cover
-                   over-zoomed to full height ("too expanded"). The fix: contain
-                   the frame to viewport width, then scale ~1.65 so the DRAWING
-                   content (not the empty frame margins) spans edge-to-edge —
-                   measured against the live render so the line-art touches both
-                   screen edges while the monogram + MOUNT ZARA wordmark stay
-                   fully visible. Stays a prominent centred band, not a
-                   full-height crop. */
-                width: 100%;
-                height: auto;
-                object-fit: contain;
-                object-position: center center;
-                transform: translate(-50%, -50%) scale(1.65);
+                width: 200vh;  /* Tall viewport needs larger diagonal coverage */
+                height: 200vh;
+                /* Still anchored bottom-left, spans diagonally */
             }
             .hero-video.ken-burns {
                 animation: heroKenBurnsSlowMobile 45s ease-in-out infinite alternate;
             }
             @keyframes heroKenBurnsSlowMobile {
                 0% {
-                    transform: translate(-50%, -50%) scale(1.65);
+                    transform: scale(1.0);
                 }
                 100% {
-                    transform: translate(-50%, -50%) scale(1.78);
+                    transform: scale(1.12);
                 }
             }
             /* monogram size is handled responsively on the base rule
@@ -751,7 +733,7 @@
             padding: clamp(80px, 10vw, 140px) 0;
             /* 2026-06-24 — translucent gradient so hero drawing shows through,
                creating texture for award-tile cards to frost with real glass. */
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.60) 0%, rgba(10, 10, 12, 0.64) 100%);
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.40) 0%, rgba(10, 10, 12, 0.45) 100%);
         }
         .awards-grid {
             display: grid;
@@ -2229,7 +2211,7 @@
             padding: clamp(60px, 8vw, 120px) 0;
             /* 2026-06-24 — translucent so hero drawing shows through (the radial
                gradient overlays in ::before still paint on top). */
-            background-color: rgba(0, 0, 0, 0.62);
+            background-color: rgba(0, 0, 0, 0.45);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -2544,7 +2526,7 @@
         /* ========== OMM Section ========== */
         .omm-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(0, 0, 0, 0.62);
+            background-color: rgba(0, 0, 0, 0.45);
             position: relative;
         }
 
@@ -3652,10 +3634,10 @@
         /* ========== Research Section ========== */
         .research-section {
             /* 2026-06-24 — translucent so hero drawing shows through, creating
-               texture for research cards to frost with real glass. Alpha kept
-               low enough (0.62) that the persistent drawing reads through the
-               section AND into each glass card's backdrop sample. */
-            background-color: rgba(0, 0, 0, 0.62);
+               texture for research cards to frost with real glass. Alpha low
+               enough (0.45) that the now-vivid (0.75 opacity) drawing reads
+               through boldly, giving glass cards intense texture to frost. */
+            background-color: rgba(0, 0, 0, 0.45);
         }
 
         .aagl-accepted-banner {
@@ -6176,13 +6158,13 @@
         .research-card,
         .research-item,
         .research-card-video {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(28px) saturate(165%) brightness(1.08);
-            -webkit-backdrop-filter: blur(28px) saturate(165%) brightness(1.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
+            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.08),
-                0 12px 32px -16px rgba(0, 0, 0, 0.60);
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 12px 32px -16px rgba(0, 0, 0, 0.65);
         }
 
         /* The apps section is light; its cards are an honest solid white→violet
@@ -6266,7 +6248,7 @@
            ============================================================ */
         .identity-map-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(0, 0, 0, 0.62);
+            background-color: rgba(0, 0, 0, 0.45);
             position: relative;
         }
         .identity-map-section::before {

@@ -268,12 +268,11 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             continue
         bg = s.get("background") or ""
         bgimg = s.get("backgroundImage") or ""
-        # Accept alpha 0.50 - 0.92: dark glass sections sit at ~0.60-0.62 (low
-        # enough that the persistent hero drawing reads through AND into each
-        # glass card's backdrop sample), light sections at ~0.82. The window
-        # rejects fully-opaque (1.0, hides drawing) and too-transparent (<0.5,
-        # text unreadable).
-        LO, HI = 0.50, 0.92
+        # Accept alpha 0.35 - 0.92: dark glass sections sit at ~0.40-0.45 (very
+        # translucent so the vivid 0.75-opacity persistent drawing reads through
+        # boldly), light sections at ~0.82. The window rejects fully-opaque (1.0,
+        # hides drawing) and too-transparent (<0.35, text unreadable).
+        LO, HI = 0.35, 0.92
         # Check background-color for translucent rgba
         m = re.match(r"rgba?\(([^)]+)\)", bg)
         translucent = False
