@@ -31,6 +31,7 @@ Usage:
 """
 from __future__ import annotations
 
+import re
 import sys
 import json
 import time
@@ -79,6 +80,31 @@ def make_check(name: str, ok: bool, detail: str = "") -> dict[str, Any]:
     return {"name": name, "pass": bool(ok), "detail": detail}
 
 
+def _has_real_surface(bg_color: str | None, bg_image: str | None) -> bool:
+    """True if an element has a real, visible fill — either an opaque
+    background-color (alpha == 1) or a gradient background-image. Used to
+    assert honest-solid cards actually render a surface (catches a card going
+    fully transparent / unstyled, the §1.1 corruption class)."""
+    img = bg_image or ""
+    if "gradient" in img:
+        return True
+    color = (bg_color or "").strip()
+    if not color or color in ("transparent", "rgba(0, 0, 0, 0)"):
+        return False
+    # rgb(...) is fully opaque; rgba(...) must have alpha == 1
+    m = re.match(r"rgba?\(([^)]+)\)", color)
+    if m:
+        parts = [p.strip() for p in m.group(1).split(",")]
+        if len(parts) == 4:
+            try:
+                return float(parts[3]) >= 0.99
+            except ValueError:
+                return False
+        return True  # rgb(...) with 3 parts = opaque
+    # named colors / hex = opaque
+    return True
+
+
 def audit_homepage(page) -> list[dict[str, Any]]:
     """Run runtime-CSS assertions on the homepage in iPhone Pro Max view."""
     page.goto(f"{BASE}/?cb={int(time.time())}",
@@ -95,6 +121,8 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             out.push({
                 id: c.getAttribute('data-identity'),
                 backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+                background: cs.backgroundColor,
+                backgroundImage: cs.backgroundImage,
                 borderRadius: cs.borderRadius,
                 minHeight: cs.minHeight,
                 borderColor: cs.borderColor,
@@ -108,17 +136,23 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             "Identity Map: cards present", False, "0 .identity-card elements"
         ))
     else:
-        # Every card MUST have backdrop-filter that contains 'blur('
-        # — this is the runtime check that would have caught the §1.1
-        # corruption.
+        # 2026-06-24 — GLASS HONESTY. Identity cards sit on the solid black
+        # identity-map section, so they are now honest OPAQUE cards, NOT glass
+        # (backdrop-filter over a solid bg frosts nothing and trips the iOS
+        # transform-drop). Assert each card is a real solid surface: no
+        # backdrop-filter, and an opaque (alpha==1) background — this catches
+        # both a regression to fake glass AND the §1.1 corruption class (a card
+        # going fully transparent / unstyled).
         for c in cards:
-            bf = c.get("backdropFilter") or ""
-            ok = "blur(" in bf and "saturate" in bf
+            bf = c.get("backdropFilter") or "none"
+            no_glass = ("blur(" not in bf)
+            surface = _has_real_surface(c.get("background"), c.get("backgroundImage"))
             results.append(make_check(
                 f"Identity Map .identity-card[data-identity={c['id']}] "
-                f"backdrop-filter active",
-                ok,
-                f"got: {bf!r}"
+                f"honest solid surface (no fake glass, real fill)",
+                no_glass and surface,
+                f"backdrop-filter={bf!r} bg-color={c.get('background')!r} "
+                f"bg-image={(c.get('backgroundImage') or '')[:40]!r}"
             ))
             # Border radius must be ≥ 20px (design intent: 22px)
             try:
@@ -141,8 +175,12 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                 f"got: {c['minHeight']}"
             ))
 
-    # SITE-WIDE-APPLE-GLASS — every named card class that exists in
-    # the DOM must have non-none backdrop-filter
+    # 2026-06-24 — GLASS HONESTY. These content cards all sit over SOLID
+    # section backgrounds, so they are now honest OPAQUE surfaces, NOT glass.
+    # The old gate demanded backdrop-filter:blur() here — that was the very
+    # fake-glass-over-solid anti-pattern that rendered as muddy translucent
+    # chips on iOS (and the blur was silently dropped anyway by the iOS
+    # transform trap). Assert the inverse: no fake glass + a real opaque fill.
     site_glass = page.evaluate("""() => {
         const targets = ['.surgical-card', '.app-card-v2', '.research-card',
                          '.evidence-card', '.bento-card', '.domain-card',
@@ -152,16 +190,16 @@ def audit_homepage(page) -> list[dict[str, Any]]:
         for (const sel of targets) {
             const els = document.querySelectorAll(sel);
             if (!els.length) {
-                out.push({selector: sel, count: 0, backdropFilter: 'n/a'});
+                out.push({selector: sel, count: 0});
                 continue;
             }
-            // Sample the first element of each kind
             const cs = getComputedStyle(els[0]);
             out.push({
                 selector: sel,
                 count: els.length,
                 backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
                 background: cs.backgroundColor,
+                backgroundImage: cs.backgroundImage,
             });
         }
         return out;
@@ -169,12 +207,45 @@ def audit_homepage(page) -> list[dict[str, Any]]:
     for g in site_glass:
         if g["count"] == 0:
             continue  # selector not used on this page, OK
-        bf = g.get("backdropFilter") or ""
-        ok = "blur(" in bf
+        bf = g.get("backdropFilter") or "none"
+        no_glass = "blur(" not in bf
+        surface = _has_real_surface(g.get("background"), g.get("backgroundImage"))
         results.append(make_check(
-            f"site-wide-glass {g['selector']} runtime backdrop-filter active",
-            ok,
-            f"got: {bf!r} ({g['count']} elements)"
+            f"site-wide-glass {g['selector']} honest solid surface (no fake glass)",
+            no_glass and surface,
+            f"backdrop-filter={bf!r} bg-color={g.get('background')!r} "
+            f"({g['count']} elements)"
+        ))
+
+    # POSITIVE GLASS INVARIANT — real frosted glass MUST survive on the few
+    # elements that genuinely overlay moving texture. This is the check that
+    # now guards the §1.1 corruption class: if a comment-corruption or a bad
+    # edit kills the real glass, this fails. (.hero-sub is the owner's
+    # canonical 'Foundation/Innovation' glass recipe; nav floats over the hero;
+    # the pinned pills frost the fixed drawing.)
+    real_glass = page.evaluate("""() => {
+        const targets = ['.hero-sub', 'nav.main-nav', '.pinned-frame .frame-eyebrow'];
+        const out = [];
+        for (const sel of targets) {
+            const el = document.querySelector(sel);
+            if (!el) { out.push({selector: sel, present: false}); continue; }
+            const cs = getComputedStyle(el);
+            out.push({
+                selector: sel,
+                present: true,
+                backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+            });
+        }
+        return out;
+    }""")
+    for g in real_glass:
+        if not g.get("present"):
+            continue  # element legitimately absent in this build
+        bf = g.get("backdropFilter") or "none"
+        results.append(make_check(
+            f"real-glass {g['selector']} backdrop-filter active (over texture)",
+            "blur(" in bf,
+            f"got: {bf!r}"
         ))
 
     # Hero must NOT be hidden
