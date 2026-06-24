@@ -136,23 +136,15 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             "Identity Map: cards present", False, "0 .identity-card elements"
         ))
     else:
-        # 2026-06-24 — GLASS HONESTY. Identity cards sit on the solid black
-        # identity-map section, so they are now honest OPAQUE cards, NOT glass
-        # (backdrop-filter over a solid bg frosts nothing and trips the iOS
-        # transform-drop). Assert each card is a real solid surface: no
-        # backdrop-filter, and an opaque (alpha==1) background — this catches
-        # both a regression to fake glass AND the §1.1 corruption class (a card
-        # going fully transparent / unstyled).
+        # 2026-06-24 — Identity cards have real glass over the now-translucent
+        # .identity-map-section (rgba 0.86). Assert backdrop-filter:blur() active.
         for c in cards:
             bf = c.get("backdropFilter") or "none"
-            no_glass = ("blur(" not in bf)
-            surface = _has_real_surface(c.get("background"), c.get("backgroundImage"))
+            has_glass = ("blur(" in bf)
             results.append(make_check(
-                f"Identity Map .identity-card[data-identity={c['id']}] "
-                f"honest solid surface (no fake glass, real fill)",
-                no_glass and surface,
-                f"backdrop-filter={bf!r} bg-color={c.get('background')!r} "
-                f"bg-image={(c.get('backgroundImage') or '')[:40]!r}"
+                f"Identity Map .identity-card[data-identity={c['id']}] real glass",
+                has_glass,
+                f"backdrop-filter={bf!r}"
             ))
             # Border radius must be ≥ 20px (design intent: 22px)
             try:
@@ -255,7 +247,8 @@ def audit_homepage(page) -> list[dict[str, Any]]:
     # Sections must be translucent so hero drawing shows through
     sections = page.evaluate("""() => {
         const targets = ['.research-section', '.awards-section', '.omm-section',
-                         '.surgical-unified-section', '.about-section', '.apps-section'];
+                         '.surgical-unified-section', '.about-section', '.apps-section',
+                         '.identity-map-section'];
         const out = [];
         for (const sel of targets) {
             const el = document.querySelector(sel);
@@ -265,6 +258,7 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                 selector: sel,
                 present: true,
                 background: cs.backgroundColor,
+                backgroundImage: cs.backgroundImage,
             });
         }
         return out;
@@ -273,6 +267,8 @@ def audit_homepage(page) -> list[dict[str, Any]]:
         if not s.get("present"):
             continue
         bg = s.get("background") or ""
+        bgimg = s.get("backgroundImage") or ""
+        # Check background-color for translucent rgba
         m = re.match(r"rgba?\(([^)]+)\)", bg)
         translucent = False
         if m:
@@ -284,10 +280,25 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                     translucent = 0.80 <= alpha <= 0.96
                 except ValueError:
                     pass
+        # If background-color is transparent but there's a gradient, check the gradient
+        if not translucent and "gradient" in bgimg:
+            # For gradients like linear-gradient(180deg, rgba(0,0,0,0.86) 0%, ...)
+            # just check if it contains rgba with alpha in range
+            rgba_matches = re.findall(r"rgba?\(([^)]+)\)", bgimg)
+            for rgba_str in rgba_matches:
+                parts = [p.strip() for p in rgba_str.split(",")]
+                if len(parts) == 4:
+                    try:
+                        alpha = float(parts[3])
+                        if 0.80 <= alpha <= 0.96:
+                            translucent = True
+                            break
+                    except ValueError:
+                        pass
         results.append(make_check(
             f"{s['selector']} translucent (drawing shows through)",
             translucent,
-            f"bg={bg!r}"
+            f"bg-color={bg!r} bg-image={(bgimg or '')[:60]!r}"
         ))
 
     # POSITIVE GLASS INVARIANT — real frosted glass MUST survive on the few
