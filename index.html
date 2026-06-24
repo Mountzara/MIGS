@@ -743,7 +743,9 @@
         /* ========== Awards & Recognition Section ========== */
         .awards-section {
             padding: clamp(80px, 10vw, 140px) 0;
-            background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
+            /* 2026-06-24 — translucent gradient so hero drawing shows through,
+               creating texture for award-tile cards to frost with real glass. */
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(10, 10, 12, 0.88) 100%);
         }
         .awards-grid {
             display: grid;
@@ -1657,7 +1659,9 @@
 
         /* ========== About / Stats ========== */
         .about-section {
-            background: var(--bg-light);
+            /* 2026-06-24 — translucent so hero drawing shows through, creating
+               subtle texture for glass elements to frost. */
+            background-color: rgba(255, 255, 255, 0.92);
             color: var(--dark);
         }
 
@@ -2215,7 +2219,9 @@
            ========================================================== */
         .surgical-unified-section {
             padding: clamp(60px, 8vw, 120px) 0;
-            background: var(--black);
+            /* 2026-06-24 — translucent so hero drawing shows through (the radial
+               gradient overlays in ::before still paint on top). */
+            background-color: rgba(0, 0, 0, 0.86);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -2529,7 +2535,8 @@
 
         /* ========== OMM Section ========== */
         .omm-section {
-            background: var(--black);
+            /* 2026-06-24 — translucent so hero drawing shows through. */
+            background-color: rgba(0, 0, 0, 0.86);
             position: relative;
         }
 
@@ -3399,7 +3406,8 @@
 
         /* ========== Apps (Bento Layout, Apple-style) ========== */
         .apps-section {
-            background: var(--bg-light);
+            /* 2026-06-24 — translucent so hero drawing shows through. */
+            background-color: rgba(255, 255, 255, 0.92);
             color: var(--dark);
         }
 
@@ -3634,7 +3642,9 @@
 
         /* ========== Research Section ========== */
         .research-section {
-            background: var(--black);
+            /* 2026-06-24 — translucent so hero drawing shows through, creating
+               texture for research cards to frost with real glass. */
+            background-color: rgba(0, 0, 0, 0.86);
         }
 
         .aagl-accepted-banner {
@@ -6138,17 +6148,12 @@
             --glow-purple-deep: 109, 40, 217;     /* #6d28d9 — violet-700 for the saturated outer halo */
         }
 
-        /* 2026-06-24 — HONEST surfaces, not fake glass. These cards all sit
-           over SOLID section backgrounds (the dark surgery/research/omm/awards
-           sections, or the light apps section), so backdrop-filter had nothing
-           to frost — and iOS Safari dropped the blur anyway because each card
-           carries a reveal transform. The result was a flat, muddy translucent
-           chip, never Apple glass. Real frosted glass is now reserved for the
-           elements that genuinely float over the moving hero drawing/video
-           (.hero-sub, the fixed nav, the .pinned-showcase pills, modals). Here
-           each card gets a crisp, near-opaque surface with a lit top edge and a
-           depth shadow — the treatment Apple uses for cards on a solid canvas.
-           No backdrop-filter = no iOS frost-drop, no wasted GPU. */
+        /* 2026-06-24 — REAL Apple frosted glass. These cards sit over the now-
+           translucent dark sections (.awards, .research, .omm, .surgical-unified),
+           through which the hero line-art drawing bleeds. The drawing provides
+           actual texture for backdrop-filter to frost. Cards settle to transform:none
+           after reveal (line 5027) so iOS Safari preserves the blur. Canonical Apple
+           glass recipe: translucent fill + heavy blur + saturation boost. */
         .award-tile,
         .curriculum-card,
         .surgical-card,
@@ -6160,11 +6165,13 @@
         .research-card,
         .research-item,
         .research-card-video {
-            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(28px) saturate(165%) brightness(1.08);
+            -webkit-backdrop-filter: blur(28px) saturate(165%) brightness(1.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.06),
-                0 12px 32px -16px rgba(0, 0, 0, 0.55);
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                0 12px 32px -16px rgba(0, 0, 0, 0.60);
         }
 
         /* The apps section is light; its cards are an honest solid white→violet
@@ -6676,46 +6683,12 @@
         }
 
         /* ============================================================
-           2026-06-24 — GLASS HONESTY OVERRIDE (authoritative final word)
-           The stylesheet accreted several overlapping "site-wide glass"
-           blocks that put backdrop-filter on cards/badges/pills sitting over
-           SOLID section backgrounds. There the blur frosts nothing AND trips
-           the iOS Safari bug that drops backdrop-filter on any element with a
-           transform (every one of these also gets a reveal/hover transform) —
-           so on iPhone they rendered as flat, muddy translucent chips, never
-           Apple glass. This block is the single source of truth: it strips
-           the fake glass everywhere and gives each solid-context surface an
-           honest opaque fill. REAL frosted glass is intentionally NOT listed
-           here — it remains only on the elements that overlay genuinely moving
-           texture: .hero-sub, .hero-meta, the fixed nav, the .pinned-showcase
-           pills, and the modal scrims. All these card sections are dark
-           (#000–#0a0a0c); the two light sections (apps/about) are handled
-           with their own light surfaces above.
+           2026-06-24 — Pills/badges/labels that don't need glass
+           Section eyebrows, badges, pills, and similar small accent elements
+           don't benefit from frosted glass — they're too small and the blur
+           just muddies text legibility. These keep their own fills but get
+           backdrop-filter: none to avoid iOS layer promotion.
            ============================================================ */
-        .stat,
-        .hub-tile,
-        .pillar-card,
-        .soc-block,
-        .traj-card,
-        .omm-quote-block,
-        .surgical-hub-panel,
-        .identity-card,
-        .award-tile,
-        .curriculum-card,
-        .zero-card,
-        .population-card,
-        .bento-card,
-        .research-card,
-        .research-item,
-        .research-card-video,
-        .frame-card {
-            -webkit-backdrop-filter: none;
-            backdrop-filter: none;
-            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-        }
-        /* Kill fake glass on labels/pills/badges over solid backgrounds — they
-           keep their own fills, just lose the no-op blur + iOS layer promotion. */
         .section-eyebrow,
         .zero-eyebrow,
         .surgical-hub-eyebrow,

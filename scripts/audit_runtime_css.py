@@ -175,17 +175,17 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                 f"got: {c['minHeight']}"
             ))
 
-    # 2026-06-24 — GLASS HONESTY. These content cards all sit over SOLID
-    # section backgrounds, so they are now honest OPAQUE surfaces, NOT glass.
-    # The old gate demanded backdrop-filter:blur() here — that was the very
-    # fake-glass-over-solid anti-pattern that rendered as muddy translucent
-    # chips on iOS (and the blur was silently dropped anyway by the iOS
-    # transform trap). Assert the inverse: no fake glass + a real opaque fill.
-    site_glass = page.evaluate("""() => {
-        const targets = ['.surgical-card', '.app-card-v2', '.research-card',
-                         '.evidence-card', '.bento-card', '.domain-card',
-                         '.zero-card', '.curriculum-card', '.award-tile',
-                         '.population-card'];
+    # 2026-06-24 — REAL GLASS on dark-section cards, solid on light-section cards.
+    # Dark sections (.research, .awards, .omm, .surgical-unified) are now
+    # translucent (rgba 0.86-0.88) so the hero drawing shows through, creating
+    # texture for cards to frost. Cards on those sections get real Apple glass:
+    # backdrop-filter:blur() + translucent fill. Light-section cards (.app-card-v2,
+    # .about-text-block) stay solid because dark line-art through translucent
+    # white doesn't create enough contrast for glass.
+    dark_glass = page.evaluate("""() => {
+        const targets = ['.surgical-card', '.research-card', '.evidence-card',
+                         '.bento-card', '.domain-card', '.zero-card',
+                         '.curriculum-card', '.award-tile', '.population-card'];
         const out = [];
         for (const sel of targets) {
             const els = document.querySelectorAll(sel);
@@ -199,22 +199,95 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                 count: els.length,
                 backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
                 background: cs.backgroundColor,
-                backgroundImage: cs.backgroundImage,
             });
         }
         return out;
     }""")
-    for g in site_glass:
+    for g in dark_glass:
         if g["count"] == 0:
-            continue  # selector not used on this page, OK
+            continue
         bf = g.get("backdropFilter") or "none"
-        no_glass = "blur(" not in bf
-        surface = _has_real_surface(g.get("background"), g.get("backgroundImage"))
+        has_glass = "blur(" in bf
+        # Background should be translucent (alpha < 0.15 for real glass)
+        bg = g.get("background") or ""
+        m = re.match(r"rgba?\(([^)]+)\)", bg)
+        translucent = False
+        if m:
+            parts = [p.strip() for p in m.group(1).split(",")]
+            if len(parts) == 4:
+                try:
+                    translucent = float(parts[3]) < 0.15
+                except ValueError:
+                    pass
         results.append(make_check(
-            f"site-wide-glass {g['selector']} honest solid surface (no fake glass)",
-            no_glass and surface,
-            f"backdrop-filter={bf!r} bg-color={g.get('background')!r} "
-            f"({g['count']} elements)"
+            f"dark-section {g['selector']} real Apple glass (blur + translucent)",
+            has_glass and translucent,
+            f"backdrop-filter={bf!r} bg={bg!r} ({g['count']} elements)"
+        ))
+
+    # Light-section cards: stay solid (no glass), because dark line-art through
+    # translucent white doesn't create enough contrast for glass.
+    light_solid = page.evaluate("""() => {
+        const targets = ['.app-card-v2', '.about-text-block'];
+        const out = [];
+        for (const sel of targets) {
+            const el = document.querySelector(sel);
+            if (!el) { out.push({selector: sel, present: false}); continue; }
+            const cs = getComputedStyle(el);
+            out.push({
+                selector: sel,
+                present: true,
+                backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+            });
+        }
+        return out;
+    }""")
+    for g in light_solid:
+        if not g.get("present"):
+            continue
+        bf = g.get("backdropFilter") or "none"
+        results.append(make_check(
+            f"light-section {g['selector']} solid (no glass)",
+            "blur(" not in bf,
+            f"backdrop-filter={bf!r}"
+        ))
+
+    # Sections must be translucent so hero drawing shows through
+    sections = page.evaluate("""() => {
+        const targets = ['.research-section', '.awards-section', '.omm-section',
+                         '.surgical-unified-section', '.about-section', '.apps-section'];
+        const out = [];
+        for (const sel of targets) {
+            const el = document.querySelector(sel);
+            if (!el) { out.push({selector: sel, present: false}); continue; }
+            const cs = getComputedStyle(el);
+            out.push({
+                selector: sel,
+                present: true,
+                background: cs.backgroundColor,
+            });
+        }
+        return out;
+    }""")
+    for s in sections:
+        if not s.get("present"):
+            continue
+        bg = s.get("background") or ""
+        m = re.match(r"rgba?\(([^)]+)\)", bg)
+        translucent = False
+        if m:
+            parts = [p.strip() for p in m.group(1).split(",")]
+            if len(parts) == 4:
+                try:
+                    alpha = float(parts[3])
+                    # Accept alpha 0.80 - 0.96 (sections are 0.86-0.92)
+                    translucent = 0.80 <= alpha <= 0.96
+                except ValueError:
+                    pass
+        results.append(make_check(
+            f"{s['selector']} translucent (drawing shows through)",
+            translucent,
+            f"bg={bg!r}"
         ))
 
     # POSITIVE GLASS INVARIANT — real frosted glass MUST survive on the few
