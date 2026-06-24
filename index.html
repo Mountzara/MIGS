@@ -23,7 +23,11 @@
             --white: #ffffff;
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
-            --glow-purple: 167, 139, 250;
+            /* 2026-06-24 — canonical violet-500. Was 167,139,250 here but a
+               second :root later in the sheet shadowed it with 139,92,246, so
+               that is the value the whole site actually rendered; made it
+               canonical and removed the late duplicate. */
+            --glow-purple: 139, 92, 246;
             --bg: #000000;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
@@ -41,6 +45,9 @@
 
         html {
             scroll-behavior: smooth;
+            /* Anchor jumps (#surgery, #research, #awards, …) must clear the
+               fixed ~64px nav so section eyebrows aren't tucked underneath it. */
+            scroll-padding-top: 80px;
         }
 
         body {
@@ -524,28 +531,15 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 14px;
         }
-        /* 2026-06-13 — these badges/pills need SATURATION + blur for real Apple
-           glass on iOS. Plain blur() looks soft/muddy on iPhone; saturate(180%)
-           + blur() gives the crisp frosted effect. Applied to all badges/pills
-           that have rgba backgrounds. */
-        .section-eyebrow,
-        .research-badge,
-        .hub-badge,
-        .tech-pill,
-        .platform-pill,
-        .meta-label,
-        .pillar-cite,
-        .dm-stat-label,
-        .evidence-expect-col-label,
-        .app-modal-section-eyebrow,
-        .app-modal-tag,
-        .app-modal-tagline,
-        .nav-portal-badge,
-        .nav-portal-badge-footer,
-        .video-preview-label {
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            backdrop-filter: saturate(180%) blur(20px);
-        }
+        /* 2026-06-24 — REMOVED the shared backdrop-filter on these badges/pills.
+           They sit on solid section backgrounds, so the blur frosted nothing
+           and only served to promote each tiny label to its own iOS compositing
+           layer (the same transform/backdrop trap that killed the card glass).
+           Each label keeps its own solid-ish fill defined in its own rule, which
+           reads as a crisp chip without pretending to be glass. Real frosted
+           glass is reserved for .hero-sub, the nav bar, the .pinned-showcase
+           pills, and modal scrims — elements that actually overlay moving
+           texture. */
 
         /* ============ Hero content reveal (Apple-style staggered) ============ */
         .hero-content-delayed {
@@ -1393,9 +1387,14 @@
             margin: 0 auto;
         }
 
+        /* 2026-06-24 — honest solid chip, no backdrop-filter. Section eyebrows
+           sit on the SOLID section background, so the old blur frosted nothing
+           (and iOS dropped it via the reveal transform anyway). A faint solid
+           fill keeps the pill reading as a chip — accent-colored uppercase label
+           on a quiet surface — without pretending to be glass. */
         .section-eyebrow {
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--accent);
             letter-spacing: 0.16em;
             text-transform: uppercase;
@@ -1404,14 +1403,12 @@
             padding: 8px 16px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            background: rgba(255, 255, 255, 0.06);
         }
-        /* Light-background sections need dark-tint glass or the chip vanishes */
+        /* Light-background sections need a dark-tint chip or it vanishes */
         .about-section .section-eyebrow {
-            border-color: rgba(0, 0, 0, 0.12);
-            background: rgba(0, 0, 0, 0.045);
+            border-color: rgba(0, 0, 0, 0.10);
+            background: rgba(118, 91, 217, 0.08);
         }
 
         .section-headline {
@@ -1674,16 +1671,17 @@
             color: var(--gray-1);
         }
 
-        /* Liquid-glass text panels — light-section variant (frosted white) */
+        /* 2026-06-24 — honest solid white panel (was fake frosted white over a
+           solid light section, where the blur frosted nothing and iOS dropped
+           it via the reveal transform). Crisp card with a hairline border and a
+           soft lift — the Apple treatment for a card on a light canvas. */
         .about-text-block {
             padding: 30px 32px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.32) 100%);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.07);
             border-radius: 22px;
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
             box-shadow:
-                0 1px 0 rgba(255, 255, 255, 0.65) inset,
+                0 1px 0 rgba(255, 255, 255, 0.8) inset,
                 0 16px 40px -28px rgba(0, 0, 0, 0.30);
         }
 
@@ -1877,21 +1875,22 @@
         }
 
         /* Editorial pull-quote */
+        /* 2026-06-24 — honest solid quote panel (was fake glass over a solid
+           black section). Keep the subtle violet wash as a real opaque surface,
+           drop the no-op backdrop-filter. */
         .excellence-quote {
             margin: 64px auto 0;
             max-width: 880px;
             padding: clamp(48px, 6vw, 72px) clamp(32px, 5vw, 72px);
             background:
-                radial-gradient(ellipse at top, rgba(109, 40, 217, 0.06) 0%, transparent 60%),
-                linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+                radial-gradient(ellipse at top, rgba(109, 40, 217, 0.10) 0%, transparent 60%),
+                #16161c;
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             box-shadow:
                 0 30px 80px -30px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .excellence-quote::before {
@@ -3642,9 +3641,9 @@
             margin-top: 40px;
             padding: 28px clamp(24px, 4vw, 48px);
             background:
-                radial-gradient(ellipse at center, rgba(109, 40, 217, 0.08) 0%, transparent 70%),
-                linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(109, 40, 217, 0.18);
+                radial-gradient(ellipse at center, rgba(109, 40, 217, 0.14) 0%, transparent 70%),
+                #16161c;
+            border: 1px solid rgba(109, 40, 217, 0.22);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -4132,9 +4131,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: #ffffff;
             border-radius: 50%;
             color: #000;
             margin-bottom: 4px;
@@ -5026,8 +5023,18 @@
         }
         [data-reveal].in {
             opacity: 1;
-            transform: translate3d(0, 0, 0) scale(1);
+            /* 2026-06-24 — settle to transform:none (NOT an identity matrix).
+               WebKit/iOS Safari DROPS backdrop-filter on any element that
+               carries a transform, and translate3d(0,0,0) scale(1) is still a
+               transform that keeps the card a promoted compositing layer
+               forever — silently killing the frost on every glass card on
+               iPhone. `none` lets Safari re-enable the blur once settled, and
+               the reveal MOTION is unchanged (the transition still interpolates
+               from the initial translate3d to identity). Mirrors the proven
+               .hero-sub fix. will-change cleared so the layer isn't pinned. */
+            transform: none;
             filter: none;
+            will-change: auto;
         }
         /* Cascading stagger 80ms apart */
         [data-reveal][data-stagger="1"].in { transition-delay: 80ms; }
@@ -5615,6 +5622,10 @@
            hover/focus. If a new card class is added without this glass
            treatment, append it to the selector list here.
            ============================================================ */
+        /* 2026-06-24 — honest opaque surfaces (was rgba(255,255,255,0.04) fake
+           glass that vanished without the no-op blur and tripped the iOS
+           transform-drop). All these cards sit on dark sections; app-card-v2 is
+           re-overridden to its light surface later in the cascade. */
         .app-card-v2,
         .research-card,
         .frame-card,
@@ -5626,12 +5637,10 @@
         .timeline-card,
         .skill-card,
         .nav-linkedin {
-            background: rgba(255, 255, 255, 0.04);
+            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 14px;
-            backdrop-filter: blur(28px) saturate(165%);
-            -webkit-backdrop-filter: blur(28px) saturate(165%);
-            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
         }
         .app-card-v2:hover,
         .research-card:hover,
@@ -5646,7 +5655,8 @@
         .nav-linkedin:hover {
             transform: translateY(-2px);
             border-color: rgba(var(--glow-purple), 0.45);
-            background: rgba(var(--glow-purple), 0.06);
+            background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
+            box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
 
         /* Care-path cards (OMT patient + clinician walk-through) */
@@ -6043,6 +6053,8 @@
            .award-card, .feature-card, .frame, .timeline-card, etc.).
            Per CLAUDE.md §3.10 Principle 4. DO NOT REMOVE OR REVERT.
            ============================================================ */
+        /* 2026-06-24 — honest opaque surfaces (see note above). app-card-v2 is
+           re-overridden to its light surface later in the cascade. */
         .app-card-v2,
         .research-card,
         .award-card,
@@ -6053,12 +6065,10 @@
         .carepath-block,
         .education-card,
         .timeline-content {
-            background: rgba(255, 255, 255, 0.04);
+            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
             border: 1px solid rgba(255, 255, 255, 0.10);
             border-radius: 14px;
-            backdrop-filter: blur(28px) saturate(165%);
-            -webkit-backdrop-filter: blur(28px) saturate(165%);
-            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
         }
         .app-card-v2:hover,
         .research-card:hover,
@@ -6071,7 +6081,8 @@
         .education-card:hover {
             transform: translateY(-2px);
             border-color: rgba(var(--glow-purple), 0.45);
-            background: rgba(var(--glow-purple), 0.06);
+            background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
+            box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
         .app-card-v2:focus-visible,
         .research-card:focus-visible,
@@ -6120,16 +6131,24 @@
            focus rings, the skip-link, and the Identity Map navigator.
            ============================================================ */
 
-        /* Brand glow color — deep violet (replaces the earlier blue accent on hover) */
+        /* Brand glow color — deep violet (replaces the earlier blue accent on hover).
+           --glow-purple is now declared once, canonically, in the top :root.
+           Only the deep halo token lives here. */
         :root {
-            --glow-purple: 139, 92, 246;          /* #8b5cf6 — Tailwind violet-500 */
             --glow-purple-deep: 109, 40, 217;     /* #6d28d9 — violet-700 for the saturated outer halo */
         }
 
-        /* Shared glassmorphism on every named card class. Uses very low
-           background opacity + backdrop-filter blur so the page behind
-           shows through with depth, plus a 1px translucent border and an
-           inset top highlight that gives the characteristic glass edge. */
+        /* 2026-06-24 — HONEST surfaces, not fake glass. These cards all sit
+           over SOLID section backgrounds (the dark surgery/research/omm/awards
+           sections, or the light apps section), so backdrop-filter had nothing
+           to frost — and iOS Safari dropped the blur anyway because each card
+           carries a reveal transform. The result was a flat, muddy translucent
+           chip, never Apple glass. Real frosted glass is now reserved for the
+           elements that genuinely float over the moving hero drawing/video
+           (.hero-sub, the fixed nav, the .pinned-showcase pills, modals). Here
+           each card gets a crisp, near-opaque surface with a lit top edge and a
+           depth shadow — the treatment Apple uses for cards on a solid canvas.
+           No backdrop-filter = no iOS frost-drop, no wasted GPU. */
         .award-tile,
         .curriculum-card,
         .surgical-card,
@@ -6138,24 +6157,24 @@
         .population-card,
         .evidence-card,
         .bento-card,
-        .app-card-v2,
         .research-card,
         .research-item,
         .research-card-video {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
-            backdrop-filter: blur(28px) saturate(165%);
-            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
             border: 1px solid rgba(255, 255, 255, 0.10);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.06),
-                0 12px 32px -16px rgba(0, 0, 0, 0.45);
+                0 12px 32px -16px rgba(0, 0, 0, 0.55);
         }
 
-        /* The app-card-v2 was previously solid white. Force a tinted glass
-           version that still reads on the section's lighter background. */
+        /* The apps section is light; its cards are an honest solid white→violet
+           gradient. No backdrop-filter: it would frost nothing on a light solid
+           background and would trip the iOS transform-drop. */
         .app-card-v2 {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.65) 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f3f0fb 100%);
             color: #0a0a0c;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         /* Deep-purple hover glow — replaces every blue hover/focus accent on cards */
@@ -6654,6 +6673,74 @@
             .research-card-video {
                 background: linear-gradient(135deg, rgba(38, 38, 42, 0.92) 0%, rgba(22, 22, 26, 0.92) 100%);
             }
+        }
+
+        /* ============================================================
+           2026-06-24 — GLASS HONESTY OVERRIDE (authoritative final word)
+           The stylesheet accreted several overlapping "site-wide glass"
+           blocks that put backdrop-filter on cards/badges/pills sitting over
+           SOLID section backgrounds. There the blur frosts nothing AND trips
+           the iOS Safari bug that drops backdrop-filter on any element with a
+           transform (every one of these also gets a reveal/hover transform) —
+           so on iPhone they rendered as flat, muddy translucent chips, never
+           Apple glass. This block is the single source of truth: it strips
+           the fake glass everywhere and gives each solid-context surface an
+           honest opaque fill. REAL frosted glass is intentionally NOT listed
+           here — it remains only on the elements that overlay genuinely moving
+           texture: .hero-sub, .hero-meta, the fixed nav, the .pinned-showcase
+           pills, and the modal scrims. All these card sections are dark
+           (#000–#0a0a0c); the two light sections (apps/about) are handled
+           with their own light surfaces above.
+           ============================================================ */
+        .stat,
+        .hub-tile,
+        .pillar-card,
+        .soc-block,
+        .traj-card,
+        .omm-quote-block,
+        .surgical-hub-panel,
+        .identity-card,
+        .award-tile,
+        .curriculum-card,
+        .zero-card,
+        .population-card,
+        .bento-card,
+        .research-card,
+        .research-item,
+        .research-card-video,
+        .frame-card {
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+        /* Kill fake glass on labels/pills/badges over solid backgrounds — they
+           keep their own fills, just lose the no-op blur + iOS layer promotion. */
+        .section-eyebrow,
+        .zero-eyebrow,
+        .surgical-hub-eyebrow,
+        .sub-eyebrow,
+        .research-badge,
+        .hub-badge,
+        .meta-label,
+        .tech-pill,
+        .platform-pill {
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+        }
+        /* Apps section is light: app-card-v2 stays a solid white→violet card,
+           including on hover (override the dark hover from the shared blocks). */
+        .app-card-v2,
+        .app-card-v2:hover {
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            background: linear-gradient(135deg, #ffffff 0%, #f3f0fb 100%);
+            color: #0a0a0c;
+            border: 1px solid rgba(0, 0, 0, 0.07);
+        }
+        .app-card-v2:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #ece7fb 100%);
+            border-color: rgba(118, 91, 217, 0.30);
         }
     </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
