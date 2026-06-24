@@ -332,7 +332,13 @@
             transition: opacity 0.8s ease-out;
         }
         .hero-bg-stage.faded {
-            opacity: 0.18;
+            /* 2026-06-24 — was 0.18, which (composited under 0.86-alpha sections)
+               left the drawing mathematically invisible (~2.5%), so glass cards
+               frosted near-black. Raised to 0.5 so the persistent drawing is a
+               genuine visible presence that the now-lower-alpha sections let
+               bleed through — giving every glass card real texture to frost,
+               like the FOUNDATION/INNOVATION pills over the full-opacity video. */
+            opacity: 0.5;
         }
         .hero-bg-vignette {
             display: none; /* Removed entirely - let the animation colors shine */
@@ -745,7 +751,7 @@
             padding: clamp(80px, 10vw, 140px) 0;
             /* 2026-06-24 — translucent gradient so hero drawing shows through,
                creating texture for award-tile cards to frost with real glass. */
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.86) 0%, rgba(10, 10, 12, 0.88) 100%);
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.60) 0%, rgba(10, 10, 12, 0.64) 100%);
         }
         .awards-grid {
             display: grid;
@@ -1659,9 +1665,11 @@
 
         /* ========== About / Stats ========== */
         .about-section {
-            /* 2026-06-24 — translucent so hero drawing shows through, creating
-               subtle texture for glass elements to frost. */
-            background-color: rgba(255, 255, 255, 0.92);
+            /* 2026-06-24 — translucent so the dark hero line-art shows through
+               the white as a soft watermark (user: drawing must show on white
+               sections too). 0.82 keeps the canvas a clean near-white while the
+               drawing's strokes read as faint silver-grey behind the content. */
+            background-color: rgba(255, 255, 255, 0.82);
             color: var(--dark);
         }
 
@@ -2221,7 +2229,7 @@
             padding: clamp(60px, 8vw, 120px) 0;
             /* 2026-06-24 — translucent so hero drawing shows through (the radial
                gradient overlays in ::before still paint on top). */
-            background-color: rgba(0, 0, 0, 0.86);
+            background-color: rgba(0, 0, 0, 0.62);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -2536,7 +2544,7 @@
         /* ========== OMM Section ========== */
         .omm-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(0, 0, 0, 0.86);
+            background-color: rgba(0, 0, 0, 0.62);
             position: relative;
         }
 
@@ -3406,8 +3414,9 @@
 
         /* ========== Apps (Bento Layout, Apple-style) ========== */
         .apps-section {
-            /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(255, 255, 255, 0.92);
+            /* 2026-06-24 — translucent so dark hero line-art shows through the
+               white as a soft watermark (matches .about-section). */
+            background-color: rgba(255, 255, 255, 0.82);
             color: var(--dark);
         }
 
@@ -3643,8 +3652,10 @@
         /* ========== Research Section ========== */
         .research-section {
             /* 2026-06-24 — translucent so hero drawing shows through, creating
-               texture for research cards to frost with real glass. */
-            background-color: rgba(0, 0, 0, 0.86);
+               texture for research cards to frost with real glass. Alpha kept
+               low enough (0.62) that the persistent drawing reads through the
+               section AND into each glass card's backdrop sample. */
+            background-color: rgba(0, 0, 0, 0.62);
         }
 
         .aagl-accepted-banner {
@@ -6255,7 +6266,7 @@
            ============================================================ */
         .identity-map-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(0, 0, 0, 0.86);
+            background-color: rgba(0, 0, 0, 0.62);
             position: relative;
         }
         .identity-map-section::before {

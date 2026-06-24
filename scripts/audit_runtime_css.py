@@ -268,6 +268,12 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             continue
         bg = s.get("background") or ""
         bgimg = s.get("backgroundImage") or ""
+        # Accept alpha 0.50 - 0.92: dark glass sections sit at ~0.60-0.62 (low
+        # enough that the persistent hero drawing reads through AND into each
+        # glass card's backdrop sample), light sections at ~0.82. The window
+        # rejects fully-opaque (1.0, hides drawing) and too-transparent (<0.5,
+        # text unreadable).
+        LO, HI = 0.50, 0.92
         # Check background-color for translucent rgba
         m = re.match(r"rgba?\(([^)]+)\)", bg)
         translucent = False
@@ -276,13 +282,12 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             if len(parts) == 4:
                 try:
                     alpha = float(parts[3])
-                    # Accept alpha 0.80 - 0.96 (sections are 0.86-0.92)
-                    translucent = 0.80 <= alpha <= 0.96
+                    translucent = LO <= alpha <= HI
                 except ValueError:
                     pass
         # If background-color is transparent but there's a gradient, check the gradient
         if not translucent and "gradient" in bgimg:
-            # For gradients like linear-gradient(180deg, rgba(0,0,0,0.86) 0%, ...)
+            # For gradients like linear-gradient(180deg, rgba(0,0,0,0.60) 0%, ...)
             # just check if it contains rgba with alpha in range
             rgba_matches = re.findall(r"rgba?\(([^)]+)\)", bgimg)
             for rgba_str in rgba_matches:
@@ -290,7 +295,7 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                 if len(parts) == 4:
                     try:
                         alpha = float(parts[3])
-                        if 0.80 <= alpha <= 0.96:
+                        if LO <= alpha <= HI:
                             translucent = True
                             break
                     except ValueError:
