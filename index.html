@@ -8604,32 +8604,16 @@
                 // applies to it via the setTimeout backstop. Idempotent.
                 let heroPosterSwapped = false;
                 function swapHeroToPoster() {
-                    const live = document.getElementById('heroVideo');
-                    if (heroPosterSwapped || !live || live.tagName !== 'VIDEO') return;
-                    heroPosterSwapped = true;
-                    const fallback = document.createElement('img');
-                    fallback.className = live.className;
-                    fallback.id = live.id;
-                    fallback.alt = '';
-                    fallback.decoding = 'async';
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
-                    if (live.parentNode) live.parentNode.replaceChild(fallback, live);
+                    // DISABLED - don't swap to poster, let video retry on interaction
+                    return;
                 }
                 const playPromise = heroVideo.play();
+                // If play() fails, recoverPausedVideos will retry on first user tap/scroll
                 if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(swapHeroToPoster);
+                    playPromise.catch(() => {
+                        console.log('Hero autoplay blocked, will retry on user interaction');
+                    });
                 }
-                // LOW POWER MODE resilience: iOS may NOT reject play() yet still
-                // refuse to advance the video (it sits paused at frame 1). The
-                // catch above never fires in that case, so verify ~900ms later:
-                // if the hero is still stuck near the start, swap to the poster
-                // so the user never sees a frozen black box.
-                setTimeout(() => {
-                    const live = document.getElementById('heroVideo');
-                    if (live && live.tagName === 'VIDEO' && live.paused && live.currentTime < 0.3) {
-                        swapHeroToPoster();
-                    }
-                }, 900);
             }
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the
