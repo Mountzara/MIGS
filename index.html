@@ -760,64 +760,31 @@
         }
         .award-tile {
             position: relative;
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.09) 0%,
-                rgba(255,255,255,0.02) 55%,
-                rgba(255,255,255,0.05) 100%);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.13);
+            /* 2026-06-25 — Apple frosted glass recipe (solid fill, saturate BEFORE blur) */
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 20px;
             padding: 28px;
             box-shadow:
-                0 1px 0 rgba(255,255,255,0.12) inset,
-                0 -1px 0 rgba(255,255,255,0.04) inset,
-                0 16px 40px -16px rgba(0,0,0,0.55),
-                0 6px 16px -6px rgba(0,0,0,0.35);
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 12px 32px -16px rgba(0, 0, 0, 0.65);
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
                         border-color 0.4s ease,
-                        box-shadow 0.4s ease,
-                        background 0.4s ease;
+                        box-shadow 0.4s ease;
             overflow: hidden;
         }
-        .award-tile::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 5%;
-            right: 5%;
-            height: 1px;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                rgba(255,255,255,0.55) 50%,
-                transparent 100%);
-        }
-        .award-tile::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            background: radial-gradient(ellipse 80% 50% at 50% 0%,
-                rgba(255,255,255,0.08) 0%,
-                transparent 70%);
-            pointer-events: none;
-            opacity: 0.6;
-            transition: opacity 0.4s ease;
-        }
+        /* Remove decorative pseudo-elements — clean Apple glass has the inset
+           highlight in box-shadow only, no extra ::before / ::after overlays */
         .award-tile:hover {
             transform: translateY(-5px) scale(1.005);
-            border-color: rgba(255,255,255,0.22);
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.13) 0%,
-                rgba(255,255,255,0.04) 55%,
-                rgba(255,255,255,0.08) 100%);
+            border-color: rgba(var(--glow-purple), 0.55);
             box-shadow:
-                0 1px 0 rgba(255,255,255,0.20) inset,
-                0 -1px 0 rgba(255,255,255,0.06) inset,
-                0 28px 60px -16px rgba(0,0,0,0.65),
-                0 10px 24px -8px rgba(255,215,0,0.10);
+                inset 0 1px 0 rgba(255, 255, 255, 0.10),
+                0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45),
+                0 0 0 1px rgba(var(--glow-purple), 0.22);
         }
-        .award-tile:hover::after { opacity: 1; }
         .award-year {
             font-size: 12px;
             font-weight: 700;
@@ -3627,7 +3594,15 @@
             font-weight: 500;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            opacity: 0.7;
+            /* 2026-06-25 — Apple frosted glass badge matching the video thumbnails */
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.85);
         }
 
         .app-icon-large {
@@ -3647,7 +3622,15 @@
             color: var(--accent);
             letter-spacing: 0.02em;
             margin-bottom: 10px;
-            display: block;
+            /* 2026-06-25 — Apple frosted glass pill matching the video thumbnails */
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
         }
 
         .app-card-v2 h3 {
@@ -6769,10 +6752,10 @@
            just muddies text legibility. These keep their own fills but get
            backdrop-filter: none to avoid iOS layer promotion.
 
-           2026-06-25 — Removed .surgical-hub-eyebrow and .zero-eyebrow from
-           this list; those now use the pill glass verbatim per user request.
+           2026-06-25 — Removed .surgical-hub-eyebrow, .zero-eyebrow, and
+           .section-eyebrow from this list; those now use the pill glass
+           verbatim per user request.
            ============================================================ */
-        .section-eyebrow,
         .sub-eyebrow,
         .research-badge,
         .hub-badge,
