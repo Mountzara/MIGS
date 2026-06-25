@@ -568,24 +568,15 @@
         .hero-sub {
             position: relative;
             display: inline-block;
-            /* 2026-06-25 — fill bumped 0.08 → 0.13. The pill's 0.08 only reads
-               as glass because it's small and always sits over a bright drawing
-               line. This large card spans the drawing's BLACK GAPS, where 0.08
-               white is invisible and looks like a flat dark panel. A slightly
-               heavier milky fill gives it a frosted-glass MATERIAL that reads as
-               glass even over the dark gaps, while staying translucent enough to
-               show the line-art where it passes behind. Same backdrop-filter as
-               the pill — only the material body is heavier for the larger area. */
-            background: rgba(255, 255, 255, 0.13);
+            /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
+               blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
+               made it look opaque/heavy instead of glassy. */
+            background: rgba(255, 255, 255, 0.08);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             backdrop-filter: saturate(180%) blur(20px);
-            /* Match the pill's border alpha (0.12, not 0.28) */
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             padding: 16px 24px;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                0 16px 46px -16px rgba(0, 0, 0, 0.65);
         }
         .hero-content-delayed > * {
             opacity: 0;
@@ -1216,25 +1207,15 @@
             max-width: 980px;
             margin-left: auto;
             margin-right: auto;
-            /* 2026-06-25 — fill 0.13 (not the pill's 0.08): large panel over the
-               drawing's black gaps needs more material body to read as glass. */
-            background: rgba(255, 255, 255, 0.13);
+            /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
+               blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
+               made it look opaque/heavy instead of glassy. */
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 18px;
             overflow: hidden;
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            /* 2026-06-25 — CRITICAL iOS glass fix. The old
-               `animation: fadeUp ... both` left a residual transform matrix
-               (animation-fill-mode:both holds the `to` keyframe's translateY(0)),
-               and WebKit/iOS DROPS backdrop-filter on any transformed element —
-               so this credential strip's glass was silently dead on iPhone.
-               Removed the animation + opacity:0; this strip now reveals through
-               the parent .hero-content-delayed opacity system and is forced to
-               transform:none below (same proven fix as .hero-sub). */
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                0 12px 32px -16px rgba(0, 0, 0, 0.65);
         }
 
         @media (max-width: 720px) {
