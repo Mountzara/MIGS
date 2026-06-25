@@ -6890,6 +6890,7 @@
                playsinline
                webkit-playsinline
                preload="auto"
+               loop="false"
                aria-label=""
                disablepictureinpicture
                disableremoteplayback
@@ -8572,6 +8573,7 @@
                 heroVideo.muted = true;
                 heroVideo.defaultMuted = true;
                 heroVideo.playsInline = true;
+                heroVideo.loop = false;
                 heroVideo.setAttribute('webkit-playsinline', 'true');
                 // 2026-05-27 — REWIND TO FRAME 1 before play(). Even with
                 // the autoplay attribute removed, some browsers may have
@@ -8636,6 +8638,13 @@
             // overlay appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
+                // 2026-06-25 — Reveal hero title synchronized with subtitle so
+                // ALL text appears together "literally the millisecond before
+                // the animation ends" (user request). Title word-reveal has
+                // ~8 words × 50ms stagger, so last word finishes ~1450ms after
+                // .in is added. This delay ensures title finishes at 8042ms.
+                const titleEl = document.querySelector('.hero-title');
+                if (titleEl) titleEl.classList.add('in');
                 // 2026-06-25 — iOS hero-glass kick. On iPhone, backdrop-filter
                 // frequently does NOT activate until a scroll/repaint occurs.
                 // The scrolled-to cards (and the pinned pill) get that repaint
@@ -10245,8 +10254,7 @@
             // them as soon as they're genuinely on screen.
             }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
             reveals.forEach(el => revealObs.observe(el));
-            // Reveal hero title immediately on load (it's already in view)
-            if (heroTitle) requestAnimationFrame(() => heroTitle.classList.add('in'));
+            // DON'T reveal hero title immediately — delay it to sync with subtitle
             // FLING-PROOF SAFETY NET — nothing must ever stay invisible.
             // IntersectionObserver can MISS elements during a fast scroll: an
             // element flung past between the observer's sample frames never
