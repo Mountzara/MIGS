@@ -8532,15 +8532,13 @@
         // 2026-06-25 — Hero text must "come together literally the millisecond
         // before the drawing animation ends" (user). So instead of appearing at
         // 55% and sitting fully-formed for ~2.2s while the line-art keeps
-        // drawing, the cascade is END-ANCHORED: it starts late enough that its
-        // SLOWEST child lands ~1ms before the animation completes, so the text
-        // resolves into place exactly as the final stroke is drawn.
-        //   cascade span = max stagger (nth-child 4 = .hero-meta, 420ms)
-        //                + transition duration (1000ms) = 1420ms.
-        //   start = animation end − span − 1ms.
-        const HERO_REVEAL_SPAN_MS = 420 + 1000; // max stagger + transition
-        const HERO_TEXT_DELAY_MS = Math.max(
-            0, ANIMATION_DURATION_MS - HERO_REVEAL_SPAN_MS - 1);
+        // 2026-06-25 — FIXED START TIMING: text begins 2.5s into the animation
+        // even if the drawing is still going, so the reader isn't staring at a
+        // blank screen for 6+ seconds. The cascade span is unchanged (1420ms
+        // from stagger + transition), but instead of being end-anchored to the
+        // 8042ms animation finish, it starts early and plays over the drawing.
+        const HERO_REVEAL_SPAN_MS = 420 + 1000; // max stagger + transition (kept for clarity)
+        const HERO_TEXT_DELAY_MS = 2500; // Start text 2.5s in, even if drawing still going
 
         // iOS backdrop-filter activation kick for the hero glass. See the call
         // site in startHeroSequence() for the full rationale. Forces WebKit/iOS
@@ -10666,6 +10664,7 @@
 
             let busy = false;        // animating or in post-animation cooldown
             let wasInZone = false;   // were we in the zone on the previous gesture?
+            let lastWheelT = 0;      // timestamp of last wheel event that triggered a snap
 
             // settleEl: when the target is a FRAME, its element — so that if the
             // viewport height changes mid-flight (iOS URL-bar collapse shifts every
@@ -10726,6 +10725,11 @@
                 if (!inZone(stops, y)) { wasInZone = false; return; }   // native scroll outside the zone
                 e.preventDefault();                                     // hold control + block flick accumulation
                 if (busy) return;
+                // Debounce: a heavy flick fires multiple wheel events in ~10-30ms; treat
+                // them as one gesture to prevent skipping two frames in a single stroke.
+                const now = performance.now();
+                if (now - lastWheelT < 150) return;                     // cluster rapid events
+                lastWheelT = now;
                 if (Math.abs(e.deltaY) < 1) { wasInZone = true; return; }
                 const dir = e.deltaY > 0 ? 1 : -1;
                 const target = chooseTarget(stops, y, dir);
