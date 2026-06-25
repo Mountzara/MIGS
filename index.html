@@ -8474,9 +8474,18 @@
             return Promise.resolve();
         }
 
-        // Hero text appears past the midpoint of the WebP animation so the
-        // visual sequence has clear identity before the overlay arrives.
-        const HERO_TEXT_DELAY_MS = Math.floor(ANIMATION_DURATION_MS * 0.55);
+        // 2026-06-25 — Hero text must "come together literally the millisecond
+        // before the drawing animation ends" (user). So instead of appearing at
+        // 55% and sitting fully-formed for ~2.2s while the line-art keeps
+        // drawing, the cascade is END-ANCHORED: it starts late enough that its
+        // SLOWEST child lands ~1ms before the animation completes, so the text
+        // resolves into place exactly as the final stroke is drawn.
+        //   cascade span = max stagger (nth-child 4 = .hero-meta, 420ms)
+        //                + transition duration (1000ms) = 1420ms.
+        //   start = animation end − span − 1ms.
+        const HERO_REVEAL_SPAN_MS = 420 + 1000; // max stagger + transition
+        const HERO_TEXT_DELAY_MS = Math.max(
+            0, ANIMATION_DURATION_MS - HERO_REVEAL_SPAN_MS - 1);
 
         // iOS backdrop-filter activation kick for the hero glass. See the call
         // site in startHeroSequence() for the full rationale. Forces WebKit/iOS
