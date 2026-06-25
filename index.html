@@ -736,7 +736,11 @@
 
         /* ========== Awards & Recognition Section ========== */
         .awards-section {
-            padding: clamp(80px, 10vw, 140px) 0;
+            /* 2026-06-25 — horizontal padding restored to the canonical section
+               inset clamp(20px,4vw,28px). Was `0`, which made award content sit
+               flush to the screen edge on mobile while about/omm/apps/research
+               were inset 20px — the inconsistent edge alignment. */
+            padding: clamp(80px, 10vw, 140px) clamp(20px, 4vw, 28px);
             /* 2026-06-24 — translucent gradient so hero drawing shows through,
                creating texture for award-tile cards to frost with real glass. */
             background: linear-gradient(180deg, rgba(0, 0, 0, 0.40) 0%, rgba(10, 10, 12, 0.45) 100%);
@@ -836,7 +840,7 @@
 
         /* ========== Contact Section ========== */
         .contact-section {
-            padding: clamp(100px, 12vw, 160px) 0;
+            padding: clamp(100px, 12vw, 160px) clamp(20px, 4vw, 28px);
             background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
             text-align: center;
         }
@@ -865,7 +869,7 @@
 
         /* ========== Education / Training Section ========== */
         .education-section {
-            padding: clamp(80px, 10vw, 140px) 0;
+            padding: clamp(80px, 10vw, 140px) clamp(20px, 4vw, 28px);
             background: linear-gradient(180deg, #000000 0%, #0a0a0c 100%);
         }
         .education-section .section-headline {
@@ -874,7 +878,7 @@
 
         /* ========== Curriculum Design Section ========== */
         .curriculum-section {
-            padding: clamp(80px, 10vw, 140px) 0;
+            padding: clamp(80px, 10vw, 140px) clamp(20px, 4vw, 28px);
             background: linear-gradient(180deg, #0a0a0c 0%, #000000 100%);
         }
         .curriculum-grid {
@@ -1464,7 +1468,7 @@
 
         /* ========== Surgical Focus — animated interactive cards ========== */
         .surgical-focus-section {
-            padding: clamp(80px, 10vw, 140px) 0 clamp(80px, 10vw, 140px);
+            padding: clamp(80px, 10vw, 140px) clamp(20px, 4vw, 28px) clamp(80px, 10vw, 140px);
             background:
                 radial-gradient(ellipse 70% 80% at 50% 0%, rgba(109, 40, 217, 0.04), transparent 70%),
                 #0a0a0c;
@@ -2223,7 +2227,7 @@
            continue to apply because the markup re-uses those classes.
            ========================================================== */
         .surgical-unified-section {
-            padding: clamp(60px, 8vw, 120px) 0;
+            padding: clamp(60px, 8vw, 120px) clamp(20px, 4vw, 28px);
             /* 2026-06-24 — translucent so hero drawing shows through (the radial
                gradient overlays in ::before still paint on top). */
             background-color: rgba(0, 0, 0, 0.45);
@@ -2238,7 +2242,14 @@
                 radial-gradient(ellipse 50% 35% at 85% 100%, rgba(109, 40, 217, 0.08), transparent 60%);
             pointer-events: none;
         }
-        .surgical-unified-section .container-wide { position: relative; }
+        .surgical-unified-section .container-wide {
+            position: relative;
+            /* 2026-06-25 — align to the canonical 1140 content column (like
+               .container) so this section's header + grid share the same left
+               edge as every other content section (150px desktop / 20px mobile).
+               Was 1400 (container-wide), which left it offset from the rest. */
+            max-width: 1140px;
+        }
 
         /* 2026-06-25 — Match the pill glass verbatim. */
         .surgical-hub-eyebrow {
@@ -6301,6 +6312,9 @@
         .identity-map-section .container-wide {
             position: relative;
             z-index: 1;
+            /* 2026-06-25 — align to canonical 1140 content column (see surgical
+               section note) so header + cards share the site-wide left edge. */
+            max-width: 1140px;
         }
         .identity-map-track {
             display: grid;
@@ -6653,13 +6667,13 @@
             .awards-section,
             .education-section,
             .curriculum-section {
-                padding: clamp(40px, 8vw, 72px) 0;
+                padding: clamp(40px, 8vw, 72px) clamp(20px, 4vw, 28px);
             }
             .surgical-unified-section {
-                padding: clamp(36px, 7vw, 56px) 0;
+                padding: clamp(36px, 7vw, 56px) clamp(20px, 4vw, 28px);
             }
             .surgical-focus-section {
-                padding: clamp(40px, 8vw, 72px) 0;
+                padding: clamp(40px, 8vw, 72px) clamp(20px, 4vw, 28px);
             }
             /* The omm/ai/apps/research sections inherit the legacy
                `main section { padding }` rule but also carry their
@@ -6970,9 +6984,9 @@
          ============================================================ -->
     <section id="identity-map" class="identity-map-section" aria-label="Choose your path">
         <div class="container-wide">
-            <span class="section-eyebrow center">Choose your path</span>
-            <h2 class="section-headline center">Five identities. One practice.</h2>
-            <p class="section-sub center">Surgeon · researcher · engineer · educator · osteopath. Swipe to choose where to start.</p>
+            <span class="section-eyebrow">Choose your path</span>
+            <h2 class="section-headline">Five identities. One practice.</h2>
+            <p class="section-sub">Surgeon · researcher · engineer · educator · osteopath. Swipe to choose where to start.</p>
 
             <div class="identity-map-track" role="tablist">
                 <a href="#surgical" class="identity-card" data-identity="surgical">
@@ -7029,9 +7043,9 @@
          unchanged so all 9 patient modals stay live). -->
     <section id="surgical" class="surgical-unified-section">
         <div class="container-wide">
-            <span class="section-eyebrow center">Surgical Practice</span>
-            <h2 class="section-headline gradient center">The full range of complex benign &amp; minimally invasive gynecology &mdash; trained, practiced, and reviewed without reservation.</h2>
-            <p class="section-sub center">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area &mdash; across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
+            <span class="section-eyebrow">Surgical Practice</span>
+            <h2 class="section-headline gradient">The full range of complex benign &amp; minimally invasive gynecology &mdash; trained, practiced, and reviewed without reservation.</h2>
+            <p class="section-sub">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area &mdash; across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
 
             <div class="excellence-quote">
                 <blockquote>I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology &mdash; without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level.</blockquote>
@@ -8100,7 +8114,7 @@
          at EVERY visit-type or modality change. Cards use the Apple-glass
          recipe inline so the shared style block needed no edits (this file's
          style block is brace-balance-sensitive; see SYSTEM_MAP.md). -->
-    <section id="how-you-visit" aria-label="How you see Dr. Mabini" style="padding: clamp(60px, 8vw, 110px) 0;">
+    <section id="how-you-visit" aria-label="How you see Dr. Mabini" style="padding: clamp(60px, 8vw, 110px) clamp(20px, 4vw, 28px);">
         <div class="container">
             <span class="section-eyebrow">In Person &amp; Telehealth</span>
             <h2 class="section-headline gradient">How you see Dr.&nbsp;Mabini.</h2>
