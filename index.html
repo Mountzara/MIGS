@@ -5168,8 +5168,17 @@
         }
 
         /* Hero parallax / scroll fade — no CSS transition (rAF drives values directly) */
+        /* 2026-06-25 — REMOVED `will-change: transform, opacity`. THIS is what made
+           the hero glass dead while the .frame-eyebrow pill stayed glassy. The pill's
+           parent (.pinned-frame) carries a transform too and reads as real glass —
+           the only difference was that .hero-inner ALSO had will-change, which pins it
+           as a permanently-promoted compositing layer. A backdrop-filter child then
+           samples that empty promoted layer instead of the FIXED drawing composited
+           underneath → flat panel, "not glass". Same root cause + same fix already
+           proven for [data-reveal].in above (`will-change: auto` so the layer isn't
+           pinned). The rAF parallax still works fine without the hint. */
         .hero-inner {
-            will-change: transform, opacity;
+            will-change: auto;
         }
         .monogram-stage {
             will-change: transform;
@@ -10259,7 +10268,6 @@
         // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
         const heroEl = document.querySelector('.hero');
         const heroInner = document.querySelector('.hero-inner');
-        const heroTitleEl = document.querySelector('.hero-title');
         const monogramStage = document.querySelector('.monogram-stage');
         const scrollBar = document.getElementById('scrollProgressBar');
         const ambient = document.getElementById('ambientGlow');
@@ -10318,20 +10326,15 @@
                 const t = Math.max(0, Math.min(1, (y - fadeStart) / (fadeEnd - fadeStart)));
                 const opacity = 1 - t;
                 heroInner.style.opacity = opacity.toFixed(3);
-                // 2026-06-25 — CRITICAL Apple-glass fix. Do NOT put a transform on
-                // .hero-inner. A transform on the PARENT of the glass cards makes it
-                // a "backdrop root" in Safari/iOS, so the backdrop-filter on
-                // .hero-sub / .hero-meta can no longer sample the FIXED drawing
-                // painted behind the hero — it frosts an empty layer and renders as
-                // a flat dark panel (the "this isn't glass" bug). This fired on the
-                // first scroll and never cleared (even translate3d(0,0,0) is a
-                // backdrop root), which is why the glass looked dead the moment the
-                // page moved. Apply the subtle parallax drift ONLY to the non-glass
-                // title + monogram; the glass cards stay anchored with a
-                // transform-free parent, so their frost samples the line-art at
-                // every scroll position.
+                // Subtle parallax: hero text drifts up slightly with scroll (slower than page)
+                // 2026-06-25 — use 2D translateY, NOT translate3d. translate3d/translateZ
+                // force a GPU compositing layer (the classic promotion hack), which makes
+                // the backdrop-filter children frost an empty promoted layer instead of the
+                // FIXED drawing → "not glass". A 2D translateY computes to matrix(1,0,0,1,..)
+                // exactly like the working .frame-eyebrow pill's parent, so the frost samples
+                // the line-art correctly. At y=0 this is matrix(1,0,0,1,0,0) — no promotion.
                 const ty = -y * 0.08;
-                if (heroTitleEl) heroTitleEl.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
+                heroInner.style.transform = `translateY(${ty.toFixed(1)}px)`;
                 if (monogramStage) {
                     const mScale = 1 - t * 0.04;
                     monogramStage.style.opacity = (1 - t).toFixed(3);
