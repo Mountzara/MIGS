@@ -303,7 +303,29 @@ awk '/<style>/{f=1} f{open+=gsub(/\{/,"{"); close_+=gsub(/\}/,"}")} \
      /<\/style>/{f=0; print "open=" open " close=" close_; exit}' index.html
 ```
 Must report equal open/close counts. As of 2026-05-26 commit `c0596b3`:
-**936 open / 936 close**.
+**936 open / 936 close**. As of 2026-06-25 (apps-section dark-glass +
+footer/AAGL-banner glass + hero-parallax fix): **968 open / 968 close**.
+
+**2026-06-25 — Apps section converted from LIGHT to DARK glass.**
+`.apps-section` background was `rgba(255,255,255,0.60)` (light); it is now
+`rgba(0,0,0,0.45)` (dark, matching `.research-section`) so the fixed hero
+line-art shows boldly behind the app cards. `.app-card-v2` is no longer a
+solid white card — it is REAL frosted glass (added to the site-wide glass
+selector list alongside `.research-card`), with light text (h3 `--white`,
+p `--gray-4`, `.app-tag` `#c4b5fd`). The old opaque
+`linear-gradient(#ffffff→#f3f0fb)` + `backdrop-filter:none` override was
+REMOVED. **DO NOT revert the apps section to a light/white background or
+re-add an opaque fill to `.app-card-v2` — that recreates the "permanent
+frost, not Apple glass" bug the user repeatedly reported.** Same change
+gave `.aagl-accepted-banner` (was solid `#16161c`) and `footer` (was solid
+`#000`) real backdrop-filter glass.
+
+**2026-06-25 — Hero parallax must emit `transform: none` at rest.**
+In `tick()`, `.hero-inner` now sets `transform: none` when the parallax
+offset ≈ 0 (instead of `translateY(0px)`, which computes to an identity
+matrix). An identity-matrix transform STILL makes `.hero-inner` a backdrop
+root on iOS Safari and flattens the `.hero-sub` / `.hero-meta` glass on
+load. Do not "simplify" this back to an unconditional `translateY()`.
 
 ---
 

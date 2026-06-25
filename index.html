@@ -3421,21 +3421,23 @@
 
         /* ========== Apps (Bento Layout, Apple-style) ========== */
         .apps-section {
-            /* 2026-06-25 — opacity lowered 0.82 → 0.60 so the fixed hero
-               line-art reads prominently through the white (matches
-               .about-section), giving the app cards real glass texture. */
-            background-color: rgba(255, 255, 255, 0.60);
-            color: var(--dark);
+            /* 2026-06-25 — DARK translucent (was light 0.60 white). A white
+               section washed the glass out ("white on white"); the app cards
+               could never read as the dark frosted video-thumbnails the user
+               wants. Now matches .research-section (rgba(0,0,0,0.45)) so the
+               vivid fixed line-art shows boldly behind the now-glass cards. */
+            background-color: rgba(0, 0, 0, 0.45);
+            color: var(--white);
         }
 
         .apps-section .section-headline {
-            color: var(--dark);
+            color: var(--white);
             background: none;
-            -webkit-text-fill-color: var(--dark);
+            -webkit-text-fill-color: var(--white);
         }
 
         .apps-section .section-sub {
-            color: var(--gray-1);
+            color: var(--gray-3);
         }
 
         /* Shared architecture callout — appears under the section intro.
@@ -3488,14 +3490,14 @@
         .apps-arch-item strong {
             font-size: 13.5px;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--white);
             letter-spacing: -0.005em;
             line-height: 1.3;
         }
         .apps-arch-item span {
             font-size: 13px;
             line-height: 1.5;
-            color: var(--gray-1);
+            color: var(--gray-3);
         }
 
         .apps-bento {
@@ -3533,26 +3535,41 @@
         }
 
         .app-card-v2 {
-            background: var(--white);
+            /* 2026-06-25 — REAL Apple frosted glass (was solid var(--white)).
+               The card now frosts the fixed line-art drawing showing through the
+               dark apps section, exactly like the .research-card video thumbnails
+               the user points at. Text flipped to light below. */
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 12px 32px -16px rgba(0, 0, 0, 0.65);
             border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             min-height: 380px;
             position: relative;
-            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.45s ease;
             cursor: pointer;
         }
 
         .app-card-v2:hover {
             transform: translateY(-6px);
-            box-shadow: 0 28px 56px -16px rgba(0, 0, 0, 0.18);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.10),
+                0 28px 56px -16px rgba(0, 0, 0, 0.55);
         }
 
         .app-visual {
             flex: 1;
             min-height: 200px;
-            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            /* 2026-06-25 — dark visual header (was light #f5f5f7→#e8e8ed) to sit
+               on the dark glass card. The colored .warm/.accent/.violet/.purple/
+               .dark variants below still override per-card. */
+            background: linear-gradient(135deg, #2c2c2e 0%, #1d1d1f 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3619,7 +3636,8 @@
         .app-tag {
             font-size: 12px;
             font-weight: 500;
-            color: var(--accent);
+            /* Lighter violet for contrast on the dark glass card */
+            color: #c4b5fd;
             letter-spacing: 0.02em;
             margin-bottom: 10px;
             /* 2026-06-25 — Apple frosted glass pill matching the video thumbnails */
@@ -3639,13 +3657,13 @@
             letter-spacing: -0.018em;
             line-height: 1.2;
             margin-bottom: 8px;
-            color: var(--dark);
+            color: var(--white);
         }
 
         .app-card-v2 p {
             font-size: 14px;
             line-height: 1.5;
-            color: var(--gray-2);
+            color: var(--gray-4);
             letter-spacing: -0.003em;
         }
 
@@ -3688,10 +3706,17 @@
         .aagl-accepted-banner {
             margin-top: 40px;
             padding: 28px clamp(24px, 4vw, 48px);
+            /* 2026-06-25 — REAL Apple frosted glass (was solid #16161c, which
+               read as a flat "permanent frost" panel). The translucent fill +
+               backdrop blur frosts the fixed line-art showing through the dark
+               research section; the purple radial just tints the glass. */
             background:
-                radial-gradient(ellipse at center, rgba(109, 40, 217, 0.14) 0%, transparent 70%),
-                #16161c;
-            border: 1px solid rgba(109, 40, 217, 0.22);
+                radial-gradient(ellipse at center, rgba(109, 40, 217, 0.16) 0%, transparent 70%),
+                rgba(255, 255, 255, 0.08);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(109, 40, 217, 0.30);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -4284,10 +4309,16 @@
         }
         /* ========== Footer ========== */
         footer {
-            background: var(--bg);
+            /* 2026-06-25 — Apple frosted glass (was solid var(--bg) #000). The
+               fixed line-art drawing is still present behind the footer, so a
+               dark translucent fill + backdrop blur frosts it into real glass to
+               match the rest of the page. */
+            background: rgba(0, 0, 0, 0.30);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             color: var(--gray-3);
             padding: 48px 22px 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
             font-size: 12px;
         }
 
@@ -4367,7 +4398,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.04em;
-            color: var(--accent);
+            color: #c4b5fd;
             opacity: 0.75;
             transition: opacity 220ms ease, transform 220ms ease;
         }
@@ -6221,6 +6252,7 @@
         .population-card,
         .evidence-card,
         .bento-card,
+        .app-card-v2,
         .research-card,
         .research-item,
         .research-card-video {
@@ -6233,15 +6265,11 @@
                 0 12px 32px -16px rgba(0, 0, 0, 0.65);
         }
 
-        /* The apps section is light; its cards are an honest solid white→violet
-           gradient. No backdrop-filter: it would frost nothing on a light solid
-           background and would trip the iOS transform-drop. */
-        .app-card-v2 {
-            background: linear-gradient(135deg, #ffffff 0%, #f3f0fb 100%);
-            color: #0a0a0c;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
+        /* 2026-06-25 — Apps section is now DARK and its cards are REAL frosted
+           glass (see .app-card-v2 base rule). The old opaque white→violet
+           override that lived here was removed: it covered the fixed drawing so
+           the cards (and the .app-tag / .app-visual-label pills inside them)
+           frosted a flat color and never read as Apple glass. */
 
         /* Deep-purple hover glow — replaces every blue hover/focus accent on cards */
         .award-tile:hover,
@@ -6263,11 +6291,15 @@
                 0 0 0 1px rgba(var(--glow-purple), 0.22);
         }
 
-        /* Hover-state translucent overlays inside cards — purple-tinted */
+        /* Hover-state translucent overlays inside cards — purple-tinted.
+           .app-card-v2 included so its hover stays TRANSLUCENT glass (the
+           site-wide Block-A hover would otherwise repaint it near-opaque and
+           kill the frost). backdrop-filter persists from the glass rule above. */
         .award-tile:hover,
         .curriculum-card:hover,
         .surgical-card:hover,
         .evidence-card:hover,
+        .app-card-v2:hover,
         .research-card:hover,
         .research-item:hover {
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.08) 0%, rgba(var(--glow-purple), 0.02) 100%);
@@ -10365,11 +10397,17 @@
                 // 2026-06-25 — use 2D translateY, NOT translate3d. translate3d/translateZ
                 // force a GPU compositing layer (the classic promotion hack), which makes
                 // the backdrop-filter children frost an empty promoted layer instead of the
-                // FIXED drawing → "not glass". A 2D translateY computes to matrix(1,0,0,1,..)
-                // exactly like the working .frame-eyebrow pill's parent, so the frost samples
-                // the line-art correctly. At y=0 this is matrix(1,0,0,1,0,0) — no promotion.
+                // FIXED drawing → "not glass".
+                // CRITICAL: at the top (ty≈0) emit literal `none`, NOT translateY(0px).
+                // translateY(0) computes to matrix(1,0,0,1,0,0) — an IDENTITY MATRIX, which
+                // iOS Safari STILL treats as a backdrop root and which flattens the
+                // .hero-sub / .hero-meta backdrop-filter to a dead flat fill. (This is the
+                // exact reason [data-reveal].in settles to `transform: none` rather than an
+                // identity transform.) Only promote the layer once the user actually scrolls.
                 const ty = -y * 0.08;
-                heroInner.style.transform = `translateY(${ty.toFixed(1)}px)`;
+                heroInner.style.transform = (Math.abs(ty) < 0.05)
+                    ? 'none'
+                    : `translateY(${ty.toFixed(1)}px)`;
                 if (monogramStage) {
                     const mScale = 1 - t * 0.04;
                     monogramStage.style.opacity = (1 - t).toFixed(3);
