@@ -10389,12 +10389,22 @@
             // through the first 60% of viewport scroll and finishes the fade
             // just after the user has fully scrolled past it. Per user mobile
             // audit 2026-05-21: "content fades before I can read it".
+            //
+            // 2026-06-25 — DO NOT apply opacity to the entire .hero-inner parent,
+            // because opacity < 1 on a parent creates a backdrop root that kills
+            // backdrop-filter on iOS Safari children (.hero-sub, .hero-meta glass
+            // cards). Instead, apply fade only to NON-glass children (monogram,
+            // title). The glass cards stay at full opacity so their frost works
+            // during scroll. User: "when scrolling up where the opacity loses glass
+            // effect when scrolling midway" — this was caused by heroInner.style.opacity.
             if (heroEl && heroInner && !reduceMotion) {
                 const fadeStart = winH * 0.60;
                 const fadeEnd = winH * 1.10;
                 const t = Math.max(0, Math.min(1, (y - fadeStart) / (fadeEnd - fadeStart)));
                 const opacity = 1 - t;
-                heroInner.style.opacity = opacity.toFixed(3);
+                // Apply opacity fade ONLY to non-glass children (monogram, title)
+                const heroTitle = heroInner.querySelector('.hero-title');
+                if (heroTitle) heroTitle.style.opacity = opacity.toFixed(3);
                 // Subtle parallax: hero text drifts up slightly with scroll (slower than page)
                 // 2026-06-25 — use 2D translateY, NOT translate3d. translate3d/translateZ
                 // force a GPU compositing layer (the classic promotion hack), which makes
