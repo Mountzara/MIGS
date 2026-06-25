@@ -343,28 +343,29 @@
         }
         .hero-video {
             position: absolute;
-            /* 2026-06-24 — span diagonally bottom-left to top-right so the drawing
-               fills the entire viewport without cropping. Anchor bottom-left and
-               scale from that origin to expand toward top-right. */
-            bottom: 0;
-            left: 0;
-            /* Make it large enough to cover the diagonal */
-            width: 141.4vh;  /* sqrt(2) × 100vh to span the diagonal of a square viewport */
-            height: 141.4vh;
+            /* 2026-06-24 — DIAGONAL fill. The drawing is a 16:9 single-line
+               anatomical illustration (mostly black with mauve line-art). To run
+               it bottom-left → top-right and fill the page WITHOUT distorting or
+               cropping it to a fragment, we keep its true 16:9 box (object-fit:
+               contain = no squish, whole frame preserved), center it, then rotate
+               it onto the diagonal and scale it up so the line-art spans the page.
+               (The earlier square 141vh×141vh + cover squished the 16:9 video into
+               a square and cropped all but one swirl — that bug is gone.) */
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 56.25vw;            /* 16:9 of the width — true aspect, no squish */
             z-index: 1;
-            object-fit: cover;
+            object-fit: contain;        /* show the WHOLE drawing, never distort */
             opacity: 1;
             pointer-events: none;
-            transform-origin: bottom left;
-            /* 2026-06-13 — the line-art read as DULLED/gray, giving the frosted
-               glass nothing with contrast to frost. Push saturation + contrast +
-               brightness so the drawing is vivid: that vivid animation IS the
-               contrast that makes the body-copy glass card read as real glass. */
+            /* 2026-06-13 — push saturation/brightness/contrast so the mauve
+               line-art is vivid: that vivid drawing IS the contrast that lets the
+               frosted-glass cards read as real Apple glass. */
             filter: saturate(2.0) brightness(1.28) contrast(1.28);
-            /* Scaled up so the drawing's strokes are THICK and DENSE behind the
-               hero copy — the body-glass card needs substantial line-art behind
-               it to frost into real glass (like the pinned-frame pill does). */
-            transform: scale(1.0);
+            /* Diagonal: tilt the landscape composition up-to-the-right and scale
+               so the anatomy fills the viewport corner-to-corner. */
+            transform: translate(-50%, -50%) rotate(-22deg) scale(1.9);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
            (the giant "tap to play" button) when the hero <video> first
@@ -400,37 +401,35 @@
 
         @keyframes heroKenBurnsSlow {
             0% {
-                transform: scale(1.0);
+                transform: translate(-50%, -50%) rotate(-22deg) scale(1.9);
             }
             100% {
-                transform: scale(1.12);
+                transform: translate(-50%, -50%) rotate(-22deg) scale(2.05);
             }
         }
 
-        /* Mobile portrait: hero animation must fill edge-to-edge.
-           2026-05-21 — earlier scale(0.85→0.95) shrank the animation below the
-           viewport width on iPhone Pro Max, leaving ~30px black bands on each
-           side. New scale(1.0→1.10) puts the hero animation edge-to-edge with
-           a gentler Ken Burns than desktop (1.0→1.15) so the drawing doesn't
-           crop its extremities. Per user mobile audit 2026-05-21:
-           "animation is again not scaled to fit from end to end of screen". */
+        /* Mobile portrait: the diagonal needs MORE tilt + scale than desktop
+           because the viewport is tall & narrow. 2026-06-24 — keep the true 16:9
+           box (object-fit:contain, no squish) but tilt harder (-30deg) and scale
+           up (2.6) so the anatomical line-art runs bottom-left → top-right and
+           fills the tall screen without being cropped to a fragment. Verified on
+           real iPhone WebKit against the live render. */
         @media (max-width: 640px) and (orientation: portrait) {
-            /* 2026-06-24 — diagonal span on mobile too. On portrait phones, the
-               viewport is taller than wide, so we need a larger diagonal. */
             .hero-video {
-                width: 200vh;  /* Tall viewport needs larger diagonal coverage */
-                height: 200vh;
-                /* Still anchored bottom-left, spans diagonally */
+                width: 100vw;
+                height: 56.25vw;       /* true 16:9 — no distortion */
+                object-fit: contain;
+                transform: translate(-50%, -50%) rotate(-30deg) scale(2.6);
             }
             .hero-video.ken-burns {
                 animation: heroKenBurnsSlowMobile 45s ease-in-out infinite alternate;
             }
             @keyframes heroKenBurnsSlowMobile {
                 0% {
-                    transform: scale(1.0);
+                    transform: translate(-50%, -50%) rotate(-30deg) scale(2.6);
                 }
                 100% {
-                    transform: scale(1.12);
+                    transform: translate(-50%, -50%) rotate(-30deg) scale(2.78);
                 }
             }
             /* monogram size is handled responsively on the base rule
