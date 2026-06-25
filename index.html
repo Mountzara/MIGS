@@ -8590,14 +8590,6 @@
                         heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
                     }
                     heroVideo.pause();
-                    // 2026-06-25 — mark the hero as finished so the Low-Power-Mode
-                    // recovery handler (recoverPausedVideos) does NOT restart it.
-                    // Without this flag, the FIRST scroll/tap after the animation
-                    // settled called play() on the paused-at-end video; the spec
-                    // seeks a finished media element back to 0, replaying the
-                    // entire 8s drawing (user: "the animation keeps replaying
-                    // after it is done").
-                    heroVideo.dataset.heroEnded = '1';
                     // Start Ken Burns at the TRUE settle moment (the frame the
                     // drawing actually finished on), not on a fixed timer that
                     // can drift from the real video length. The setTimeout
@@ -8709,20 +8701,12 @@
         // scroll performance and never fights a deliberate user pause.
         function recoverPausedVideos() {
             document.querySelectorAll('video').forEach(v => {
-                const isHero = v.id === 'heroVideo';
-                const wantsAutoplay = v.autoplay || isHero ||
+                const wantsAutoplay = v.autoplay || v.id === 'heroVideo' ||
                                       v.classList.contains('video-preview');
-                if (!wantsAutoplay || !v.paused || v.tagName !== 'VIDEO') return;
-                // 2026-06-25 — NEVER restart the hero once it has played. Only
-                // kick it if it never got past frame 1 (the genuine Low-Power-
-                // Mode autoplay block this handler exists for). If it has ended
-                // (flagged in the 'ended' handler) or already advanced past the
-                // start, calling play() would seek a finished clip back to 0 and
-                // replay the whole 8s drawing on the first post-animation
-                // scroll/tap (user: "the animation keeps replaying").
-                if (isHero && (v.dataset.heroEnded === '1' || v.currentTime > 0.3)) return;
-                const p = v.play();
-                if (p && typeof p.catch === 'function') p.catch(() => {});
+                if (wantsAutoplay && v.paused && v.tagName === 'VIDEO') {
+                    const p = v.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                }
             });
         }
         ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(ev =>
