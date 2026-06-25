@@ -219,8 +219,9 @@ def audit_homepage(page) -> list[dict[str, Any]]:
 
     # Light-section cards: stay solid (no glass), because dark line-art through
     # translucent white doesn't create enough contrast for glass.
+    # 2026-06-25 — Removed .about-text-block; user wants glass on those cards.
     light_solid = page.evaluate("""() => {
-        const targets = ['.app-card-v2', '.about-text-block'];
+        const targets = ['.app-card-v2'];
         const out = [];
         for (const sel of targets) {
             const el = document.querySelector(sel);
