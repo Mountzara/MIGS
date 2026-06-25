@@ -8581,38 +8581,55 @@
                 // loader fades out — not somewhere in the middle.
                 try { heroVideo.pause(); } catch (e) {}
                 try { heroVideo.currentTime = 0; } catch (e) {}
-                // Pause on the final frame when the drawing animation
-                // completes, so Ken Burns can apply to a settled last
-                // frame (matching the original WebP single-shot behavior,
-                // not a perpetual restart of the drawing).
+                // Pause on the final frame when the drawing animation completes,
+                // so it settles like the original single-shot WebP instead of
+                // looping. Flag it finished so the interaction-recovery handler
+                // never restarts it (that restart was the "keeps replaying after
+                // it's done" bug).
                 heroVideo.addEventListener('ended', () => {
                     if (Number.isFinite(heroVideo.duration)) {
                         heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
                     }
                     heroVideo.pause();
+                    heroVideo.dataset.heroEnded = '1';
                     // Start Ken Burns at the TRUE settle moment (the frame the
                     // drawing actually finished on), not on a fixed timer that
-                    // can drift from the real video length. The setTimeout
-                    // below remains a backstop for the image-fallback path.
+                    // can drift from the real video length.
                     heroVideo.classList.add('ken-burns');
                 }, { once: true });
-                // Swap the hero <video> for a STATIC final-frame poster. Used
-                // both when play() rejects AND when Low Power Mode leaves play()
-                // un-rejected but the video stuck (see the stuck-check below).
-                // 2026-06-11 — fallback is a static last-frame webp (not the
-                // animated webp, which looped forever on phones). Ken Burns
-                // applies to it via the setTimeout backstop. Idempotent.
+                // 2026-06-25 — Static last-frame poster fallback ONLY on a
+                // genuine media load FAILURE — never on a blocked or slow
+                // autoplay. The previous code swapped to this poster whenever
+                // play() rejected OR the video had not advanced 0.3s within
+                // 900ms; on perfectly healthy browsers that fired on a slightly
+                // slow start and replaced the <video> with the COMPLETED drawing
+                // image, so the user saw the finished art with no animation
+                // ("the animation does not animate, it already appears"). A
+                // merely-blocked autoplay is instead recovered on first
+                // interaction by recoverPausedVideos, which leaves the video at
+                // frame 1 (not the final frame) until then. Only a real
+                // decode/network error warrants the static image.
                 let heroPosterSwapped = false;
                 function swapHeroToPoster() {
-                    // DISABLED - don't swap to poster, let video retry on interaction
-                    return;
+                    const live = document.getElementById('heroVideo');
+                    if (heroPosterSwapped || !live || live.tagName !== 'VIDEO') return;
+                    heroPosterSwapped = true;
+                    const fallback = document.createElement('img');
+                    fallback.className = live.className;
+                    fallback.id = live.id;
+                    fallback.alt = '';
+                    fallback.decoding = 'async';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+                    if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
+                // Fires only when ALL <source> candidates fail to load.
+                heroVideo.addEventListener('error', swapHeroToPoster);
+                // Kick off playback. A blocked autoplay leaves the video paused
+                // at frame 1; recoverPausedVideos retries it on the first
+                // tap/scroll. We deliberately do NOT swap to the poster here.
                 const playPromise = heroVideo.play();
-                // If play() fails, recoverPausedVideos will retry on first user tap/scroll
                 if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {
-                        console.log('Hero autoplay blocked, will retry on user interaction');
-                    });
+                    playPromise.catch(() => {});
                 }
             }
             // Cascade hero text in Apple-style — past the animation midpoint
@@ -8685,12 +8702,19 @@
         // scroll performance and never fights a deliberate user pause.
         function recoverPausedVideos() {
             document.querySelectorAll('video').forEach(v => {
-                const wantsAutoplay = v.autoplay || v.id === 'heroVideo' ||
+                const isHero = v.id === 'heroVideo';
+                const wantsAutoplay = v.autoplay || isHero ||
                                       v.classList.contains('video-preview');
-                if (wantsAutoplay && v.paused && v.tagName === 'VIDEO') {
-                    const p = v.play();
-                    if (p && typeof p.catch === 'function') p.catch(() => {});
-                }
+                if (!wantsAutoplay || !v.paused || v.tagName !== 'VIDEO') return;
+                // Never RESTART the hero once it has played: if it finished
+                // (flagged in the 'ended' handler) or already advanced past
+                // frame 1, calling play() on a finished clip seeks it back to 0
+                // and replays the whole 8s drawing on the first post-animation
+                // scroll/tap (user: "the animation keeps replaying"). Only kick
+                // it when it genuinely never started (autoplay was blocked).
+                if (isHero && (v.dataset.heroEnded === '1' || v.currentTime > 0.3)) return;
+                const p = v.play();
+                if (p && typeof p.catch === 'function') p.catch(() => {});
             });
         }
         ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(ev =>
