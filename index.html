@@ -5252,7 +5252,12 @@
             z-index: 2;
             /* No solid bg — lets the cinematic-intro video show through behind the frames */
             background: transparent;
-            padding: clamp(90px, 14vw, 170px) clamp(20px, 4vw, 28px);
+            /* 2026-06-25 — vertical padding removed; each .pinned-frame is now a
+               full-viewport "landing" (min-height:100svh) so the velocity-
+               independent scroll-snap controller can settle one frame per stroke
+               (see the scroll-snap controller JS near tick()). Horizontal padding
+               kept for gutters. */
+            padding: 0 clamp(20px, 4vw, 28px);
         }
         /* All other sections need explicit z-index + solid bg so they cover the
            fixed video backdrop after the user scrolls past the hero. */
@@ -5340,7 +5345,10 @@
             color: var(--white);
             display: flex;
             flex-direction: column;
-            gap: clamp(110px, 18vw, 220px);
+            /* gap:0 — separation now comes from each frame being a full
+               viewport tall, so the snap controller lands one component per
+               stroke with no half-visible neighbour. */
+            gap: 0;
         }
         /* Each frame is now a normal-flow block; opacity/transform entrance is
            driven entirely by the shared [data-reveal] system (see CSS at
@@ -5352,6 +5360,15 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            /* Full-viewport landing. svh (small viewport height) keeps it from
+               overflowing under the mobile URL bar; 100vh is the fallback for
+               engines without svh. The scroll-snap controller settles scrollY
+               on each frame's top, which — because the frame is exactly one
+               viewport tall — centres that single component on screen. */
+            min-height: 100vh;
+            min-height: 100svh;
+            box-sizing: border-box;
+            padding: clamp(56px, 9vh, 110px) 0;
         }
         .pinned-frame .frame-eyebrow {
             font-size: 12px;
@@ -5415,7 +5432,7 @@
         }
         @media (max-width: 720px) {
             .pinned-frame .frame-headline { font-size: clamp(32px, 8vw, 52px); }
-            .pinned-frames { gap: clamp(90px, 22vw, 140px); }
+            .pinned-frames { gap: 0; }
         }
 
         /* Respect prefers-reduced-motion */
@@ -6958,13 +6975,19 @@
     <section class="pinned-showcase" aria-label="Mission">
         <div class="pinned-stage">
             <div class="pinned-bg"></div>
+            <!-- 2026-06-25 — data-reveal removed from both frames: with the
+                 velocity-independent scroll-snap controller, the snap landing IS
+                 the entrance. A concurrent data-reveal slide/opacity transition
+                 would otherwise run on top of the 680ms snap scroll and read as
+                 jank (per adversarial review). The frames are simply present and
+                 the deliberate one-stroke snap delivers the motion. -->
             <div class="pinned-frames">
-                <div class="pinned-frame" data-reveal="up">
+                <div class="pinned-frame">
                     <span class="frame-eyebrow">The Foundation</span>
                     <h2 class="frame-headline">Whole-person care, not just a diagnosis.</h2>
                     <p class="frame-sub">Osteopathic Manipulative Treatment, anatomy-first reasoning, and a fellowship in OMM — built on the belief that structure and function inform every operation.</p>
                 </div>
-                <div class="pinned-frame" data-reveal="up">
+                <div class="pinned-frame">
                     <span class="frame-eyebrow">The Innovation</span>
                     <h2 class="frame-headline">Engineered for the working surgeon.</h2>
                     <p class="frame-sub">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
@@ -10544,6 +10567,229 @@
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
         tick();
+
+        // ============================================================
+        // Pinned-showcase scroll-snap controller (2026-06-25)
+        // ------------------------------------------------------------
+        // User request: the two mission frames ("The Foundation" /
+        // "The Innovation") should each take exactly ONE scroll/swipe
+        // stroke to land on — REGARDLESS OF VELOCITY. A hard flick must
+        // not blow past a frame; two strokes total traverse both.
+        //
+        // CSS scroll-snap alone can't do this: a fast flick still skips
+        // past mandatory snap points to a far one. So we hijack the
+        // gesture ONLY while the showcase is in view and animate scrollY
+        // to the adjacent frame, swallowing every other wheel/touch event
+        // of that same flick (busy-lock) — that is what makes it
+        // velocity-independent. Outside the zone, scrolling is 100% native.
+        //
+        // Snap stops (top-aligned; each frame is exactly one viewport tall
+        // so top-align == centred): [escape-up, Foundation, Innovation,
+        // escape-down]. The escape anchors (hero bottom / About top) let a
+        // stroke at either end RELEASE out of the zone instead of trapping
+        // the reader. Geometry is recomputed live per gesture, so resize /
+        // orientation / dynamic-URL-bar changes need no cache busting.
+        //
+        // Disabled under prefers-reduced-motion (plain native scroll), and
+        // a no-op if fewer than two frames exist. Coexists with tick() and
+        // the reveal system: our programmatic scroll fires real 'scroll'
+        // events, so parallax + data-reveal entrances run normally.
+        (function initPinnedSnap() {
+            if (reduceMotion) return;
+            const frames = pinnedFrames;
+            if (!frames || frames.length < 2) return;
+            const aboutEl = document.getElementById('about');
+
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            // Document-absolute LAYOUT top via the offsetParent chain — deliberately
+            // NOT getBoundingClientRect, which would bake any CSS transform on the
+            // frame (e.g. a reveal slide) into the rect and make the snap stop drift.
+            // offsetTop/offsetParent ignore transforms, so the stop is the frame's
+            // true resting layout position regardless of any entrance animation.
+            const absTop = (el) => { let t = 0; for (let n = el; n; n = n.offsetParent) t += n.offsetTop; return Math.round(t); };
+
+            const FRAME_LO = 1, FRAME_HI = frames.length; // inclusive frame-stop index range
+
+            // Ordered snap stops in document space: [hero-escape, ...frames, About-
+            // escape]. Returns null when the page is too short / frames aren't
+            // meaningfully separated, so the controller NEVER hijacks a degenerate
+            // layout (which would otherwise trap the reader behind preventDefault).
+            function snapStops() {
+                const wh = window.innerHeight;
+                const maxY = Math.max(0, (document.documentElement.scrollHeight || 0) - wh);
+                if (maxY < wh * 0.5) return null;                       // page barely scrolls — bail
+                const fy = frames.map(f => clamp(absTop(f), 0, maxY));
+                for (let i = 1; i < fy.length; i++) {                   // force strict monotonic stops
+                    if (fy[i] <= fy[i - 1]) fy[i] = fy[i - 1] + 1;
+                }
+                if (fy[fy.length - 1] - fy[0] < wh * 0.5) return null;  // frames collapsed together — bail
+                const above = clamp(fy[0] - wh, 0, maxY);
+                const below = clamp(aboutEl ? absTop(aboutEl) : (fy[fy.length - 1] + wh), 0, maxY);
+                return [above].concat(fy, [below]);
+            }
+            // In the active zone? From half a viewport before the first frame to
+            // half a viewport after the last. Bounds are INCLUSIVE so a gesture that
+            // lands exactly on a float/rounded boundary is still captured (never
+            // falls through to native scroll and "sticks").
+            function inZone(stops, y) {
+                if (!stops) return false;
+                const wh = window.innerHeight;
+                return y >= (stops[FRAME_LO] - wh * 0.5) && y <= (stops[FRAME_HI] + wh * 0.5);
+            }
+            // Nearest FRAME stop (indices 1..n only) — never an escape anchor, so
+            // "advance by one" can't accidentally treat the hero/About escape as the
+            // current position and double-step or stall.
+            function nearestFrameIndex(stops, y) {
+                let best = FRAME_LO, bd = Infinity;
+                for (let i = FRAME_LO; i <= FRAME_HI; i++) {
+                    const d = Math.abs(stops[i] - y);
+                    if (d < bd) { bd = d; best = i; }
+                }
+                return best;
+            }
+            // First gesture in the zone (arriving): a downward gesture lands on the
+            // first frame at/after y (→ Foundation from the hero); if already past
+            // the last frame, RELEASE down to About. Upward lands on the last frame
+            // at/before y (→ Innovation coming up from About); if already above the
+            // first frame, RELEASE up to the hero. This both guarantees "first stroke
+            // lands ON the component" and never snaps you backwards when you're
+            // trying to leave the zone at its edge.
+            function entryTarget(stops, y, dir) {
+                if (dir > 0) {
+                    for (let i = FRAME_LO; i <= FRAME_HI; i++) if (stops[i] >= y - 2) return i;
+                    return stops.length - 1;   // below every frame, heading down → About
+                } else {
+                    for (let i = FRAME_HI; i >= FRAME_LO; i--) if (stops[i] <= y + 2) return i;
+                    return 0;                  // above every frame, heading up → hero
+                }
+            }
+
+            let busy = false;        // animating or in post-animation cooldown
+            let wasInZone = false;   // were we in the zone on the previous gesture?
+
+            // settleEl: when the target is a FRAME, its element — so that if the
+            // viewport height changes mid-flight (iOS URL-bar collapse shifts every
+            // svh-sized box above the showcase, hence the frame's layout top), we
+            // land on its CURRENT position instead of a stale coordinate.
+            function animateTo(targetY, settleEl) {
+                const html = document.documentElement;
+                const startY = window.scrollY;
+                const maxY = Math.max(0, (html.scrollHeight || 0) - window.innerHeight);
+                targetY = clamp(targetY, 0, maxY);
+                const dist = targetY - startY;
+                busy = true;
+                // CRITICAL: the page sets `html { scroll-behavior: smooth }`, which
+                // would make EVERY per-rAF window.scrollTo() below animate on its
+                // own and fight our easing (motion stalls / overshoots). Neutralise
+                // it inline for the duration, then restore. Inline `auto` overrides
+                // the stylesheet's `smooth` across all engines, so each step is an
+                // instant jump and OUR cubic easing drives the motion.
+                const prevSB = html.style.scrollBehavior;
+                html.style.scrollBehavior = 'auto';
+                const settle = () => {
+                    if (settleEl) {  // re-land precisely in case geometry shifted mid-animation
+                        const m = Math.max(0, (html.scrollHeight || 0) - window.innerHeight);
+                        window.scrollTo(0, clamp(absTop(settleEl), 0, m));
+                    }
+                    html.style.scrollBehavior = prevSB;
+                };
+                if (Math.abs(dist) < 2) {           // already there — still hold the lock briefly
+                    settle();
+                    setTimeout(() => { busy = false; }, 200);
+                    return;
+                }
+                const dur = 680;
+                const t0 = performance.now();
+                const ease = p => (p < 0.5) ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+                (function step(now) {
+                    const p = Math.min(1, (now - t0) / dur);
+                    window.scrollTo(0, Math.round(startY + dist * ease(p)));
+                    if (p < 1) { requestAnimationFrame(step); }
+                    else { settle(); setTimeout(() => { busy = false; }, 240); } // cooldown absorbs flick inertia
+                })(t0);
+            }
+
+            function chooseTarget(stops, y, dir) {
+                if (!wasInZone) return entryTarget(stops, y, dir);
+                return clamp(nearestFrameIndex(stops, y) + dir, 0, stops.length - 1);
+            }
+            function snapTo(stops, target) {
+                const isFrame = target >= FRAME_LO && target <= FRAME_HI;
+                animateTo(stops[target], isFrame ? frames[target - FRAME_LO] : null);
+            }
+
+            // ---- Wheel (desktop mouse / trackpad) ----
+            window.addEventListener('wheel', (e) => {
+                if (reduceMotion) return;
+                const stops = snapStops();
+                const y = window.scrollY;
+                if (!inZone(stops, y)) { wasInZone = false; return; }   // native scroll outside the zone
+                e.preventDefault();                                     // hold control + block flick accumulation
+                if (busy) return;
+                if (Math.abs(e.deltaY) < 1) { wasInZone = true; return; }
+                const dir = e.deltaY > 0 ? 1 : -1;
+                const target = chooseTarget(stops, y, dir);
+                wasInZone = true;
+                snapTo(stops, target);
+            }, { passive: false });
+
+            // ---- Touch (iPad / mobile) ----
+            // Only a single-finger gesture that STARTS inside the zone can snap.
+            // Requiring start-in-zone prevents a swipe begun in the hero/About from
+            // false-snapping when momentum carries scrollY across the boundary; the
+            // multi-touch guard lets native pinch-zoom pass straight through.
+            let tStartY = null, tConsumed = false;
+            window.addEventListener('touchstart', (e) => {
+                tStartY = null; tConsumed = false;
+                if (reduceMotion || busy) return;
+                if (e.touches && e.touches.length > 1) return;          // pinch / multi-touch → leave to native
+                const t = e.touches && e.touches[0];
+                if (!t) return;
+                if (!inZone(snapStops(), window.scrollY)) return;       // gesture must originate in the zone
+                tStartY = t.clientY;
+            }, { passive: true });
+            window.addEventListener('touchmove', (e) => {
+                if (reduceMotion || tStartY === null) return;
+                if (e.touches && e.touches.length > 1) { tStartY = null; return; } // second finger → release to pinch-zoom
+                const t = e.touches && e.touches[0];
+                if (!t) return;
+                const stops = snapStops();
+                const y = window.scrollY;
+                if (!inZone(stops, y)) { wasInZone = false; return; }   // crossed out of zone → native scroll
+                e.preventDefault();                                     // suppress native scroll within the zone
+                if (busy || tConsumed) return;
+                const dy = tStartY - t.clientY;                         // +dy = finger up = intent to go down
+                if (Math.abs(dy) < 8) return;                           // ignore micro-jitter / taps
+                const dir = dy > 0 ? 1 : -1;
+                const target = chooseTarget(stops, y, dir);
+                wasInZone = true;
+                tConsumed = true;                                       // one snap per swipe
+                snapTo(stops, target);
+            }, { passive: false });
+            const endTouch = () => { tStartY = null; tConsumed = false; };
+            window.addEventListener('touchend', endTouch, { passive: true });
+            window.addEventListener('touchcancel', endTouch, { passive: true }); // system interrupt → clear stale state
+
+            // ---- Keyboard (space / arrows / page) ----
+            window.addEventListener('keydown', (e) => {
+                if (reduceMotion || busy) return;
+                const tgt = e.target;
+                const tag = (tgt && tgt.tagName) || '';
+                // Don't steal Space/arrows from form fields or focusable controls.
+                if (/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(tag) || (tgt && tgt.isContentEditable)) return;
+                const stops = snapStops();
+                const y = window.scrollY;
+                if (!inZone(stops, y)) { wasInZone = false; return; }
+                let dir = 0;
+                if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ' || e.key === 'Spacebar') dir = 1;
+                else if (e.key === 'ArrowUp' || e.key === 'PageUp') dir = -1;
+                if (!dir) return;
+                e.preventDefault();
+                const target = chooseTarget(stops, y, dir);
+                wasInZone = true;
+                snapTo(stops, target);
+            });
+        })();
 
         // ============================================================
         // Identity Map "See all" trigger + full-screen sheet modal

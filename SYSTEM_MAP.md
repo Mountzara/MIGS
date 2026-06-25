@@ -376,12 +376,28 @@ Reference incident: §1.3.
 If you rename / remove ANY of these in HTML, JS will break:
 - `#heroVideo`, `.hero-inner`, `.monogram-stage` — hero loader + tick()
 - `#scrollProgressBar`, `#ambientGlow` — tick()
-- `.pinned-showcase`, `.pinned-frame` — pinned showcase. 2026-06-25: the
-  300vh sticky scroll-swap was REMOVED; the two `.pinned-frame`s are now
-  normal-flow blocks that scroll-reveal independently via `data-reveal="up"`
-  (no per-frame JS). `.pinned-bg` is `display:none`. `tick()` no longer
-  switches frames. The cinematic backdrop fade still reads
-  `pinnedSection.offsetHeight` live, so it auto-adapts to the shorter section.
+- `.pinned-showcase`, `.pinned-frame` — pinned showcase. 2026-06-25 (a): the
+  300vh sticky scroll-swap was REMOVED; the two `.pinned-frame`s became
+  normal-flow blocks that scroll-reveal independently via `data-reveal="up"`.
+  `.pinned-bg` is `display:none`. `tick()` no longer switches frames. The
+  cinematic backdrop fade reads `pinnedSection.offsetHeight` live, so it
+  auto-adapts.
+  2026-06-25 (b): each `.pinned-frame` is now `min-height:100svh` (one
+  viewport per component) and a **velocity-independent scroll-snap
+  controller** (`initPinnedSnap()` IIFE, just after `tick();`) hijacks
+  wheel/touch/keyboard ONLY while the showcase is in view, animating
+  scrollY one frame per stroke regardless of flick velocity (busy-lock
+  swallows the rest of the gesture). Snap stops are
+  `[hero-escape, Foundation, Innovation, About-escape]`; the escape
+  anchors release the reader out at each end instead of trapping. Stops
+  use the **offsetParent-chain layout top** (NOT getBoundingClientRect —
+  the frames' `data-reveal` transform would otherwise skew the stop).
+  Controller temporarily sets inline `scroll-behavior:auto` on `<html>`
+  during its animation because the global `html{scroll-behavior:smooth}`
+  (line ~47) would otherwise fight every per-rAF `scrollTo`. Disabled
+  under `prefers-reduced-motion` and a no-op with <2 frames. If you rename
+  `.pinned-frame`, change `#about` (the down-escape anchor), or remove the
+  100svh frame sizing, this controller breaks.
 - `#cinematicIntro` — cinematic video backdrop
 - `.identity-card[data-identity]`, `.identity-pip[data-target]`,
   `#identity-map` — Identity Map scroll-spy (Commit 1)
