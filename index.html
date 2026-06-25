@@ -318,19 +318,16 @@
             overflow: visible;
         }
 
-        /* Background stage for the hero drawing.
-           2026-06-25 — position CHANGED from `fixed` to `absolute`. This is the
-           iOS Safari glass fix. WebKit/iOS does NOT sample a position:fixed layer
-           as the backdrop for a backdrop-filter element in scrolling content — the
-           fixed layer is promoted to its own GPU compositing layer that the glass
-           cards cannot read, so the frost renders as a flat panel on iPhone while
-           desktop (which composites the fixed layer into the sampled backdrop)
-           frosts correctly. Making the drawing `absolute` puts it in the normal
-           paint layer behind the hero, so iOS samples it and the hero glass
-           (.hero-sub / .hero-meta) actually frosts the line-art on iPhone.
-           (Authoritative: WebKit bug 275247 + CSS Filter Effects backdrop-root.) */
+        /* Persistent background stage - fixed to viewport, fades out via JS on deep scroll.
+           2026-06-25 — kept `fixed`: the scrolled-to glass (content cards + the
+           pinned pill) frost this fixed drawing correctly on iOS. The hero glass
+           failing on iOS is NOT a fixed-vs-absolute issue — it's that iOS doesn't
+           activate backdrop-filter until a scroll/repaint, and the hero is shown
+           on load with no scroll. Fixed below via a JS repaint kick, not by moving
+           this layer (moving it to absolute would scroll the drawing away before
+           the pinned showcase and break the pills that currently work). */
         .hero-bg-stage {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
@@ -8534,6 +8531,39 @@
         // visual sequence has clear identity before the overlay arrives.
         const HERO_TEXT_DELAY_MS = Math.floor(ANIMATION_DURATION_MS * 0.55);
 
+        // iOS backdrop-filter activation kick for the hero glass. See the call
+        // site in startHeroSequence() for the full rationale. Forces WebKit/iOS
+        // to RE-SAMPLE the backdrop behind the hero glass cards (which it does
+        // not do on load without a scroll), so the frost actually appears on
+        // iPhone instead of rendering as a flat panel. Non-destructive: the blur
+        // nudge is imperceptible (20px↔21px) and the scroll nudge is 1px at the
+        // very top of the page.
+        function kickHeroGlass() {
+            const els = [document.querySelector('.hero-sub'),
+                         document.querySelector('.hero-meta')];
+            els.forEach(el => {
+                if (!el) return;
+                // A real filter-value change forces iOS to recompute the backdrop.
+                el.style.webkitBackdropFilter = 'saturate(180%) blur(21px)';
+                el.style.backdropFilter = 'saturate(180%) blur(21px)';
+                // force a reflow so the nudge takes effect as its own frame
+                void el.offsetHeight;
+                requestAnimationFrame(() => {
+                    // clear inline → fall back to the CSS value (blur 20px); the
+                    // change re-triggers a backdrop recompute, now sampling the
+                    // painted drawing.
+                    el.style.webkitBackdropFilter = '';
+                    el.style.backdropFilter = '';
+                });
+            });
+            // Scroll-repaint nudge: only at the very top, invisible 1px bounce,
+            // mirrors the scroll that makes the lower cards' glass activate.
+            if (window.scrollY === 0) {
+                window.scrollTo(0, 1);
+                requestAnimationFrame(() => window.scrollTo(0, 0));
+            }
+        }
+
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
@@ -8618,6 +8648,21 @@
             // overlay appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
+                // 2026-06-25 — iOS hero-glass kick. On iPhone, backdrop-filter
+                // frequently does NOT activate until a scroll/repaint occurs.
+                // The scrolled-to cards (and the pinned pill) get that repaint
+                // when the user scrolls to them, so their frost works — but the
+                // HERO glass is shown on load with no scroll, so iOS samples an
+                // empty/not-yet-painted backdrop and the card renders flat. We
+                // force a backdrop re-sample once the drawing has painted by
+                // (a) nudging the blur radius on the hero glass (a real filter
+                // change forces WebKit to recompute the backdrop) and (b) a 1px
+                // scroll nudge (invisible at the top) that triggers the same
+                // repaint path the other cards rely on. Runs a few times to
+                // catch the video's first painted frames.
+                kickHeroGlass();
+                setTimeout(kickHeroGlass, 600);
+                setTimeout(kickHeroGlass, 1500);
             }, HERO_TEXT_DELAY_MS);
             // Ken Burns after the animation finishes
             setTimeout(() => {
