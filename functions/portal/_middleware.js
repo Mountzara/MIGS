@@ -256,6 +256,59 @@ const COMING_SOON_HTML = `<!doctype html>
             animation-delay: 1.36s;
         }
         .footer-links a { margin: 0 6px; }
+        .visit-matrix-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.92);
+            margin: 0 0 14px 0;
+            animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 1.2s;
+        }
+        .visit-matrix-title {
+            font-size: clamp(22px, 3.2vw, 30px);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            color: var(--fg-strong);
+            margin: 0 0 14px 0;
+            animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 1.26s;
+        }
+        .visit-matrix-lede {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: var(--fg-mid);
+            margin: 0 0 24px 0;
+            animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 1.32s;
+        }
+        .visit-matrix {
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+            margin: 0 0 14px 0;
+            animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 1.38s;
+        }
+        .visit-matrix table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .visit-matrix th {
+            text-align: left;
+            padding: 13px 16px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(var(--glow-purple), 0.95);
+            background: rgba(109, 40, 217, 0.12);
+        }
+        .visit-matrix td { padding: 10px 16px; color: var(--fg-mid); vertical-align: top; }
+        .visit-matrix tbody tr { border-top: 1px solid rgba(255, 255, 255, 0.07); }
         @keyframes mzRise {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: none; }
@@ -336,6 +389,37 @@ const COMING_SOON_HTML = `<!doctype html>
                 <p class="feature-body">Pre-operative checklists, post-operative recovery trackers, family-history mapping for hereditary risk, billing transparency, and care-plan summaries you can take to other clinicians &mdash; layered in as the portal grows.</p>
             </article>
         </section>
+
+        <div class="visit-matrix-eyebrow">In Person &amp; Telehealth</div>
+        <h2 class="visit-matrix-title">How you&rsquo;ll see Dr.&nbsp;Mabini.</h2>
+        <p class="visit-matrix-lede">Mount Zara is built around the patient&rsquo;s convenience, not the clinician&rsquo;s. Some visits need hands-on attention &mdash; surgical consultations, pelvic examinations, office procedures &mdash; and those are always in person. Others are at least as good over a private video call, and often better, because you can be at home, with the people who support you, without taking half a day off work. Where it says &ldquo;either,&rdquo; you choose &mdash; the standard of care doesn&rsquo;t change with the modality.</p>
+        <div class="visit-matrix">
+            <table aria-label="Visit types and their modality">
+                <thead>
+                    <tr>
+                        <th scope="col">Visit type</th>
+                        <th scope="col">How you&rsquo;re seen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>New patient &mdash; complex</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                    <tr><td>New patient &mdash; standard</td><td>In person preferred</td></tr>
+                    <tr><td>Complex pelvic pain / endometriosis evaluation</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                    <tr><td>Endometriosis follow-up</td><td>Either &mdash; you choose</td></tr>
+                    <tr><td>OMT treatment</td><td>In person (hands-on care)</td></tr>
+                    <tr><td>Heavy bleeding evaluation</td><td>Either &mdash; you choose</td></tr>
+                    <tr><td>Pre-operative visit</td><td>Either &mdash; you choose</td></tr>
+                    <tr><td>Post-op check (1&ndash;2 weeks)</td><td>Either &mdash; you choose</td></tr>
+                    <tr><td>Post-op visit (6 weeks)</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
+                    <tr><td>Routine follow-up</td><td>Either &mdash; you choose</td></tr>
+                    <tr><td>Office procedure (IUD &middot; biopsy &middot; colposcopy)</td><td>In person (procedure room)</td></tr>
+                    <tr><td>Quick concern / sick visit</td><td>Telehealth preferred</td></tr>
+                    <tr><td>Annual exam</td><td>In person (examination visit)</td></tr>
+                    <tr><td>Telehealth consult</td><td>Telehealth</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="note" style="animation-delay: 1.44s;">If you&rsquo;re unsure, the intake form&rsquo;s built-in scheduling assistant will recommend a modality based on what you tell us &mdash; you always have the final say. Visits with an examination component offered over video require an adult chaperone present in the room with you.</p>
 
         <p class="note">If you&rsquo;re an existing patient and need to reach the office in the meantime, please call the practice directly or email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
 

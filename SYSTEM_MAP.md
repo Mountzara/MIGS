@@ -354,7 +354,12 @@ Reference incident: §1.3.
 If you rename / remove ANY of these in HTML, JS will break:
 - `#heroVideo`, `.hero-inner`, `.monogram-stage` — hero loader + tick()
 - `#scrollProgressBar`, `#ambientGlow` — tick()
-- `.pinned-showcase`, `.pinned-frame`, `.pinned-bg` — pinned showcase frame switcher
+- `.pinned-showcase`, `.pinned-frame` — pinned showcase. 2026-06-25: the
+  300vh sticky scroll-swap was REMOVED; the two `.pinned-frame`s are now
+  normal-flow blocks that scroll-reveal independently via `data-reveal="up"`
+  (no per-frame JS). `.pinned-bg` is `display:none`. `tick()` no longer
+  switches frames. The cinematic backdrop fade still reads
+  `pinnedSection.offsetHeight` live, so it auto-adapts to the shorter section.
 - `#cinematicIntro` — cinematic video backdrop
 - `.identity-card[data-identity]`, `.identity-pip[data-target]`,
   `#identity-map` — Identity Map scroll-spy (Commit 1)
@@ -464,10 +469,12 @@ as the first argument so `getSession`'s `last_seen_at` UPDATE goes via
 `index.html` (~10K lines — see §3, §4), `about/`, `evidence/`, `trending/`,
 `cv/`, `curriculum/` (`cbg-migs/`, `hospice-clerkship/`, `hospice-training/`)
 
-**R11 lock-step (2026-06-10):** the homepage `#how-you-visit` section carries
-a hand-aligned 14-row visit-type → modality matrix mirroring
-`functions/_lib/visit_types.js`. Any visit-type add/rename or modality/
-chaperone change MUST update that matrix in the same commit.
+**R11 lock-step (2026-06-10; relocated 2026-06-25):** the 14-row visit-type →
+modality matrix mirroring `functions/_lib/visit_types.js` was MOVED off the
+homepage (`#how-you-visit` section deleted) into the Member-Portal Coming-Soon
+page (`functions/portal/_middleware.js`, `COMING_SOON_HTML`, `.visit-matrix`).
+Any visit-type add/rename or modality/chaperone change MUST update that matrix
+in `_middleware.js` in the same commit.
 
 ### 8.2 Education (gated by `EDUCATION_PUBLIC_LAUNCH` + middleware)
 
