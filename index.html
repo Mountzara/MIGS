@@ -6890,7 +6890,6 @@
                playsinline
                webkit-playsinline
                preload="auto"
-               loop="false"
                aria-label=""
                disablepictureinpicture
                disableremoteplayback
@@ -8592,6 +8591,14 @@
                         heroVideo.currentTime = Math.max(0, heroVideo.duration - 0.04);
                     }
                     heroVideo.pause();
+                    // 2026-06-25 — mark the hero as finished so the Low-Power-Mode
+                    // recovery handler (recoverPausedVideos) does NOT restart it.
+                    // Without this flag, the FIRST scroll/tap after the animation
+                    // settled called play() on the paused-at-end video; the spec
+                    // seeks a finished media element back to 0, replaying the
+                    // entire 8s drawing (user: "the animation keeps replaying
+                    // after it is done").
+                    heroVideo.dataset.heroEnded = '1';
                     // Start Ken Burns at the TRUE settle moment (the frame the
                     // drawing actually finished on), not on a fixed timer that
                     // can drift from the real video length. The setTimeout
@@ -8638,11 +8645,15 @@
             // overlay appears.
             setTimeout(() => {
                 heroContent.classList.add('visible');
-                // 2026-06-25 — Reveal hero title synchronized with subtitle so
-                // ALL text appears together "literally the millisecond before
-                // the animation ends" (user request). Title word-reveal has
-                // ~8 words × 50ms stagger, so last word finishes ~1450ms after
-                // .in is added. This delay ensures title finishes at 8042ms.
+                // 2026-06-25 — Reveal the hero title's word-stagger in lockstep
+                // with the block cascade so ALL text appears together "literally
+                // the millisecond before the animation ends" (user request). The
+                // title is deliberately NOT revealed at load (excluded from the
+                // IntersectionObserver and the fling-proof safety net below), so
+                // this is the ONLY place it gets `.in`. The 5 title words stagger
+                // 0.05–0.25s and finish ~1350ms after this fires; the block
+                // cascade (meta = nth-child 4, +420ms + 1000ms) finishes ~1420ms
+                // after — both land at ≈8041ms, 1ms before the 8042ms animation.
                 const titleEl = document.querySelector('.hero-title');
                 if (titleEl) titleEl.classList.add('in');
                 // 2026-06-25 — iOS hero-glass kick. On iPhone, backdrop-filter
@@ -8699,12 +8710,20 @@
         // scroll performance and never fights a deliberate user pause.
         function recoverPausedVideos() {
             document.querySelectorAll('video').forEach(v => {
-                const wantsAutoplay = v.autoplay || v.id === 'heroVideo' ||
+                const isHero = v.id === 'heroVideo';
+                const wantsAutoplay = v.autoplay || isHero ||
                                       v.classList.contains('video-preview');
-                if (wantsAutoplay && v.paused && v.tagName === 'VIDEO') {
-                    const p = v.play();
-                    if (p && typeof p.catch === 'function') p.catch(() => {});
-                }
+                if (!wantsAutoplay || !v.paused || v.tagName !== 'VIDEO') return;
+                // 2026-06-25 — NEVER restart the hero once it has played. Only
+                // kick it if it never got past frame 1 (the genuine Low-Power-
+                // Mode autoplay block this handler exists for). If it has ended
+                // (flagged in the 'ended' handler) or already advanced past the
+                // start, calling play() would seek a finished clip back to 0 and
+                // replay the whole 8s drawing on the first post-animation
+                // scroll/tap (user: "the animation keeps replaying").
+                if (isHero && (v.dataset.heroEnded === '1' || v.currentTime > 0.3)) return;
+                const p = v.play();
+                if (p && typeof p.catch === 'function') p.catch(() => {});
             });
         }
         ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(ev =>
@@ -10253,8 +10272,17 @@
             // (user: "elegant appear is not working in mobile view"). -8% reveals
             // them as soon as they're genuinely on screen.
             }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
-            reveals.forEach(el => revealObs.observe(el));
-            // DON'T reveal hero title immediately — delay it to sync with subtitle
+            // 2026-06-25 — Do NOT observe the hero title here. It is in the
+            // viewport on load, so the observer would add `.in` immediately and
+            // the title's word-stagger would settle BEFORE the hero text
+            // cascade begins (user: "'passion for women's health.' comes up
+            // when page opens, then the rest appears WAY after"). The title's
+            // `.in` is instead added inside startHeroSequence's setTimeout, in
+            // lockstep with `.hero-content-delayed.visible`, so the title and
+            // subtitle reveal together, finishing 1ms before the animation ends.
+            reveals.forEach(el => {
+                if (!el.classList.contains('hero-title')) revealObs.observe(el);
+            });
             // FLING-PROOF SAFETY NET — nothing must ever stay invisible.
             // IntersectionObserver can MISS elements during a fast scroll: an
             // element flung past between the observer's sample frames never
@@ -10267,7 +10295,14 @@
             // four mechanisms (.in for data-reveal/word-reveal/cards, .visible
             // for .reveal), plus a hard sweep at the bottom. The CSS stagger
             // still plays because it keys off the .in/.visible class.
-            const REVEAL_IN = '[data-reveal]:not(.in), .word-reveal:not(.in), '
+            // 2026-06-25 — exclude .hero-title from the fling-proof safety net
+            // for the same reason it is excluded from the observer above: its
+            // reveal is owned exclusively by startHeroSequence's setTimeout so
+            // it stays synchronized with the subtitle. (Its block-level
+            // visibility is ALSO gated solely on that setTimeout via
+            // `.hero-content-delayed.visible`, so excluding it here introduces
+            // no new way for it to stay hidden.)
+            const REVEAL_IN = '[data-reveal]:not(.in), .word-reveal:not(.in):not(.hero-title), '
                             + '.evidence-card:not(.in), .surgical-card:not(.in)';
             const REVEAL_VIS = '.reveal:not(.visible)';
             let revealTick = false;
