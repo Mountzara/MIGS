@@ -6149,8 +6149,18 @@
            translucent dark sections (.awards, .research, .omm, .surgical-unified),
            through which the hero line-art drawing bleeds. The drawing provides
            actual texture for backdrop-filter to frost. Cards settle to transform:none
-           after reveal (line 5027) so iOS Safari preserves the blur. Canonical Apple
-           glass recipe: translucent fill + heavy blur + saturation boost. */
+           after reveal (line 5027) so iOS Safari preserves the blur.
+
+           2026-06-25 — STOP inventing a recipe. Copy the EXACT glass that the
+           user repeatedly confirmed works: the `.frame-eyebrow` pill in the
+           pinned showcase (line 5285-5289). That pill is:
+               background: rgba(255,255,255,0.08);
+               backdrop-filter: saturate(180%) blur(20px);
+           The previous `blur(40px) saturate(200%) brightness(1.15)` was MY
+           invention — the brightness() washes the frost flat and the 40px
+           over-blur dissolves all texture into uniform gray, which is exactly
+           why it never read as the pill. Match the pill verbatim: saturate
+           FIRST, blur 20px, NO brightness. */
         .award-tile,
         .curriculum-card,
         .surgical-card,
@@ -6163,9 +6173,9 @@
         .research-item,
         .research-card-video {
             background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
-            -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.12),
                 0 12px 32px -16px rgba(0, 0, 0, 0.65);
