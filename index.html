@@ -596,7 +596,9 @@
            "wannabe glass" bug). So the body card reveals with OPACITY ONLY: no
            transform on the element itself, keeping the real frosted glass. */
         .hero-content-delayed > .hero-sub,
-        .hero-content-delayed.visible > .hero-sub {
+        .hero-content-delayed.visible > .hero-sub,
+        .hero-content-delayed > .hero-meta,
+        .hero-content-delayed.visible > .hero-meta {
             transform: none;
         }
         /* Stagger each child for a cascading Apple-style reveal */
@@ -1212,8 +1214,14 @@
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            opacity: 0;
-            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
+            /* 2026-06-25 — CRITICAL iOS glass fix. The old
+               `animation: fadeUp ... both` left a residual transform matrix
+               (animation-fill-mode:both holds the `to` keyframe's translateY(0)),
+               and WebKit/iOS DROPS backdrop-filter on any transformed element —
+               so this credential strip's glass was silently dead on iPhone.
+               Removed the animation + opacity:0; this strip now reveals through
+               the parent .hero-content-delayed opacity system and is forced to
+               transform:none below (same proven fix as .hero-sub). */
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.12),
                 0 12px 32px -16px rgba(0, 0, 0, 0.65);
@@ -2257,8 +2265,6 @@
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
 
         .surgical-hub {
