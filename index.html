@@ -10259,6 +10259,7 @@
         // -- 4) Single rAF-throttled scroll handler for hero / progress / ambient / pinned --
         const heroEl = document.querySelector('.hero');
         const heroInner = document.querySelector('.hero-inner');
+        const heroTitleEl = document.querySelector('.hero-title');
         const monogramStage = document.querySelector('.monogram-stage');
         const scrollBar = document.getElementById('scrollProgressBar');
         const ambient = document.getElementById('ambientGlow');
@@ -10317,9 +10318,20 @@
                 const t = Math.max(0, Math.min(1, (y - fadeStart) / (fadeEnd - fadeStart)));
                 const opacity = 1 - t;
                 heroInner.style.opacity = opacity.toFixed(3);
-                // Subtle parallax: hero text drifts up slightly with scroll (slower than page)
+                // 2026-06-25 — CRITICAL Apple-glass fix. Do NOT put a transform on
+                // .hero-inner. A transform on the PARENT of the glass cards makes it
+                // a "backdrop root" in Safari/iOS, so the backdrop-filter on
+                // .hero-sub / .hero-meta can no longer sample the FIXED drawing
+                // painted behind the hero — it frosts an empty layer and renders as
+                // a flat dark panel (the "this isn't glass" bug). This fired on the
+                // first scroll and never cleared (even translate3d(0,0,0) is a
+                // backdrop root), which is why the glass looked dead the moment the
+                // page moved. Apply the subtle parallax drift ONLY to the non-glass
+                // title + monogram; the glass cards stay anchored with a
+                // transform-free parent, so their frost samples the line-art at
+                // every scroll position.
                 const ty = -y * 0.08;
-                heroInner.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
+                if (heroTitleEl) heroTitleEl.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
                 if (monogramStage) {
                     const mScale = 1 - t * 0.04;
                     monogramStage.style.opacity = (1 - t).toFixed(3);
