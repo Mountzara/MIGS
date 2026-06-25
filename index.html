@@ -568,7 +568,15 @@
         .hero-sub {
             position: relative;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.08);
+            /* 2026-06-25 — fill bumped 0.08 → 0.13. The pill's 0.08 only reads
+               as glass because it's small and always sits over a bright drawing
+               line. This large card spans the drawing's BLACK GAPS, where 0.08
+               white is invisible and looks like a flat dark panel. A slightly
+               heavier milky fill gives it a frosted-glass MATERIAL that reads as
+               glass even over the dark gaps, while staying translucent enough to
+               show the line-art where it passes behind. Same backdrop-filter as
+               the pill — only the material body is heavier for the larger area. */
+            background: rgba(255, 255, 255, 0.13);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             backdrop-filter: saturate(180%) blur(20px);
             /* Match the pill's border alpha (0.12, not 0.28) */
@@ -1208,7 +1216,9 @@
             max-width: 980px;
             margin-left: auto;
             margin-right: auto;
-            background: rgba(255, 255, 255, 0.08);
+            /* 2026-06-25 — fill 0.13 (not the pill's 0.08): large panel over the
+               drawing's black gaps needs more material body to read as glass. */
+            background: rgba(255, 255, 255, 0.13);
             border-radius: 18px;
             overflow: hidden;
             backdrop-filter: saturate(180%) blur(20px);
