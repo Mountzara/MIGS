@@ -2371,52 +2371,95 @@
             color: rgba(167, 139, 250, 0.95);
         }
 
-        /* Expansion panel — slides open below the grid when a tile is active. */
+        /* 2026-06-26 — Full-screen modal overlay (was inline panel). User: "modal
+           pop ups stack on next row, not overlay the screen... MAKE SURE ALL MODAL
+           POPUPS ARE FULL SCREEN WITH EASY CLICK OUT WHERE THE MODAL IS FULL APPLE
+           GLASS BACKGROUND EFFECT". Same overlay pattern as .app-modal. */
         .surgical-hub-panel {
-            margin-top: 18px;
-            padding: 26px 28px;
-            background:
-                radial-gradient(ellipse 70% 50% at 20% 0%, rgba(167, 139, 250, 0.07), transparent 60%),
-                rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(167, 139, 250, 0.28);
-            border-radius: 18px;
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            position: relative;
-            overflow: hidden;
+            position: fixed;
+            inset: 0;
+            z-index: 250;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 8, 10, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
             opacity: 0;
-            transform: translateY(-8px);
-            transition: opacity 0.32s ease, transform 0.32s ease;
+            pointer-events: none;
+            transition: opacity 380ms ease, background 380ms ease, backdrop-filter 380ms ease;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .surgical-hub-panel:not([hidden]) {
             opacity: 1;
-            transform: none;
+            pointer-events: auto;
+            /* Lighter veil so the page refracts THROUGH the glass card (the card
+               itself carries the heavy blur). Heavy veil here = opaque "frost". */
+            background: rgba(8, 8, 10, 0.52);
+            backdrop-filter: blur(8px) saturate(140%);
+            -webkit-backdrop-filter: blur(8px) saturate(140%);
+        }
+        .hub-panel-card {
+            position: relative;
+            width: min(94%, 960px);
+            margin: 32px auto;
+            max-height: calc(100vh - 64px);
+            /* Apple "Liquid Glass": translucent so the page refracts through, heavy
+               backdrop blur + vibrancy, a luminous 1px rim and a bright specular top
+               edge. NOT an opaque card — that reads as frost. */
+            background: linear-gradient(155deg, rgba(54, 50, 70, 0.55) 0%, rgba(26, 24, 34, 0.60) 55%, rgba(18, 16, 24, 0.62) 100%);
+            backdrop-filter: blur(42px) saturate(190%);
+            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            border: 1px solid rgba(187, 165, 255, 0.30);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(24px) scale(0.96);
+            opacity: 0;
+            transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease;
+            box-shadow: 0 48px 140px rgba(0, 0, 0, 0.55),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                        inset 0 0 40px rgba(167, 139, 250, 0.06);
+        }
+        .surgical-hub-panel:not([hidden]) .hub-panel-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
         .hub-panel-close {
             position: absolute;
-            top: 12px;
-            right: 14px;
-            width: 30px;
-            height: 30px;
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(245, 245, 247, 0.7);
-            font-size: 22px;
+            top: 16px;
+            right: 16px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--white);
+            font-size: 24px;
             line-height: 1;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.18s, color 0.18s, border-color 0.18s;
+            z-index: 10;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: background 200ms ease, transform 200ms ease, border-color 200ms ease;
         }
         .hub-panel-close:hover, .hub-panel-close:focus-visible {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-            border-color: rgba(167, 139, 250, 0.45);
+            background: rgba(255, 255, 255, 0.16);
+            transform: scale(1.06);
+            border-color: rgba(167, 139, 250, 0.5);
             outline: none;
         }
-        .hub-panel-inner { padding-right: 32px; }
+        .hub-panel-inner {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 48px clamp(24px, 5vw, 56px);
+        }
         .hub-panel-inner > article {
             display: grid;
             gap: 18px;
@@ -2928,9 +2971,9 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(0, 0, 0, 0.78);
-            backdrop-filter: saturate(140%) blur(14px);
-            -webkit-backdrop-filter: saturate(140%) blur(14px);
+            background: rgba(8, 8, 10, 0.52);
+            backdrop-filter: saturate(140%) blur(8px);
+            -webkit-backdrop-filter: saturate(140%) blur(8px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2945,11 +2988,15 @@
             max-width: 760px;
             max-height: 88vh;
             overflow-y: auto;
-            background: linear-gradient(180deg, #1c1c1f 0%, #0e0e10 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            backdrop-filter: blur(42px) saturate(190%);
+            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 24px;
             padding: 44px 44px 36px;
-            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.75),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+                        inset 0 0 40px rgba(255, 255, 255, 0.03);
             transform: scale(0.96) translateY(12px);
             transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
             -ms-overflow-style: none;
@@ -4237,7 +4284,12 @@
             position: fixed;
             inset: 0;
             z-index: 10000;
-            background: rgba(0, 0, 0, 0.95);
+            /* 2026-06-26 — Apple-glass backdrop (was flat rgba(0,0,0,0.95)) so the
+               page behind frosts uniformly with every other modal. Kept fairly opaque
+               so the video itself still reads with full contrast. */
+            background: rgba(8, 8, 10, 0.62);
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
             align-items: center;
             justify-content: center;
             cursor: pointer;
@@ -4425,17 +4477,21 @@
         .app-modal.open {
             opacity: 1;
             pointer-events: auto;
-            background: rgba(8, 8, 10, 0.78);
-            backdrop-filter: blur(28px) saturate(140%);
-            -webkit-backdrop-filter: blur(28px) saturate(140%);
+            background: rgba(8, 8, 10, 0.52);
+            backdrop-filter: blur(8px) saturate(140%);
+            -webkit-backdrop-filter: blur(8px) saturate(140%);
         }
         .app-modal-card {
             position: relative;
             width: min(96%, 1180px);
             margin: 24px auto;
             max-height: calc(100vh - 48px);
-            background: linear-gradient(180deg, #18181b 0%, #0e0e10 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* Apple "Liquid Glass" — translucent + vibrancy so the page shows through,
+               luminous rim, specular top edge. (Was opaque #18181b → read as frost.) */
+            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            backdrop-filter: blur(42px) saturate(190%);
+            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 28px;
             overflow: hidden;
             display: flex;
@@ -4443,7 +4499,9 @@
             transform: translateY(28px) scale(0.98);
             opacity: 0;
             transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+                        inset 0 0 40px rgba(255, 255, 255, 0.03);
         }
         .app-modal.open .app-modal-card {
             transform: translateY(0) scale(1);
@@ -5497,9 +5555,9 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(0, 0, 0, 0.72);
-            backdrop-filter: saturate(140%) blur(12px);
-            -webkit-backdrop-filter: saturate(140%) blur(12px);
+            background: rgba(8, 8, 10, 0.52);
+            backdrop-filter: saturate(140%) blur(8px);
+            -webkit-backdrop-filter: saturate(140%) blur(8px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -5514,11 +5572,17 @@
             position: relative;
             width: 100%;
             max-width: 480px;
-            background: linear-gradient(180deg, #1c1c1f 0%, #131315 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            backdrop-filter: blur(42px) saturate(190%);
+            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 22px;
             padding: 40px 36px 36px;
-            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+                        inset 0 0 40px rgba(255, 255, 255, 0.03);
             transform: scale(0.96) translateY(8px);
             transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -5531,8 +5595,8 @@
             position: absolute;
             top: 16px;
             right: 16px;
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.06);
             color: var(--gray-3);
@@ -5853,9 +5917,9 @@
            purple-accent treatment. */
         .omt-modal {
             position: fixed; inset: 0;
-            background: rgba(7, 7, 10, 0.78);
-            backdrop-filter: blur(18px) saturate(140%);
-            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            background: rgba(7, 7, 10, 0.52);
+            backdrop-filter: blur(8px) saturate(140%);
+            -webkit-backdrop-filter: blur(8px) saturate(140%);
             z-index: 9000;
             display: flex; align-items: center; justify-content: center;
             padding: clamp(20px, 4vw, 48px);
@@ -5868,13 +5932,15 @@
             width: min(820px, 100%);
             max-height: 86vh;
             overflow-y: auto;
-            background: linear-gradient(180deg, rgba(20, 20, 28, 0.96) 0%, rgba(12, 12, 18, 0.96) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(155deg, rgba(52, 48, 66, 0.55) 0%, rgba(24, 22, 32, 0.60) 55%, rgba(16, 15, 22, 0.62) 100%);
+            border: 1px solid rgba(187, 165, 255, 0.28);
             border-radius: 22px;
             padding: 44px 36px 32px;
-            backdrop-filter: blur(28px) saturate(165%);
-            -webkit-backdrop-filter: blur(28px) saturate(165%);
-            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(var(--glow-purple), 0.20);
+            backdrop-filter: blur(42px) saturate(190%);
+            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                        inset 0 0 40px rgba(167, 139, 250, 0.06);
             transform: translateY(12px) scale(0.985);
             transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -5890,7 +5956,7 @@
         }
         .omt-modal-close {
             position: absolute; top: 16px; right: 16px;
-            width: 34px; height: 34px;
+            width: 38px; height: 38px;
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 50%;
@@ -7269,10 +7335,12 @@
                     </button>
                 </div>
 
-                <!-- Inline expansion panel — content swapped in by JS when a tile is clicked. -->
-                <div class="surgical-hub-panel" id="hub-panel" role="tabpanel" aria-live="polite" hidden>
-                    <button type="button" class="hub-panel-close" aria-label="Close panel">&times;</button>
-                    <div class="hub-panel-inner"></div>
+                <!-- 2026-06-26 — Full-screen modal (was inline panel) per user request. -->
+                <div class="surgical-hub-panel" id="hub-panel" role="dialog" aria-modal="true" aria-live="polite" hidden>
+                    <div class="hub-panel-card">
+                        <button type="button" class="hub-panel-close" aria-label="Close panel">&times;</button>
+                        <div class="hub-panel-inner"></div>
+                    </div>
                 </div>
             </div>
 
@@ -7841,10 +7909,9 @@
 
             </div>
 
-            <!-- Video Modal -->
-            <div class="video-modal" id="videoModal" role="dialog" aria-modal="true" aria-label="Video player" onclick="closeVideoModal()">
-                <video id="modalVideo" playsinline controls></video>
-            </div>
+            <!-- Video Modal lives at body level (see end of body) — nesting it here
+                 trapped its z-index inside the research section's stacking context,
+                 letting the fixed nav paint over it and hide the close button. -->
 
             <div class="research-list">
                 <!-- ICG Isthmocele -->
@@ -8312,6 +8379,15 @@
 
     <!-- Contact Modal -->
     <!-- Apps detail modal -->
+    <!-- Video Modal — relocated here to body level so its z-index isn't trapped in
+         the research section's stacking context (the fixed nav was painting over it). -->
+    <div class="video-modal" id="videoModal" role="dialog" aria-modal="true" aria-label="Video player" onclick="closeVideoModal()">
+        <button type="button" class="app-modal-close" onclick="event.stopPropagation(); closeVideoModal()" aria-label="Close video">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+        </button>
+        <video id="modalVideo" playsinline controls></video>
+    </div>
+
     <div class="app-modal" id="appModal" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
         <div class="app-modal-card">
             <button type="button" class="app-modal-close" onclick="closeAppModal()" aria-label="Close">
@@ -9933,17 +10009,16 @@
                     }
                 });
                 panel.hidden = false;
+                panel.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden'; // prevent body scroll when modal open
                 activeKey = key;
-                // 2026-05-27 — scroll the panel into view on every viewport
-                // (was mobile-only), since user feedback was that clicking a
-                // tile "did nothing" because the panel renders BELOW the tile
-                // grid and desktop users saw no visual change. Smooth scroll
-                // so the expand is visibly tied to the click.
-                setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+                // 2026-06-26 — removed scrollIntoView (panel is now a fixed overlay, not inline)
             }
 
             function closePanel() {
                 panel.hidden = true;
+                panel.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = ''; // restore body scroll
                 panelInner.innerHTML = '';
                 tiles.forEach(t => {
                     t.classList.remove('active');
@@ -9964,6 +10039,10 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', closePanel);
             }
+            // Outside-click closes (click on backdrop, not on card)
+            panel.addEventListener('click', e => {
+                if (e.target === panel) closePanel();
+            });
             // Escape anywhere closes the panel when one is open.
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape' && activeKey) closePanel();
