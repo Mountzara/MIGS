@@ -327,6 +327,32 @@ matrix). An identity-matrix transform STILL makes `.hero-inner` a backdrop
 root on iOS Safari and flattens the `.hero-sub` / `.hero-meta` glass on
 load. Do not "simplify" this back to an unconditional `translateY()`.
 
+**2026-06-26 — All 7 modals converted to full-screen Liquid Glass overlays.**
+User requirement: "FULL SCREEN WITH EASY CLICK OUT WHERE THE MODAL IS FULL
+APPLE GLASS BACKGROUND EFFECT" — previous frost-style treatment rejected
+("that looks frost, not glass").
+
+Surgical hub panel (lines 2378-2454): Now `position:fixed; inset:0; z-index:250`
+full-screen overlay (was inline `display:grid` that stacked below next section
+on mobile). Lighter backdrop (rgba 0.52, blur 8px vs old 0.78/28px). Card is
+translucent: 55-62% tint gradient + `backdrop-filter: blur(42px) saturate(190%)`
+— page content refracts through (glass, not frost). Luminous purple border +
+specular top edge (inset white highlight). Body scroll locked via
+`document.body.style.overflow='hidden'` on open. Backdrop-click + Escape + X
+button handlers for "easy click out".
+
+Video modal (relocated lines 8386+): Moved from inside research section
+(~line 7913) to body level (before app-modal at 8386). Fix: z-index was
+trapped in research section's stacking context, letting nav paint over it.
+Now at body level with z-index:10000, close button properly clears nav.
+
+App/domain/contact/omt/evidence modals: Same Liquid Glass treatment applied.
+All backdrops lightened to rgba 0.52, blur 8px. Cards translucent with heavy
+backdrop-filter blur(42px) saturate(190%). Luminous borders (rgba white
+0.14-0.30) + specular edges. **DO NOT revert any modal to opaque cards on
+heavy blurred backdrops — that's frost. The translucent card + light backdrop
++ heavy card blur pattern is Liquid Glass.**
+
 ---
 
 ## 4. `index.html` inline `<script>` atlas (lines ~7914 – ~9990)
@@ -360,13 +386,17 @@ Reference incident: §1.3.
 | Line range | Name | Queries DOM after 7914? | DOMContentLoaded guard? |
 |---|---|---|---|
 | 7913–7982 | Hero loader + page-loader fade | no | n/a (queries hero, declared earlier) |
-| 7997–8033 | Contact modal handlers | no | n/a |
-| 8286–8444 | Evidence modal handlers | no | n/a |
+| 7997–8033 | Contact modal handlers (`openContactModal`, `closeContactModal`) | no | n/a |
+| ~8040–8100 | Hub-panel modal handlers (surgical hub overlay, 2026-06-26) | no | n/a |
+| ~8100–8165 | App modal handlers (`openAppModal`, `closeAppModal`) | no | n/a |
+| ~8165–8230 | Domain modal handlers (`openDomainModal`, `closeDomainModal`) | no | n/a |
+| ~8230–8285 | OMT modal handlers (`openOmtModal`, `closeOmtModal`) | no | n/a |
+| 8286–8444 | Evidence modal handlers (`openEvidenceModal`, `closeEvidenceModal`) | no | n/a |
+| ~8386+ | Video modal (relocated 2026-06-26 from research section to body level for z-index fix) | yes (videoModal) — but globals, not auto-fired | n/a |
 | 9285–9398 | Identity Map setup (`identityCards`, `identityPips`, `identitySections`) | no — declared at line ~6260 (before script) | n/a |
 | 9404–9637 | `tick()` rAF-throttled scroll handler + `lastIdentityActive` + scroll-spy | no | n/a |
 | 9645–9728 | `initSeeAllSheet()` (sheet modal dormant — currently no triggers fire it) | **YES — queries `mz-sheet` at line 10066** | **YES (added 2026-05-26)** |
 | 9730–9820 | `initMobileCarousels()` (carousel + pip indicators for each `[data-mobile-carousel]` grid) | no — queries grids at lines 6369 / 6650 / 6847 / 6969 | YES (defensive — same pattern) |
-| ~9860–9896 | `openVideoModal()` / `closeVideoModal()` globals | yes (videoModal at 9952) — but globals, not auto-fired | n/a |
 | 9908–9935 | Research-card preview autoplay IntersectionObserver IIFE | yes (`.video-preview`) but tolerant of empty results | n/a |
 | 9941 | `if (typeof toggleFeatureSound === 'function') { window.toggleFeatureSound = toggleFeatureSound; }` — **DEFENSIVE GUARD added 2026-05-26 per §1.2.** | n/a | n/a |
 | 9959–9980 | Hero video autoplay IIFE | yes — hero declared earlier, fine | n/a |
@@ -405,7 +435,13 @@ If you rename / remove ANY of these in HTML, JS will break:
 - `.mz-grid-pips` — built dynamically by initMobileCarousels()
 - `#mz-sheet`, `#mz-sheet-content`, `[data-mz-sheet-close]` —
   initSeeAllSheet() (currently dormant)
-- `#contactModal`, `#evidenceModal`, `#videoModal` — modal openers
+- `#hub-panel`, `.surgical-hub-panel`, `#appModal`, `#domainModal`,
+  `#contactModal`, `#omtModal`, `#evidenceModal`, `#videoModal` —
+  full-screen Liquid Glass modal overlays (2026-06-26). All have
+  open/close function pairs + backdrop-click + Escape handlers + body
+  scroll lock. Video modal relocated from research section to body level
+  (z-index was trapped in stacking context, nav painted over it).
+- `.hub-tile[data-category]` — triggers surgical hub panel overlay
 - `.research-card-video[onclick=openVideoModal(...)]` — video previews
 
 ---
