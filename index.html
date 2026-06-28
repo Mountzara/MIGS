@@ -2412,23 +2412,21 @@
                backdrop blur + vibrancy, a luminous 1px rim and a bright specular top
                edge. NOT an opaque card — that reads as frost. */
             background: linear-gradient(155deg, rgba(54, 50, 70, 0.55) 0%, rgba(26, 24, 34, 0.60) 55%, rgba(18, 16, 24, 0.62) 100%);
-            backdrop-filter: blur(42px) saturate(190%);
-            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(187, 165, 255, 0.30);
             border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transform: translateY(24px) scale(0.96);
             opacity: 0;
-            transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease;
-            will-change: transform, opacity;
+            transition: opacity 340ms ease;
+            will-change: opacity;
             box-shadow: 0 48px 140px rgba(0, 0, 0, 0.55),
                         inset 0 1px 0 rgba(255, 255, 255, 0.25),
                         inset 0 0 40px rgba(167, 139, 250, 0.06);
         }
         .surgical-hub-panel:not([hidden]) .hub-panel-card {
-            transform: translateY(0) scale(1);
             opacity: 1;
         }
         .hub-panel-close {
@@ -2993,17 +2991,17 @@
             max-height: 88vh;
             overflow-y: auto;
             background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
-            backdrop-filter: blur(42px) saturate(190%);
-            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 24px;
             padding: 44px 44px 36px;
             box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.75),
                         inset 0 1px 0 rgba(255, 255, 255, 0.24),
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
-            transform: scale(0.96) translateY(12px);
-            transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, opacity;
+            opacity: 0;
+            transition: opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity;
             -ms-overflow-style: none;
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.18) transparent;
@@ -3015,7 +3013,7 @@
             border-radius: 999px;
         }
         .evidence-modal.open .evidence-modal-card {
-            transform: scale(1) translateY(0);
+            opacity: 1;
         }
         @media (max-width: 720px) {
             .evidence-modal-card { padding: 36px 24px 28px; border-radius: 20px; }
@@ -4497,23 +4495,21 @@
             /* Apple "Liquid Glass" — translucent + vibrancy so the page shows through,
                luminous rim, specular top edge. (Was opaque #18181b → read as frost.) */
             background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
-            backdrop-filter: blur(42px) saturate(190%);
-            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 28px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transform: translateY(28px) scale(0.98);
             opacity: 0;
-            transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, opacity;
+            transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity;
             box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55),
                         inset 0 1px 0 rgba(255, 255, 255, 0.24),
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
         }
         .app-modal.open .app-modal-card {
-            transform: translateY(0) scale(1);
             opacity: 1;
         }
         .app-modal-scroll {
@@ -5584,21 +5580,21 @@
             max-height: calc(100vh - 48px);
             overflow-y: auto;
             background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
-            backdrop-filter: blur(42px) saturate(190%);
-            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 22px;
             padding: 40px 36px 36px;
             box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
                         inset 0 1px 0 rgba(255, 255, 255, 0.24),
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
-            transform: scale(0.96) translateY(8px);
-            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, opacity;
+            opacity: 0;
+            transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity;
         }
 
         .contact-modal.open .contact-modal-card {
-            transform: scale(1) translateY(0);
+            opacity: 1;
         }
 
         .contact-modal-close {
@@ -5946,16 +5942,16 @@
             border: 1px solid rgba(187, 165, 255, 0.28);
             border-radius: 22px;
             padding: 44px 36px 32px;
-            backdrop-filter: blur(42px) saturate(190%);
-            -webkit-backdrop-filter: blur(42px) saturate(190%);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
                         inset 0 1px 0 rgba(255, 255, 255, 0.25),
                         inset 0 0 40px rgba(167, 139, 250, 0.06);
-            transform: translateY(12px) scale(0.985);
-            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, opacity;
+            opacity: 0;
+            transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity;
         }
-        .omt-modal.open .omt-modal-card { transform: none; }
+        .omt-modal.open .omt-modal-card { opacity: 1; }
         .omt-modal-card::-webkit-scrollbar { width: 8px; }
         .omt-modal-card::-webkit-scrollbar-track { background: transparent; }
         .omt-modal-card::-webkit-scrollbar-thumb {
