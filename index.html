@@ -2387,7 +2387,10 @@
             -webkit-backdrop-filter: blur(0px);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 380ms ease, background 380ms ease, backdrop-filter 380ms ease;
+            /* Animate only opacity + veil colour, NOT the backdrop-filter blur radius —
+               animating a blur radius re-rasterizes the whole backdrop every frame
+               (jank). The blur snaps on, masked by the opacity fade-in. */
+            transition: opacity 380ms ease, background 380ms ease;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -2419,6 +2422,7 @@
             transform: translateY(24px) scale(0.96);
             opacity: 0;
             transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease;
+            will-change: transform, opacity;
             box-shadow: 0 48px 140px rgba(0, 0, 0, 0.55),
                         inset 0 1px 0 rgba(255, 255, 255, 0.25),
                         inset 0 0 40px rgba(167, 139, 250, 0.06);
@@ -2999,6 +3003,7 @@
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
             transform: scale(0.96) translateY(12px);
             transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
             -ms-overflow-style: none;
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.18) transparent;
@@ -4471,7 +4476,10 @@
             -webkit-backdrop-filter: blur(0px);
             opacity: 0;
             pointer-events: none;
-            transition: opacity 380ms ease, background 380ms ease, backdrop-filter 380ms ease;
+            /* Animate only opacity + veil colour, NOT the backdrop-filter blur radius —
+               animating a blur radius re-rasterizes the whole backdrop every frame
+               (jank). The blur snaps on, masked by the opacity fade-in. */
+            transition: opacity 380ms ease, background 380ms ease;
             overflow: hidden;
         }
         .app-modal.open {
@@ -4499,6 +4507,7 @@
             transform: translateY(28px) scale(0.98);
             opacity: 0;
             transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
             box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55),
                         inset 0 1px 0 rgba(255, 255, 255, 0.24),
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
@@ -5585,6 +5594,7 @@
                         inset 0 0 40px rgba(255, 255, 255, 0.03);
             transform: scale(0.96) translateY(8px);
             transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
         }
 
         .contact-modal.open .contact-modal-card {
@@ -5943,6 +5953,7 @@
                         inset 0 0 40px rgba(167, 139, 250, 0.06);
             transform: translateY(12px) scale(0.985);
             transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity;
         }
         .omt-modal.open .omt-modal-card { transform: none; }
         .omt-modal-card::-webkit-scrollbar { width: 8px; }
