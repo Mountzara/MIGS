@@ -838,7 +838,11 @@
         .contact-section .btn {
             font-size: 17px;
             padding: 16px 36px;
-            margin: 0 auto;
+            /* Top margin lives on the button (not the paragraph): the paragraph is
+               `.section-sub.center`, and `.section-sub.center { margin: 0 auto }`
+               (defined later) zeroes any bottom margin set on `.contact-section
+               .section-sub`. Putting the gap here can't be overridden. */
+            margin: clamp(88px, 9vw, 120px) auto 0;
         }
 
         /* ========== Education / Training Section ========== */
@@ -4368,12 +4372,17 @@
                fixed line-art drawing is still present behind the footer, so a
                dark translucent fill + backdrop blur frosts it into real glass to
                match the rest of the page. */
-            background: rgba(0, 0, 0, 0.30);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            /* 2026-06-28 — match the site-wide Apple-glass language (was flat
+               rgba(0,0,0,0.30), which read as a solid dark bar, not glass). A
+               luminous white-tinted gradient + heavier blur + a specular top edge
+               frost it into real glass consistent with the cards/nav. */
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
+            backdrop-filter: saturate(180%) blur(28px);
+            -webkit-backdrop-filter: saturate(180%) blur(28px);
             color: var(--gray-3);
             padding: 48px 22px 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
             font-size: 12px;
         }
 
