@@ -220,6 +220,13 @@ rsync -a \
     --exclude='wrangler.toml' \
     --exclude='.env' \
     --exclude='.env.*' \
+    --exclude='scripts/' \
+    --exclude='schema/' \
+    --exclude='*.md' \
+    --exclude='*.sh' \
+    --exclude='*.py' \
+    --exclude='.gitignore' \
+    --exclude='.gitattributes' \
     "$REPO_ROOT/" "$STAGE_DIR/"
 
 STAGED_FILES=$(find "$STAGE_DIR" -type f | wc -l | tr -d ' ')
