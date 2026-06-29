@@ -15,6 +15,21 @@ final class PatientDetailModel: ObservableObject {
     }
     private var api: AdminAPI { AdminAPI(token: auth.basicToken) }
 
+    /// PATCH the patient's editable profile fields, then refresh.
+    @discardableResult
+    func updateProfile(_ fields: [String: Any]) async -> Bool {
+        error = nil
+        do {
+            try await api.updatePatient(id: patientID, fields: fields)
+            await reload()
+            return true
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+            return false
+        }
+    }
+
     func reload() async {
         isLoading = true; error = nil
         do {
@@ -41,6 +56,7 @@ struct PatientDetailView: View {
     let patient: Patient
     let auth: AuthStore
     @StateObject private var model: PatientDetailModel
+    @State private var showEdit = false
 
     init(patient: Patient, auth: AuthStore) {
         self.patient = patient
@@ -59,12 +75,21 @@ struct PatientDetailView: View {
         }
         .navigationTitle(patient.displayName)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                if model.detail?.patient != nil {
+                    Button { showEdit = true } label: { Image(systemName: "pencil") }
+                        .help("Edit patient profile")
+                }
                 Button { Task { await model.reload() } } label: { Image(systemName: "arrow.clockwise") }
             }
         }
         .refreshable { await model.reload() }
         .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
+        .sheet(isPresented: $showEdit) {
+            if let full = model.detail?.patient {
+                PatientEditView(patient: full, model: model)
+            }
+        }
         .task { await model.reload() }
     }
 
@@ -225,5 +250,96 @@ private struct EventRow: View {
             }
             Spacer()
         }
+    }
+}
+
+// MARK: - Profile editor
+
+/// Editor for the patient profile fields the backend PATCH allows:
+/// preferred_name, phone, pronouns, preferred_language, timezone, mrn, status.
+struct PatientEditView: View {
+    let patient: PatientFull
+    @ObservedObject var model: PatientDetailModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var preferredName: String
+    @State private var phone: String
+    @State private var pronouns: String
+    @State private var language: String
+    @State private var timezone: String
+    @State private var mrn: String
+    @State private var status: String
+    @State private var saving = false
+
+    private let statuses = ["active", "suspended", "closed"]
+
+    init(patient: PatientFull, model: PatientDetailModel) {
+        self.patient = patient
+        self.model = model
+        _preferredName = State(initialValue: patient.preferredName ?? "")
+        _phone = State(initialValue: patient.phone ?? "")
+        _pronouns = State(initialValue: patient.pronouns ?? "")
+        _language = State(initialValue: patient.preferredLanguage ?? "")
+        _timezone = State(initialValue: patient.timezone ?? "")
+        _mrn = State(initialValue: patient.mrn ?? "")
+        _status = State(initialValue: patient.status ?? "active")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Identity — read-only") {
+                    LabeledContent("Name",
+                        value: [patient.firstName, patient.lastName].compactMap { $0 }.joined(separator: " "))
+                    LabeledContent("Email", value: patient.email)
+                    if let d = patient.dob { LabeledContent("DOB", value: d) }
+                }
+                Section("Profile") {
+                    TextField("Preferred name", text: $preferredName)
+                    TextField("Phone", text: $phone)
+                        #if os(iOS)
+                        .keyboardType(.phonePad)
+                        #endif
+                    TextField("Pronouns", text: $pronouns)
+                    TextField("Preferred language", text: $language)
+                    TextField("Timezone — e.g. America/Chicago", text: $timezone)
+                    TextField("MRN", text: $mrn)
+                }
+                Section("Account status") {
+                    Picker("Status", selection: $status) {
+                        ForEach(statuses, id: \.self) { Text($0.capitalized).tag($0) }
+                    }
+                }
+            }
+            .navigationTitle("Edit patient")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if saving { ProgressView() }
+                    else { Button("Save") { Task { await save() } } }
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 480, minHeight: 540)
+        #endif
+    }
+
+    private func save() async {
+        saving = true; defer { saving = false }
+        func t(_ s: String) -> String { s.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let fields: [String: Any] = [
+            "preferred_name": t(preferredName),
+            "phone": t(phone),
+            "pronouns": t(pronouns),
+            "preferred_language": t(language),
+            "timezone": t(timezone),
+            "mrn": t(mrn),
+            "status": status,
+        ]
+        if await model.updateProfile(fields) { dismiss() }
     }
 }

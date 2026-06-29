@@ -177,6 +177,13 @@ struct AdminAPI {
         return try decode(PatientDetailResponse.self, data)
     }
 
+    /// Edit patient profile fields (preferred_name, phone, pronouns,
+    /// preferred_language, timezone, mrn, status) via PATCH /patients/<id>.
+    func updatePatient(id: String, fields: [String: Any]) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/v1/admin/patients/\(id)", method: "PATCH", body: payload))
+    }
+
     // MARK: - Cases (what's new)
     func caseWhatsNew(patientId: String) async throws -> WhatsNewResponse {
         let data = try await send(request("/api/v1/admin/cases/\(patientId)/whats-new"))
