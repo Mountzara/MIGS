@@ -423,6 +423,7 @@ struct EducationEditView: View {
     @State private var bodyMd: String
     @State private var saving = false
     @State private var error: String?
+    @State private var bodyMode = 0                  // 0 = Markdown source, 1 = live preview
 
     init(material: EducationMaterial, model: EducationModel, onSaved: @escaping (EducationMaterial) -> Void) {
         self.material = material
@@ -450,10 +451,29 @@ struct EducationEditView: View {
                 Section("Topics — comma separated") {
                     TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
                 }
-                Section("Body (Markdown)") {
-                    TextEditor(text: $bodyMd)
-                        .font(.system(.footnote, design: .monospaced))
+                Section {
+                    Picker("View", selection: $bodyMode) {
+                        Text("Markdown").tag(0)
+                        Text("Preview").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    if bodyMode == 0 {
+                        TextEditor(text: $bodyMd)
+                            .font(.system(.footnote, design: .monospaced))
+                            .frame(minHeight: 300)
+                    } else {
+                        ScrollView {
+                            Text(Self.renderMarkdown(bodyMd))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                                .padding(.vertical, 4)
+                        }
                         .frame(minHeight: 300)
+                    }
+                } header: {
+                    Text("Body (Markdown)")
+                } footer: {
+                    Text(bodyMode == 1 ? "Live preview of your unsaved Markdown." : "Edit Markdown, then switch to Preview to see it rendered.")
                 }
             }
             .navigationTitle("Edit material")
@@ -475,6 +495,12 @@ struct EducationEditView: View {
         #if os(macOS)
         .frame(minWidth: 560, minHeight: 600)
         #endif
+    }
+
+    static func renderMarkdown(_ md: String) -> AttributedString {
+        (try? AttributedString(markdown: md,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace,
+                           failurePolicy: .returnPartiallyParsedIfPossible))) ?? AttributedString(md)
     }
 
     private func save() async {

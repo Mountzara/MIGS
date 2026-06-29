@@ -216,6 +216,8 @@ struct PostEditView: View {
     @State private var bodyHTML: String
     @State private var saving = false
     @State private var error: String?
+    @State private var bodyMode = 0                  // 0 = HTML source, 1 = live preview
+    @State private var previewHeight: CGFloat = 320
 
     init(post: Post, model: AppModel, onSaved: @escaping (Post) -> Void) {
         self.post = post
@@ -243,10 +245,27 @@ struct PostEditView: View {
                 Section("Topics — comma separated") {
                     TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
                 }
-                Section("Body (HTML)") {
-                    TextEditor(text: $bodyHTML)
-                        .font(.system(.footnote, design: .monospaced))
-                        .frame(minHeight: 300)
+                Section {
+                    Picker("View", selection: $bodyMode) {
+                        Text("HTML source").tag(0)
+                        Text("Preview").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    if bodyMode == 0 {
+                        TextEditor(text: $bodyHTML)
+                            .font(.system(.footnote, design: .monospaced))
+                            .frame(minHeight: 300)
+                    } else {
+                        // Live render of the CURRENT edit buffer (unsaved) — so
+                        // you see exactly how the HTML looks before you save.
+                        HTMLView(html: bodyHTML, height: $previewHeight)
+                            .frame(height: max(previewHeight, 300))
+                            .id(bodyHTML)   // fresh render whenever the source changes
+                    }
+                } header: {
+                    Text("Body (HTML)")
+                } footer: {
+                    Text(bodyMode == 1 ? "Live preview of your unsaved edits." : "Edit the raw HTML, then switch to Preview to see it rendered.")
                 }
             }
             .navigationTitle("Edit post")
