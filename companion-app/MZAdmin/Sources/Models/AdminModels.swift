@@ -694,6 +694,41 @@ struct ComplianceDoc: Identifiable, Codable, Hashable {
 }
 struct ComplianceDocsResponse: Codable { let docs: [ComplianceDoc] }
 
+/// GET /api/v1/admin/compliance/docs/<slug> — doc body + active signature.
+struct ComplianceDocDetail: Codable {
+    let doc: DocMeta?
+    let body: String?
+    let bodyPresent: Bool?
+    let activeSignature: ActiveSignature?
+
+    struct DocMeta: Codable {
+        let slug: String?; let title: String?; let path: String?; let publicUrl: String?
+        let reviewIntervalMonths: Int?; let counselReviewRecommended: Bool?
+        enum CodingKeys: String, CodingKey {
+            case slug, title, path
+            case publicUrl = "public_url"
+            case reviewIntervalMonths = "review_interval_months"
+            case counselReviewRecommended = "counsel_review_recommended"
+        }
+    }
+    struct ActiveSignature: Codable {
+        let signedByDisplayName: String?; let signedAt: String?; let typedInitials: String?
+        let documentSha256: String?; let nextReviewDate: String?
+        enum CodingKeys: String, CodingKey {
+            case signedByDisplayName = "signed_by_display_name"
+            case signedAt = "signed_at"
+            case typedInitials = "typed_initials"
+            case documentSha256 = "document_sha256"
+            case nextReviewDate = "next_review_date"
+        }
+    }
+    enum CodingKeys: String, CodingKey {
+        case doc, body
+        case bodyPresent = "body_present"
+        case activeSignature = "active_signature"
+    }
+}
+
 // ---------- Briefings ----------
 struct Briefing: Identifiable, Codable, Hashable {
     let id: String                     // typically patient_id-appointment_id

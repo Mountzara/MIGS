@@ -274,6 +274,12 @@ struct AdminAPI {
         return try decode(ComplianceDocsResponse.self, data).docs
     }
 
+    /// Full compliance doc: rendered body + the active signature record.
+    func complianceDocDetail(slug: String) async throws -> ComplianceDocDetail {
+        let data = try await send(request("/api/v1/admin/compliance/docs/\(slug)"))
+        return try decode(ComplianceDocDetail.self, data)
+    }
+
     // MARK: - Briefings
     func listBriefings(date: String? = nil, range: String? = nil) async throws -> [Briefing] {
         var params: [String] = []
