@@ -92,9 +92,10 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            /* Drop the opaque var(--bg) base so the fixed line-art backdrop shows
+               through the hero; keep only the translucent blue glow on top. */
             background:
-                radial-gradient(ellipse 90% 60% at 50% 20%, rgba(41, 151, 255, 0.05), transparent 70%),
-                var(--bg);
+                radial-gradient(ellipse 90% 60% at 50% 20%, rgba(41, 151, 255, 0.05), transparent 70%);
         }
         .hero-eyebrow {
             display: inline-block;
