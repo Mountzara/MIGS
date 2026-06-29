@@ -198,14 +198,59 @@
     var KEY = 'mz_admin_basic';
     var declined = false;          // user cancelled the prompt → stop auto-prompting
     function cached() { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } }
-    function ensure(force) {
+    var EKEY = 'mz_admin_email';
+    function lastEmail() { try { return sessionStorage.getItem(EKEY) || 'chris.mabini@gmail.com'; } catch (e) { return 'chris.mabini@gmail.com'; } }
+    // On-theme glass credential modal — replaces the native window.prompt the
+    // Basic-auth fetch interceptor used to fire. Same mechanism (base64 user:pass
+    // cached in sessionStorage); only the UI changed. Returns a Promise<string|null>.
+    function credModal(defaultEmail) {
+        return new Promise(function (resolve) {
+            if (!document.getElementById('mz-admin-cred-style')) {
+                var st = document.createElement('style');
+                st.id = 'mz-admin-cred-style';
+                st.textContent =
+                  '.mz-cred-ov{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,8,10,.55);backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%);}' +
+                  '.mz-cred-card{width:min(92%,400px);background:linear-gradient(155deg,rgba(48,48,58,.62),rgba(16,16,22,.66));backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:22px;box-shadow:0 40px 120px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.22);padding:30px 28px 26px;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Avenir Next",sans-serif;}' +
+                  '.mz-cred-card h2{margin:0 0 4px;font-size:18px;font-weight:600;}' +
+                  '.mz-cred-card p{margin:0 0 6px;font-size:13px;color:rgba(255,255,255,.55);}' +
+                  '.mz-cred-card label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin:16px 0 6px;}' +
+                  '.mz-cred-card input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#fff;font-size:15px;outline:none;}' +
+                  '.mz-cred-card input:focus{border-color:rgba(167,139,250,.7);background:rgba(255,255,255,.09);}' +
+                  '.mz-cred-row{display:flex;gap:10px;margin-top:22px;}' +
+                  '.mz-cred-row button{flex:1;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;}' +
+                  '.mz-cred-cancel{background:rgba(255,255,255,.08);color:#fff;}' +
+                  '.mz-cred-go{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;}';
+                document.head.appendChild(st);
+            }
+            var ov = document.createElement('div'); ov.className = 'mz-cred-ov';
+            var card = document.createElement('form'); card.className = 'mz-cred-card';
+            card.innerHTML = '<h2>Mount&nbsp;Zara — Admin</h2><p>Sign in to continue.</p>' +
+                '<label>Email</label><input type="email" autocomplete="username">' +
+                '<label>Password</label><input type="password" autocomplete="current-password">' +
+                '<div class="mz-cred-row"><button type="button" class="mz-cred-cancel">Cancel</button><button type="submit" class="mz-cred-go">Sign in</button></div>';
+            ov.appendChild(card); document.body.appendChild(ov);
+            var email = card.querySelector('input[type=email]');
+            var pass = card.querySelector('input[type=password]');
+            email.value = defaultEmail || '';
+            (email.value ? pass : email).focus();
+            function done(val) { try { ov.remove(); } catch (e) {} resolve(val); }
+            card.querySelector('.mz-cred-cancel').addEventListener('click', function () { done(null); });
+            ov.addEventListener('click', function (e) { if (e.target === ov) done(null); });
+            document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', esc); done(null); } });
+            card.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var u = email.value.trim(), p = pass.value;
+                if (!u || !p) { done(null); return; }
+                try { sessionStorage.setItem(EKEY, u); } catch (x) {}
+                done(btoa(u + ':' + p));
+            });
+        });
+    }
+    async function ensure(force) {
         if (!force) { var c = cached(); if (c) return c; }
         if (declined && !force) return null;
-        var u = window.prompt('Admin email:', 'chris.mabini@gmail.com');
-        if (!u) { declined = true; return null; }
-        var p = window.prompt('Admin password:');
-        if (!p) { declined = true; return null; }
-        var b = btoa(u + ':' + p);
+        var b = await credModal(lastEmail());
+        if (!b) { declined = true; return null; }
         try { sessionStorage.setItem(KEY, b); } catch (e) {}
         declined = false;
         return b;
@@ -224,13 +269,13 @@
         var headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || undefined);
         var hadAuth = headers.has('Authorization');   // caller manages its own auth
         if (!hadAuth) {
-            var c = cached() || ensure(false);
+            var c = cached(); if (!c) c = await ensure(false);
             if (c) headers.set('Authorization', 'Basic ' + c);
         }
         var res = await orig(input, Object.assign({}, init, { headers: headers }));
         if (res.status === 401 && !hadAuth && !declined) {
             try { sessionStorage.removeItem(KEY); } catch (e) {}
-            var c2 = ensure(true);
+            var c2 = await ensure(true);
             if (c2) { headers.set('Authorization', 'Basic ' + c2); res = await orig(input, Object.assign({}, init, { headers: headers })); }
         }
         return res;
