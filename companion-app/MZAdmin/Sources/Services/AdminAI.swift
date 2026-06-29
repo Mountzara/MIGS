@@ -19,6 +19,22 @@ import FoundationModels
 // records are never exposed to the model.
 // =====================================================================
 
+/// Non-AI helpers over the content queue (usable without Apple Intelligence).
+enum AdminQueue {
+    /// Counts of content items awaiting review (draft posts / pending briefs /
+    /// draft carousels). Content surfaces only — never patient data.
+    static func pendingCounts(token: String?) async -> (posts: Int, briefs: Int, carousels: Int) {
+        let api = AdminAPI(token: token)
+        var posts = 0
+        for kind in PostKind.allCases {
+            if let ps = try? await api.listPosts(kind: kind) { posts += ps.filter { $0.status == "draft" }.count }
+        }
+        let briefs = (try? await api.listTrendBriefs(includeDone: false))?.filter { $0.status == "pending" }.count ?? 0
+        let carousels = (try? await api.listCarousels())?.filter { $0.status == "draft" }.count ?? 0
+        return (posts, briefs, carousels)
+    }
+}
+
 #if canImport(FoundationModels)
 
 /// Rough token budget for the shared 4096-token prompt+answer window: keep
@@ -99,14 +115,8 @@ struct PendingCountsTool: Tool {
     }
 
     func call(arguments: Arguments) async throws -> String {
-        let api = AdminAPI(token: token)
-        var posts = 0, briefs = 0, carousels = 0
-        for kind in PostKind.allCases {
-            if let ps = try? await api.listPosts(kind: kind) { posts += ps.filter { $0.status == "draft" }.count }
-        }
-        if let bs = try? await api.listTrendBriefs(includeDone: false) { briefs = bs.filter { $0.status == "pending" }.count }
-        if let cs = try? await api.listCarousels() { carousels = cs.filter { $0.status == "draft" }.count }
-        return "Pending review — draft posts: \(posts), pending trend briefs: \(briefs), draft carousels: \(carousels)."
+        let c = await AdminQueue.pendingCounts(token: token)
+        return "Pending review — draft posts: \(c.posts), pending trend briefs: \(c.briefs), draft carousels: \(c.carousels)."
     }
 }
 
@@ -136,6 +146,45 @@ struct AssistantTurn: Identifiable, Equatable {
 
 #if canImport(FoundationModels)
 
+/// Shared on-device engine used by both the in-app assistant and the Siri
+/// App Intents, so grounding + instructions stay identical across surfaces.
+@available(iOS 26.0, macOS 26.0, *)
+enum AdminAIEngine {
+    static let instructions = """
+    You are the Mount Zara admin assistant for Dr. Chris Mabini. You help him
+    manage his CONTENT pipeline: research-digest posts, trend briefs, and social
+    carousels. Use the provided tools to look up real items and counts — never
+    invent titles, ids, statuses, dates, or PMIDs. If a tool returns nothing,
+    say so plainly. Be concise (2–4 sentences) unless asked for detail. You have
+    no access to patient data, messages, triage, or schedules; if asked about
+    those, say they are out of scope for this assistant.
+    """
+
+    static func makeSession(token: String?) -> LanguageModelSession {
+        let s = LanguageModelSession(
+            tools: [ContentSearchTool(token: token), PendingCountsTool(token: token)],
+            instructions: instructions)
+        s.prewarm()
+        return s
+    }
+
+    /// One-shot grounded answer (App Intents / Siri).
+    static func answer(token: String?, query: String) async throws -> String {
+        try await makeSession(token: token)
+            .respond(to: query, options: GenerationOptions(temperature: 0.3, maximumResponseTokens: 500))
+            .content
+    }
+
+    /// Structured "what needs attention" digest.
+    static func digest(token: String?) async throws -> QueueDigest {
+        try await makeSession(token: token)
+            .respond(to: "Summarize what most needs my attention across the content queue. Use getPendingCounts.",
+                     generating: QueueDigest.self,
+                     options: GenerationOptions(temperature: 0.2))
+            .content
+    }
+}
+
 @available(iOS 26.0, macOS 26.0, *)
 @MainActor
 final class AdminAssistant: ObservableObject {
@@ -148,27 +197,11 @@ final class AdminAssistant: ObservableObject {
     private var session: LanguageModelSession?
     private let log = Logger(subsystem: "com.mountzara.mzadmin", category: "assistant")
 
-    private static let instructions = """
-    You are the Mount Zara admin assistant for Dr. Chris Mabini. You help him
-    manage his CONTENT pipeline: research-digest posts, trend briefs, and social
-    carousels. Use the provided tools to look up real items and counts — never
-    invent titles, ids, statuses, dates, or PMIDs. If a tool returns nothing,
-    say so plainly. Be concise (2–4 sentences) unless asked for detail. You have
-    no access to patient data, messages, triage, or schedules; if asked about
-    those, say they are out of scope for this assistant.
-    """
-
     init(auth: AuthStore) { self.auth = auth }
 
     private func ensureSession() {
         guard session == nil else { return }
-        let token = auth.basicToken
-        let s = LanguageModelSession(
-            tools: [ContentSearchTool(token: token), PendingCountsTool(token: token)],
-            instructions: Self.instructions
-        )
-        s.prewarm()
-        session = s
+        session = AdminAIEngine.makeSession(token: auth.basicToken)
     }
 
     /// Send the current input and stream the grounded answer back.
@@ -203,20 +236,22 @@ final class AdminAssistant: ObservableObject {
         }
     }
 
-    /// One-shot structured digest of the queue (guided generation + tools).
-    func digest() async -> QueueDigest? {
-        ensureSession()
-        guard let session else { return nil }
+    /// One-shot structured "what needs attention" digest, posted as a turn.
+    func summarize() async {
+        guard !isResponding else { return }
+        isResponding = true
+        defer { isResponding = false }
+        turns.append(AssistantTurn(role: .user, text: "Summarize what needs my attention"))
+        turns.append(AssistantTurn(role: .assistant, text: "…"))
+        let idx = turns.count - 1
         do {
-            let r = try await session.respond(
-                to: "Summarize what most needs my attention across the content queue. Use getPendingCounts.",
-                generating: QueueDigest.self,
-                options: GenerationOptions(temperature: 0.2)
-            )
-            return r.content
+            let d = try await AdminAIEngine.digest(token: auth.basicToken)
+            var t = d.headline
+            if !d.actions.isEmpty { t += "\n\n" + d.actions.map { "• \($0)" }.joined(separator: "\n") }
+            turns[idx].text = t
         } catch {
             log.error("digest failed: \(error.localizedDescription)")
-            return nil
+            turns[idx].text = "Couldn't generate a summary on device."
         }
     }
 }
@@ -286,6 +321,15 @@ struct AssistantChatView: View {
             composer
         }
         .overlay(alignment: .bottom) { ErrorBar(text: assistant.errorText) }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { Task { await assistant.summarize() } } label: {
+                    Image(systemName: "wand.and.stars")
+                }
+                .disabled(assistant.isResponding)
+                .help("Summarize what needs attention")
+            }
+        }
     }
 
     private var emptyState: some View {

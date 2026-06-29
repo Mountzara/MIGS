@@ -95,6 +95,14 @@ enum AdminSpotlight {
 
 #if canImport(AppIntents) && canImport(CoreSpotlight)
 
+/// Admin API bound to the signed-in operator's Keychain token, for resolving
+/// indexed entities from the App Intents / Spotlight context.
+@available(macOS 15.0, iOS 18.0, *)
+private func entityResolverAPI() async -> AdminAPI {
+    let token = await MainActor.run { AuthStore().basicToken }
+    return AdminAPI(token: token)
+}
+
 @available(macOS 15.0, iOS 18.0, *)
 struct AdminPostEntity: AppEntity, IndexedEntity {
     static var typeDisplayRepresentation: TypeDisplayRepresentation { "Mount Zara post" }
@@ -132,8 +140,18 @@ struct AdminPostEntity: AppEntity, IndexedEntity {
 
 @available(macOS 15.0, iOS 18.0, *)
 struct AdminPostEntityQuery: EntityQuery {
-    func entities(for identifiers: [AdminPostEntity.ID]) async throws -> [AdminPostEntity] { [] }
-    func suggestedEntities() async throws -> [AdminPostEntity] { [] }
+    func suggestedEntities() async throws -> [AdminPostEntity] {
+        let api = await entityResolverAPI()
+        var out: [AdminPostEntity] = []
+        for kind in PostKind.allCases {
+            if let ps = try? await api.listPosts(kind: kind) { out += ps.prefix(12).map(AdminPostEntity.init) }
+        }
+        return Array(out.prefix(24))
+    }
+    func entities(for identifiers: [AdminPostEntity.ID]) async throws -> [AdminPostEntity] {
+        let ids = Set(identifiers)
+        return try await suggestedEntities().filter { ids.contains($0.id) }
+    }
 }
 
 @available(macOS 15.0, iOS 18.0, *)
@@ -177,8 +195,15 @@ struct AdminTrendBriefEntity: AppEntity, IndexedEntity {
 
 @available(macOS 15.0, iOS 18.0, *)
 struct AdminTrendBriefEntityQuery: EntityQuery {
-    func entities(for identifiers: [AdminTrendBriefEntity.ID]) async throws -> [AdminTrendBriefEntity] { [] }
-    func suggestedEntities() async throws -> [AdminTrendBriefEntity] { [] }
+    func suggestedEntities() async throws -> [AdminTrendBriefEntity] {
+        let api = await entityResolverAPI()
+        let briefs = (try? await api.listTrendBriefs(includeDone: true)) ?? []
+        return briefs.prefix(24).map(AdminTrendBriefEntity.init)
+    }
+    func entities(for identifiers: [AdminTrendBriefEntity.ID]) async throws -> [AdminTrendBriefEntity] {
+        let ids = Set(identifiers)
+        return try await suggestedEntities().filter { ids.contains($0.id) }
+    }
 }
 
 @available(macOS 15.0, iOS 18.0, *)
@@ -220,8 +245,15 @@ struct AdminCarouselEntity: AppEntity, IndexedEntity {
 
 @available(macOS 15.0, iOS 18.0, *)
 struct AdminCarouselEntityQuery: EntityQuery {
-    func entities(for identifiers: [AdminCarouselEntity.ID]) async throws -> [AdminCarouselEntity] { [] }
-    func suggestedEntities() async throws -> [AdminCarouselEntity] { [] }
+    func suggestedEntities() async throws -> [AdminCarouselEntity] {
+        let api = await entityResolverAPI()
+        let cs = (try? await api.listCarousels()) ?? []
+        return cs.prefix(24).map(AdminCarouselEntity.init)
+    }
+    func entities(for identifiers: [AdminCarouselEntity.ID]) async throws -> [AdminCarouselEntity] {
+        let ids = Set(identifiers)
+        return try await suggestedEntities().filter { ids.contains($0.id) }
+    }
 }
 
 #endif

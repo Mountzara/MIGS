@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import os
 
 /// Stores the admin Basic-auth credentials securely in the system Keychain
 /// (shared across app launches; never written to UserDefaults or disk in clear).
@@ -12,6 +13,7 @@ final class AuthStore: ObservableObject {
 
     private let service = "com.mountzara.mzadmin"
     private let account = "admin-basic"
+    private let log = Logger(subsystem: "com.mountzara.mzadmin", category: "auth")
 
     init() {
         if let creds = load() {
@@ -52,7 +54,10 @@ final class AuthStore: ObservableObject {
             kSecValueData as String: payload,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            log.error("Keychain save failed: OSStatus \(status). Credentials not persisted.")
+        }
     }
 
     private func load() -> Credentials? {
