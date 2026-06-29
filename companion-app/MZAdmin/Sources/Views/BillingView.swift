@@ -115,6 +115,16 @@ struct BillingView: View {
                 BillingClaimDetailView(claim: claim, model: model)
             }
             .sheet(isPresented: $showBulkApprove) { bulkApproveSheet }
+            .onChange(of: model.claims) { _, _ in
+                // Reconcile the selection against the live queue: drop ids the
+                // server no longer returns, and leave selection mode if there's
+                // nothing left to pick (otherwise the Cancel toggle can vanish).
+                picked.formIntersection(Set(model.claims.map { $0.id }))
+                if selecting && model.pending.isEmpty {
+                    selecting = false
+                    picked.removeAll()
+                }
+            }
         }
         .task { await model.reload() }
     }
@@ -139,13 +149,16 @@ struct BillingView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showBulkApprove = false } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Approve") {
-                        let ids = Array(picked)
                         let note = bulkNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+                        // Only send ids that still exist in the current queue.
+                        let ids = Array(picked.intersection(Set(model.claims.map { $0.id })))
                         Task {
                             let failed = await model.bulkApprove(ids, notes: note.isEmpty ? nil : note)
                             showBulkApprove = false
-                            picked = Set(failed)            // keep failures selected for retry
-                            if failed.isEmpty { withAnimation { selecting = false } }
+                            // Keep only still-existing failures selected for retry; drop
+                            // any id the server no longer returns (deleted/changed).
+                            picked = Set(failed).intersection(Set(model.claims.map { $0.id }))
+                            if picked.isEmpty { withAnimation { selecting = false } }
                         }
                     }
                     .disabled(picked.isEmpty)
