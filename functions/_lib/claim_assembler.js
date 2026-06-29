@@ -78,7 +78,9 @@ export async function assembleClaim(env, claimRow, body = {}) {
         patient: isSelf ? null : { firstName: patient && patient.first_name, lastName: patient && patient.last_name, dob: ((patient && patient.dob) || "").replace(/-/g, ""), gender: ins.gender, address: ins.address || {} },
         claim: {
             patientControlNumber: id,
-            placeOfService: claimRow.place_of_service || (lines[0] && lines[0].place_of_service) || "11",
+            // POS lives on billing_claim_lines, not billing_claims — take it
+            // from the first line (default to 11 office).
+            placeOfService: (lines[0] && lines[0].place_of_service) || "11",
             frequencyCode: (body && body.frequency_code) || (claimRow.status === "denied" || claimRow.status === "rejected" ? "7" : "1"),
             diagnoses: diags.map((d) => d.user_override_code || d.icd10_code),
             patientIsSubscriber: isSelf,

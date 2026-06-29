@@ -54,12 +54,13 @@ export async function onRequestPost(ctx) {
                 review.ai_used ? 1 : 0, review.model || null, review.prompt_version || null,
                 (admin && admin.user) || "admin", now,
             ).run();
-        } catch (e) { /* table may not exist yet on first deploy; non-fatal */ }
+        } catch (e) { console.warn("preflight: review persist failed (non-fatal)", { claim_id: id, error: e && e.message ? e.message : String(e) }); }
 
         try {
             await logAudit(env, {
                 user_id: (admin && admin.user) || "admin", user_role: "staff", action: "claim_ai_preflight",
                 record_type: "billing_claim", record_id: id, success: true,
+                ip: request.headers.get("CF-Connecting-IP"), user_agent: request.headers.get("user-agent"),
                 details: { ai_used: review.ai_used, risk_level: review.risk_level, ready_to_submit: readyToSubmit, scrub_clean: scrub.clean, issue_count: (review.issues || []).length, model: review.model },
             }, ctx);
         } catch {}

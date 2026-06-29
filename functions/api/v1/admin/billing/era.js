@@ -56,7 +56,7 @@ async function tokensMatch(a, b) {
     return diff === 0;
 }
 
-async function postEra(env, edi, actor, ctx) {
+async function postEra(env, edi, actor, ctx, reqMeta = {}) {
     if (!edi || edi.indexOf("CLP") < 0) return jsonError("body is not an 835 remittance (no CLP segment)", 400);
     const era = parse835(edi);
     const now = Date.now();
@@ -82,17 +82,24 @@ async function postEra(env, edi, actor, ctx) {
         // attach the remittance under `.era` rather than clobbering it.
         let merged = {};
         try { merged = claim.clearinghouse_response_json ? JSON.parse(claim.clearinghouse_response_json) : {}; } catch { merged = {}; }
-        merged.era = { trace: era.payment.traceNumber, payer: era.payerName, status: c.statusLabel, charge_cents: c.chargeCents, paid_cents: c.paidCents, patient_resp_cents: c.patientRespCents, reason_codes: c.reasonCodes, adjustments: c.adjustments, lines: c.lines, posted_at: now };
-        await env.DB.prepare(
+        merged.era = { trace: era.payment.traceNumber, payer: era.payerName, status: c.statusLabel, charge_cents: c.chargeCents, paid_cents: c.paidCents, patient_resp_cents: c.patientRespCents, reason_codes: c.reasonCodes, rarc_codes: c.rarcCodes || [], adjustments: c.adjustments, lines: c.lines, posted_at: now };
+        // Compare-and-swap on the status we read — if the claim moved between
+        // the SELECT and here (concurrent submit/appeal), don't post over it.
+        const upd = await env.DB.prepare(
             `UPDATE billing_claims
                 SET status = ?, status_reason = ?, paid_at = COALESCE(paid_at, ?),
                     clearinghouse_response_json = ?, updated_at = ?
-              WHERE id = ?`
+              WHERE id = ? AND status = ?`
         ).bind(
             c.mappedStatus, reason, isPaid ? now : null,
             JSON.stringify(merged),
-            now, pcn,
+            now, pcn, claim.status,
         ).run();
+        if (!upd || !upd.meta || upd.meta.changes === 0) {
+            skipped++;
+            results.push({ patientControlNumber: pcn, matched: false, skipped: true, reason: "claim status changed during posting — ERA not applied" });
+            continue;
+        }
         matched++; postedCents += c.paidCents;
         results.push({ patientControlNumber: pcn, matched: true, mappedStatus: c.mappedStatus, paid_cents: c.paidCents, reason_codes: c.reasonCodes });
     }
@@ -102,6 +109,7 @@ async function postEra(env, edi, actor, ctx) {
             user_id: actor || "pipeline", user_role: actor === "pipeline" ? "app" : "staff",
             action: "claim_era_post", record_type: "billing_era", record_id: era.payment.traceNumber || "era",
             success: true,
+            ip: reqMeta.ip, user_agent: reqMeta.ua,
             details: { payer: era.payerName, trace: era.payment.traceNumber, claims: era.claims.length, matched, skipped, posted_cents: postedCents },
         }, ctx);
     } catch {}
@@ -119,12 +127,13 @@ async function postEra(env, edi, actor, ctx) {
 export async function onRequestPost(ctx) {
     const { request, env } = ctx;
     const token = request.headers.get("X-Pipeline-Token");
+    const meta = { ip: request.headers.get("CF-Connecting-IP"), ua: request.headers.get("user-agent") };
     if (token && env.PIPELINE_TOKEN && await tokensMatch(token, env.PIPELINE_TOKEN)) {
         const edi = await readEdi(request);
-        return postEra(env, edi, "pipeline", ctx);
+        return postEra(env, edi, "pipeline", ctx, meta);
     }
     return adminRoute(ctx, async ({ env: e, request: r, admin }) => {
         const edi = await readEdi(r);
-        return postEra(e, edi, (admin && admin.user) || "admin", ctx);
+        return postEra(e, edi, (admin && admin.user) || "admin", ctx, { ip: r.headers.get("CF-Connecting-IP"), ua: r.headers.get("user-agent") });
     });
 }

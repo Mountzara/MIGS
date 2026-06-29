@@ -25,6 +25,16 @@ const ANTHROPIC_VERSION = "2023-06-01";
 // set. Model string per Anthropic's published list: `claude-sonnet-4-6`.
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 
+/**
+ * Whether a model rejects sampling parameters (temperature/top_p/top_k).
+ * The Opus 4.7/4.8/4.9… family returns a 400 when any are sent. Matches
+ * claude-opus-4-7 and up (and future two-digit minors), not opus-4-6 or
+ * earlier, and never Sonnet/Haiku.
+ */
+export function modelRejectsSamplingParams(model) {
+    return /claude-opus-4-(?:[789]|1\d|2\d)\b/.test(String(model || ""));
+}
+
 export class AnthropicError extends Error {
     constructor(message, status, body) {
         super(message);
@@ -56,13 +66,23 @@ export async function callClaude(env, args) {
             null
         );
     }
+    const model = args.model || DEFAULT_MODEL;
     const body = {
-        model: args.model || DEFAULT_MODEL,
+        model,
         max_tokens: args.max_tokens || 1024,
-        temperature: args.temperature ?? 0,
         system: args.system || "",
         messages: args.messages || [],
     };
+    // The Opus 4.7/4.8 family REJECTS sampling parameters (temperature/top_p/
+    // top_k) with a 400. Only attach them for models that accept them, so a
+    // caller can pin BILLING_AI_MODEL=claude-opus-4-8 (or any Opus 4.x) and
+    // every call still succeeds. Non-Opus models keep deterministic temp 0
+    // (or the caller's override) exactly as before.
+    if (!modelRejectsSamplingParams(model)) {
+        body.temperature = args.temperature ?? 0;
+        if (args.top_p != null) body.top_p = args.top_p;
+        if (args.top_k != null) body.top_k = args.top_k;
+    }
     const t0 = Date.now();
     let res;
     try {

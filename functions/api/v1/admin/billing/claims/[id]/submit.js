@@ -64,8 +64,19 @@ export async function onRequestPost(ctx) {
         // 5. Submit — route to the payer's enrolled clearinghouse (multi-CH practices),
         //    else the global default.
         const vendor = (payer && payer.clearinghouse_vendor) || clearinghouseVendor(env);
-        const result = await submitClaim(env, { edi: built.edi, claim: norm, payer, vendor });
         const now = Date.now();
+        // Optimistic lock — compare-and-swap on the status we read, so two
+        // concurrent submits can't BOTH reach the clearinghouse and create
+        // duplicate claims (a CARC 18 denial). The final UPDATE below clears
+        // 'submitting' to the real outcome (or back to ready_to_submit on
+        // failure). If another request already claimed it, 409.
+        const claimed = await env.DB.prepare(
+            `UPDATE billing_claims SET status = 'submitting', updated_at = ? WHERE id = ? AND status = ?`
+        ).bind(now, id, claimRow.status).run();
+        if (!claimed || !claimed.meta || claimed.meta.changes === 0) {
+            return jsonError("claim is already submitting or its status changed — refresh and retry", 409, { status: claimRow.status });
+        }
+        const result = await submitClaim(env, { edi: built.edi, claim: norm, payer, vendor });
 
         // 6. Persist + transition + audit
         const newStatus = result.ok ? result.status : "ready_to_submit";
@@ -85,6 +96,7 @@ export async function onRequestPost(ctx) {
             await logAudit(env, {
                 user_id: (admin && admin.user) || "admin", user_role: "staff", action: "claim_submit",
                 record_type: "billing_claim", record_id: id, success: result.ok,
+                ip: request.headers.get("CF-Connecting-IP"), user_agent: request.headers.get("user-agent"),
                 details: { vendor, usage: built.controlNumbers.usageIndicator, ok: result.ok, status: newStatus, clearinghouse_claim_id: result.clearinghouseClaimId, warnings: scrub.warnings.length },
             }, ctx);
         } catch {}

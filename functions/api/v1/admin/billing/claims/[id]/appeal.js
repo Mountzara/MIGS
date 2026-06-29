@@ -100,8 +100,12 @@ export async function onRequestPost(ctx) {
             await logAudit(env, {
                 user_id: (admin && admin.user) || "admin", user_role: "staff", action: "claim_appeal_draft",
                 record_type: "billing_claim", record_id: id, success: true,
+                ip: request.headers.get("CF-Connecting-IP"), user_agent: request.headers.get("user-agent"),
                 // PHI-free audit detail: codes + strategy only, never patient identity.
-                details: { appeal_id: appealId, ai_used: draft.ai_used, strategy: draft.strategy, carc: (era.reason_codes) || [], mark_appealed: statusChanged, model: draft.model, phi_sent_to_ai: !!(env.ANTHROPIC_API_KEY) },
+                // phi_sent_to_ai reflects whether the model ACTUALLY ran (ai_used),
+                // not merely whether a key is configured — the appeal letter carries
+                // PHI only on the AI path; the fallback is local + PHI-free.
+                details: { appeal_id: appealId, ai_used: draft.ai_used, strategy: draft.strategy, carc: (era.reason_codes) || [], mark_appealed: statusChanged, model: draft.model, phi_sent_to_ai: !!draft.ai_used },
             }, ctx);
         } catch {}
 

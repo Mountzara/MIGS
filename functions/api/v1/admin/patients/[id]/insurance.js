@@ -65,6 +65,7 @@ export async function onRequestPut(ctx) {
             await logAudit(env, {
                 user_id: (admin && admin.user) || "admin", user_role: "staff", action: "insurance_update",
                 record_type: "patient_insurance", record_id: pid, success: true,
+                ip: request.headers.get("CF-Connecting-IP"), user_agent: request.headers.get("user-agent"),
                 details: { rank, payer_id: fields.payer_id, has_member_id: !!fields.member_id },
             }, ctx);
         } catch {}

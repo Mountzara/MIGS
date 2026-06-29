@@ -68,6 +68,7 @@ export function parse835(edi) {
                     patientRespCents: toCents(el[5]),
                     payerClaimId: el[7] || null,             // payer's internal claim control number
                     adjustments: [],
+                    rarcCodes: [],                           // RARC remark codes (LQ/MIA/MOA)
                     lines: [],
                     _line: null,
                 };
@@ -97,7 +98,27 @@ export function parse835(edi) {
                     units: parseInt(el[5] || "1", 10) || 1,
                     adjustments: [],
                 };
+                line.rarcCodes = [];
                 if (claim) { claim.lines.push(line); claim._line = line; }
+                break;
+            }
+            case "LQ": {
+                // LQ*HE*<RARC> — Remittance Advice Remark Code. Attach to the
+                // current line if we're inside one, else to the claim.
+                if (el[1] === "HE" && el[2]) {
+                    if (claim && claim._line) claim._line.rarcCodes.push(el[2]);
+                    else if (claim) claim.rarcCodes.push(el[2]);
+                }
+                break;
+            }
+            case "MIA":
+            case "MOA": {
+                // Inpatient/outpatient adjudication — trailing elements carry
+                // RARC remark codes (alphanumeric, not pure money). Collect them.
+                for (let i = 1; i < el.length; i++) {
+                    const v = (el[i] || "").trim();
+                    if (/^[A-Z][A-Z0-9]{1,6}$/.test(v) && /[A-Z]/.test(v)) { if (claim) claim.rarcCodes.push(v); }
+                }
                 break;
             }
             default:
@@ -112,6 +133,9 @@ export function parse835(edi) {
         c.mappedStatus = (base === "paid" && c.paidCents > 0 && c.paidCents < c.chargeCents) ? "partially_paid" : base;
         // top-level denial/adjustment reasons (CARC codes) for remediation
         c.reasonCodes = [...new Set([...c.adjustments, ...c.lines.flatMap((l) => l.adjustments)].map((a) => a.reason))];
+        // RARC remark codes (claim- + line-level) — the field-level detail that
+        // pairs with a CARC and grounds the appeal draft.
+        c.rarcCodes = [...new Set([...(c.rarcCodes || []), ...c.lines.flatMap((l) => l.rarcCodes || [])])];
     }
     out.totalPaidCents = out.claims.reduce((a, c) => a + c.paidCents, 0);
     return out;

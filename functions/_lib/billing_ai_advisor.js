@@ -20,7 +20,7 @@
 // tax advice — consult a CPA" line. The frontend renders it prominently.
 // =====================================================================
 
-import { callClaude, AnthropicError } from "./anthropic.js";
+import { callClaude, AnthropicError, extractJson } from "./anthropic.js";
 
 export const ADVISOR_PROMPT_VERSION = "billing-advisor-v1.0-2026-05-18";
 // Billing AI runs on Opus 4.8 by default; override per-env with BILLING_AI_MODEL.
@@ -95,17 +95,8 @@ function buildUserMessage(insights) {
     ].join("\n");
 }
 
-function extractJson(text) {
-    if (typeof text !== "string") return null;
-    const t = text.trim();
-    try { return JSON.parse(t); } catch {}
-    const start = t.indexOf("{");
-    const end = t.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-        try { return JSON.parse(t.slice(start, end + 1)); } catch {}
-    }
-    return null;
-}
+// extractJson is imported from anthropic.js (the shared, fence/prose-tolerant
+// implementation) so every JSON-shape AI feature parses identically.
 
 // =====================================================================
 // Rule-based fallback — used when ANTHROPIC_API_KEY is unset or call
