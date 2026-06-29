@@ -9,27 +9,39 @@ final class PatientsModel: ObservableObject {
 
     let auth: AuthStore
     private var searchTask: Task<Void, Never>?
+    private var latestSeq = 0
     init(auth: AuthStore) { self.auth = auth }
     private var api: AdminAPI { AdminAPI(token: auth.basicToken) }
 
-    func reload() async {
-        isLoading = true; error = nil
-        do { patients = try await api.listPatients(query: query) }
-        catch {
-            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
-            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
-        }
-        isLoading = false
-    }
+    func reload() async { await fetch(seq: nil) }
 
     /// Debounced search — fires 300ms after the user stops typing.
     func scheduleSearch() {
         searchTask?.cancel()
+        latestSeq += 1
+        let mySeq = latestSeq
         searchTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000)
             if Task.isCancelled { return }
-            await self?.reload()
+            await self?.fetch(seq: mySeq)
         }
+    }
+
+    /// `seq == nil` is an explicit reload (always applied). A debounced search
+    /// passes its sequence number and its result is dropped if a newer search
+    /// has since started — so a slow earlier fetch can't overwrite fresh data.
+    private func fetch(seq: Int?) async {
+        isLoading = true; error = nil
+        do {
+            let result = try await api.listPatients(query: query)
+            guard seq == nil || seq == latestSeq else { return }
+            patients = result
+        } catch {
+            guard seq == nil || seq == latestSeq else { return }
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+        }
+        if seq == nil || seq == latestSeq { isLoading = false }
     }
 }
 

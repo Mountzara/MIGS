@@ -35,8 +35,8 @@ final class BillingModel: ObservableObject {
         isLoading = false
     }
 
-    func approve(_ id: String, notes: String?) async -> Bool {
-        await run(id) { try await self.api.approveBillingClaim(id: id, notes: notes) }
+    func approve(_ id: String, notes: String?, force: Bool = false) async -> Bool {
+        await run(id) { try await self.api.approveBillingClaim(id: id, notes: notes, force: force) }
     }
     func reject(_ id: String, reason: String) async -> Bool {
         await run(id) { try await self.api.rejectBillingClaim(id: id, reason: reason) }

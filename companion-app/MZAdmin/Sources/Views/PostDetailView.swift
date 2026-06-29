@@ -9,6 +9,7 @@ struct PostDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var full: Post?
     @State private var showHTML = false
+    @State private var loadingFull = true
 
     private var current: Post { full ?? post }
     private var isActioning: Bool { model.actioningIDs.contains(post.id) }
@@ -34,6 +35,14 @@ struct PostDetailView: View {
                     Button { showHTML = true } label: {
                         Label("Preview full post", systemImage: "doc.richtext")
                     }
+                } else if loadingFull {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                        Text("Loading full post…").font(.caption).foregroundStyle(.secondary)
+                    }
+                } else {
+                    Label("Couldn't load the full post body.", systemImage: "exclamationmark.triangle")
+                        .font(.caption).foregroundStyle(Theme.amber)
                 }
             }
             .padding()
@@ -44,7 +53,7 @@ struct PostDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) { actions }
-        .task { full = await model.fullPost(post.id) }
+        .task { full = await model.fullPost(post.id); loadingFull = false }
     }
 
     private var header: some View {

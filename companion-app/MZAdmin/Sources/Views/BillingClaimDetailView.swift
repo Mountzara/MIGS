@@ -161,7 +161,7 @@ struct BillingClaimDetailView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Approve") {
                         Task {
-                            if await model.approve(claim.id, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                            if await model.approve(claim.id, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), force: force) {
                                 showApproveSheet = false; dismiss()
                             }
                         }
