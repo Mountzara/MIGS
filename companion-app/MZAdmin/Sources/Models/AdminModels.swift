@@ -1018,6 +1018,118 @@ struct BillingClaimsResponse: Codable {
     let total: Int?
 }
 
+// MARK: - Billing claim drill-down (GET /billing/claims/:id)
+
+struct BillingClaimDetail: Codable {
+    let claim: BillingClaim
+    var lines: [BillingClaimLine]?
+    var diagnoses: [BillingClaimDiagnosis]?
+    var flags: [BillingComplianceFlag]?
+    var upcoding: [BillingUpcoding]?
+    var docSuggestions: [BillingDocSuggestion]?
+    enum CodingKeys: String, CodingKey {
+        case claim, lines, diagnoses, flags, upcoding
+        case docSuggestions = "doc_suggestions"
+    }
+}
+
+struct BillingClaimLine: Codable, Hashable, Identifiable {
+    let id: String
+    var lineNumber: Int?
+    var codeType: String?
+    var code: String?
+    var codeDescription: String?
+    var modifier1: String?
+    var modifier2: String?
+    var modifierRationale: String?
+    var units: Int?
+    var placeOfService: String?
+    var chargeCents: Int?
+    var modifiers: [String] { [modifier1, modifier2].compactMap { $0 }.filter { !$0.isEmpty } }
+    enum CodingKeys: String, CodingKey {
+        case id, code, units
+        case lineNumber = "line_number"
+        case codeType = "code_type"
+        case codeDescription = "code_description"
+        case modifier1 = "modifier_1"
+        case modifier2 = "modifier_2"
+        case modifierRationale = "modifier_rationale"
+        case placeOfService = "place_of_service"
+        case chargeCents = "charge_cents"
+    }
+}
+
+struct BillingClaimDiagnosis: Codable, Hashable, Identifiable {
+    let id: String
+    var diagnosisIndex: Int?
+    var icd10Code: String?
+    var icd10Description: String?
+    var userOverrideCode: String?
+    enum CodingKeys: String, CodingKey {
+        case id
+        case diagnosisIndex = "diagnosis_index"
+        case icd10Code = "icd10_code"
+        case icd10Description = "icd10_description"
+        case userOverrideCode = "user_override_code"
+    }
+}
+
+struct BillingComplianceFlag: Codable, Hashable, Identifiable {
+    let id: String
+    var severity: String?
+    var flagKind: String?
+    var title: String?
+    var description: String?
+    var referencedCode: String?
+    var suggestedFix: String?
+    var resolved: Int?
+    var resolvedNote: String?
+    var isResolved: Bool { (resolved ?? 0) != 0 }
+    enum CodingKeys: String, CodingKey {
+        case id, severity, title, description, resolved
+        case flagKind = "flag_kind"
+        case referencedCode = "referenced_code"
+        case suggestedFix = "suggested_fix"
+        case resolvedNote = "resolved_note"
+    }
+}
+
+struct BillingUpcoding: Codable, Hashable, Identifiable {
+    let id: String
+    var currentCode: String?
+    var potentialCode: String?
+    var wrvuDelta: Double?
+    var revenueDeltaCents: Int?
+    var requiredDocumentation: String?
+    var confidence: Double?
+    var rationale: String?
+    var accepted: Int?
+    var isAccepted: Bool { (accepted ?? 0) != 0 }
+    enum CodingKeys: String, CodingKey {
+        case id, confidence, rationale, accepted
+        case currentCode = "current_code"
+        case potentialCode = "potential_code"
+        case wrvuDelta = "wrvu_delta"
+        case revenueDeltaCents = "revenue_delta_cents"
+        case requiredDocumentation = "required_documentation"
+    }
+}
+
+struct BillingDocSuggestion: Codable, Hashable, Identifiable {
+    let id: String
+    var priority: String?
+    var section: String?
+    var issue: String?
+    var suggestion: String?
+    var revisedText: String?
+    var revenueImpact: String?
+    enum CodingKeys: String, CodingKey {
+        case id, priority, section, issue, suggestion
+        case revisedText = "revised_text"
+        case revenueImpact = "revenue_impact"
+    }
+}
+
 struct BillingReportSummary: Codable, Hashable {
     var period: Period?
     var income: Income?

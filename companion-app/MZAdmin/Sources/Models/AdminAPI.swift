@@ -390,6 +390,13 @@ struct AdminAPI {
         return try decode(BillingClaimsResponse.self, data).claims
     }
 
+    /// Full claim drill-down: lines, diagnoses, compliance flags, upcoding
+    /// opportunities, and documentation suggestions.
+    func fetchBillingClaimDetail(id: String) async throws -> BillingClaimDetail {
+        let data = try await send(request("/api/v1/admin/billing/claims/\(id)"))
+        return try decode(BillingClaimDetail.self, data)
+    }
+
     func approveBillingClaim(id: String, notes: String?, force: Bool = false) async throws {
         var obj: [String: Any] = ["force": force]
         if let notes, !notes.isEmpty { obj["notes"] = notes }

@@ -39,6 +39,11 @@ final class BillingModel: ObservableObject {
         isLoading = false
     }
 
+    /// Full claim drill-down (lines, diagnoses, flags, upcoding, doc suggestions).
+    func claimDetail(_ id: String) async -> BillingClaimDetail? {
+        try? await api.fetchBillingClaimDetail(id: id)
+    }
+
     func approve(_ id: String, notes: String?, force: Bool = false) async -> Bool {
         await run(id) { try await self.api.approveBillingClaim(id: id, notes: notes, force: force) }
     }
