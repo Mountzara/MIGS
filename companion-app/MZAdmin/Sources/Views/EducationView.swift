@@ -151,6 +151,10 @@ struct EducationDetailView: View {
     @State private var isLoading = true
     @State private var loadError: String?
     @State private var working = false
+    @State private var suggestion: EducationEditSuggestion?
+    @State private var suggesting = false
+    @State private var showSuggestion = false
+    @State private var applyingEdit = false
 
     /// The detail (with body) once fetched; falls back to the list row until then.
     private var current: EducationMaterial { detail ?? material }
@@ -174,7 +178,95 @@ struct EducationDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .overlay(alignment: .bottom) { ErrorBar(text: loadError ?? model.error) }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { Task { await suggest() } } label: {
+                    if suggesting { ProgressView() } else { Image(systemName: "wand.and.sparkles") }
+                }
+                .disabled(suggesting)
+                .help("Suggest a clearer title & summary (on-server Claude)")
+            }
+        }
+        .sheet(isPresented: $showSuggestion) { suggestionSheet }
         .task { await load() }
+    }
+
+    private func suggest() async {
+        suggesting = true
+        defer { suggesting = false }
+        do {
+            let resp = try await model.api.suggestEducationEdit(slug: current.slug, instruction: "")
+            suggestion = resp.proposal
+            showSuggestion = true
+        } catch {
+            loadError = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func applyEdit() async {
+        guard let s = suggestion else { return }
+        applyingEdit = true
+        defer { applyingEdit = false }
+        do {
+            _ = try await model.api.updateEducation(slug: current.slug, title: s.proposedTitle, summary: s.proposedSummary)
+            showSuggestion = false
+            await load()
+            await model.reload()
+        } catch {
+            loadError = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    @ViewBuilder
+    private var suggestionSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if let s = suggestion {
+                        diffCard("Title", currentValue: current.title, proposed: s.proposedTitle)
+                        diffCard("Summary", currentValue: current.summary ?? "", proposed: s.proposedSummary)
+                        if !s.rationale.isEmpty {
+                            Label(s.rationale, systemImage: "sparkles")
+                                .font(.caption).foregroundStyle(Theme.accentSoft)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12).glassCard()
+                        }
+                        Text("AI-proposed copy edit, grounded in this material's body. Review carefully — it must not change any clinical meaning. Applying updates the title and summary only.")
+                            .font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
+                .padding(16)
+            }
+            .navigationTitle("Suggested edit")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Discard") { showSuggestion = false } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Apply") { Task { await applyEdit() } }.disabled(applyingEdit)
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 480, minHeight: 440)
+        #endif
+    }
+
+    private func diffCard(_ label: String, currentValue: String, proposed: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(label.uppercased()).font(.caption2.bold()).foregroundStyle(.tertiary)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Current").font(.caption2).foregroundStyle(.secondary)
+                Text(currentValue.isEmpty ? "(none)" : currentValue).font(.callout).foregroundStyle(.secondary)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Proposed").font(.caption2).foregroundStyle(Theme.green)
+                Text(proposed).font(.callout.weight(.medium))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
     }
 
     private func load() async {

@@ -311,6 +311,25 @@ struct AdminAPI {
         return try decode(EducationDetailResponse.self, data).material
     }
 
+    /// Edit a material's title / summary (e.g. after accepting an AI suggestion).
+    @discardableResult
+    func updateEducation(slug: String, title: String?, summary: String?) async throws -> EducationMaterial {
+        var fields: [String: Any] = [:]
+        if let title { fields["title"] = title }
+        if let summary { fields["summary"] = summary }
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        let data = try await send(request("/api/v1/admin/education/\(slug)", method: "PATCH", body: payload))
+        return try decode(EducationDetailResponse.self, data).material
+    }
+
+    /// Ask the on-server Claude copy editor for a clearer title + summary,
+    /// grounded in the material's own body (no clinical-fact changes).
+    func suggestEducationEdit(slug: String, instruction: String) async throws -> SuggestEditResponse {
+        let payload = try JSONSerialization.data(withJSONObject: ["kind": "education", "slug": slug, "instruction": instruction])
+        let data = try await send(request("/api/v1/admin/ai/suggest-edit", method: "POST", body: payload))
+        return try decode(SuggestEditResponse.self, data)
+    }
+
     // MARK: - Debug sessions
     func listDebugSessions(limit: Int = 100) async throws -> DebugSessionsResponse {
         let data = try await send(request("/api/v1/admin/debug/sessions?limit=\(limit)"))

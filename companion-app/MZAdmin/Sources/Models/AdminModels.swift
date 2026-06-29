@@ -802,6 +802,17 @@ struct EducationDetailResponse: Codable {
     let material: EducationMaterial
 }
 
+/// POST /api/v1/admin/ai/suggest-edit — Claude-proposed copy edit (title/summary).
+struct EducationEditSuggestion: Codable, Equatable {
+    let proposedTitle: String
+    let proposedSummary: String
+    let rationale: String
+}
+struct SuggestEditResponse: Codable {
+    let proposal: EducationEditSuggestion
+    let model: String?
+}
+
 // ---------- Debug session traces ----------
 struct DebugSessionEvent: Identifiable, Codable, Hashable {
     let id: String
