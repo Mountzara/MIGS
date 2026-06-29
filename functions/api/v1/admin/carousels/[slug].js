@@ -98,6 +98,34 @@ export async function onRequestPost(ctx) {
     });
 }
 
+// --- PUT /api/v1/admin/carousels/<slug>  — edit editorial fields ---------
+//      body: { title?, captions?, alt_text?, hashtags? }
+//      Merges the supplied editorial fields into the manifest and re-saves.
+//      Re-running the deploy gate stays the pipeline's job; this only stores
+//      the operator's copy edits so they aren't lost between ingest and publish.
+export async function onRequestPut(ctx) {
+    return adminRoute(ctx, async ({ request, env, admin }) => {
+        const slug = ctx.params.slug;
+        const manifest = await loadManifest(env, slug);
+        if (!manifest) return jsonError("carousel not found", 404);
+        const body = await readJsonBody(request);
+        if (!body || typeof body !== "object") return jsonError("invalid JSON body", 400);
+
+        const ALLOWED = ["title", "captions", "alt_text", "hashtags"];
+        let changed = false;
+        for (const k of ALLOWED) {
+            if (body[k] !== undefined) { manifest[k] = body[k]; changed = true; }
+        }
+        if (!changed) return jsonError("no editable fields provided (title, captions, alt_text, hashtags)", 400);
+
+        manifest.edited_at = Date.now();
+        manifest.edited_by = admin?.user || "admin";
+        await saveManifest(env, manifest);
+        await updateIndex(env, manifest);
+        return jsonResponse({ ok: true, carousel: manifest });
+    });
+}
+
 // --- DELETE /api/v1/admin/carousels/<slug>  — drop from queue ------------
 export async function onRequestDelete(ctx) {
     return adminRoute(ctx, async ({ env }) => {

@@ -297,6 +297,15 @@ struct AdminAPI {
         return try decode(CarouselDetailResponse.self, data).carousel
     }
 
+    /// Edit a carousel's editorial fields (title, captions, alt_text, hashtags)
+    /// via PUT /api/v1/admin/carousels/<slug>.
+    @discardableResult
+    func updateCarousel(slug: String, fields: [String: Any]) async throws -> Carousel? {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        let data = try await send(request("/api/v1/admin/carousels/\(slug)", method: "PUT", body: payload))
+        return try? decode(CarouselDetailResponse.self, data).carousel
+    }
+
     /// Approve only succeeds when the §3.11.6 deploy gate marked the
     /// carousel ready_to_publish=true. Reject takes a short admin memo.
     func setCarouselDecision(slug: String, action: String, memo: String?) async throws {

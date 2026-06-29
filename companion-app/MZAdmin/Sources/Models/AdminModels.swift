@@ -636,6 +636,11 @@ struct Carousel: Identifiable, Codable, Hashable {
     var createdAt: Int?
     var approvedAt: Int?
     var rejectedAt: Int?
+    // Full manifest fields (present on the detail GET, nil in the list)
+    var captions: CarouselCaptions?
+    var hashtags: CarouselCaptions?
+    var altText: [String: String]?
+    var verification: CarouselVerification?
 
     var id: String { slug }
     var isDraft: Bool { status == "draft" }
@@ -644,7 +649,7 @@ struct Carousel: Identifiable, Codable, Hashable {
     var isPublished: Bool { status == "published" }
 
     enum CodingKeys: String, CodingKey {
-        case slug, title, status
+        case slug, title, status, captions, hashtags, verification
         case handleLine = "handle_line"
         case postTopic = "post_topic"
         case weekLabel = "week_label"
@@ -654,6 +659,23 @@ struct Carousel: Identifiable, Codable, Hashable {
         case createdAt = "created_at"
         case approvedAt = "approved_at"
         case rejectedAt = "rejected_at"
+        case altText = "alt_text"
+    }
+}
+
+/// Per-platform text on a carousel manifest (captions and hashtags share this shape).
+struct CarouselCaptions: Codable, Hashable {
+    var linkedin: String?
+    var instagram: String?
+}
+
+/// The carousel deploy-gate result (subset; extra keys ignored).
+struct CarouselVerification: Codable, Hashable {
+    var voiceGatePassed: Bool?
+    var readyToPublish: Bool?
+    enum CodingKeys: String, CodingKey {
+        case voiceGatePassed = "voice_gate_passed"
+        case readyToPublish = "ready_to_publish"
     }
 }
 struct CarouselsListResponse: Codable { let carousels: [Carousel] }

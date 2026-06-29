@@ -15,6 +15,10 @@ struct CarouselDetailView: View {
     @State private var slides: [SlideImage] = []
     @State private var loadingSlides = true
     @State private var assetError: String?
+    @State private var full: Carousel?
+    @State private var showEdit = false
+
+    private var current: Carousel { full ?? carousel }
 
     var body: some View {
         ScrollView {
@@ -27,16 +31,64 @@ struct CarouselDetailView: View {
                 } else if let data = coverImage {
                     coverCard(data)
                 }
+                copyCard
                 metadataCard
                 actionsBar
             }
             .padding(16)
         }
         .navigationTitle("Carousel")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { showEdit = true } label: { Image(systemName: "pencil") }
+                    .help("Edit captions, hashtags & alt text")
+            }
+        }
         .overlay(alignment: .bottom) { ErrorBar(text: model.error ?? assetError) }
         .sheet(isPresented: $showApproveSheet) { decisionSheet(approve: true) }
         .sheet(isPresented: $showRejectSheet) { decisionSheet(approve: false) }
+        .sheet(isPresented: $showEdit) {
+            CarouselEditView(carousel: current, model: model) { updated in full = updated }
+        }
         .task { await loadSlides() }
+        .task { full = try? await model.api.carousel(slug: carousel.slug) }
+    }
+
+    /// Captions, hashtags, and per-slide alt text from the manifest.
+    @ViewBuilder
+    private var copyCard: some View {
+        let c = current
+        if c.captions != nil || c.hashtags != nil || (c.altText?.isEmpty == false) {
+            VStack(alignment: .leading, spacing: 10) {
+                Label("Copy", systemImage: "text.bubble").font(.subheadline.weight(.semibold))
+                captionBlock("LinkedIn caption", c.captions?.linkedin, c.hashtags?.linkedin)
+                captionBlock("Instagram caption", c.captions?.instagram, c.hashtags?.instagram)
+                if let alt = c.altText, !alt.isEmpty {
+                    Divider().padding(.vertical, 2)
+                    Text("Alt text").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    ForEach(alt.sorted { (Int($0.key) ?? 0) < (Int($1.key) ?? 0) }, id: \.key) { k, v in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text("#\((Int(k) ?? 0) + 1)").font(.caption2.monospaced()).foregroundStyle(.tertiary)
+                            Text(v).font(.caption).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading).padding(14).glassCard()
+        }
+    }
+
+    @ViewBuilder
+    private func captionBlock(_ title: String, _ caption: String?, _ tags: String?) -> some View {
+        if let caption, !caption.isEmpty {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(caption).font(.caption).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+                if let tags, !tags.isEmpty {
+                    Text(tags).font(.caption2).foregroundStyle(Theme.accentSoft).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
     }
 
     /// Load every slide (slide_01.png … slide_NN.png) for the gallery; fall
@@ -257,6 +309,100 @@ struct CarouselDetailView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Copy editor
+
+/// Editor for a carousel's copy: per-platform captions + hashtags and the
+/// per-slide alt text. Saves via PUT /api/v1/admin/carousels/<slug>.
+struct CarouselEditView: View {
+    let carousel: Carousel
+    @ObservedObject var model: CarouselsModel
+    var onSaved: (Carousel) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var liCaption: String
+    @State private var igCaption: String
+    @State private var liTags: String
+    @State private var igTags: String
+    @State private var altKeys: [String]
+    @State private var altValues: [String: String]
+    @State private var saving = false
+    @State private var error: String?
+
+    init(carousel: Carousel, model: CarouselsModel, onSaved: @escaping (Carousel) -> Void) {
+        self.carousel = carousel
+        self.model = model
+        self.onSaved = onSaved
+        _liCaption = State(initialValue: carousel.captions?.linkedin ?? "")
+        _igCaption = State(initialValue: carousel.captions?.instagram ?? "")
+        _liTags = State(initialValue: carousel.hashtags?.linkedin ?? "")
+        _igTags = State(initialValue: carousel.hashtags?.instagram ?? "")
+        let alt = carousel.altText ?? [:]
+        _altKeys = State(initialValue: alt.keys.sorted { (Int($0) ?? 0) < (Int($1) ?? 0) })
+        _altValues = State(initialValue: alt)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("LinkedIn") {
+                    TextField("Caption", text: $liCaption, axis: .vertical).lineLimit(3...10)
+                    TextField("Hashtags", text: $liTags, axis: .vertical).lineLimit(1...4)
+                }
+                Section("Instagram") {
+                    TextField("Caption", text: $igCaption, axis: .vertical).lineLimit(3...10)
+                    TextField("Hashtags", text: $igTags, axis: .vertical).lineLimit(1...4)
+                }
+                if !altKeys.isEmpty {
+                    Section("Alt text — per slide") {
+                        ForEach(altKeys, id: \.self) { k in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Slide \((Int(k) ?? 0) + 1)").font(.caption).foregroundStyle(.secondary)
+                                TextField("Alt text", text: Binding(
+                                    get: { altValues[k] ?? "" },
+                                    set: { altValues[k] = $0 }
+                                ), axis: .vertical).lineLimit(1...4)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Edit copy")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if saving { ProgressView() } else { Button("Save") { Task { await save() } } }
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 560, minHeight: 600)
+        #endif
+    }
+
+    private func save() async {
+        saving = true
+        defer { saving = false }
+        error = nil
+        func t(_ s: String) -> String { s.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let fields: [String: Any] = [
+            "captions": ["linkedin": t(liCaption), "instagram": t(igCaption)],
+            "hashtags": ["linkedin": t(liTags), "instagram": t(igTags)],
+            "alt_text": altValues,
+        ]
+        do {
+            let updated = try await model.api.updateCarousel(slug: carousel.slug, fields: fields)
+            if let updated { onSaved(updated) }
+            dismiss()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
         }
     }
 }
