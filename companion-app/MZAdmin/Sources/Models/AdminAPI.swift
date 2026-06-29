@@ -151,6 +151,16 @@ struct AdminAPI {
         return try decode(AppointmentsResponse.self, data).appointments
     }
 
+    /// Update an appointment (status / cancel reason / reschedule / modality)
+    /// via PATCH /api/v1/admin/appointments/<id>.
+    @discardableResult
+    func updateAppointment(id: String, fields: [String: Any]) async throws -> Appointment? {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        let data = try await send(request("/api/v1/admin/appointments/\(id)", method: "PATCH", body: payload))
+        // Handler returns the updated appointment under "appointment" (best-effort decode).
+        return try? decode(AppointmentDetailResponse.self, data).appointment
+    }
+
     // MARK: - Patients
     func listPatients(query: String = "", limit: Int = 50) async throws -> [Patient] {
         var path = "/api/v1/admin/patients?limit=\(limit)"

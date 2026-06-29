@@ -174,14 +174,20 @@ struct ThreadDetailResponse: Codable { let thread: MessageThread; let messages: 
 // ---------- Scheduling ----------
 struct Appointment: Identifiable, Codable, Hashable {
     let id: String
+    var patientId: String?
     var patientFirstName: String?
     var patientLastName: String?
     var visitType: String
     var startsAt: Int
+    var endsAt: Int?
     var durationMin: Int?
     var modality: String?
     var status: String
     var chiefComplaintSummary: String?
+    var cancellationReason: String?
+    var doxyRoomUrl: String?
+    var doxyJoinLoggedAt: Int?
+    var deviceCheck: AppointmentDeviceCheck?
 
     var patientName: String {
         [patientFirstName, patientLastName].compactMap { $0 }.joined(separator: " ")
@@ -189,15 +195,35 @@ struct Appointment: Identifiable, Codable, Hashable {
     }
     enum CodingKeys: String, CodingKey {
         case id, status, modality
+        case patientId = "patient_id"
         case patientFirstName = "patient_first_name"
         case patientLastName = "patient_last_name"
         case visitType = "visit_type"
         case startsAt = "starts_at"
+        case endsAt = "ends_at"
         case durationMin = "duration_min"
         case chiefComplaintSummary = "chief_complaint_summary"
+        case cancellationReason = "cancellation_reason"
+        case doxyRoomUrl = "doxy_room_url"
+        case doxyJoinLoggedAt = "doxy_join_logged_at"
+        case deviceCheck = "device_check"
+    }
+}
+
+/// Telehealth pre-visit device check, from the appointment GET.
+struct AppointmentDeviceCheck: Codable, Hashable {
+    var status: String?            // "passed" | "failed"
+    var checkedAt: Int?
+    var networkKbps: Int?
+    var failures: [String]?
+    enum CodingKeys: String, CodingKey {
+        case status, failures
+        case checkedAt = "checked_at"
+        case networkKbps = "network_kbps"
     }
 }
 struct AppointmentsResponse: Codable { let appointments: [Appointment] }
+struct AppointmentDetailResponse: Codable { let appointment: Appointment? }
 
 // ---------- Patients ----------
 /// Row returned by GET /api/v1/admin/patients (list).
@@ -718,10 +744,26 @@ struct AdminAnalytics: Codable, Hashable {
         var uniquePatientsLogging: Int?
         var recentPainAvg: Double?
         var recentPainHighCount: Int?
+        var urgentPainPatients: [UrgentPainPatient]?
         enum CodingKeys: String, CodingKey {
-            case uniquePatientsLogging = "unique_patients_logging"
+            case uniquePatientsLogging = "unique_patients_logging_last_7d"
             case recentPainAvg = "recent_pain_avg"
             case recentPainHighCount = "recent_pain_high_count"
+            case urgentPainPatients = "urgent_pain_patients"
+        }
+    }
+
+    /// A patient flagged for high recent pelvic pain (≥8/10) in the last 7 days.
+    struct UrgentPainPatient: Codable, Hashable, Identifiable {
+        let id: String
+        var name: String?
+        var email: String?
+        var painMax: Double?
+        var latestDate: String?
+        enum CodingKeys: String, CodingKey {
+            case id, name, email
+            case painMax = "pain_max"
+            case latestDate = "latest_date"
         }
     }
 

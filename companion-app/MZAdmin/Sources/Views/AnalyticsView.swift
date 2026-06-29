@@ -42,6 +42,7 @@ struct AnalyticsView: View {
                         triageBreakdown(d)
                         appointmentsBreakdown(d)
                         messagingActivity(d)
+                        symptomSignalsCard(d)
                         auditSignals(d)
                     } else {
                         ContentUnavailableView("Analytics unavailable",
@@ -183,6 +184,37 @@ struct AnalyticsView: View {
     }
 
     @ViewBuilder
+    private func symptomSignalsCard(_ d: AdminAnalytics) -> some View {
+        if let s = d.symptomSignals {
+            card("Symptom signals · last 7 days", icon: "waveform.path.ecg") {
+                rowKV("Patients logging", "\(s.uniquePatientsLogging ?? 0)")
+                if let avg = s.recentPainAvg {
+                    rowKV("Avg pelvic pain", String(format: "%.1f / 10", avg))
+                }
+                rowKV("High-pain patients (≥8)", "\(s.recentPainHighCount ?? 0)",
+                      accent: (s.recentPainHighCount ?? 0) > 0 ? Theme.amber : nil)
+                if let urgent = s.urgentPainPatients, !urgent.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    Text("Urgent — high recent pain")
+                        .font(.caption.weight(.semibold)).foregroundStyle(Theme.red)
+                    ForEach(urgent) { p in
+                        HStack(alignment: .top, spacing: 8) {
+                            Circle().fill(Theme.red).frame(width: 6, height: 6).padding(.top, 5)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(p.name ?? p.email ?? p.id).font(.subheadline.weight(.medium))
+                                HStack(spacing: 6) {
+                                    if let pm = p.painMax { Text("pain \(Int(pm))/10") }
+                                    if let ld = p.latestDate { Text("· \(ld)") }
+                                }.font(.caption2).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private func card<Content: View>(_ title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(title, systemImage: icon).font(.subheadline.weight(.semibold))
