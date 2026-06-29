@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Coding Coach · Mount Zara Admin</title>
+    <style>
+        :root {
+            --bg-base: #07070a; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: rgba(245,245,247,0.84);
+            --fg-soft: rgba(245,245,247,0.62); --fg-dim: rgba(245,245,247,0.42);
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html { background-color: var(--bg-base); }
+        html, body {
+            margin: 0; padding: 0;
+            background-color: transparent;
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* fixed line-art backdrop so the glass reads as glass (matches the site) */
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #000; opacity: 0.75; }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+
+        a { color: var(--accent-soft); text-decoration: none; transition: color .2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1120px; margin: 0 auto; padding: clamp(20px, 4vw, 40px) clamp(16px, 5vw, 40px) 100px; }
+
+        header.bar { display: flex; align-items: baseline; gap: 14px; font-size: 13px; color: var(--fg-soft); flex-wrap: wrap; margin-bottom: 4px; }
+        header.bar .crumb { color: var(--fg-dim); }
+        h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 300; letter-spacing: -0.02em; color: var(--fg-strong); margin: 8px 0 6px; }
+        h1 b { font-weight: 600; color: var(--accent-soft); }
+        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 80ch; margin: 0 0 22px; }
+
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 26px; }
+        .chip { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 999px; padding: 7px 15px; color: var(--fg-soft); font-size: 12px; cursor: pointer; transition: all .2s; }
+        .chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), .45); }
+        .chip.active { background: rgba(var(--glow-purple), .16); border-color: rgba(var(--glow-purple), .55); color: var(--accent-soft); }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 30px; }
+        .kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 18px 16px; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); transition: transform .25s, border-color .25s; }
+        .kpi:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), .30); }
+        .kpi .label { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 8px; }
+        .kpi .value { font-size: 28px; font-weight: 200; color: var(--fg-strong); letter-spacing: -.02em; line-height: 1; }
+        .kpi .sub { font-size: 11.5px; color: var(--fg-soft); margin-top: 6px; }
+        .kpi.alert { border-color: rgba(245,158,11,.45); } .kpi.alert .value { color: rgba(252,211,77,.95); }
+        .kpi.good  { border-color: rgba(16,185,129,.45); } .kpi.good .value { color: rgba(52,211,153,.95); }
+
+        section.block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 22px 22px 20px; margin-bottom: 18px; backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%); }
+        section.block > h2 { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-soft); margin: 0 0 16px; }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+
+        /* coaching points — the centerpiece */
+        .coach-item { display: flex; gap: 14px; padding: 16px 0; border-top: 1px solid var(--border); }
+        .coach-item:first-of-type { border-top: none; padding-top: 0; }
+        .pri { flex: 0 0 auto; font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px; border-radius: 6px; height: fit-content; margin-top: 2px; }
+        .pri.high { background: rgba(239,68,68,.16); color: #fca5a5; border: 1px solid rgba(239,68,68,.4); }
+        .pri.medium { background: rgba(var(--glow-purple),.16); color: var(--accent-soft); border: 1px solid rgba(var(--glow-purple),.4); }
+        .pri.low { background: rgba(255,255,255,.05); color: var(--fg-soft); border: 1px solid var(--border); }
+        .coach-body .t { font-size: 15px; font-weight: 600; color: var(--fg-strong); margin-bottom: 4px; }
+        .coach-body .d { font-size: 13.5px; line-height: 1.5; color: var(--fg-mid); margin-bottom: 8px; }
+        .coach-body .n { font-size: 13px; line-height: 1.5; color: var(--accent-soft); }
+        .coach-body .n::before { content: "→ "; color: var(--fg-dim); }
+
+        /* E/M bars */
+        .bar-row { display: grid; grid-template-columns: 64px 1fr 92px; align-items: center; gap: 12px; margin: 9px 0; font-size: 13px; }
+        .bar-row .code { color: var(--fg-strong); font-weight: 600; }
+        .bar-track { background: rgba(255,255,255,.05); border-radius: 6px; height: 9px; overflow: hidden; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); border-radius: 6px; }
+        .bar-row .meta { text-align: right; color: var(--fg-soft); font-size: 12px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); font-weight: 700; padding: 0 10px 10px 0; }
+        td { padding: 9px 10px 9px 0; border-top: 1px solid var(--border); color: var(--fg-mid); }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        td .arrow { color: var(--fg-dim); }
+        .pos { color: rgba(252,211,77,.95); font-weight: 600; }
+
+        .list-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 13px; }
+        .list-row:first-child { border-top: none; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: 0 0 auto; }
+        .dot.error { background: var(--red); } .dot.warning { background: var(--amber); } .dot.info { background: var(--accent-soft); }
+        .list-row .c { color: var(--fg-strong); font-weight: 600; }
+        .list-row .x { color: var(--fg-soft); }
+        .count-pill { margin-left: auto; flex: 0 0 auto; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; font-size: 11px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+
+        .trend { display: flex; align-items: flex-end; gap: 6px; height: 90px; }
+        .trend .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .trend .tb { width: 70%; background: linear-gradient(180deg, var(--accent-soft), var(--accent)); border-radius: 4px 4px 0 0; min-height: 2px; }
+        .trend .tl { font-size: 10px; color: var(--fg-dim); }
+
+        .note { font-size: 12.5px; line-height: 1.55; color: var(--fg-soft); background: rgba(var(--glow-purple), .06); border: 1px solid rgba(var(--glow-purple), .22); border-radius: 14px; padding: 14px 16px; margin-top: 22px; }
+        .muted { color: var(--fg-dim); }
+        .center { text-align: center; padding: 60px 20px; color: var(--fg-soft); }
+        .spinner { width: 26px; height: 26px; border: 2px solid rgba(var(--glow-purple), .25); border-top-color: var(--accent-soft); border-radius: 50%; animation: spin .9s linear infinite; margin: 0 auto 14px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .gen { font-size: 11px; color: var(--fg-dim); margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <script src="/admin/_nav.js"></script>
+
+    <div class="wrap">
+        <header class="bar"><span class="crumb"><a href="/admin/">Admin</a> › <a href="/admin/billing/">Billing</a> › Coding Coach</span></header>
+        <h1>Coding <b>Coach</b></h1>
+        <p class="lede">Cross-encounter coding insights from the per-visit analysis your transcription app syncs in — where your documentation supports a level you <em>under-</em>billed, the flags / modifiers / documentation gaps you keep hitting, and concrete ways to tighten it going forward. Recovery and education, not speculative upcoding: every figure is tied to documentation already in the note.</p>
+
+        <div class="chips" id="chips">
+            <button class="chip" data-w="mtd">Month</button>
+            <button class="chip" data-w="qtd">Quarter</button>
+            <button class="chip active" data-w="ytd">Year-to-date</button>
+            <button class="chip" data-w="l90d">Last 90d</button>
+            <button class="chip" data-w="l365d">Last 365d</button>
+        </div>
+
+        <div id="root"><div class="center"><div class="spinner"></div>Loading coding insights…</div></div>
+    </div>
+
+    <script>
+        var state = { window: 'ytd' };
+
+        function money(n) { n = Number(n) || 0; return '$' + Math.round(n).toLocaleString(); }
+        function pct(x) { return Math.round((Number(x) || 0) * 100) + '%'; }
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+
+        async function load() {
+            var root = document.getElementById('root');
+            root.innerHTML = '<div class="center"><div class="spinner"></div>Loading coding insights…</div>';
+            try {
+                var res = await fetch('/api/v1/admin/billing/coding-coach?window=' + encodeURIComponent(state.window), { credentials: 'include' });
+                if (!res.ok) { root.innerHTML = '<div class="center">Could not load (' + res.status + '). ' + (res.status === 401 ? 'Sign in to continue.' : 'Try again.') + '</div>'; return; }
+                var data = (await res.json()).coach;
+                render(data);
+            } catch (e) {
+                root.innerHTML = '<div class="center">Network error loading the coach. Check your connection and retry.</div>';
+            }
+        }
+
+        function render(c) {
+            var root = document.getElementById('root');
+            if (!c || !c.summary || c.summary.claims_analyzed === 0) {
+                root.innerHTML = '<section class="block"><div class="center"><div style="font-size:34px;margin-bottom:10px;">🩺</div>No coded encounters synced for <b>' + esc(c && c.window ? c.window.label : state.window) + '</b> yet.<br><span class="muted">Once the transcription app syncs coding analyses, your patterns show up here.</span></div></section>';
+                return;
+            }
+            var s = c.summary, u = c.undercoding;
+            var h = '';
+
+            // KPI grid
+            h += '<div class="kpi-grid">';
+            h += kpi('Claims analyzed', s.claims_analyzed, c.window.label, '');
+            h += kpi('Under-coding (open)', money(s.documented_undercoding_open_usd), s.open_opportunity_count + ' documented opportunit' + (s.open_opportunity_count === 1 ? 'y' : 'ies'), s.documented_undercoding_open_usd > 0 ? 'alert' : '');
+            h += kpi('Open opportunities', s.open_opportunity_count, 'note already supports it', '');
+            h += kpi('Total wRVU', (Number(s.total_wrvu) || 0).toFixed(1), 'this period', '');
+            h += kpi('Avg medico-legal', s.avg_medicolegal_score == null ? '—' : s.avg_medicolegal_score, 'documentation score /100', (s.avg_medicolegal_score >= 85 ? 'good' : (s.avg_medicolegal_score != null && s.avg_medicolegal_score < 70 ? 'alert' : '')));
+            h += '</div>';
+
+            // Coaching points — centerpiece
+            h += '<section class="block"><h2>What to tighten</h2>';
+            if (!c.coaching_points || !c.coaching_points.length) {
+                h += '<div class="muted" style="font-size:14px;">Nothing flagged this period — your coding and documentation are tracking clean. ✅</div>';
+            } else {
+                c.coaching_points.forEach(function (p) {
+                    h += '<div class="coach-item"><span class="pri ' + esc(p.priority) + '">' + esc(p.priority) + '</span><div class="coach-body">'
+                       + '<div class="t">' + esc(p.title) + '</div><div class="d">' + esc(p.detail) + '</div><div class="n">' + esc(p.next_step) + '</div></div></div>';
+                });
+            }
+            h += '</section>';
+
+            // E/M distribution + Under-coding by pair (two-col)
+            h += '<div class="two-col">';
+            h += '<section class="block"><h2>E/M level mix</h2>';
+            if (c.em_level_distribution && c.em_level_distribution.length) {
+                c.em_level_distribution.forEach(function (l) {
+                    h += '<div class="bar-row"><span class="code">' + esc(l.code) + '</span>'
+                       + '<span class="bar-track"><span class="bar-fill" style="width:' + Math.max(2, Math.round(l.share * 100)) + '%"></span></span>'
+                       + '<span class="meta">' + l.count + ' · ' + pct(l.share) + '</span></div>';
+                });
+            } else { h += '<div class="muted">No E/M-coded visits in this window.</div>'; }
+            h += '</section>';
+
+            h += '<section class="block"><h2>Documentation-supported under-coding</h2>';
+            if (u.top_pairs && u.top_pairs.length) {
+                h += '<table><thead><tr><th>Level</th><th class="num">Open</th><th class="num">Recoverable</th><th class="num">wRVU</th></tr></thead><tbody>';
+                u.top_pairs.forEach(function (p) {
+                    if (p.open_count <= 0) return;
+                    h += '<tr><td>' + esc(p.from_code) + ' <span class="arrow">→</span> ' + esc(p.to_code) + '</td>'
+                       + '<td class="num">' + p.open_count + '</td><td class="num pos">' + money(p.open_revenue_delta_usd) + '</td>'
+                       + '<td class="num">' + (Number(p.wrvu_delta) || 0).toFixed(1) + '</td></tr>';
+                });
+                h += '</tbody></table>';
+            } else { h += '<div class="muted">No open under-coding opportunities — nice.</div>'; }
+            h += '</section>';
+            h += '</div>';
+
+            // Recurring flags / modifier misses / doc gaps
+            h += '<div class="two-col">';
+            h += '<section class="block"><h2>Recurring flags</h2>' + listFlags(c.recurring_flags) + '</section>';
+            h += '<section class="block"><h2>Modifiers you keep missing</h2>' + listMods(c.modifier_misses) + '</section>';
+            h += '</div>';
+            h += '<section class="block"><h2>Recurring documentation gaps</h2>' + listGaps(c.documentation_gaps) + '</section>';
+
+            // Trend
+            if (c.trend && c.trend.length > 1) {
+                var max = Math.max.apply(null, c.trend.map(function (t) { return t.open_undercoding_usd || 0; }).concat([1]));
+                h += '<section class="block"><h2>Open under-coding by month</h2><div class="trend">';
+                c.trend.forEach(function (t) {
+                    h += '<div class="col" title="' + esc(t.month) + ': ' + money(t.open_undercoding_usd) + ' · ' + t.claims + ' claims">'
+                       + '<div class="tb" style="height:' + Math.round((t.open_undercoding_usd / max) * 78) + 'px"></div>'
+                       + '<div class="tl">' + esc((t.month || '').slice(5)) + '</div></div>';
+                });
+                h += '</div></section>';
+            }
+
+            h += '<div class="note">' + esc(c.compliance_note) + '</div>';
+            h += '<div class="gen">Generated ' + esc(c.generated_at) + ' · window: ' + esc(c.window.label) + '</div>';
+            root.innerHTML = h;
+        }
+
+        function kpi(label, value, sub, cls) {
+            return '<div class="kpi ' + (cls || '') + '"><div class="label">' + esc(label) + '</div><div class="value">' + esc(value) + '</div><div class="sub">' + esc(sub) + '</div></div>';
+        }
+        function listFlags(rows) {
+            if (!rows || !rows.length) return '<div class="muted">No compliance flags this period.</div>';
+            return rows.slice(0, 7).map(function (f) {
+                return '<div class="list-row"><span class="dot ' + esc(f.severity) + '"></span><span class="c">' + esc((f.kind || '').replace(/_/g, ' ')) + '</span>'
+                     + '<span class="x">· ' + f.claims_affected + ' claim' + (f.claims_affected === 1 ? '' : 's') + (f.resolved_count ? ', ' + f.resolved_count + ' resolved' : '') + '</span>'
+                     + '<span class="count-pill">' + f.count + '×</span></div>';
+            }).join('');
+        }
+        function listMods(rows) {
+            if (!rows || !rows.length) return '<div class="muted">No modifier-miss patterns. 👍</div>';
+            return rows.slice(0, 7).map(function (m) {
+                return '<div class="list-row"><div><span class="c">' + esc(m.referenced_code || '—') + '</span>'
+                     + (m.example_fix ? '<div class="x" style="margin-top:3px;">' + esc(m.example_fix) + '</div>' : '') + '</div>'
+                     + '<span class="count-pill">' + m.count + '×</span></div>';
+            }).join('');
+        }
+        function listGaps(rows) {
+            if (!rows || !rows.length) return '<div class="muted">No recurring documentation gaps.</div>';
+            return rows.slice(0, 8).map(function (g) {
+                return '<div class="list-row"><div><span class="c">' + esc(g.title) + '</span>'
+                     + (g.example_fix ? '<div class="x" style="margin-top:3px;">' + esc(g.example_fix) + '</div>' : '') + '</div>'
+                     + '<span class="count-pill">' + (g.claims || g.count) + '×</span></div>';
+            }).join('');
+        }
+
+        document.getElementById('chips').addEventListener('click', function (e) {
+            var b = e.target.closest('.chip'); if (!b) return;
+            state.window = b.getAttribute('data-w');
+            Array.prototype.forEach.call(this.querySelectorAll('.chip'), function (c) { c.classList.toggle('active', c === b); });
+            load();
+        });
+        load();
+    </script>
+</body>
+</html>
