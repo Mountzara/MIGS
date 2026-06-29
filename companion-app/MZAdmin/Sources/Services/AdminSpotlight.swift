@@ -23,7 +23,7 @@ import AppIntents
 /// the app and are excluded by design.
 @available(macOS 15.0, iOS 17.0, *)
 enum AdminSpotlight {
-    private static let log = Logger(subsystem: "com.mountzara.admin", category: "spotlight")
+    private static let log = Logger(subsystem: "com.mountzara.mzadmin", category: "spotlight")
 
     /// Index every non-PHI surface available to the signed-in admin.
     /// Called from MZAdminApp's `.task` once authenticated.

@@ -10,7 +10,7 @@ final class AuthStore: ObservableObject {
     @Published private(set) var email: String?
     @Published private(set) var isAuthenticated: Bool = false
 
-    private let service = "com.mountzara.admin"
+    private let service = "com.mountzara.mzadmin"
     private let account = "admin-basic"
 
     init() {

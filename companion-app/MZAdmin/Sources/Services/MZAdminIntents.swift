@@ -35,7 +35,7 @@ struct AskAdminIntent: AppIntent {
     )
     var question: String
 
-    private static let log = Logger(subsystem: "com.mountzara.admin", category: "intent.ask")
+    private static let log = Logger(subsystem: "com.mountzara.mzadmin", category: "intent.ask")
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         Self.log.info("AskAdminIntent.perform: '\(question)'")

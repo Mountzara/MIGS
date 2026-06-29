@@ -23,7 +23,7 @@ import FoundationModels
 ///   - `OnDeviceModel.complete(system:user:)` — generic completion
 ///   - `OnDeviceModel.answerAdmin(query:context:)` — admin-content Q&A
 enum OnDeviceModel {
-    private static let log = Logger(subsystem: "com.mountzara.admin", category: "ondevice")
+    private static let log = Logger(subsystem: "com.mountzara.mzadmin", category: "ondevice")
 
     /// True only when:
     ///   (a) the FoundationModels framework is linkable (macOS 26+/iOS 26+)

@@ -17,7 +17,7 @@ import UserNotifications
 @MainActor
 final class PushNotifications {
     static let shared = PushNotifications()
-    private let log = Logger(subsystem: "com.mountzara.admin", category: "push")
+    private let log = Logger(subsystem: "com.mountzara.mzadmin", category: "push")
 
     private var basicToken: String?
     private var pendingDeviceToken: String?

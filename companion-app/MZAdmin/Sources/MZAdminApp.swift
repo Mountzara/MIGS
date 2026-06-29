@@ -32,7 +32,7 @@ struct MZAdminApp: App {
 /// Bridges UIKit notification callbacks into PushNotifications.shared.
 /// SwiftUI app lifecycle exposes these via UIApplicationDelegateAdaptor.
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    private let log = Logger(subsystem: "com.mountzara.admin", category: "appdelegate")
+    private let log = Logger(subsystem: "com.mountzara.mzadmin", category: "appdelegate")
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {

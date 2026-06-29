@@ -13,7 +13,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    DEVELOPMENT_TEAM: ""            # set your Apple Developer Team ID in Xcode
+    DEVELOPMENT_TEAM: "6LHWWYGLZK"            # set your Apple Developer Team ID in Xcode
     CODE_SIGN_STYLE: Automatic
     GENERATE_INFOPLIST_FILE: YES
     MARKETING_VERSION: "1.0"
@@ -27,7 +27,7 @@ targets:
       - path: MZAdmin/Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.mountzara.admin
+        PRODUCT_BUNDLE_IDENTIFIER: com.mountzara.mzadmin
         PRODUCT_NAME: MZ Admin
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -40,5 +40,5 @@ targets:
         CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: MZAdmin/MZAdmin.entitlements
         ENABLE_HARDENED_RUNTIME[sdk=macosx*]: YES
         # iOS APNs entitlement (aps-environment) — requires PAID Apple Developer Program.
-        # Re-enable when team `3LWCM6H9MM` is upgraded from free to paid:
+        # Re-enable when team `6LHWWYGLZK` is upgraded from free to paid:
         # CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]: MZAdmin/MZAdmin-iOS.entitlements
