@@ -81,7 +81,30 @@ export async function onRequestGet(ctx) {
 export async function onRequestPost(ctx) {
     return adminRoute(ctx, async ({ env, request }) => {
         const body = (await readJsonBody(request)) || {};
-        if (body.action !== "seed_payers") return jsonError("unknown_action — expected { action: 'seed_payers' }", 400);
+
+        // Route payer categories to clearinghouses in one shot (minimal go-live setup).
+        // { action:"route_by_kind", map:{ commercial:"availity", medicare:"claim_md", medicaid:"claim_md" } }
+        // or per-payer: { action:"route", assignments:[{ payer_id, vendor }] }  (payer_id = billing_payers.id)
+        if (body.action === "route_by_kind" || body.action === "route") {
+            const now = Date.now();
+            let updated = 0;
+            if (body.action === "route_by_kind") {
+                for (const [kind, vendor] of Object.entries(body.map || {})) {
+                    const r = await env.DB.prepare(`UPDATE billing_payers SET clearinghouse_vendor = ?, updated_at = ? WHERE payer_kind = ?`)
+                        .bind(vendor || null, now, kind).run().catch(() => null);
+                    updated += (r && r.meta && r.meta.changes) || 0;
+                }
+            } else {
+                for (const a of (body.assignments || [])) {
+                    const r = await env.DB.prepare(`UPDATE billing_payers SET clearinghouse_vendor = ?, updated_at = ? WHERE id = ?`)
+                        .bind(a.vendor || null, now, a.payer_id).run().catch(() => null);
+                    updated += (r && r.meta && r.meta.changes) || 0;
+                }
+            }
+            return jsonResponse({ ok: true, updated });
+        }
+
+        if (body.action !== "seed_payers") return jsonError("unknown_action — expected 'seed_payers' | 'route_by_kind' | 'route'", 400);
         const vendor = clearinghouseVendor(env);
         const now = Date.now();
         let inserted = 0, skipped = 0;
