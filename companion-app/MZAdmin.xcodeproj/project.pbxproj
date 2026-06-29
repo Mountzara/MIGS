@@ -44,6 +44,7 @@
 		B10000000000000000000024 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000024 /* DebugView.swift */; };
 		B10000000000000000000025 /* BillingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000025 /* BillingView.swift */; };
 		B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000026 /* BillingClaimDetailView.swift */; };
+		B10000000000000000000027 /* AdminAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000027 /* AdminAI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +86,7 @@
 		F10000000000000000000024 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		F10000000000000000000025 /* BillingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingView.swift; sourceTree = "<group>"; };
 		F10000000000000000000026 /* BillingClaimDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillingClaimDetailView.swift; sourceTree = "<group>"; };
+		F10000000000000000000027 /* AdminAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAI.swift; sourceTree = "<group>"; };
 		F100000000000000000000FF /* MZ Admin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MZ Admin.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -143,6 +145,7 @@
 				F1000000000000000000001D /* OnDeviceModel.swift */,
 				F1000000000000000000001E /* AdminSpotlight.swift */,
 				F1000000000000000000001F /* MZAdminIntents.swift */,
+				F10000000000000000000027 /* AdminAI.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -305,6 +308,7 @@
 				B10000000000000000000024 /* DebugView.swift in Sources */,
 				B10000000000000000000025 /* BillingView.swift in Sources */,
 				B10000000000000000000026 /* BillingClaimDetailView.swift in Sources */,
+				B10000000000000000000027 /* AdminAI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
