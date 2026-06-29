@@ -6986,6 +6986,53 @@
             background: linear-gradient(135deg, #ffffff 0%, #ece7fb 100%);
             border-color: rgba(118, 91, 217, 0.30);
         }
+
+        /* ==========================================================
+           Magazine-style justified body copy (2026-06-29)
+           Running prose only — flush both edges so text fills the
+           column. Centered intros excluded via :not(.center); headings,
+           eyebrows, labels, metadata, and badges are NOT listed so they
+           stay as-is. hyphens kept MANUAL per CLAUDE.md (auto-hyphenation
+           once broke "AAGL-presented" mid-word).
+           ========================================================== */
+        .section-sub:not(.center),
+        .about-text-block p,
+        .domain-card p,
+        .sub-sub,
+        .hub-content-body p,
+        .zero-card p,
+        .technique-cell p,
+        .population-card p,
+        .award-tile p,
+        .surgical-card-body p,
+        .curriculum-card p,
+        .curriculum-cta-inner p,
+        .evidence-modal-intro,
+        .evidence-lit-lead,
+        .evidence-section-body,
+        .evidence-service-desc,
+        .evidence-expect-col-body,
+        .evidence-faq-a,
+        .evidence-study-finding,
+        .carepath-body,
+        .bento-card p,
+        .app-card-v2 p,
+        .app-feature p,
+        .feature-tile p,
+        .app-modal-section-lead,
+        .usecase-row p,
+        .dm-body p,
+        .dm-rba-col p,
+        .dm-timeline-body p,
+        .dm-qa-a,
+        .research-card-summary,
+        .pillar-content,
+        .traj-body,
+        .omt-modal-intro {
+            text-align: justify;
+            -webkit-hyphens: manual;
+            hyphens: manual;
+        }
     </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
