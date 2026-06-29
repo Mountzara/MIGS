@@ -143,9 +143,19 @@
         @media (prefers-reduced-motion: reduce) {
             .assignment, .scale-btn, .option, .btn { transition: none !important; transform: none !important; }
         }
+    
+        /* Fixed finalized hero line-art backdrop (static — does NOT play) so the
+           glass dashboard components frost against real texture, uniform with the
+           rest of the site. Move the opaque page base to html so the z-index:-1
+           art shows; body keeps only its translucent glow on top. Added 2026-06-29. */
+        html { background-color: var(--bg-base, var(--bg, var(--black, #07070a))); }
+        body { background-color: transparent !important; }
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #000; opacity: 0.75; }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     </style>
 </head>
 <body>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
     <main class="wrap">
         <div class="top-row">
             <div class="brand">
