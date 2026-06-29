@@ -50,6 +50,19 @@ struct TriageDetailView: View {
                 if let r = row.aiRationale, !r.isEmpty {
                     Text(r).font(.callout).foregroundStyle(.secondary)
                 }
+                if let concerns = row.aiSecondaryConcerns, !concerns.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Secondary concerns").font(.caption.weight(.semibold)).foregroundStyle(Theme.amber)
+                        ForEach(concerns, id: \.self) { c in
+                            Label(c, systemImage: "exclamationmark.triangle")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                if let pv = row.aiPromptVersion, !pv.isEmpty {
+                    LabeledContent("Model prompt", value: pv)
+                        .font(.caption2).foregroundStyle(.tertiary)
+                }
             }
 
             Section("Your override") {

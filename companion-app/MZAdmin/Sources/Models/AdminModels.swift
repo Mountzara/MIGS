@@ -79,6 +79,8 @@ struct TriageRow: Identifiable, Codable, Hashable {
     @LBoolReq var aiInPersonRequired: Bool
     var aiPreferredTimeOfDay: String?
     var aiRationale: String?
+    var aiSecondaryConcerns: [String]?
+    var aiPromptVersion: String?
     var clinicianReviewedAt: Int?
     var finalVisitType: String?
     var finalDurationMin: Int?
@@ -105,6 +107,8 @@ struct TriageRow: Identifiable, Codable, Hashable {
         case aiInPersonRequired = "ai_in_person_required"
         case aiPreferredTimeOfDay = "ai_preferred_time_of_day"
         case aiRationale = "ai_rationale"
+        case aiSecondaryConcerns = "ai_secondary_concerns"
+        case aiPromptVersion = "ai_prompt_version"
         case clinicianReviewedAt = "clinician_reviewed_at"
         case finalVisitType = "final_visit_type"
         case finalDurationMin = "final_duration_min"
