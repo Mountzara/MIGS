@@ -93,9 +93,21 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
 }
 .skip-link { position: absolute; left: -9999px; top: 8px; background: rgba(var(--glow-purple), 0.95); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; z-index: 200; }
 .skip-link:focus { left: 16px; }
+    
+        /* Fixed finalized hero line-art backdrop (static final frame — does NOT
+           play) so glass components frost against real texture, uniform with the
+           homepage. z-index:-1 keeps it behind all content; cards' backdrop-filter
+           samples it. Added 2026-06-29. */
+        /* Move the opaque page base to html so the fixed line-art (z-index:-1)
+           shows; body keeps only its translucent glow/gradient on top. */
+        html { background-color: var(--bg-base, var(--bg, var(--black, #07070a))); }
+        body { background-color: transparent !important; }
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #000; opacity: 0.75; }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     </style>
 </head>
 <body>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
     <a href="#main" class="skip-link">Skip to main content</a>
 
     <nav class="site-nav" aria-label="Primary">
