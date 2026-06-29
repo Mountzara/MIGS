@@ -77,6 +77,13 @@ struct AdminAPI {
         _ = try await send(request("/api/posts/\(id)/reject", method: "POST"))
     }
 
+    /// Edit a post's content (PUT /api/posts/:id). Editable fields incl.
+    /// title, summary, body_html, verdict, topics_covered, pmids_cited, status.
+    func updatePost(id: String, fields: [String: Any]) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/posts/\(id)", method: "PUT", body: payload))
+    }
+
     /// Verify credentials by hitting the authenticated listing once.
     /// Returns nil on success or the specific APIError so the caller can
     /// distinguish 401 (wrong password) from offline / server / decoding.

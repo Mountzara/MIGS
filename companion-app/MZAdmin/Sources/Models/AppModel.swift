@@ -48,6 +48,20 @@ final class AppModel: ObservableObject {
         await act(post.id) { try await self.api.reject(id: post.id) }
     }
 
+    /// Save edits to a post, then refresh the list. Returns the updated full post.
+    func updatePost(_ id: String, fields: [String: Any]) async -> Post? {
+        do {
+            try await api.updatePost(id: id, fields: fields)
+            let updated = try? await api.fetchPost(id: id)
+            await reload()
+            return updated
+        } catch {
+            errorMessage = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+            return nil
+        }
+    }
+
     private func act(_ id: String, _ op: @escaping () async throws -> Void) async {
         actioningIDs.insert(id)
         defer { actioningIDs.remove(id) }
