@@ -12,15 +12,20 @@ struct FeedbackDetailView: View {
     @State private var showRejectSheet = false
     @State private var screenshot: Data?
     @State private var screenshotError: String?
+    @State private var full: Feedback?
+    @State private var events: [TrendBriefEvent] = []
+
+    private var current: Feedback { full ?? item }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
-                if let comment = item.commentText, !comment.isEmpty { commentCard(comment) }
-                if let rec = item.aiRecommendation { aiCard(rec) }
-                if item.hasScreenshot == true { screenshotCard }
+                if let comment = current.commentText, !comment.isEmpty { commentCard(comment) }
+                if let rec = current.aiRecommendation { aiCard(rec) }
+                if current.hasScreenshot == true { screenshotCard }
                 metadataCard
+                if !events.isEmpty { eventsCard }
                 actionsBar
             }
             .padding(16)
@@ -30,6 +35,36 @@ struct FeedbackDetailView: View {
         .sheet(isPresented: $showApproveSheet) { approveSheet }
         .sheet(isPresented: $showRejectSheet) { rejectSheet }
         .task { if item.hasScreenshot == true { await loadScreenshot() } }
+        .task { await loadDetail() }
+    }
+
+    private func loadDetail() async {
+        if let d = try? await model.api.feedbackDetail(id: item.id) {
+            full = d.feedback
+            events = d.events ?? []
+        }
+    }
+
+    private var eventsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Activity", systemImage: "clock.arrow.circlepath").font(.subheadline.weight(.semibold))
+            ForEach(events) { e in
+                HStack(alignment: .top, spacing: 8) {
+                    Circle().fill(Theme.accent.opacity(0.6)).frame(width: 6, height: 6).padding(.top, 5)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text((e.eventKind ?? "event").replacingOccurrences(of: "_", with: " ").capitalized)
+                            .font(.caption.weight(.medium))
+                        HStack(spacing: 6) {
+                            if let who = e.actorLabel ?? e.actor, !who.isEmpty { Text(who) }
+                            if let ts = e.ts { Text("· \(fmtEpoch(ts))") }
+                        }.font(.caption2).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
     }
 
     private func loadScreenshot() async {
@@ -155,14 +190,19 @@ struct FeedbackDetailView: View {
 
     private var metadataCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("Details", systemImage: "info.circle")
+            Label("Details & context", systemImage: "info.circle")
                 .font(.subheadline.weight(.semibold))
-            if let r = item.route { kvRow("Route", r) }
-            if let l = item.inviteLabel { kvRow("Invite", l) }
-            if let c = item.createdAt { kvRow("Submitted", fmtEpoch(c)) }
-            if let s = item.statusReason, !s.isEmpty { kvRow("Reason", s) }
-            if let by = item.approvedBy { kvRow("Approved by", by) }
-            if let commit = item.implementedInCommit { kvRow("Commit", commit) }
+            if let r = current.route { kvRow("Route", r) }
+            if let l = current.inviteLabel { kvRow("Invite", l) }
+            if let c = current.createdAt { kvRow("Submitted", fmtEpoch(c)) }
+            if let w = current.viewportWidth, let h = current.viewportHeight {
+                kvRow("Viewport", "\(w) × \(h)")
+            }
+            if let ua = current.userAgent, !ua.isEmpty { kvRow("User agent", ua) }
+            if let sid = current.sessionId, !sid.isEmpty { kvRow("Session", sid) }
+            if let s = current.statusReason, !s.isEmpty { kvRow("Reason", s) }
+            if let by = current.approvedBy { kvRow("Approved by", by) }
+            if let commit = current.implementedInCommit { kvRow("Commit", commit) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14).glassCard()

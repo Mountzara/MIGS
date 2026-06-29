@@ -536,6 +536,11 @@ struct Feedback: Identifiable, Codable, Hashable {
     var updatedAt: Int?
     @LBool var hasScreenshot: Bool?
     var aiRecommendation: AIRecommendation?
+    // Submission context (returned by the detail endpoint)
+    var sessionId: String?
+    var viewportWidth: Int?
+    var viewportHeight: Int?
+    var userAgent: String?
 
     var isPending: Bool { status == "new" || status == "ai_analyzed" }
     var isApproved: Bool { status == "approved" }
@@ -558,6 +563,10 @@ struct Feedback: Identifiable, Codable, Hashable {
         case updatedAt = "updated_at"
         case hasScreenshot = "has_screenshot"
         case aiRecommendation = "ai_recommendation"
+        case sessionId = "session_id"
+        case viewportWidth = "viewport_width"
+        case viewportHeight = "viewport_height"
+        case userAgent = "user_agent"
     }
 
     /// Claude-generated implementation recommendation embedded in the row.
@@ -592,6 +601,7 @@ struct FeedbackListResponse: Codable {
 
 struct FeedbackDetailResponse: Codable {
     let feedback: Feedback
+    let events: [TrendBriefEvent]?   // shared {ts, actor, actor_label, event_kind} audit-event shape
 }
 
 // ---------- Carousels ----------

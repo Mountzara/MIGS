@@ -251,6 +251,12 @@ struct AdminAPI {
         return try decode(FeedbackDetailResponse.self, data).feedback
     }
 
+    /// Full feedback row (with submission context) + its audit-event timeline.
+    func feedbackDetail(id: String) async throws -> FeedbackDetailResponse {
+        let data = try await send(request("/api/v1/admin/feedback/\(id)"))
+        return try decode(FeedbackDetailResponse.self, data)
+    }
+
     func approveFeedback(id: String, note: String?) async throws {
         var obj: [String: Any] = [:]
         if let note, !note.isEmpty { obj["note"] = note }
