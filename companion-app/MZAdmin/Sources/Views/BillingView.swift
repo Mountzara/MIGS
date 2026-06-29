@@ -46,12 +46,37 @@ final class BillingModel: ObservableObject {
         do { try await op(); await reload(); return true }
         catch { self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription; return false }
     }
+
+    /// Approve several claims in sequence (one network call each), then refresh
+    /// once. Returns the ids that failed so the caller can keep them selected.
+    func bulkApprove(_ ids: [String], notes: String?) async -> [String] {
+        error = nil
+        var failed: [String] = []
+        for id in ids {
+            busyIDs.insert(id)
+            do { try await api.approveBillingClaim(id: id, notes: notes) }
+            catch {
+                failed.append(id)
+                self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+                if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+            }
+            busyIDs.remove(id)
+        }
+        await reload()
+        return failed
+    }
 }
 
 struct BillingView: View {
     @EnvironmentObject var auth: AuthStore
     @StateObject private var model: BillingModel
     @State private var selected: BillingClaim?
+
+    // Bulk-approve selection state.
+    @State private var selecting = false
+    @State private var picked: Set<String> = []
+    @State private var showBulkApprove = false
+    @State private var bulkNotes = ""
 
     init(auth: AuthStore) { _model = StateObject(wrappedValue: BillingModel(auth: auth)) }
 
@@ -74,7 +99,13 @@ struct BillingView: View {
             }
             .navigationTitle("Billing")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    if model.section == "claims" && !model.pending.isEmpty {
+                        Button(selecting ? "Cancel" : "Select") {
+                            withAnimation { selecting.toggle() }
+                            if !selecting { picked.removeAll() }
+                        }
+                    }
                     Button { Task { await model.reload() } } label: { Image(systemName: "arrow.clockwise") }
                 }
             }
@@ -83,8 +114,47 @@ struct BillingView: View {
             .navigationDestination(item: $selected) { claim in
                 BillingClaimDetailView(claim: claim, model: model)
             }
+            .sheet(isPresented: $showBulkApprove) { bulkApproveSheet }
         }
         .task { await model.reload() }
+    }
+
+    /// Confirmation sheet for approving the selected clean claims.
+    private var bulkApproveSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("Approve \(picked.count) clean claim\(picked.count == 1 ? "" : "s")? This moves them to ready-to-submit. Claims with unresolved errors aren't selectable and must be reviewed individually.")
+                        .font(.callout)
+                }
+                Section("Approval note (optional — applies to all)") {
+                    TextField("Audit note", text: $bulkNotes, axis: .vertical).lineLimit(2...5)
+                }
+            }
+            .navigationTitle("Bulk approve")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showBulkApprove = false } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Approve") {
+                        let ids = Array(picked)
+                        let note = bulkNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+                        Task {
+                            let failed = await model.bulkApprove(ids, notes: note.isEmpty ? nil : note)
+                            showBulkApprove = false
+                            picked = Set(failed)            // keep failures selected for retry
+                            if failed.isEmpty { withAnimation { selecting = false } }
+                        }
+                    }
+                    .disabled(picked.isEmpty)
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 440, minHeight: 300)
+        #endif
     }
 
     @ViewBuilder
@@ -97,7 +167,7 @@ struct BillingView: View {
                 description: Text("No billing claims to review in this window."))
         } else {
             List {
-                claimSection("Pending review", model.pending, badge: model.pending.count)
+                claimSection("Pending review", model.pending, badge: model.pending.count, selectable: true)
                 claimSection("Ready to submit / submitted", model.ready)
                 claimSection("Paid", model.paid)
                 claimSection("Denied", model.denied)
@@ -107,16 +177,51 @@ struct BillingView: View {
             #else
             .listStyle(.insetGrouped)
             #endif
+            .safeAreaInset(edge: .bottom) {
+                if selecting && !picked.isEmpty { bulkBar }
+            }
         }
     }
 
+    private var bulkBar: some View {
+        HStack {
+            Text("\(picked.count) selected").font(.subheadline.weight(.medium))
+            Spacer()
+            Button {
+                bulkNotes = ""; showBulkApprove = true
+            } label: {
+                Label("Approve \(picked.count)", systemImage: "checkmark.seal.fill").bold()
+            }
+            .buttonStyle(.borderedProminent).tint(Theme.green)
+            .disabled(!model.busyIDs.isDisjoint(with: picked))
+        }
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+    }
+
     @ViewBuilder
-    private func claimSection(_ title: String, _ items: [BillingClaim], badge: Int? = nil) -> some View {
+    private func claimSection(_ title: String, _ items: [BillingClaim], badge: Int? = nil, selectable: Bool = false) -> some View {
         if !items.isEmpty {
             Section {
                 ForEach(items) { c in
-                    Button { selected = c } label: { BillingClaimRowView(claim: c) }
+                    if selecting && selectable {
+                        let approvable = (c.unresolvedErrors ?? 0) == 0
+                        Button {
+                            guard approvable else { return }
+                            if picked.contains(c.id) { picked.remove(c.id) } else { picked.insert(c.id) }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: picked.contains(c.id) ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(approvable ? Theme.accentSoft : Color.secondary)
+                                BillingClaimRowView(claim: c).opacity(approvable ? 1 : 0.45)
+                            }
+                        }
                         .buttonStyle(.plain)
+                        .disabled(!approvable)
+                    } else {
+                        Button { selected = c } label: { BillingClaimRowView(claim: c) }
+                            .buttonStyle(.plain)
+                    }
                 }
             } header: {
                 HStack {
