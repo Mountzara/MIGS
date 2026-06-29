@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// One decoded carousel slide (R2 keys carousel-assets/<slug>/slide_01.png …).
+private struct SlideImage: Identifiable { let id: Int; let data: Data }
+
 struct CarouselDetailView: View {
     let carousel: Carousel
     let model: CarouselsModel
@@ -9,12 +12,20 @@ struct CarouselDetailView: View {
     @State private var showApproveSheet = false
     @State private var showRejectSheet = false
     @State private var coverImage: Data?
+    @State private var slides: [SlideImage] = []
+    @State private var loadingSlides = true
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
-                if let data = coverImage { coverCard(data) }
+                if !slides.isEmpty {
+                    slidesCard
+                } else if loadingSlides && (carousel.slideCount ?? 0) > 0 {
+                    slidesLoadingCard
+                } else if let data = coverImage {
+                    coverCard(data)
+                }
                 metadataCard
                 actionsBar
             }
@@ -24,7 +35,24 @@ struct CarouselDetailView: View {
         .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
         .sheet(isPresented: $showApproveSheet) { decisionSheet(approve: true) }
         .sheet(isPresented: $showRejectSheet) { decisionSheet(approve: false) }
-        .task { await loadCover() }
+        .task { await loadSlides() }
+    }
+
+    /// Load every slide (slide_01.png … slide_NN.png) for the gallery; fall
+    /// back to the single cover image if there are no slides.
+    private func loadSlides() async {
+        let n = carousel.slideCount ?? 0
+        guard n > 0 else { loadingSlides = false; await loadCover(); return }
+        var out: [SlideImage] = []
+        for i in 1...n {
+            let file = "slide_\(String(format: "%02d", i)).png"
+            if let data = try? await model.api.carouselAsset(slug: carousel.slug, file: file) {
+                out.append(SlideImage(id: i, data: data))
+            }
+        }
+        slides = out
+        loadingSlides = false
+        if out.isEmpty { await loadCover() }
     }
 
     private func loadCover() async {
@@ -91,6 +119,54 @@ struct CarouselDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14).glassCard()
+    }
+
+    private var slidesCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Slides (\(carousel.slideCount ?? slides.count))", systemImage: "rectangle.stack")
+                .font(.subheadline.weight(.semibold))
+            #if os(iOS)
+            TabView {
+                ForEach(slides) { s in
+                    slideImage(s.data).padding(.bottom, 30).tag(s.id)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .frame(height: 420)
+            #else
+            VStack(spacing: 12) {
+                ForEach(slides) { s in slideImage(s.data) }
+            }
+            #endif
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private var slidesLoadingCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Slides", systemImage: "rectangle.stack")
+                .font(.subheadline.weight(.semibold))
+            ProgressView().frame(maxWidth: .infinity).padding(.vertical, 24)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    @ViewBuilder
+    private func slideImage(_ data: Data) -> some View {
+        #if os(iOS)
+        if let ui = UIImage(data: data) {
+            Image(uiImage: ui).resizable().scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        #elseif os(macOS)
+        if let ns = NSImage(data: data) {
+            Image(nsImage: ns).resizable().scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        #endif
     }
 
     private var metadataCard: some View {
