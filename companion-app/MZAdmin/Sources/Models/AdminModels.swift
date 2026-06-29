@@ -874,6 +874,326 @@ struct Briefing: Identifiable, Codable, Hashable {
         case hasNewSinceLastView = "has_new_since_last_view"
     }
 }
+
+// MARK: - Pre-visit briefing drill-down (GET /briefings/<patient_id>)
+// Every field is optional so a missing/null section never crashes the decode.
+
+struct BriefingDetail: Codable {
+    var patient: BriefPatient?
+    var appointmentFocus: BriefAppointment?
+    var appointmentsContext: BriefApptContext?
+    var executiveLede: String?
+    var intakeSummary: BriefIntake?
+    var triage: BriefTriage?
+    var snapshotSummary: BriefSnapshot?
+    var recentEncounters: [BriefEncounter]?
+    var promTrends: [BriefPromTrend]?
+    var personalTouchpoints: [BriefNote]?
+    var allPersonalNotes: [BriefNote]?
+    var obstetricHistory: BriefObHistory?
+    var pastSurgeries: BriefPastSurgeries?
+    var medicalHistory: BriefMedicalHistory?
+    var currentMedications: BriefMedications?
+    var allergies: BriefAllergies?
+    var imagingSummary: BriefImaging?
+    var uploadedDocuments: [BriefDocument]?
+    var watchFor: [BriefWatchItem]?
+    var suggestedQuestions: [String]?
+    var medicationWatch: [BriefMedWatch]?
+
+    enum CodingKeys: String, CodingKey {
+        case patient, triage, allergies
+        case appointmentFocus = "appointment_focus"
+        case appointmentsContext = "appointments_context"
+        case executiveLede = "executive_lede"
+        case intakeSummary = "intake_summary"
+        case snapshotSummary = "snapshot_summary"
+        case recentEncounters = "recent_encounters"
+        case promTrends = "prom_trends"
+        case personalTouchpoints = "personal_touchpoints"
+        case allPersonalNotes = "all_personal_notes"
+        case obstetricHistory = "obstetric_history"
+        case pastSurgeries = "past_surgeries"
+        case medicalHistory = "medical_history"
+        case currentMedications = "current_medications"
+        case imagingSummary = "imaging_summary"
+        case uploadedDocuments = "uploaded_documents"
+        case watchFor = "watch_for"
+        case suggestedQuestions = "suggested_questions"
+        case medicationWatch = "medication_watch"
+    }
+}
+
+struct BriefPatient: Codable, Hashable {
+    var displayName: String?
+    var fullName: String?
+    var pronouns: String?
+    var preferredLanguage: String?
+    var age: Int?
+    var dob: String?
+    enum CodingKeys: String, CodingKey {
+        case pronouns, age, dob
+        case displayName = "display_name"
+        case fullName = "full_name"
+        case preferredLanguage = "preferred_language"
+    }
+}
+
+struct BriefAppointment: Codable, Hashable {
+    var visitType: String?
+    var startsAt: String?
+    var durationMin: Int?
+    var modality: String?
+    var status: String?
+    var chiefComplaintSummary: String?
+    var doxyRoomUrl: String?
+    enum CodingKeys: String, CodingKey {
+        case status, modality
+        case visitType = "visit_type"
+        case startsAt = "starts_at"
+        case durationMin = "duration_min"
+        case chiefComplaintSummary = "chief_complaint_summary"
+        case doxyRoomUrl = "doxy_room_url"
+    }
+}
+
+struct BriefApptContext: Codable, Hashable {
+    var recentCompleted: [BriefAppointment]?
+    var upcomingScheduled: [BriefAppointment]?
+    enum CodingKeys: String, CodingKey {
+        case recentCompleted = "recent_completed"
+        case upcomingScheduled = "upcoming_scheduled"
+    }
+}
+
+struct BriefIntake: Codable, Hashable {
+    var status: String?
+    var submittedAt: String?
+    var completionPct: Int?
+    enum CodingKeys: String, CodingKey {
+        case status
+        case submittedAt = "submitted_at"
+        case completionPct = "completion_pct"
+    }
+}
+
+struct BriefTriage: Codable, Hashable {
+    var visitType: String?
+    var urgency: String?
+    var estimatedDurationMin: Int?
+    var inPersonRequired: Bool?
+    var preferredTimeOfDay: String?
+    var rationale: String?
+    var secondaryConcerns: [String]?
+    enum CodingKeys: String, CodingKey {
+        case urgency, rationale
+        case visitType = "visit_type"
+        case estimatedDurationMin = "estimated_duration_min"
+        case inPersonRequired = "in_person_required"
+        case preferredTimeOfDay = "preferred_time_of_day"
+        case secondaryConcerns = "secondary_concerns"
+    }
+}
+
+struct BriefSnapshot: Codable, Hashable {
+    var executiveSummary: String?
+    var narrativeSummary: String?
+    var chiefComplaint: String?
+    var ccHistory: String?
+    var dominantCategory: String?
+    var patientGoals: [String]?
+    var surgicalHistory: [String]?
+    var aiRecommendations: [String]?
+    var problemCount: Int?
+    var actionItemCount: Int?
+    enum CodingKeys: String, CodingKey {
+        case executiveSummary = "executive_summary"
+        case narrativeSummary = "narrative_summary"
+        case chiefComplaint = "chief_complaint"
+        case ccHistory = "cc_history"
+        case dominantCategory = "dominant_category"
+        case patientGoals = "patient_goals"
+        case surgicalHistory = "surgical_history"
+        case aiRecommendations = "ai_recommendations"
+        case problemCount = "problem_count"
+        case actionItemCount = "action_item_count"
+    }
+}
+
+struct BriefEncounter: Codable, Hashable {
+    var visitDate: String?
+    var visitType: String?
+    var chiefComplaint: String?
+    var cptCodes: [String]?
+    var icd10Codes: [String]?
+    enum CodingKeys: String, CodingKey {
+        case visitDate = "visit_date"
+        case visitType = "visit_type"
+        case chiefComplaint = "chief_complaint"
+        case cptCodes = "cpt_codes"
+        case icd10Codes = "icd10_codes"
+    }
+}
+
+struct BriefPromTrend: Codable, Hashable {
+    var shortName: String?
+    var title: String?
+    var latestScore: Double?
+    var latestInterpretation: String?
+    var delta: Double?
+    var latestSubmittedAt: String?
+    enum CodingKeys: String, CodingKey {
+        case title, delta
+        case shortName = "short_name"
+        case latestScore = "latest_score"
+        case latestInterpretation = "latest_interpretation"
+        case latestSubmittedAt = "latest_submitted_at"
+    }
+}
+
+struct BriefNote: Codable, Hashable {
+    var category: String?
+    var summary: String?
+    var body: String?
+    var isPinned: Bool?
+    enum CodingKeys: String, CodingKey {
+        case category, summary, body
+        case isPinned = "is_pinned"
+    }
+}
+
+struct BriefObHistory: Codable, Hashable {
+    var gravida: Int?
+    var paraSimple: String?
+    var paraLiving: Int?
+    var wantsFuturePregnancy: Bool?
+    var ttcNow: Bool?
+    var infertilityFlag: Bool?
+    enum CodingKeys: String, CodingKey {
+        case gravida
+        case paraSimple = "para_simple"
+        case paraLiving = "para_living"
+        case wantsFuturePregnancy = "wants_future_pregnancy"
+        case ttcNow = "ttc_now"
+        case infertilityFlag = "infertility_flag"
+    }
+}
+
+struct BriefPastSurgeries: Codable, Hashable {
+    var count: Int?
+    var items: [BriefSurgeryItem]?
+    var findingsText: String?
+    enum CodingKeys: String, CodingKey {
+        case count, items
+        case findingsText = "findings_text"
+    }
+}
+struct BriefSurgeryItem: Codable, Hashable {
+    var label: String?
+    var year: String?
+}
+
+struct BriefMedicalHistory: Codable, Hashable {
+    var anticoagulants: [String]?
+    var hormoneTx: [String]?
+    var otherConditions: [String]?
+    var gynConditions: [String]?
+    var erasPositives: [BriefLabelDetail]?
+    var glp1Use: [BriefGlp1]?
+    enum CodingKeys: String, CodingKey {
+        case anticoagulants
+        case hormoneTx = "hormone_tx"
+        case otherConditions = "other_conditions"
+        case gynConditions = "gyn_conditions"
+        case erasPositives = "eras_positives"
+        case glp1Use = "glp1_use"
+    }
+}
+struct BriefLabelDetail: Codable, Hashable { var label: String?; var detail: String? }
+struct BriefGlp1: Codable, Hashable {
+    var drug: String?
+    var lastDoseDate: String?
+    enum CodingKeys: String, CodingKey { case drug; case lastDoseDate = "last_dose_date" }
+}
+
+struct BriefMedications: Codable, Hashable {
+    var painMeds: String?
+    var contraceptivesHormones: String?
+    var otherMeds: String?
+    enum CodingKeys: String, CodingKey {
+        case painMeds = "pain_meds"
+        case contraceptivesHormones = "contraceptives_hormones"
+        case otherMeds = "other_meds"
+    }
+}
+
+struct BriefAllergies: Codable, Hashable {
+    var hasDrugAllergies: Bool?
+    var hasLatexAllergy: Bool?
+    var list: String?
+    enum CodingKeys: String, CodingKey {
+        case list
+        case hasDrugAllergies = "has_drug_allergies"
+        case hasLatexAllergy = "has_latex_allergy"
+    }
+}
+
+struct BriefImaging: Codable, Hashable {
+    var tvusDate: String?
+    var endometrialThicknessMm: String?
+    var fibroidCount: String?
+    var largestFibroidSizeCm: String?
+    var hadPelvicMri: Bool?
+    var pelvicMriDate: String?
+    var hadCtAbdPelvis: Bool?
+    var hadSonohysterography: Bool?
+    var hadHsg: Bool?
+    enum CodingKeys: String, CodingKey {
+        case tvusDate = "tvus_date"
+        case endometrialThicknessMm = "endometrial_thickness_mm"
+        case fibroidCount = "fibroid_count"
+        case largestFibroidSizeCm = "largest_fibroid_size_cm"
+        case hadPelvicMri = "had_pelvic_mri"
+        case pelvicMriDate = "pelvic_mri_date"
+        case hadCtAbdPelvis = "had_ct_abd_pelvis"
+        case hadSonohysterography = "had_sonohysterography"
+        case hadHsg = "had_hsg"
+    }
+}
+
+struct BriefDocument: Codable, Hashable {
+    var kind: String?
+    var originalFilename: String?
+    var contentType: String?
+    var sizeBytes: Int?
+    var uploadedAt: String?
+    enum CodingKeys: String, CodingKey {
+        case kind, source
+        case originalFilename = "original_filename"
+        case contentType = "content_type"
+        case sizeBytes = "size_bytes"
+        case uploadedAt = "uploaded_at"
+    }
+    var source: String?
+}
+
+struct BriefWatchItem: Codable, Hashable {
+    var kind: String?
+    var label: String?
+    var severity: String?
+}
+
+struct BriefMedWatch: Codable, Hashable {
+    var drug: String?
+    var notFound: Bool?
+    var advisory: String?
+    var highConfidenceCount: Int?
+    enum CodingKeys: String, CodingKey {
+        case drug, advisory
+        case notFound = "not_found"
+        case highConfidenceCount = "high_confidence_count"
+    }
+}
 struct BriefingsResponse: Codable {
     let briefings: [Briefing]
     let window: BriefingWindow?

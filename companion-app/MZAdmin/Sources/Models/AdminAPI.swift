@@ -334,6 +334,14 @@ struct AdminAPI {
         return try decode(BriefingsResponse.self, data).briefings
     }
 
+    /// Full pre-visit briefing for one patient (optionally focused on an appointment).
+    func briefingDetail(patientId: String, appointmentId: String? = nil) async throws -> BriefingDetail {
+        var path = "/api/v1/admin/briefings/\(patientId)"
+        if let appointmentId { path += "?appointment_id=\(appointmentId)" }
+        let data = try await send(request(path))
+        return try decode(BriefingDetail.self, data)
+    }
+
     // MARK: - Education
     func listEducation(status: String = "all") async throws -> [EducationMaterial] {
         let data = try await send(request("/api/v1/admin/education?status=\(status)"))
