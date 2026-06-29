@@ -9971,8 +9971,12 @@
                 inner += '<div class="dm-rba">' +
                     ['expectant','medical','surgical'].filter(k => s.rba[k]).map(k => {
                         const c = s.rba[k];
-                        const label = { expectant:'Expectant', medical:'Medical', surgical:'Surgical' }[k];
-                        const sub   = { expectant:'Watch and wait', medical:'Medication-based', surgical:'Operative' }[k];
+                        // Patient-friendly headings for the three management paths
+                        // (clinical terms — expectant / medical / surgical — read as
+                        // jargon to patients). The per-card `sub` keeps the specific
+                        // clinical approach for the referring-clinician audience.
+                        const label = { expectant:'Watch &amp; Wait', medical:'Medication', surgical:'Surgery' }[k];
+                        const sub   = { expectant:'Monitoring over time', medical:'Medicine-based care', surgical:'A surgical procedure' }[k];
                         return `<div class="dm-rba-col">
                             <h4>${label}</h4>
                             <div class="dm-rba-sub">${c.sub || sub}</div>
