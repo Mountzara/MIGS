@@ -365,6 +365,14 @@ struct AdminAPI {
         let data = try await send(request(path))
         return try decode(BillingReportSummary.self, data)
     }
+
+    /// Cross-encounter Coding Coach — documentation-supported undercoding not
+    /// yet captured, recurring flags, modifier misses, and coaching actions.
+    /// window: mtd | qtd | ytd | l30d | l90d | l365d.
+    func codingCoach(window: String = "ytd") async throws -> CodingCoach {
+        let data = try await send(request("/api/v1/admin/billing/coding-coach?window=\(window)"))
+        return try decode(CodingCoachResponse.self, data).coach
+    }
 }
 
 /// PATCH body for an in-flight triage override. Only the fields the

@@ -974,6 +974,130 @@ struct BillingReportSummary: Codable, Hashable {
     }
 }
 
+// ---------- Coding Coach (GET /api/v1/admin/billing/coding-coach) ----------
+// Cross-encounter coaching view aggregating the AI coding analysis synced
+// from MedicalTranscription: documentation-supported undercoding not yet
+// captured, recurring compliance flags, modifier misses, and coaching actions.
+struct CodingCoach: Codable {
+    var window: Window?
+    var summary: Summary?
+    var undercoding: Undercoding?
+    var recurringFlags: [RecurringFlag]?
+    var modifierMisses: [ModifierMiss]?
+    var coachingPoints: [CoachingPoint]?
+    var trend: [TrendPoint]?
+    var complianceNote: String?
+    var generatedAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case window, summary, undercoding, trend
+        case recurringFlags = "recurring_flags"
+        case modifierMisses = "modifier_misses"
+        case coachingPoints = "coaching_points"
+        case complianceNote = "compliance_note"
+        case generatedAt = "generated_at"
+    }
+
+    struct Window: Codable { var key: String?; var label: String? }
+
+    struct Summary: Codable {
+        var claimsAnalyzed: Int?
+        var totalWrvu: Double?
+        var avgMedicolegalScore: Int?
+        var documentedUndercodingOpenUsd: Double?
+        var openOpportunityCount: Int?
+        var topRecurringFlag: String?
+        enum CodingKeys: String, CodingKey {
+            case claimsAnalyzed = "claims_analyzed"
+            case totalWrvu = "total_wrvu"
+            case avgMedicolegalScore = "avg_medicolegal_score"
+            case documentedUndercodingOpenUsd = "documented_undercoding_open_usd"
+            case openOpportunityCount = "open_opportunity_count"
+            case topRecurringFlag = "top_recurring_flag"
+        }
+    }
+
+    struct CoachingPoint: Codable, Identifiable {
+        var priority: String?
+        var theme: String?
+        var title: String?
+        var detail: String?
+        var nextStep: String?
+        var id: String { (theme ?? "") + "|" + (title ?? "") }
+        enum CodingKeys: String, CodingKey {
+            case priority, theme, title, detail
+            case nextStep = "next_step"
+        }
+    }
+
+    struct Undercoding: Codable {
+        var documentedUndercodingOpenUsd: Double?
+        var openOpportunityCount: Int?
+        var openWrvu: Double?
+        var topPairs: [Pair]?
+        enum CodingKeys: String, CodingKey {
+            case documentedUndercodingOpenUsd = "documented_undercoding_open_usd"
+            case openOpportunityCount = "open_opportunity_count"
+            case openWrvu = "open_wrvu"
+            case topPairs = "top_pairs"
+        }
+        struct Pair: Codable, Identifiable {
+            var fromCode: String?
+            var toCode: String?
+            var openCount: Int?
+            var openRevenueDeltaUsd: Double?
+            var wrvuDelta: Double?
+            var id: String { (fromCode ?? "") + "→" + (toCode ?? "") }
+            enum CodingKeys: String, CodingKey {
+                case fromCode = "from_code"
+                case toCode = "to_code"
+                case openCount = "open_count"
+                case openRevenueDeltaUsd = "open_revenue_delta_usd"
+                case wrvuDelta = "wrvu_delta"
+            }
+        }
+    }
+
+    struct RecurringFlag: Codable, Identifiable {
+        var kind: String?
+        var severity: String?
+        var count: Int?
+        var claimsAffected: Int?
+        var id: String { (kind ?? "flag") + "|" + String(count ?? 0) }
+        enum CodingKeys: String, CodingKey {
+            case kind, severity, count
+            case claimsAffected = "claims_affected"
+        }
+    }
+
+    struct ModifierMiss: Codable, Identifiable {
+        var referencedCode: String?
+        var count: Int?
+        var exampleFix: String?
+        var id: String { (referencedCode ?? "mod") + "|" + String(count ?? 0) }
+        enum CodingKeys: String, CodingKey {
+            case referencedCode = "referenced_code"
+            case count
+            case exampleFix = "example_fix"
+        }
+    }
+
+    struct TrendPoint: Codable, Identifiable {
+        var month: String?
+        var claims: Int?
+        var openUndercodingUsd: Double?
+        var id: String { month ?? "" }
+        enum CodingKeys: String, CodingKey {
+            case month, claims
+            case openUndercodingUsd = "open_undercoding_usd"
+        }
+    }
+}
+struct CodingCoachResponse: Codable {
+    let coach: CodingCoach
+    let cached: Bool?
+}
+
 /// Format cents → "$1,234.56".
 func fmtCents(_ cents: Int?) -> String {
     guard let cents else { return "—" }

@@ -4,7 +4,8 @@ import SwiftUI
 final class BillingModel: ObservableObject {
     @Published var claims: [BillingClaim] = []
     @Published var summary: BillingReportSummary?
-    @Published var section: String = "claims"      // "claims" | "report"
+    @Published var coach: CodingCoach?
+    @Published var section: String = "claims"      // "claims" | "coach" | "report"
     @Published var isLoading = false
     @Published var error: String?
     @Published var busyIDs: Set<String> = []
@@ -21,11 +22,14 @@ final class BillingModel: ObservableObject {
     func reload() async {
         isLoading = true; error = nil
         do {
-            if section == "claims" {
+            switch section {
+            case "claims":
                 claims = try await api.listBillingClaims(
                     statuses: ["pending_review", "edited", "ready_to_submit", "submitted", "paid", "denied"],
                     days: 60)
-            } else {
+            case "coach":
+                coach = try await api.codingCoach(window: "ytd")
+            default:
                 summary = try await api.billingReportSummary()
             }
         } catch {
@@ -85,6 +89,7 @@ struct BillingView: View {
             VStack(spacing: 8) {
                 Picker("Section", selection: $model.section) {
                     Text("Claims").tag("claims")
+                    Text("Coach").tag("coach")
                     Text("Report").tag("report")
                 }
                 .pickerStyle(.segmented)
@@ -93,6 +98,8 @@ struct BillingView: View {
 
                 if model.section == "claims" {
                     claimsList
+                } else if model.section == "coach" {
+                    coachScroll
                 } else {
                     reportScroll
                 }
@@ -248,6 +255,160 @@ struct BillingView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var coachScroll: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let c = model.coach {
+                    coachHeadline(c)
+                    if let pts = c.coachingPoints, !pts.isEmpty { coachingPointsCard(pts) }
+                    if let pairs = c.undercoding?.topPairs, !pairs.isEmpty { undercodingCard(pairs) }
+                    if let flags = c.recurringFlags, !flags.isEmpty { recurringFlagsCard(flags) }
+                    if let mods = c.modifierMisses, !mods.isEmpty { modifierMissesCard(mods) }
+                    if let t = c.trend, !t.isEmpty { trendCard(t) }
+                    if let note = c.complianceNote, !note.isEmpty {
+                        Text(note).font(.caption2).foregroundStyle(.tertiary)
+                    }
+                } else if model.isLoading {
+                    ProgressView().frame(maxWidth: .infinity).padding(.vertical, 32)
+                } else {
+                    ContentUnavailableView("No coaching data yet", systemImage: "sparkles",
+                        description: Text("Coding analysis appears here once encounters have synced from MedicalTranscription."))
+                }
+            }.padding(16)
+        }
+    }
+
+    private func coachHeadline(_ c: CodingCoach) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Coding Coach" + (c.window?.label.map { " · \($0)" } ?? ""), systemImage: "chart.line.uptrend.xyaxis")
+                .font(.subheadline.weight(.semibold))
+            if let open = c.summary?.documentedUndercodingOpenUsd, open >= 1 {
+                Text("$\(open, specifier: "%.0f")")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.green)
+                Text("documentation-supported coding not yet captured"
+                     + (c.summary?.openOpportunityCount.map { " · \($0) encounter\($0 == 1 ? "" : "s")" } ?? ""))
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                Text("No open undercoding — your billed levels match your documentation.")
+                    .font(.callout).foregroundStyle(Theme.green)
+            }
+            Divider().padding(.vertical, 2)
+            HStack(spacing: 18) {
+                if let n = c.summary?.claimsAnalyzed { metric("\(n)", "claims") }
+                if let w = c.summary?.totalWrvu { metric(String(format: "%.1f", w), "wRVU") }
+                if let s = c.summary?.avgMedicolegalScore { metric("\(s)", "med-legal") }
+                if let ow = c.undercoding?.openWrvu, ow > 0 { metric(String(format: "%.1f", ow), "open wRVU") }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private func metric(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value).font(.headline)
+            Text(label).font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+
+    private func coachingPointsCard(_ points: [CodingCoach.CoachingPoint]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Coaching", systemImage: "lightbulb").font(.subheadline.weight(.semibold))
+            ForEach(points) { p in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Circle().fill(priorityColor(p.priority)).frame(width: 8, height: 8)
+                        Text(p.title ?? "").font(.callout.weight(.semibold))
+                    }
+                    if let d = p.detail, !d.isEmpty { Text(d).font(.caption).foregroundStyle(.secondary) }
+                    if let n = p.nextStep, !n.isEmpty {
+                        Label(n, systemImage: "arrow.turn.down.right")
+                            .font(.caption2).foregroundStyle(Theme.accentSoft)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if p.id != points.last?.id { Divider() }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private func priorityColor(_ p: String?) -> Color {
+        switch p { case "high": return Theme.red; case "medium": return Theme.amber; default: return Theme.accentSoft }
+    }
+
+    private func undercodingCard(_ pairs: [CodingCoach.Undercoding.Pair]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Top undercoding — note supports a higher level", systemImage: "arrow.up.right")
+                .font(.subheadline.weight(.semibold))
+            ForEach(pairs) { p in
+                HStack {
+                    Text("\(p.fromCode ?? "?") → \(p.toCode ?? "?")").font(.subheadline.weight(.medium))
+                    if let n = p.openCount, n > 0 { Text("\(n)×").font(.caption).foregroundStyle(.secondary) }
+                    Spacer()
+                    if let usd = p.openRevenueDeltaUsd, usd > 0 {
+                        Text("+$\(usd, specifier: "%.0f")").font(.subheadline.weight(.medium)).foregroundStyle(Theme.green)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private func recurringFlagsCard(_ flags: [CodingCoach.RecurringFlag]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Recurring compliance flags", systemImage: "flag").font(.subheadline.weight(.semibold))
+            ForEach(flags.prefix(8)) { f in
+                HStack {
+                    Text((f.kind ?? "—").replacingOccurrences(of: "_", with: " ").capitalized).font(.subheadline)
+                    Spacer()
+                    if let n = f.count { Text("\(n)×").font(.caption).foregroundStyle(Theme.amber) }
+                    if let c = f.claimsAffected, c > 0 { Text("· \(c) claims").font(.caption2).foregroundStyle(.tertiary) }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private func modifierMissesCard(_ mods: [CodingCoach.ModifierMiss]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Modifier misses", systemImage: "number").font(.subheadline.weight(.semibold))
+            ForEach(mods.prefix(8)) { m in
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text(m.referencedCode ?? "—").font(.subheadline.weight(.medium))
+                        Spacer()
+                        if let n = m.count { Text("\(n)×").font(.caption).foregroundStyle(Theme.amber) }
+                    }
+                    if let fix = m.exampleFix, !fix.isEmpty { Text(fix).font(.caption2).foregroundStyle(.tertiary) }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private func trendCard(_ trend: [CodingCoach.TrendPoint]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Monthly open undercoding", systemImage: "calendar").font(.subheadline.weight(.semibold))
+            ForEach(trend) { t in
+                HStack {
+                    Text(t.month ?? "—").font(.subheadline)
+                    Spacer()
+                    if let usd = t.openUndercodingUsd { Text("$\(usd, specifier: "%.0f")").font(.subheadline.weight(.medium)) }
+                    if let c = t.claims { Text("· \(c) claims").font(.caption2).foregroundStyle(.tertiary) }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
     }
 
     @ViewBuilder
