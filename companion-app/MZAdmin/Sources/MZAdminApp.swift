@@ -60,11 +60,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return [.banner, .sound, .badge]
     }
 
-    // Tap handling — deep-link routing comes in Phase 1d once payloads exist.
+    // Tap handling — route the {type, id} payload to the matching tab.
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse) async {
         let info = response.notification.request.content.userInfo
         log.info("notification tapped: \(info as NSDictionary)")
+        await NotificationRouter.shared.handle(type: info["type"] as? String,
+                                               id: info["id"] as? String)
     }
 }
 #endif

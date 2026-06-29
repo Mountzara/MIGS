@@ -34,44 +34,89 @@ struct RootView: View {
     }
 }
 
-/// The signed-in shell: one tab per admin surface. Posts (review/approve),
-/// Triage (appointment-request review), Messages (secure patient threads),
-/// and Schedule (upcoming appointments).
+/// The signed-in shell: one tab per admin surface. The TabView `selection`
+/// is bound to NotificationRouter so a tapped push can deep-link to its tab.
 struct MainTabs: View {
     let auth: AuthStore
+    @ObservedObject private var router = NotificationRouter.shared
 
     var body: some View {
-        TabView {
-            PostListView(auth: auth)
+        TabView(selection: $router.selectedTab) {
+            PostListView(auth: auth).tag(AdminTab.posts)
                 .tabItem { Label("Posts", systemImage: "doc.text") }
-            TriageView(auth: auth)
+            TriageView(auth: auth).tag(AdminTab.triage)
                 .tabItem { Label("Triage", systemImage: "stethoscope") }
-            MessagesView(auth: auth)
+            MessagesView(auth: auth).tag(AdminTab.messages)
                 .tabItem { Label("Messages", systemImage: "bubble.left.and.bubble.right") }
-            ScheduleView(auth: auth)
+            ScheduleView(auth: auth).tag(AdminTab.schedule)
                 .tabItem { Label("Schedule", systemImage: "calendar") }
-            PatientsView(auth: auth)
+            PatientsView(auth: auth).tag(AdminTab.patients)
                 .tabItem { Label("Patients", systemImage: "person.2") }
-            TrendBriefsView(auth: auth)
+            TrendBriefsView(auth: auth).tag(AdminTab.briefs)
                 .tabItem { Label("Briefs", systemImage: "chart.line.uptrend.xyaxis") }
-            FeedbackView(auth: auth)
+            FeedbackView(auth: auth).tag(AdminTab.feedback)
                 .tabItem { Label("Feedback", systemImage: "ellipsis.bubble") }
-            CarouselsView(auth: auth)
+            CarouselsView(auth: auth).tag(AdminTab.carousels)
                 .tabItem { Label("Carousels", systemImage: "rectangle.stack") }
-            AnalyticsView(auth: auth)
+            AnalyticsView(auth: auth).tag(AdminTab.analytics)
                 .tabItem { Label("Analytics", systemImage: "chart.bar") }
-            BriefingsView(auth: auth)
+            BriefingsView(auth: auth).tag(AdminTab.briefings)
                 .tabItem { Label("Briefings", systemImage: "list.bullet.clipboard") }
-            EducationView(auth: auth)
+            EducationView(auth: auth).tag(AdminTab.education)
                 .tabItem { Label("Education", systemImage: "book") }
-            ComplianceView(auth: auth)
+            ComplianceView(auth: auth).tag(AdminTab.compliance)
                 .tabItem { Label("Compliance", systemImage: "doc.badge.gearshape") }
-            DebugView(auth: auth)
+            DebugView(auth: auth).tag(AdminTab.debug)
                 .tabItem { Label("Debug", systemImage: "ladybug") }
-            BillingView(auth: auth)
+            BillingView(auth: auth).tag(AdminTab.billing)
                 .tabItem { Label("Billing", systemImage: "creditcard") }
         }
         .tint(Theme.accentSoft)
+    }
+}
+
+/// The admin tabs — used both for the TabView selection and to route a tapped
+/// push notification to the right surface.
+enum AdminTab: Hashable {
+    case posts, triage, messages, schedule, patients, briefs, feedback
+    case carousels, analytics, briefings, education, compliance, debug, billing
+
+    /// Contract for the push-notification `type` field → tab. No backend
+    /// sender exists yet; this DEFINES the mapping the sender should target.
+    init?(notificationType: String?) {
+        switch notificationType?.lowercased() {
+        case "post", "evidence", "blog":      self = .posts
+        case "triage", "appointment_request": self = .triage
+        case "message", "thread":             self = .messages
+        case "appointment", "schedule":       self = .schedule
+        case "patient", "case":               self = .patients
+        case "trend_brief", "brief":          self = .briefs
+        case "feedback":                      self = .feedback
+        case "carousel":                      self = .carousels
+        case "briefing":                      self = .briefings
+        case "education":                     self = .education
+        case "compliance":                    self = .compliance
+        case "billing", "claim":              self = .billing
+        default:                              return nil
+        }
+    }
+}
+
+/// Bridges a tapped push notification ({type, id}) to the tab shell. The
+/// iOS AppDelegate writes here; MainTabs binds its TabView selection to it.
+@MainActor
+final class NotificationRouter: ObservableObject {
+    static let shared = NotificationRouter()
+    @Published var selectedTab: AdminTab = .posts
+    /// Record id from the payload — seam for future record-level deep links.
+    @Published var pendingRecordID: String?
+    private init() {}
+
+    /// Switch to the tab for `type` (ignored if `type` is unknown).
+    func handle(type: String?, id: String?) {
+        guard let tab = AdminTab(notificationType: type) else { return }
+        pendingRecordID = id
+        selectedTab = tab
     }
 }
 
