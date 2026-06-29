@@ -7,11 +7,15 @@
 //   * env.ANTHROPIC_API_KEY read
 //   * structured logging of request URL + status + duration
 //
-// PHI safety (§4.2 + §11.4 BAA-ledger): Anthropic does NOT offer a BAA.
-// Callers MUST de-identify any patient data before passing it as
-// messages. This wrapper does not enforce that — it is the caller's
-// responsibility. See functions/_lib/intake_triage.js for the canonical
-// de-identification path used by AI triage.
+// PHI safety (§4.2 + §11.4 BAA-ledger): an Anthropic BAA is now EXECUTED
+// (confirmed 2026-06-29), so PHI MAY flow to the Messages API where a
+// feature genuinely requires it — e.g. payer appeal letters need the
+// patient name / member id / DOB to be valid. The standing rule is still
+// DATA MINIMIZATION: send only the fields a feature needs, never more.
+// Non-clinical/finance features (billing advisor) and de-identifiable
+// ones (triage) should continue to minimize. See
+// functions/_lib/intake_triage.js for the canonical de-identification
+// path; callers that DO send PHI must audit-log the event.
 // =====================================================================
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
@@ -117,6 +121,48 @@ export async function callClaude(env, args) {
         usage: parsed?.usage || {},
         latency_ms,
     };
+}
+
+/**
+ * Extract the first balanced JSON object/array from a model response.
+ * Claude is instructed to emit raw JSON, but defensively strips ```json
+ * fences and any prose preamble/suffix so a stray sentence can't break
+ * JSON.parse. Returns the parsed value, or null if nothing parseable.
+ *
+ * Shared by every JSON-shape-enforced AI feature (advisor, pre-flight
+ * reviewer, appeal drafter) so they parse identically.
+ */
+export function extractJson(text) {
+    if (!text || typeof text !== "string") return null;
+    let s = text.trim();
+    // strip ```json … ``` or ``` … ``` fences if present
+    const fence = s.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    if (fence) s = fence[1].trim();
+    // fast path
+    try { return JSON.parse(s); } catch {}
+    // find the first { or [ and scan to its balanced close (string-aware)
+    const start = s.search(/[\[{]/);
+    if (start < 0) return null;
+    const open = s[start], close = open === "{" ? "}" : "]";
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < s.length; i++) {
+        const ch = s[i];
+        if (inStr) {
+            if (esc) esc = false;
+            else if (ch === "\\") esc = true;
+            else if (ch === '"') inStr = false;
+            continue;
+        }
+        if (ch === '"') inStr = true;
+        else if (ch === open) depth++;
+        else if (ch === close) {
+            depth--;
+            if (depth === 0) {
+                try { return JSON.parse(s.slice(start, i + 1)); } catch { return null; }
+            }
+        }
+    }
+    return null;
 }
 
 export const ANTHROPIC = {

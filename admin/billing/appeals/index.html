@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Denials / Appeals · Mount Zara Admin</title>
+    <style>
+        :root{--bg-base:#07070a;--bg-card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.10);--fg-strong:#fff;--fg-mid:rgba(245,245,247,0.84);--fg-soft:rgba(245,245,247,0.62);--fg-dim:rgba(245,245,247,0.42);--accent-soft:#fdba74;--glow-amber:251,146,60;--green:#10b981;}
+        *{box-sizing:border-box;} html{background-color:var(--bg-base);}
+        html,body{margin:0;background-color:transparent;color:var(--fg-mid);font-family:'Avenir Next','Avenir',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        .page-bg-stage{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#000;opacity:.75;}
+        .page-bg-art{position:absolute;top:50%;left:50%;width:100vw;height:56.25vw;object-fit:contain;pointer-events:none;filter:saturate(2.0) brightness(1.28) contrast(1.28);transform:translate(-48%,-50%) rotate(-22deg) scale(2.09);}
+        a{color:var(--accent-soft);text-decoration:none;}
+        .wrap{max-width:880px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,5vw,32px) 100px;}
+        header.bar{font-size:13px;color:var(--fg-dim);margin-bottom:4px;}
+        h1{font-size:clamp(24px,4vw,32px);font-weight:300;color:var(--fg-strong);margin:8px 0 6px;} h1 b{font-weight:600;color:var(--accent-soft);}
+        .lede{font-size:14px;line-height:1.5;color:var(--fg-soft);margin:0 0 22px;}
+        section.block{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:16px;backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);}
+        label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 6px;}
+        input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;}
+        input:focus{outline:none;border-color:rgba(var(--glow-amber),.6);}
+        .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+        button.btn{background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;} button.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--fg-mid);} button.btn:disabled{opacity:.5;cursor:wait;}
+        .muted{color:var(--fg-dim);font-size:12.5px;}
+        .strat{display:inline-block;font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(var(--glow-amber),.16);border:1px solid rgba(var(--glow-amber),.5);color:var(--accent-soft);text-transform:uppercase;letter-spacing:.04em;}
+        .carc{border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:8px;background:rgba(255,255,255,.02);}
+        .carc .code{font-weight:700;color:var(--fg-strong);} .carc .plain{font-size:13px;color:var(--fg-soft);margin-top:3px;}
+        .chg{font-size:13px;color:var(--fg-soft);margin:5px 0;padding-left:14px;border-left:2px solid rgba(var(--glow-amber),.5);}
+        h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim);margin:18px 0 8px;}
+        textarea{width:100%;min-height:340px;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:12px;color:var(--fg-strong);font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;padding:14px;}
+        .msg{margin-top:12px;font-size:13px;padding:10px 12px;border-radius:10px;display:none;}
+        .msg.ok{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;display:block;}
+        .msg.err{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.4);color:#fca5a5;display:block;}
+        .src{font-size:11px;color:var(--fg-dim);margin-top:10px;}
+        .actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+        ul.pts{margin:6px 0 0;padding-left:18px;} ul.pts li{font-size:13px;color:var(--fg-soft);margin-bottom:5px;}
+    </style>
+</head>
+<body>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><a href="/admin/billing/">Billing</a> › Denials / Appeals</header>
+        <h1>Denials &amp; <b>Appeals</b></h1>
+        <p class="lede">When a claim comes back denied or down-coded, draft the response here. The drafter reads the claim's 835 CARC codes, decides the right move — corrected claim, formal appeal, reconsideration, or legitimate patient bill — and writes the payer-ready letter plus the exact corrected-claim changes. Every recommendation is grounded in the denial codes; nothing is invented.</p>
+
+        <section class="block">
+            <label>Denied claim ID</label>
+            <div class="row"><input id="cid" placeholder="billing_claims UUID (status denied / rejected / partially_paid)" style="flex:1;"><button class="btn" id="draft">Draft response</button></div>
+            <div class="muted" style="margin-top:8px;">Open from a claim with <code>?claim_id=…</code> to prefill and auto-draft.</div>
+            <div class="msg" id="msg"></div>
+        </section>
+
+        <section class="block" id="result" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+                <span class="strat" id="strat">—</span>
+                <span class="muted" id="rationale"></span>
+            </div>
+
+            <h3>Denial reasons</h3>
+            <div id="carcs"></div>
+
+            <div id="changesWrap" style="display:none;">
+                <h3>Corrected-claim changes</h3>
+                <div id="changes"></div>
+            </div>
+
+            <div id="letterWrap" style="display:none;">
+                <h3>Appeal letter</h3>
+                <textarea id="letter" spellcheck="false"></textarea>
+                <div class="actions">
+                    <button class="btn ghost" id="copy">Copy letter</button>
+                    <button class="btn ghost" id="markAppealed">Mark claim appealed</button>
+                    <span class="muted" id="deadline"></span>
+                </div>
+            </div>
+
+            <div id="ptsWrap" style="display:none;">
+                <h3>Before you send</h3>
+                <ul class="pts" id="pts"></ul>
+            </div>
+
+            <div class="src" id="src"></div>
+        </section>
+    </div>
+
+    <script>
+        const qs = new URLSearchParams(location.search);
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        let lastClaim = null;
+        async function api(path, opts){ const r = await fetch(path, Object.assign({credentials:'include'}, opts||{})); return { ok:r.ok, status:r.status, data: await r.json().catch(()=>({})) }; }
+
+        async function draft(cid, markAppealed){
+            $('msg').style.display='none'; $('draft').disabled=true; $('draft').textContent='Drafting…';
+            const { ok, data } = await api('/api/v1/admin/billing/claims/'+encodeURIComponent(cid)+'/appeal', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ mark_appealed: !!markAppealed }) });
+            $('draft').disabled=false; $('draft').textContent='Draft response';
+            if(!ok){ const m=$('msg'); m.className='msg err'; m.textContent='Error: '+(data.error||('HTTP '+(data.status||'failed'))); m.style.display='block'; return; }
+            lastClaim = cid;
+            render(data.draft||{}, data.status_changed);
+            if(markAppealed){ const m=$('msg'); m.className='msg ok'; m.textContent='Claim marked appealed ✓'; m.style.display='block'; }
+        }
+        function render(d, statusChanged){
+            $('result').style.display='block';
+            $('strat').textContent = d.strategy_label || d.strategy || '—';
+            $('rationale').textContent = d.strategy_rationale || '';
+            $('carcs').innerHTML = (d.carc_explanations||[]).map(c=>`
+                <div class="carc"><span class="code">CARC ${esc(c.code)}</span> — ${esc(c.label)}<div class="plain">${esc(c.plain)}</div></div>`).join('') || '<div class="muted">No CARC codes recorded on this claim.</div>';
+
+            const changes = d.corrected_claim_changes||[];
+            $('changesWrap').style.display = changes.length ? 'block':'none';
+            $('changes').innerHTML = changes.map(c=>`<div class="chg"><b>${esc(c.target)}:</b> ${esc(c.change)}${c.reason?(' <span class="muted">— '+esc(c.reason)+'</span>'):''}</div>`).join('');
+
+            const hasLetter = !!(d.appeal_letter && d.appeal_letter.trim());
+            $('letterWrap').style.display = hasLetter ? 'block':'none';
+            if(hasLetter){ $('letter').value = d.appeal_letter; $('deadline').textContent = d.deadline_note||''; }
+
+            const pts = d.supporting_points||[];
+            $('ptsWrap').style.display = pts.length ? 'block':'none';
+            $('pts').innerHTML = pts.map(p=>`<li>${esc(p)}</li>`).join('');
+
+            const used = d.ai_used ? ('AI drafter · '+esc(d.model||'')) : 'Rule-based, code-grounded draft (set ANTHROPIC_API_KEY for AI letter authoring)';
+            $('src').textContent = used + (d.note?(' — '+d.note):'') + (statusChanged?' · claim status → appealed':'');
+        }
+
+        $('draft').addEventListener('click', ()=>{ const c=$('cid').value.trim(); if(c) draft(c,false); });
+        $('cid').addEventListener('keydown', e=>{ if(e.key==='Enter'){ const c=$('cid').value.trim(); if(c) draft(c,false); } });
+        $('copy').addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText($('letter').value); $('copy').textContent='Copied ✓'; setTimeout(()=>$('copy').textContent='Copy letter',1500);}catch(e){} });
+        $('markAppealed').addEventListener('click', ()=>{ if(lastClaim) draft(lastClaim, true); });
+
+        const pre = qs.get('claim_id'); if(pre){ $('cid').value=pre; draft(pre,false); }
+    </script>
+</body>
+</html>

@@ -43,6 +43,7 @@ const ALLOWED_ACTIONS = new Set([
     // billing
     "invoice_create", "invoice_send", "invoice_paid", "invoice_void",
     "claim_submit", "claim_era_post", "insurance_update",
+    "claim_ai_preflight", "claim_appeal_draft",
     // app sync
     "app_sync_push", "app_sync_token_issue", "app_sync_token_revoke",
     // admin / data rights
