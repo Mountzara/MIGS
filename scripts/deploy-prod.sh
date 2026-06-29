@@ -174,11 +174,69 @@ fi
 # the post-deploy block.
 # ---------------------------------------------------------------------------
 
-npx --yes wrangler@latest pages deploy . \
+# ---------------------------------------------------------------------------
+# Staged upload (added 2026-06-29). `wrangler pages deploy .` uploads the
+# ENTIRE working tree. wrangler drops `.git`/`node_modules` by its own
+# defaults, but it does NOT drop:
+#   • companion-app/  — the native iOS/Mac app (MZAdmin). Its Xcode
+#     DerivedData (companion-app/build/, present after a local build) is
+#     500MB+/~9k files and alone can blow Cloudflare Pages' 20,000-file
+#     ceiling, making the deploy hang/fail. Even without build/, the Swift
+#     source is junk on a static web host.
+#   • wrangler.toml   — uploaded + served live, leaking the D1 database_id
+#     and KV namespace ids.
+#   • .env / .env.*   — secret files (e.g. .env.pipeline) that were being
+#     served byte-for-byte on the public site.
+#   • .github/, .wrangler/ — CI config / local wrangler state, not web content.
+#
+# So we rsync ONLY the deployable site into a temp dir and deploy THAT —
+# wrangler never even walks the excluded trees (the file-count ceiling is
+# impossible to hit no matter how large DerivedData grows).
+#
+# Safe because production bindings + env vars + compatibility_date all live
+# in the Pages dashboard deployment_config (verified 2026-06-29), NOT in
+# wrangler.toml — so a config-less deploy from the stage dir inherits them
+# unchanged. The pre-deploy gates above already ran against the repo
+# (REPO_ROOT); the stage is a byte copy of those same files minus non-web
+# junk, so what was verified is exactly what ships.
+# ---------------------------------------------------------------------------
+command -v rsync >/dev/null 2>&1 || { echo "ERROR: rsync not found (needed to stage the deploy)." >&2; exit 1; }
+
+STAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mz-pages-deploy.XXXXXX")"
+cleanup_stage() { rm -rf "$STAGE_DIR"; }
+trap cleanup_stage EXIT
+
+rsync -a \
+    --exclude='.git/' \
+    --exclude='.github/' \
+    --exclude='.wrangler/' \
+    --exclude='node_modules/' \
+    --exclude='companion-app/' \
+    --exclude='build/' \
+    --exclude='DerivedData/' \
+    --exclude='.build/' \
+    --exclude='*.xcuserstate' \
+    --exclude='.DS_Store' \
+    --exclude='wrangler.toml' \
+    --exclude='.env' \
+    --exclude='.env.*' \
+    "$REPO_ROOT/" "$STAGE_DIR/"
+
+STAGED_FILES=$(find "$STAGE_DIR" -type f | wc -l | tr -d ' ')
+echo "📦 Staged $STAGED_FILES deployable files → $STAGE_DIR"
+echo "   Excluded: companion-app/ (native app) + build artifacts, wrangler.toml, .env*, .github/, .wrangler/"
+echo ""
+
+# Deploy from the stage dir. There is no wrangler.toml there, so wrangler runs
+# config-less (no `pages_build_output_dir` vs positional-directory conflict);
+# --project-name pins the project explicitly and production inherits bindings/
+# compatibility_date from the dashboard. Run in a subshell so the post-deploy
+# gates below still execute from REPO_ROOT.
+( cd "$STAGE_DIR" && npx --yes wrangler@latest pages deploy . \
     --project-name="$PROJECT" \
     --branch=main \
     --commit-dirty=true \
-    ${MSG:+--commit-message="$MSG"}
+    ${MSG:+--commit-message="$MSG"} )
 
 echo ""
 echo "✅ Deployed. Verifying mountzara.com is fresh..."
