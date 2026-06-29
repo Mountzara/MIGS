@@ -1,5 +1,48 @@
 import Foundation
 
+// ---------- Lenient boolean decoding ----------
+// D1/SQLite returns 0/1 for boolean columns; JSONDecoder won't coerce a number
+// into Bool. These wrappers decode bool, 0/1 number, or "true"/"1" string.
+@propertyWrapper struct LBool: Codable, Equatable, Hashable {
+    var wrappedValue: Bool?
+    init(wrappedValue: Bool?) { self.wrappedValue = wrappedValue }
+    init(from d: Decoder) throws {
+        let c = try d.singleValueContainer()
+        if c.decodeNil() { wrappedValue = nil }
+        else if let b = try? c.decode(Bool.self) { wrappedValue = b }
+        else if let i = try? c.decode(Int.self) { wrappedValue = i != 0 }
+        else if let x = try? c.decode(Double.self) { wrappedValue = x != 0 }
+        else if let s = try? c.decode(String.self) { wrappedValue = (s == "true" || s == "1") }
+        else { wrappedValue = nil }
+    }
+    func encode(to e: Encoder) throws {
+        var c = e.singleValueContainer()
+        if let v = wrappedValue { try c.encode(v) } else { try c.encodeNil() }
+    }
+}
+@propertyWrapper struct LBoolReq: Codable, Equatable, Hashable {
+    var wrappedValue: Bool
+    init(wrappedValue: Bool) { self.wrappedValue = wrappedValue }
+    init(from d: Decoder) throws {
+        let c = try d.singleValueContainer()
+        if let b = try? c.decode(Bool.self) { wrappedValue = b }
+        else if let i = try? c.decode(Int.self) { wrappedValue = i != 0 }
+        else if let x = try? c.decode(Double.self) { wrappedValue = x != 0 }
+        else if let s = try? c.decode(String.self) { wrappedValue = (s == "true" || s == "1") }
+        else { wrappedValue = false }
+    }
+    func encode(to e: Encoder) throws { var c = e.singleValueContainer(); try c.encode(wrappedValue) }
+}
+extension KeyedDecodingContainer {
+    func decode(_ t: LBool.Type, forKey k: Key) throws -> LBool {
+        (try decodeIfPresent(t, forKey: k)) ?? LBool(wrappedValue: nil)
+    }
+    func decode(_ t: LBoolReq.Type, forKey k: Key) throws -> LBoolReq {
+        (try decodeIfPresent(t, forKey: k)) ?? LBoolReq(wrappedValue: false)
+    }
+}
+
+
 // =====================================================================
 // Models for the admin clinical surfaces the app drives beyond posts:
 // triage review, secure messaging, and scheduling. Field names mirror
@@ -33,7 +76,7 @@ struct TriageRow: Identifiable, Codable, Hashable {
     var aiVisitType: String
     var aiDurationMin: Int
     var aiUrgency: String
-    var aiInPersonRequired: Bool
+    @LBoolReq var aiInPersonRequired: Bool
     var aiPreferredTimeOfDay: String?
     var aiRationale: String?
     var clinicianReviewedAt: Int?
@@ -44,7 +87,7 @@ struct TriageRow: Identifiable, Codable, Hashable {
     var clinicianOverrideVisitType: String?
     var clinicianOverrideDurationMin: Int?
     var clinicianOverrideUrgency: String?
-    var clinicianOverrideInPersonRequired: Bool?
+    @LBool var clinicianOverrideInPersonRequired: Bool?
     var clinicianOverridePreferredTimeOfDay: String?
     var clinicianOverrideReason: String?
 
@@ -90,7 +133,7 @@ struct MessageThread: Identifiable, Codable, Hashable {
     var unreadCount: Int?
     var urgency: String?
     var slaDueAt: Int?
-    var slaBreached: Bool?
+    @LBool var slaBreached: Bool?
     var status: String?
 
     var patientName: String {
@@ -196,7 +239,7 @@ struct PatientFull: Codable, Hashable {
     var pronouns: String?
     var preferredLanguage: String?
     var timezone: String?
-    var hasPassword: Bool?
+    @LBool var hasPassword: Bool?
     var emailVerifiedAt: String?
     var status: String?
     var createdAt: String?
@@ -251,8 +294,8 @@ struct PatientSummary: Codable, Hashable {
         let id: String
         var visitType: String?
         var urgency: String?
-        var reviewed: Bool?
-        var booked: Bool?
+        @LBool var reviewed: Bool?
+        @LBool var booked: Bool?
         var createdAt: String?
         enum CodingKeys: String, CodingKey {
             case id, urgency, reviewed, booked
@@ -336,11 +379,11 @@ struct WhatsNewCounts: Codable, Hashable {
 }
 
 struct WhatsNewResponse: Codable, Hashable {
-    let ok: Bool?
+    @LBool var ok: Bool?
     let clinicianId: String?
     let patientId: String?
     let since: String?
-    let firstVisit: Bool?
+    @LBool var firstVisit: Bool?
     let counts: WhatsNewCounts?
     let events: [CaseEvent]?
 
@@ -368,7 +411,7 @@ struct TrendBrief: Identifiable, Codable, Hashable {
     var auditFailCount: Int?
     var status: String                // "pending" | "approved" | "rejected"
     var statusReason: String?
-    var hasOverride: Bool?
+    @LBool var hasOverride: Bool?
     var submittedAt: Int?
     var approvedAt: Int?
     var rejectedAt: Int?
@@ -438,7 +481,7 @@ struct Feedback: Identifiable, Codable, Hashable {
     var implementedInCommit: String?
     var createdAt: Int?
     var updatedAt: Int?
-    var hasScreenshot: Bool?
+    @LBool var hasScreenshot: Bool?
     var aiRecommendation: AIRecommendation?
 
     var isPending: Bool { status == "new" || status == "ai_analyzed" }
@@ -509,7 +552,7 @@ struct Carousel: Identifiable, Codable, Hashable {
     var status: String              // draft | approved | rejected | published
     var slideCount: Int?
     var coverPngUrl: String?
-    var readyToPublish: Bool?
+    @LBool var readyToPublish: Bool?
     var createdAt: Int?
     var approvedAt: Int?
     var rejectedAt: Int?
@@ -679,7 +722,7 @@ struct ComplianceDoc: Identifiable, Codable, Hashable {
     var nextReviewDate: String?
     var dueInDays: Int?
     var reviewIntervalMonths: Int?
-    var counselReviewRecommended: Bool?
+    @LBool var counselReviewRecommended: Bool?
     var path: String?
     var id: String { slug }
     enum CodingKeys: String, CodingKey {
@@ -698,12 +741,13 @@ struct ComplianceDocsResponse: Codable { let docs: [ComplianceDoc] }
 struct ComplianceDocDetail: Codable {
     let doc: DocMeta?
     let body: String?
-    let bodyPresent: Bool?
+    @LBool var bodyPresent: Bool?
     let activeSignature: ActiveSignature?
 
     struct DocMeta: Codable {
         let slug: String?; let title: String?; let path: String?; let publicUrl: String?
-        let reviewIntervalMonths: Int?; let counselReviewRecommended: Bool?
+        var reviewIntervalMonths: Int?
+        @LBool var counselReviewRecommended: Bool?
         enum CodingKeys: String, CodingKey {
             case slug, title, path
             case publicUrl = "public_url"
@@ -739,7 +783,7 @@ struct Briefing: Identifiable, Codable, Hashable {
     var startsAt: Int?
     var modality: String?
     var summary: String?               // briefing text composed by the backend
-    var hasNewSinceLastView: Bool?
+    @LBool var hasNewSinceLastView: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id, summary, modality
@@ -777,8 +821,8 @@ struct EducationMaterial: Identifiable, Codable, Hashable {
     var publishedAt: Int?
     var createdAt: Int?
     var updatedAt: Int?
-    var hasInlineBody: Bool?
-    var hasR2Body: Bool?
+    @LBool var hasInlineBody: Bool?
+    @LBool var hasR2Body: Bool?
     var bodyMd: String?                // only present on the detail (GET /education/<slug>) response
     var r2Key: String?                 // set when the body lives in R2 rather than inline
     enum CodingKeys: String, CodingKey {
@@ -1095,7 +1139,7 @@ struct CodingCoach: Codable {
 }
 struct CodingCoachResponse: Codable {
     let coach: CodingCoach
-    let cached: Bool?
+    @LBool var cached: Bool?
 }
 
 /// Format cents → "$1,234.56".
