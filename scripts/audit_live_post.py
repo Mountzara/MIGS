@@ -186,6 +186,13 @@ PAPER_CARD = re.compile(
 PAPER_CARD_TITLE = re.compile(r'<h3[^>]*class="[^"]*title[^"]*"[^>]*>(.*?)</h3>',
                               re.IGNORECASE | re.DOTALL)
 PAPER_CARD_PMID = re.compile(r"openDeepDive\(['\"]dd-(\d+)['\"]\)", re.IGNORECASE)
+# §1.2b inclusion tag — a card carrying this attribute is a clinician-confirmed
+# deliberate cross-disciplinary inclusion (UPSTREAM_FIXES §1 step 2), not
+# contamination. Honored by offtopic_cards(); untagged non-gyn cards still flag.
+INCLUSION_MARK = re.compile(
+    r'data-inclusion\s*=\s*["\']?(?:cross-disciplinary|tech-transfer|mechanism)',
+    re.IGNORECASE,
+)
 # The paper-card's trailing "DO + CBG/MIGS lens" framing block. It carries the
 # pipeline's per-topic editorializing (gyn-name-dropping) that must be excluded
 # from the §1.2b subspecialty-anchor check — see offtopic_cards().
@@ -420,6 +427,14 @@ def offtopic_cards(article_contents: Iterable[str]) -> list[tuple[str, str]]:
     """
     flagged: list[tuple[str, str]] = []
     for c in article_contents:
+        # UPSTREAM_FIXES §1 step 2 — a card explicitly tagged as a DELIBERATE
+        # cross-disciplinary / mechanism / tech-transfer inclusion (the W23/W24
+        # model) is a clinician-confirmed decision, not contamination. Such cards
+        # carry data-inclusion="cross-disciplinary|tech-transfer|mechanism" and are
+        # passed by the gate. Untagged non-gyn cards still flag. This is what makes
+        # "intentional vs contamination" machine-decidable instead of a blanket flag.
+        if INCLUSION_MARK.search(c):
+            continue
         own = LENS_CALLOUT.split(c, 1)[0]   # drop the lens-callout framing block
         own = CITE_FITS.sub(" ", own)
         text = HTML_TAG.sub(" ", own)
