@@ -61,7 +61,13 @@ export async function onRequestPut(ctx) {
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
             ).bind(newId(), pid, rank, fields.payer_id, fields.member_id, fields.group_number, fields.relationship, fields.subscriber_first_name, fields.subscriber_last_name, fields.subscriber_dob, fields.patient_gender, fields.address_line1, fields.address_city, fields.address_state, fields.address_zip, now, now).run();
         }
-        try { await logAudit(env, { actor: (admin && admin.user) || "admin", action: "patient.insurance.upsert", entity_type: "patient", entity_id: pid, detail: JSON.stringify({ rank, payer_id: fields.payer_id, has_member_id: !!fields.member_id }) }, ctx); } catch {}
+        try {
+            await logAudit(env, {
+                user_id: (admin && admin.user) || "admin", user_role: "staff", action: "insurance_update",
+                record_type: "patient_insurance", record_id: pid, success: true,
+                details: { rank, payer_id: fields.payer_id, has_member_id: !!fields.member_id },
+            }, ctx);
+        } catch {}
         return jsonResponse({ ok: true, rank });
     });
 }

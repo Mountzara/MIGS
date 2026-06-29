@@ -99,6 +99,7 @@ export async function onRequestPost(ctx) {
                 frequencyCode: body.frequency_code || (claimRow.status === "denied" || claimRow.status === "rejected" ? "7" : "1"),
                 diagnoses: diags.map((d) => d.user_override_code || d.icd10_code),
                 patientIsSubscriber: isSelf,
+                patientRelationship: bi.relationship || si.relationship || "self",   // PAT01 for non-self dependents (spouse/child)
                 serviceDate: (claimRow.visit_date || "").replace(/-/g, ""),
             },
             lines: lines.map((l) => ({
@@ -146,9 +147,9 @@ export async function onRequestPost(ctx) {
 
         try {
             await logAudit(env, {
-                actor: (admin && admin.user) || "admin", action: "billing.claim.submit",
-                entity_type: "billing_claim", entity_id: id,
-                detail: JSON.stringify({ vendor, usage: built.controlNumbers.usageIndicator, ok: result.ok, status: newStatus, clearinghouse_claim_id: result.clearinghouseClaimId, warnings: scrub.warnings.length }),
+                user_id: (admin && admin.user) || "admin", user_role: "staff", action: "claim_submit",
+                record_type: "billing_claim", record_id: id, success: result.ok,
+                details: { vendor, usage: built.controlNumbers.usageIndicator, ok: result.ok, status: newStatus, clearinghouse_claim_id: result.clearinghouseClaimId, warnings: scrub.warnings.length },
             }, ctx);
         } catch {}
 

@@ -42,6 +42,7 @@ const ALLOWED_ACTIONS = new Set([
     "phi_read", "phi_write", "phi_delete",
     // billing
     "invoice_create", "invoice_send", "invoice_paid", "invoice_void",
+    "claim_submit", "claim_era_post", "insurance_update",
     // app sync
     "app_sync_push", "app_sync_token_issue", "app_sync_token_revoke",
     // admin / data rights

@@ -20,6 +20,7 @@
         input,select{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;}
         input:focus,select:focus{outline:none;border-color:rgba(var(--glow-purple),.6);}
         .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;} .grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;}
+        @media (max-width:560px){ .grid2,.grid3{grid-template-columns:1fr;} }
         .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
         button.btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;} button.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);} button.btn:disabled{opacity:.5;cursor:wait;}
         .msg{margin-top:12px;font-size:13px;padding:10px 12px;border-radius:10px;display:none;}

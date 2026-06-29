@@ -66,7 +66,12 @@ export function scrubClaim(claim) {
         if (!/^\d{8}$/.test(String(l.serviceDate || cl.serviceDate || "").replace(/\D/g, ""))) block("service_date", `Line ${i + 1}: service date (YYYYMMDD) is required.`, where);
         const ptrs = l.diagnosisPointers || [];
         if (!ptrs.length) block("dx_pointer", `Line ${i + 1}: at least one diagnosis pointer is required.`, where);
-        ptrs.forEach((p) => { if (!(p >= 1 && p <= dx.length)) block("dx_pointer_range", `Line ${i + 1}: diagnosis pointer ${p} has no matching diagnosis.`, where); });
+        // The 837P only carries the first 12 diagnoses (HI segment cap), so a
+        // pointer beyond 12 — even if a 13th diagnosis exists on the claim —
+        // would reference a code that never makes it onto the wire. Cap the
+        // valid range at min(dx.length, 12) to match the builder exactly.
+        const maxDx = Math.min(dx.length, 12);
+        ptrs.forEach((p) => { if (!(p >= 1 && p <= maxDx)) block("dx_pointer_range", `Line ${i + 1}: diagnosis pointer ${p} has no matching diagnosis (claim carries ${maxDx} on the 837P).`, where); });
         (l.modifiers || []).forEach((m) => { if (!/^[A-Z0-9]{2}$/.test(String(m))) warn("modifier_fmt", `Line ${i + 1}: modifier "${m}" is not a valid 2-char modifier.`, where); });
     });
     if (lines.length && total <= 0) block("total_charge", "Total claim charge is $0.", "lines");
