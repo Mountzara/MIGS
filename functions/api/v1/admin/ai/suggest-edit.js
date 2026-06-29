@@ -18,6 +18,7 @@
 
 import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../_lib/admin_api.js";
 import { callClaude, AnthropicError } from "../../../../_lib/anthropic.js";
+import { retrieveKB } from "../../../../_lib/kb.js";
 import { logAudit } from "../../../../_lib/audit.js";
 
 // Use the same model the shared wrapper is built around: claude-sonnet-4-6.
@@ -67,13 +68,23 @@ export async function onRequestPost(ctx) {
         ).bind(slug).first();
         if (!row) return jsonError("material_not_found", 404);
 
+        // Ground the edit in the OB/GYN KB (best-effort; empty if not yet loaded).
+        const { context: kbContext, citations } = await retrieveKB(env, {
+            query: `${row.title || ""} ${row.summary || ""}`,
+            topK: 5,
+            maxChars: 2800,
+        });
+
         const user = `Instruction: ${instruction}
 
 Current title: ${row.title || "(none)"}
 Current summary: ${row.summary || "(none)"}
 
 Body (for grounding only — do NOT change it; use it to keep the title/summary accurate):
-${String(row.body_md || "(no body on file)").slice(0, 6000)}`;
+${String(row.body_md || "(no body on file)").slice(0, 6000)}`
+            + (kbContext
+                ? `\n\nRelevant clinical reference from the practice's knowledge base (use ONLY to keep the title/summary clinically accurate — never copy verbatim, never add new claims):\n${kbContext}`
+                : "");
 
         let result;
         try {
@@ -116,6 +127,8 @@ ${String(row.body_md || "(no body on file)").slice(0, 6000)}`;
             ok: true,
             proposal,
             current: { title: row.title, summary: row.summary },
+            kb_citations: citations,
+            kb_grounded: citations.length > 0,
             model: result.raw?.model || EDIT_MODEL,
             usage: result.usage || {},
         });
