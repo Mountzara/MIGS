@@ -213,7 +213,12 @@
         .loader-spinner { width: 32px; height: 32px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: rgba(var(--glow-purple), 0.95); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        footer { padding: 40px 24px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.04); }
+        footer { padding: 40px 24px; text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.55);
+            /* Apple-glass footer (matches index.html) — luminous tinted gradient,
+               blur, specular top edge, so it frosts the line-art backdrop. */
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
+            backdrop-filter: saturate(180%) blur(28px); -webkit-backdrop-filter: saturate(180%) blur(28px);
+            border-top: 1px solid rgba(255,255,255,0.14); box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset; }
         footer a { color: rgba(var(--glow-purple), 0.85); }
     </style>
 </head>
@@ -264,7 +269,7 @@
     </div>
 
     <footer>
-        <p>© 2026 Mount Zara LLC · Christopher Z. Mabini, DO, MSAEd · <a href="/">mountzara.com</a></p>
+        <p>© 2026 Mount Zara, LLC · <a href="/">mountzara.com</a></p>
     </footer>
 
     <script>

@@ -463,8 +463,13 @@
             padding: 40px 24px;
             text-align: center;
             font-size: 13px;
-            color: rgba(255, 255, 255, 0.4);
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.55);
+            /* Apple-glass footer (matches index.html) — frosts the line-art backdrop. */
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
+            backdrop-filter: saturate(180%) blur(28px);
+            -webkit-backdrop-filter: saturate(180%) blur(28px);
+            border-top: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
         }
         footer a { color: rgba(var(--glow-purple), 0.85); }
     </style>
@@ -518,7 +523,7 @@
     </div>
 
     <footer>
-        <p>© 2026 Mount Zara LLC · Christopher Z. Mabini, DO, MSAEd · <a href="/">mountzara.com</a></p>
+        <p>© 2026 Mount Zara, LLC · <a href="/">mountzara.com</a></p>
     </footer>
 
     <script>

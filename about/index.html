@@ -852,7 +852,8 @@
             font-size: 19px;
             line-height: 1.55;
             color: var(--gray-3);
-            margin-bottom: 32px;
+            /* Space the CTA buttons well clear of this line (was a cramped 32px). */
+            margin-bottom: clamp(72px, 9vw, 104px);
             max-width: 560px;
             margin-left: auto;
             margin-right: auto;
@@ -1160,12 +1161,15 @@
             text-transform: uppercase;
         }
 
-        /* Footer */
+        /* Footer — Apple-glass (matches index.html); was solid var(--black). */
         footer {
-            background: var(--black);
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
+            backdrop-filter: saturate(180%) blur(28px);
+            -webkit-backdrop-filter: saturate(180%) blur(28px);
             color: var(--gray-3);
             padding: 48px 22px 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
             font-size: 12px;
         }
 
@@ -1532,7 +1536,7 @@
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <div>© 2026 Mount Zara, LLC. Christopher Z. Mabini, DO, MSAEd.</div>
+            <div>© 2026 Mount Zara, LLC</div>
             <div class="footer-links">
                 <a href="/#about">About</a>
                 <a href="/#osteopathic">Osteopathic</a>
