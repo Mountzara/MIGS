@@ -3147,6 +3147,82 @@
             stroke-width: 2;
             fill: none;
         }
+        /* Promoted-literature redesign (2026-06-29): per-population lead-in +
+           numbered, badged study cards. The literature now sits at the top of
+           the evidence page rather than the bottom. */
+        .evidence-lit-lead {
+            font-size: 14.5px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.82);
+            margin: 0 0 22px;
+            padding: 16px 18px;
+            background: rgba(139, 92, 246, 0.06);
+            border: 1px solid rgba(139, 92, 246, 0.20);
+            border-left: 3px solid rgba(139, 92, 246, 0.55);
+            border-radius: 12px;
+        }
+        .evidence-study {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .evidence-study-index {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #c4b5fd;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.30);
+            border-radius: 9px;
+            margin-top: 2px;
+        }
+        .evidence-study-main { flex: 1 1 auto; min-width: 0; }
+        .evidence-study-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .evidence-study-journal,
+        .evidence-study-year {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 3px 9px;
+            border-radius: 999px;
+        }
+        .evidence-study-journal {
+            color: #c4b5fd;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.28);
+            font-style: italic;
+        }
+        .evidence-study-year {
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+        .pop-evidence-count {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            color: #c4b5fd;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.28);
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 560px) {
+            .evidence-study { gap: 12px; }
+            .evidence-study-index { width: 26px; height: 26px; font-size: 12px; }
+        }
         .evidence-modal-footnote {
             margin-top: 28px;
             padding-top: 20px;
@@ -7578,15 +7654,16 @@
                         <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
-                <div class="bento-card omt-bento-clickable" data-omt-modal="populations" role="button" tabindex="0" aria-label="Open patient populations and evidence">
+                <div class="bento-card omt-bento-clickable" data-omt-modal="literature" role="button" tabindex="0" aria-label="Open the evidence and published literature by patient population">
                     <div>
                         <svg class="bento-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="9" cy="8" r="3"/><path d="M15 11l1 -3l3 1"/><path d="M3 21c0-4 3-6.5 7-6.5"/><path d="M14 17c0-2.5 2-4.5 4.5-4.5"/>
+                            <path d="M4 5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+                            <path d="M13 3v5h5"/><path d="M8 13h7M8 17h5"/>
                         </svg>
-                        <div class="num">06 — Populations</div>
-                        <h3>Tailored to the Patient</h3>
-                        <p>Women's Health, pregnancy &amp; postpartum, post-operative recovery, and pelvic pain &amp; endometriosis — each with its own PubMed-anchored evidence review.</p>
-                        <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
+                        <div class="num">06 — Evidence</div>
+                        <h3>Evidence-Based Care, Tailored to Each Patient</h3>
+                        <p>Whole-person osteopathic care — structure and function as one — matched to the woman in front of me and anchored in the published literature. Women's health, pregnancy &amp; postpartum, post-operative recovery, and pelvic pain, each with its own PubMed-indexed evidence review.</p>
+                        <span class="bento-cta">See the evidence <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
             </div>
@@ -8552,6 +8629,12 @@
             <h3 id="evidenceModalTitle"></h3>
             <p class="evidence-modal-intro" id="evidenceModalIntro"></p>
 
+            <section class="evidence-section evidence-section--lit" id="evidenceModalStudiesSection">
+                <h4 class="evidence-section-head">What the literature &amp; evidence says</h4>
+                <p class="evidence-lit-lead" id="evidenceModalLitLead" hidden></p>
+                <div class="evidence-study-list" id="evidenceModalStudies"></div>
+            </section>
+
             <section class="evidence-section" id="evidenceModalWhoSection" hidden>
                 <h4 class="evidence-section-head">Who this care path is for</h4>
                 <p class="evidence-section-body" id="evidenceModalWho"></p>
@@ -8572,11 +8655,6 @@
             <section class="evidence-section" id="evidenceModalFaqSection" hidden>
                 <h4 class="evidence-section-head">Common questions</h4>
                 <div class="evidence-faq-list" id="evidenceModalFaqs"></div>
-            </section>
-
-            <section class="evidence-section" id="evidenceModalStudiesSection">
-                <h4 class="evidence-section-head">The published literature</h4>
-                <div class="evidence-study-list" id="evidenceModalStudies"></div>
             </section>
 
             <div class="evidence-modal-footnote">
@@ -8921,6 +8999,7 @@
             'womens-health': {
                 title: 'OMT for Women\'s Health',
                 intro: 'For dysmenorrhea, sacral imbalance, and visceral-somatic patterns rooted in the pelvis, the literature increasingly supports defined OMT protocols combining muscle energy, myofascial release, and counterstrain across a structured number of sessions — adjunct to, not replacing, gynecologic management.',
+                litLead: 'Across randomized controlled trials and a systematic review, structured osteopathic protocols for primary dysmenorrhea consistently reduce both pain intensity and the number of painful days — and the effect builds across menstrual cycles rather than fading. The strongest signal comes from multi-session courses timed to the pre-menstrual and early-menstrual window. What this means for your care: OMT here is a measurable, repeatable structural layer added to hormonal and anti-inflammatory management — reaching the spinal, sacral, and fascial contributors those medications alone cannot.',
                 whoItsFor: 'Women whose menstrual pain, ovulatory pain, low back and sacral pain, or visceral-somatic patterns are not fully addressed by hormonal therapy, NSAIDs, and lifestyle measures alone. Manual osteopathic care is offered as one layer of a fully multimodal plan — your contraceptive or hormonal management, anti-inflammatories, and any procedural or surgical care you may need remain the foundation; the manual work is added to address the structural and neurological substrate those treatments alone cannot reach.',
                 servicesIntro: 'A focused selection of evidence-supported osteopathic techniques. The specific combination, sequencing, and dosing are individualized at your first visit after a structured osteopathic structural examination — generalized names below describe the categories of work used in this care path.',
                 whatYouOffer: [
@@ -8976,6 +9055,7 @@
             pregnancy: {
                 title: 'OMT in Pregnancy',
                 intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline most women experience in the third trimester.',
+                litLead: 'Two large obstetrics-journal RCTs (PROMOTE and Licciardone) and a 2017 meta-analysis (Franke) establish that pregnancy-modified OMT slows the back-specific functional decline most women hit in the third trimester and reduces low-back and pelvic-girdle pain — with no serious adverse events across hundreds of enrolled patients. What this means for your care: there is real, high-quality evidence that gentle, position-modified manual care is both safe and effective for the musculoskeletal strain of pregnancy and the residual pelvic-girdle pain of postpartum recovery.',
                 whoItsFor: 'Pregnant patients with low back pain, sacroiliac pain, pelvic girdle pain, sciatic symptoms, round-ligament pain, or postural strain — particularly in the second and third trimesters as the pelvis adapts to the growing uterus. Also appropriate for postpartum patients with pubic symphysis dysfunction, sacroiliac instability, and residual pelvic-girdle pain that persists beyond 6 weeks. Pregnancy-modified positioning and a defined safety profile guide every session.',
                 servicesIntro: 'Pregnancy-modified osteopathic care. High-velocity techniques at the sacrum and lumbar spine are avoided after roughly 16 weeks; supine positioning is limited after 20 weeks. Deep visceral abdominal work is not performed. The selected techniques below are the safe, evidence-supported pregnancy options.',
                 whatYouOffer: [
@@ -9031,6 +9111,7 @@
             'post-op': {
                 title: 'OMT for Post-Operative Recovery',
                 intro: 'Post-operative recovery — particularly after cesarean and laparoscopic gynecologic surgery — involves fascial restrictions, adhesions, and viscerosomatic patterns that linger long after wound healing. The evidence base shows osteopathic manipulative therapy can meaningfully improve quality of life and reduce recurrent pain after surgery.',
+                litLead: 'The post-operative evidence is newer but specific: gentle superficial mobilization beginning around postoperative day 14 (the MOVENDOP protocol, Comptour 2025) and a visceral/fascial protocol for recurrent pain after endometriosis excision (Alboni 2024) each show benefit added to standard recovery — within timing rules that protect the surgical repair. The learning here: osteopathic care after gynecologic surgery is about sequencing. What is safe in week one differs from week six, and the literature supports a staged, surgeon-coordinated plan rather than a one-size protocol.',
                 whoItsFor: 'Patients recovering from cesarean delivery, laparoscopic gynecologic surgery, endometriosis excision, hysterectomy, or pelvic-floor reconstruction. Especially valuable for: recurrent pelvic pain after endometriosis excision; persistent deep dyspareunia after surgery; abdominal-wall trigger points along the incision; post-cesarean fascial restriction limiting trunk rotation and core engagement; post-laparoscopic shoulder, neck, or diaphragm pain from residual gas insufflation patterns.',
                 servicesIntro: 'Postoperative osteopathic care follows a defined timeline. Deep visceral abdominal work and high-velocity techniques in the surgical region are withheld for at least 6 weeks. Superficial abdominal mobilization and scar work can begin from postoperative day 14 with surgeon clearance per the MOVENDOP protocol (Comptour 2025). Suboccipital, thoracic, and upper-extremity work are permissible immediately when desired.',
                 whatYouOffer: [
@@ -9086,6 +9167,7 @@
             'pelvic-pain': {
                 title: 'OMT for Pelvic Pain & Endometriosis',
                 intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common, and endometriosis-associated pain often persists even after surgical excision. Randomized trials, systematic reviews, and clinical literature support manual osteopathic therapy as an adjunct to standard gynecologic care.',
+                litLead: 'For chronic pelvic pain and endometriosis-associated pain, randomized trials (Zota 2023, Muñoz-Gómez 2023) and an updated systematic review support OMT as one layer of a multimodal plan — addressing the viscerosomatic, fascial, and musculoskeletal contributors that imaging alone can\'t see, alongside pelvic-floor physical therapy and medical management. What this means for your care: manual osteopathic work targets the structural and neurological substrate of persistent pelvic pain — including pain that lingers after excision surgery — complementing, never replacing, the gynecologic and surgical care that remains the foundation.',
                 whoItsFor: 'Women with chronic pelvic pain of any cause: endometriosis, adenomyosis, painful intercourse (dyspareunia, both entry and deep), pelvic floor hypertonicity, vulvodynia and provoked vestibulodynia, persistent pain after endometriosis excision, post-surgical adhesion patterns, abdominal-wall myofascial trigger points, and the centrally-sensitized pain that develops over months or years of unaddressed symptoms. OMT is offered as one layer of a fully multimodal plan — hormonal therapy, neuromodulators, pelvic floor physical therapy, behavioral pain care, and any procedural or surgical work you may need remain the foundation; the manual osteopathic care is added to address the structural and neurological substrate those treatments alone cannot reach.',
                 servicesIntro: 'A comprehensive catalogue of evidence-supported osteopathic techniques used in this care path. The specific combination, sequencing, and frequency are individualized after a structured osteopathic structural examination at the first visit — generalized names below describe the categories of work, not the patient-specific plan.',
                 whatYouOffer: [
@@ -9148,6 +9230,7 @@
         const evidenceModalEl = document.getElementById('evidenceModal');
         const evidenceModalTitleEl = document.getElementById('evidenceModalTitle');
         const evidenceModalIntroEl = document.getElementById('evidenceModalIntro');
+        const evidenceModalLitLeadEl = document.getElementById('evidenceModalLitLead');
         const evidenceModalStudiesEl = document.getElementById('evidenceModalStudies');
         const evidenceModalCardEl = document.getElementById('evidenceModalCard');
 
@@ -9240,20 +9323,31 @@
                 `).join('');
             }
 
-            // Section: Published literature (existing)
-            evidenceModalStudiesEl.innerHTML = data.studies.map(s => `
+            // Section: Published literature — promoted to the top of the page,
+            // with a per-population lead-in and redesigned, numbered study cards.
+            if (data.litLead) {
+                evidenceModalLitLeadEl.textContent = data.litLead;
+                evidenceModalLitLeadEl.hidden = false;
+            } else {
+                evidenceModalLitLeadEl.hidden = true;
+            }
+            const studies = Array.isArray(data.studies) ? data.studies : [];
+            evidenceModalStudiesEl.innerHTML = studies.map((s, i) => `
                 <article class="evidence-study">
-                    <h4 class="evidence-study-title">${_esc(s.title)}</h4>
-                    <div class="evidence-study-meta">
-                        <span>${_esc(s.authors)}</span>
-                        <span class="dot">·</span>
-                        <span><em>${_esc(s.journal)}</em> · ${_esc(s.year)}</span>
+                    <div class="evidence-study-index" aria-hidden="true">${i + 1}</div>
+                    <div class="evidence-study-main">
+                        <div class="evidence-study-badges">
+                            <span class="evidence-study-journal">${_esc(s.journal)}</span>
+                            <span class="evidence-study-year">${_esc(s.year)}</span>
+                        </div>
+                        <h4 class="evidence-study-title">${_esc(s.title)}</h4>
+                        <div class="evidence-study-meta"><span>${_esc(s.authors)}</span></div>
+                        <p class="evidence-study-finding">${_esc(s.finding)}</p>
+                        <a class="evidence-study-link" href="${pubmedUrl(s.pmid)}" target="_blank" rel="noopener noreferrer">
+                            View on PubMed
+                            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 9l7-7M8 2h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </a>
                     </div>
-                    <p class="evidence-study-finding">${_esc(s.finding)}</p>
-                    <a class="evidence-study-link" href="${pubmedUrl(s.pmid)}" target="_blank" rel="noopener noreferrer">
-                        View on PubMed
-                        <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 9l7-7M8 2h4v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </a>
                 </article>
             `).join('');
 
@@ -9513,10 +9607,10 @@
                     </div>
                 `,
             },
-            populations: {
-                eyebrow: 'Tailored Care',
-                title: 'Designed around the patient.',
-                intro: 'OMT applied with intent — adapted to the unique physiology, needs, and constraints of the women I treat. Click any population to open its PubMed-indexed evidence review.',
+            literature: {
+                eyebrow: 'Evidence & Literature',
+                title: 'Evidence-based care, tailored to each patient.',
+                intro: 'Whole-person osteopathic care — structure and function as one — matched to the patient in front of me and grounded in peer-reviewed evidence. Each population below opens its own literature review: what the published studies actually show, and what it means for your care.',
                 body: `
                     <div class="populations-grid">
                       <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health OMT evidence">
@@ -9566,6 +9660,15 @@
             container.querySelectorAll('.population-card[data-evidence]').forEach(card => {
                 if (card.__mzWired) return;
                 const k = card.getAttribute('data-evidence');
+                // Stamp a peer-reviewed study count badge from the EVIDENCE data
+                // (kept accurate automatically as studies are added/removed).
+                const n = (EVIDENCE[k] && Array.isArray(EVIDENCE[k].studies)) ? EVIDENCE[k].studies.length : 0;
+                if (n && !card.querySelector('.pop-evidence-count')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'pop-evidence-count';
+                    badge.textContent = n + (n === 1 ? ' peer-reviewed study' : ' peer-reviewed studies');
+                    card.insertBefore(badge, card.firstChild);
+                }
                 const handler = (e) => {
                     if (e && e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
                     if (e && e.preventDefault) e.preventDefault();
@@ -9586,9 +9689,9 @@
             omtModalTitleEl.textContent = data.title;
             omtModalIntroEl.textContent = data.intro;
             omtModalBodyEl.innerHTML = data.body;
-            // The populations modal injects .population-card[data-evidence]
+            // The literature hub injects .population-card[data-evidence]
             // sub-cards dynamically. Bind their evidence-modal handlers now.
-            if (key === 'populations') wirePopulationCardsInside(omtModalBodyEl);
+            if (key === 'literature' || key === 'populations') wirePopulationCardsInside(omtModalBodyEl);
             omtModalEl.classList.add('open');
             omtModalEl.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
