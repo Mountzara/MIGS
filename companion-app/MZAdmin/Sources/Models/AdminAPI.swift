@@ -290,6 +290,21 @@ struct AdminAPI {
         return try decode(EducationListResponse.self, data).materials
     }
 
+    /// Full record for one material, including `body_md` (inline markdown) and `r2_key`.
+    func educationDetail(slug: String) async throws -> EducationMaterial {
+        let data = try await send(request("/api/v1/admin/education/\(slug)"))
+        return try decode(EducationDetailResponse.self, data).material
+    }
+
+    /// Change a material's publish status (draft → published, or → archived).
+    /// Backend bumps `version` and stamps `published_at` on first publish.
+    @discardableResult
+    func setEducationStatus(slug: String, status: String) async throws -> EducationMaterial {
+        let payload = try JSONSerialization.data(withJSONObject: ["status": status])
+        let data = try await send(request("/api/v1/admin/education/\(slug)", method: "PATCH", body: payload))
+        return try decode(EducationDetailResponse.self, data).material
+    }
+
     // MARK: - Debug sessions
     func listDebugSessions(limit: Int = 100) async throws -> DebugSessionsResponse {
         let data = try await send(request("/api/v1/admin/debug/sessions?limit=\(limit)"))

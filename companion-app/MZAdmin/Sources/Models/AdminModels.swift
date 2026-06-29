@@ -744,6 +744,8 @@ struct EducationMaterial: Identifiable, Codable, Hashable {
     var updatedAt: Int?
     var hasInlineBody: Bool?
     var hasR2Body: Bool?
+    var bodyMd: String?                // only present on the detail (GET /education/<slug>) response
+    var r2Key: String?                 // set when the body lives in R2 rather than inline
     enum CodingKeys: String, CodingKey {
         case id, slug, title, summary, status, version
         case topicTags = "topic_tags"
@@ -753,11 +755,16 @@ struct EducationMaterial: Identifiable, Codable, Hashable {
         case updatedAt = "updated_at"
         case hasInlineBody = "has_inline_body"
         case hasR2Body = "has_r2_body"
+        case bodyMd = "body_md"
+        case r2Key = "r2_key"
     }
 }
 struct EducationListResponse: Codable {
     let materials: [EducationMaterial]
     let count: Int?
+}
+struct EducationDetailResponse: Codable {
+    let material: EducationMaterial
 }
 
 // ---------- Debug session traces ----------
