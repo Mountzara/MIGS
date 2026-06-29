@@ -279,6 +279,11 @@ struct AdminAPI {
         try await send(request("/api/v1/admin/feedback/\(id)/screenshot"))
     }
 
+    /// Download a message attachment's bytes (decrypted server-side).
+    func messageAttachment(id: String) async throws -> Data {
+        try await send(request("/api/v1/admin/messages/attachments/\(id)"))
+    }
+
     // MARK: - Carousels
     func listCarousels(status: String? = nil) async throws -> [Carousel] {
         var path = "/api/v1/admin/carousels"

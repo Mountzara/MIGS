@@ -166,11 +166,28 @@ struct ThreadMessage: Identifiable, Codable, Hashable {
     var body: String
     var createdAt: Int?
     var readAt: Int?
+    @LBool var hasAttachments: Bool?
+    var attachments: [MessageAttachment]?
     enum CodingKeys: String, CodingKey {
-        case id, body
+        case id, body, attachments
         case fromRole = "from_role"
         case createdAt = "created_at"
         case readAt = "read_at"
+        case hasAttachments = "has_attachments"
+    }
+}
+
+/// File attached to a thread message, downloadable via
+/// GET /api/v1/admin/messages/attachments/<id>.
+struct MessageAttachment: Identifiable, Codable, Hashable {
+    let id: String
+    var filename: String?
+    var mimeType: String?
+    var sizeBytes: Int?
+    enum CodingKeys: String, CodingKey {
+        case id, filename
+        case mimeType = "mime_type"
+        case sizeBytes = "size_bytes"
     }
 }
 struct ThreadDetailResponse: Codable { let thread: MessageThread; let messages: [ThreadMessage] }
