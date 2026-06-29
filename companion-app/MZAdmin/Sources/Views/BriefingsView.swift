@@ -184,7 +184,7 @@ struct BriefingDetailView: View {
             kv("Pronouns", d.patient?.pronouns)
             if let f = d.appointmentFocus {
                 kv("Visit", [f.visitType.map(prettyVisitKey), f.modality].compactMap { $0 }.joined(separator: " · "))
-                kv("When", f.startsAt)
+                kv("When", f.startsAt.map { fmtEpoch($0) })
                 kv("Chief complaint", f.chiefComplaintSummary)
             }
         }

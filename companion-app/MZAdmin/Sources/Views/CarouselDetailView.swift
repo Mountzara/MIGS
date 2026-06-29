@@ -61,8 +61,8 @@ struct CarouselDetailView: View {
         if c.captions != nil || c.hashtags != nil || (c.altText?.isEmpty == false) {
             VStack(alignment: .leading, spacing: 10) {
                 Label("Copy", systemImage: "text.bubble").font(.subheadline.weight(.semibold))
-                captionBlock("LinkedIn caption", c.captions?.linkedin, c.hashtags?.linkedin)
-                captionBlock("Instagram caption", c.captions?.instagram, c.hashtags?.instagram)
+                captionBlock("LinkedIn caption", c.captions?.linkedin, c.hashtags?.linkedin?.joined(separator: " "))
+                captionBlock("Instagram caption", c.captions?.instagram, c.hashtags?.instagram?.joined(separator: " "))
                 if let alt = c.altText, !alt.isEmpty {
                     Divider().padding(.vertical, 2)
                     Text("Alt text").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
@@ -338,8 +338,8 @@ struct CarouselEditView: View {
         self.onSaved = onSaved
         _liCaption = State(initialValue: carousel.captions?.linkedin ?? "")
         _igCaption = State(initialValue: carousel.captions?.instagram ?? "")
-        _liTags = State(initialValue: carousel.hashtags?.linkedin ?? "")
-        _igTags = State(initialValue: carousel.hashtags?.instagram ?? "")
+        _liTags = State(initialValue: (carousel.hashtags?.linkedin ?? []).joined(separator: " "))
+        _igTags = State(initialValue: (carousel.hashtags?.instagram ?? []).joined(separator: " "))
         let alt = carousel.altText ?? [:]
         _altKeys = State(initialValue: alt.keys.sorted { (Int($0) ?? 0) < (Int($1) ?? 0) })
         _altValues = State(initialValue: alt)
@@ -392,9 +392,14 @@ struct CarouselEditView: View {
         defer { saving = false }
         error = nil
         func t(_ s: String) -> String { s.trimmingCharacters(in: .whitespacesAndNewlines) }
+        // Hashtags persist as arrays of "#tag" strings (the manifest's shape).
+        func tags(_ s: String) -> [String] {
+            s.split(whereSeparator: { $0 == " " || $0 == "\n" || $0 == "," })
+                .map { $0.hasPrefix("#") ? String($0) : "#\($0)" }
+        }
         let fields: [String: Any] = [
             "captions": ["linkedin": t(liCaption), "instagram": t(igCaption)],
-            "hashtags": ["linkedin": t(liTags), "instagram": t(igTags)],
+            "hashtags": ["linkedin": tags(liTags), "instagram": tags(igTags)],
             "alt_text": altValues,
         ]
         do {

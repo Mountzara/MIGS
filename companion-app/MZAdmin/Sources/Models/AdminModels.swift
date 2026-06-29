@@ -100,7 +100,7 @@ struct TriageRow: Identifiable, Codable, Hashable {
         case patientName = "patient_name"
         case patientEmail = "patient_email"
         case ageYears = "age_years"
-        case chiefComplaint = "chief_complaint"
+        case chiefComplaint = "chief_complaint_summary"
         case aiVisitType = "ai_visit_type"
         case aiDurationMin = "ai_duration_min"
         case aiUrgency = "ai_urgency"
@@ -638,7 +638,7 @@ struct Carousel: Identifiable, Codable, Hashable {
     var rejectedAt: Int?
     // Full manifest fields (present on the detail GET, nil in the list)
     var captions: CarouselCaptions?
-    var hashtags: CarouselCaptions?
+    var hashtags: CarouselHashtags?
     var altText: [String: String]?
     var verification: CarouselVerification?
 
@@ -663,10 +663,16 @@ struct Carousel: Identifiable, Codable, Hashable {
     }
 }
 
-/// Per-platform text on a carousel manifest (captions and hashtags share this shape).
+/// Per-platform captions on a carousel manifest (string per platform).
 struct CarouselCaptions: Codable, Hashable {
     var linkedin: String?
     var instagram: String?
+}
+
+/// Per-platform hashtags on a carousel manifest — arrays of "#tag" strings.
+struct CarouselHashtags: Codable, Hashable {
+    var linkedin: [String]?
+    var instagram: [String]?
 }
 
 /// The carousel deploy-gate result (subset; extra keys ignored).
@@ -789,7 +795,7 @@ struct AdminAnalytics: Codable, Hashable {
             case messagesWindow = "messages_window"
             case clinicianRepliesWindow = "clinician_replies_window"
             case threadsWithUnread = "threads_with_unread"
-            case oldestUnreadThreadMs = "oldest_unread_thread_ms"
+            case oldestUnreadThreadMs = "oldest_unread_thread_at"
         }
     }
 
@@ -980,7 +986,7 @@ struct BriefPatient: Codable, Hashable {
 
 struct BriefAppointment: Codable, Hashable {
     var visitType: String?
-    var startsAt: String?
+    var startsAt: Int?          // epoch ms (appointments.starts_at)
     var durationMin: Int?
     var modality: String?
     var status: String?
@@ -1414,11 +1420,13 @@ struct BillingClaimLine: Codable, Hashable, Identifiable {
     var codeDescription: String?
     var modifier1: String?
     var modifier2: String?
+    var modifier3: String?
+    var modifier4: String?
     var modifierRationale: String?
     var units: Int?
     var placeOfService: String?
     var chargeCents: Int?
-    var modifiers: [String] { [modifier1, modifier2].compactMap { $0 }.filter { !$0.isEmpty } }
+    var modifiers: [String] { [modifier1, modifier2, modifier3, modifier4].compactMap { $0 }.filter { !$0.isEmpty } }
     enum CodingKeys: String, CodingKey {
         case id, code, units
         case lineNumber = "line_number"
@@ -1426,6 +1434,8 @@ struct BillingClaimLine: Codable, Hashable, Identifiable {
         case codeDescription = "code_description"
         case modifier1 = "modifier_1"
         case modifier2 = "modifier_2"
+        case modifier3 = "modifier_3"
+        case modifier4 = "modifier_4"
         case modifierRationale = "modifier_rationale"
         case placeOfService = "place_of_service"
         case chargeCents = "charge_cents"
