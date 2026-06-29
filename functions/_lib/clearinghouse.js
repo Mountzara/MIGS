@@ -131,8 +131,11 @@ async function oauthToken(env, cfg) {
 //   { ok, provider, clearinghouseClaimId, status, acknowledgment, raw, error }
 //   status maps onto billing_claims.status.
 // ---------------------------------------------------------------------
-export async function submitClaim(env, { edi, claim, payer }) {
-    const vendor = clearinghouseVendor(env);
+export async function submitClaim(env, { edi, claim, payer, vendor: vendorOverride }) {
+    // Per-payer routing: a payer's billing_payers.clearinghouse_vendor wins,
+    // so a practice using MULTIPLE clearinghouses sends each payer to the right
+    // one. Falls back to the global CLEARINGHOUSE_VENDOR, then mock.
+    const vendor = (vendorOverride || clearinghouseVendor(env)).toLowerCase();
     try {
         if (vendor === "mock") return submitMock({ edi, claim });
         const cfg = providerConfig(env, vendor);

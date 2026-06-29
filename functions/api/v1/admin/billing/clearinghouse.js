@@ -53,6 +53,9 @@ export async function onRequestGet(ctx) {
         total = PAYERS.length;
         const prov = providerReadiness(env);
         const bp = billingProviderReadiness(env);
+        // Per-vendor credential status — for practices routing payers across MULTIPLE clearinghouses.
+        const vendorsConfigured = CLEARINGHOUSES.filter((c) => c.vendor !== "mock").map((c) => ({ vendor: c.vendor, label: c.label, configured: isConfigured(env, c.vendor) }));
+        const anyVendorConfigured = vendorsConfigured.some((v) => v.configured);
         const checklist = [
             { step: "Choose a clearinghouse + select it", done: prov.selected_vendor !== "mock", detail: `CLEARINGHOUSE_VENDOR=${prov.selected_vendor}` },
             { step: "Clearinghouse credentials set", done: prov.credentials_configured && prov.selected_vendor !== "mock" },
@@ -66,9 +69,10 @@ export async function onRequestGet(ctx) {
         return jsonResponse({
             clearinghouse: prov,
             supported: CLEARINGHOUSES,
+            vendors_configured: vendorsConfigured,   // per-vendor creds (multi-clearinghouse routing by payer.clearinghouse_vendor)
             billing_provider: bp,
             payers: { in_db: seeded, directory_total: total, missing_payer_id: needVerify },
-            ready_to_go_live: prov.selected_vendor !== "mock" && prov.credentials_configured && bp.complete && seeded > 0 && needVerify === 0,
+            ready_to_go_live: (prov.credentials_configured || anyVendorConfigured) && bp.complete && seeded > 0 && needVerify === 0 && prov.live_mode,
             checklist,
         });
     });

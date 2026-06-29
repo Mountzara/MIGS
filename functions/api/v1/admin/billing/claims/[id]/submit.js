@@ -110,9 +110,10 @@ export async function onRequestPost(ctx) {
             return jsonResponse({ ok: true, dry_run: true, clean: true, warnings: scrub.warnings, control: built.controlNumbers, segment_count: built.segmentCount, total_charge_cents: built.totalChargeCents, edi: built.edi });
         }
 
-        // 5. Submit
-        const vendor = clearinghouseVendor(env);
-        const result = await submitClaim(env, { edi: built.edi, claim: norm, payer });
+        // 5. Submit — route to the payer's enrolled clearinghouse (multi-CH practices),
+        //    else the global default.
+        const vendor = (payer && payer.clearinghouse_vendor) || clearinghouseVendor(env);
+        const result = await submitClaim(env, { edi: built.edi, claim: norm, payer, vendor });
         const now = Date.now();
 
         // 6. Persist + transition + audit
