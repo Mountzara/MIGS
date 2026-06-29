@@ -22,7 +22,7 @@ import { callClaude, AnthropicError, extractJson } from "./anthropic.js";
 import { lookupCarc, lookupRarc, recommendStrategy } from "./carc_codes.js";
 
 export const APPEAL_PROMPT_VERSION = "billing-appeal-v1.0-2026-06-29";
-const MODEL = (env) => (env && env.BILLING_AI_MODEL) || "claude-sonnet-4-6";
+const MODEL = (env) => (env && env.BILLING_AI_MODEL) || "claude-opus-4-8";
 
 const STRATEGY_LABEL = {
     corrected_claim: "Corrected claim (resubmit)",

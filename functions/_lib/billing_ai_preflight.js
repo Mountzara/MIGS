@@ -28,7 +28,7 @@ import { callClaude, AnthropicError, extractJson } from "./anthropic.js";
 import { CARC } from "./carc_codes.js";
 
 export const PREFLIGHT_PROMPT_VERSION = "billing-preflight-v1.0-2026-06-29";
-const MODEL = (env) => (env && env.BILLING_AI_MODEL) || "claude-sonnet-4-6";
+const MODEL = (env) => (env && env.BILLING_AI_MODEL) || "claude-opus-4-8";
 
 const SYSTEM_PROMPT = `You are a senior medical-billing denial-prevention reviewer for an OB/GYN and minimally-invasive gynecologic surgery (MIGS) practice. You review a single CLEAN-passed professional claim and predict which denials a payer would issue, so the biller can prevent them BEFORE submission.
 

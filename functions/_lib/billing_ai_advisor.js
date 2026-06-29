@@ -23,7 +23,8 @@
 import { callClaude, AnthropicError } from "./anthropic.js";
 
 export const ADVISOR_PROMPT_VERSION = "billing-advisor-v1.0-2026-05-18";
-const MODEL = "claude-sonnet-4-6";
+// Billing AI runs on Opus 4.8 by default; override per-env with BILLING_AI_MODEL.
+const MODEL = (env) => (env && env.BILLING_AI_MODEL) || "claude-opus-4-8";
 
 const SYSTEM_PROMPT = `You are a senior CPA-level advisor reviewing a sole-practitioner medical practice's billing and accounting data. The practice owner sees this on their admin dashboard.
 
@@ -224,15 +225,14 @@ export async function generateBillingNarrative(env, insights) {
         return { ...ruleBasedNarrative(insights), prompt_version: ADVISOR_PROMPT_VERSION, ai_used: false, reason: "no_api_key" };
     }
     try {
-        const raw = await callClaude({
-            env,
-            model: MODEL,
+        const raw = await callClaude(env, {
+            model: MODEL(env),
             max_tokens: 1500,
             temperature: 0.2,
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: buildUserMessage(insights) }],
         });
-        const parsed = extractJson(raw);
+        const parsed = extractJson(raw.text);
         if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.observations)) {
             throw new Error("invalid_response_shape");
         }
@@ -240,7 +240,7 @@ export async function generateBillingNarrative(env, insights) {
             ...parsed,
             ai_used: true,
             prompt_version: ADVISOR_PROMPT_VERSION,
-            model: MODEL,
+            model: MODEL(env),
         };
     } catch (e) {
         const code = String(e?.message || e);
