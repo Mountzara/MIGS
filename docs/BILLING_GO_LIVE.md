@@ -10,12 +10,21 @@ state.
 > Health Net, Molina, Centene…). You do not connect to each insurer.
 
 ## 1. Pick + select a clearinghouse
-Supported adapters (`functions/_lib/clearinghouse.js`): `stedi`,
-`change_healthcare` (Optum), `availity`, `claim_md`, `office_ally`, `waystar`.
-For an API-driven build like this, **Stedi** or **Claim.MD** are the smoothest;
-**Office Ally** is cheapest but batch/SFTP. Set:
+**Recommended set (most flexibility for a solo IL/CA practice):**
+| Vendor | Best for |
+|---|---|
+| **availity** | Broadest *free* real-time network — commercial + Blues (BCBS-IL, Anthem/Blue Shield CA), strong eligibility. |
+| **claim_md** | Affordable, full transactions incl. **Medicare / Medicaid / Medi-Cal** — government breadth, small-practice friendly. |
+| **stedi** | Cleanest modern API — best for automating this pipeline. |
+
+Together they cover commercial, Blues, Medicare, and Medicaid across IL + CA with
+cost + API flexibility. You can run just one and route specific carriers to the
+others as needed (per-payer `clearinghouse_vendor`). `change_healthcare` (Optum)
+stays available as the max-reach enterprise swap-in; `office_ally`/`waystar` too.
+
+Set the default:
 ```
-CLEARINGHOUSE_VENDOR = stedi   # (or change_healthcare | availity | claim_md | waystar | office_ally)
+CLEARINGHOUSE_VENDOR = availity   # (or claim_md | stedi)
 ```
 
 ## 2. Set clearinghouse credentials (Cloudflare Pages secrets)

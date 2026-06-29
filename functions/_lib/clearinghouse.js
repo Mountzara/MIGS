@@ -33,7 +33,7 @@
 const PROVIDERS = {
     mock: { label: "Mock (no network)" },
     stedi: {
-        label: "Stedi", auth: "key",
+        label: "Stedi", auth: "key", recommended: true, bestFor: "Cleanest modern API — best for automating this custom pipeline.",
         baseUrl: "https://core.us.stedi.com", submitPath: "/2023-08-01/x12/transactions",
         eligibilityPath: "/2024-04-01/healthcare/eligibility", statusPath: "/2023-08-01/x12/transactions",
         keyEnv: "STEDI_API_KEY", contentType: "application/edi-x12",
@@ -46,14 +46,14 @@ const PROVIDERS = {
         contentType: "application/json",
     },
     availity: {
-        label: "Availity Essentials", auth: "oauth2",
+        label: "Availity Essentials", auth: "oauth2", recommended: true, bestFor: "Broadest free real-time network — commercial + Blues (BCBS-IL, Anthem/Blue Shield CA), strong eligibility.",
         baseUrl: "https://api.availity.com", submitPath: "/availity/v1/claim-submissions",
         eligibilityPath: "/availity/v1/coverages", statusPath: "/availity/v1/claim-statuses",
         tokenPath: "/v1/token", idEnv: "AVAILITY_CLIENT_ID", secretEnv: "AVAILITY_CLIENT_SECRET",
         contentType: "application/json",
     },
     claim_md: {
-        label: "Claim.MD", auth: "accountkey-body",
+        label: "Claim.MD", auth: "accountkey-body", recommended: true, bestFor: "Affordable, full transactions incl. Medicare/Medicaid/Medi-Cal — broad government + small-practice friendly.",
         baseUrl: "https://svc.claim.md", submitPath: "/services/upload/",
         eligibilityPath: "/services/eligibility/", statusPath: "/services/response/",
         keyEnv: "CLAIMMD_ACCOUNT_KEY", contentType: "multipart/form-data",
@@ -201,5 +201,7 @@ function credEnvList(cfg) {
 }
 function shortHash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h).toString(36).slice(0, 8); }
 
-export const CLEARINGHOUSES = Object.keys(PROVIDERS).map((k) => ({ vendor: k, label: PROVIDERS[k].label, auth: PROVIDERS[k].auth || "none" }));
+export const CLEARINGHOUSES = Object.keys(PROVIDERS).map((k) => ({ vendor: k, label: PROVIDERS[k].label, auth: PROVIDERS[k].auth || "none", recommended: !!PROVIDERS[k].recommended, bestFor: PROVIDERS[k].bestFor || null }));
+// The focused, recommended set (most flexibility for a solo IL/CA practice).
+export const RECOMMENDED_CLEARINGHOUSES = CLEARINGHOUSES.filter((c) => c.recommended).map((c) => c.vendor);
 export default { submitClaim, checkEligibility, clearinghouseVendor, providerConfig, isConfigured, CLEARINGHOUSES };
