@@ -324,6 +324,13 @@ struct AdminAPI {
         var fields: [String: Any] = [:]
         if let title { fields["title"] = title }
         if let summary { fields["summary"] = summary }
+        return try await patchEducation(slug: slug, fields: fields)
+    }
+
+    /// Patch any editable education fields (title, summary, body_md, topic_tags,
+    /// target_audience, status) — the full PATCH /api/v1/admin/education/<slug> contract.
+    @discardableResult
+    func patchEducation(slug: String, fields: [String: Any]) async throws -> EducationMaterial {
         let payload = try JSONSerialization.data(withJSONObject: fields)
         let data = try await send(request("/api/v1/admin/education/\(slug)", method: "PATCH", body: payload))
         return try decode(EducationDetailResponse.self, data).material

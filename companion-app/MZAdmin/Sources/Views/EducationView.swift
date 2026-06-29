@@ -155,6 +155,7 @@ struct EducationDetailView: View {
     @State private var suggesting = false
     @State private var showSuggestion = false
     @State private var applyingEdit = false
+    @State private var showEdit = false
 
     /// The detail (with body) once fetched; falls back to the list row until then.
     private var current: EducationMaterial { detail ?? material }
@@ -179,7 +180,9 @@ struct EducationDetailView: View {
         #endif
         .overlay(alignment: .bottom) { ErrorBar(text: loadError ?? model.error) }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button { showEdit = true } label: { Image(systemName: "pencil") }
+                    .help("Edit this material")
                 Button { Task { await suggest() } } label: {
                     if suggesting { ProgressView() } else { Image(systemName: "wand.and.sparkles") }
                 }
@@ -188,6 +191,12 @@ struct EducationDetailView: View {
             }
         }
         .sheet(isPresented: $showSuggestion) { suggestionSheet }
+        .sheet(isPresented: $showEdit) {
+            EducationEditView(material: current, model: model) { updated in
+                detail = updated
+                Task { await model.reload() }
+            }
+        }
         .task { await load() }
     }
 
@@ -396,3 +405,97 @@ struct EducationDetailView: View {
     .preferredColorScheme(.dark)
 }
 #endif
+
+// MARK: - Manual editor
+
+/// Full manual editor for an education material: title, summary, audience,
+/// topics, and the markdown body → PATCH /api/v1/admin/education/<slug>.
+struct EducationEditView: View {
+    let material: EducationMaterial
+    @ObservedObject var model: EducationModel
+    var onSaved: (EducationMaterial) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var title: String
+    @State private var summary: String
+    @State private var audience: String
+    @State private var topics: String
+    @State private var bodyMd: String
+    @State private var saving = false
+    @State private var error: String?
+
+    init(material: EducationMaterial, model: EducationModel, onSaved: @escaping (EducationMaterial) -> Void) {
+        self.material = material
+        self.model = model
+        self.onSaved = onSaved
+        _title = State(initialValue: material.title)
+        _summary = State(initialValue: material.summary ?? "")
+        _audience = State(initialValue: material.targetAudience ?? "")
+        _topics = State(initialValue: (material.topicTags ?? []).joined(separator: ", "))
+        _bodyMd = State(initialValue: material.bodyMd ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Title") {
+                    TextField("Title", text: $title, axis: .vertical).lineLimit(1...3)
+                }
+                Section("Summary") {
+                    TextField("Summary", text: $summary, axis: .vertical).lineLimit(2...5)
+                }
+                Section("Target audience") {
+                    TextField("e.g. patient / clinician", text: $audience)
+                }
+                Section("Topics — comma separated") {
+                    TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
+                }
+                Section("Body (Markdown)") {
+                    TextEditor(text: $bodyMd)
+                        .font(.system(.footnote, design: .monospaced))
+                        .frame(minHeight: 300)
+                }
+            }
+            .navigationTitle("Edit material")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if saving { ProgressView() }
+                    else {
+                        Button("Save") { Task { await save() } }
+                            .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 560, minHeight: 600)
+        #endif
+    }
+
+    private func save() async {
+        saving = true
+        defer { saving = false }
+        error = nil
+        var fields: [String: Any] = [
+            "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
+            "summary": summary.trimmingCharacters(in: .whitespacesAndNewlines),
+            "body_md": bodyMd,
+            "topic_tags": topics.split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty },
+        ]
+        let a = audience.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !a.isEmpty { fields["target_audience"] = a }
+        do {
+            let updated = try await model.api.patchEducation(slug: material.slug, fields: fields)
+            onSaved(updated)
+            dismiss()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+}
