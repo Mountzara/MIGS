@@ -11,6 +11,7 @@ struct FeedbackDetailView: View {
     @State private var showApproveSheet = false
     @State private var showRejectSheet = false
     @State private var screenshot: Data?
+    @State private var screenshotError: String?
 
     var body: some View {
         ScrollView {
@@ -32,8 +33,9 @@ struct FeedbackDetailView: View {
     }
 
     private func loadScreenshot() async {
+        screenshotError = nil
         do { screenshot = try await model.api.feedbackScreenshot(id: item.id) }
-        catch { /* keep silent; metadata still shows */ }
+        catch { screenshotError = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription }
     }
 
     private var header: some View {
@@ -139,6 +141,10 @@ struct FeedbackDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 #endif
+            } else if let err = screenshotError {
+                Label("Couldn't load screenshot — \(err)", systemImage: "exclamationmark.triangle")
+                    .font(.caption).foregroundStyle(Theme.amber)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 ProgressView().frame(maxWidth: .infinity, alignment: .center).padding(.vertical, 24)
             }

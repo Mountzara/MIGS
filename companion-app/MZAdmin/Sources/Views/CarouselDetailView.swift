@@ -14,6 +14,7 @@ struct CarouselDetailView: View {
     @State private var coverImage: Data?
     @State private var slides: [SlideImage] = []
     @State private var loadingSlides = true
+    @State private var assetError: String?
 
     var body: some View {
         ScrollView {
@@ -32,7 +33,7 @@ struct CarouselDetailView: View {
             .padding(16)
         }
         .navigationTitle("Carousel")
-        .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
+        .overlay(alignment: .bottom) { ErrorBar(text: model.error ?? assetError) }
         .sheet(isPresented: $showApproveSheet) { decisionSheet(approve: true) }
         .sheet(isPresented: $showRejectSheet) { decisionSheet(approve: false) }
         .task { await loadSlides() }
@@ -44,15 +45,23 @@ struct CarouselDetailView: View {
         let n = carousel.slideCount ?? 0
         guard n > 0 else { loadingSlides = false; await loadCover(); return }
         var out: [SlideImage] = []
+        var firstError: String?
         for i in 1...n {
             let file = "slide_\(String(format: "%02d", i)).png"
-            if let data = try? await model.api.carouselAsset(slug: carousel.slug, file: file) {
-                out.append(SlideImage(id: i, data: data))
+            do {
+                out.append(SlideImage(id: i, data: try await model.api.carouselAsset(slug: carousel.slug, file: file)))
+            } catch {
+                if firstError == nil {
+                    firstError = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+                }
             }
         }
         slides = out
         loadingSlides = false
-        if out.isEmpty { await loadCover() }
+        if out.isEmpty {
+            await loadCover()
+            if coverImage == nil { assetError = firstError ?? "Couldn't load this carousel's images." }
+        }
     }
 
     private func loadCover() async {
