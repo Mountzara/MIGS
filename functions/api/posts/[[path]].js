@@ -150,6 +150,45 @@ function backfillManifest(post) {
     return post;
 }
 
+// Summary normalization — the MountZaraResearchDigest pipeline (paper-card
+// auto-draft path) ships a GENERIC boilerplate summary ("This week's research
+// digest covers N topic areas across N peer-reviewed studies…") that under-counts
+// the papers and names no topics, so the evidence/trending cards read as stale.
+// Regenerate an accurate, specific summary at ingestion FROM THE POST ITSELF:
+// the true paper count (= cited modal set, post-backfill) and the topic areas
+// (topics_covered). Only fires on the boilerplate or an empty summary, so a
+// clinician-authored rich summary (W20/W21) is never overwritten. No invented
+// content — counts and topics come straight from the post.
+const BOILERPLATE_SUMMARY = /^\s*this week'?s research digest covers\b/i;
+const TOPIC_LABELS = {
+    csection_scar: "C-section scar", endometriosis: "endometriosis", fibroids: "fibroids",
+    hysterectomy: "hysterectomy", icg_fluorescence: "ICG fluorescence", infertility: "infertility",
+    menopause_mht: "menopause/MHT", mht: "menopause/MHT", menopause: "menopause/MHT",
+    pcos: "PCOS", chronic_pelvic_pain: "chronic pelvic pain",
+    operative_hysteroscopy: "operative hysteroscopy", hysteroscopy: "operative hysteroscopy",
+};
+function humanizeTopic(slug) {
+    return TOPIC_LABELS[slug] || String(slug).replace(/_/g, " ").trim();
+}
+function normalizeSummary(post) {
+    const cur = typeof post.summary === "string" ? post.summary : "";
+    if (cur && !BOILERPLATE_SUMMARY.test(cur)) return post;   // keep authored summaries
+    const n = Array.isArray(post.pmids_cited) ? post.pmids_cited.length
+                                              : citedPmidsFromBody(post.body_html).length;
+    if (n === 0) return post;                                 // non-cite-card surface — leave as-is
+    const topics = (Array.isArray(post.topics_covered) ? post.topics_covered : [])
+        .map(humanizeTopic).filter(Boolean);
+    let topicPhrase = "";
+    if (topics.length === 1) topicPhrase = ` — ${topics[0]} —`;
+    else if (topics.length > 1) topicPhrase = ` — ${topics.slice(0, -1).join(", ")}, and ${topics[topics.length - 1]} —`;
+    const area = topics.length
+        ? `across ${topics.length} CBG/MIGS subspecialty area${topics.length === 1 ? "" : "s"} `
+        : "";
+    post.summary = `${n} peer-reviewed papers ${area}this week${topicPhrase} each appraised `
+        + `through a DO + CBG/MIGS surgeon's lens.`;
+    return post;
+}
+
 async function readPost(env, id) {
     const obj = await env.CONTENT.get(`posts/${id}.json`);
     if (!obj) return null;
@@ -404,6 +443,7 @@ async function onRequestImpl({ request, env, params }) {
             updated_at: now,
         };
         backfillManifest(post);   // §0.8.2: complete pmids_cited from the post's modals
+        normalizeSummary(post);   // replace the pipeline's boilerplate summary with a real one
         await writePost(env, post);
         await upsertIndexEntry(env, post);
         return jsonResponse({ ok: true, id: post.id }, 201);
@@ -548,6 +588,7 @@ async function onRequestImpl({ request, env, params }) {
             post.published_at = null;
         }
         backfillManifest(post);   // §0.8.2: keep pmids_cited complete after body edits
+        normalizeSummary(post);   // regenerate the summary if it's still boilerplate
         await writePost(env, post);
         await upsertIndexEntry(env, post);
         if (post.kind !== oldKind) {
