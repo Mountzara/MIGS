@@ -446,18 +446,41 @@ struct TrendBriefsQueueResponse: Codable {
 
 struct TrendBriefDetailResponse: Codable {
     let brief: TrendBrief
+    let events: [TrendBriefEvent]?
 }
 
-/// Minimal approval override — matches what gold_brief_render.py needs at a minimum.
-/// Richer override editing (level_a_items, gap_paragraphs, extra_meta_cards, etc.)
-/// stays on the web admin for now.
+/// One row of a trend brief's audit timeline (submitted / resubmitted /
+/// approved / rejected), from GET /trend-briefs/<id>.
+struct TrendBriefEvent: Codable, Identifiable, Hashable {
+    var id: String { "\(ts ?? 0)-\(eventKind ?? "")-\(actor ?? "")" }
+    let ts: Int?
+    let actor: String?
+    let actorLabel: String?
+    let eventKind: String?
+    enum CodingKeys: String, CodingKey {
+        case ts, actor
+        case actorLabel = "actor_label"
+        case eventKind = "event_kind"
+    }
+}
+
+/// Approval override forwarded to render_brief_html. verdict/label/rationale are
+/// required; the editorial fields are optional and only sent when the reviewer
+/// edits them in-app (they overwrite the rendered brief's copy).
 struct TrendBriefApproveBody: Codable {
     let verdict: String           // supported | partially supported | equipoise | mechanism-plausible / not supported | refuted
     let verdictLabel: String
     let rationale: String
+    var title: String? = nil
+    var summary: String? = nil
+    var lede: String? = nil
+    var bottomLine: String? = nil
+    var reviewerNotes: String? = nil
     enum CodingKeys: String, CodingKey {
-        case verdict, rationale
+        case verdict, rationale, title, summary, lede
         case verdictLabel = "verdict_label"
+        case bottomLine = "bottom_line"
+        case reviewerNotes = "reviewer_notes"
     }
 }
 

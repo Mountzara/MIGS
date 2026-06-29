@@ -20,12 +20,27 @@ struct TrendBriefDetailView: View {
     @State private var showApproveSheet = false
     @State private var showRejectSheet = false
 
+    // Full rendered brief + audit timeline (fetched on appear)
+    @State private var previewHTML: String?
+    @State private var bodyHeight: CGFloat = 360
+    @State private var events: [TrendBriefEvent] = []
+    @State private var loadingPreview = true
+
+    // Optional editorial overrides applied at approval
+    @State private var ovTitle = ""
+    @State private var ovSummary = ""
+    @State private var ovLede = ""
+    @State private var ovBottomLine = ""
+    @State private var reviewerNotes = ""
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 if let s = brief.suggestionsText, !s.isEmpty { suggestionsCard(s) }
+                fullBriefCard
                 metadataCard
+                if !events.isEmpty { eventsCard }
                 actionsBar
             }
             .padding(16)
@@ -35,6 +50,58 @@ struct TrendBriefDetailView: View {
         .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
         .sheet(isPresented: $showApproveSheet) { approveSheet }
         .sheet(isPresented: $showRejectSheet) { rejectSheet }
+        .task { await loadDetail() }
+    }
+
+    private func loadDetail() async {
+        if let d = await model.detail(brief.id) { events = d.events ?? [] }
+        previewHTML = await model.previewHTML(brief.id)
+        loadingPreview = false
+    }
+
+    /// The fully rendered brief, inline (the "complete posting"), via /preview.
+    private var fullBriefCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Full brief", systemImage: "doc.richtext")
+                .font(.subheadline.weight(.semibold))
+            if let html = previewHTML, !html.isEmpty {
+                HTMLView(html: html, height: $bodyHeight)
+                    .frame(height: max(bodyHeight, 300))
+            } else if loadingPreview {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text("Loading rendered brief…").font(.caption).foregroundStyle(.secondary)
+                }
+            } else {
+                Text("No rendered body is available for this brief yet.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
+    }
+
+    private var eventsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Audit timeline", systemImage: "clock.arrow.circlepath")
+                .font(.subheadline.weight(.semibold))
+            ForEach(events) { e in
+                HStack(alignment: .top, spacing: 8) {
+                    Circle().fill(Theme.accent.opacity(0.6)).frame(width: 6, height: 6).padding(.top, 5)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text((e.eventKind ?? "event").replacingOccurrences(of: "_", with: " ").capitalized)
+                            .font(.caption.weight(.medium))
+                        HStack(spacing: 6) {
+                            if let who = e.actorLabel ?? e.actor, !who.isEmpty { Text(who) }
+                            if let ts = e.ts { Text("· \(fmtEpoch(ts))") }
+                        }.font(.caption2).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14).glassCard()
     }
 
     private var header: some View {
@@ -155,6 +222,19 @@ struct TrendBriefDetailView: View {
                     TextField("Required — audit-trail justification", text: $rationale, axis: .vertical)
                         .lineLimit(3...8)
                 }
+                Section {
+                    TextField("Title", text: $ovTitle, axis: .vertical).lineLimit(1...3)
+                    TextField("Summary", text: $ovSummary, axis: .vertical).lineLimit(2...5)
+                    TextField("Lede", text: $ovLede, axis: .vertical).lineLimit(2...5)
+                    TextField("Bottom line", text: $ovBottomLine, axis: .vertical).lineLimit(2...5)
+                } header: {
+                    Text("Editorial overrides — optional")
+                } footer: {
+                    Text("Leave blank to keep the rendered brief's copy. Anything entered overwrites it on re-render.")
+                }
+                Section("Reviewer notes — not published") {
+                    TextField("Internal note", text: $reviewerNotes, axis: .vertical).lineLimit(2...5)
+                }
             }
             .navigationTitle("Approve brief")
             .toolbar {
@@ -164,11 +244,20 @@ struct TrendBriefDetailView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Approve") {
                         Task {
-                            let body = TrendBriefApproveBody(
+                            func clean(_ s: String) -> String? {
+                                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                                return t.isEmpty ? nil : t
+                            }
+                            var approveBody = TrendBriefApproveBody(
                                 verdict: verdict,
                                 verdictLabel: verdictLabel.trimmingCharacters(in: .whitespacesAndNewlines),
                                 rationale: rationale.trimmingCharacters(in: .whitespacesAndNewlines))
-                            if await model.approve(brief.id, body) {
+                            approveBody.title = clean(ovTitle)
+                            approveBody.summary = clean(ovSummary)
+                            approveBody.lede = clean(ovLede)
+                            approveBody.bottomLine = clean(ovBottomLine)
+                            approveBody.reviewerNotes = clean(reviewerNotes)
+                            if await model.approve(brief.id, approveBody) {
                                 showApproveSheet = false
                                 dismiss()
                             }

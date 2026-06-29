@@ -26,6 +26,15 @@ final class TrendBriefsModel: ObservableObject {
         isLoading = false
     }
 
+    /// Full detail (brief + audit events) for the detail screen.
+    func detail(_ id: String) async -> TrendBriefDetailResponse? {
+        try? await api.trendBriefDetail(id: id)
+    }
+    /// Rendered HTML body of the brief for inline preview.
+    func previewHTML(_ id: String) async -> String? {
+        try? await api.trendBriefPreviewHTML(id: id)
+    }
+
     func approve(_ id: String, _ body: TrendBriefApproveBody) async -> Bool {
         await run(id) { try await self.api.approveTrendBrief(id: id, body) }
     }

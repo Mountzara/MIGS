@@ -193,6 +193,20 @@ struct AdminAPI {
         return try decode(TrendBriefDetailResponse.self, data).brief
     }
 
+    /// Full detail: the brief row + its audit-event timeline.
+    func trendBriefDetail(id: String) async throws -> TrendBriefDetailResponse {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let data = try await send(request("/api/v1/admin/trend-briefs/\(encoded)"))
+        return try decode(TrendBriefDetailResponse.self, data)
+    }
+
+    /// The rendered brief body (text/html) for inline preview.
+    func trendBriefPreviewHTML(id: String) async throws -> String {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let data = try await send(request("/api/v1/admin/trend-briefs/\(encoded)/preview"))
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
     func approveTrendBrief(id: String, _ body: TrendBriefApproveBody) async throws {
         let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
         let payload = try JSONEncoder().encode(body)
