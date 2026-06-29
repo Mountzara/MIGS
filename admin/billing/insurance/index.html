@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Patient Insurance · Mount Zara Admin</title>
+    <style>
+        :root{--bg-base:#07070a;--bg-card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.10);--fg-strong:#fff;--fg-mid:rgba(245,245,247,0.84);--fg-soft:rgba(245,245,247,0.62);--fg-dim:rgba(245,245,247,0.42);--accent-soft:#a78bfa;--glow-purple:167,139,250;--green:#10b981;}
+        *{box-sizing:border-box;} html{background-color:var(--bg-base);}
+        html,body{margin:0;background-color:transparent;color:var(--fg-mid);font-family:'Avenir Next','Avenir',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        .page-bg-stage{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#000;opacity:.75;}
+        .page-bg-art{position:absolute;top:50%;left:50%;width:100vw;height:56.25vw;object-fit:contain;pointer-events:none;filter:saturate(2.0) brightness(1.28) contrast(1.28);transform:translate(-48%,-50%) rotate(-22deg) scale(2.09);}
+        a{color:var(--accent-soft);text-decoration:none;}
+        .wrap{max-width:760px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,5vw,32px) 100px;}
+        header.bar{font-size:13px;color:var(--fg-dim);margin-bottom:4px;}
+        h1{font-size:clamp(24px,4vw,32px);font-weight:300;color:var(--fg-strong);margin:8px 0 6px;} h1 b{font-weight:600;color:var(--accent-soft);}
+        .lede{font-size:14px;line-height:1.5;color:var(--fg-soft);margin:0 0 22px;}
+        section.block{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:16px;backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);}
+        label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);margin:14px 0 6px;}
+        input,select{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;}
+        input:focus,select:focus{outline:none;border-color:rgba(var(--glow-purple),.6);}
+        .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;} .grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;}
+        .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+        button.btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;} button.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);} button.btn:disabled{opacity:.5;cursor:wait;}
+        .msg{margin-top:12px;font-size:13px;padding:10px 12px;border-radius:10px;display:none;}
+        .msg.ok{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;display:block;}
+        .msg.err{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.4);color:#fca5a5;display:block;}
+        .muted{color:var(--fg-dim);font-size:12.5px;}
+        #subFields{display:none;}
+    </style>
+</head>
+<body>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><a href="/admin/billing/">Billing</a> › <a href="/admin/billing/clearinghouse/">Go-Live</a> › Patient Insurance</header>
+        <h1>Patient <b>Insurance</b></h1>
+        <p class="lede">Enter a patient's insurance once — member ID, payer, subscriber, gender, billing address. Every claim for that patient then auto-fills it (no per-claim entry). The submit scrubber blocks claims missing required fields.</p>
+
+        <section class="block">
+            <label>Patient ID</label>
+            <div class="row"><input id="pid" placeholder="patient UUID" style="flex:1;"><button class="btn ghost" id="load">Load</button></div>
+            <div class="muted" style="margin-top:8px;">Open from a claim with <code>?patient_id=…</code> to prefill.</div>
+        </section>
+
+        <section class="block" id="form" style="display:none;">
+            <div class="grid2">
+                <div><label>Insurance rank</label><select id="rank"><option value="primary">Primary</option><option value="secondary">Secondary</option></select></div>
+                <div><label>Payer</label><select id="payer_id"><option value="">— select payer —</option></select></div>
+            </div>
+            <div class="grid2">
+                <div><label>Member ID</label><input id="member_id" placeholder="e.g. ABC123456789"></div>
+                <div><label>Group number</label><input id="group_number"></div>
+            </div>
+            <div class="grid2">
+                <div><label>Relationship to subscriber</label><select id="relationship"><option value="self">Self</option><option value="spouse">Spouse</option><option value="child">Child</option><option value="other">Other</option></select></div>
+                <div><label>Patient gender</label><select id="patient_gender"><option value="">—</option><option value="F">Female</option><option value="M">Male</option><option value="U">Unknown</option></select></div>
+            </div>
+            <div id="subFields">
+                <div class="grid3">
+                    <div><label>Subscriber last name</label><input id="subscriber_last_name"></div>
+                    <div><label>First name</label><input id="subscriber_first_name"></div>
+                    <div><label>DOB</label><input id="subscriber_dob" placeholder="YYYY-MM-DD"></div>
+                </div>
+            </div>
+            <label>Billing address</label>
+            <input id="addr_line1" placeholder="Street address" style="margin-bottom:10px;">
+            <div class="grid3">
+                <input id="addr_city" placeholder="City">
+                <input id="addr_state" placeholder="State" maxlength="2">
+                <input id="addr_zip" placeholder="ZIP">
+            </div>
+            <div class="row" style="margin-top:18px;"><button class="btn" id="save">Save insurance</button></div>
+            <div class="msg" id="msg"></div>
+        </section>
+    </div>
+
+    <script>
+        const qs = new URLSearchParams(location.search);
+        const $ = (id) => document.getElementById(id);
+        async function api(path, opts){ const r = await fetch(path, Object.assign({credentials:'include'}, opts||{})); return { ok:r.ok, status:r.status, data: await r.json().catch(()=>({})) }; }
+
+        async function loadPayers(){
+            const { data } = await api('/api/v1/admin/billing/payers');
+            const list = data.payers || data || [];
+            const sel = $('payer_id');
+            (Array.isArray(list)?list:[]).forEach(p => { const o=document.createElement('option'); o.value=p.id; o.textContent=p.payer_name + (p.payer_id?(' ('+p.payer_id+')'):' — no ID'); sel.appendChild(o); });
+        }
+        function setVal(id,v){ const e=$(id); if(e) e.value = v==null?'':v; }
+        async function loadInsurance(pid){
+            const { ok, data } = await api('/api/v1/admin/patients/'+encodeURIComponent(pid)+'/insurance');
+            $('form').style.display='block';
+            const ins = (data.insurance||[]).find(x=>x.rank==='primary') || (data.insurance||[])[0];
+            if (ins){
+                setVal('rank',ins.rank); setVal('payer_id',ins.payer_id); setVal('member_id',ins.member_id); setVal('group_number',ins.group_number);
+                setVal('relationship',ins.relationship||'self'); setVal('patient_gender',ins.patient_gender);
+                setVal('subscriber_last_name',ins.subscriber_last_name); setVal('subscriber_first_name',ins.subscriber_first_name); setVal('subscriber_dob',ins.subscriber_dob);
+                setVal('addr_line1',ins.address_line1); setVal('addr_city',ins.address_city); setVal('addr_state',ins.address_state); setVal('addr_zip',ins.address_zip);
+            }
+            toggleSub();
+        }
+        function toggleSub(){ $('subFields').style.display = ($('relationship').value==='self') ? 'none' : 'block'; }
+
+        $('relationship').addEventListener('change', toggleSub);
+        $('load').addEventListener('click', () => { const p=$('pid').value.trim(); if(p) loadInsurance(p); });
+        $('save').addEventListener('click', async () => {
+            const pid = $('pid').value.trim(); if(!pid) return;
+            $('save').disabled = true;
+            const body = {
+                rank: $('rank').value, payer_id: $('payer_id').value || null,
+                member_id: $('member_id').value, group_number: $('group_number').value,
+                relationship: $('relationship').value, patient_gender: $('patient_gender').value,
+                subscriber_first_name: $('subscriber_first_name').value, subscriber_last_name: $('subscriber_last_name').value, subscriber_dob: $('subscriber_dob').value,
+                address: { line1: $('addr_line1').value, city: $('addr_city').value, state: $('addr_state').value, zip: $('addr_zip').value },
+            };
+            const { ok, data } = await api('/api/v1/admin/patients/'+encodeURIComponent(pid)+'/insurance', { method:'PUT', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+            const m = $('msg'); m.className = 'msg ' + (ok?'ok':'err'); m.textContent = ok ? ('Saved '+(data.rank||'')+' insurance ✓') : ('Error: '+(data.error||'failed')); m.style.display='block';
+            $('save').disabled = false;
+        });
+
+        loadPayers();
+        const pp = qs.get('patient_id'); if (pp){ $('pid').value = pp; loadInsurance(pp); }
+    </script>
+</body>
+</html>

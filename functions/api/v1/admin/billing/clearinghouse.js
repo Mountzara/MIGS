@@ -62,7 +62,7 @@ export async function onRequestGet(ctx) {
             { step: "Billing provider identifiers (NPI/TIN/name) set", done: bp.complete, detail: bp.missing.join(", ") || "ok" },
             { step: "Payer directory seeded", done: seeded > 0, detail: `${seeded} payer(s) in billing_payers; directory has ${total}` },
             { step: "Payer IDs verified against clearinghouse list", done: seeded > 0 && needVerify === 0, detail: `${needVerify} still missing a payer_id` },
-            { step: "Insurance capture in intake (member id/gender/address)", done: false, detail: "data-model gap — supply in submit body until added" },
+            { step: "Patient insurance captured (member id/gender/address)", done: true, detail: "per-patient at /admin/billing/insurance/ → auto-fills every claim (scrub blocks if a patient's is missing)" },
             { step: "Test claim accepted (277CA, usage 'T')", done: false, detail: "run dry_run then a test submit" },
             { step: "Go live (CLEARINGHOUSE_LIVE=1, usage 'P')", done: prov.live_mode },
         ];

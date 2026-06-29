@@ -59,32 +59,46 @@ export async function onRequestPost(ctx) {
             return jsonError(`claim status "${claimRow.status}" is not submittable`, 409, { status: claimRow.status });
         }
 
-        const [lines, diags, payer, patient] = await Promise.all([
+        const [lines, diags, patient, storedIns] = await Promise.all([
             env.DB.prepare(`SELECT * FROM billing_claim_lines WHERE claim_id = ? ORDER BY line_number`).bind(id).all().then((r) => r.results || []),
             env.DB.prepare(`SELECT * FROM billing_claim_diagnoses WHERE claim_id = ? ORDER BY diagnosis_index`).bind(id).all().then((r) => r.results || []),
-            claimRow.payer_id ? env.DB.prepare(`SELECT * FROM billing_payers WHERE id = ?`).bind(claimRow.payer_id).first() : Promise.resolve(null),
             env.DB.prepare(`SELECT first_name, last_name, dob FROM patients WHERE id = ?`).bind(claimRow.patient_id).first().catch(() => null),
+            env.DB.prepare(`SELECT * FROM patient_insurance WHERE patient_id = ? AND active = 1 AND rank = 'primary' ORDER BY updated_at DESC LIMIT 1`).bind(claimRow.patient_id).first().catch(() => null),
         ]);
-
-        const ins = body.insurance || {};
+        // Payer: the claim's own payer wins; else the patient's stored insurance payer.
+        const payerId = claimRow.payer_id || (storedIns && storedIns.payer_id) || null;
+        const payer = payerId ? await env.DB.prepare(`SELECT * FROM billing_payers WHERE id = ?`).bind(payerId).first().catch(() => null) : null;
+        // Merge stored patient_insurance with any per-request override (body.insurance wins).
+        const bi = body.insurance || {}, si = storedIns || {};
+        const isSelf = !(bi.relationship || si.relationship) || (bi.relationship || si.relationship) === "self";
+        const ins = {
+            memberId: bi.member_id || si.member_id, groupNumber: bi.group_number || si.group_number,
+            gender: bi.gender || si.patient_gender, dob: bi.dob || si.subscriber_dob,
+            subFirst: bi.subscriber_first_name || si.subscriber_first_name, subLast: bi.subscriber_last_name || si.subscriber_last_name,
+            address: bi.address || { line1: si.address_line1, city: si.address_city, state: si.address_state, zip: si.address_zip },
+        };
         const norm = {
             control: { usageIndicator: env.CLEARINGHOUSE_LIVE === "1" ? "P" : "T" },
             submitter: { name: env.BILLING_PROVIDER_NAME || "Mount Zara, LLC", id: env.SUBMITTER_ID || "MZBILL", contactName: "Billing", contactPhone: env.BILLING_CONTACT_PHONE || "" },
             receiver: { name: (payer && payer.clearinghouse_vendor) || clearinghouseVendor(env), id: env.RECEIVER_ID || "CLEARINGHOUSE" },
             billingProvider: billingProvider(env),
             payer: payer ? { name: payer.payer_name, payerId: payer.payer_id, kind: payer.payer_kind } : { name: "", payerId: "", kind: "commercial" },
-            subscriber: {
+            subscriber: isSelf ? {
                 firstName: patient && patient.first_name, lastName: patient && patient.last_name,
-                memberId: ins.member_id, groupNumber: ins.group_number,
+                memberId: ins.memberId, groupNumber: ins.groupNumber,
                 dob: (ins.dob || (patient && patient.dob) || "").replace(/-/g, ""),
                 gender: ins.gender, address: ins.address || {},
+            } : {
+                firstName: ins.subFirst, lastName: ins.subLast, memberId: ins.memberId, groupNumber: ins.groupNumber,
+                dob: (ins.dob || "").replace(/-/g, ""), gender: ins.gender, address: ins.address || {},
             },
+            patient: isSelf ? null : { firstName: patient && patient.first_name, lastName: patient && patient.last_name, dob: ((patient && patient.dob) || "").replace(/-/g, ""), gender: ins.gender, address: ins.address || {} },
             claim: {
                 patientControlNumber: id,
                 placeOfService: claimRow.place_of_service || (lines[0] && lines[0].place_of_service) || "11",
                 frequencyCode: body.frequency_code || (claimRow.status === "denied" || claimRow.status === "rejected" ? "7" : "1"),
                 diagnoses: diags.map((d) => d.user_override_code || d.icd10_code),
-                patientIsSubscriber: ins.relationship ? ins.relationship === "self" : true,
+                patientIsSubscriber: isSelf,
                 serviceDate: (claimRow.visit_date || "").replace(/-/g, ""),
             },
             lines: lines.map((l) => ({
