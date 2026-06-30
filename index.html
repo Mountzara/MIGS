@@ -1421,15 +1421,15 @@
             letter-spacing: -0.028em;
             line-height: 1.04;
             margin-bottom: 28px;
-            max-width: 1200px;
-            text-wrap: balance;
+            max-width: none;          /* run to the full content width */
+            text-wrap: pretty;        /* normal wrapping (fills each line) — not balance, which made headlines break early into short lines */
             -webkit-hyphens: manual;
             hyphens: manual;
         }
 
         .frame-headline,
         .sub-headline {
-            text-wrap: balance;
+            text-wrap: pretty;
             -webkit-hyphens: manual;
             hyphens: manual;
         }
