@@ -251,6 +251,16 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             let n=0, ex='';
             set.forEach(el=>{ const cs=getComputedStyle(el); const r=el.getBoundingClientRect();
                 if(r.width<2||r.height<2) return;
+                // The hero title has an INTENTIONAL scroll-parallax fade — its
+                // inline opacity is driven to 0 as the user scrolls past it, so
+                // at the bottom of the page opacity 0 is CORRECT, not stuck.
+                // Judge it by whether it was REVEALED (.in class), which still
+                // catches a genuine never-revealed-at-load bug, without
+                // false-failing on the deliberate scroll fade.
+                if(el.classList.contains('hero-title')){
+                    if(!el.classList.contains('in')){ n++; if(!ex) ex='hero-title (never revealed)'; }
+                    return;
+                }
                 // <0.5 = clearly not revealed (a mid-transition fade is >0.5 by now)
                 if(parseFloat(cs.opacity)<0.5 || cs.visibility==='hidden'){
                     n++; if(!ex) ex=(''+(el.className.baseVal!==undefined?el.className.baseVal:el.className)).slice(0,40);
