@@ -6995,43 +6995,40 @@
            stay as-is. hyphens kept MANUAL per CLAUDE.md (auto-hyphenation
            once broke "AAGL-presented" mid-word).
            ========================================================== */
+        /* WIDE running prose only. Justify in a NARROW column (<~45ch: card
+           grids, stat tiles, 3-col R/B/A) creates giant word-gap "rivers" —
+           those all stay left-aligned (see the reset below). */
         .section-sub:not(.center),
-        .about-text-block p,
-        .domain-card p,
         .sub-sub,
+        .about-text-block p,
         .hub-content-body p,
-        .zero-card p,
-        .technique-cell p,
-        .population-card p,
-        .award-tile p,
-        .surgical-card-body p,
-        .curriculum-card p,
         .curriculum-cta-inner p,
         .evidence-modal-intro,
         .evidence-lit-lead,
         .evidence-section-body,
-        .evidence-service-desc,
-        .evidence-expect-col-body,
         .evidence-faq-a,
         .evidence-study-finding,
-        .carepath-body,
-        .bento-card p,
-        .app-card-v2 p,
         .app-feature p,
-        .feature-tile p,
         .app-modal-section-lead,
-        .usecase-row p,
         .dm-body p,
-        .dm-rba-col p,
         .dm-timeline-body p,
         .dm-qa-a,
-        .research-card-summary,
         .pillar-content,
         .traj-body,
         .omt-modal-intro {
             text-align: justify;
             -webkit-hyphens: manual;
             hyphens: manual;
+        }
+        /* Narrow-column reset — .dm-body p above matches EVERY <p> in the
+           domain modal body, including the ~230px stat tiles and the 3-col
+           risks/benefits/alternatives cards, where justify reads terribly
+           (2026-06-29 user report: "seven clinical practice areas modal text
+           VERY POORLY FORMATTED"). Higher specificity puts them back left. */
+        .dm-body .dm-stat-label,
+        .dm-body .dm-stats p,
+        .dm-body .dm-rba-col p {
+            text-align: left;
         }
     </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
