@@ -48,6 +48,12 @@ final class AppModel: ObservableObject {
         await act(post.id) { try await self.api.reject(id: post.id) }
     }
 
+    /// Maintenance: rebuild the current kind's index, then refresh.
+    func rebuildIndex() async {
+        do { try await api.rebuildPostsIndex(kind: kind); await reload() }
+        catch { errorMessage = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription }
+    }
+
     /// Create a new draft, then refresh. Returns true on success.
     func createPost(fields: [String: Any]) async -> Bool {
         do {

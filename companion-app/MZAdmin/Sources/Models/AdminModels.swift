@@ -521,11 +521,14 @@ struct TrendBriefApproveBody: Codable {
     var title: String? = nil
     var summary: String? = nil
     var lede: String? = nil
+    var tagline: String? = nil
+    var taglineBody: String? = nil
     var bottomLine: String? = nil
     var reviewerNotes: String? = nil
     enum CodingKeys: String, CodingKey {
-        case verdict, rationale, title, summary, lede
+        case verdict, rationale, title, summary, lede, tagline
         case verdictLabel = "verdict_label"
+        case taglineBody = "tagline_body"
         case bottomLine = "bottom_line"
         case reviewerNotes = "reviewer_notes"
     }

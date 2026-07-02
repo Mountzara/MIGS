@@ -88,6 +88,11 @@ struct AdminAPI {
         _ = try await send(request("/api/posts/\(id)", method: "DELETE"))
     }
 
+    /// Maintenance: re-list posts/ in R2 and re-emit the kind index.
+    func rebuildPostsIndex(kind: PostKind) async throws {
+        _ = try await send(request("/api/posts/_admin/rebuild_index?kind=\(kind.rawValue)", method: "POST"))
+    }
+
     /// Edit a post's content (PUT /api/posts/:id). Editable fields incl.
     /// title, summary, body_html, verdict, topics_covered, pmids_cited, status.
     func updatePost(id: String, fields: [String: Any]) async throws {
@@ -235,6 +240,14 @@ struct AdminAPI {
         return String(data: data, encoding: .utf8) ?? ""
     }
 
+    /// Send free-text refinement suggestions back to the Cowork pipeline
+    /// (POST /trend-briefs/<id>/suggest — flips the brief to needs_revision).
+    func suggestTrendBriefRevision(id: String, suggestions: String) async throws {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
+        let payload = try JSONSerialization.data(withJSONObject: ["suggestions": suggestions])
+        _ = try await send(request("/api/v1/admin/trend-briefs/\(encoded)/suggest", method: "POST", body: payload))
+    }
+
     func approveTrendBrief(id: String, _ body: TrendBriefApproveBody) async throws {
         let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? id
         let payload = try JSONEncoder().encode(body)
@@ -315,6 +328,11 @@ struct AdminAPI {
         let payload = try JSONSerialization.data(withJSONObject: fields)
         let data = try await send(request("/api/v1/admin/carousels/\(slug)", method: "PUT", body: payload))
         return try? decode(CarouselDetailResponse.self, data).carousel
+    }
+
+    /// Permanently delete a carousel: manifest, all R2 assets, index entry.
+    func deleteCarousel(slug: String) async throws {
+        _ = try await send(request("/api/v1/admin/carousels/\(slug)", method: "DELETE"))
     }
 
     /// Approve only succeeds when the §3.11.6 deploy gate marked the
@@ -448,6 +466,13 @@ struct AdminAPI {
         let payload = try JSONSerialization.data(withJSONObject: fields)
         let data = try await send(request("/api/v1/admin/education/\(slug)", method: "PATCH", body: payload))
         return try decode(EducationDetailResponse.self, data).material
+    }
+
+    /// Author a brand-new education material (POST /api/v1/admin/education).
+    /// slug: lowercase/digits/hyphens; title ≤200; summary ≤280; body_md ≤60k.
+    func createEducation(fields: [String: Any]) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/v1/admin/education", method: "POST", body: payload))
     }
 
     /// Ask the on-server Claude copy editor for a clearer title + summary,

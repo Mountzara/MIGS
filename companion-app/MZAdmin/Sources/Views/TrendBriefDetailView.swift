@@ -30,8 +30,14 @@ struct TrendBriefDetailView: View {
     @State private var ovTitle = ""
     @State private var ovSummary = ""
     @State private var ovLede = ""
+    @State private var ovTagline = ""
+    @State private var ovTaglineBody = ""
     @State private var ovBottomLine = ""
     @State private var reviewerNotes = ""
+
+    // Refine-in-Cowork (free-text revision suggestions)
+    @State private var showRefineSheet = false
+    @State private var refineText = ""
 
     var body: some View {
         ScrollView {
@@ -50,6 +56,7 @@ struct TrendBriefDetailView: View {
         .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
         .sheet(isPresented: $showApproveSheet) { approveSheet }
         .sheet(isPresented: $showRejectSheet) { rejectSheet }
+        .sheet(isPresented: $showRefineSheet) { refineSheet }
         .task { await loadDetail() }
     }
 
@@ -185,24 +192,69 @@ struct TrendBriefDetailView: View {
     @ViewBuilder
     private var actionsBar: some View {
         if brief.isPending {
-            HStack(spacing: 12) {
-                Button(role: .destructive) {
-                    rejectReason = ""; showRejectSheet = true
+            VStack(spacing: 10) {
+                HStack(spacing: 12) {
+                    Button(role: .destructive) {
+                        rejectReason = ""; showRejectSheet = true
+                    } label: {
+                        Text("Reject").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    Button {
+                        verdictLabel = ""; rationale = ""
+                        verdict = "equipoise"
+                        showApproveSheet = true
+                    } label: {
+                        Text("Approve").bold().frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Theme.accent)
+                }
+                Button {
+                    refineText = ""; showRefineSheet = true
                 } label: {
-                    Text("Reject").frame(maxWidth: .infinity)
+                    Label("Refine in Cowork…", systemImage: "arrow.uturn.backward.circle")
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                Button {
-                    verdictLabel = ""; rationale = ""
-                    verdict = "equipoise"
-                    showApproveSheet = true
-                } label: {
-                    Text("Approve").bold().frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .tint(Theme.accentSoft)
             }
             .disabled(model.busyIDs.contains(brief.id))
+        }
+    }
+
+    // MARK: - Refine sheet
+
+    /// Free-text revision suggestions — flips the brief to needs_revision and
+    /// queues it for the Cowork pipeline to re-author.
+    private var refineSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("What should change? Be specific — this goes to the re-authoring run.",
+                              text: $refineText, axis: .vertical)
+                        .lineLimit(5...14)
+                } header: { Text("Revision suggestions") } footer: {
+                    Text("Sends the brief back for revision instead of approving or rejecting it.")
+                }
+            }
+            .navigationTitle("Refine brief")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showRefineSheet = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Send for revision") {
+                        Task {
+                            if await model.suggest(brief.id, suggestions: refineText.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                                showRefineSheet = false
+                                dismiss()
+                            }
+                        }
+                    }
+                    .disabled(refineText.trimmingCharacters(in: .whitespaces).count < 10)
+                }
+            }
         }
     }
 
@@ -226,6 +278,8 @@ struct TrendBriefDetailView: View {
                     TextField("Title", text: $ovTitle, axis: .vertical).lineLimit(1...3)
                     TextField("Summary", text: $ovSummary, axis: .vertical).lineLimit(2...5)
                     TextField("Lede", text: $ovLede, axis: .vertical).lineLimit(2...5)
+                    TextField("Tagline", text: $ovTagline, axis: .vertical).lineLimit(1...3)
+                    TextField("Tagline body", text: $ovTaglineBody, axis: .vertical).lineLimit(2...5)
                     TextField("Bottom line", text: $ovBottomLine, axis: .vertical).lineLimit(2...5)
                 } header: {
                     Text("Editorial overrides — optional")
@@ -255,6 +309,8 @@ struct TrendBriefDetailView: View {
                             approveBody.title = clean(ovTitle)
                             approveBody.summary = clean(ovSummary)
                             approveBody.lede = clean(ovLede)
+                            approveBody.tagline = clean(ovTagline)
+                            approveBody.taglineBody = clean(ovTaglineBody)
                             approveBody.bottomLine = clean(ovBottomLine)
                             approveBody.reviewerNotes = clean(reviewerNotes)
                             if await model.approve(brief.id, approveBody) {

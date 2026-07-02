@@ -38,6 +38,10 @@ final class TrendBriefsModel: ObservableObject {
     func approve(_ id: String, _ body: TrendBriefApproveBody) async -> Bool {
         await run(id) { try await self.api.approveTrendBrief(id: id, body) }
     }
+    /// Send free-text revision suggestions (flips to needs_revision).
+    func suggest(_ id: String, suggestions: String) async -> Bool {
+        await run(id) { try await self.api.suggestTrendBriefRevision(id: id, suggestions: suggestions) }
+    }
     func reject(_ id: String, reason: String) async -> Bool {
         await run(id) { try await self.api.rejectTrendBrief(id: id, reason: reason) }
     }

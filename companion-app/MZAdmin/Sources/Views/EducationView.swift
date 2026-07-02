@@ -44,6 +44,7 @@ final class EducationModel: ObservableObject {
 struct EducationView: View {
     @EnvironmentObject var auth: AuthStore
     @StateObject private var model: EducationModel
+    @State private var composing = false
     init(auth: AuthStore) { _model = StateObject(wrappedValue: EducationModel(auth: auth)) }
 
     var body: some View {
@@ -69,12 +70,15 @@ struct EducationView: View {
             }
             .navigationTitle("Education")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                        .help("New material")
                     Button { Task { await model.reload() } } label: { Image(systemName: "arrow.clockwise") }
                 }
             }
             .refreshable { await model.reload() }
             .overlay(alignment: .bottom) { ErrorBar(text: model.error) }
+            .sheet(isPresented: $composing) { EducationComposeView(model: model) }
         }
         .task { await model.reload() }
     }
@@ -519,6 +523,136 @@ struct EducationEditView: View {
         do {
             let updated = try await model.api.patchEducation(slug: material.slug, fields: fields)
             onSaved(updated)
+            dismiss()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+}
+
+// MARK: - Compose (new material)
+
+/// Author a brand-new education material — POST /api/v1/admin/education.
+/// Slug auto-generates from the title (lowercase/digits/hyphens), editable.
+struct EducationComposeView: View {
+    @ObservedObject var model: EducationModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var slug = ""
+    @State private var slugEdited = false
+    @State private var title = ""
+    @State private var summary = ""
+    @State private var audience = "patient"
+    @State private var topics = ""
+    @State private var bodyMd = ""
+    @State private var publishNow = false
+    @State private var saving = false
+    @State private var error: String?
+    @State private var bodyMode = 0
+
+    private var effectiveSlug: String { slugEdited ? slug : PostComposeView.slugify(title) }
+    private var slugValid: Bool {
+        effectiveSlug.range(of: #"^[a-z0-9][a-z0-9-]*$"#, options: .regularExpression) != nil
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Title") {
+                    TextField("Title (≤200 chars)", text: $title, axis: .vertical).lineLimit(1...3)
+                }
+                Section {
+                    TextField("material-slug", text: Binding(
+                        get: { effectiveSlug },
+                        set: { slug = $0.lowercased(); slugEdited = true }))
+                        .font(.system(.footnote, design: .monospaced))
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
+                        .foregroundStyle(effectiveSlug.isEmpty || slugValid ? Color.primary : Theme.red)
+                } header: { Text("Slug") } footer: {
+                    Text("Lowercase letters, digits, hyphens. Auto-generated from the title.")
+                }
+                Section("Summary (≤280 chars)") {
+                    TextField("Summary", text: $summary, axis: .vertical).lineLimit(2...5)
+                }
+                Section("Target audience") {
+                    TextField("e.g. patient / clinician / all", text: $audience)
+                }
+                Section("Topics — comma separated") {
+                    TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
+                }
+                Section {
+                    Picker("View", selection: $bodyMode) {
+                        Text("Markdown").tag(0)
+                        Text("Preview").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    if bodyMode == 0 {
+                        TextEditor(text: $bodyMd)
+                            .font(.system(.footnote, design: .monospaced))
+                            .frame(minHeight: 280)
+                    } else {
+                        ScrollView {
+                            Text(EducationEditView.renderMarkdown(bodyMd))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                                .padding(.vertical, 4)
+                        }
+                        .frame(minHeight: 280)
+                    }
+                } header: { Text("Body (Markdown, ≤60k chars)") }
+                Section {
+                    Toggle("Publish immediately", isOn: $publishNow)
+                        .tint(Theme.accent)
+                } footer: {
+                    Text(publishNow ? "Live for patients as soon as you save."
+                                    : "Saved as a draft you can publish later.")
+                }
+            }
+            .navigationTitle("New material")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if saving { ProgressView() }
+                    else {
+                        Button(publishNow ? "Publish" : "Save draft") { Task { await save() } }
+                            .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty
+                                      || !slugValid
+                                      || bodyMd.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 560, minHeight: 620)
+        #endif
+    }
+
+    private func save() async {
+        saving = true
+        defer { saving = false }
+        error = nil
+        var fields: [String: Any] = [
+            "slug": effectiveSlug,
+            "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
+            "body_md": bodyMd,
+            "status": publishNow ? "published" : "draft",
+            "topic_tags": topics.split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty },
+        ]
+        let s = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !s.isEmpty { fields["summary"] = s }
+        let a = audience.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !a.isEmpty { fields["target_audience"] = a }
+        do {
+            try await model.api.createEducation(fields: fields)
+            await model.reload()
             dismiss()
         } catch {
             self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription

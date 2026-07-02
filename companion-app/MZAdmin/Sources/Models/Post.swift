@@ -16,6 +16,8 @@ struct Post: Identifiable, Codable, Hashable {
     var publishedAt: String?
     var updatedAt: String?
     var bodyHTML: String?       // only present on the full fetch
+    var linkedinDraft: String?
+    var instagramDraft: String?
 
     enum CodingKeys: String, CodingKey {
         case id, kind, status, title, summary, verdict
@@ -26,6 +28,8 @@ struct Post: Identifiable, Codable, Hashable {
         case publishedAt = "published_at"
         case updatedAt = "updated_at"
         case bodyHTML = "body_html"
+        case linkedinDraft = "linkedin_draft"
+        case instagramDraft = "instagram_draft"
     }
 
     var statusKind: StatusKind { StatusKind(rawValue: status) ?? .draft }

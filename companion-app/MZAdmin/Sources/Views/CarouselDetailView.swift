@@ -17,6 +17,7 @@ struct CarouselDetailView: View {
     @State private var assetError: String?
     @State private var full: Carousel?
     @State private var showEdit = false
+    @State private var confirmDelete = false
 
     private var current: Carousel { full ?? carousel }
 
@@ -39,10 +40,24 @@ struct CarouselDetailView: View {
         }
         .navigationTitle("Carousel")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button { showEdit = true } label: { Image(systemName: "pencil") }
                     .help("Edit captions, hashtags & alt text")
+                Menu {
+                    Button(role: .destructive) { confirmDelete = true } label: {
+                        Label("Delete carousel…", systemImage: "trash")
+                    }
+                } label: { Image(systemName: "ellipsis.circle") }
             }
+        }
+        .confirmationDialog("Permanently delete this carousel?",
+                            isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete \(carousel.slug)", role: .destructive) {
+                Task { if await model.delete(carousel.slug) { dismiss() } }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Removes the manifest, every slide asset in R2, and the queue entry. No undo.")
         }
         .overlay(alignment: .bottom) { ErrorBar(text: model.error ?? assetError) }
         .sheet(isPresented: $showApproveSheet) { decisionSheet(approve: true) }

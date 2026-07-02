@@ -29,6 +29,12 @@ struct PostDetailView: View {
                 if let topics = current.topicsCovered, !topics.isEmpty {
                     chips(topics)
                 }
+                if let li = current.linkedinDraft, !li.isEmpty {
+                    label("LinkedIn draft", li)
+                }
+                if let ig = current.instagramDraft, !ig.isEmpty {
+                    label("Instagram draft", ig)
+                }
                 if let html = current.bodyHTML, !html.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("FULL POST").font(.caption2.weight(.bold)).foregroundStyle(.tertiary)
@@ -230,6 +236,9 @@ struct PostEditView: View {
     @State private var topics: String
     @State private var bodyHTML: String
     @State private var status: String
+    @State private var kind: String
+    @State private var linkedinDraft: String
+    @State private var instagramDraft: String
     @State private var saving = false
     @State private var error: String?
     @State private var bodyMode = 0                  // 0 = HTML source, 1 = live preview
@@ -245,6 +254,9 @@ struct PostEditView: View {
         _topics = State(initialValue: (post.topicsCovered ?? []).joined(separator: ", "))
         _bodyHTML = State(initialValue: post.bodyHTML ?? "")
         _status = State(initialValue: post.status)
+        _kind = State(initialValue: post.kind)
+        _linkedinDraft = State(initialValue: post.linkedinDraft ?? "")
+        _instagramDraft = State(initialValue: post.instagramDraft ?? "")
     }
 
     var body: some View {
@@ -273,6 +285,20 @@ struct PostEditView: View {
                     Text("Status")
                 } footer: {
                     Text("Publishing here puts the post live on mountzara.com immediately.")
+                }
+                Section {
+                    Picker("Feed", selection: $kind) {
+                        ForEach(PostKind.allCases) { Text($0.title).tag($0.rawValue) }
+                    }
+                    .pickerStyle(.segmented)
+                } header: { Text("Feed") } footer: {
+                    Text("Moving feeds re-categorizes the post and rebuilds both indexes.")
+                }
+                Section("LinkedIn draft") {
+                    TextField("LinkedIn caption", text: $linkedinDraft, axis: .vertical).lineLimit(2...8)
+                }
+                Section("Instagram draft") {
+                    TextField("Instagram caption", text: $instagramDraft, axis: .vertical).lineLimit(2...8)
                 }
                 Section {
                     Picker("View", selection: $bodyMode) {
@@ -332,6 +358,9 @@ struct PostEditView: View {
         let v = verdict.trimmingCharacters(in: .whitespacesAndNewlines)
         if !v.isEmpty { fields["verdict"] = v }
         if status != post.status { fields["status"] = status }
+        if kind != post.kind { fields["kind"] = kind }
+        if linkedinDraft != (post.linkedinDraft ?? "") { fields["linkedin_draft"] = linkedinDraft }
+        if instagramDraft != (post.instagramDraft ?? "") { fields["instagram_draft"] = instagramDraft }
 
         if let updated = await model.updatePost(post.id, fields: fields) {
             onSaved(updated)

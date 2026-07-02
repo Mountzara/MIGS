@@ -32,6 +32,10 @@ final class CarouselsModel: ObservableObject {
     func reject(_ slug: String, memo: String?) async -> Bool {
         await run(slug) { try await self.api.setCarouselDecision(slug: slug, action: "reject", memo: memo) }
     }
+    /// Permanent delete (manifest + all R2 assets + index entry).
+    func delete(_ slug: String) async -> Bool {
+        await run(slug) { try await self.api.deleteCarousel(slug: slug) }
+    }
     private func run(_ id: String, _ op: @escaping () async throws -> Void) async -> Bool {
         busyIDs.insert(id); defer { busyIDs.remove(id) }
         do { try await op(); await reload(); return true }

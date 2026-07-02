@@ -36,6 +36,9 @@ struct PostListView: View {
                         .help("New post")
                     Menu {
                         Button("Refresh") { Task { await model.reload() } }
+                        Button("Rebuild \(model.kind.title) index") {
+                            Task { await model.rebuildIndex() }
+                        }
                         Button("Sign out", role: .destructive) { auth.signOut() }
                         if let e = auth.email { Text(e) }
                     } label: { Image(systemName: "ellipsis.circle") }
