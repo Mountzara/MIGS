@@ -105,6 +105,32 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ] && [ "$KB_GATE_OK" = "1" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Canonical post-format gate (codified 2026-07-02). Hermetic unit+route tests
+# of the auto-heal / format-audit / approve-block pipeline in
+# functions/_lib/post_format.js + functions/api/posts/[[path]].js, run from
+# committed fixtures built out of the real regressed corpus. HARD gate — a
+# regression here is exactly how the stale paper-card format reached the
+# public site twice (W23/W24). No override flag on purpose: the suite is
+# hermetic (no network), runs in ~1s, and a failure means the format
+# guarantee is actually broken.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_post_format_gate.mjs ]; then
+    echo ""
+    echo "🔒 canonical post-format gate — auto-heal + audit + approve-block..."
+    if node scripts/test_post_format_gate.mjs > /tmp/_post_format_gate.log 2>&1; then
+        tail -1 /tmp/_post_format_gate.log
+        echo "   ✅ post-format gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the canonical post-format gate:"
+        tail -20 /tmp/_post_format_gate.log
+        echo "   Full log: /tmp/_post_format_gate.log"
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
 # Runs scripts/regression_audit.py against every known clinical surface BEFORE
 # the wrangler deploy. Exit code 0 = pass; 1 = block deploy.

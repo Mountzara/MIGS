@@ -30,6 +30,8 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
+import { auditPostFormat, healPaperCardPost } from "../../_lib/post_format.js";
+
 const POST_KINDS = new Set(["blog", "evidence", "claim_proposal"]);
 const POST_STATUSES = new Set(["draft", "published", "rejected"]);
 
@@ -190,38 +192,41 @@ function normalizeSummary(post) {
 }
 
 // ====================================================================
-// CANONICAL-FORMAT AUDIT (2026-07-02) — the ingestion choke point.
-// The 2026-05-26 regression (W23/W24 shipped in the stripped
-// "paper-card" auto-draft format instead of the canonical mz-cite-card
-// format, and W25 arrived the same way) went live because nothing on
-// this side ever LOOKED at body_html. The rule below is derived from
-// the actual live corpus, not taste:
-//   canonical  (W20, W21, every evidence brief):  mz-cite-card > 0, paper-card == 0
-//   stale      (W23, W24, W25):                   mz-cite-card == 0, paper-card > 0
-// Enforcement: warn (loudly, in the 201 response the Mac pipeline logs)
-// at ingest so drafts still land and are visible in admin; HARD-BLOCK at
-// /approve so stale-format content can never go live (admin may override
-// with {"force":true}, which is recorded on the post).
-// Applies to kind blog + evidence; claim_proposal has no body format.
+// CANONICAL-FORMAT AUDIT + AUTO-HEAL (2026-07-02) — the ingestion choke
+// point. auditPostFormat / healPaperCardPost live in _lib/post_format.js
+// (single source of truth, unit-tested by scripts/test_post_format_gate.mjs
+// which runs as a HARD deploy gate). Enforcement layers:
+//   1. AUTO-HEAL at ingest: a stale paper-card body is converted to the
+//      canonical mz-cite-card format server-side, verified LOSSLESS
+//      (every modal id + PMID preserved) or the heal is refused.
+//   2. Warn: non-canonical drafts that can't be healed still land, with
+//      loud format_warnings in the 201 the pipeline logs.
+//   3. HARD-BLOCK at /approve: non-canonical content cannot be published
+//      (admin {"force":true} override is recorded on the post).
+// So every post that goes live matches the W20/W21 standard, regardless
+// of what the Mac generator emits.
 // ====================================================================
-function auditPostFormat(post) {
-    const problems = [];
-    if (post.kind !== "blog" && post.kind !== "evidence") {
-        return { canonical: true, problems, checked_at: new Date().toISOString() };
+
+// Attempt the auto-heal on an incoming body. Returns { body_html, healed,
+// heal_problems } — on any failure the original body is returned untouched.
+async function autoHealBody(env, kind, bodyHtml) {
+    const probe = auditPostFormat({ kind, body_html: bodyHtml });
+    if (probe.canonical || !/paper-card/.test(String(bodyHtml || ""))) {
+        return { body_html: bodyHtml, healed: false, heal_problems: [] };
     }
-    const h = typeof post.body_html === "string" ? post.body_html : "";
-    const paperCards = (h.match(/paper-card/g) || []).length;
-    const citeCards = (h.match(/mz-cite-card/g) || []).length;
-    if (paperCards > 0) {
-        problems.push(`body_html uses the stripped "paper-card" auto-draft format (${paperCards} occurrence(s)) — the canonical renderer emits mz-cite-card. Re-render with the cite-card path before publishing.`);
+    const refId = env.CANONICAL_REFERENCE_POST || "blog-2026-W21";
+    let ref = null;
+    try { ref = await readPost(env, refId); } catch { ref = null; }
+    if (!ref || !auditPostFormat(ref).canonical) {
+        return { body_html: bodyHtml, healed: false, heal_problems: [`reference post ${refId} unavailable or not canonical — auto-heal skipped`] };
     }
-    if (citeCards === 0 && h.length > 0) {
-        problems.push(`body_html contains no mz-cite-card markup — every canonical post (W20, W21, all published evidence briefs) carries mz-cite-card cards.`);
+    try {
+        const r = healPaperCardPost(bodyHtml, ref.body_html);
+        if (r.ok) return { body_html: r.healed, healed: true, heal_problems: [] };
+        return { body_html: bodyHtml, healed: false, heal_problems: r.problems };
+    } catch (e) {
+        return { body_html: bodyHtml, healed: false, heal_problems: [`auto-heal threw: ${String(e && e.message || e)}`] };
     }
-    if (h.length === 0) {
-        problems.push("body_html is empty.");
-    }
-    return { canonical: problems.length === 0, problems, checked_at: new Date().toISOString() };
 }
 
 async function readPost(env, id) {
@@ -478,6 +483,14 @@ async function onRequestImpl({ request, env, params }) {
         if (!body.id) return errorResponse("missing id");
         if (!POST_KINDS.has(body.kind)) return errorResponse("invalid kind");
 
+        // AUTO-HEAL (2026-07-02): convert a stale paper-card body to the
+        // canonical format BEFORE any guard logic runs, so every post that
+        // lands — including a stale re-render of a published id — is held
+        // to the same standard as W20/W21. Provably lossless or it doesn't
+        // apply (see _lib/post_format.js safety model).
+        const heal = await autoHealBody(env, body.kind, body.body_html || "");
+        body.body_html = heal.body_html;
+
         // Overwrite-protection guard (added 2026-05-27 after the audit
         // revealed that POST /api/posts had no dedup check — if
         // run_weekly_digest.sh re-fires for an already-rejected W22 or an
@@ -526,7 +539,12 @@ async function onRequestImpl({ request, env, params }) {
         const post = {
             id: String(body.id),
             kind: body.kind,
-            status: body.status || "draft",
+            // Adversarial-review fix (2026-07-02): pipeline creates are ALWAYS
+            // drafts. Previously `body.status || "draft"` let a token-holding
+            // pipeline publish directly, bypassing the /approve canonical gate.
+            // Publication happens only via /approve (or the formatHeal branch
+            // below, which itself requires a canonical body).
+            status: "draft",
             week_label: body.week_label || null,
             title: body.title || "",
             summary: body.summary || "",
@@ -540,10 +558,15 @@ async function onRequestImpl({ request, env, params }) {
             instagram_draft: body.instagram_draft || null,
             blog_html_path: body.blog_html_path || null,
             run_manifest_path: body.run_manifest_path || null,
-            created_at: now,
-            // Stamp immediately when created directly as published (admin
-            // composer's "Publish immediately"); otherwise set on approve.
-            published_at: (body.status === "published") ? now : null,
+            // Adversarial-review fix (2026-07-02): a re-POST of an existing id
+            // preserves first-ingest time, so the freshness dead-man's draft
+            // age can't be reset by the pipeline's weekly re-runs.
+            created_at: (existing && existing.created_at) || now,
+            // status/published_at resolved below AFTER the format audit: the
+            // admin composer's "Publish immediately" (body.status==="published")
+            // is honored ONLY for a canonical body, so it can't bypass the
+            // canonical-format gate that /approve enforces.
+            published_at: null,
             updated_at: now,
         };
         backfillManifest(post);   // §0.8.2: complete pmids_cited from the post's modals
@@ -552,13 +575,38 @@ async function onRequestImpl({ request, env, params }) {
         // approve gate reads it) and echoed in the response so the Mac
         // pipeline's logs show EXACTLY why a draft will not be publishable.
         post.format_audit = auditPostFormat(post);
+        if (heal.healed) {
+            post.format_auto_healed_at = new Date().toISOString();
+        }
         if (formatHeal) {
             // Preserve published state: this is a canonical re-render
             // replacing a stale-format body under the same id.
             post.status = "published";
             post.published_at = existing.published_at || new Date().toISOString();
-            post.created_at = existing.created_at || post.created_at;
             post.format_healed_at = new Date().toISOString();
+            // Adversarial-review fix (2026-07-02): the 2026-05-27 overwrite
+            // guard exists precisely to protect clinician-revised fields
+            // (verdict, social drafts, curated summary/title/topics) from
+            // pipeline re-runs. The format heal replaces the BODY — it must
+            // not revert curation. Prefer the existing (curated) value for
+            // every editorial field; the incoming payload only fills gaps.
+            for (const f of ["title", "summary", "verdict", "linkedin_draft", "instagram_draft", "week_label"]) {
+                const cur = existing[f];
+                if (cur !== null && cur !== undefined && cur !== "") post[f] = cur;
+            }
+            for (const f of ["topics_covered", "gaps_surfaced"]) {
+                if (Array.isArray(existing[f]) && existing[f].length) post[f] = existing[f];
+            }
+        } else if (body.status === "published") {
+            // Admin composer "Publish immediately" — honored ONLY when the
+            // (post-auto-heal) body is canonical, so a non-canonical body can
+            // never reach the public by skipping the /approve gate.
+            if (post.format_audit.canonical) {
+                post.status = "published";
+                post.published_at = now;
+            }
+            // else: silently remains a draft; the 201 response's
+            // format_warnings + not-publishable notice explain why.
         }
         await writePost(env, post);
         await upsertIndexEntry(env, post);
@@ -566,8 +614,10 @@ async function onRequestImpl({ request, env, params }) {
             ok: true, id: post.id,
             format_canonical: post.format_audit.canonical,
             format_warnings: post.format_audit.problems,
+            ...(heal.healed ? { auto_healed: true, note: "stale paper-card body was auto-converted to the canonical mz-cite-card format (lossless-verified)" } : {}),
+            ...(heal.heal_problems && heal.heal_problems.length ? { heal_problems: heal.heal_problems } : {}),
             ...(post.format_audit.canonical ? {} : {
-                warning: "DRAFT ACCEPTED but NOT PUBLISHABLE: body_html is in a non-canonical format. /approve will refuse it until a canonical (mz-cite-card) re-render is submitted.",
+                warning: "DRAFT ACCEPTED but NOT PUBLISHABLE: body_html is in a non-canonical format and could not be auto-healed. /approve will refuse it until a canonical (mz-cite-card) re-render is submitted.",
             }),
             ...(formatHeal ? { format_healed: true, note: "canonical re-render replaced the stale-format published body" } : {}),
         }, 201);
