@@ -21,6 +21,8 @@ struct ThreadView: View {
     @State private var error: String?
     @State private var downloadingId: String?
     @State private var downloaded: DownloadedFile?
+    @State private var importing = false
+    @State private var staged: (data: Data, name: String, mime: String)?
 
     private var api: AdminAPI { AdminAPI(token: auth.basicToken) }
 
@@ -79,19 +81,56 @@ struct ThreadView: View {
     }
 
     private var composer: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            TextField("Reply to \(thread.patientName)…", text: $reply, axis: .vertical)
-                .lineLimit(1...5)
-                .textFieldStyle(.roundedBorder)
-            Button { Task { await send() } } label: {
-                if sending { ProgressView().controlSize(.small) }
-                else { Image(systemName: "arrow.up.circle.fill").font(.title2) }
+        VStack(spacing: 6) {
+            if let s = staged {
+                HStack(spacing: 6) {
+                    Image(systemName: "paperclip")
+                    Text(s.name).font(.caption).lineLimit(1)
+                    Text("\(s.data.count / 1024) KB").font(.caption2).foregroundStyle(.secondary)
+                    Spacer()
+                    Button { staged = nil } label: { Image(systemName: "xmark.circle.fill") }
+                        .buttonStyle(.plain).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 6)
+                .background(Theme.surface, in: Capsule())
             }
-            .disabled(sending || reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .tint(Theme.accent)
+            HStack(alignment: .bottom, spacing: 8) {
+                Button { importing = true } label: {
+                    Image(systemName: "paperclip").font(.title3)
+                }
+                .buttonStyle(.plain)
+                .tint(Theme.accentSoft)
+                .disabled(sending)
+                TextField("Reply to \(thread.patientName)…", text: $reply, axis: .vertical)
+                    .lineLimit(1...5)
+                    .textFieldStyle(.roundedBorder)
+                Button { Task { await send() } } label: {
+                    if sending { ProgressView().controlSize(.small) }
+                    else { Image(systemName: "arrow.up.circle.fill").font(.title2) }
+                }
+                .disabled(sending || (reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && staged == nil))
+                .tint(Theme.accent)
+            }
         }
         .padding(10)
         .background(.ultraThinMaterial)
+        .fileImporter(isPresented: $importing,
+                      allowedContentTypes: [.image, .pdf, .movie, .data]) { result in
+            if case .success(let url) = result { stage(url) }
+        }
+    }
+
+    private func stage(_ url: URL) {
+        let secured = url.startAccessingSecurityScopedResource()
+        defer { if secured { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else { return }
+        guard data.count <= 25 * 1024 * 1024 else { error = "Attachment exceeds the 25 MB limit."; return }
+        let ext = url.pathExtension.lowercased()
+        let mime = ["jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+                    "heic": "image/heic", "gif": "image/gif", "webp": "image/webp",
+                    "pdf": "application/pdf", "mp4": "video/mp4", "mov": "video/quicktime",
+                    "dcm": "application/dicom"][ext] ?? "application/octet-stream"
+        staged = (data, url.lastPathComponent, mime)
     }
 
     private func load() async {
@@ -102,12 +141,18 @@ struct ThreadView: View {
     }
 
     private func send() async {
-        let text = reply.trimmingCharacters(in: .whitespacesAndNewlines)
+        var text = reply.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.isEmpty && staged != nil { text = "📎 \(staged!.name)" }
         guard !text.isEmpty else { return }
         sending = true; error = nil
         do {
-            try await api.reply(threadID: thread.id, body: text)
-            reply = ""
+            let messageId = try await api.replyReturningId(threadID: thread.id, body: text)
+            if let s = staged, let mid = messageId {
+                try await api.uploadMessageAttachment(
+                    threadId: thread.id, messageId: mid,
+                    data: s.data, filename: s.name, mime: s.mime)
+            }
+            reply = ""; staged = nil
             await load()
             onChange()   // refresh the thread list (unread/preview/SLA)
         } catch let e {

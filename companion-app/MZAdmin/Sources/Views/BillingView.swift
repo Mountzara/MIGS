@@ -44,6 +44,22 @@ final class BillingModel: ObservableObject {
         try? await api.fetchBillingClaimDetail(id: id)
     }
 
+    /// Resolve/unresolve a compliance flag.
+    func setFlagResolved(claimId: String, flagId: String, resolved: Bool) async -> Bool {
+        do { try await api.setBillingFlagResolved(claimId: claimId, flagId: flagId, resolved: resolved, note: nil); return true }
+        catch { self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription; return false }
+    }
+    /// Accept/revert an upcoding opportunity (applies to the line on accept).
+    func setUpcodingAccepted(claimId: String, opId: String, accepted: Bool) async -> Bool {
+        do { try await api.setBillingUpcodingAccepted(claimId: claimId, opId: opId, accepted: accepted); return true }
+        catch { self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription; return false }
+    }
+    /// Mark a documentation suggestion applied/unapplied.
+    func setDocSuggestionApplied(claimId: String, suggId: String, applied: Bool) async -> Bool {
+        do { try await api.setBillingDocSuggestionApplied(claimId: claimId, suggId: suggId, applied: applied); return true }
+        catch { self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription; return false }
+    }
+
     func approve(_ id: String, notes: String?, force: Bool = false) async -> Bool {
         await run(id) { try await self.api.approveBillingClaim(id: id, notes: notes, force: force) }
     }

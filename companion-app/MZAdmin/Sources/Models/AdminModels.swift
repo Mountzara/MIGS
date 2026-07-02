@@ -1531,8 +1531,10 @@ struct BillingDocSuggestion: Codable, Hashable, Identifiable {
     var suggestion: String?
     var revisedText: String?
     var revenueImpact: String?
+    var applied: Int?
+    var isApplied: Bool { (applied ?? 0) != 0 }
     enum CodingKeys: String, CodingKey {
-        case id, priority, section, issue, suggestion
+        case id, priority, section, issue, suggestion, applied
         case revisedText = "revised_text"
         case revenueImpact = "revenue_impact"
     }

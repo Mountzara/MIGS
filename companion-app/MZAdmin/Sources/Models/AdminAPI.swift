@@ -157,8 +157,41 @@ struct AdminAPI {
         return try decode(ThreadDetailResponse.self, data)
     }
     func reply(threadID: String, body text: String) async throws {
+        _ = try await replyReturningId(threadID: threadID, body: text)
+    }
+
+    /// Reply and return the new message's id (needed to attach files to it).
+    func replyReturningId(threadID: String, body text: String) async throws -> String? {
         let body = try JSONSerialization.data(withJSONObject: ["body": text])
-        _ = try await send(request("/api/v1/admin/messages/\(threadID)", method: "POST", body: body))
+        let data = try await send(request("/api/v1/admin/messages/\(threadID)", method: "POST", body: body))
+        struct R: Codable { let messageId: String?
+            enum CodingKeys: String, CodingKey { case messageId = "message_id" } }
+        return (try? decode(R.self, data))?.messageId
+    }
+
+    /// Start a brand-new thread to a patient (clinician-initiated outreach).
+    /// Returns the new thread id.
+    func createThread(patientId: String, subject: String, body text: String) async throws -> String? {
+        let payload = try JSONSerialization.data(withJSONObject: [
+            "patient_id": patientId, "subject": subject, "body": text,
+        ])
+        let data = try await send(request("/api/v1/admin/messages", method: "POST", body: payload))
+        struct R: Codable { let threadId: String?
+            enum CodingKeys: String, CodingKey { case threadId = "thread_id" } }
+        return (try? decode(R.self, data))?.threadId
+    }
+
+    /// Attach a file to a message just sent (≤25MB, MIME whitelist server-side).
+    func uploadMessageAttachment(threadId: String, messageId: String,
+                                 data fileData: Data, filename: String, mime: String) async throws {
+        let boundary = "mz-\(UUID().uuidString)"
+        var body = Data()
+        body.append("--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\nContent-Type: \(mime)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        var req = request("/api/v1/admin/messages/\(threadId)/\(messageId)/attachments", method: "POST", body: body)
+        req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        _ = try await send(req)
     }
 
     // MARK: - Scheduling
@@ -500,6 +533,26 @@ struct AdminAPI {
 
     /// Full claim drill-down: lines, diagnoses, compliance flags, upcoding
     /// opportunities, and documentation suggestions.
+    /// Resolve / un-resolve a compliance flag on a claim.
+    func setBillingFlagResolved(claimId: String, flagId: String, resolved: Bool, note: String?) async throws {
+        var fields: [String: Any] = ["resolved": resolved]
+        if let note, !note.isEmpty { fields["resolved_note"] = note }
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/v1/admin/billing/claims/\(claimId)/flags/\(flagId)", method: "PATCH", body: payload))
+    }
+
+    /// Accept / revert an AI upcoding opportunity (accept also overrides the line by default).
+    func setBillingUpcodingAccepted(claimId: String, opId: String, accepted: Bool) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: ["accepted": accepted, "apply_to_line": true])
+        _ = try await send(request("/api/v1/admin/billing/claims/\(claimId)/upcoding/\(opId)", method: "PATCH", body: payload))
+    }
+
+    /// Mark a documentation suggestion applied / not applied.
+    func setBillingDocSuggestionApplied(claimId: String, suggId: String, applied: Bool) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: ["applied": applied])
+        _ = try await send(request("/api/v1/admin/billing/claims/\(claimId)/doc-suggestions/\(suggId)", method: "PATCH", body: payload))
+    }
+
     func fetchBillingClaimDetail(id: String) async throws -> BillingClaimDetail {
         let data = try await send(request("/api/v1/admin/billing/claims/\(id)"))
         return try decode(BillingClaimDetail.self, data)

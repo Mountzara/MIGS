@@ -31,6 +31,7 @@ struct MessagesView: View {
     @EnvironmentObject var auth: AuthStore
     @StateObject private var model: MessagesModel
     @State private var selected: MessageThread?
+    @State private var composing = false
 
     init(auth: AuthStore) { _model = StateObject(wrappedValue: MessagesModel(auth: auth)) }
 
@@ -59,7 +60,9 @@ struct MessagesView: View {
             }
             .navigationTitle("Messages")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                        .help("New message to a patient")
                     Button { Task { await model.reload() } } label: { Image(systemName: "arrow.clockwise") }
                 }
             }
@@ -68,8 +71,107 @@ struct MessagesView: View {
             .navigationDestination(item: $selected) { thread in
                 ThreadView(thread: thread, auth: auth, onChange: { Task { await model.reload() } })
             }
+            .sheet(isPresented: $composing) {
+                NewThreadSheet(auth: auth) { Task { await model.reload() } }
+            }
         }
         .task { await model.reload() }
+    }
+}
+
+/// Start a clinician-initiated thread: pick the patient (live search),
+/// subject, first message — POST /api/v1/admin/messages.
+struct NewThreadSheet: View {
+    let auth: AuthStore
+    var onCreated: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var query = ""
+    @State private var results: [Patient] = []
+    @State private var chosen: Patient?
+    @State private var subject = ""
+    @State private var body_ = ""
+    @State private var sending = false
+    @State private var error: String?
+
+    private var api: AdminAPI { AdminAPI(token: auth.basicToken) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("To") {
+                    if let p = chosen {
+                        HStack {
+                            Text(p.displayName).font(.body.weight(.medium))
+                            Spacer()
+                            Button { chosen = nil } label: { Image(systemName: "xmark.circle.fill") }
+                                .buttonStyle(.plain).foregroundStyle(.secondary)
+                        }
+                    } else {
+                        TextField("Search patients by name or email…", text: $query)
+                            .autocorrectionDisabled()
+                        ForEach(results.prefix(6)) { p in
+                            Button { chosen = p } label: {
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(p.displayName)
+                                    Text(p.email).font(.caption2).foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                Section("Subject") {
+                    TextField("Subject", text: $subject)
+                }
+                Section("Message") {
+                    TextField("Write your message…", text: $body_, axis: .vertical).lineLimit(4...10)
+                }
+            }
+            .navigationTitle("New message")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if sending { ProgressView() }
+                    else {
+                        Button("Send") { Task { await send() } }
+                            .disabled(chosen == nil
+                                      || subject.trimmingCharacters(in: .whitespaces).isEmpty
+                                      || body_.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
+            .task(id: query) {
+                guard chosen == nil, query.count >= 2 else { return }
+                try? await Task.sleep(nanoseconds: 250_000_000)   // debounce
+                if Task.isCancelled { return }
+                results = (try? await api.listPatients(query: query, limit: 8)) ?? []
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 480, minHeight: 480)
+        #endif
+    }
+
+    private func send() async {
+        guard let p = chosen else { return }
+        sending = true
+        defer { sending = false }
+        error = nil
+        do {
+            _ = try await api.createThread(
+                patientId: p.id,
+                subject: subject.trimmingCharacters(in: .whitespaces),
+                body: body_.trimmingCharacters(in: .whitespacesAndNewlines))
+            onCreated()
+            dismiss()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
     }
 }
 

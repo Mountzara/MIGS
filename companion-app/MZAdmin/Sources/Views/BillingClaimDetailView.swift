@@ -42,6 +42,11 @@ struct BillingClaimDetailView: View {
         .task { detail = await model.claimDetail(claim.id); loadingDetail = false }
     }
 
+    /// Re-fetch the drill-down after an inline action (flag/upcoding/doc-sugg).
+    private func refreshDetail() async {
+        detail = await model.claimDetail(claim.id)
+    }
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -198,8 +203,18 @@ struct BillingClaimDetailView: View {
                     let color: Color = f.severity == "error" ? Theme.red : (f.severity == "warning" ? Theme.amber : Theme.accentSoft)
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
-                            Image(systemName: f.isResolved ? "checkmark.circle.fill" : "circle")
-                                .font(.caption2).foregroundStyle(f.isResolved ? Theme.green : color)
+                            Button {
+                                Task {
+                                    if await model.setFlagResolved(claimId: claim.id, flagId: f.id, resolved: !f.isResolved) {
+                                        await refreshDetail()
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: f.isResolved ? "checkmark.circle.fill" : "circle")
+                                    .font(.body).foregroundStyle(f.isResolved ? Theme.green : color)
+                            }
+                            .buttonStyle(.plain)
+                            .help(f.isResolved ? "Un-resolve" : "Mark resolved")
                             Text(f.title ?? f.flagKind ?? "Flag").font(.caption.weight(.semibold))
                                 .strikethrough(f.isResolved)
                             if let rc = f.referencedCode, !rc.isEmpty {
@@ -232,7 +247,17 @@ struct BillingClaimDetailView: View {
                             Text(op.potentialCode ?? "—").font(.caption.weight(.bold).monospaced()).foregroundStyle(Theme.green)
                             Spacer()
                             if let r = op.revenueDeltaCents { Text("+\(fmtCents(r))").font(.caption).foregroundStyle(Theme.green) }
-                            if op.isAccepted { Text("accepted").font(.caption2).foregroundStyle(Theme.green) }
+                            Button(op.isAccepted ? "Revert" : "Accept") {
+                                Task {
+                                    if await model.setUpcodingAccepted(claimId: claim.id, opId: op.id, accepted: !op.isAccepted) {
+                                        await refreshDetail()
+                                    }
+                                }
+                            }
+                            .font(.caption2.bold())
+                            .buttonStyle(.bordered)
+                            .controlSize(.mini)
+                            .tint(op.isAccepted ? Color.secondary : Theme.green)
                         }
                         HStack(spacing: 8) {
                             if let w = op.wrvuDelta { Text("+\(String(format: "%.2f", w)) wRVU").font(.caption2).foregroundStyle(.secondary) }
@@ -263,6 +288,17 @@ struct BillingClaimDetailView: View {
                             if let sec = s.section, !sec.isEmpty { Text(sec).font(.caption2).foregroundStyle(.tertiary) }
                             Spacer()
                             if let ri = s.revenueImpact, !ri.isEmpty { Text(ri).font(.caption2).foregroundStyle(Theme.accentSoft) }
+                            Button(s.isApplied ? "Applied ✓" : "Mark applied") {
+                                Task {
+                                    if await model.setDocSuggestionApplied(claimId: claim.id, suggId: s.id, applied: !s.isApplied) {
+                                        await refreshDetail()
+                                    }
+                                }
+                            }
+                            .font(.caption2.bold())
+                            .buttonStyle(.bordered)
+                            .controlSize(.mini)
+                            .tint(s.isApplied ? Theme.green : Color.secondary)
                         }
                         if let i = s.issue, !i.isEmpty { Text(i).font(.caption.weight(.medium)) }
                         if let sg = s.suggestion, !sg.isEmpty { Text(sg).font(.caption2).foregroundStyle(.secondary) }
