@@ -48,6 +48,32 @@ final class AppModel: ObservableObject {
         await act(post.id) { try await self.api.reject(id: post.id) }
     }
 
+    /// Create a new draft, then refresh. Returns true on success.
+    func createPost(fields: [String: Any]) async -> Bool {
+        do {
+            try await api.createPost(fields: fields)
+            await reload()
+            return true
+        } catch {
+            errorMessage = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+            return false
+        }
+    }
+
+    /// Permanently delete a post, then refresh. Returns true on success.
+    func deletePost(_ id: String) async -> Bool {
+        do {
+            try await api.deletePost(id: id)
+            await reload()
+            return true
+        } catch {
+            errorMessage = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+            if case AdminAPI.APIError.unauthorized = error { auth.signOut() }
+            return false
+        }
+    }
+
     /// Save edits to a post, then refresh the list. Returns the updated full post.
     func updatePost(_ id: String, fields: [String: Any]) async -> Post? {
         do {

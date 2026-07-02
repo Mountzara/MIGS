@@ -11,6 +11,7 @@ struct PostDetailView: View {
     @State private var showEdit = false
     @State private var bodyHeight: CGFloat = 240
     @State private var loadingFull = true
+    @State private var confirmDelete = false
 
     private var current: Post { full ?? post }
     private var isActioning: Bool { model.actioningIDs.contains(post.id) }
@@ -54,9 +55,23 @@ struct PostDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button { showEdit = true } label: { Label("Edit", systemImage: "pencil") }
+                Menu {
+                    Button(role: .destructive) { confirmDelete = true } label: {
+                        Label("Delete post…", systemImage: "trash")
+                    }
+                } label: { Image(systemName: "ellipsis.circle") }
             }
+        }
+        .confirmationDialog("Permanently delete this post?",
+                            isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete \"\(current.displayTitle)\"", role: .destructive) {
+                Task { if await model.deletePost(current.id) { dismiss() } }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This removes it from the site index and R2. There is no undo.")
         }
         .safeAreaInset(edge: .bottom) { actions }
         .sheet(isPresented: $showEdit) {
@@ -214,6 +229,7 @@ struct PostEditView: View {
     @State private var verdict: String
     @State private var topics: String
     @State private var bodyHTML: String
+    @State private var status: String
     @State private var saving = false
     @State private var error: String?
     @State private var bodyMode = 0                  // 0 = HTML source, 1 = live preview
@@ -228,6 +244,7 @@ struct PostEditView: View {
         _verdict = State(initialValue: post.verdict ?? "")
         _topics = State(initialValue: (post.topicsCovered ?? []).joined(separator: ", "))
         _bodyHTML = State(initialValue: post.bodyHTML ?? "")
+        _status = State(initialValue: post.status)
     }
 
     var body: some View {
@@ -244,6 +261,18 @@ struct PostEditView: View {
                 }
                 Section("Topics — comma separated") {
                     TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
+                }
+                Section {
+                    Picker("Status", selection: $status) {
+                        Text("Draft").tag("draft")
+                        Text("Published").tag("published")
+                        Text("Rejected").tag("rejected")
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Status")
+                } footer: {
+                    Text("Publishing here puts the post live on mountzara.com immediately.")
                 }
                 Section {
                     Picker("View", selection: $bodyMode) {
@@ -302,12 +331,151 @@ struct PostEditView: View {
         ]
         let v = verdict.trimmingCharacters(in: .whitespacesAndNewlines)
         if !v.isEmpty { fields["verdict"] = v }
+        if status != post.status { fields["status"] = status }
 
         if let updated = await model.updatePost(post.id, fields: fields) {
             onSaved(updated)
             dismiss()
         } else {
             error = model.errorMessage ?? "Couldn't save the post."
+        }
+    }
+}
+
+// MARK: - Compose (new post)
+
+/// Create a brand-new post draft from scratch — POST /api/posts.
+/// The id is slugified from the title (prefixed by kind) but editable.
+struct PostComposeView: View {
+    @ObservedObject var model: AppModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var kind: PostKind = .blog
+    @State private var slug = ""
+    @State private var slugEdited = false
+    @State private var title = ""
+    @State private var summary = ""
+    @State private var verdict = ""
+    @State private var topics = ""
+    @State private var bodyHTML = ""
+    @State private var publishNow = false
+    @State private var saving = false
+    @State private var error: String?
+    @State private var bodyMode = 0
+    @State private var previewHeight: CGFloat = 320
+
+    private var effectiveSlug: String { slugEdited ? slug : Self.slugify(title) }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Feed") {
+                    Picker("Feed", selection: $kind) {
+                        ForEach(PostKind.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                Section("Title") {
+                    TextField("Title", text: $title, axis: .vertical).lineLimit(1...3)
+                }
+                Section {
+                    TextField("post-id-slug", text: Binding(
+                        get: { effectiveSlug },
+                        set: { slug = $0; slugEdited = true }))
+                        .font(.system(.footnote, design: .monospaced))
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        #endif
+                } header: { Text("ID") } footer: {
+                    Text("Auto-generated from the title; edit if you need a specific slug.")
+                }
+                Section("Summary") {
+                    TextField("Summary", text: $summary, axis: .vertical).lineLimit(2...6)
+                }
+                Section("Verdict (optional)") {
+                    TextField("Verdict", text: $verdict, axis: .vertical).lineLimit(1...4)
+                }
+                Section("Topics — comma separated") {
+                    TextField("Topics", text: $topics, axis: .vertical).lineLimit(1...3)
+                }
+                Section {
+                    Picker("View", selection: $bodyMode) {
+                        Text("HTML source").tag(0)
+                        Text("Preview").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    if bodyMode == 0 {
+                        TextEditor(text: $bodyHTML)
+                            .font(.system(.footnote, design: .monospaced))
+                            .frame(minHeight: 280)
+                    } else {
+                        HTMLView(html: bodyHTML, height: $previewHeight)
+                            .frame(height: max(previewHeight, 280))
+                            .id(bodyHTML)
+                    }
+                } header: { Text("Body (HTML)") }
+                Section {
+                    Toggle("Publish immediately", isOn: $publishNow)
+                        .tint(Theme.accent)
+                } footer: {
+                    Text(publishNow ? "Goes live on mountzara.com as soon as you save."
+                                    : "Saved as a draft in the review queue.")
+                }
+            }
+            .navigationTitle("New post")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if saving { ProgressView() }
+                    else {
+                        Button(publishNow ? "Publish" : "Save draft") { Task { await save() } }
+                            .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty
+                                      || effectiveSlug.isEmpty)
+                    }
+                }
+            }
+        }
+        #if os(macOS)
+        .frame(minWidth: 580, minHeight: 640)
+        #endif
+    }
+
+    static func slugify(_ s: String) -> String {
+        let lowered = s.lowercased()
+            .folding(options: .diacriticInsensitive, locale: .current)
+        let mapped = lowered.map { c -> Character in
+            (c.isLetter || c.isNumber) ? c : "-"
+        }
+        let collapsed = String(mapped).split(separator: "-").joined(separator: "-")
+        return String(collapsed.prefix(80))
+    }
+
+    private func save() async {
+        saving = true
+        defer { saving = false }
+        error = nil
+        var fields: [String: Any] = [
+            "id": effectiveSlug,
+            "kind": kind.rawValue,
+            "status": publishNow ? "published" : "draft",
+            "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
+            "summary": summary.trimmingCharacters(in: .whitespacesAndNewlines),
+            "body_html": bodyHTML,
+            "topics_covered": topics.split(separator: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty },
+        ]
+        let v = verdict.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !v.isEmpty { fields["verdict"] = v }
+
+        if await model.createPost(fields: fields) {
+            dismiss()
+        } else {
+            error = model.errorMessage ?? "Couldn't create the post."
         }
     }
 }

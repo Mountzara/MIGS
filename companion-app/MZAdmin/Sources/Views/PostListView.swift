@@ -4,6 +4,7 @@ struct PostListView: View {
     @EnvironmentObject var auth: AuthStore
     @StateObject private var model: AppModel
     @State private var selected: Post?
+    @State private var composing = false
 
     init(auth: AuthStore) {
         _model = StateObject(wrappedValue: AppModel(auth: auth))
@@ -30,7 +31,9 @@ struct PostListView: View {
             .navigationTitle(model.kind.title)
             .toolbar {
                 ToolbarItem(placement: .principal) { kindPicker }
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { composing = true } label: { Image(systemName: "square.and.pencil") }
+                        .help("New post")
                     Menu {
                         Button("Refresh") { Task { await model.reload() } }
                         Button("Sign out", role: .destructive) { auth.signOut() }
@@ -43,6 +46,7 @@ struct PostListView: View {
             .navigationDestination(item: $selected) { post in
                 PostDetailView(post: post, model: model)
             }
+            .sheet(isPresented: $composing) { PostComposeView(model: model) }
         }
         .task { await model.reload() }
         .onChange(of: model.kind) { _, _ in Task { await model.reload() } }

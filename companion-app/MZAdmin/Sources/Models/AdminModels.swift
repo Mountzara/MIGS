@@ -862,6 +862,28 @@ struct ComplianceDoc: Identifiable, Codable, Hashable {
 struct ComplianceDocsResponse: Codable { let docs: [ComplianceDoc] }
 
 /// GET /api/v1/admin/compliance/docs/<slug> — doc body + active signature.
+/// A stored clinician signature PNG (for compliance doc signing).
+struct ClinicianSignature: Identifiable, Codable, Hashable {
+    let id: String
+    var displayName: String?
+    var widthPx: Int?
+    var heightPx: Int?
+    var createdAt: String?
+    var retiredAt: String?
+    enum CodingKeys: String, CodingKey {
+        case id
+        case displayName = "display_name"
+        case widthPx = "width_px"
+        case heightPx = "height_px"
+        case createdAt = "created_at"
+        case retiredAt = "retired_at"
+    }
+}
+
+struct SignaturesListResponse: Codable {
+    let signatures: [ClinicianSignature]
+}
+
 struct ComplianceDocDetail: Codable {
     let doc: DocMeta?
     let body: String?

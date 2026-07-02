@@ -468,9 +468,11 @@ async function onRequestImpl({ request, env, params }) {
         return jsonResponse(post);
     }
 
-    // POST /api/posts  (create draft from pipeline)
+    // POST /api/posts  (create draft — pipeline token OR signed-in admin)
     if (method === "POST" && segments.length === 0) {
-        if (!isPipelineRequest(request, env)) return errorResponse("unauthorized", 401);
+        if (!isPipelineRequest(request, env) && !(await isAdminRequest(request, env))) {
+            return errorResponse("unauthorized", 401);
+        }
         let body;
         try { body = await request.json(); } catch { return errorResponse("invalid JSON body"); }
         if (!body.id) return errorResponse("missing id");
@@ -539,7 +541,9 @@ async function onRequestImpl({ request, env, params }) {
             blog_html_path: body.blog_html_path || null,
             run_manifest_path: body.run_manifest_path || null,
             created_at: now,
-            published_at: null,
+            // Stamp immediately when created directly as published (admin
+            // composer's "Publish immediately"); otherwise set on approve.
+            published_at: (body.status === "published") ? now : null,
             updated_at: now,
         };
         backfillManifest(post);   // §0.8.2: complete pmids_cited from the post's modals
@@ -749,6 +753,21 @@ async function onRequestImpl({ request, env, params }) {
             }
         }
         return jsonResponse({ ok: true, id: post.id });
+    }
+
+    // DELETE /api/posts/:id  (admin — permanent removal + index rebuild).
+    // This is the "DELETE-with-confirm via the admin UI" path the 2026-05-27
+    // overwrite-protection guard anticipated: the only sanctioned way to
+    // remove a post outright (vs /reject which tombstones it as rejected).
+    if (method === "DELETE" && segments.length === 1) {
+        if (!(await isAdminRequest(request, env))) return errorResponse("unauthorized", 401);
+        const id = segments[0];
+        const post = await readPost(env, id);
+        if (!post) return errorResponse("not found", 404);
+        await env.CONTENT.delete(`posts/${id}.json`);
+        // Rebuild (not upsert) so the index drops the deleted entry.
+        await rebuildIndex(env, post.kind);
+        return jsonResponse({ ok: true, deleted: id, kind: post.kind });
     }
 
     return errorResponse("method not allowed", 405);

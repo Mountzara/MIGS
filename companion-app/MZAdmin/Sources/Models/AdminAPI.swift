@@ -77,6 +77,17 @@ struct AdminAPI {
         _ = try await send(request("/api/posts/\(id)/reject", method: "POST"))
     }
 
+    /// Create a brand-new post draft (POST /api/posts — admin-authorized).
+    func createPost(fields: [String: Any]) async throws {
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/posts", method: "POST", body: payload))
+    }
+
+    /// Permanently delete a post (DELETE /api/posts/:id — rebuilds the index).
+    func deletePost(id: String) async throws {
+        _ = try await send(request("/api/posts/\(id)", method: "DELETE"))
+    }
+
     /// Edit a post's content (PUT /api/posts/:id). Editable fields incl.
     /// title, summary, body_html, verdict, topics_covered, pmids_cited, status.
     func updatePost(id: String, fields: [String: Any]) async throws {
@@ -336,6 +347,50 @@ struct AdminAPI {
     func complianceDocDetail(slug: String) async throws -> ComplianceDocDetail {
         let data = try await send(request("/api/v1/admin/compliance/docs/\(slug)"))
         return try decode(ComplianceDocDetail.self, data)
+    }
+
+    /// Stored clinician signatures (active only by default).
+    func listSignatures(includeRetired: Bool = false) async throws -> [ClinicianSignature] {
+        let path = "/api/v1/admin/compliance/signatures" + (includeRetired ? "?include_retired=1" : "")
+        let data = try await send(request(path))
+        return try decode(SignaturesListResponse.self, data).signatures
+    }
+
+    /// The signature's PNG bytes (for preview in the signing sheet).
+    func signatureImage(id: String) async throws -> Data {
+        try await send(request("/api/v1/admin/compliance/signatures/\(id)/image"))
+    }
+
+    /// Legally sign a compliance doc: attestation ≥16 chars, initials 2–6 letters.
+    func signComplianceDoc(slug: String, signatureId: String,
+                           attestation: String, initials: String, notes: String?) async throws {
+        var fields: [String: Any] = [
+            "signature_id": signatureId,
+            "typed_attestation": attestation,
+            "typed_initials": initials,
+        ]
+        if let notes, !notes.isEmpty { fields["notes"] = notes }
+        let payload = try JSONSerialization.data(withJSONObject: fields)
+        _ = try await send(request("/api/v1/admin/compliance/docs/\(slug)", method: "POST", body: payload))
+    }
+
+    /// Retire a stored signature (idempotent).
+    func retireSignature(id: String) async throws {
+        _ = try await send(request("/api/v1/admin/compliance/signatures/\(id)", method: "DELETE"))
+    }
+
+    /// Upload a new signature PNG (multipart/form-data: file + display_name).
+    func uploadSignature(png: Data, displayName: String) async throws {
+        let boundary = "mz-\(UUID().uuidString)"
+        var body = Data()
+        func field(_ s: String) { body.append(s.data(using: .utf8)!) }
+        field("--\(boundary)\r\nContent-Disposition: form-data; name=\"display_name\"\r\n\r\n\(displayName)\r\n")
+        field("--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"signature.png\"\r\nContent-Type: image/png\r\n\r\n")
+        body.append(png)
+        field("\r\n--\(boundary)--\r\n")
+        var req = request("/api/v1/admin/compliance/signatures", method: "POST", body: body)
+        req.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        _ = try await send(req)
     }
 
     // MARK: - Briefings

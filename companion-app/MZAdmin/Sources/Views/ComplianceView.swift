@@ -132,16 +132,17 @@ private struct ComplianceRowView: View {
 
 // MARK: - Detail
 
-/// Read-only compliance doc viewer: renders the document body and the active
-/// signature record (who signed, when, next review). The signing action
-/// (POST with a stored signature + typed attestation) is a separate, legally
-/// sensitive flow and is intentionally not wired here yet.
+/// Compliance doc viewer + the full signing flow: renders the document body,
+/// the active signature record, and a Sign action (stored signature PNG +
+/// typed attestation ≥16 chars + typed initials) hitting
+/// POST /compliance/docs/<slug>.
 struct ComplianceDetailView: View {
     let doc: ComplianceDoc
     @ObservedObject var model: ComplianceModel
     @State private var detail: ComplianceDocDetail?
     @State private var isLoading = true
     @State private var loadError: String?
+    @State private var showSign = false
 
     var body: some View {
         ScrollView {
@@ -160,8 +161,33 @@ struct ComplianceDetailView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .safeAreaInset(edge: .bottom) { signBar }
+        .sheet(isPresented: $showSign) {
+            SignDocSheet(doc: doc, model: model) {
+                Task { await load(); await model.reload() }
+            }
+        }
         .overlay(alignment: .bottom) { ErrorBar(text: loadError ?? model.error) }
         .task { await load() }
+    }
+
+    @ViewBuilder
+    private var signBar: some View {
+        // Body must have loaded (the attestation legally covers its SHA-256).
+        if detail?.body?.isEmpty == false {
+            Button {
+                showSign = true
+            } label: {
+                Label(doc.status == "signed" ? "Re-sign / re-attest" : "Sign this document",
+                      systemImage: "signature")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(doc.status == "signed" ? Theme.accentSoft : Theme.accent)
+            .padding()
+            .background(.ultraThinMaterial)
+        }
     }
 
     private func load() async {
@@ -250,5 +276,182 @@ struct ComplianceDetailView: View {
         (try? AttributedString(markdown: md,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace,
                            failurePolicy: .returnPartiallyParsedIfPossible))) ?? AttributedString(md)
+    }
+}
+
+// MARK: - Signing flow
+
+/// Legally sign a compliance doc: pick a stored signature PNG, type the
+/// attestation (≥16 chars) and initials (2–6 letters), then POST.
+/// Also manages stored signatures (upload PNG / retire).
+struct SignDocSheet: View {
+    let doc: ComplianceDoc
+    @ObservedObject var model: ComplianceModel
+    var onSigned: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var signatures: [ClinicianSignature] = []
+    @State private var images: [String: Data] = [:]
+    @State private var selectedId: String?
+    @State private var attestation = ""
+    @State private var initials = ""
+    @State private var notes = ""
+    @State private var loading = true
+    @State private var signing = false
+    @State private var importing = false
+    @State private var uploadName = ""
+    @State private var error: String?
+
+    private var initialsValid: Bool {
+        initials.range(of: #"^[A-Za-z]{2,6}$"#, options: .regularExpression) != nil
+    }
+    private var canSign: Bool {
+        selectedId != nil && attestation.trimmingCharacters(in: .whitespacesAndNewlines).count >= 16
+            && initialsValid && !signing
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    if loading {
+                        ProgressView("Loading signatures…")
+                    } else if signatures.isEmpty {
+                        Text("No stored signatures yet — add your signature PNG below.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        ForEach(signatures) { sig in
+                            Button { selectedId = sig.id } label: { signatureRow(sig) }
+                                .buttonStyle(.plain)
+                        }
+                    }
+                    Button {
+                        importing = true
+                    } label: { Label("Add signature PNG…", systemImage: "plus.circle") }
+                } header: { Text("Signature") } footer: {
+                    Text("The selected signature image is embedded in the signed record.")
+                }
+                Section {
+                    TextField("I have read and approve this policy as written…",
+                              text: $attestation, axis: .vertical)
+                        .lineLimit(2...5)
+                    HStack {
+                        Spacer()
+                        Text("\(attestation.trimmingCharacters(in: .whitespacesAndNewlines).count)/16 min")
+                            .font(.caption2)
+                            .foregroundStyle(attestation.trimmingCharacters(in: .whitespacesAndNewlines).count >= 16 ? Theme.green : Color.secondary)
+                    }
+                } header: { Text("Typed attestation") }
+                Section("Typed initials (2–6 letters)") {
+                    TextField("CM", text: $initials)
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.characters)
+                        #endif
+                        .foregroundStyle(initials.isEmpty || initialsValid ? Color.primary : Theme.red)
+                }
+                Section("Notes (optional)") {
+                    TextField("Notes for the audit record", text: $notes, axis: .vertical)
+                        .lineLimit(1...4)
+                }
+            }
+            .navigationTitle("Sign \(doc.title)")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .overlay(alignment: .bottom) { ErrorBar(text: error) }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    if signing { ProgressView() }
+                    else { Button("Sign") { Task { await sign() } }.disabled(!canSign) }
+                }
+            }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.png]) { result in
+                if case .success(let url) = result { Task { await upload(url) } }
+            }
+            .task { await loadSignatures() }
+        }
+        #if os(macOS)
+        .frame(minWidth: 520, minHeight: 560)
+        #endif
+    }
+
+    @ViewBuilder
+    private func signatureRow(_ sig: ClinicianSignature) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: selectedId == sig.id ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(selectedId == sig.id ? Theme.accent : Color.secondary)
+            if let data = images[sig.id], let img = platformImage(data) {
+                img.resizable().scaledToFit().frame(height: 34)
+                    .padding(4).background(.white, in: RoundedRectangle(cornerRadius: 6))
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(sig.displayName ?? "Signature").font(.subheadline)
+                if let c = sig.createdAt { Text(c).font(.caption2).foregroundStyle(.secondary) }
+            }
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                Task { try? await model.api.retireSignature(id: sig.id); await loadSignatures() }
+            } label: { Label("Retire", systemImage: "trash") }
+        }
+    }
+
+    private func platformImage(_ data: Data) -> Image? {
+        #if canImport(UIKit)
+        UIImage(data: data).map(Image.init(uiImage:))
+        #elseif canImport(AppKit)
+        NSImage(data: data).map(Image.init(nsImage:))
+        #else
+        nil
+        #endif
+    }
+
+    private func loadSignatures() async {
+        loading = true
+        defer { loading = false }
+        do {
+            signatures = try await model.api.listSignatures()
+            if selectedId == nil { selectedId = signatures.first?.id }
+            for sig in signatures where images[sig.id] == nil {
+                images[sig.id] = try? await model.api.signatureImage(id: sig.id)
+            }
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func upload(_ url: URL) async {
+        error = nil
+        do {
+            let secured = url.startAccessingSecurityScopedResource()
+            defer { if secured { url.stopAccessingSecurityScopedResource() } }
+            let data = try Data(contentsOf: url)
+            try await model.api.uploadSignature(png: data, displayName: url.deletingPathExtension().lastPathComponent)
+            await loadSignatures()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func sign() async {
+        guard let sid = selectedId else { return }
+        signing = true
+        defer { signing = false }
+        error = nil
+        do {
+            try await model.api.signComplianceDoc(
+                slug: doc.slug, signatureId: sid,
+                attestation: attestation.trimmingCharacters(in: .whitespacesAndNewlines),
+                initials: initials.trimmingCharacters(in: .whitespaces),
+                notes: notes.trimmingCharacters(in: .whitespacesAndNewlines))
+            onSigned()
+            dismiss()
+        } catch {
+            self.error = (error as? AdminAPI.APIError)?.errorDescription ?? error.localizedDescription
+        }
     }
 }
