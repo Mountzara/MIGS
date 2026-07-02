@@ -602,6 +602,23 @@ create the SPA dir.
 | `_index/blog.json`, `_index/evidence.json` | Listing indexes | Admin dashboards |
 | `manifests/<id>.json` | Per-post run manifests | `verify_kb_anchoring.py --r2-posts` |
 
+**CANONICAL-FORMAT GATE (2026-07-02)** — `functions/api/posts/[[path]].js`
+`auditPostFormat()`: canonical = `mz-cite-card > 0` AND `paper-card == 0`
+(rule derived from the live corpus: W20/W21/evidence briefs canonical;
+W23/W24/W25 stale). Enforcement: ingest WARNS in the 201 response
+(`format_warnings`, stored as `post.format_audit`); `/approve` HARD-BLOCKS
+(422) non-canonical posts unless `{"force":true}` (recorded as
+`format_force_published_at`). Overwrite-guard exception: a canonical
+re-render may replace a PUBLISHED stale-format post under the same id
+("format heal", keeps published status, stamps `format_healed_at`) — the
+repair path for the W23/W24 regression. `GET /api/posts/_admin/freshness`
+(admin) = content-pipeline dead-man dashboard (newest published age per
+kind, stale > 8 days, drafts pending approval with per-draft format
+verdicts, trend-brief queue depth, carousel freshness); surfaced by the
+freshness banner in `admin/_nav.js` (passive — only when creds cached) and
+checked daily by cron-worker `runContentFreshnessCheck` (writes audit_log
+`content_freshness_alert`, allowlisted in `_lib/audit.js`).
+
 **Current shipped posts (as of 2026-05-26):**
 - `blog-2026-W20` — CBG/MIGS Monday Mornings W20
 - `blog-2026-W21` — CBG/MIGS Monday Mornings W21

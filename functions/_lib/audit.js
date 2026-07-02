@@ -46,6 +46,8 @@ const ALLOWED_ACTIONS = new Set([
     "claim_ai_preflight", "claim_appeal_draft",
     // app sync
     "app_sync_push", "app_sync_token_issue", "app_sync_token_revoke",
+    // content pipeline (cron-worker dead-man check writes this directly)
+    "content_freshness_alert",
     // admin / data rights
     "admin_override",
     "data_export", "data_amendment_request", "data_restriction_request",

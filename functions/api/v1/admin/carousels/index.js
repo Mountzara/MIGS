@@ -26,7 +26,13 @@ const SLUG_RE = /^[a-z0-9][a-z0-9_-]{2,80}$/;
 
 function isPipelineToken(request, env) {
     const tok = request.headers.get("X-Pipeline-Token") || "";
-    return tok && tok === env.PIPELINE_TOKEN;
+    const expected = env.PIPELINE_TOKEN || "";
+    if (!tok || !expected || tok.length !== expected.length) return false;
+    // Constant-time compare (2026-07-02) — was a plain ===, unlike the posts
+    // and trend-brief ingestion paths which already compare constant-time.
+    let diff = 0;
+    for (let i = 0; i < tok.length; i++) diff |= tok.charCodeAt(i) ^ expected.charCodeAt(i);
+    return diff === 0;
 }
 
 async function loadIndex(env) {

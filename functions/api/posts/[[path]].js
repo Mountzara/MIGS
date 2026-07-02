@@ -189,6 +189,41 @@ function normalizeSummary(post) {
     return post;
 }
 
+// ====================================================================
+// CANONICAL-FORMAT AUDIT (2026-07-02) — the ingestion choke point.
+// The 2026-05-26 regression (W23/W24 shipped in the stripped
+// "paper-card" auto-draft format instead of the canonical mz-cite-card
+// format, and W25 arrived the same way) went live because nothing on
+// this side ever LOOKED at body_html. The rule below is derived from
+// the actual live corpus, not taste:
+//   canonical  (W20, W21, every evidence brief):  mz-cite-card > 0, paper-card == 0
+//   stale      (W23, W24, W25):                   mz-cite-card == 0, paper-card > 0
+// Enforcement: warn (loudly, in the 201 response the Mac pipeline logs)
+// at ingest so drafts still land and are visible in admin; HARD-BLOCK at
+// /approve so stale-format content can never go live (admin may override
+// with {"force":true}, which is recorded on the post).
+// Applies to kind blog + evidence; claim_proposal has no body format.
+// ====================================================================
+function auditPostFormat(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") {
+        return { canonical: true, problems, checked_at: new Date().toISOString() };
+    }
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const paperCards = (h.match(/paper-card/g) || []).length;
+    const citeCards = (h.match(/mz-cite-card/g) || []).length;
+    if (paperCards > 0) {
+        problems.push(`body_html uses the stripped "paper-card" auto-draft format (${paperCards} occurrence(s)) — the canonical renderer emits mz-cite-card. Re-render with the cite-card path before publishing.`);
+    }
+    if (citeCards === 0 && h.length > 0) {
+        problems.push(`body_html contains no mz-cite-card markup — every canonical post (W20, W21, all published evidence briefs) carries mz-cite-card cards.`);
+    }
+    if (h.length === 0) {
+        problems.push("body_html is empty.");
+    }
+    return { canonical: problems.length === 0, problems, checked_at: new Date().toISOString() };
+}
+
 async function readPost(env, id) {
     const obj = await env.CONTENT.get(`posts/${id}.json`);
     if (!obj) return null;
@@ -352,6 +387,60 @@ async function onRequestImpl({ request, env, params }) {
         return jsonResponse({ posts: combined });
     }
 
+    // GET /api/posts/_admin/freshness  (admin) — the CONTENT-PIPELINE DEAD-MAN
+    // dashboard (2026-07-02). One call answers: is the weekly autogeneration
+    // actually flowing, or silently dead again? Reports, per kind: the newest
+    // PUBLISHED post + its age (stale when > 8 days — weekly cadence + grace),
+    // every draft awaiting approval WITH its canonical-format verdict, pending
+    // trend-brief queue depth, and carousel freshness. Surfaced as a banner in
+    // admin/_nav.js on every admin page; also checked daily by the cron-worker.
+    if (method === "GET" && segments.length === 2 && segments[0] === "_admin" && segments[1] === "freshness") {
+        if (!(await isAdminRequest(request, env))) return errorResponse("unauthorized", 401);
+        const now = Date.now();
+        const ageDays = (iso) => iso ? Math.floor((now - Date.parse(iso)) / 86400000) : null;
+        const out = { checked_at: new Date(now).toISOString(), stale: false, problems: [], kinds: {}, trend_briefs: {}, carousels: {} };
+        for (const kind of ["blog", "evidence"]) {
+            const idx = await readIndex(env, kind);
+            const published = idx.posts.filter((p) => p.status === "published")
+                .sort((a, b) => (b.published_at || b.created_at || "").localeCompare(a.published_at || a.created_at || ""));
+            const drafts = idx.posts.filter((p) => p.status === "draft");
+            const newest = published[0] || null;
+            const age = newest ? ageDays(newest.published_at || newest.created_at) : null;
+            const stale = age === null || age > 8;
+            // Per-draft format verdicts (drafts are few; reads are cheap).
+            const draftDetails = [];
+            for (const d of drafts.slice(0, 20)) {
+                const full = await readPost(env, d.id);
+                const fmt = full ? auditPostFormat(full) : { canonical: false, problems: ["post object missing"] };
+                draftDetails.push({ id: d.id, created_at: d.created_at, age_days: ageDays(d.created_at), format_canonical: fmt.canonical, format_problems: fmt.problems });
+            }
+            out.kinds[kind] = { newest_published: newest ? { id: newest.id, published_at: newest.published_at, age_days: age } : null, stale, drafts_pending_approval: draftDetails };
+            if (stale) { out.stale = true; out.problems.push(`${kind}: newest published post is ${age === null ? "MISSING" : age + " days old"} (weekly cadence expected).`); }
+            for (const d of draftDetails) {
+                out.problems.push(`${kind}: draft ${d.id} awaiting approval for ${d.age_days} day(s)${d.format_canonical ? "" : " — NON-CANONICAL format, /approve will refuse it"}.`);
+            }
+        }
+        try {
+            const rows = await env.DB.prepare(`SELECT status, COUNT(*) n, MAX(created_at) latest FROM trend_brief_pending GROUP BY status`).all().then((r) => r.results || []);
+            out.trend_briefs = { by_status: rows };
+            const pending = rows.find((r) => r.status === "pending");
+            if (pending && pending.n > 0) {
+                out.problems.push(`trend briefs: ${pending.n} pending review in /admin/trend-briefs/ (latest ${new Date(pending.latest).toISOString().slice(0, 10)}).`);
+            }
+        } catch (e) { out.trend_briefs = { error: String(e && e.message || e) }; }
+        try {
+            const cidx = await env.CONTENT.get("_index/carousels.json").then((o) => o ? o.text() : null).then((t) => t ? JSON.parse(t) : null);
+            // The carousel index is a plain ARRAY (see carousels/index.js loadIndex).
+            const items = Array.isArray(cidx) ? cidx : ((cidx && (cidx.carousels || cidx.items)) || []);
+            const newestC = items.map((c) => c.updated_at || c.created_at || "").sort().reverse()[0] || null;
+            const cAge = newestC ? ageDays(newestC) : null;
+            out.carousels = { count: items.length, newest: newestC, age_days: cAge, stale: cAge === null || cAge > 8 };
+            if (out.carousels.stale) out.problems.push(`carousels: newest is ${cAge === null ? "MISSING" : cAge + " days old"} — the weekly carousel push has stopped.`);
+        } catch (e) { out.carousels = { error: String(e && e.message || e) }; }
+        if (out.problems.length) out.stale = true;
+        return jsonResponse(out);
+    }
+
     // GET /api/posts/_admin/:id  (admin fetch including drafts/rejected)
     if (method === "GET" && segments.length === 2 && segments[0] === "_admin") {
         if (!(await isAdminRequest(request, env))) return errorResponse("unauthorized", 401);
@@ -400,9 +489,18 @@ async function onRequestImpl({ request, env, params }) {
         // the admin UI. To intentionally republish, use PUT with the
         // editable-fields whitelist (preserves R2 state)."""
         const existing = await readPost(env, String(body.id));
+        // Format-heal exception (2026-07-02): a PUBLISHED post stuck in the
+        // stale paper-card format may be overwritten by an incoming CANONICAL
+        // re-render of the same id — that is exactly the repair path for the
+        // live W23/W24 regression. Canonical may replace stale; stale may
+        // never replace anything published, and rejected stays tombstoned.
+        let formatHeal = false;
         if (existing) {
+            const incomingAudit = auditPostFormat({ kind: body.kind, body_html: body.body_html || "" });
+            const existingAudit = auditPostFormat(existing);
+            formatHeal = existing.status === "published" && !existingAudit.canonical && incomingAudit.canonical;
             const lockedStatuses = new Set(["published", "rejected"]);
-            if (lockedStatuses.has(existing.status)) {
+            if (lockedStatuses.has(existing.status) && !formatHeal) {
                 return errorResponse(
                     `post ${body.id} already exists with status="${existing.status}" — ` +
                     `POST refused (overwrite-protection guard 2026-05-27). ` +
@@ -410,7 +508,9 @@ async function onRequestImpl({ request, env, params }) {
                     `or explicitly change status first via /reject or /approve. ` +
                     `This guard prevents a re-run of run_weekly_digest.sh / ` +
                     `run_trend_tracker.sh from silently un-tombstoning rejected drafts ` +
-                    `or overwriting published content.`,
+                    `or overwriting published content. ` +
+                    `(Exception: a CANONICAL mz-cite-card re-render of a published ` +
+                    `stale-format post is accepted as a format heal.)`,
                     409  // Conflict
                 );
             }
@@ -444,9 +544,29 @@ async function onRequestImpl({ request, env, params }) {
         };
         backfillManifest(post);   // §0.8.2: complete pmids_cited from the post's modals
         normalizeSummary(post);   // replace the pipeline's boilerplate summary with a real one
+        // Canonical-format audit — stored on the post (admin sees it, the
+        // approve gate reads it) and echoed in the response so the Mac
+        // pipeline's logs show EXACTLY why a draft will not be publishable.
+        post.format_audit = auditPostFormat(post);
+        if (formatHeal) {
+            // Preserve published state: this is a canonical re-render
+            // replacing a stale-format body under the same id.
+            post.status = "published";
+            post.published_at = existing.published_at || new Date().toISOString();
+            post.created_at = existing.created_at || post.created_at;
+            post.format_healed_at = new Date().toISOString();
+        }
         await writePost(env, post);
         await upsertIndexEntry(env, post);
-        return jsonResponse({ ok: true, id: post.id }, 201);
+        return jsonResponse({
+            ok: true, id: post.id,
+            format_canonical: post.format_audit.canonical,
+            format_warnings: post.format_audit.problems,
+            ...(post.format_audit.canonical ? {} : {
+                warning: "DRAFT ACCEPTED but NOT PUBLISHABLE: body_html is in a non-canonical format. /approve will refuse it until a canonical (mz-cite-card) re-render is submitted.",
+            }),
+            ...(formatHeal ? { format_healed: true, note: "canonical re-render replaced the stale-format published body" } : {}),
+        }, 201);
     }
 
     // POST /api/posts/:id/approve  (admin)
@@ -455,6 +575,27 @@ async function onRequestImpl({ request, env, params }) {
         const id = segments[0];
         const post = await readPost(env, id);
         if (!post) return errorResponse("not found", 404);
+        // CANONICAL-FORMAT GATE (2026-07-02) — recompute fresh from body_html
+        // (never trust a stored audit) and refuse to publish stale-format
+        // content. This is the choke point that keeps a paper-card auto-draft
+        // from ever going live again. Admin escape hatch: {"force": true} in
+        // the request body publishes anyway and records the override.
+        const fmt = auditPostFormat(post);
+        if (!fmt.canonical) {
+            let force = false;
+            try { const b = await request.json(); force = b && b.force === true; } catch {}
+            if (!force) {
+                return errorResponse(
+                    `approve refused — post ${id} is in a NON-CANONICAL format and will not be published:\n` +
+                    fmt.problems.map((p) => `  • ${p}`).join("\n") +
+                    `\nSubmit a canonical (mz-cite-card) re-render from the pipeline, ` +
+                    `or POST /approve with {"force":true} to publish anyway (recorded on the post).`,
+                    422,
+                );
+            }
+            post.format_force_published_at = new Date().toISOString();
+        }
+        post.format_audit = fmt;
         post.status = "published";
         post.published_at = new Date().toISOString();
         await writePost(env, post);

@@ -68,6 +68,25 @@ const TABLES = [
     "nps_dispatches",
     "nps_responses",
 
+    // Phase QF trend-brief review queue (schema 0016 — added to backup
+    // 2026-07-02; pre-existing gap: pending briefs + their audit trail
+    // were unbacked-up since the queue launched)
+    "trend_brief_pending",
+    "trend_brief_audit_events",
+
+    // Billing pipeline (schema 0006/0025/0026 — added 2026-07-02)
+    "billing_claims",
+    "billing_claim_lines",
+    "billing_claim_diagnoses",
+    "billing_compliance_flags",
+    "billing_upcoding_opportunities",
+    "billing_documentation_suggestions",
+    "billing_audit_log",
+    "billing_payers",
+    "patient_insurance",
+    "billing_appeals",
+    "billing_preflight_reviews",
+
     // KNOWN GAP (2026-06-10): tables from migrations 0006–0017 (triage is
     // covered above, but session_trace, preview_invites, member_feedback,
     // wizard_state, PROMs, billing, snapshots, deep-dive authoring) are NOT
@@ -159,6 +178,51 @@ async function runNpsDispatch(env) {
     }
 }
 
+// =====================================================================
+// Content-pipeline DEAD-MAN check (daily, piggybacks the 09:00 backup)
+// =====================================================================
+// 2026-07-02 — the weekly autogeneration (Mac → /api/posts) died silently
+// after blog-2026-W24 (2026-06-12) and NOTHING on the server noticed for
+// three weeks; trend briefs piled up pending; carousels stopped 05-19.
+// This check reads the PUBLIC posts API daily and writes an audit_log row
+// (action content_freshness_alert) whenever the newest published post is
+// older than the weekly cadence allows (> 8 days). The admin nav banner
+// reads the richer /api/posts/_admin/freshness endpoint; this row is the
+// durable, queryable record that the pipeline was dead on a given day.
+// KNOWN GAP: no mailer exists yet (same as the R8 SLA sweep) — alerting
+// is the admin banner + audit trail until email lands.
+async function runContentFreshnessCheck(env) {
+    const now = Date.now();
+    try {
+        const r = await fetch("https://mountzara.com/api/posts/?status=published", {
+            headers: { "User-Agent": "mountzara-cron/freshness" },
+        });
+        if (!r.ok) throw new Error(`posts API HTTP ${r.status}`);
+        const data = await r.json();
+        const posts = Array.isArray(data) ? data : (data.posts || []);
+        const newest = posts
+            .map((p) => Date.parse(p.published_at || p.created_at || 0) || 0)
+            .sort((a, b) => b - a)[0] || 0;
+        const ageDays = newest ? Math.floor((now - newest) / 86400000) : null;
+        const stale = ageDays === null || ageDays > 8;
+        console.log(`content freshness: newest published ${ageDays === null ? "NONE" : ageDays + "d ago"} — ${stale ? "STALE" : "ok"}`);
+        if (!stale) return { ok: true, age_days: ageDays };
+        await env.DB.prepare(`
+            INSERT INTO audit_log
+                (id, ts, user_id, user_role, action, record_type, record_id,
+                 ip, user_agent, success, details_json)
+            VALUES (?, ?, NULL, 'app', 'content_freshness_alert', 'content_pipeline', 'weekly_posts', '', 'mountzara-cron', 0, ?)
+        `).bind(
+            crypto.randomUUID(), now,
+            JSON.stringify({ newest_published_age_days: ageDays, threshold_days: 8, checked_at: new Date(now).toISOString() }),
+        ).run();
+        return { ok: false, age_days: ageDays };
+    } catch (e) {
+        console.error("content freshness check failed", { error: String(e?.message || e) });
+        return { ok: false, error: String(e?.message || e) };
+    }
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
@@ -174,6 +238,7 @@ export default {
             return;
         }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));
+        ctx.waitUntil(runContentFreshnessCheck(env));
     },
 
     /**

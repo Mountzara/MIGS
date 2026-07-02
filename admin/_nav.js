@@ -282,4 +282,57 @@
     };
     // Shared sign-out other pages can call.
     window.mzAdminSignOut = function () { try { sessionStorage.removeItem(KEY); } catch (e) {} declined = false; };
+    // Read-only peek at cached creds for passive features (the freshness
+    // banner below) that must NEVER trigger the credential modal on load.
+    window.mzAdminCachedCreds = cached;
+})();
+
+// ---------------------------------------------------------------------
+// Content-pipeline freshness banner (2026-07-02). The weekly autogen died
+// silently after W24 and nothing surfaced it — this makes staleness and
+// pending-approval pile-ups impossible to miss on ANY admin page. Passive:
+// runs only when admin creds are already cached this session (never
+// prompts), fails silent, dismissible per session.
+// ---------------------------------------------------------------------
+(function () {
+    var DISMISS_KEY = 'mz_freshness_dismissed';
+    function show(data) {
+        if (!data || !data.problems || !data.problems.length) return;
+        var bar = document.createElement('div');
+        bar.setAttribute('role', 'alert');
+        bar.style.cssText = 'position:sticky;top:0;z-index:400;background:rgba(120,53,15,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(251,146,60,0.5);color:#fdba74;font:600 12.5px/1.45 "Avenir Next","Avenir",system-ui,sans-serif;padding:9px 16px;display:flex;gap:12px;align-items:flex-start;';
+        var n = data.problems.length;
+        var newest = data.kinds && data.kinds.evidence && data.kinds.evidence.newest_published;
+        var head = document.createElement('div');
+        head.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
+        head.innerHTML = '&#9888;&#65039; Content pipeline: ' + n + ' issue' + (n === 1 ? '' : 's') +
+            (newest ? ' &mdash; newest weekly post is ' + newest.age_days + ' days old' : '') +
+            '. <u>Details</u>';
+        var list = document.createElement('div');
+        list.style.cssText = 'display:none;margin-top:7px;font-weight:400;color:rgba(253,230,200,0.92);white-space:pre-line;';
+        list.textContent = data.problems.map(function (p) { return '• ' + p; }).join('\n');
+        head.appendChild(list);
+        head.addEventListener('click', function () { list.style.display = list.style.display === 'none' ? 'block' : 'none'; });
+        var x = document.createElement('button');
+        x.textContent = '×';
+        x.setAttribute('aria-label', 'Dismiss for this session');
+        x.style.cssText = 'background:none;border:none;color:#fdba74;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;';
+        x.addEventListener('click', function () {
+            try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+            bar.remove();
+        });
+        bar.appendChild(head); bar.appendChild(x);
+        document.body.insertBefore(bar, document.body.firstChild);
+    }
+    function check() {
+        try { if (sessionStorage.getItem(DISMISS_KEY)) return; } catch (e) {}
+        var creds = (typeof window.mzAdminCachedCreds === 'function') ? window.mzAdminCachedCreds() : null;
+        if (!creds) return;   // not signed in this session — stay silent, never prompt
+        fetch('/api/posts/_admin/freshness', { headers: { Authorization: 'Basic ' + creds } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(show)
+            .catch(function () { /* banner is best-effort */ });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check);
+    else check();
 })();
