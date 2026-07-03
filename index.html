@@ -8928,6 +8928,26 @@
             setTimeout(startHeroSequence, 250);
         });
 
+        // 2026-07-04 — HERO REVEAL SAFETY NET. The hero headline + subtitle are
+        // revealed inside startHeroSequence, which is gated behind the loader
+        // (up to the 6s cap) plus HERO_TEXT_DELAY_MS. If fonts or the hero video
+        // load slowly, that chain can leave the hero visibly BLANK for many
+        // seconds on open — the recurring "the opening animation is broken"
+        // report. This guarantees the text is revealed within a bounded time
+        // regardless of the loader/video state. It is a strict NO-OP once the
+        // normal sequence has already revealed the hero (the classes are only
+        // ADDED if absent), so it never double-animates, never changes the
+        // normal-load feel, and never fights the word-stagger — it only
+        // prevents a stalled load from holding the hero blank. It does NOT
+        // touch the drawing video, which continues to play underneath and start
+        // Ken Burns on its own 'ended' event.
+        setTimeout(() => {
+            const hc = document.querySelector('.hero-content-delayed');
+            const t = document.querySelector('.hero-title');
+            if (hc && !hc.classList.contains('visible')) hc.classList.add('visible');
+            if (t && !t.classList.contains('in')) t.classList.add('in');
+        }, 4000);
+
         // LOW POWER MODE resilience for autoplay videos.
         // iOS Low Power Mode blocks autoplay (the hero and the four
         // .video-preview loops sit paused even though play() was issued).
