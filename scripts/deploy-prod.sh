@@ -105,6 +105,31 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ] && [ "$KB_GATE_OK" = "1" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# HERO ANIMATION LOCK (codified 2026-07-04). The opening hero animation broke
+# on multiple revisions because unrelated edits (justify, headline wrapping, a
+# well-meaning "safety net") silently touched or interacted with the reveal
+# choreography. This gate fingerprints the exact animation-critical regions of
+# index.html and BLOCKS the deploy if they changed without the lock being
+# deliberately updated. To intentionally change the animation: make the edit,
+# WATCH the opening sequence end-to-end in a real browser, then
+#   node scripts/hero_anim_fingerprint.mjs --update && git add scripts/hero_animation.lock
+# No env override — the whole point is that an animation change can't slip out
+# unacknowledged.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/hero_anim_fingerprint.mjs ]; then
+    echo ""
+    echo "🔒 hero animation lock — opening choreography unchanged..."
+    if node scripts/hero_anim_fingerprint.mjs --check > /tmp/_hero_lock.log 2>&1; then
+        tail -1 /tmp/_hero_lock.log
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — the opening hero animation code changed:"
+        cat /tmp/_hero_lock.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Canonical post-format gate (codified 2026-07-02). Hermetic unit+route tests
 # of the auto-heal / format-audit / approve-block pipeline in
 # functions/_lib/post_format.js + functions/api/posts/[[path]].js, run from
