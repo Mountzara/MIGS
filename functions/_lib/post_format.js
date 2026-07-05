@@ -44,11 +44,60 @@ export function auditPostFormat(post) {
     const h = typeof post.body_html === "string" ? post.body_html : "";
     const paperCards = (h.match(/paper-card/g) || []).length;
     const citeCards = (h.match(/mz-cite-card/g) || []).length;
+    // The deep-dive modals have their OWN canonical grammar. W23/W24 shipped
+    // modals in a `deepdive-modal`/`dd-*` grammar (dd-section, dd-body, dd-h3,
+    // dd-title, glass-card) that the post's own inline <style> does NOT style
+    // — it only styles the mz-jc-* grammar W20/W21 use. Result: the cards look
+    // fine but every OPENED deep dive renders as unstyled raw HTML (the "garbage"
+    // the operator reported 2026-07-05). Detect the stale modal grammar
+    // independently of the card grammar — a post can have canonical cards and
+    // still-broken modals.
+    const ddSections = (h.match(/class="dd-(?:section|body|h3|title|eyebrow|citation)\b/g) || []).length;
     if (paperCards > 0) {
         problems.push(`body_html uses the stripped "paper-card" auto-draft format (${paperCards} occurrence(s)) — the canonical renderer emits mz-cite-card. Re-render with the cite-card path before publishing.`);
     }
     if (citeCards === 0 && h.length > 0) {
         problems.push(`body_html contains no mz-cite-card markup — every canonical post (W20, W21, all published evidence briefs) carries mz-cite-card cards.`);
+    }
+    if (ddSections > 0) {
+        problems.push(`deep-dive modals use the unstyled "dd-*"/deepdive-modal grammar (${ddSections} occurrence(s)) — the post's inline CSS only styles the mz-jc-* modal grammar (W20/W21), so these modals render UNSTYLED when opened. Convert with healDeepDiveModals before publishing.`);
+    }
+    // EDITORIAL ARCHITECTURE (2026-07-05): W20/W21 are full "Monday Mornings"
+    // editorial briefs — a hero lede, a cross-topic narrative, a bottom-line-
+    // up-front, a "what's established" section, a Five Picks feature, a DO+CBG/
+    // MIGS lens essay, a gaps section, a closing, a TOC, a shape-of-evidence
+    // chart, per-topic synthesis paragraphs, and a references list. W23/W24
+    // shipped as a BARE card directory (hero + counters + topic grids only) —
+    // none of the editorial writing that defines the format. The cards being
+    // "canonical" masked that the POST was a stripped shell. Require the
+    // editorial spine so a directory-only post can never publish again. Only
+    // enforced on non-trivial briefs (a post with cards); a would-be brief with
+    // zero cards already fails above. Only enforced on the WEEKLY ROUNDUP
+    // briefs (CBG/MIGS Monday Mornings), NOT the single-topic trend briefs
+    // (evidence-2026-05-19-*), which are a different, legitimately simpler
+    // format. A roundup is identified by carrying multiple topic sections
+    // (>= 2 mz-topic-group OR topic-section blocks) or the Monday-Mornings
+    // masthead — the exact things a single-topic trend brief never has.
+    const topicSections = (h.match(/class="(?:mz-topic-group|topic-section)\b/g) || []).length;
+    const isWeeklyRoundup = topicSections >= 2 || /Monday Mornings/.test(h);
+    if (citeCards > 0 && isWeeklyRoundup) {
+        // Feature-level requirements, each satisfied by EITHER the W21-era
+        // (mz-post-*) OR the W20-era vocabulary — both are "proper" briefs
+        // with different section class names. The four features below are the
+        // common denominator present in every proper roundup (W20, W21, and
+        // the rebuilt W23/W24) and ABSENT from the stripped cards-only briefs
+        // (which had only a hero + counters + topic-section grids). Matching on
+        // features, not exact W21 class names, avoids false-flagging W20.
+        const REQUIRED = [
+            [/mz-(?:post-)?narrative/, "an editorial narrative section"],
+            [/mz-five-pick/, "the Five Picks feature"],
+            [/mz-topic-group/, "per-topic synthesis groups (mz-topic-group)"],
+            [/mz-references-list/, "the references list"],
+        ];
+        const missing = REQUIRED.filter(([re]) => !re.test(h)).map(([, label]) => label);
+        if (missing.length) {
+            problems.push(`body_html is missing the Monday-Mornings editorial architecture (${missing.join("; ")}) — every canonical brief (W20, W21) carries the full editorial spine, not just a directory of cards. A stripped, cards-only post must not publish.`);
+        }
     }
     if (h.length === 0) {
         problems.push("body_html is empty.");
@@ -312,4 +361,130 @@ export function healPaperCardPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [] };
 }
 
-export default { auditPostFormat, healPaperCardPost, extractStyleScript };
+// ---------------------------------------------------------------------
+// Deep-dive modal heal — convert the unstyled `deepdive-modal`/`dd-*`
+// grammar (W23/W24) to the `mz-jc-*` grammar the post's own inline CSS
+// styles. Unlike the card heal this needs NO reference post: every target
+// class is already present in the post's <style> (the W23/W24 stylesheets
+// carry the full mz-jc-* modal CSS — the markup just never used it). The
+// transform is a deterministic class-rename + a flat dd-body unwrap
+// (verified: no dd-body ever nests a <div>). Lossless post-conditions
+// mirror the card heal: no dd-* left, PMID multiset + modal-id set + each
+// modal's visible-text word-multiset preserved, or the heal REFUSES.
+// ---------------------------------------------------------------------
+function convertDeepDiveModal(modal) {
+    let s = modal;
+    s = s.replace('<div class="glass-card">', '<div class="mz-jc-modal-inner">');
+    s = s.replace('class="modal-close"', 'class="mz-jc-close"');
+    // header: eyebrow + title + citation → mz-jc-modal-header (dd-eyebrow /
+    // dd-citation carry no nested tags/divs, so non-greedy .*? is safe)
+    s = s.replace(/<div class="dd-eyebrow">([\s\S]*?)<\/div>/,
+        '<header class="mz-jc-modal-header"><p class="mz-jc-modal-eyebrow">$1</p>');
+    s = s.replace('<h2 class="dd-title"', '<h2 class="mz-jc-modal-title"');
+    s = s.replace(/<div class="dd-citation">([\s\S]*?)<\/div>/,
+        '<p class="mz-jc-modal-meta">$1</p></header>');
+    // verbatim abstract → mz-jc-abstract-body (do BEFORE the generic unwrap)
+    s = s.replace(/<div class="dd-body"><p class="dd-verbatim-abstract">([\s\S]*?)<\/p><\/div>/,
+        '<div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5>' +
+        '<p>$1</p></div><p class="mz-jc-abstract-note">Reproduced verbatim from PubMed.</p>');
+    // sections + headings
+    s = s.replace(/<section class="dd-section[^"]*"/g, '<section class="mz-jc-section"');
+    s = s.replace(/<h3 class="dd-h3">/g, "<h3>");
+    // unwrap remaining flat dd-body wrappers
+    s = s.replace(/<div class="dd-body">([\s\S]*?)<\/div>/g, "$1");
+    // minor inline classes
+    s = s.replace(/<span class="dd-pill[^"]*">/g, '<span class="mz-jc-pending-tag">');
+    s = s.replace(/ class="dd-link"/g, "");
+    return s;
+}
+
+function wordCounts(text) {
+    const m = {};
+    for (const w of String(text || "").match(/\w+/g) || []) m[w] = (m[w] || 0) + 1;
+    return m;
+}
+
+/**
+ * Heal deep-dive modals from the dd- / deepdive-modal grammar to mz-jc-*.
+ * @returns {{ok:boolean, healed:string|null, problems:string[]}}
+ */
+export function healDeepDiveModals(bodyHtml) {
+    const src = String(bodyHtml || "");
+    const problems = [];
+    const dialogRe = /<dialog\b[^>]*\bdeepdive-modal\b[^>]*>[\s\S]*?<\/dialog>/g;
+    const matches = src.match(dialogRe);
+    if (!matches || matches.length === 0) {
+        return { ok: false, healed: null, problems: ["no deepdive-modal modals to heal"] };
+    }
+    // Guard the flat-unwrap assumption: no dd-body may contain a nested <div>.
+    for (const dlg of matches) {
+        const bodies = dlg.match(/<div class="dd-body">([\s\S]*?)<\/div>/g) || [];
+        if (bodies.some((b) => b.slice('<div class="dd-body">'.length).includes("<div"))) {
+            return { ok: false, healed: null, problems: ["a dd-body wraps a nested <div> — flat unwrap unsafe, refusing heal"] };
+        }
+    }
+    const h = src.replace(dialogRe, (m) => convertDeepDiveModal(m));
+
+    // ---- POST-CONDITIONS: provably lossless, or refuse ----
+    if (/class="dd-(?:section|body|h3|title|eyebrow|citation)\b/.test(h)) {
+        problems.push("healed output still contains dd-* modal classes");
+    }
+    // PMID multiset preserved
+    const pmA = (src.match(/pubmed\.ncbi\.nlm\.nih\.gov\/\d+/g) || []).sort();
+    const pmB = (h.match(/pubmed\.ncbi\.nlm\.nih\.gov\/\d+/g) || []).sort();
+    if (pmA.length !== pmB.length || pmA.some((v, i) => v !== pmB[i])) {
+        problems.push(`PMID multiset changed during modal heal (${pmA.length}→${pmB.length})`);
+    }
+    // modal id set preserved
+    if (!setEq(modalIds(src), modalIds(h))) problems.push("deep-dive modal ids changed during modal heal");
+    // per-modal visible-text word-multiset preserved (tolerate the injected
+    // "Abstract" label + verbatim note we add to the abstract section)
+    {
+        const grab = (html) => {
+            const map = {};
+            const re = /<dialog[^>]*id="(dd-\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+            let mm;
+            while ((mm = re.exec(html)) !== null) map[mm[1]] = visibleText(mm[2]);
+            return map;
+        };
+        const A = grab(src), B = grab(h);
+        for (const id of Object.keys(A)) {
+            const ca = wordCounts(A[id]);
+            const cb = wordCounts(B[id] || "");
+            let dropped = null;
+            for (const w of Object.keys(ca)) {
+                if ((cb[w] || 0) < ca[w]) { dropped = w; break; }
+            }
+            if (dropped) { problems.push(`modal ${id}: word "${dropped}" lost during heal`); break; }
+        }
+    }
+    if (h.length < src.length * 0.7) problems.push("modal-healed output implausibly small vs input");
+    if (problems.length) return { ok: false, healed: null, problems };
+    return { ok: true, healed: h, problems: [] };
+}
+
+/**
+ * Orchestrate every heal a post may need, in order. Card heal (needs the
+ * reference post's <style>/<script>) then modal heal (self-contained).
+ * Returns the combined result; refuses (ok:false) if any needed heal
+ * refuses, so a partially-healed body is never emitted.
+ * @returns {{ok:boolean, healed:string|null, problems:string[], steps:string[]}}
+ */
+export function healPost(bodyHtml, refBodyHtml) {
+    let h = String(bodyHtml || "");
+    const steps = [];
+    if (/paper-card/.test(h)) {
+        const r = healPaperCardPost(h, refBodyHtml);
+        if (!r.ok) return { ok: false, healed: null, problems: r.problems, steps };
+        h = r.healed; steps.push("paper-card");
+    }
+    if (/\bdeepdive-modal\b/.test(h) && /class="dd-(?:section|body|h3)\b/.test(h)) {
+        const r = healDeepDiveModals(h);
+        if (!r.ok) return { ok: false, healed: null, problems: r.problems, steps };
+        h = r.healed; steps.push("deepdive-modal");
+    }
+    if (!steps.length) return { ok: false, healed: null, problems: ["nothing to heal"], steps };
+    return { ok: true, healed: h, problems: [], steps };
+}
+
+export default { auditPostFormat, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };

@@ -30,7 +30,7 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
-import { auditPostFormat, healPaperCardPost } from "../../_lib/post_format.js";
+import { auditPostFormat, healPaperCardPost, healPost } from "../../_lib/post_format.js";
 
 const POST_KINDS = new Set(["blog", "evidence", "claim_proposal"]);
 const POST_STATUSES = new Set(["draft", "published", "rejected"]);
@@ -211,18 +211,35 @@ function normalizeSummary(post) {
 // heal_problems } — on any failure the original body is returned untouched.
 async function autoHealBody(env, kind, bodyHtml) {
     const probe = auditPostFormat({ kind, body_html: bodyHtml });
-    if (probe.canonical || !/paper-card/.test(String(bodyHtml || ""))) {
+    if (probe.canonical) {
         return { body_html: bodyHtml, healed: false, heal_problems: [] };
     }
-    const refId = env.CANONICAL_REFERENCE_POST || "blog-2026-W21";
-    let ref = null;
-    try { ref = await readPost(env, refId); } catch { ref = null; }
-    if (!ref || !auditPostFormat(ref).canonical) {
-        return { body_html: bodyHtml, healed: false, heal_problems: [`reference post ${refId} unavailable or not canonical — auto-heal skipped`] };
+    const src = String(bodyHtml || "");
+    const needsCardHeal = /paper-card/.test(src);
+    const needsModalHeal = /\bdeepdive-modal\b/.test(src) && /class="dd-(?:section|body|h3)\b/.test(src);
+    // Nothing auto-fixable (e.g. a stripped, cards-only roundup missing the
+    // editorial architecture — that requires regeneration, not a markup heal).
+    // Leave it as a blocked draft; /approve will refuse it. Auto-heal can only
+    // repair the two mechanical regressions it knows: paper-card cards and
+    // dd-*/deepdive-modal modals.
+    if (!needsCardHeal && !needsModalHeal) {
+        return { body_html: bodyHtml, healed: false, heal_problems: probe.problems };
+    }
+    // The paper-card step needs a canonical reference post for its <style>/
+    // <script>; the modal step is self-contained (no ref).
+    let refBody = null;
+    if (needsCardHeal) {
+        const refId = env.CANONICAL_REFERENCE_POST || "blog-2026-W21";
+        let ref = null;
+        try { ref = await readPost(env, refId); } catch { ref = null; }
+        if (!ref || !auditPostFormat(ref).canonical) {
+            return { body_html: bodyHtml, healed: false, heal_problems: [`reference post ${refId} unavailable or not canonical — auto-heal skipped`] };
+        }
+        refBody = ref.body_html;
     }
     try {
-        const r = healPaperCardPost(bodyHtml, ref.body_html);
-        if (r.ok) return { body_html: r.healed, healed: true, heal_problems: [] };
+        const r = healPost(bodyHtml, refBody);
+        if (r.ok) return { body_html: r.healed, healed: true, heal_problems: [], heal_steps: r.steps };
         return { body_html: bodyHtml, healed: false, heal_problems: r.problems };
     } catch (e) {
         return { body_html: bodyHtml, healed: false, heal_problems: [`auto-heal threw: ${String(e && e.message || e)}`] };

@@ -629,11 +629,36 @@ create the SPA dir.
 | `_index/blog.json`, `_index/evidence.json` | Listing indexes | Admin dashboards |
 | `manifests/<id>.json` | Per-post run manifests | `verify_kb_anchoring.py --r2-posts` |
 
-**CANONICAL-FORMAT GATE + AUTO-HEAL (2026-07-02)** — single source of
-truth `functions/_lib/post_format.js` (imported by
-`functions/api/posts/[[path]].js`). `auditPostFormat()`: canonical =
-`mz-cite-card > 0` AND `paper-card == 0` (rule derived from the live
-corpus: W20/W21/evidence briefs canonical; W23/W24/W25 stale).
+**CANONICAL-FORMAT GATE + AUTO-HEAL (2026-07-02; expanded 2026-07-05)** —
+single source of truth `functions/_lib/post_format.js` (imported by
+`functions/api/posts/[[path]].js`). `auditPostFormat()` now enforces THREE
+layers, all derived from the live corpus (W20/W21 = proper; the shipped
+W23/W24 = broken on all three):
+  1. **Cards** — canonical = `mz-cite-card > 0` AND `paper-card == 0`.
+  2. **Deep-dive modals** — must use the `mz-jc-*` grammar the post's own
+     inline CSS styles, NOT the `deepdive-modal`/`dd-*` grammar (dd-section,
+     dd-body, dd-h3, dd-title, glass-card). The dd-* grammar has ZERO matching
+     CSS, so W23/W24 modals rendered as UNSTYLED raw HTML when opened (the
+     "garbage" reported 2026-07-05). `healDeepDiveModals()` converts dd-* →
+     mz-jc-* losslessly (class-rename + flat dd-body unwrap; PMID multiset +
+     modal-id set + per-modal word-multiset preserved or it REFUSES).
+  3. **Editorial architecture** (weekly roundups only — detected by ≥2
+     `mz-topic-group`/`topic-section` blocks or the "Monday Mornings"
+     masthead; the single-topic `evidence-2026-05-19-*` trend briefs are
+     exempt). A proper roundup MUST carry: an editorial narrative
+     (`mz-(post-)?narrative`), the Five Picks feature (`mz-five-pick`),
+     per-topic synthesis groups (`mz-topic-group`), and a references list
+     (`mz-references-list`). Feature-matched (not exact class names) so BOTH
+     the W20-era and W21-era vocabularies pass. This blocks a stripped,
+     cards-only directory from ever publishing — that class of regression
+     can only be repaired by REGENERATING the editorial layer (the AI
+     authoring pass used to rebuild live W23/W24 on 2026-07-05), not a
+     mechanical heal, so a stripped roundup lands as a blocked draft.
+`healPost(body, refBody)` orchestrates both mechanical heals (paper-card →
+cards, then dd-* → modals); `autoHealBody` in `[[path]].js` calls it at
+ingest. The base card rule (kept verbatim for the fixtures):
+`mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
+the originally-shipped W23/W24/W25 stale).
 `healPaperCardPost(body, refBody)`: server-side conversion of a stale
 paper-card body to canonical (style swap from reference post
 `env.CANONICAL_REFERENCE_POST || blog-2026-W21` read from R2, card

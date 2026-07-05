@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, healPaperCardPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -45,7 +45,25 @@ if (healRes.ok) {
     A(/<(div|main|article|section)\b[^>]*class="[^"]*\bmz-post-wrap\b/.test(out),
         "content wrapped in an mz-post-wrap ELEMENT (not just the CSS selector text)");
     A(out.includes("pubmed.ncbi.nlm.nih.gov/"), "PubMed links point at PubMed (not DOI)");
-    A(auditPostFormat({ kind: "evidence", body_html: out }).canonical, "healed output passes the audit");
+    // The real stale fixture carries BOTH paper-card cards AND dd-*/deepdive-
+    // modal deep-dives. The card heal alone fixes the cards; the FULL heal
+    // (healPost = card heal + modal heal) is what makes the whole post
+    // canonical — the card heal's output still trips the modal-grammar audit.
+    A(!auditPostFormat({ kind: "evidence", body_html: out }).canonical,
+        "card-only heal is NOT yet canonical while dd-* modals remain (expected)");
+    const full = healPost(stalePost.body_html, refPost.body_html);
+    A(full.ok, "combined healPost succeeds on the real stale fixture: " + JSON.stringify(full.problems));
+    A(full.ok && auditPostFormat({ kind: "evidence", body_html: full.healed }).canonical,
+        "combined healPost output passes the audit (cards + modals)");
+    A(full.ok && ids(stalePost.body_html) === ids(full.healed), "healPost preserves modal ids");
+    A(full.ok && !/class="dd-(?:section|body|h3)\b/.test(full.healed), "healPost leaves no dd-* modal grammar");
+}
+// modal-only heal on a canonical-cards + dd-modals body
+{
+    const modalOnly = healDeepDiveModals(stalePost.body_html);
+    A(modalOnly.ok, "healDeepDiveModals succeeds on the fixture's dd-* modals: " + JSON.stringify(modalOnly.problems));
+    A(modalOnly.ok && !/class="dd-(?:section|body|h3)\b/.test(modalOnly.healed), "modal heal removes dd-* grammar");
+    A(modalOnly.ok && ids(stalePost.body_html) === ids(modalOnly.healed), "modal heal preserves modal ids");
 }
 A(!healPaperCardPost("<div>hello</div>", refPost.body_html).ok, "heal refuses non-paper-card input");
 A(!healPaperCardPost('<article class="paper-card">broken', "no style here").ok, "heal refuses a non-canonical reference");
