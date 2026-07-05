@@ -656,7 +656,27 @@ W23/W24 = broken on all three):
      mechanical heal, so a stripped roundup lands as a blocked draft.
 `healPost(body, refBody)` orchestrates both mechanical heals (paper-card →
 cards, then dd-* → modals); `autoHealBody` in `[[path]].js` calls it at
-ingest. The base card rule (kept verbatim for the fixtures):
+ingest.
+
+**MODAL-CONTENT DEPTH (2026-07-05).** Beyond structure, each deep-dive
+modal has 13 sections; auto-generation leaves some as placeholder text
+("Study design not auto-classified", "No explicit limitations extracted",
+"No matching foundational topic synthesis found", "See verbatim abstract
+below"). W20 shipped fully-filled; W21/W23/W24 had degraded methods /
+risk-of-bias / findings / strengths / literature-placement sections. These
+were DEEPENED on 2026-07-05 by an AI authoring pass grounded strictly in
+(a) each modal's own verbatim PubMed abstract and (b) KB context retrieved
+from the D1 `kb_docs` FTS5 index (1,144 docs; `_lib/kb.js retrieveKB`,
+queried per topic — see `scripts/kb_load_d1.py` to (re)load). Splicing
+replaces ONLY the placeholder body of the degraded section (keeps the
+`<h3>` + any `mz-jc-section-intro`), verified lossless (modal-id set + card
+count + abstract-block count unchanged). Pipeline artifacts live in the
+session scratchpad (`modal_author_wf.js`, `splice_modals.py`,
+`extract_modalwork.py`). NOT gate-enforced (content depth, not structure) —
+the real durable fix is the sibling generator emitting filled sections.
+Every roundup now carries 0 residual placeholders across 287 modals.
+
+The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).
 `healPaperCardPost(body, refBody)`: server-side conversion of a stale
