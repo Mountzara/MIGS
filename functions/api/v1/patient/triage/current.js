@@ -56,6 +56,7 @@ function shapeForPatient(r, statusLabel, etaMs) {
         ai_duration_min: r.ai_duration_min,
         was_overridden_by_clinician: !!r.clinician_override_visit_type || !!r.clinician_override_duration_min,
         override_reason: r.clinician_override_reason || null,
+        appointment_id: r.appointment_id || null,   // set once booked — lets the portal render Join-visit
         triage_created_at: r.created_at,
         intake_submitted_at: r.intake_submitted_at,
         clinician_reviewed_at: r.clinician_reviewed_at,
@@ -84,6 +85,7 @@ export async function onRequestGet(ctx) {
                t.clinician_override_visit_type, t.clinician_override_duration_min,
                t.clinician_override_reason, t.clinician_reviewed_at,
                t.final_visit_type, t.final_duration_min,
+               t.appointment_id,
                t.created_at,
                ir.submitted_at AS intake_submitted_at
         FROM appointment_triage t
@@ -109,6 +111,7 @@ export async function onRequestGet(ctx) {
                t.clinician_override_visit_type, t.clinician_override_duration_min,
                t.clinician_override_reason, t.clinician_reviewed_at,
                t.final_visit_type, t.final_duration_min,
+               t.appointment_id,
                t.created_at,
                ir.submitted_at AS intake_submitted_at
         FROM appointment_triage t

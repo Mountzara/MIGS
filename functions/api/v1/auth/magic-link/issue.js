@@ -23,8 +23,15 @@
 
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { issueMagicLink, normalizeEmail } from "../../../../_lib/auth.js";
+import { checkLockout, recordFailure, tooManyRequests } from "../../../../_lib/rate_limit.js";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Same soft-lockout policy as password login: 10 requests per (email|ip)
+// per 15 min. Every request counts as a "failure" — the endpoint always
+// pretends to succeed, so there is no success to clear on; this throttles
+// link-flooding an inbox and enumeration probing alike.
+const RL_THRESHOLD = 10;
+const RL_WINDOW_SECONDS = 15 * 60;
 
 function genericOk(extra) {
     return new Response(JSON.stringify(Object.assign({
@@ -47,6 +54,18 @@ export async function onRequestPost(ctx) {
     try { body = await request.json(); } catch { return genericOk(); }
     const email = normalizeEmail(body?.email);
     if (!EMAIL_RX.test(email)) return genericOk();
+
+    const ip = request.headers.get("CF-Connecting-IP") || "";
+    const rlIdentifier = `${email}|${ip}`;
+    const lock = await checkLockout({
+        env, prefix: "magic_issue", identifier: rlIdentifier,
+        threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+    });
+    if (lock.locked) return tooManyRequests(lock.retry_after_seconds);
+    await recordFailure({
+        env, prefix: "magic_issue", identifier: rlIdentifier,
+        threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+    });
 
     const row = await env.DB.prepare(
         "SELECT id, status FROM patients WHERE email = ? LIMIT 1"

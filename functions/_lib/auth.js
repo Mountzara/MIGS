@@ -198,21 +198,44 @@ export async function createSession({ env, patient_id, clinician_id, role, reque
     const now = nowMs();
     const expires_at = now + SESSION_TTL_MS;
 
-    await env.DB.prepare(`
-        INSERT INTO auth_sessions
-            (id, patient_id, clinician_id, role, created_at, expires_at, last_seen_at, ip, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-        session_id,
-        patient_id || null,
-        clinician_id || null,
-        role,
-        now,
-        expires_at,
-        now,
-        ip,
-        ua
-    ).run();
+    // token_hash lands with migration 0027; tolerate a not-yet-migrated
+    // DB by falling back to the legacy INSERT (the session then simply
+    // has no D1 fallback — getSession fails closed on a KV miss).
+    try {
+        await env.DB.prepare(`
+            INSERT INTO auth_sessions
+                (id, patient_id, clinician_id, role, created_at, expires_at, last_seen_at, ip, user_agent, token_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+            session_id,
+            patient_id || null,
+            clinician_id || null,
+            role,
+            now,
+            expires_at,
+            now,
+            ip,
+            ua,
+            token_hash
+        ).run();
+    } catch (e) {
+        if (!/no column named token_hash/i.test(String(e))) throw e;
+        await env.DB.prepare(`
+            INSERT INTO auth_sessions
+                (id, patient_id, clinician_id, role, created_at, expires_at, last_seen_at, ip, user_agent)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+            session_id,
+            patient_id || null,
+            clinician_id || null,
+            role,
+            now,
+            expires_at,
+            now,
+            ip,
+            ua
+        ).run();
+    }
 
     // KV mirrors session_id → JSON for fast lookup. Token verification still
     // requires the hash compare so KV-only leakage is not enough to forge.
@@ -268,9 +291,11 @@ export async function getSession({ env, token, request, ctx }) {
     // Fallback to D1 if KV missed (cache miss tolerable).
     let row = null;
     if (!kvRecord) {
+        // SELECT * so this works before AND after migration 0027 (an
+        // explicit token_hash column reference would throw pre-migration
+        // and 500 every KV-miss request).
         row = await env.DB.prepare(`
-            SELECT id, patient_id, clinician_id, role, expires_at, revoked_at
-            FROM auth_sessions WHERE id = ?
+            SELECT * FROM auth_sessions WHERE id = ?
         `).bind(session_id).first();
         if (!row) return null;
     }
@@ -279,19 +304,15 @@ export async function getSession({ env, token, request, ctx }) {
     if (!expires_at || expires_at < nowMs()) return null;
     if (row && row.revoked_at) return null;
 
-    // Verify the secret half by hashing and comparing.
-    const expectedHash = kvRecord ? kvRecord.token_hash : null;
-    if (expectedHash) {
-        const candidateHash = await sha256Base64Url(secret);
-        // Constant-time on strings
-        if (!constantTimeStringEq(expectedHash, candidateHash)) return null;
-    } else {
-        // D1 doesn't currently carry the token hash; for now, accept
-        // session id alone in the fallback path (KV miss). This is
-        // tightened in a follow-up migration by adding a token_hash
-        // column to auth_sessions.
-        // KNOWN GAP: D1-only fallback acceptance — KV must be healthy.
-    }
+    // Verify the secret half by hashing and comparing. FAIL CLOSED: a
+    // session with no stored hash (pre-migration-0027 D1 row on a KV
+    // miss) is rejected rather than accepted on session_id alone —
+    // worst case a 12-hour-TTL session re-authenticates once.
+    const expectedHash = kvRecord ? kvRecord.token_hash : row.token_hash;
+    if (!expectedHash) return null;
+    const candidateHash = await sha256Base64Url(secret);
+    // Constant-time on strings
+    if (!constantTimeStringEq(expectedHash, candidateHash)) return null;
 
     // Refresh last_seen_at — truly fire-and-forget. Previous behavior
     // awaited this UPDATE on every authenticated request which added 20-50ms

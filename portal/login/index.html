@@ -156,7 +156,7 @@
         <a class="nav-back" href="/portal/">Back to portal</a>
         <p class="eyebrow">Member Portal &middot; Sign In</p>
         <h1>Welcome back.</h1>
-        <p class="lede">Sign in with the email and password you used to sign up. Magic-link sign-in is coming soon.</p>
+        <p class="lede">Sign in with the email and password you used to sign up — or use a one-time email link below.</p>
         <form id="loginForm" autocomplete="on">
             <label>Email
                 <input type="email" id="email" name="email" autocomplete="username" required>
@@ -194,7 +194,10 @@
                     }),
                 });
                 if (res.ok) {
-                    location.href = '/portal/profile/';
+                    // Return the member to wherever a 401 bounced them from
+                    // (?next=), but only ever inside the portal.
+                    const next = new URLSearchParams(location.search).get('next');
+                    location.href = (next && next.startsWith('/portal/')) ? next : '/portal/';
                     return;
                 }
                 if (res.status === 401) { showError('Invalid email or password.'); }

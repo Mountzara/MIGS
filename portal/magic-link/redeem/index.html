@@ -129,7 +129,10 @@
                     body: JSON.stringify({ token }),
                 });
                 if (r.ok) {
-                    location.href = '/portal/profile/';
+                    // Honor ?next= (portal-internal only) so a member who
+                    // was bounced to sign-in lands back where they were.
+                    const next = new URLSearchParams(location.search).get('next');
+                    location.href = (next && next.startsWith('/portal/')) ? next : '/portal/';
                     return;
                 }
                 if (r.status === 401) {

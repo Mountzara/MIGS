@@ -268,6 +268,14 @@
                 <span class="card-action">Open documents →</span>
             </a>
 
+            <a class="card" href="/portal/billing/" id="card-billing">
+                <div class="badge-row"><span class="badge badge-empty" id="bill-badge">—</span></div>
+                <div class="card-eyebrow">Billing</div>
+                <h2 id="bill-title">Invoices & payments</h2>
+                <div class="card-body" id="bill-body">Your invoices, balances, and secure card payments — itemized statements on request.</div>
+                <span class="card-action">Open billing →</span>
+            </a>
+
             <a class="card" href="/portal/profile/">
                 <div class="card-eyebrow">Profile</div>
                 <h2>Your information</h2>
@@ -368,6 +376,7 @@
             loadIntakeCard();
             loadEducationCard();
             loadPROMsCard();
+            loadBillingCard();
 
             // 3. logout
             $('link-logout').addEventListener('click', async (e) => {
@@ -398,7 +407,10 @@
                 $('appt-badge').textContent = b.label;
                 $('appt-badge').className = `badge ${b.cls}`;
 
-                if (triage.status === 'released') {
+                if (triage.status === 'released' && triage.appointment_id) {
+                    // Already booked — surface the visit itself, not the booking flow.
+                    await renderBookedAppointment(triage);
+                } else if (triage.status === 'released') {
                     $('appt-title').textContent = labelVisit(triage.visit_type);
                     $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${triage.duration_min} min</strong> · ${triage.in_person_required ? 'In person' : 'In person or telehealth'} · Tap to choose a time that works for you.`;
                     $('appt-action').textContent = 'Pick a time →';
@@ -423,6 +435,60 @@
                     $('appt-body').textContent = 'Could not load triage status (' + (e.message || 'unknown') + ').';
                 }
             }
+        }
+
+        // Booked state — the visit is scheduled, so the card becomes the
+        // door to the visit itself: telehealth gets a Join-visit link
+        // (/portal/visit/<id>/launch, live 15 min before start) plus a
+        // device check; in-person shows when to arrive.
+        async function renderBookedAppointment(triage) {
+            let appt = null;
+            try {
+                const a = await fetchJson(`/api/v1/patient/appointments/${triage.appointment_id}`);
+                appt = a.appointment || a;
+            } catch {}
+            $('appt-badge').textContent = 'booked';
+            $('appt-badge').className = 'badge badge-released';
+            $('appt-title').textContent = labelVisit(triage.visit_type);
+            if (!appt || !appt.starts_at) {
+                $('appt-body').textContent = 'Your visit is booked. Details are in the scheduling page.';
+                $('appt-action').textContent = 'View appointment →';
+                return;
+            }
+            const when = fmtRelativeDate(appt.starts_at);
+            const isTele = appt.modality === 'telehealth';
+            if (isTele) {
+                $('appt-body').innerHTML =
+                    `<strong style="color:var(--fg-strong);">${escapeHtml(when)}</strong> · Telehealth · ` +
+                    `The Join button goes live 15 minutes before your visit. ` +
+                    `<a href="/portal/tech-check/" style="color:var(--accent-soft);" onclick="event.stopPropagation();">Run a quick device check</a> beforehand so the visit starts smoothly.`;
+                $('appt-action').textContent = 'Join your visit →';
+                $('card-appointment').setAttribute('href', `/portal/visit/${encodeURIComponent(triage.appointment_id)}/launch`);
+            } else {
+                $('appt-body').innerHTML =
+                    `<strong style="color:var(--fg-strong);">${escapeHtml(when)}</strong> · In person · ` +
+                    `Please arrive 15 minutes early with your insurance card and photo ID.`;
+                $('appt-action').textContent = 'View appointment →';
+            }
+        }
+
+        async function loadBillingCard() {
+            try {
+                const d = await fetchJson('/api/v1/patient/billing/invoices');
+                const due = (d.invoices || []).filter(i => i.status === 'sent' || i.status === 'partially_paid').length;
+                const cents = d.outstanding_balance_cents || 0;
+                if (due > 0) {
+                    $('bill-badge').textContent = `${due} due`;
+                    $('bill-badge').className = 'badge badge-pending';
+                    $('bill-title').textContent = `$${(cents / 100).toFixed(2)} outstanding`;
+                    $('bill-body').textContent = due === 1
+                        ? 'You have an invoice awaiting payment — pay securely by card in a couple of taps.'
+                        : `You have ${due} invoices awaiting payment — pay securely by card in a couple of taps.`;
+                } else {
+                    $('bill-badge').textContent = 'all settled';
+                    $('bill-badge').className = 'badge badge-empty';
+                }
+            } catch { /* leave the static copy */ }
         }
 
         async function loadMessagesCard() {

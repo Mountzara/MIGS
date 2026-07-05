@@ -15,6 +15,14 @@
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { redeemMagicLink, createSession, buildSessionCookie } from "../../../../_lib/auth.js";
 import { logAudit } from "../../../../_lib/audit.js";
+import { checkLockout, recordFailure, clearLockout, tooManyRequests } from "../../../../_lib/rate_limit.js";
+
+// Same soft-lockout policy as password login: 10 failed redeems per IP
+// per 15 min. Keyed by IP alone (a redeem carries no email); a
+// successful redeem clears the counter so a legitimate member who
+// fumbled a stale link isn't shadowed.
+const RL_THRESHOLD = 10;
+const RL_WINDOW_SECONDS = 15 * 60;
 
 function unauthorized(reason) {
     return new Response(JSON.stringify({ error: "invalid_token", reason }), {
@@ -44,6 +52,12 @@ export async function onRequestPost(ctx) {
     const ip = request.headers.get("CF-Connecting-IP") || "";
     const ua = request.headers.get("User-Agent") || "";
 
+    const lock = await checkLockout({
+        env, prefix: "magic_redeem", identifier: ip || "unknown",
+        threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+    });
+    if (lock.locked) return tooManyRequests(lock.retry_after_seconds);
+
     let redeemed;
     try {
         redeemed = await redeemMagicLink({ env, token, request });
@@ -52,8 +66,13 @@ export async function onRequestPost(ctx) {
         return unauthorized("redeem_threw");
     }
     if (!redeemed || !redeemed.patient_id || redeemed.purpose !== "login") {
+        await recordFailure({
+            env, prefix: "magic_redeem", identifier: ip || "unknown",
+            threshold: RL_THRESHOLD, windowSeconds: RL_WINDOW_SECONDS,
+        });
         return unauthorized("invalid_or_expired");
     }
+    await clearLockout({ env, prefix: "magic_redeem", identifier: ip || "unknown" });
 
     // Confirm patient is still active.
     const patient = await env.DB.prepare(

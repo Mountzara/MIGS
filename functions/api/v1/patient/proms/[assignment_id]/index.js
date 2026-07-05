@@ -5,6 +5,7 @@
 
 import { requireRole } from "../../../../../_lib/auth.js";
 import { getAssignment, getDefinition, submitResponse } from "../../../../../_lib/proms.js";
+import { previewAccess, preLaunchNotFound } from "../../../../../_lib/preview_gate.js";
 
 function jsonError(message, status = 400) {
     return new Response(JSON.stringify({ error: message }), {
@@ -14,6 +15,9 @@ function jsonError(message, status = 400) {
 }
 
 export async function onRequestGet(ctx) {
+    // Pre-launch cloak — parity with every other /api/v1/patient/* route.
+    const { allow } = await previewAccess(ctx.request, ctx.env);
+    if (!allow) return preLaunchNotFound();
     let session;
     try { session = await requireRole(ctx, ["patient"]); }
     catch (resp) { return resp; }
@@ -34,6 +38,9 @@ export async function onRequestGet(ctx) {
 }
 
 export async function onRequestPost(ctx) {
+    // Pre-launch cloak — parity with every other /api/v1/patient/* route.
+    const { allow } = await previewAccess(ctx.request, ctx.env);
+    if (!allow) return preLaunchNotFound();
     let session;
     try { session = await requireRole(ctx, ["patient"]); }
     catch (resp) { return resp; }

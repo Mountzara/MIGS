@@ -32,6 +32,7 @@
         { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
         { key: 'carousels',  label: 'Carousels',    href: '/admin/carousels/',  match: /^\/admin\/carousels\b/  },
         { key: 'trendbriefs',label: 'Trend Briefs', href: '/admin/trend-briefs/', match: /^\/admin\/trend-briefs\b/ },
+        { key: 'compliance', label: 'Compliance',   href: '/admin/compliance/', match: /^\/admin\/compliance\b/ },
         { key: 'feedback',   label: 'Feedback',     href: '/admin/feedback/',   match: /^\/admin\/feedback\b/   },
         { key: 'debug',      label: 'Debug',        href: '/admin/debug/sessions/', match: /^\/admin\/debug\b/  },
     ];

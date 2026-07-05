@@ -451,9 +451,11 @@
                 <span class="k">Modality</span><span class="v" id="booked-modality"></span>
             </div>
             <div id="booked-doxy" style="display:none;">
-                <p style="font-size:13px; color:var(--fg-soft); margin: 14px 0 0 0;">Your telehealth visit will happen on Doxy.me. The "Join visit" button will be active in your portal 15 minutes before your appointment starts.</p>
+                <p style="font-size:13px; color:var(--fg-soft); margin: 14px 0 0 0;">Your telehealth visit will happen on Doxy.me. The "Join visit" button below goes live 15 minutes before your appointment starts — it also lives on your portal home page.</p>
             </div>
             <div class="actions">
+                <a class="primary" id="booked-join" style="display:none; text-decoration:none;" href="#">Join visit page</a>
+                <a class="ghost" id="booked-techcheck" style="display:none; text-decoration:none;" href="/portal/tech-check/">Run a device check</a>
                 <a class="ghost" style="display:inline-block; text-decoration:none;" href="/portal/">Back to portal</a>
             </div>
         </section>
@@ -818,6 +820,12 @@
                 $('booked-modality').textContent = data.appointment.modality === 'telehealth' ? 'Telehealth (Doxy.me)' : 'In person';
                 if (data.appointment.modality === 'telehealth') {
                     $('booked-doxy').style.display = 'block';
+                    // Give the patient the actual doors: the Join-visit
+                    // interstitial (goes live 15 min before start) and the
+                    // pre-visit device/connection check the clinic sees.
+                    $('booked-join').href = `/portal/visit/${encodeURIComponent(data.appointment.id)}/launch`;
+                    $('booked-join').style.display = 'inline-block';
+                    $('booked-techcheck').style.display = 'inline-block';
                 }
                 $('booked-card').classList.add('show');
                 $('booked-card').scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -88,6 +88,36 @@ function isMagicLinkRedeem(url) {
 }
 
 /**
+ * Returns true for the member sign-in surfaces that must stay reachable
+ * pre-launch: the login + magic-link-request pages and their APIs.
+ *
+ * Without this, a member whose mz_preview_access and mz_session cookies
+ * have both expired is LOCKED OUT: /portal/login/ serves Coming Soon,
+ * POST /api/v1/auth/login 404s, and although magic-link REDEEM is open,
+ * the ISSUE endpoint is cloaked — so no new link can ever be requested
+ * without a fresh admin invite. These surfaces leak nothing beyond the
+ * portal's existence (which the homepage nav already announces): login
+ * authenticates by password with enumeration-safe constant-time compare,
+ * and magic-link issue always returns the same generic 200.
+ *
+ *   GET  /portal/login                          — password sign-in page
+ *   GET  /portal/magic-link                     — request-a-link page
+ *   POST /api/v1/auth/login                     — password sign-in API
+ *   POST /api/v1/auth/logout                    — sign-out (session-authenticated)
+ *   POST /api/v1/auth/magic-link/issue          — request-a-link API
+ */
+function isMemberSignIn(url) {
+    const p = url.pathname.replace(/\/+$/, "");
+    return (
+        p === "/portal/login" ||
+        p === "/portal/magic-link" ||
+        p === "/api/v1/auth/login" ||
+        p === "/api/v1/auth/logout" ||
+        p === "/api/v1/auth/magic-link/issue"
+    );
+}
+
+/**
  * Returns true if the request carries an mz_session cookie. The cookie
  * is server-issued only after successful password login or magic-link
  * redeem, is HttpOnly + Secure + SameSite=Lax, and is KV-backed with
@@ -178,6 +208,9 @@ export async function previewAccess(request, env) {
     }
     if (isMagicLinkRedeem(url)) {
         return { allow: true, reason: "magic_link_redeem" };
+    }
+    if (isMemberSignIn(url)) {
+        return { allow: true, reason: "member_sign_in" };
     }
     if (hasMemberSessionCookie(request)) {
         return { allow: true, reason: "member_session" };

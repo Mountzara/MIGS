@@ -281,3 +281,8 @@ export async function onRequestPut(ctx) {
         headers: { "content-type": "application/json", "cache-control": "no-store" },
     });
 }
+
+// navigator.sendBeacon can only send POST — the portal symptom page's
+// beforeunload save fallback depends on this alias (portal/symptoms/
+// index.html); without it every beacon 405s and the unsaved entry is lost.
+export const onRequestPost = onRequestPut;

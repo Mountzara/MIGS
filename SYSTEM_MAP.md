@@ -538,6 +538,7 @@ as the first argument so `getSession`'s `last_seen_at` UPDATE goes via
 | `functions/admin/_signout.js` | Drops Basic Auth + MFA cookie | Lock-stepped to `admin/index.html` Sign Out button |
 | `functions/portal/_middleware.js` | §11.5.2 preview gate via `_lib/preview_gate.js`; HTMLRewriter `PortalScriptInjector` injects `_feedback.js` + `_wizard.js` before `</body>` on every portal SPA | If you remove the injection, the floating Feedback button + Wizard chip disappear from every portal page. Sibling `portal/*/index.html` files don't import these scripts themselves. |
 | `functions/education/_middleware.js` | Per-slug allow-list + `EDUCATION_PUBLIC_LAUNCH` env gate | Lock-stepped to the 12 `education/<slug>/index.html` files |
+| `functions/api/_middleware.js` | JSON-only guarantee for `/api/*` — converts the static-HTML SPA fallthrough (wrong method / typo'd path previously returned the MARKETING HOMEPAGE as 200 text/html) into JSON 404 | Post-processes `next()` by content-type. Safe because every legit `/api/*` response is JSON/CSV, never text/html — keep it that way or exempt the new route here. |
 
 ---
 
@@ -575,12 +576,38 @@ in `_middleware.js` in the same commit.
 `intake/`, `login/`, `magic-link/`, `messages/`, `profile/`, `proms/`,
 `signup/`, `symptoms/`, plus `_feedback.js` + `_wizard.js`
 
+**Pre-launch sign-in allowlist (2026-07-05):** `preview_gate.js`
+`isMemberSignIn()` keeps `/portal/login`, `/portal/magic-link`,
+`POST /api/v1/auth/{login,logout}` + `magic-link/issue` reachable while
+the gate is closed — without it a member whose preview + session cookies
+both expired was permanently locked out (magic-link REDEEM was open but
+ISSUE was cloaked). Magic-link issue+redeem are rate-limited
+(`rate_limit.js`, same 10/15-min policy as password login).
+
+**Dashboard experience lock-steps (2026-07-05):** `portal/index.html`
+Billing card ← `/api/v1/patient/billing/invoices`
+(`outstanding_balance_cents` + per-invoice `status`); booked-visit card
+state ← `triage/current` now returns `appointment_id` →
+`/api/v1/patient/appointments/<id>` (`modality`,`starts_at`) → telehealth
+renders Join-visit (`/portal/visit/<id>/launch`) + `/portal/tech-check/`
+links (previously BOTH pages were orphaned — zero inbound links).
+Booking confirmation (`appointments/book/`) shows the same two links.
+`symptoms/diary/[date].js` exports `onRequestPost = onRequestPut`
+because the diary page's beforeunload `sendBeacon` can only POST.
+Login + magic-link-redeem honor `?next=` (portal-internal only).
+
 ### 8.4 Admin SPAs
 
 14 surfaces — `analytics/`, `billing/`, `briefings/`, `carousels/`,
-`cases/`, `content/`, `debug/`, `education/`, `feedback/`, `login/`,
-`messages/`, `patients/`, `scheduling/`, `trend-briefs/`, `triage/`
-+ `_nav.js` (shared sidebar) + `index.html`
+`cases/`, `compliance/`, `content/`, `debug/`, `education/`,
+`feedback/`, `messages/`, `patients/`, `scheduling/`, `trend-briefs/`,
+`triage/` + `_nav.js` (shared sidebar) + `index.html`
+
+(`login/` REMOVED 2026-07-05 — it was orphaned dead code whose form
+POSTed to a nonexistent `/admin/api/login`; real admin auth is the
+browser Basic prompt from `functions/admin/_middleware.js` + `/admin/_mfa`.
+`compliance/` added to `_nav.js` the same day — it existed with full API
+backing but was unreachable from the sidebar.)
 
 `billing/` sub-pages (all linked from the `billing/` header, all glass +
 line-art backdrop): `clearinghouse/` (go-live console), `coach/` (Coding
@@ -674,6 +701,7 @@ allowlisted in `_lib/audit.js`).
 | `0023_phase18_nps.sql` | Phase 18 | `nps_dispatches` + `nps_responses` (R9 post-visit NPS). Idempotent. Lock-step: `/api/v1/internal/nps/dispatch` (pipeline-token) ← cron-worker `0 11 * * *` (needs `PIPELINE_TOKEN` secret on the worker); `/api/v1/patient/nps/respond` (token-is-auth, 14-day TTL); `portal/nps/index.html` + `_redirects` wildcard; `/api/v1/admin/nps/{scores,responses}`; analytics NPS cards; cron-worker backup TABLES list. |
 | `0025_patient_insurance.sql` | Billing | `patient_insurance` (member id / group / subscriber / gender / billing address). Idempotent. Auto-filled into claims by `claims/[id]/submit.js`; editor `admin/billing/insurance/`. **Applied to D1.** |
 | `0026_billing_ai_appeals.sql` | Billing AI | `billing_preflight_reviews` (AI pre-flight denial-prevention records) + `billing_appeals` (denial-response drafts: strategy + letter + remediation + CARC codes). Idempotent. Backs `claims/[id]/preflight.js` + `claims/[id]/appeal.js`. **Applied to D1 2026-06-29.** |
+| `0027_session_token_hash.sql` | Auth hardening | ALTER `auth_sessions` ADD `token_hash` — closes the D1 session-fallback gap (getSession previously accepted session_id ALONE on a KV miss). Code is migration-TOLERANT: `createSession` falls back to the legacy INSERT if the column is missing, and `getSession` uses `SELECT *` + FAILS CLOSED (KV-miss + no/mismatched hash = rejected, forcing one re-login). **NOT YET APPLIED — auto-mode classifier blocked the remote ALTER; apply when approved. Until then KV-miss sessions re-authenticate.** |
 
 Apply: `wrangler d1 execute mountzara-clinical --remote
 --file=schema/<file>.sql`
