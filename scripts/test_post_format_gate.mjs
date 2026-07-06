@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditNumericFidelity, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -57,6 +57,30 @@ if (healRes.ok) {
         "combined healPost output passes the audit (cards + modals)");
     A(full.ok && ids(stalePost.body_html) === ids(full.healed), "healPost preserves modal ids");
     A(full.ok && !/class="dd-(?:section|body|h3)\b/.test(full.healed), "healPost leaves no dd-* modal grammar");
+}
+// ---------------- NUMERIC FIDELITY (effect estimate ↔ embedded abstract) ----------------
+{
+    const mk = (findings, abstract) => ({
+        kind: "evidence",
+        body_html:
+            `<dialog id="dd-99999999"><div class="mz-jc-abstract-body"><p>${abstract}</p></div>` +
+            `<section class="mz-jc-section" id="dd-99999999-findings"><h3>Key findings</h3>${findings}</section></dialog>`,
+    });
+    // literal match passes
+    A(auditNumericFidelity(mk("<p>OR 1.34 (95% CI 1.14–1.57)</p>", "the adjusted OR was 1.34 (95% CI 1.14-1.57).")).ok,
+        "numeric fidelity: literal effect estimate present in abstract passes");
+    // faithful 2-decimal rounding of a 3-decimal abstract value passes
+    A(auditNumericFidelity(mk("<p>OR 1.89 (1.27–2.80)</p>", "OR 1.885, 95% CI 1.267-2.803.")).ok,
+        "numeric fidelity: 2-decimal rounding of a 3-decimal abstract value passes (1.885→1.89)");
+    // a fabricated / untraceable effect estimate FAILS
+    const bad = auditNumericFidelity(mk("<p>AFC OR 0.55 (0.40–0.70)</p>", "female age OR 0.909; AFC OR 0.916 (0.89-0.94)."));
+    A(!bad.ok && bad.problems.some((p) => p.includes("0.55")),
+        "numeric fidelity: an untraceable effect estimate (0.55 not in abstract) FAILS");
+    // a modal with no embedded abstract is skipped, not failed
+    A(auditNumericFidelity({ kind: "evidence", body_html: `<dialog id="dd-1"><section id="dd-1-findings"><h3>x</h3><p>OR 9.99</p></section></dialog>` }).ok,
+        "numeric fidelity: modal without an embedded abstract is skipped (not failed)");
+    // non-clinical kinds are exempt
+    A(auditNumericFidelity({ kind: "claim_proposal", body_html: "OR 9.99" }).ok, "numeric fidelity: non-clinical kind exempt");
 }
 // modal-only heal on a canonical-cards + dd-modals body
 {

@@ -365,6 +365,25 @@ if [ -z "${DEPLOY_SKIP_STRUCTURAL_GATE:-}" ]; then
         echo "   DEPLOY_SKIP_STRUCTURAL_GATE=1 ./scripts/deploy-prod.sh '<reason>'"
         exit 1
     fi
+    # Numeric-fidelity gate (2026-07-06): every decimal effect estimate in a
+    # deep-dive modal's Key-Findings section must be traceable to that modal's
+    # own embedded verbatim abstract (literal or 2-decimal rounding). Blocks a
+    # generator misextraction / fabrication from presenting an unverifiable
+    # number as a clinical finding. Offline per-modal check; network-flaky
+    # corpus load degrades to skip (never a false block).
+    if command -v node >/dev/null 2>&1 && [ -f scripts/audit_numeric_fidelity.mjs ]; then
+        echo ""
+        echo "🔒 numeric-fidelity gate — effect estimates vs embedded abstracts..."
+        if ! node scripts/audit_numeric_fidelity.mjs ; then
+            echo ""
+            echo "🛑 NUMERIC-FIDELITY GATE FAILED — a published post presents an"
+            echo "   effect estimate (OR/RR/HR/CI/AUC) that is NOT traceable to its"
+            echo "   modal's own verbatim PubMed abstract. Correct the number in R2"
+            echo "   from the real abstract (or remove the unverifiable estimate)."
+            echo "   Override: DEPLOY_SKIP_STRUCTURAL_GATE=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+    fi
 fi
 
 # ---------------------------------------------------------------------------

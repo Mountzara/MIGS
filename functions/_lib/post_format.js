@@ -106,6 +106,49 @@ export function auditPostFormat(post) {
 }
 
 // ---------------------------------------------------------------------
+// Numeric-fidelity audit (2026-07-06). Every decimal EFFECT ESTIMATE
+// (single-digit d.dd — the shape of an OR / RR / HR / AUC / CI bound)
+// presented inside a modal's Key-Findings / effects section MUST be
+// traceable to that same modal's own EMBEDDED verbatim PubMed abstract
+// (`mz-jc-abstract-body`): either a literal match, or within a 2-decimal
+// rounding tolerance (|abstract − value| ≤ 0.006, so the abstract's 3-decimal
+// 1.885 legitimately renders as 1.89). This catches a generator misextraction
+// or an authored fabrication BEFORE it publishes — the failure mode surfaced
+// during the 2026-07-05 trust audit — while tolerating faithful rounding.
+//
+// Deterministic + fully offline: the verbatim abstract lives in the modal, so
+// no PubMed call is needed at gate time. Scope = decimals of the form \d\.\d\d
+// (values < 10, which excludes DOIs like 10.3389 and integer years) inside the
+// findings/effects sections only. A modal with no embedded abstract is skipped
+// (nothing to check against) rather than failed.
+// ---------------------------------------------------------------------
+export function auditNumericFidelity(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const dialogRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+    let m;
+    while ((m = dialogRe.exec(h)) !== null) {
+        const pmid = m[1], modal = m[2];
+        const abM = modal.match(/<div class="mz-jc-abstract-body">([\s\S]*?)<\/div>/);
+        if (!abM) continue; // no embedded abstract — cannot verify, skip
+        const abNums = (visibleText(abM[1]).match(/\d+\.\d+/g) || []).map(Number);
+        const secRe = /<section[^>]*\bid="dd-\d+-(?:findings|effects)"[^>]*>([\s\S]*?)<\/section>/g;
+        let s;
+        while ((s = secRe.exec(modal)) !== null) {
+            const decs = new Set(visibleText(s[1]).match(/\b\d\.\d{2}\b/g) || []);
+            for (const d of decs) {
+                const dv = Number(d);
+                if (!abNums.some((a) => Math.abs(a - dv) <= 0.006)) {
+                    problems.push(`modal dd-${pmid}: effect estimate "${d}" in the Key-Findings section is not traceable to the modal's own verbatim abstract (no literal or rounded match) — an unverifiable effect number must not be presented as a finding.`);
+                }
+            }
+        }
+    }
+    return { ok: problems.length === 0, problems };
+}
+
+// ---------------------------------------------------------------------
 // Lossless-ness fingerprints
 // ---------------------------------------------------------------------
 function modalIds(h) {
@@ -487,4 +530,4 @@ export function healPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [], steps };
 }
 
-export default { auditPostFormat, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
+export default { auditPostFormat, auditNumericFidelity, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };

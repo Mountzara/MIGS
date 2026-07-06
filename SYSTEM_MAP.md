@@ -676,6 +676,28 @@ session scratchpad (`modal_author_wf.js`, `splice_modals.py`,
 the real durable fix is the sibling generator emitting filled sections.
 Every roundup now carries 0 residual placeholders across 287 modals.
 
+**NUMERIC-FIDELITY GATE (2026-07-06).** `auditNumericFidelity(post)` in
+`post_format.js`: every decimal EFFECT ESTIMATE (single-digit `d.dd` — the
+shape of an OR/RR/HR/AUC/CI bound) inside a deep-dive modal's Key-Findings
+section MUST be traceable to that modal's OWN embedded verbatim PubMed
+abstract (`mz-jc-abstract-body`) — literally OR within a 2-decimal rounding
+tolerance (|abstract − value| ≤ 0.006, so a 3-decimal 1.885 legitimately
+renders as 1.89). Catches a generator misextraction or an authored
+fabrication before publish; tolerates faithful rounding. Deterministic +
+offline (the abstract is in the modal). Deploy gate
+`scripts/audit_numeric_fidelity.mjs` (imports the same function; runs
+against the live R2 corpus, `--file` for local; network-flaky load degrades
+to skip, never a false block) wired into `deploy-prod.sh` right after the
+structural gate; hermetic fixtures in `test_post_format_gate.mjs` (literal
+pass / rounding pass / fabrication fail / no-abstract skip / non-clinical
+exempt). Origin: the 2026-07-05 trust audit — an operator-skeptic pass that
+cross-checked every modal number against real PubMed; all live effect
+estimates were faithful (roundings, not fabrications), and the handful of
+authored PROSE roundings (`~92%`→91.6%, `~45%`→45%, a derived `n=105`→
+"three groups of 35") were tightened to the exact source figures. Prose
+approximation isn't gate-enforceable (editorial license); the effect-table
+numbers are, and now are.
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).
