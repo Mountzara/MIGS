@@ -19,7 +19,7 @@
 // Exit: 0 = clean, 2 = at least one untraceable effect number.
 // =====================================================================
 import { readFileSync } from "fs";
-import { auditNumericFidelity } from "../functions/_lib/post_format.js";
+import { auditNumericFidelity, auditAbstractCompleteness } from "../functions/_lib/post_format.js";
 
 const BASE = process.env.MZ_SITE_BASE || "https://mountzara.com";
 const args = process.argv.slice(2);
@@ -42,19 +42,21 @@ const posts = fileIdx >= 0
 
 let failed = 0, checked = 0;
 for (const p of posts) {
-    const a = auditNumericFidelity(p);
     checked++;
-    if (a.ok) {
-        console.log(`  ✓  ${p.id}: effect estimates traceable to embedded abstracts`);
+    const num = auditNumericFidelity(p);
+    const abs = auditAbstractCompleteness(p);
+    const problems = [...num.problems, ...abs.problems];
+    if (!problems.length) {
+        console.log(`  ✓  ${p.id}: effect estimates traceable + verbatim abstracts complete`);
     } else {
         failed++;
-        console.error(`  ✗  ${p.id}: ${a.problems.length} untraceable effect number(s)`);
-        a.problems.slice(0, 8).forEach((pr) => console.error(`        ${pr}`));
+        console.error(`  ✗  ${p.id}: ${problems.length} content-fidelity problem(s)`);
+        problems.slice(0, 10).forEach((pr) => console.error(`        ${pr}`));
     }
 }
 if (failed) {
-    console.error(`\nnumeric-fidelity gate: ${failed}/${checked} post(s) present an unverifiable effect number as a finding.`);
+    console.error(`\ncontent-fidelity gate: ${failed}/${checked} post(s) present an unverifiable effect number or a truncated "verbatim" abstract.`);
     process.exit(2);
 }
-console.log(`\nnumeric-fidelity gate: CLEAN — all ${checked} post(s) traceable.`);
+console.log(`\ncontent-fidelity gate: CLEAN — all ${checked} post(s): effect estimates traceable + abstracts complete.`);
 process.exit(0);

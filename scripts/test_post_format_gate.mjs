@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditNumericFidelity, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -81,6 +81,22 @@ if (healRes.ok) {
         "numeric fidelity: modal without an embedded abstract is skipped (not failed)");
     // non-clinical kinds are exempt
     A(auditNumericFidelity({ kind: "claim_proposal", body_html: "OR 9.99" }).ok, "numeric fidelity: non-clinical kind exempt");
+}
+// ---------------- ABSTRACT COMPLETENESS (verbatim abstract not truncated) ----------------
+{
+    const modal = (label) =>
+        `<dialog id="dd-42116313"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">${label}</h5><p>text</p></div></dialog>`;
+    A(auditAbstractCompleteness({ kind: "evidence", body_html: modal("Abstract") }).ok,
+        "abstract completeness: a generic 'Abstract' label passes");
+    A(auditAbstractCompleteness({ kind: "evidence", body_html: modal("Background") }).ok,
+        "abstract completeness: an opening label (Background) passes");
+    const trunc = auditAbstractCompleteness({ kind: "evidence", body_html: modal("Interventions") });
+    A(!trunc.ok && trunc.problems.some((p) => p.includes("42116313")),
+        "abstract completeness: a mid-structure first label (Interventions) FAILS as truncated");
+    A(!auditAbstractCompleteness({ kind: "evidence", body_html: modal("Results") }).ok,
+        "abstract completeness: a 'Results'-first structured abstract FAILS as truncated");
+    A(auditAbstractCompleteness({ kind: "claim_proposal", body_html: modal("Results") }).ok,
+        "abstract completeness: non-clinical kind exempt");
 }
 // modal-only heal on a canonical-cards + dd-modals body
 {

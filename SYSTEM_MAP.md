@@ -698,6 +698,24 @@ authored PROSE roundings (`~92%`→91.6%, `~45%`→45%, a derived `n=105`→
 approximation isn't gate-enforceable (editorial license); the effect-table
 numbers are, and now are.
 
+**ABSTRACT-COMPLETENESS GATE (2026-07-06).** `auditAbstractCompleteness(post)`
+in `post_format.js`: a modal's embedded "verbatim from PubMed" abstract
+(`mz-jc-abstract-body`) must NOT start with a mid-structure section label
+(Interventions/Results/Outcomes/Conclusions/Lessons/…) — that can only be the
+FIRST label if the opening sections (Background/Objective/Introduction/Methods/
+Patient Concerns/Rationale) were truncated. Deterministic + offline (no PubMed
+at gate time). Runs in the SAME gate script (`audit_numeric_fidelity.mjs`, now
+a combined content-fidelity gate: effect estimates + abstract completeness) and
+`test_post_format_gate.mjs` (gate 47/47). Origin: the 2026-07-06 exhaustive
+corpus audit found 5 modals (4 in W21, 1 in the MCAS/POTS/EDS trend brief)
+whose "verbatim" abstract had dropped its leading structured sections; each was
+re-embedded with the COMPLETE English abstract from efetch (bilingual PubMed
+records: English `AbstractText` blocks only). That pass also confirmed corpus
+health independently of the site's own audits: all 357 unique cited PMIDs
+resolve on PubMed (zero fabricated citations); all 286 effect-estimate decimals
+trace to their embedded abstracts; all 71 reference-list entries + 372
+inline-citation popovers carry real titles with zero dangling links.
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).

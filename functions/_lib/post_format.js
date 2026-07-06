@@ -149,6 +149,35 @@ export function auditNumericFidelity(post) {
 }
 
 // ---------------------------------------------------------------------
+// Abstract-completeness audit (2026-07-06). Each modal embeds a "verbatim
+// from PubMed" abstract (mz-jc-abstract-body). The generator sometimes kept
+// only a TRAILING AbstractText block of a STRUCTURED abstract — dropping the
+// opening sections (Background / Objective / Introduction / Methods / Patient
+// Concerns / Rationale) — so the modal presented a truncated abstract as
+// verbatim (surfaced by the 2026-07-06 corpus audit: 4 W21 case-report /
+// structured abstracts). Deterministic OFFLINE signal: the FIRST
+// mz-jc-abstract-label inside a modal must be an opening label (or the generic
+// "Abstract") — never a mid-structure section, which can only appear first if
+// the sections before it were dropped.
+// ---------------------------------------------------------------------
+const MID_STRUCTURE_LABEL = /^(interventions?|outcomes?|results?|conclusions?|lessons?|discussion|main results|findings|key ?messages)$/i;
+export function auditAbstractCompleteness(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const dialogRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+    let m;
+    while ((m = dialogRe.exec(h)) !== null) {
+        const pmid = m[1], modal = m[2];
+        const first = (modal.match(/<h5 class="mz-jc-abstract-label">([^<]*)<\/h5>/) || [])[1];
+        if (first && MID_STRUCTURE_LABEL.test(first.trim())) {
+            problems.push(`modal dd-${pmid}: the "verbatim" abstract starts with the mid-structure label "${first.trim()}" — its opening sections (Background/Objective/Methods/Patient Concerns) were truncated. Re-embed the COMPLETE PubMed abstract.`);
+        }
+    }
+    return { ok: problems.length === 0, problems };
+}
+
+// ---------------------------------------------------------------------
 // Lossless-ness fingerprints
 // ---------------------------------------------------------------------
 function modalIds(h) {
@@ -530,4 +559,4 @@ export function healPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [], steps };
 }
 
-export default { auditPostFormat, auditNumericFidelity, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
+export default { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
