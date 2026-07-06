@@ -716,6 +716,23 @@ resolve on PubMed (zero fabricated citations); all 286 effect-estimate decimals
 trace to their embedded abstracts; all 71 reference-list entries + 372
 inline-citation popovers carry real titles with zero dangling links.
 
+**POPOVER-SUMMARY GATE (2026-07-06).** `auditPopoverSummaries(post)` in
+`post_format.js`: each inline-citation hover popover's `mz-ref-pop-finding`
+must be an ADEQUATE plain-language summary of the paper's finding (the W20/W21
+standard), NOT a raw dump of the abstract's opening. Hard signal: a finding
+that starts with a structured-abstract section label (RATIONALE:/INTRODUCTION:/
+BACKGROUND:/METHODS:/…) is a truncated abstract dump, never a summary; also
+flags effectively-empty findings (< 25 chars — floor sits BELOW the W20/W21
+reference minimum of 53 so concise foundational-citation descriptors pass).
+Deterministic + offline; part of the combined content-fidelity gate
+(`audit_numeric_fidelity.mjs`) + `test_post_format_gate.mjs` (gate 53/53).
+Origin: the 2026-07-06 audit found ~106 W23/W24 citation popovers (43 unique
+papers) whose finding field was the truncated abstract opening; each was
+replaced with that paper's own modal Bottom-line (already grounded +
+numeric-gated) — median summary length rose to ~300 chars, matching/exceeding
+W21. W20 uses an older popover grammar (`mz-ref-title`, title-only, no finding
+field) and is exempt.
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).

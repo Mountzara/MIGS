@@ -178,6 +178,48 @@ export function auditAbstractCompleteness(post) {
 }
 
 // ---------------------------------------------------------------------
+// Popover-summary audit (2026-07-06). Each inline citation carries a hover
+// popover whose `mz-ref-pop-finding` field must be an ADEQUATE plain-language
+// summary of the paper's finding (the W20/W21 standard), NOT a raw dump of the
+// abstract's opening sentence. The 2026-07-06 audit found ~106 W23/W24
+// popovers whose finding field was the truncated abstract opening — it starts
+// with a structured-abstract section label (RATIONALE:/INTRODUCTION:/…), which
+// a real summary never does. Each was replaced with the paper's own modal
+// Bottom-line (already grounded + numeric-gated). Deterministic + offline:
+// flag any finding that (a) starts with a structured-abstract label or (b) is
+// too short to be a real summary (< 60 chars).
+// ---------------------------------------------------------------------
+const RAW_ABSTRACT_LABEL = /^\s*(rationale|background|objectives?|introduction|methods?|materials?|purpose|aims?|importance|context|setting|design|participants)\b\s*[:\-–]/i;
+export function auditPopoverSummaries(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const re = /id="ref-pop-(\d+)"[\s\S]*?<span class="mz-ref-pop-finding">([^<]*)<\/span>/g;
+    let m;
+    const seen = new Set();
+    while ((m = re.exec(h)) !== null) {
+        const pmid = m[1];
+        if (seen.has(pmid)) continue; // one report per paper
+        const finding = decodeEntities(m[2]).trim();
+        if (RAW_ABSTRACT_LABEL.test(finding)) {
+            seen.add(pmid);
+            problems.push(`popover ref-pop-${pmid}: the citation summary is a raw abstract dump (starts "${finding.slice(0, 24)}…") — replace with an adequate plain-language finding (the paper's modal Bottom-line).`);
+        } else if (finding.length > 0 && finding.length < 25) {
+            // Empty/near-empty only. The floor sits BELOW the W20/W21
+            // reference-standard minimum (53 chars) so a legitimately concise
+            // foundational-citation descriptor is never flagged — the real
+            // defect this gate targets is the raw-abstract-dump above.
+            seen.add(pmid);
+            problems.push(`popover ref-pop-${pmid}: the citation summary is only ${finding.length} chars — effectively empty.`);
+        }
+    }
+    return { ok: problems.length === 0, problems };
+}
+function decodeEntities(s) {
+    return String(s || "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+}
+
+// ---------------------------------------------------------------------
 // Lossless-ness fingerprints
 // ---------------------------------------------------------------------
 function modalIds(h) {
@@ -559,4 +601,4 @@ export function healPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [], steps };
 }
 
-export default { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
+export default { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };

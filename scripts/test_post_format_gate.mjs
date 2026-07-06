@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -97,6 +97,25 @@ if (healRes.ok) {
         "abstract completeness: a 'Results'-first structured abstract FAILS as truncated");
     A(auditAbstractCompleteness({ kind: "claim_proposal", body_html: modal("Results") }).ok,
         "abstract completeness: non-clinical kind exempt");
+}
+// ---------------- POPOVER SUMMARIES (adequate, not raw abstract dumps) ----------------
+{
+    const pop = (finding) =>
+        `<sup class="mz-ref"><a>1</a><span class="mz-ref-pop" id="ref-pop-42216742" role="tooltip"><span class="mz-ref-pop-title">T</span><span class="mz-ref-pop-meta">J · 2026</span><span class="mz-ref-pop-finding">${finding}</span></span></sup>`;
+    const good = "Survival study comparing abdominal vs laparoscopic radical hysterectomy for cervical cancer: 5-year survival favored open (83.5% vs 75.0%).";
+    A(auditPopoverSummaries({ kind: "evidence", body_html: pop(good) }).ok,
+        "popover summary: an adequate plain-language finding passes");
+    const raw = auditPopoverSummaries({ kind: "evidence", body_html: pop("INTRODUCTION: Cervical cancer ranks among the top ten globally. Its five-year survival rate is 67.9%.") });
+    A(!raw.ok && raw.problems.some((p) => p.includes("42216742")),
+        "popover summary: a raw abstract dump (starts 'INTRODUCTION:') FAILS");
+    A(!auditPopoverSummaries({ kind: "evidence", body_html: pop("RATIONALE: ART combines egg and sperm outside the body.") }).ok,
+        "popover summary: a 'RATIONALE:'-prefixed dump FAILS");
+    A(!auditPopoverSummaries({ kind: "evidence", body_html: pop("Reduces pain.") }).ok,
+        "popover summary: an effectively-empty finding (<25c) FAILS");
+    A(auditPopoverSummaries({ kind: "evidence", body_html: pop("Leiomyosarcoma of uterus in pregnancy: A case report.") }).ok,
+        "popover summary: a concise 53c foundational-citation descriptor (W21 standard) PASSES");
+    A(auditPopoverSummaries({ kind: "claim_proposal", body_html: pop("BACKGROUND: x") }).ok,
+        "popover summary: non-clinical kind exempt");
 }
 // modal-only heal on a canonical-cards + dd-modals body
 {
