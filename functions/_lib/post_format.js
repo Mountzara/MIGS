@@ -178,6 +178,24 @@ export function auditAbstractCompleteness(post) {
 }
 
 // ---------------------------------------------------------------------
+// AUTHORITATIVE PUBLISH GATE (2026-07-06). The single "may this post go live"
+// check — combines the STRUCTURAL canonical audit with the three content-
+// fidelity audits (effect-estimate accuracy, verbatim-abstract completeness,
+// adequate citation-popover summaries). Every code path that flips a post to
+// `published` — the pipeline "publish immediately" flag, the /approve gate,
+// and the stale→canonical format-heal re-publish — routes through this, so a
+// scheduled auto-post that fails ANY criterion is held as a draft and can
+// never reach the public. `.canonical` is still exposed for the auto-heal
+// decision (its contract is structure only). Deterministic + offline.
+// ---------------------------------------------------------------------
+export function auditPublishable(post) {
+    const fmt = auditPostFormat(post);
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post)];
+    const problems = checks.flatMap((c) => c.problems);
+    return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
+}
+
+// ---------------------------------------------------------------------
 // Popover-summary audit (2026-07-06). Each inline citation carries a hover
 // popover whose `mz-ref-pop-finding` field must be an ADEQUATE plain-language
 // summary of the paper's finding (the W20/W21 standard), NOT a raw dump of the
@@ -601,4 +619,4 @@ export function healPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [], steps };
 }
 
-export default { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };

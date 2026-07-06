@@ -733,6 +733,29 @@ numeric-gated) — median summary length rose to ~300 chars, matching/exceeding
 W21. W20 uses an older popover grammar (`mz-ref-title`, title-only, no finding
 field) and is exempt.
 
+**AUTHORITATIVE PUBLISH GATE — closes the scheduled-auto-post hole (2026-07-06).**
+Before this, the ingest/`/approve` choke points keyed off `auditPostFormat().canonical`
+(STRUCTURAL only), so a scheduled auto-post that was structurally canonical but
+had a fabricated effect number, a truncated verbatim abstract, or a raw-dump
+citation popover would AUTO-PUBLISH. `auditPublishable(post)` in `post_format.js`
+is now the single "may this go live" check = structural canonical AND all three
+content-fidelity audits. EVERY path in `functions/api/posts/[[path]].js` that sets
+`status:"published"` routes through it: (1) pipeline "publish immediately"
+(`body.status==="published"`) → only if `publishable`; (2) stale→canonical
+format-heal auto-republish → only if the incoming re-render is fully `publishable`;
+(3) `POST /:id/approve` → 422 unless `publishable` (admin `{"force":true}` recorded);
+(4) `PUT /:id` flipping `status:"published"` → 422 unless `publishable` (was an
+UNGATED admin shortcut — the bypass this pass closed; `{"force":true}` recorded).
+A failing auto-post lands as a NON-PUBLISHABLE draft (never public) with
+`publish_problems` in the 201 + on `_admin/freshness` (dead-man surfaces it). The
+auto-heal still uses `auditPostFormat().canonical` (structure = its contract) —
+it fixes grammar, not clinical content, so a numeric/abstract/popover defect it
+cannot fix simply holds the post as a draft. Hermetic proof in
+`test_post_format_gate.mjs` (gate 57/57): a structural-canonical body with a
+raw-dump popover / truncated abstract / fabricated OR is asserted NOT publishable;
+the canonical fixture IS. So a scheduled post now meets the full W20/W21 standard
+before it can ever reach the public — enforced at the API, not just at my deploys.
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).

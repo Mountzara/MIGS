@@ -30,7 +30,7 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
-import { auditPostFormat, healPaperCardPost, healPost } from "../../_lib/post_format.js";
+import { auditPostFormat, auditPublishable, healPaperCardPost, healPost } from "../../_lib/post_format.js";
 
 const POST_KINDS = new Set(["blog", "evidence", "claim_proposal"]);
 const POST_STATUSES = new Set(["draft", "published", "rejected"]);
@@ -433,13 +433,13 @@ async function onRequestImpl({ request, env, params }) {
             const draftDetails = [];
             for (const d of drafts.slice(0, 20)) {
                 const full = await readPost(env, d.id);
-                const fmt = full ? auditPostFormat(full) : { canonical: false, problems: ["post object missing"] };
-                draftDetails.push({ id: d.id, created_at: d.created_at, age_days: ageDays(d.created_at), format_canonical: fmt.canonical, format_problems: fmt.problems });
+                const pub = full ? auditPublishable(full) : { publishable: false, canonical: false, problems: ["post object missing"] };
+                draftDetails.push({ id: d.id, created_at: d.created_at, age_days: ageDays(d.created_at), publishable: pub.publishable, format_canonical: pub.canonical, publish_problems: pub.problems });
             }
             out.kinds[kind] = { newest_published: newest ? { id: newest.id, published_at: newest.published_at, age_days: age } : null, stale, drafts_pending_approval: draftDetails };
             if (stale) { out.stale = true; out.problems.push(`${kind}: newest published post is ${age === null ? "MISSING" : age + " days old"} (weekly cadence expected).`); }
             for (const d of draftDetails) {
-                out.problems.push(`${kind}: draft ${d.id} awaiting approval for ${d.age_days} day(s)${d.format_canonical ? "" : " — NON-CANONICAL format, /approve will refuse it"}.`);
+                out.problems.push(`${kind}: draft ${d.id} awaiting approval for ${d.age_days} day(s)${d.publishable ? "" : " — NOT PUBLISHABLE, /approve will refuse it (" + d.publish_problems.length + " problem(s))"}.`);
             }
         }
         try {
@@ -528,9 +528,14 @@ async function onRequestImpl({ request, env, params }) {
         // never replace anything published, and rejected stays tombstoned.
         let formatHeal = false;
         if (existing) {
-            const incomingAudit = auditPostFormat({ kind: body.kind, body_html: body.body_html || "" });
+            // A stale published post may be auto-replaced ONLY by an incoming
+            // re-render that is FULLY PUBLISHABLE (structural canonical AND
+            // content-fidelity: numbers, abstracts, popovers) — a content-dirty
+            // re-render must not silently replace-and-republish; it hits the
+            // overwrite guard (422) and forces a proper re-render.
+            const incomingPub = auditPublishable({ kind: body.kind, body_html: body.body_html || "" });
             const existingAudit = auditPostFormat(existing);
-            formatHeal = existing.status === "published" && !existingAudit.canonical && incomingAudit.canonical;
+            formatHeal = existing.status === "published" && !existingAudit.canonical && incomingPub.publishable;
             const lockedStatuses = new Set(["published", "rejected"]);
             if (lockedStatuses.has(existing.status) && !formatHeal) {
                 return errorResponse(
@@ -592,6 +597,11 @@ async function onRequestImpl({ request, env, params }) {
         // approve gate reads it) and echoed in the response so the Mac
         // pipeline's logs show EXACTLY why a draft will not be publishable.
         post.format_audit = auditPostFormat(post);
+        // Authoritative publish gate — structural canonical AND content fidelity
+        // (effect estimates, verbatim-abstract completeness, popover summaries).
+        // A scheduled auto-post that fails ANY criterion stays a draft.
+        const publishAudit = auditPublishable(post);
+        post.publishable_audit = publishAudit;
         if (heal.healed) {
             post.format_auto_healed_at = new Date().toISOString();
         }
@@ -615,15 +625,16 @@ async function onRequestImpl({ request, env, params }) {
                 if (Array.isArray(existing[f]) && existing[f].length) post[f] = existing[f];
             }
         } else if (body.status === "published") {
-            // Admin composer "Publish immediately" — honored ONLY when the
-            // (post-auto-heal) body is canonical, so a non-canonical body can
-            // never reach the public by skipping the /approve gate.
-            if (post.format_audit.canonical) {
+            // Admin composer / pipeline "Publish immediately" — honored ONLY
+            // when the (post-auto-heal) body is FULLY PUBLISHABLE (structural
+            // canonical AND content fidelity), so a body that fails any
+            // criterion can never reach the public by skipping the /approve gate.
+            if (publishAudit.publishable) {
                 post.status = "published";
                 post.published_at = now;
             }
             // else: silently remains a draft; the 201 response's
-            // format_warnings + not-publishable notice explain why.
+            // publish_problems + not-publishable notice explain why.
         }
         await writePost(env, post);
         await upsertIndexEntry(env, post);
@@ -631,12 +642,14 @@ async function onRequestImpl({ request, env, params }) {
             ok: true, id: post.id,
             format_canonical: post.format_audit.canonical,
             format_warnings: post.format_audit.problems,
+            publishable: publishAudit.publishable,
+            publish_problems: publishAudit.problems,
             ...(heal.healed ? { auto_healed: true, note: "stale paper-card body was auto-converted to the canonical mz-cite-card format (lossless-verified)" } : {}),
             ...(heal.heal_problems && heal.heal_problems.length ? { heal_problems: heal.heal_problems } : {}),
-            ...(post.format_audit.canonical ? {} : {
-                warning: "DRAFT ACCEPTED but NOT PUBLISHABLE: body_html is in a non-canonical format and could not be auto-healed. /approve will refuse it until a canonical (mz-cite-card) re-render is submitted.",
+            ...(publishAudit.publishable ? {} : {
+                warning: "DRAFT ACCEPTED but NOT PUBLISHABLE: the body fails one or more publish criteria (canonical format, effect-estimate fidelity, complete verbatim abstracts, adequate citation summaries). /approve will refuse it until a conforming re-render is submitted. See publish_problems.",
             }),
-            ...(formatHeal ? { format_healed: true, note: "canonical re-render replaced the stale-format published body" } : {}),
+            ...(formatHeal ? { format_healed: true, note: "fully-publishable re-render replaced the stale-format published body" } : {}),
         }, 201);
     }
 
@@ -646,27 +659,31 @@ async function onRequestImpl({ request, env, params }) {
         const id = segments[0];
         const post = await readPost(env, id);
         if (!post) return errorResponse("not found", 404);
-        // CANONICAL-FORMAT GATE (2026-07-02) — recompute fresh from body_html
-        // (never trust a stored audit) and refuse to publish stale-format
-        // content. This is the choke point that keeps a paper-card auto-draft
-        // from ever going live again. Admin escape hatch: {"force": true} in
-        // the request body publishes anyway and records the override.
-        const fmt = auditPostFormat(post);
-        if (!fmt.canonical) {
+        // PUBLISH GATE (2026-07-02, extended 2026-07-06) — recompute fresh from
+        // body_html (never trust a stored audit) and refuse to publish content
+        // that fails ANY publish criterion: structural canonical format PLUS
+        // content fidelity (effect-estimate accuracy, complete verbatim
+        // abstracts, adequate citation-popover summaries). This is the choke
+        // point that keeps a substandard auto-draft from ever going live again.
+        // Admin escape hatch: {"force": true} publishes anyway and records it.
+        const pub = auditPublishable(post);
+        if (!pub.publishable) {
             let force = false;
             try { const b = await request.json(); force = b && b.force === true; } catch {}
             if (!force) {
                 return errorResponse(
-                    `approve refused — post ${id} is in a NON-CANONICAL format and will not be published:\n` +
-                    fmt.problems.map((p) => `  • ${p}`).join("\n") +
-                    `\nSubmit a canonical (mz-cite-card) re-render from the pipeline, ` +
-                    `or POST /approve with {"force":true} to publish anyway (recorded on the post).`,
+                    `approve refused — post ${id} fails one or more publish criteria and will not be published:\n` +
+                    pub.problems.map((p) => `  • ${p}`).join("\n") +
+                    `\nSubmit a conforming re-render from the pipeline (canonical mz-cite-card format, ` +
+                    `effect estimates traceable to the embedded abstract, complete verbatim abstracts, ` +
+                    `adequate citation summaries), or POST /approve with {"force":true} to publish anyway (recorded on the post).`,
                     422,
                 );
             }
             post.format_force_published_at = new Date().toISOString();
         }
-        post.format_audit = fmt;
+        post.format_audit = auditPostFormat(post);
+        post.publishable_audit = pub;
         post.status = "published";
         post.published_at = new Date().toISOString();
         await writePost(env, post);
@@ -790,6 +807,25 @@ async function onRequestImpl({ request, env, params }) {
         // rebuilds can fully restore any status state).
         if (patch.status !== undefined && !POST_STATUSES.has(post.status)) {
             return errorResponse(`invalid status: ${post.status}`);
+        }
+        // PUBLISH GATE on PUT (2026-07-06): flipping status → "published" via
+        // PUT is an admin shortcut, but it must NOT bypass the content-fidelity
+        // gate that /approve and pipeline-publish enforce — otherwise a
+        // substandard body could be published by a raw status edit. Recompute
+        // fresh and refuse unless the body is publishable (or {"force":true}).
+        if (patch.status === "published") {
+            const pub = auditPublishable(post);
+            if (!pub.publishable && patch.force !== true) {
+                return errorResponse(
+                    `PUT refused — cannot set status="published" on post ${id}: it fails one or more publish criteria:\n` +
+                    pub.problems.map((p) => `  • ${p}`).join("\n") +
+                    `\nFix the body (canonical format, traceable effect estimates, complete verbatim abstracts, ` +
+                    `adequate citation summaries), or PUT with {"force":true} to publish anyway (recorded).`,
+                    422,
+                );
+            }
+            post.publishable_audit = pub;
+            if (!pub.publishable) post.format_force_published_at = new Date().toISOString();
         }
         // Stamp published_at when status flips to "published"; clear it when
         // status moves away from "published" so the public surface never

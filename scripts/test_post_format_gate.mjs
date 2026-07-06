@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -116,6 +116,25 @@ if (healRes.ok) {
         "popover summary: a concise 53c foundational-citation descriptor (W21 standard) PASSES");
     A(auditPopoverSummaries({ kind: "claim_proposal", body_html: pop("BACKGROUND: x") }).ok,
         "popover summary: non-clinical kind exempt");
+}
+// ---------------- AUTHORITATIVE PUBLISH GATE (ingest/approve enforcement) ----------------
+{
+    // A structurally-canonical body must still be BLOCKED from publish when it
+    // fails any content-fidelity criterion — this is what protects scheduled
+    // auto-posts at the /api/posts ingest + /approve choke points.
+    const rawPop = `<article class="mz-cite-card" id="mz-cite-1"><h3 class="mz-cite-title">t</h3></article>` +
+        `<div class="mz-post-narrative">x</div><div class="mz-five-pick">x</div><div class="mz-topic-group">x</div><div class="mz-references-list">x</div>` +
+        `<sup class="mz-ref"><a>1</a><span class="mz-ref-pop" id="ref-pop-42216742"><span class="mz-ref-pop-title">T</span><span class="mz-ref-pop-meta">J</span><span class="mz-ref-pop-finding">INTRODUCTION: Cervical cancer ranks among the top ten globally worldwide today.</span></span></sup>` +
+        `<dialog id="dd-42216742"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>text 0.909</p></div></dialog>`;
+    const r = auditPublishable({ kind: "evidence", body_html: rawPop });
+    A(!r.publishable && r.problems.some((p) => p.includes("42216742")),
+        "publish gate: structural-canonical body with a raw-dump popover is NOT publishable");
+    A(!auditPublishable({ kind: "evidence", body_html: `<dialog id="dd-9"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Results</h5><p>x</p></div></dialog>` }).publishable,
+        "publish gate: a truncated verbatim abstract is NOT publishable");
+    A(!auditPublishable({ kind: "evidence", body_html: `<dialog id="dd-9"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>OR 0.909 here</p></div><section class="mz-jc-section" id="dd-9-findings"><h3>Key findings</h3><p>AFC OR 0.55 (0.40-0.70)</p></section></dialog>` }).publishable,
+        "publish gate: a fabricated effect estimate is NOT publishable");
+    A(auditPublishable({ kind: "evidence", body_html: refPost.body_html }).publishable,
+        "publish gate: the canonical reference fixture IS publishable");
 }
 // modal-only heal on a canonical-cards + dd-modals body
 {
