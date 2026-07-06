@@ -756,6 +756,30 @@ raw-dump popover / truncated abstract / fabricated OR is asserted NOT publishabl
 the canonical fixture IS. So a scheduled post now meets the full W20/W21 standard
 before it can ever reach the public — enforced at the API, not just at my deploys.
 
+**CONTENT-FIDELITY AUTO-REPAIR AT INGEST (2026-07-06).** Beyond blocking, the
+ingest `autoHealBody` now REPAIRS a substandard auto-post to publishable where a
+ground truth exists — so a good post goes live without waiting on a human:
+  * `healPopoverSummaries(body)` (offline) — replaces a raw-abstract-dump citation
+    summary with that paper's OWN modal Bottom-line (already grounded +
+    numeric-gated).
+  * `healAbstractCompleteness(body, fetchAbstract)` — replaces a truncated
+    "verbatim" abstract with the COMPLETE English abstract from PubMed
+    (`fetchPubmedAbstract` in `posts/[[path]].js` → eutils efetch, edge-cached,
+    6 s timeout, ≤30 fetches/ingest, second-language blocks skipped). Lossless
+    guard: the fetched text must cover ≥85% of the embedded text's VISIBLE words
+    (tag/attribute tokens excluded) or the modal is left untouched.
+Both run on EVERY ingest — even a structurally-canonical body — because that was
+exactly the W23/W24 failure (canonical cards, broken modals/popovers). Order:
+structural heal → popover heal → abstract completion; completing a truncated
+abstract also RESOLVES numeric-fidelity flags whose only cause was the truncation.
+NUMBERS ARE NEVER FABRICATED: a genuinely untraceable effect estimate that
+survives completion is left for the publish gate to hold as a draft (repair what
+we can verify; refuse to guess where we can't). Clean posts incur zero fetches /
+zero changes. Hermetic proof in `test_post_format_gate.mjs` (gate 65/65):
+popover raw-dump → bottom-line; truncated abstract → completed via injected
+fetcher; non-lossless fetch refused; a fabricated number survives and stays
+NOT publishable.
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).

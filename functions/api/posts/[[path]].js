@@ -30,7 +30,33 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
-import { auditPostFormat, auditPublishable, healPaperCardPost, healPost } from "../../_lib/post_format.js";
+import { auditPostFormat, auditPublishable, healPaperCardPost, healPost, healPopoverSummaries, healAbstractCompleteness } from "../../_lib/post_format.js";
+
+// Fetch the COMPLETE English abstract for a PMID from PubMed eutils. Returns
+// [{label, text}] of the AbstractText blocks, skipping any second-language
+// (accent-heavy) block. Used by the ingest content-fidelity auto-repair to
+// re-embed a truncated "verbatim" abstract. Throws on transport/HTTP failure
+// so the caller leaves the modal untouched (safe: post stays a draft).
+async function fetchPubmedAbstract(pmid) {
+    const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${encodeURIComponent(pmid)}&rettype=abstract&retmode=xml`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(6000), cf: { cacheTtl: 86400, cacheEverything: true } });
+    if (!r.ok) throw new Error(`efetch HTTP ${r.status}`);
+    const xml = await r.text();
+    const out = [];
+    const re = /<AbstractText([^>]*)>([\s\S]*?)<\/AbstractText>/g;
+    let m;
+    while ((m = re.exec(xml)) !== null) {
+        let txt = m[2].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        if (!txt) continue;
+        const nonAscii = (txt.match(/[^\x00-\x7f]/g) || []).length;
+        if (nonAscii / txt.length >= 0.08) continue; // second-language block
+        txt = txt.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#x27;/g, "'")
+                 .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+        const label = (m[1].match(/Label="([^"]*)"/) || [])[1] || "";
+        out.push({ label, text: txt });
+    }
+    return out;
+}
 
 const POST_KINDS = new Set(["blog", "evidence", "claim_proposal"]);
 const POST_STATUSES = new Set(["draft", "published", "rejected"]);
@@ -210,40 +236,58 @@ function normalizeSummary(post) {
 // Attempt the auto-heal on an incoming body. Returns { body_html, healed,
 // heal_problems } — on any failure the original body is returned untouched.
 async function autoHealBody(env, kind, bodyHtml) {
-    const probe = auditPostFormat({ kind, body_html: bodyHtml });
-    if (probe.canonical) {
-        return { body_html: bodyHtml, healed: false, heal_problems: [] };
-    }
-    const src = String(bodyHtml || "");
-    const needsCardHeal = /paper-card/.test(src);
-    const needsModalHeal = /\bdeepdive-modal\b/.test(src) && /class="dd-(?:section|body|h3)\b/.test(src);
-    // Nothing auto-fixable (e.g. a stripped, cards-only roundup missing the
-    // editorial architecture — that requires regeneration, not a markup heal).
-    // Leave it as a blocked draft; /approve will refuse it. Auto-heal can only
-    // repair the two mechanical regressions it knows: paper-card cards and
-    // dd-*/deepdive-modal modals.
-    if (!needsCardHeal && !needsModalHeal) {
-        return { body_html: bodyHtml, healed: false, heal_problems: probe.problems };
-    }
-    // The paper-card step needs a canonical reference post for its <style>/
-    // <script>; the modal step is self-contained (no ref).
-    let refBody = null;
-    if (needsCardHeal) {
-        const refId = env.CANONICAL_REFERENCE_POST || "blog-2026-W21";
-        let ref = null;
-        try { ref = await readPost(env, refId); } catch { ref = null; }
-        if (!ref || !auditPostFormat(ref).canonical) {
-            return { body_html: bodyHtml, healed: false, heal_problems: [`reference post ${refId} unavailable or not canonical — auto-heal skipped`] };
+    let body = String(bodyHtml || "");
+    let healed = false;
+    const heal_problems = [];
+    const heal_steps = [];
+
+    // ---- 1) STRUCTURAL heal (paper-card cards, dd-*/deepdive-modal modals) ----
+    // Only when the body is not already structurally canonical.
+    const probe = auditPostFormat({ kind, body_html: body });
+    if (!probe.canonical) {
+        const needsCardHeal = /paper-card/.test(body);
+        const needsModalHeal = /\bdeepdive-modal\b/.test(body) && /class="dd-(?:section|body|h3)\b/.test(body);
+        if (needsCardHeal || needsModalHeal) {
+            let refBody = null;
+            if (needsCardHeal) {
+                const refId = env.CANONICAL_REFERENCE_POST || "blog-2026-W21";
+                let ref = null;
+                try { ref = await readPost(env, refId); } catch { ref = null; }
+                if (!ref || !auditPostFormat(ref).canonical) {
+                    heal_problems.push(`reference post ${refId} unavailable or not canonical — structural heal skipped`);
+                } else {
+                    refBody = ref.body_html;
+                }
+            }
+            if (refBody !== null || !needsCardHeal) {
+                try {
+                    const r = healPost(body, refBody);
+                    if (r.ok) { body = r.healed; healed = true; heal_steps.push(...(r.steps || [])); }
+                    else heal_problems.push(...r.problems);
+                } catch (e) { heal_problems.push(`structural heal threw: ${String(e && e.message || e)}`); }
+            }
+        } else {
+            // Not mechanically fixable (e.g. a stripped cards-only roundup missing
+            // the editorial architecture — needs regeneration). Record it.
+            heal_problems.push(...probe.problems);
         }
-        refBody = ref.body_html;
     }
+
+    // ---- 2) CONTENT-FIDELITY repair (ALWAYS — a structurally-canonical body
+    //         can still carry raw-dump popovers and truncated abstracts; that
+    //         was exactly the W23/W24 case). ----
     try {
-        const r = healPost(bodyHtml, refBody);
-        if (r.ok) return { body_html: r.healed, healed: true, heal_problems: [], heal_steps: r.steps };
-        return { body_html: bodyHtml, healed: false, heal_problems: r.problems };
-    } catch (e) {
-        return { body_html: bodyHtml, healed: false, heal_problems: [`auto-heal threw: ${String(e && e.message || e)}`] };
-    }
+        const pop = healPopoverSummaries(body);          // offline: bottom-line -> popover
+        if (pop.changed) { body = pop.healed; healed = true; heal_steps.push(`popover-summaries:${pop.changed}`); }
+        heal_problems.push(...pop.problems);
+    } catch (e) { heal_problems.push(`popover heal threw: ${String(e && e.message || e)}`); }
+    try {
+        const abs = await healAbstractCompleteness(body, fetchPubmedAbstract, { maxFetch: 30 }); // PubMed
+        if (abs.changed) { body = abs.healed; healed = true; heal_steps.push(`abstract-completion:${abs.changed}`); }
+        heal_problems.push(...abs.problems);
+    } catch (e) { heal_problems.push(`abstract-completion heal threw: ${String(e && e.message || e)}`); }
+
+    return { body_html: body, healed, heal_problems, heal_steps };
 }
 
 async function readPost(env, id) {

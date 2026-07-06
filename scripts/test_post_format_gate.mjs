@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -135,6 +135,40 @@ if (healRes.ok) {
         "publish gate: a fabricated effect estimate is NOT publishable");
     A(auditPublishable({ kind: "evidence", body_html: refPost.body_html }).publishable,
         "publish gate: the canonical reference fixture IS publishable");
+}
+// ---------------- CONTENT-FIDELITY AUTO-REPAIR (ingest heals to publishable) ----------------
+{
+    // popover repair: a raw-dump finding is replaced by the paper's bottom-line
+    const rawPop =
+        `<sup class="mz-ref"><a>1</a><span class="mz-ref-pop" id="ref-pop-42216742"><span class="mz-ref-pop-title">T</span><span class="mz-ref-pop-meta">J</span><span class="mz-ref-pop-finding">INTRODUCTION: Cervical cancer ranks among the top ten globally worldwide today.</span></span></sup>` +
+        `<dialog id="dd-42216742"><section class="mz-jc-section" id="dd-42216742-bottom"><h3>Bottom line</h3><p>Survival study comparing abdominal vs laparoscopic radical hysterectomy for cervical cancer: 5-year survival favored open (83.5% vs 75.0%).</p></section><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>x 0.909</p></div></dialog>`;
+    const ph = healPopoverSummaries(rawPop);
+    A(ph.changed === 1, "heal: popover raw-dump replaced from the modal Bottom-line");
+    A(auditPopoverSummaries({ kind: "evidence", body_html: ph.healed }).ok, "heal: popover output passes the popover audit");
+    A(!/mz-ref-pop-finding">INTRODUCTION:/.test(ph.healed), "heal: no raw-dump finding remains");
+
+    // abstract completion: injected fake PubMed fetcher returns the full abstract
+    const truncated = `<dialog id="dd-42116313"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Interventions</h5><p>The patient was treated with surgery and chemotherapy.</p></div></dialog>`;
+    const fakeFetch = async (pmid) => [
+        { label: "RATIONALE", text: "Leiomyosarcoma diagnosis in pregnancy is challenging." },
+        { label: "INTERVENTIONS", text: "The patient was treated with surgery and chemotherapy." },
+        { label: "LESSONS", text: "Timely diagnosis avoids misdiagnosis." },
+    ];
+    const ah = await healAbstractCompleteness(truncated, fakeFetch);
+    A(ah.changed === 1 && ah.fetched === 1, "heal: truncated abstract fetched + completed");
+    A(auditAbstractCompleteness({ kind: "evidence", body_html: ah.healed }).ok, "heal: completed abstract passes the completeness audit");
+    A(/Rationale:/.test(ah.healed) && /Leiomyosarcoma/.test(ah.healed), "heal: dropped opening section restored");
+
+    // lossless guard: a fetch that does NOT cover the embedded text is rejected
+    const badFetch = async () => [{ label: "BACKGROUND", text: "Totally unrelated content about something else." }];
+    const ah2 = await healAbstractCompleteness(truncated, badFetch);
+    A(ah2.changed === 0 && ah2.problems.some((p) => p.includes("covers only")), "heal: non-lossless abstract fetch is refused");
+
+    // a genuinely fabricated number is NOT auto-fixed (stays for the gate)
+    const fab = `<dialog id="dd-9"><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>OR 0.909 here</p></div><section class="mz-jc-section" id="dd-9-findings"><h3>Key findings</h3><p>AFC OR 0.55 (0.40-0.70)</p></section></dialog>`;
+    const noFetch = async () => [];
+    const ah3 = await healAbstractCompleteness(fab, noFetch);
+    A(!auditPublishable({ kind: "evidence", body_html: ah3.healed }).publishable, "heal: a fabricated number survives heal and remains NOT publishable");
 }
 // modal-only heal on a canonical-cards + dd-modals body
 {

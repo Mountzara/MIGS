@@ -619,4 +619,105 @@ export function healPost(bodyHtml, refBodyHtml) {
     return { ok: true, healed: h, problems: [], steps };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, extractStyleScript };
+// =====================================================================
+// CONTENT-FIDELITY AUTO-REPAIR (2026-07-06) — make a substandard auto-post
+// PUBLISHABLE where a ground truth exists. Two repairs, both provably
+// grounded (no fabricated clinical content):
+//   * healPopoverSummaries — replace a raw-abstract-dump citation summary with
+//     the paper's OWN modal Bottom-line (already in the post + numeric-gated).
+//     Fully offline.
+//   * healAbstractCompleteness — replace a truncated "verbatim" abstract with
+//     the COMPLETE English abstract from PubMed (ground truth = PubMed). Needs
+//     an injected async `fetchAbstract(pmid) -> [{label,text}]`.
+// Neither invents a number: an untraceable effect estimate that survives (i.e.
+// isn't in even the completed abstract) is left for the publish gate to hold
+// as a draft — repairing what we can verify, refusing to guess where we can't.
+// =====================================================================
+function escapeHtml(s) {
+    return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function titleCase(s) {
+    return String(s || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+function cleanBottomLine(t) {
+    let s = decodeEntities(String(t || ""));
+    s = s.replace(/^\s*Bottom line\s*/i, "");
+    s = s.replace(/^[\s—\-–:]*(?:the\s+)?author'?s? own interpretation\s*/i, "");
+    s = s.replace(/^[\s—\-–:]+/, "");
+    return s.replace(/\s+/g, " ").trim();
+}
+function wordSet(s) { return new Set((String(s || "").toLowerCase().match(/[a-z0-9]+/g)) || []); }
+
+/**
+ * Offline. Replace every raw-abstract-dump citation popover summary with the
+ * paper's own (cleaned) modal Bottom-line. @returns {ok, healed, changed, problems}
+ */
+export function healPopoverSummaries(bodyHtml) {
+    let h = String(bodyHtml || "");
+    const problems = [];
+    const bl = {};
+    const dRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+    let dm;
+    while ((dm = dRe.exec(h)) !== null) {
+        const s = dm[2].match(/id="dd-\d+-bottom"[^>]*>([\s\S]*?)<\/section>/);
+        if (!s) continue;
+        const c = cleanBottomLine(visibleText(s[1]));
+        if (c.length >= 80 && !RAW_ABSTRACT_LABEL.test(c)) bl[dm[1]] = c;
+    }
+    let changed = 0;
+    h = h.replace(/(<span class="mz-ref-pop" id="ref-pop-(\d+)"[\s\S]*?<span class="mz-ref-pop-finding">)([^<]*)(<\/span>)/g,
+        (full, pre, pmid, finding, post) => {
+            if (!RAW_ABSTRACT_LABEL.test(decodeEntities(finding).trim())) return full;
+            if (!bl[pmid]) { problems.push(`ref-pop-${pmid}: no adequate modal Bottom-line to source a summary — left for review`); return full; }
+            changed++;
+            return pre + escapeHtml(bl[pmid]) + post;
+        });
+    return { ok: true, healed: h, changed, problems };
+}
+
+/**
+ * Network (fetcher injected). Replace a truncated "verbatim" abstract (first
+ * label is mid-structure) with the COMPLETE English abstract from PubMed.
+ * Lossless: the completed text must cover >=85% of the truncated text's words,
+ * else the modal is left untouched. @returns {ok, healed, changed, fetched, problems}
+ */
+export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {}) {
+    const maxFetch = opts.maxFetch || 30;
+    let h = String(bodyHtml || "");
+    const problems = [];
+    let changed = 0, fetched = 0;
+    const dialogs = [];
+    const dRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>[\s\S]*?<\/dialog>/g;
+    let dm;
+    while ((dm = dRe.exec(h)) !== null) dialogs.push({ pmid: dm[1], modal: dm[0] });
+    for (const { pmid, modal } of dialogs) {
+        const abM = modal.match(/<div class="mz-jc-abstract-body">([\s\S]*?)<\/div>/);
+        if (!abM) continue;
+        const first = (abM[1].match(/<h5 class="mz-jc-abstract-label">([^<]*)<\/h5>/) || [])[1];
+        if (!first || !MID_STRUCTURE_LABEL.test(first.trim())) continue; // not truncated
+        if (fetched >= maxFetch) { problems.push(`dd-${pmid}: abstract-completion fetch cap (${maxFetch}) reached`); continue; }
+        fetched++;
+        let blocks;
+        try { blocks = await fetchAbstract(pmid); } catch (e) { problems.push(`dd-${pmid}: PubMed fetch failed (${String(e && e.message || e)})`); continue; }
+        if (!blocks || !blocks.length) { problems.push(`dd-${pmid}: PubMed returned no abstract`); continue; }
+        const full = blocks.map((b) => (b.label ? `<strong>${escapeHtml(titleCase(b.label))}:</strong> ` : "") + escapeHtml(b.text)).join(" ");
+        // Coverage on VISIBLE text only — tokenizing raw HTML would count tag /
+        // attribute words (h5, class, mz-jc-abstract-label) and wrongly depress it.
+        const newSet = wordSet(visibleText(full));
+        const oldWords = [...wordSet(visibleText(abM[1]))];
+        const cov = oldWords.length ? oldWords.filter((w) => newSet.has(w)).length / oldWords.length : 1;
+        if (cov < 0.85) { problems.push(`dd-${pmid}: fetched abstract covers only ${Math.round(cov * 100)}% of the embedded text — skipped (not lossless)`); continue; }
+        const newBody = `<div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>${full}</p></div>`;
+        const newModal = modal.replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/, newBody);
+        // guard: nothing outside the abstract-body block changed
+        const strip = (x) => x.replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/, "");
+        if (strip(modal) !== strip(newModal)) { problems.push(`dd-${pmid}: non-abstract content would change — skipped`); continue; }
+        h = h.replace(modal, newModal);
+        changed++;
+    }
+    return { ok: true, healed: h, changed, fetched, problems };
+}
+
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
