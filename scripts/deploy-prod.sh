@@ -251,34 +251,55 @@ fi
 # (REPO_ROOT); the stage is a byte copy of those same files minus non-web
 # junk, so what was verified is exactly what ships.
 # ---------------------------------------------------------------------------
-command -v rsync >/dev/null 2>&1 || { echo "ERROR: rsync not found (needed to stage the deploy)." >&2; exit 1; }
+command -v rsync >/dev/null 2>&1 || RSYNC_MISSING=1
 
 STAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mz-pages-deploy.XXXXXX")"
 cleanup_stage() { rm -rf "$STAGE_DIR"; }
 trap cleanup_stage EXIT
 
-rsync -a \
-    --exclude='.git/' \
-    --exclude='.github/' \
-    --exclude='.wrangler/' \
-    --exclude='node_modules/' \
-    --exclude='companion-app/' \
-    --exclude='build/' \
-    --exclude='DerivedData/' \
-    --exclude='.build/' \
-    --exclude='*.xcuserstate' \
-    --exclude='.DS_Store' \
-    --exclude='wrangler.toml' \
-    --exclude='.env' \
-    --exclude='.env.*' \
-    --exclude='scripts/' \
-    --exclude='schema/' \
-    --exclude='*.md' \
-    --exclude='*.sh' \
-    --exclude='*.py' \
-    --exclude='.gitignore' \
-    --exclude='.gitattributes' \
-    "$REPO_ROOT/" "$STAGE_DIR/"
+# Exclude set: dev junk (.git, node_modules, native app, build artifacts) plus
+# non-web files (scripts/, schema/, *.md/*.sh/*.py, wrangler.toml, .env*). Kept
+# identical between the rsync path and the tar fallback below.
+if [ -z "${RSYNC_MISSING:-}" ]; then
+    rsync -a \
+        --exclude='.git/' \
+        --exclude='.github/' \
+        --exclude='.wrangler/' \
+        --exclude='node_modules/' \
+        --exclude='companion-app/' \
+        --exclude='build/' \
+        --exclude='DerivedData/' \
+        --exclude='.build/' \
+        --exclude='*.xcuserstate' \
+        --exclude='.DS_Store' \
+        --exclude='wrangler.toml' \
+        --exclude='.env' \
+        --exclude='.env.*' \
+        --exclude='scripts/' \
+        --exclude='schema/' \
+        --exclude='*.md' \
+        --exclude='*.sh' \
+        --exclude='*.py' \
+        --exclude='.gitignore' \
+        --exclude='.gitattributes' \
+        "$REPO_ROOT/" "$STAGE_DIR/"
+else
+    # rsync-less fallback (2026-07-06): some managed containers ship without
+    # rsync. tar is always present and its non-anchored --exclude matches the
+    # same trees/extensions (excluding a directory excludes its contents), so
+    # the staged byte set is identical to the rsync path — exactly what the
+    # pre-deploy gates verified against REPO_ROOT.
+    echo "ℹ️  rsync not present — staging via tar fallback."
+    ( cd "$REPO_ROOT" && tar \
+        --exclude='.git' --exclude='.github' --exclude='.wrangler' \
+        --exclude='node_modules' --exclude='companion-app' --exclude='build' \
+        --exclude='DerivedData' --exclude='.build' --exclude='*.xcuserstate' \
+        --exclude='.DS_Store' --exclude='wrangler.toml' --exclude='.env' \
+        --exclude='.env.*' --exclude='scripts' --exclude='schema' \
+        --exclude='*.md' --exclude='*.sh' --exclude='*.py' \
+        --exclude='.gitignore' --exclude='.gitattributes' \
+        -cf - . ) | ( cd "$STAGE_DIR" && tar -xf - )
+fi
 
 STAGED_FILES=$(find "$STAGE_DIR" -type f | wc -l | tr -d ' ')
 echo "📦 Staged $STAGED_FILES deployable files → $STAGE_DIR"
