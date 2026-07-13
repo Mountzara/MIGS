@@ -190,9 +190,44 @@ export function auditAbstractCompleteness(post) {
 // ---------------------------------------------------------------------
 export function auditPublishable(post) {
     const fmt = auditPostFormat(post);
-    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post)];
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post)];
     const problems = checks.flatMap((c) => c.problems);
     return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
+}
+
+// ---------------------------------------------------------------------
+// Summary-duplication audit (2026-07-06). Each study card carries a
+// `mz-cite-fits` "DO + CBG/MIGS lens" line. In W20/W21 (the standard) these
+// are paper-specific; the regressed W23/W24 pipeline stamped ONE canned,
+// essay-length per-topic paragraph verbatim onto up to 13 different papers —
+// so a reader saw the identical "Infertility is rarely just an organ failing…"
+// block on every infertility paper. That reads as fake per-paper insight.
+// Rule (calibrated against the live corpus: W20/W21 = 0, W23 = 13, W24 = 4):
+// an essay-length lens line (≥ 200 chars) must not appear on more than one
+// card. Short honest category tags (W21's "Where it fits: Evidence on X — see
+// abstract", ≤ 141 chars) legitimately repeat and are below the threshold, so
+// they never trip this. The auto-heal cannot synthesize grounded per-paper
+// prose, so a tripping post is held as a non-publishable draft for
+// regeneration. Deterministic + offline.
+// ---------------------------------------------------------------------
+export function auditSummaryDuplication(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const counts = new Map();
+    const re = /<p class="mz-cite-fits"[^>]*>([\s\S]*?)<\/p>/g;
+    let m;
+    while ((m = re.exec(h)) !== null) {
+        const text = visibleText(m[1]);
+        if (text.length < 200) continue; // only essay-length lens summaries; short category tags may repeat
+        counts.set(text, (counts.get(text) || 0) + 1);
+    }
+    for (const [text, n] of counts) {
+        if (n >= 2) {
+            problems.push(`the ${text.length}-char card lens summary is copy-pasted verbatim across ${n} different papers — each paper needs its own grounded summary (starts: "${text.slice(0, 70)}…").`);
+        }
+    }
+    return { ok: problems.length === 0, problems };
 }
 
 // ---------------------------------------------------------------------
@@ -720,4 +755,4 @@ export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {
     return { ok: true, healed: h, changed, fetched, problems };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };

@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -81,6 +81,22 @@ if (healRes.ok) {
         "numeric fidelity: modal without an embedded abstract is skipped (not failed)");
     // non-clinical kinds are exempt
     A(auditNumericFidelity({ kind: "claim_proposal", body_html: "OR 9.99" }).ok, "numeric fidelity: non-clinical kind exempt");
+}
+// ---------------- SUMMARY DUPLICATION (canned per-topic lens copy-pasted across papers) ----------------
+{
+    const long = "DO + CBG/MIGS lens — Frame: infertility is a systems condition: Infertility is rarely just an organ failing; stress-axis regulation, autonomic balance, inflammation, and sleep all factor in, and this needs a systems read before anything else.";
+    const card = (pmid, fits) => `<article class="mz-cite-card" id="mz-cite-${pmid}"><p class="mz-cite-fits">${fits}</p></article>`;
+    // same essay-length lens on 3 different papers -> FAIL
+    const dup = auditSummaryDuplication({ kind: "evidence", body_html: card(1, long) + card(2, long) + card(3, long) });
+    A(!dup.ok && dup.problems[0].includes("copy-pasted"), "summary-dup: essay-length lens copy-pasted across 3 papers FAILS");
+    // each paper a distinct long lens -> PASS
+    A(auditSummaryDuplication({ kind: "evidence", body_html: card(1, long + " alpha") + card(2, long + " beta") }).ok,
+        "summary-dup: distinct per-paper lens lines PASS");
+    // short honest category tags may repeat (W21 style, < 200c) -> PASS
+    const tag = "Where it fits: Evidence on Menopausal Hormone Therapy — see abstract for design + effect detail.";
+    A(auditSummaryDuplication({ kind: "evidence", body_html: card(1, tag) + card(2, tag) + card(3, tag) }).ok,
+        "summary-dup: short repeated category tags (< 200c) do NOT trip the gate");
+    A(auditSummaryDuplication({ kind: "claim_proposal", body_html: card(1, long) + card(2, long) }).ok, "summary-dup: non-clinical kind exempt");
 }
 // ---------------- ABSTRACT COMPLETENESS (verbatim abstract not truncated) ----------------
 {

@@ -19,7 +19,7 @@
 // Exit: 0 = clean, 2 = at least one untraceable effect number.
 // =====================================================================
 import { readFileSync } from "fs";
-import { auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries } from "../functions/_lib/post_format.js";
+import { auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication } from "../functions/_lib/post_format.js";
 
 const BASE = process.env.MZ_SITE_BASE || "https://mountzara.com";
 const args = process.argv.slice(2);
@@ -46,9 +46,10 @@ for (const p of posts) {
     const num = auditNumericFidelity(p);
     const abs = auditAbstractCompleteness(p);
     const pop = auditPopoverSummaries(p);
-    const problems = [...num.problems, ...abs.problems, ...pop.problems];
+    const dup = auditSummaryDuplication(p);
+    const problems = [...num.problems, ...abs.problems, ...pop.problems, ...dup.problems];
     if (!problems.length) {
-        console.log(`  ✓  ${p.id}: effect estimates traceable + abstracts complete + popover summaries adequate`);
+        console.log(`  ✓  ${p.id}: effect estimates traceable + abstracts complete + popover summaries adequate + no copy-pasted lens summaries`);
     } else {
         failed++;
         console.error(`  ✗  ${p.id}: ${problems.length} content-fidelity problem(s)`);
@@ -56,8 +57,8 @@ for (const p of posts) {
     }
 }
 if (failed) {
-    console.error(`\ncontent-fidelity gate: ${failed}/${checked} post(s) present an unverifiable effect number, a truncated "verbatim" abstract, or a raw-dump citation summary.`);
+    console.error(`\ncontent-fidelity gate: ${failed}/${checked} post(s) present an unverifiable effect number, a truncated "verbatim" abstract, a raw-dump citation summary, or a copy-pasted card lens summary.`);
     process.exit(2);
 }
-console.log(`\ncontent-fidelity gate: CLEAN — all ${checked} post(s): effect estimates traceable + abstracts complete + popover summaries adequate.`);
+console.log(`\ncontent-fidelity gate: CLEAN — all ${checked} post(s): effect estimates traceable + abstracts complete + popover summaries adequate + lens summaries unique.`);
 process.exit(0);

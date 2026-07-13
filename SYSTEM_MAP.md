@@ -733,13 +733,31 @@ numeric-gated) — median summary length rose to ~300 chars, matching/exceeding
 W21. W20 uses an older popover grammar (`mz-ref-title`, title-only, no finding
 field) and is exempt.
 
+**SUMMARY-DUPLICATION GATE (2026-07-06).** `auditSummaryDuplication(post)` in
+`post_format.js`: each study card's `mz-cite-fits` "DO + CBG/MIGS lens" line must
+be paper-specific. The regressed W23/W24 pipeline stamped ONE canned essay-length
+per-topic paragraph verbatim onto up to 13 different papers ("Infertility is
+rarely just an organ failing…" on every infertility card) — fake per-paper
+insight. Rule, calibrated against the live corpus (max repeat of a ≥200-char
+lens line: W20 = 0, W21 = 0, W23 = 13, W24 = 4): an essay-length lens line (≥ 200
+chars) must not appear on more than one card. Short honest category tags (W21's
+"Where it fits: Evidence on X — see abstract", ≤ 141 chars) legitimately repeat
+and sit below the 200-char floor, so they never trip it. The auto-heal cannot
+synthesize grounded per-paper prose, so a tripping post is held as a
+non-publishable draft for regeneration. Part of the combined content-fidelity
+gate (`audit_numeric_fidelity.mjs`) + `test_post_format_gate.mjs` (gate 69/69) +
+`auditPublishable`. Fix for the live corpus: the 72 duplicated W23/W24 cards (61
++ 11) were regenerated with paper-specific, abstract-grounded lens lines via a
+fan-out workflow (generate → adversarial grounding+specificity verify).
+
 **AUTHORITATIVE PUBLISH GATE — closes the scheduled-auto-post hole (2026-07-06).**
 Before this, the ingest/`/approve` choke points keyed off `auditPostFormat().canonical`
 (STRUCTURAL only), so a scheduled auto-post that was structurally canonical but
 had a fabricated effect number, a truncated verbatim abstract, or a raw-dump
 citation popover would AUTO-PUBLISH. `auditPublishable(post)` in `post_format.js`
-is now the single "may this go live" check = structural canonical AND all three
-content-fidelity audits. EVERY path in `functions/api/posts/[[path]].js` that sets
+is now the single "may this go live" check = structural canonical AND all four
+content-fidelity audits (numeric fidelity, abstract completeness, popover
+summaries, summary duplication). EVERY path in `functions/api/posts/[[path]].js` that sets
 `status:"published"` routes through it: (1) pipeline "publish immediately"
 (`body.status==="published"`) → only if `publishable`; (2) stale→canonical
 format-heal auto-republish → only if the incoming re-render is fully `publishable`;
