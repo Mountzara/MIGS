@@ -8866,6 +8866,29 @@
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch(() => {});
                 }
+                // 2026-07-13 — Reliability net: that single play() rejects
+                // silently if it lost the user-activation window or fired a beat
+                // before the media was decodable, leaving the hero blank at frame
+                // 1 until a tap (a "no animation" report we could not reproduce
+                // server-side). Retry play() the instant the video is actually
+                // ready (canplay/loadeddata) and whenever the tab returns to the
+                // foreground — a muted+playsinline video is permitted to start in
+                // all three cases, so this recovers an early/blocked start WITHOUT
+                // waiting for user interaction. Strictly additive: the `!v.paused`
+                // guard means it never runs against a video that is already
+                // advancing, so healthy playback and the deliberate
+                // start-after-loader timing are untouched.
+                const retryHeroPlay = () => {
+                    const v = document.getElementById('heroVideo');
+                    if (!v || v.tagName !== 'VIDEO' || !v.paused) return;
+                    const pr = v.play();
+                    if (pr && typeof pr.catch === 'function') pr.catch(() => {});
+                };
+                heroVideo.addEventListener('canplay', retryHeroPlay);
+                heroVideo.addEventListener('loadeddata', retryHeroPlay);
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) retryHeroPlay();
+                });
             }
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the
