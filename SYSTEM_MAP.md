@@ -798,6 +798,23 @@ popover raw-dump → bottom-line; truncated abstract → completed via injected
 fetcher; non-lossless fetch refused; a fabricated number survives and stays
 NOT publishable.
 
+**TEMPLATE-BOILERPLATE GATE (2026-07-14).** `auditTemplateBoilerplate(post)`
+in `post_format.js`, wired into `auditPublishable` + `audit_numeric_fidelity.mjs`
++ `test_post_format_gate.mjs`. Catches the softer sibling of exact duplication:
+the regressed generator emitted ONE fill-in-the-number template ("…This week's
+signal is a sample of N with an OR of X … That's the gap I'm building tools to
+close.") across 30-44 cards/post. Each copy is byte-UNIQUE (different N/X) so
+`auditSummaryDuplication` passes it, yet it reads as robotic filler — a
+regression from W21, whose every card line is paper-specific. Detection: strip
+each card's shared "Frame: …:" prefix, number-normalize the remaining
+sentences, flag any substantive sentence (≥40 chars) reused across **≥10**
+cards. Calibration: the W21 gold standard's most-reused fallback recurs in 7
+cards, so ≤9 is tolerated as shared framing; the template's content-free filler
+recurs across 16-44. 10 cleanly separates them (verified: W20/W21/trend briefs
+PASS, the 5 regressed roundups FAIL). Fix: the 190 templated cards across
+W23/W24/W25/W28/W29 were regenerated to grounded, paper-specific,
+adversarially-verified lens lines (same pipeline as the duplicate-card rehab).
+
 The base card rule (kept verbatim for the fixtures):
 `mz-cite-card > 0` AND `paper-card == 0` (W20/W21/evidence briefs canonical;
 the originally-shipped W23/W24/W25 stale).

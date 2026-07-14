@@ -190,7 +190,7 @@ export function auditAbstractCompleteness(post) {
 // ---------------------------------------------------------------------
 export function auditPublishable(post) {
     const fmt = auditPostFormat(post);
-    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post)];
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post)];
     const problems = checks.flatMap((c) => c.problems);
     return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
 }
@@ -211,6 +211,59 @@ export function auditPublishable(post) {
 // regeneration. Deterministic + offline.
 // ---------------------------------------------------------------------
 export function auditSummaryDuplication(post) {
+    return _auditSummaryDuplicationImpl(post);
+}
+
+// ---------------------------------------------------------------------
+// Template-boilerplate audit (2026-07-14). The duplication gate above only
+// catches lens summaries that are BYTE-identical across cards. The regressed
+// generator also emits a softer defect: one generic template with number-
+// substitution — e.g. "…This week's signal is a sample of N with an OR of X …
+// That's the gap I'm building tools to close." — reused across dozens of
+// cards. Each copy is byte-UNIQUE (different N/OR), so the duplication gate
+// passes it, yet it reads as robotic filler and is a regression from the W21
+// gold standard, whose every card line is paper-specific. This catches it by
+// SENTENCE reuse: strip each card's shared "Frame: …:" prefix, number-normalize
+// the remaining sentences, and flag any substantive sentence (≥40 chars) that
+// recurs across ≥3 different cards. W21 (unique lines) passes; the templated
+// posts trip and are held for regeneration. Deterministic + offline.
+// ---------------------------------------------------------------------
+export function auditTemplateBoilerplate(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const re = /<p class="mz-cite-fits"[^>]*>([\s\S]*?)<\/p>/g;
+    const sentCards = new Map(); // normalized sentence -> Set of card indices
+    let m, idx = 0;
+    while ((m = re.exec(h)) !== null) {
+        const full = visibleText(m[1]);
+        // drop the shared "DO + CBG/MIGS lens — Frame: <frame>:" prefix so a
+        // legitimately shared frame label isn't what trips this.
+        const body = full.replace(/^.*?Frame:[^:]*:\s*/, "");
+        const seen = new Set();
+        for (let s of body.split(/(?<=[.!?])\s+/)) {
+            s = s.replace(/\d[\d.,%–\-]*/g, "#").replace(/\s+/g, " ").trim().toLowerCase();
+            if (s.length < 40 || seen.has(s)) continue;
+            seen.add(s);
+            if (!sentCards.has(s)) sentCards.set(s, new Set());
+            sentCards.get(s).add(idx);
+        }
+        idx++;
+    }
+    for (const [s, cards] of sentCards) {
+        // Threshold 10: the W21 gold standard's most-reused line (a generic
+        // "see abstract for design + effect estimates" fallback) recurs in 7
+        // cards, so ≤9 is tolerated as shared framing; the regressed template's
+        // content-free filler ("That's the gap I'm building tools to close")
+        // recurs across 16–44 cards. 10 cleanly separates them.
+        if (cards.size >= 10) {
+            problems.push(`a generic templated sentence is reused across ${cards.size} different card lens summaries — each paper needs its own specific wording, not a fill-in-the-number template (sentence: "${s.slice(0, 72)}…").`);
+        }
+    }
+    return { ok: problems.length === 0, problems };
+}
+
+function _auditSummaryDuplicationImpl(post) {
     const problems = [];
     if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
     const h = typeof post.body_html === "string" ? post.body_html : "";
@@ -755,4 +808,4 @@ export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {
     return { ok: true, healed: h, changed, fetched, problems };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };

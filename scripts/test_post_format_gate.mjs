@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -97,6 +97,29 @@ if (healRes.ok) {
     A(auditSummaryDuplication({ kind: "evidence", body_html: card(1, tag) + card(2, tag) + card(3, tag) }).ok,
         "summary-dup: short repeated category tags (< 200c) do NOT trip the gate");
     A(auditSummaryDuplication({ kind: "claim_proposal", body_html: card(1, long) + card(2, long) }).ok, "summary-dup: non-clinical kind exempt");
+}
+// ---------------- TEMPLATE BOILERPLATE (one fill-in-the-number template reused across cards) ----------------
+{
+    const card = (pmid, fits) => `<article class="mz-cite-card" id="mz-cite-${pmid}"><p class="mz-cite-fits"><strong>DO + CBG/MIGS lens — Frame: menopause is a systems transition:</strong> ${fits}</p></article>`;
+    // the filler sentence is IDENTICAL bar the numbers → each full-fits is byte-unique (dup gate passes) but the template repeats.
+    const tmpl = (n, or_) => `In ${n} women the effect was OR ${or_}. This week's signal is modest in magnitude but worth tracking against what we'd predict. That's the gap I'm building tools to close.`;
+    // 12 cards on the template (≥10 threshold) -> FAIL
+    let body = "";
+    for (let i = 1; i <= 12; i++) body += card(i, tmpl(100 + i, "0." + (10 + i)));
+    const bad = auditTemplateBoilerplate({ kind: "evidence", body_html: body });
+    A(!bad.ok && bad.problems[0].includes("templated"), "template: a fill-in-the-number template reused across 12 cards FAILS");
+    // byte-uniqueness confirmed: the duplication gate does NOT catch it (proves the two gates are complementary)
+    A(auditSummaryDuplication({ kind: "evidence", body_html: body }).ok, "template: number-varied template is byte-unique so the dup gate passes it (why this gate exists)");
+    // fully paper-specific lines, no reused sentence -> PASS
+    let uniq = "";
+    const specifics = ["Laparoscopic excision cut recurrence at two years.", "Vaginal NOTES lowered conversion to laparotomy in class-III obesity.", "GnRH-agonist pretreatment shrank fibroid volume before myomectomy."];
+    for (let i = 0; i < 12; i++) uniq += card(i + 1, specifics[i % 3] + ` Point estimate ${i}.${i}${i}.`);
+    // (each of the 3 specifics recurs 4×, < 10 threshold) -> PASS
+    A(auditTemplateBoilerplate({ kind: "evidence", body_html: uniq }).ok, "template: paper-specific lines (each sentence < 10 cards) PASS");
+    // shared 'Frame:' prefix alone never trips it -> PASS
+    A(auditTemplateBoilerplate({ kind: "evidence", body_html: Array.from({ length: 15 }, (_, i) => card(i + 1, `Distinct finding number ${i} for paper ${i}.`)).join("") }).ok,
+        "template: a shared Frame prefix with distinct bodies does NOT trip the gate");
+    A(auditTemplateBoilerplate({ kind: "claim_proposal", body_html: body }).ok, "template: non-clinical kind exempt");
 }
 // ---------------- ABSTRACT COMPLETENESS (verbatim abstract not truncated) ----------------
 {

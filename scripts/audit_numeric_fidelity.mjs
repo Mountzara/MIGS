@@ -19,7 +19,7 @@
 // Exit: 0 = clean, 2 = at least one untraceable effect number.
 // =====================================================================
 import { readFileSync } from "fs";
-import { auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication } from "../functions/_lib/post_format.js";
+import { auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate } from "../functions/_lib/post_format.js";
 
 const BASE = process.env.MZ_SITE_BASE || "https://mountzara.com";
 const args = process.argv.slice(2);
@@ -47,9 +47,10 @@ for (const p of posts) {
     const abs = auditAbstractCompleteness(p);
     const pop = auditPopoverSummaries(p);
     const dup = auditSummaryDuplication(p);
-    const problems = [...num.problems, ...abs.problems, ...pop.problems, ...dup.problems];
+    const tpl = auditTemplateBoilerplate(p);
+    const problems = [...num.problems, ...abs.problems, ...pop.problems, ...dup.problems, ...tpl.problems];
     if (!problems.length) {
-        console.log(`  ✓  ${p.id}: effect estimates traceable + abstracts complete + popover summaries adequate + no copy-pasted lens summaries`);
+        console.log(`  ✓  ${p.id}: effect estimates traceable + abstracts complete + popover summaries adequate + no copy-pasted or templated lens summaries`);
     } else {
         failed++;
         console.error(`  ✗  ${p.id}: ${problems.length} content-fidelity problem(s)`);
