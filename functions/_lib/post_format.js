@@ -190,7 +190,7 @@ export function auditAbstractCompleteness(post) {
 // ---------------------------------------------------------------------
 export function auditPublishable(post) {
     const fmt = auditPostFormat(post);
-    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post)];
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post), auditModalPlaceholders(post)];
     const problems = checks.flatMap((c) => c.problems);
     return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
 }
@@ -228,6 +228,26 @@ export function auditSummaryDuplication(post) {
 // recurs across ≥3 different cards. W21 (unique lines) passes; the templated
 // posts trip and are held for regeneration. Deterministic + offline.
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Modal-placeholder audit (2026-07-14). The deep-dive modals carry all 13
+// journal-club sections structurally, but the regressed generator leaves
+// most of them as "Pending Dr. …'s review" author-placeholders — W25/W28/W29
+// shipped with ~1000 such stubs each, while W20/W21/W23/W24 (authored) carry
+// ~0. The structure audit passes (sections present) yet the CONTENT is unwritten.
+// Flag any post whose body carries more than a trivial number of pending-review
+// placeholders so a half-authored brief can never publish. Deterministic + offline.
+// ---------------------------------------------------------------------
+export function auditModalPlaceholders(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const n = (h.match(/[Pp]ending\b[^<]{0,40}\breview\b/g) || []).length;
+    if (n > 5) {
+        problems.push(`body_html carries ${n} unfilled "Pending …review" deep-dive placeholders — the journal-club sections are author-stubs, not written analysis. Every canonical brief (W20/W21/W23/W24) has these authored. Author the deep dives before publishing.`);
+    }
+    return { ok: problems.length === 0, problems };
+}
+
 export function auditTemplateBoilerplate(post) {
     const problems = [];
     if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
@@ -808,4 +828,4 @@ export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {
     return { ok: true, healed: h, changed, fetched, problems };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
