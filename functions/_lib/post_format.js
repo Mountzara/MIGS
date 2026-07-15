@@ -81,22 +81,37 @@ export function auditPostFormat(post) {
     const topicSections = (h.match(/class="(?:mz-topic-group|topic-section)\b/g) || []).length;
     const isWeeklyRoundup = topicSections >= 2 || /Monday Mornings/.test(h);
     if (citeCards > 0 && isWeeklyRoundup) {
-        // Feature-level requirements, each satisfied by EITHER the W21-era
-        // (mz-post-*) OR the W20-era vocabulary — both are "proper" briefs
-        // with different section class names. The four features below are the
-        // common denominator present in every proper roundup (W20, W21, and
-        // the rebuilt W23/W24) and ABSENT from the stripped cards-only briefs
-        // (which had only a hero + counters + topic-section grids). Matching on
-        // features, not exact W21 class names, avoids false-flagging W20.
+        // Feature-level requirements. CRITICAL (2026-07-15): match real ELEMENTS
+        // via `class="…<feature>…"`, NOT a bare substring — the inline <style>
+        // block defines `.mz-topic-group`, `.mz-five-pick`, `.mz-post-narrative`
+        // etc., so a bare-substring test passes on the CSS ALONE even when the
+        // post carries ZERO such elements. That hole let W25/W28/W29 publish
+        // with a flat card directory and NO per-topic synthesis groups (operator
+        // report 2026-07-15: "no AI summaries of each topic, you just list the
+        // articles"). Each feature below is satisfied by EITHER the W21-era
+        // (mz-post-*) OR the W20-era vocabulary; matching on the class attribute
+        // (element), not the selector text.
+        // NOTE: Five Picks is NOT required — W20 (a gold-standard brief) has no
+        // Five Picks feature at all; the original bare-substring gate only
+        // "passed" W20 because the inline CSS defines `.mz-five-pick`. The true
+        // common spine across W20/W21/W23/W24 is: an editorial narrative, real
+        // per-topic groups each opened by a synthesis paragraph, and a
+        // references list.
         const REQUIRED = [
-            [/mz-(?:post-)?narrative/, "an editorial narrative section"],
-            [/mz-five-pick/, "the Five Picks feature"],
-            [/mz-topic-group/, "per-topic synthesis groups (mz-topic-group)"],
-            [/mz-references-list/, "the references list"],
+            [/class="[^"]*\bmz-(?:post-)?narrative\b/, "an editorial narrative section"],
+            [/class="[^"]*\b(?:mz-topic-group|topic-section)\b/, "per-topic synthesis groups"],
+            [/class="[^"]*\bmz-references-list\b/, "the references list"],
         ];
         const missing = REQUIRED.filter(([re]) => !re.test(h)).map(([, label]) => label);
+        // The per-topic groups must carry actual SYNTHESIS PROSE, not just be
+        // empty card containers — W20/W21/W23/W24 each open every topic group
+        // with a synthesis paragraph. Require ≥2 groups AND ≥2 synthesis blocks.
+        const topicGroupEls = (h.match(/class="[^"]*\b(?:mz-topic-group|topic-section)\b/g) || []).length;
+        const synthEls = (h.match(/mz-toc-group-synthesis|mz-topic-group-synthesis|mz-group-synthesis|mz-section-intro/g) || []).length;
+        if (topicGroupEls >= 1 && topicGroupEls < 2) missing.push("at least 2 per-topic synthesis groups");
+        if (topicGroupEls >= 2 && synthEls < 2) missing.push("per-topic synthesis paragraphs (topic groups present but no synthesis prose)");
         if (missing.length) {
-            problems.push(`body_html is missing the Monday-Mornings editorial architecture (${missing.join("; ")}) — every canonical brief (W20, W21) carries the full editorial spine, not just a directory of cards. A stripped, cards-only post must not publish.`);
+            problems.push(`body_html is missing the Monday-Mornings editorial architecture (${missing.join("; ")}) — every canonical brief (W20, W21) carries the full editorial spine (a per-topic synthesis paragraph above each topic's cards), not just a directory of cards. A stripped, cards-only post must not publish.`);
         }
     }
     if (h.length === 0) {
