@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -97,6 +97,16 @@ if (healRes.ok) {
     A(auditSummaryDuplication({ kind: "evidence", body_html: card(1, tag) + card(2, tag) + card(3, tag) }).ok,
         "summary-dup: short repeated category tags (< 200c) do NOT trip the gate");
     A(auditSummaryDuplication({ kind: "claim_proposal", body_html: card(1, long) + card(2, long) }).ok, "summary-dup: non-clinical kind exempt");
+}
+// ---------------- MODAL PLACEHOLDERS (half-authored deep dives) ----------------
+{
+    const pend = (pmid) => `<section class="mz-jc-section" id="dd-${pmid}-question"><h3>Clinical question <span class="mz-jc-pending-tag">Pending review</span></h3><p><em>Pending Dr. Mabini's review.</em></p></section>`;
+    // 6 pending sections (> threshold 5) -> FAIL
+    let many = ""; for (let i = 1; i <= 6; i++) many += pend(1000 + i);
+    A(!auditModalPlaceholders({ kind: "evidence", body_html: many }).ok, "placeholders: >5 pending-review stubs FAIL");
+    // <=5 (the ~1 benign footer placeholder W20/W21 also carry) -> PASS
+    A(auditModalPlaceholders({ kind: "evidence", body_html: pend(1) + pend(2) }).ok, "placeholders: a couple of stubs (<=5) PASS");
+    A(auditModalPlaceholders({ kind: "claim_proposal", body_html: many }).ok, "placeholders: non-clinical kind exempt");
 }
 // ---------------- TEMPLATE BOILERPLATE (one fill-in-the-number template reused across cards) ----------------
 {
