@@ -257,6 +257,23 @@ the target element is in a section ABOVE the script tag.
    so a sandbox/CI TLS-MITM (self-signed root → `ERR_CERT_AUTHORITY_
    INVALID`) doesn't block the gate. Orphan-discovery still enforced
    in all environments.
+10. **Content-render gate (added 2026-07-21, §14.1)** —
+    `scripts/audit_render.mjs`: renders every published weekly roundup's
+    `body_html` in headless Chromium and asserts on the reader's actual
+    DOM — each topic group shows real per-topic AI synthesis prose,
+    deep-dive modals are authored (no "Pending review") AND styled
+    (a force-opened modal's section heading picks up the stylesheet's
+    `text-transform:uppercase`; default `none` catches the unstyled
+    `dd-*` grammar), and the body throws no JS error. Grammar-ADAPTIVE:
+    stays green on both valid corpus layouts (W20 nests synthesis in a
+    TOC sibling → count check; W21+ nests it inside each group → per-group
+    check). Closes the systemic blind spot behind the string/structural
+    gates — they check whether markup EXISTS as a source string (often
+    only in CSS), not whether it RENDERS. Verified 2026-07-21 green on the
+    whole approved corpus (W20/W21 + W23–W29) and red on each of the three
+    regressions (stripped synthesis, injected `Pending review`, `dd-*`
+    class with no matching CSS). Best-effort: self-skips (exit 0) when
+    playwright-core / Chromium is absent. Skip: `DEPLOY_SKIP_RENDER_AUDIT=1`.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 
@@ -1041,6 +1058,20 @@ struck through are RESOLVED — kept in this list as audit history.
    4 carousels, body bg blue tokens; plus 3-check audit per education
    page covering disclaimer visibility + body bg + `--glow-purple`
    CSS var). Wired into `deploy-prod.sh` as a post-deploy gate.
+   **§14.1 — content-render generalization (2026-07-21).** The §1.1 /
+   item-2 gap was not CSS-specific: the WHOLE content-gate stack asserts
+   on whether markup EXISTS as a source string, not whether it RENDERS.
+   This let weekly briefs (W25/W28/W29) ship that a reader saw as broken —
+   per-topic AI synthesis absent, deep-dive modals as placeholder stubs or
+   unstyled raw HTML — while every string/structural gate stayed green
+   (the `mz-topic-group` substring matched inside a CSS rule; the modal
+   markup was byte-present). ~~No render-level gate covered post BODIES
+   (only routes/homepage).~~ **RESOLVED 2026-07-21** by
+   `scripts/audit_render.mjs` (deploy gate #10 above): renders each
+   published roundup's `body_html` in headless Chromium and asserts on the
+   reader's DOM — synthesis prose per topic, authored+styled modals, no JS
+   error. Grammar-adaptive; verified green on the approved corpus and red
+   on stripped-synthesis / `Pending review` / unstyled-`dd-*` regressions.
 3. **§3.7 / §3.11 audit coverage** — `/curriculum/` + `/evidence/`
    wrapper pages not yet covered by KB-anchor gate (currently only
    `/education/*` + `/portal/education/*`).

@@ -513,3 +513,41 @@ if [ -z "${DEPLOY_SKIP_ROUTE_RENDER_AUDIT:-}" ]; then
         fi
     fi
 fi
+
+# ---------------------------------------------------------------------------
+# Content-render gate (added 2026-07-21 per SYSTEM_MAP.md §14.1). The string
+# and structural gates repeatedly PASSED weekly briefs that a READER saw as
+# broken — placeholder deep dives, missing per-topic AI synthesis, unstyled
+# dd-* modals — because the markup existed as a source string (often only in
+# the CSS) while the rendered DOM was wrong. This gate renders each published
+# roundup's body_html in headless Chromium and asserts on the ACTUAL DOM:
+# every topic group shows real synthesis prose, deep-dive modals are authored
+# (no "Pending review") AND styled (headings pick up the stylesheet), and the
+# body throws no JS errors. Verified 2026-07-21 to be green on the entire
+# approved corpus (W20/W21 gold standard + W23–W29) and red on each of those
+# three regressions. Best-effort: self-skips (exit 0) when playwright-core /
+# Chromium is absent, same policy as the runtime-CSS audit.
+# Skip with DEPLOY_SKIP_RENDER_AUDIT=1 — dangerous, document why.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_RENDER_AUDIT:-}" ]; then
+    if command -v node >/dev/null 2>&1 && [ -f scripts/audit_render.mjs ]; then
+        echo ""
+        echo "🔍 Content-render gate — every roundup rendered + reader-DOM asserted on live site..."
+        if node scripts/audit_render.mjs > /tmp/_render_audit.log 2>&1; then
+            tail -1 /tmp/_render_audit.log
+            echo "   ✅ content-render gate passed"
+        else
+            echo ""
+            echo "🛑 CONTENT-RENDER GATE FAILED — a published roundup renders"
+            echo "   incorrectly for a reader (missing per-topic synthesis, a"
+            echo "   'Pending review' deep-dive stub, an unstyled modal, or a page"
+            echo "   JS error). Heal the post body in R2 (functions/_lib/post_format.js"
+            echo "   auditPublishable/healPost) and re-run."
+            grep -E '✗' /tmp/_render_audit.log | head -20
+            echo ""
+            echo "   Full log: /tmp/_render_audit.log"
+            echo "   Override: DEPLOY_SKIP_RENDER_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+    fi
+fi
