@@ -108,6 +108,18 @@
             .brief-grid { gap: 14px; }
             .brief-card { padding: 20px 18px; }
             .brief-detail { padding: 0 16px 60px; }
+            /* Nav must FIT a 390px phone: brand + 4 links measured 429px,
+               giving every page a 39px sideways wobble (found by
+               audit_reader_path.mjs mobile pass, 2026-07-22). */
+            .nav { padding-left: 14px; padding-right: 14px; }
+            .nav-brand { font-size: 15px; letter-spacing: 0.05em; gap: 8px; }
+            .nav-brand img { height: 26px; }
+            .nav-links { gap: 10px; font-size: 13px; }
+            /* Post bodies must never widen the page: legacy inline-reference
+               popovers (.mz-ref-pop, ~360px absolutely positioned) overflowed
+               the viewport by 115-246px on W20/W21-era posts. */
+            .brief-detail-body { overflow-x: clip; }
+            .brief-detail-body .mz-ref-pop { max-width: calc(100vw - 40px); }
         }
         .brief-card {
             display: flex; flex-direction: column;

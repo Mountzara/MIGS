@@ -295,6 +295,23 @@ the target element is in a section ABOVE the script tag.
     regressions (stripped synthesis, injected `Pending review`, `dd-*`
     class with no matching CSS). Best-effort: self-skips (exit 0) when
     playwright-core / Chromium is absent. Skip: `DEPLOY_SKIP_RENDER_AUDIT=1`.
+11. **Reader-path gate (added 2026-07-22, §14.1)** —
+    `scripts/audit_reader_path.mjs`: walks the path a READER actually
+    takes for EVERY published post (all 15, both shells — not just
+    roundups): `/evidence/` + `/trending/` listings render one linked
+    card per published post; each detail page loads through the real
+    shell (API fetch → innerHTML → script re-execution); deep-dive
+    modals are opened BY CLICKING their trigger buttons (dialog.open,
+    authored, styled); roundup synthesis + references VISIBLE
+    (offsetHeight>0); zero page JS errors; and NO page — post detail,
+    listing, home, about — scrolls horizontally at 390px. Shell-grammar
+    aware (`brief-*` on /evidence/, `post-*` on /trending/). Its first
+    run caught 3 shipped defects invisible to every other gate: the
+    /trending/ shell never re-executed injected body scripts (every
+    deep-dive button was a DEAD CLICK on all 8 trend briefs), a 39px
+    site-wide mobile nav overflow, and 115–246px mobile overflow from
+    legacy `.mz-ref-pop` popovers on W20/W21-era posts. Best-effort
+    skip without Chromium. Skip: `DEPLOY_SKIP_READER_PATH_AUDIT=1`.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 

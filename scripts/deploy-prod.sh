@@ -554,3 +554,40 @@ if [ -z "${DEPLOY_SKIP_RENDER_AUDIT:-}" ]; then
         fi
     fi
 fi
+
+# ---------------------------------------------------------------------------
+# Reader-path gate (added 2026-07-22 per SYSTEM_MAP.md §14.1). The content-
+# render gate renders body_html in ISOLATION; this one walks the path a
+# reader actually takes for EVERY published post (not just roundups): the
+# /evidence/ + /trending/ listings render one linked card per post, each
+# detail page loads through the real shell (API fetch -> innerHTML ->
+# script re-execution), deep-dive modals open BY CLICKING their trigger
+# buttons, roundup synthesis/references are VISIBLE, no page JS errors, and
+# no page — post, listing, home, about — scrolls horizontally at 390px.
+# First run found 3 shipped defects the other gates could not see: the
+# /trending/ shell never re-executed body scripts (every deep-dive button
+# dead), a 39px site-wide mobile nav overflow, and 115-246px popover
+# overflow on W20/W21-era posts. Best-effort skip without Chromium.
+# Skip with DEPLOY_SKIP_READER_PATH_AUDIT=1 — dangerous, document why.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_READER_PATH_AUDIT:-}" ]; then
+    if command -v node >/dev/null 2>&1 && [ -f scripts/audit_reader_path.mjs ]; then
+        echo ""
+        echo "🔍 Reader-path gate — every post walked end-to-end through the real shells..."
+        if node scripts/audit_reader_path.mjs > /tmp/_reader_path_audit.log 2>&1; then
+            tail -1 /tmp/_reader_path_audit.log
+            echo "   ✅ reader-path gate passed"
+        else
+            echo ""
+            echo "🛑 READER-PATH GATE FAILED — a published post is broken on the"
+            echo "   path a reader actually takes (listing card missing, shell load,"
+            echo "   dead deep-dive trigger, invisible synthesis, JS error, or"
+            echo "   mobile horizontal overflow):"
+            grep -E '✗' /tmp/_reader_path_audit.log | head -20
+            echo ""
+            echo "   Full log: /tmp/_reader_path_audit.log"
+            echo "   Override: DEPLOY_SKIP_READER_PATH_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+    fi
+fi

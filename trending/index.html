@@ -168,6 +168,18 @@
             .post-grid { gap: 14px; }
             .post-card { padding: 20px 18px; }
             .post-card .post-card-title { font-size: 18px; }
+            /* Nav must FIT a 390px phone: brand + 4 links measured 429px,
+               giving every page a 39px sideways wobble (found by
+               audit_reader_path.mjs mobile pass, 2026-07-22). */
+            .nav { padding-left: 14px; padding-right: 14px; }
+            .nav-brand { font-size: 15px; letter-spacing: 0.05em; gap: 8px; }
+            .nav-brand img { height: 26px; }
+            .nav-links { gap: 10px; font-size: 13px; }
+            /* Post bodies must never widen the page: legacy inline-reference
+               popovers (.mz-ref-pop, ~360px absolutely positioned) overflowed
+               the viewport by 115-246px on W20/W21-era posts. */
+            .post-detail-body { overflow-x: clip; }
+            .post-detail-body .mz-ref-pop { max-width: calc(100vw - 40px); }
             .post-detail {
                 padding: 0 16px 60px;
             }
@@ -604,6 +616,21 @@
                     <p class="post-detail-subtitle">${esc(post.summary)}</p>
                     <div class="post-detail-body">${post.body_html || ''}</div>
                 `;
+
+                // Execute any <script> tags that came through innerHTML —
+                // innerHTML strips script execution by default, so we walk
+                // the new DOM and replace each <script> with a fresh one.
+                // Without this, the deep-dive modal handlers (openDeepDive)
+                // that ship inside body_html never run and every deep-dive
+                // trigger button is a dead click. The /evidence/ shell has
+                // had this walker all along; /trending/ was missing it
+                // (found by audit_reader_path.mjs, 2026-07-22).
+                document.querySelectorAll('#detailContent script').forEach(function (oldScript) {
+                    var s = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(function (a) { s.setAttribute(a.name, a.value); });
+                    s.text = oldScript.textContent;
+                    oldScript.parentNode.replaceChild(s, oldScript);
+                });
             } catch (e) {
                 document.getElementById('detailContent').innerHTML = `<div class="empty">Post not found: ${esc(e.message || String(e))}</div>`;
             }
