@@ -241,6 +241,27 @@ the target element is in a section ABOVE the script tag.
 8. **Runtime-CSS audit** — `scripts/audit_runtime_css.py homepage`
    (getComputedStyle on live; the §1.1 bytes-present-runtime-absent
    class). Skip: `DEPLOY_SKIP_RUNTIME_CSS_AUDIT=1`.
+   **Environment resilience (2026-07-22):** all Python browser audits
+   (this one, visual, route-render) launch via
+   `scripts/_lib_pw_launch.py` — container-Chromium fallback when the
+   pip-pinned browser build is absent, webkit→chromium fallback (loudly
+   noted) when WebKit isn't installed, env-proxy injection
+   (HTTPS_PROXY) plus `--ssl-version-max=tls1.2` in proxied containers
+   (the egress MITM resets Chromium's TLS 1.3 hello; cert verification
+   stays ON via the proxy CA in the NSS store). These audits previously
+   SILENTLY SKIPPED in the remote deploy environment — which let a
+   stale `#how-you-visit` manifest selector (element moved to portal
+   2026-06-25, commit 5953296) sit undetected for a month.
+8b. **Visual/interactive audit — HARD gate since 2026-07-22** —
+   `scripts/audit_visual_runtime.py`: images loaded, autoplay videos
+   playing, hero video starts/covers, Ken-Burns actually animating,
+   fade-in + Apple-reveal completed, across desktop-chromium + iPhone +
+   iPhone-reduce-motion profiles. Calibrated 29/29 on live: videos this
+   test engine cannot DECODE (mp4-only sources; Playwright Chromium
+   ships no H.264 — detected as readyState 0 + NETWORK_NO_SOURCE +
+   canPlayType('avc1')='') are skipped LOUDLY as unjudgeable rather
+   than false-failed; a decodable video that stalls still fails.
+   Demote: `DEPLOY_VISUAL_GATE_SOFT=1`. Skip: `DEPLOY_SKIP_VISUAL_AUDIT=1`.
 9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
    in headless Chromium on live + title/selector asserted (homepage-
@@ -981,7 +1002,7 @@ or it won't be backed up.
 | **Phase deploys** | `_deploy_phase14_a/b/c/d.sh`, `_deploy_phase15.sh`, `_deploy_phase_qa/qb/qc.sh`, `_deploy_p25a.sh`, `_redeploy_phase14_*_fix.sh` |
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
-| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_deploy_gate.py` (structural-integrity hard gate — deploy gate #7; reuses `audit_accuracy.py` header-* + `audit_inline_refs.py`), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #9, env-resilient), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
+| **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_deploy_gate.py` (structural-integrity hard gate — deploy gate #7; reuses `audit_accuracy.py` header-* + `audit_inline_refs.py`), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #9, env-resilient; `/` asserts `#identity-map` since 2026-07-22 — `#how-you-visit` moved to portal in 5953296), `_lib_pw_launch.py` (shared Playwright launcher: container-Chromium/engine fallback + proxy env wiring for ALL Python browser audits), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
 | **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |

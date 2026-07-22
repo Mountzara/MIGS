@@ -448,10 +448,11 @@ fi
 # covers the screen, the Ken-Burns animation is applied + actually moving, and
 # the opening fade-in sequence completes.
 #
-# SOFT GATE for now (reports, does NOT block) — it must be calibrated against a
-# live render on a browser-equipped machine before being promoted to a hard
-# gate. Promote by setting DEPLOY_VISUAL_GATE_HARD=1 once calibrated.
-# Skip entirely with DEPLOY_SKIP_VISUAL_AUDIT=1.
+# HARD GATE since 2026-07-22: calibrated against a live render (29/29 across
+# desktop-chromium + iPhone + iPhone-reduce-motion profiles, with engine and
+# codec fallbacks that skip loudly instead of false-failing). Demote to
+# report-only with DEPLOY_VISUAL_GATE_SOFT=1; skip entirely with
+# DEPLOY_SKIP_VISUAL_AUDIT=1.
 # ---------------------------------------------------------------------------
 if [ -z "${DEPLOY_SKIP_VISUAL_AUDIT:-}" ] && [ -f scripts/audit_visual_runtime.py ]; then
     if ! py_has_module playwright; then
@@ -465,14 +466,16 @@ if [ -z "${DEPLOY_SKIP_VISUAL_AUDIT:-}" ] && [ -f scripts/audit_visual_runtime.p
             echo "   ✅ visual/interactive audit passed"
         else
             echo ""
-            echo "⚠️  VISUAL/INTERACTIVE audit reported failures (SOFT gate — not blocking):"
+            echo "🛑 VISUAL/INTERACTIVE audit FAILED — the page LOOKS broken at"
+            echo "   runtime (image/video/animation/reveal), not just in source:"
             grep -E '✗' /tmp/_visual_audit.log | head -20
             echo "   Full log: /tmp/_visual_audit.log"
-            if [ -n "${DEPLOY_VISUAL_GATE_HARD:-}" ]; then
-                echo "🛑 DEPLOY_VISUAL_GATE_HARD set — blocking."
+            if [ -n "${DEPLOY_VISUAL_GATE_SOFT:-}" ]; then
+                echo "⚠️  DEPLOY_VISUAL_GATE_SOFT set — reporting only, not blocking."
+            else
+                echo "   Override: DEPLOY_VISUAL_GATE_SOFT=1 ./scripts/deploy-prod.sh '<reason>'"
                 exit 1
             fi
-            echo "   (Calibrate against a live render, then set DEPLOY_VISUAL_GATE_HARD=1 to enforce.)"
         fi
     fi
 fi

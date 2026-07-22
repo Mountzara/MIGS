@@ -497,13 +497,19 @@ def main() -> int:
     report: dict[str, Any] = {"surfaces": []}
     any_fail = False
 
+    from _lib_pw_launch import launch_chromium, launch_engine
+
     with sync_playwright() as p_ctx:
         if args.desktop:
-            browser = p_ctx.chromium.launch(headless=True)
+            browser, _, note = launch_chromium(p_ctx, headless=True)
+            if note:
+                print(f"  (launcher: {note})")
             ctx = browser.new_context(viewport={"width": 1440, "height": 900})
         else:
             iphone = p_ctx.devices["iPhone 14 Pro Max"]
-            browser = p_ctx.webkit.launch(headless=True)
+            browser, engine_used, note = launch_engine(p_ctx, "webkit", headless=True)
+            if note:
+                print(f"  (launcher: {note})")
             ctx = browser.new_context(**iphone, bypass_csp=True)
         page = ctx.new_page()
 

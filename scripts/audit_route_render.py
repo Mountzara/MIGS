@@ -170,8 +170,12 @@ def main():
         except Exception as e:
             return f"RENDER {path}: load failed — {str(e)[:160]}"
 
+    from _lib_pw_launch import launch_chromium
+
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser, _, launch_note = launch_chromium(p)
+        if launch_note:
+            print(f"  (launcher: {launch_note})")
         ctx = browser.new_context(
             viewport={"width": 1280, "height": 1200},
             # Some sandboxed CI/VM networks MITM TLS with a self-signed root, so
