@@ -8938,6 +8938,26 @@
                 document.addEventListener('visibilitychange', () => {
                     if (!document.hidden) retryHeroPlay();
                 });
+                // 2026-07-22 — DETERMINED AUTO-START. The event-based retries
+                // above have a hole: on a repeat visit the media is fully
+                // cached, so canplay/loadeddata fired BEFORE these listeners
+                // attached and never fire again — if the single play() above
+                // rejected (iOS pause→seek→play race), the drawing froze at
+                // frame 1 until a tap ("animation only works when I click").
+                // A muted playsinline video may legally start WITHOUT user
+                // interaction at any time, so poll briefly until playback
+                // actually advances, then stop. Bounded (20 × 300ms) and
+                // self-cancelling on success, finish, or poster swap.
+                let autoStartTries = 0;
+                const autoStartPoll = setInterval(() => {
+                    const v = document.getElementById('heroVideo');
+                    const done = !v || v.tagName !== 'VIDEO' ||
+                        v.dataset.heroEnded === '1' ||
+                        (!v.paused && v.currentTime > 0.05) ||
+                        ++autoStartTries > 20;
+                    if (done) { clearInterval(autoStartPoll); return; }
+                    retryHeroPlay();
+                }, 300);
             }
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the
