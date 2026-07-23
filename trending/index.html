@@ -46,6 +46,19 @@
             outline-offset: 3px;
             border-radius: 4px;
         }
+        /* 2026-07-22 user directive: ALL glass-modal text pure white — the
+           embedded post CSS used grey-ish rgba(245,245,247,.6-.85) tiers,
+           which read muddy on the frosted glass. Overrides the per-post
+           <style> (shell CSS loads after body_html styles at equal
+           specificity, so !important guarantees the win). Purple section
+           headings (accent) are intentionally kept. */
+        .mz-jc-modal p, .mz-jc-modal li, .mz-jc-section p, .mz-jc-section li,
+        .mz-jc-abstract-body, .mz-jc-abstract-body p, .mz-jc-section-intro,
+        .mz-jc-modal .mz-jc-pico-grid, .mz-jc-modal td, .mz-jc-modal th,
+        .mz-jc-modal blockquote, .mz-jc-modal dd, .mz-jc-modal dt {
+            color: #ffffff !important;
+        }
+
 
         /* Finalized hero line-art as a fixed backdrop (static final frame — does
            NOT play) so the page's glass components frost against real texture

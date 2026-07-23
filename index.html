@@ -47,6 +47,13 @@
 
         html {
             scroll-behavior: smooth;
+            /* 2026-07-22 — the document CANVAS carries the plum gradient.
+               The fixed stage fades to 0.75 after the pinned showcase; the
+               25% that bleeds through used to be FLAT #120b22, so deep
+               scroll read black on OLED ("background becomes dark again").
+               Painting the canvas with the same tones keeps every scroll
+               depth looking like the opening. */
+            background: linear-gradient(163deg, #1c1236 0%, #150e2a 46%, #181031 100%);
             /* Anchor jumps (#surgery, #research, #awards, …) must clear the
                fixed ~64px nav so section eyebrows aren't tucked underneath it. */
             scroll-padding-top: 80px;
@@ -54,7 +61,7 @@
 
         body {
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-            background: var(--bg);
+            background: transparent;  /* html canvas gradient shows through (2026-07-22) */
             color: var(--text-on-dark);
             overflow-x: hidden;
             font-feature-settings: "ss01", "cv11";
@@ -8916,6 +8923,13 @@
                 const retryHeroPlay = () => {
                     const v = document.getElementById('heroVideo');
                     if (!v || v.tagName !== 'VIDEO' || !v.paused) return;
+                    // NEVER restart a FINISHED hero. The 'ended' handler seeks
+                    // to the final frame, which itself fires 'canplay' — without
+                    // this guard that event re-entered here, play() wrapped the
+                    // clip to 0, and the 8s drawing replayed in an endless loop
+                    // (2026-07-22 regression). Mid-play resumes (tab switch)
+                    // still work: heroEnded is only set at the true end.
+                    if (v.dataset.heroEnded === '1') return;
                     const pr = v.play();
                     if (pr && typeof pr.catch === 'function') pr.catch(() => {});
                 };
