@@ -30,7 +30,7 @@
                that is the value the whole site actually rendered; made it
                canonical and removed the late duplicate. */
             --glow-purple: 139, 92, 246;
-            --bg: #0b0714;
+            --bg: #120b22;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
             --text-on-dark: #f5f5f7;
@@ -345,9 +345,9 @@
                halation). Tones stay dark enough that all text contrast
                remains AAA — verified by the reader-path contrast checks. */
             background:
-                radial-gradient(120vmax 85vmax at 78% -8%, rgba(139, 92, 246, 0.16), transparent 62%),
-                radial-gradient(95vmax 75vmax at 8% 108%, rgba(109, 40, 217, 0.14), transparent 58%),
-                linear-gradient(163deg, #100a1e 0%, #0b0714 46%, #0e0817 100%);
+                radial-gradient(120vmax 85vmax at 78% -8%, rgba(139, 92, 246, 0.24), transparent 62%),
+                radial-gradient(95vmax 75vmax at 8% 108%, rgba(109, 40, 217, 0.20), transparent 58%),
+                linear-gradient(163deg, #1c1236 0%, #150e2a 46%, #181031 100%);
             transition: opacity 0.8s ease-out;
         }
         .hero-bg-stage.faded {
@@ -372,9 +372,9 @@
             z-index: 2;
             pointer-events: none;
             background:
-                radial-gradient(120vmax 85vmax at 78% -8%, rgba(139, 92, 246, 0.22), transparent 62%),
-                radial-gradient(95vmax 75vmax at 8% 108%, rgba(109, 40, 217, 0.20), transparent 58%),
-                linear-gradient(163deg, rgba(36, 22, 68, 0.38) 0%, rgba(24, 14, 46, 0.34) 46%, rgba(30, 18, 56, 0.38) 100%);
+                radial-gradient(120vmax 85vmax at 78% -8%, rgba(150, 105, 255, 0.30), transparent 62%),
+                radial-gradient(95vmax 75vmax at 8% 108%, rgba(122, 52, 235, 0.26), transparent 58%),
+                linear-gradient(163deg, rgba(62, 40, 118, 0.46) 0%, rgba(44, 28, 86, 0.42) 46%, rgba(54, 34, 102, 0.46) 100%);
         }
         .hero-video {
             position: absolute;
@@ -397,7 +397,7 @@
             /* 2026-06-13 — push saturation/brightness/contrast so the mauve
                line-art is vivid: that vivid drawing IS the contrast that lets the
                frosted-glass cards read as real Apple glass. */
-            filter: saturate(2.0) brightness(1.28) contrast(1.28);
+            filter: saturate(2.0) brightness(1.45) contrast(1.28); /* +brightness 2026-07-22: offsets the stronger plum overlay so the line-art stays vivid */
             /* 2026-07-22 — screen-blend the video so its black pixels become
                transparent: the mauve line-art now draws ITSELF directly onto
                the purple-gradient stage instead of carrying its own black

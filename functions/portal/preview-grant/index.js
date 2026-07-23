@@ -44,7 +44,7 @@ ${refresh}
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg-base: #0b0714;
+    --bg-base: #120b22;
     --fg-strong: #ffffff;
     --fg-mid: rgba(245, 245, 247, 0.88);
     --fg-soft: rgba(245, 245, 247, 0.62);

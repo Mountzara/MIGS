@@ -227,7 +227,7 @@ for (const { shell, posts } of SHELLS) {
 // The 2026-07-22 accessibility pass fixed section eyebrows/buttons/links that
 // shipped at 2.83:1 (deep purple #6d28d9 as text). This check keeps every
 // sampled text element at >=4.5:1 against the LIGHTEST region of the plum
-// gradient (conservative base rgb(40,28,70)) so a future edit cannot quietly
+// gradient (conservative base rgb(48,32,92)) so a future edit cannot quietly
 // reintroduce low-contrast text on the dark theme.
 {
     const { ctx, page } = await newPage({ width: 1440, height: 900 });
@@ -235,7 +235,7 @@ for (const { shell, posts } of SHELLS) {
         await page.goto(`${BASE}/?cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
         await page.waitForTimeout(5000);
         const bad = await page.evaluate(() => {
-            const BASE_BG = [40, 28, 70];
+            const BASE_BG = [48, 32, 92];  // lightest under-text composite of the 2026-07-22 OLED-brightened plum (stage + overlay)
             const lum = (c) => {
                 const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
                 return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);

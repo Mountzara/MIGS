@@ -32,7 +32,7 @@ export async function onRequest({ request, env }) {
             margin: 0; padding: 0;
             background:
                 radial-gradient(ellipse 80% 60% at 50% -10%, rgba(167, 139, 250, 0.18), transparent 60%),
-                #0b0714;
+                #120b22;
             color: rgba(245, 245, 247, 0.84);
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             min-height: 100vh;
