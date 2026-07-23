@@ -26,7 +26,7 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
   :root {
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
-    --bg-base: #07070a;
+    --bg-base: #0b0714;
     --fg-strong: #ffffff;
     --fg-mid: rgba(245, 245, 247, 0.88);
     --fg-soft: rgba(245, 245, 247, 0.62);

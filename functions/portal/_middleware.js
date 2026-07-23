@@ -89,7 +89,7 @@ const COMING_SOON_HTML = `<!doctype html>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #07070a;
+            --bg-base: #0b0714;
             --bg-soft: #0e0e13;
             --fg-strong: #ffffff;
             --fg-mid: rgba(245, 245, 247, 0.84);
