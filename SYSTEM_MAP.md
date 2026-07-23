@@ -312,6 +312,23 @@ the target element is in a section ABOVE the script tag.
     site-wide mobile nav overflow, and 115–246px mobile overflow from
     legacy `.mz-ref-pop` popovers on W20/W21-era posts. Best-effort
     skip without Chromium. Skip: `DEPLOY_SKIP_READER_PATH_AUDIT=1`.
+    **Contrast enforcement (2026-07-22):** the gate also samples homepage
+    text elements (eyebrows, buttons, links, tags) and fails any below
+    WCAG AA (4.5:1 small / 3:1 large) against the plum gradient's
+    LIGHTEST region — guards the accessibility pass that fixed
+    `#6d28d9`-as-text (2.83:1 → `--accent-soft` 7.3:1).
+12. **Design tokens (2026-07-22 accessibility + gradient pass):** pure
+    `#000` backgrounds replaced by deep-plum gradients — homepage
+    `.hero-bg-stage` carries the full gradient; shells carry a calmer
+    half-alpha version; `about/` keeps true black on purpose (portrait
+    vignettes blend to black). Hero drawing + shell `.page-bg-art` use
+    `mix-blend-mode: screen` so the line-art's black pixels are
+    transparent and the drawing floats on the gradient (hero lock
+    updated deliberately). Text never uses `--accent #6d28d9` on dark
+    (2.83:1) — text/icons use `--accent-soft #a78bfa`; the two
+    decorative blockquote quote-marks are the only exemption. Reading
+    text weight floor: 400 under 20px. Shells now have
+    `:focus-visible` rings matching the homepage.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 

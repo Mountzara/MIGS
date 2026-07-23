@@ -223,6 +223,52 @@ for (const { shell, posts } of SHELLS) {
     }
 }
 
+// ---------- 3b. text contrast (WCAG) on the homepage ----------
+// The 2026-07-22 accessibility pass fixed section eyebrows/buttons/links that
+// shipped at 2.83:1 (deep purple #6d28d9 as text). This check keeps every
+// sampled text element at >=4.5:1 against the LIGHTEST region of the plum
+// gradient (conservative base rgb(40,28,70)) so a future edit cannot quietly
+// reintroduce low-contrast text on the dark theme.
+{
+    const { ctx, page } = await newPage({ width: 1440, height: 900 });
+    try {
+        await page.goto(`${BASE}/?cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+        await page.waitForTimeout(5000);
+        const bad = await page.evaluate(() => {
+            const BASE_BG = [40, 28, 70];
+            const lum = (c) => {
+                const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+                return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+            };
+            const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+            const SAMPLES = [
+                ["section eyebrow", ".section-eyebrow"], ["sub eyebrow", ".sub-eyebrow"],
+                ["secondary button", ".btn-secondary"], ["publication link", ".pub-link"],
+                ["nav link", ".nav-links a"], ["hero subtitle", ".hero-sub"],
+                ["pop tag", ".pop-tag"], ["domain eyebrow", ".domain-eyebrow"],
+            ];
+            const out = [];
+            for (const [label, sel] of SAMPLES) {
+                const el = [...document.querySelectorAll(sel)].find((e) => e.offsetHeight > 0);
+                if (!el) continue;
+                const cs = getComputedStyle(el);
+                const m = cs.color.match(/[\d.]+/g).map(Number);
+                const alpha = m.length > 3 ? m[3] : 1;
+                const fg = m.slice(0, 3).map((v, i) => Math.round(v * alpha + BASE_BG[i] * (1 - alpha)));
+                const r = ratio(fg, BASE_BG);
+                const large = parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.66 && parseInt(cs.fontWeight) >= 700);
+                if (r < (large ? 3.0 : 4.5)) out.push(`${label} (${sel}) at ${r.toFixed(2)}:1 color=${cs.color}`);
+            }
+            return out;
+        });
+        if (bad.length) for (const bmsg of bad) note("/", `TEXT CONTRAST below WCAG: ${bmsg}`);
+        else console.log(`  ✓  / text contrast — all sampled elements >=4.5:1 (AA) on the gradient's lightest region`);
+    } catch (e) {
+        note("/", `contrast check failed to run: ${String(e.message).slice(0, 120)}`);
+    }
+    await ctx.close();
+}
+
 // ---------- 3. static pages + listings: no mobile horizontal overflow ----------
 for (const path of ["/", "/about/", "/evidence/", "/trending/"]) {
     const { ctx, page } = await newPage({ width: 390, height: 844 });

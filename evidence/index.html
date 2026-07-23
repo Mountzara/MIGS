@@ -27,11 +27,27 @@
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-            background: linear-gradient(180deg, #000000 0%, #0a0a0c 60%, #000000 100%);
+            /* 2026-07-22 — pure-black band -> deep plum near-black with soft purple
+               glows (matches the homepage stage): the glass cards get a color
+               field to refract and white text stops haloing on true black.
+               Glow alphas are HALF the homepage's — these are long-form reading
+               surfaces, the backdrop must stay calm under body text. */
+            background:
+                radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.10), transparent 60%),
+                radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.08), transparent 56%),
+                linear-gradient(178deg, #0e0917 0%, #0b0714 55%, #0d0816 100%);
             color: var(--text-on-dark);
             min-height: 100vh;
             line-height: 1.5;
         }
+        /* Keyboard accessibility (2026-07-22): match the homepage pattern —
+           visible focus ring for keyboard users, invisible for mouse/touch. */
+        a:focus-visible, button:focus-visible, [tabindex]:focus-visible, dialog:focus-visible {
+            outline: 2px solid var(--accent-soft, #a78bfa);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
         /* Finalized hero line-art as a fixed backdrop (static final frame — does
            NOT play) so the page's glass components (cards, footer) frost against
            real texture instead of flat black. Matches index.html's faded hero
@@ -41,13 +57,20 @@
         .page-bg-stage {
             position: fixed; inset: 0; z-index: -1;
             overflow: hidden; pointer-events: none;
-            background: #000; opacity: 0.75;
+            /* 2026-07-22 — was opaque #000, which sat OVER the body's plum
+               gradient and hid it. Transparent stage lets the gradient show;
+               the art screens its own black away (see .page-bg-art). */
+            background: transparent; opacity: 0.75;
         }
         .page-bg-art {
             position: absolute; top: 50%; left: 50%;
             width: 100vw; height: 56.25vw;   /* true 16:9, no distortion */
             object-fit: contain; pointer-events: none;
             filter: saturate(2.0) brightness(1.28) contrast(1.28);
+            /* screen-blend: black pixels of the drawing become transparent so
+               the mauve line-art floats directly on the plum gradient
+               (mirrors index.html .hero-video, 2026-07-22). */
+            mix-blend-mode: screen;
             transform: translate(-48%, -50%) rotate(-22deg) scale(2.09);
         }
         a { color: inherit; text-decoration: none; }

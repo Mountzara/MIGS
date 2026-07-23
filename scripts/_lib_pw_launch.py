@@ -71,7 +71,10 @@ def _with_env_proxy(kwargs: dict) -> dict:
     if not server:
         return kwargs
     kw = dict(kwargs)
-    kw["proxy"] = {"server": server}
+    # bypass for local addresses — the relay only accepts HTTPS CONNECT, so
+    # plain-HTTP localhost requests (local preview servers) must go direct
+    kw["proxy"] = {"server": server,
+                   "bypass": os.environ.get("NO_PROXY", "localhost,127.0.0.1")}
     # The egress proxy's TLS-interception stack RESETS Chromium's TLS 1.3
     # ClientHello (hybrid post-quantum key share); curl's 1.3 hello passes,
     # every Chromium navigation died with net::ERR_CONNECTION_RESET
