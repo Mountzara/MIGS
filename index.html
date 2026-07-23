@@ -358,7 +358,23 @@
             opacity: 0.75;
         }
         .hero-bg-vignette {
-            display: none; /* Removed entirely - let the animation colors shine */
+            /* 2026-07-22 — repurposed as the PLUM OVERLAY. iOS Safari ignores
+               mix-blend-mode on <video> (hardware-layer compositing), so on
+               iPhone the drawing video kept its opaque black rectangle and the
+               stage gradient underneath was invisible — the page read as pure
+               black. This overlay sits ABOVE the video (z-index 2 > video's 1)
+               and tints its black floor plum via plain alpha compositing,
+               which every browser supports. On blend-capable browsers it
+               simply enriches the gradient already showing through. */
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            background:
+                radial-gradient(120vmax 85vmax at 78% -8%, rgba(139, 92, 246, 0.22), transparent 62%),
+                radial-gradient(95vmax 75vmax at 8% 108%, rgba(109, 40, 217, 0.20), transparent 58%),
+                linear-gradient(163deg, rgba(36, 22, 68, 0.38) 0%, rgba(24, 14, 46, 0.34) 46%, rgba(30, 18, 56, 0.38) 100%);
         }
         .hero-video {
             position: absolute;
@@ -7035,7 +7051,7 @@
         .pillar-content,
         .traj-body,
         .omt-modal-intro {
-            text-align: justify;
+            text-align: left;
             -webkit-hyphens: manual;
             hyphens: manual;
         }
