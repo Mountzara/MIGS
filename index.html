@@ -3735,6 +3735,112 @@
                 0 28px 56px -16px rgba(0, 0, 0, 0.55);
         }
 
+
+        /* ================= APP PREVIEW REELS (2026-07-22) =================
+           App Store-style auto-playing feature reels inside each app card.
+           Pure CSS/JS micro-UI scenes (no video): waveforms, SOAP assembly,
+           PHI redaction sweeps, forest plots, Pencil strokes. Scenes cycle
+           every 3.6s via the rotator script; prefers-reduced-motion shows
+           scene 1 static. Each scene's children animate on .active. */
+        .app-visual .app-icon-large {
+            position: absolute; top: 12px; right: 12px;
+            width: 22px; height: 22px; opacity: 0.5; z-index: 3;
+        }
+        .app-reel { position: absolute; inset: 0; overflow: hidden; }
+        .reel-scene {
+            position: absolute; inset: 0; opacity: 0; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            gap: 7px; padding: 16px 16px 40px;
+            transition: opacity 0.55s ease;
+        }
+        .reel-scene.active { opacity: 1; }
+        .rl-cap {
+            position: absolute; left: 14px; right: 14px; bottom: 10px;
+            font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em;
+            color: #ffffff; text-transform: none;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.55);
+        }
+        .reel-scene .rl-anim { opacity: 0; }
+        .reel-scene.active .rl-anim { animation: rlIn 0.5s ease forwards; }
+        .reel-scene.active .rl-anim:nth-child(1) { animation-delay: 0.10s; }
+        .reel-scene.active .rl-anim:nth-child(2) { animation-delay: 0.42s; }
+        .reel-scene.active .rl-anim:nth-child(3) { animation-delay: 0.74s; }
+        .reel-scene.active .rl-anim:nth-child(4) { animation-delay: 1.06s; }
+        .reel-scene.active .rl-anim:nth-child(5) { animation-delay: 1.38s; }
+        @keyframes rlIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+        .rl-row {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; padding: 6px 9px; font-size: 10.5px; color: #fff;
+        }
+        .rl-row .ic { width: 13px; height: 13px; flex: none; stroke: #c9b8ff; }
+        .rl-bar { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.16); overflow: hidden; }
+        .rl-bar::after { content: ''; position: absolute; inset: 0; width: 0; border-radius: 2px; background: linear-gradient(90deg, #a78bfa, #7c4dff); }
+        .reel-scene.active .rl-bar::after { animation: rlFill 1.4s 0.5s cubic-bezier(0.2,0.7,0.3,1) forwards; }
+        @keyframes rlFill { to { width: 100%; } }
+        .rl-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(167,139,250,0.20); border: 1px solid rgba(167,139,250,0.45);
+            color: #e6dcff; border-radius: 999px; padding: 3px 9px;
+            font-size: 10px; font-weight: 700; width: max-content;
+        }
+        .rl-chip.ok { background: rgba(52,199,89,0.16); border-color: rgba(52,199,89,0.5); color: #b7f4c4; }
+        .rl-chip.warn { background: rgba(255,159,10,0.14); border-color: rgba(255,159,10,0.5); color: #ffd699; }
+        .rl-chiprow { display: flex; gap: 6px; flex-wrap: wrap; }
+        .rl-line { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.22); }
+        .rl-line.w60 { width: 60%; } .rl-line.w80 { width: 80%; } .rl-line.w45 { width: 45%; } .rl-line.w70 { width: 70%; }
+        .rl-redact { position: relative; }
+        .rl-redact::after { content: ''; position: absolute; inset: -1px; width: 0; border-radius: 3px; background: #0d0a18; border: 1px solid rgba(167,139,250,0.6); }
+        .reel-scene.active .rl-redact::after { animation: rlFill 0.7s 1.0s ease forwards; }
+        .rl-wave { display: flex; align-items: center; gap: 3px; height: 26px; }
+        .rl-wave i { width: 3px; border-radius: 2px; background: #b7a3ff; height: 30%; }
+        .reel-scene.active .rl-wave i { animation: rlWave 0.9s ease-in-out infinite alternate; }
+        .rl-wave i:nth-child(2n) { animation-delay: 0.12s; } .rl-wave i:nth-child(3n) { animation-delay: 0.22s; }
+        .rl-wave i:nth-child(4n) { animation-delay: 0.30s; } .rl-wave i:nth-child(5n) { animation-delay: 0.05s; }
+        @keyframes rlWave { from { height: 22%; } to { height: 96%; } }
+        .rl-forest { display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; }
+        .rl-forest .fp { position: relative; height: 8px; }
+        .rl-forest .fp i { position: absolute; top: 3px; height: 2px; background: rgba(255,255,255,0.5); border-radius: 1px; }
+        .rl-forest .fp b { position: absolute; top: 0; width: 8px; height: 8px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,0.8); }
+        .rl-ring { --p: 92; width: 44px; height: 44px; border-radius: 50%; flex: none;
+            background: conic-gradient(#a78bfa calc(var(--p)*1%), rgba(255,255,255,0.14) 0);
+            display: flex; align-items: center; justify-content: center; }
+        .rl-ring i { font-style: normal; font-size: 10px; font-weight: 800; color: #fff;
+            background: #191129; border-radius: 50%; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center; }
+        .rl-frame { position: relative; flex: 1; min-height: 74px; border-radius: 10px;
+            background: linear-gradient(145deg, #241a3d 0%, #191129 70%);
+            border: 1px solid rgba(255,255,255,0.12); overflow: hidden; }
+        .rl-frame svg.draw { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .rl-frame svg.draw path { fill: none; stroke: #ff9ff3; stroke-width: 2.2; stroke-linecap: round;
+            stroke-dasharray: 300; stroke-dashoffset: 300; filter: drop-shadow(0 0 5px rgba(255,159,243,0.7)); }
+        .reel-scene.active .rl-frame svg.draw path { animation: rlDraw 2.0s 0.5s ease forwards; }
+        @keyframes rlDraw { to { stroke-dashoffset: 0; } }
+        .rl-pin { position: absolute; display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; color: #fff; }
+        .rl-pin::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,0.9); }
+        .rl-scrub { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.2); }
+        .rl-scrub::after { content: ''; position: absolute; inset: 0; width: 0; background: #a78bfa; border-radius: 2px; }
+        .reel-scene.active .rl-scrub::after { animation: rlFill 2.6s 0.4s linear forwards; }
+
+        /* warm (cream) visual variant: reel content flips to dark-on-cream */
+        .app-visual.warm .rl-row { background: rgba(30, 18, 55, 0.10); border-color: rgba(30, 18, 55, 0.18); color: #2b1c4d; }
+        .app-visual.warm .rl-row .ic { stroke: #6d28d9; }
+        .app-visual.warm .rl-cap { color: #2b1c4d; text-shadow: none; }
+        .app-visual.warm .rl-line { background: rgba(30, 18, 55, 0.28); }
+        .app-visual.warm .rl-chip { background: rgba(109, 40, 217, 0.12); border-color: rgba(109, 40, 217, 0.4); color: #4c1d95; }
+        .app-visual.warm .rl-chip.ok { color: #14532d; }
+        .app-visual.warm .rl-chip.warn { color: #7c2d12; }
+        .app-visual.warm .rl-bar { background: rgba(30, 18, 55, 0.18); }
+        .app-visual.warm .rl-wave i { background: #7c4dff; }
+        .app-visual.warm .rl-ring i { background: #f4ecdf; color: #2b1c4d; }
+        @media (prefers-reduced-motion: reduce) {
+            .reel-scene { transition: none; }
+            .reel-scene:first-child { opacity: 1; }
+            .reel-scene .rl-anim { opacity: 1; animation: none !important; }
+            .reel-scene .rl-bar::after, .reel-scene .rl-scrub::after { width: 70%; animation: none !important; }
+            .reel-scene .rl-wave i { animation: none !important; height: 55%; }
+            .rl-frame svg.draw path { stroke-dashoffset: 0; animation: none !important; }
+        }
         .app-visual {
             flex: 1;
             min-height: 200px;
@@ -4754,6 +4860,16 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        /* 2026-07-22 polish: NO grey text in ANY glass modal surface on this
+           page — app detail modal, OMT modals, See-All sheet, contact modal.
+           Headings/links keep brand purple; everything else reads pure white. */
+        .app-modal :is(p, li, td, th, dd, dt, span, div, blockquote):not(a):not(a *):not(h2 *):not(h3 *):not(h4 *):not(.app-modal-tag),
+        .omt-modal-card :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *),
+        .mz-sheet :is(p, li, td, th, dd, dt):not(a):not(a *),
+        #contactModal :is(p, li):not(a):not(a *) {
+            color: #ffffff !important;
         }
         .app-modal-tagline {
             font-size: clamp(17px, 1.5vw, 21px);
@@ -7889,6 +8005,30 @@
                             <path d="M12 2v6m0 0c-3 0-5 2-5 5v3a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4v-3c0-3-2-5-5-5z"/>
                             <circle cx="12" cy="13" r="2"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>ACOG PB 228 — Fibroids.pdf</span><span class="rl-bar"></span></div>
+                                <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>AAGL myomectomy 2024.pdf</span><span class="rl-bar"></span></div>
+                                <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Cochrane HMB review.pdf</span><span class="rl-bar"></span></div>
+                                <span class="rl-cap">Index your evidence library — fully on-device</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-forest rl-anim">
+                                    <div class="fp"><i style="left:18%;width:38%"></i><b style="left:32%"></b></div>
+                                    <div class="fp"><i style="left:26%;width:30%"></i><b style="left:38%"></b></div>
+                                    <div class="fp"><i style="left:14%;width:46%"></i><b style="left:30%"></b></div>
+                                </div>
+                                <div class="rl-chiprow rl-anim"><span class="rl-chip">I² = 38%</span><span class="rl-chip">RR 0.74 (0.61–0.90)</span></div>
+                                <div class="rl-chip ok rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Synthesis complete — 12 trials</div>
+                                <span class="rl-cap">Meta-analysis with I² and CIs — in seconds</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><span>ACOG — consider UAE before repeat myomectomy</span></div>
+                                <div class="rl-row rl-anim"><span>AAGL — myomectomy preferred if fertility desired</span></div>
+                                <div class="rl-chip warn rl-anim">⚠ Guideline conflict detected — see side-by-side</div>
+                                <span class="rl-cap">Cross-society conflict detection: ACOG · AAGL · ASRM</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -7905,6 +8045,26 @@
                             <rect x="4" y="3" width="16" height="18" rx="2"/>
                             <path d="M9 8h6M9 12h6M9 16h4"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-line w80 rl-anim rl-redact"></div>
+                                <div class="rl-line w60 rl-anim rl-redact"></div>
+                                <div class="rl-line w70 rl-anim"></div>
+                                <div class="rl-chip ok rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>PHI auto-redacted on-device</div>
+                                <span class="rl-cap">Import a chart PDF — identifiers never leave the phone</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-chiprow rl-anim"><span class="rl-chip">Laparoscopic hysterectomy</span><span class="rl-chip">Category 41</span></div>
+                                <div class="rl-chiprow rl-anim"><span class="rl-chip">Blood loss 150 mL</span><span class="rl-chip">No transfusion</span></div>
+                                <div class="rl-row rl-anim"><span>Case list</span><span class="rl-bar"></span><span>87 / 101</span></div>
+                                <span class="rl-cap">AI extracts, categorizes, and maps every case</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-wave rl-anim"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                                <div style="display:flex;align-items:center;gap:10px" class="rl-anim"><span class="rl-ring" style="--p:92"><i>92</i></span><span style="font-size:10.5px;color:#fff">Answer covers ACOG first-line criteria</span></div>
+                                <span class="rl-cap">Oral-exam simulator scores your spoken answers</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">In Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -7921,6 +8081,27 @@
                             <rect x="9" y="2" width="6" height="13" rx="3"/>
                             <path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-wave rl-anim"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                                <div class="rl-row rl-anim"><span>"…three months of worsening pelvic pain, worse with menses…"</span></div>
+                                <div class="rl-chip rl-anim">Whisper · on-device · Watch → iPhone → Mac</div>
+                                <span class="rl-cap">Dictate anywhere — audio never leaves the device</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">S</b><span>3 mo cyclic pelvic pain, dyspareunia</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">O</b><span>Uterus RV, tender nodularity post cul-de-sac</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">A</b><span>Suspected endometriosis, r/o adenomyosis</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">P</b><span>TVUS, trial NSAID + LNG-IUS counseling</span></div>
+                                <span class="rl-cap">CBG/MIGS-tailored SOAP assembles itself</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-chiprow rl-anim"><span class="rl-chip">99214</span><span class="rl-chip">N80.9</span><span class="rl-chip">76856</span></div>
+                                <div class="rl-chip warn rl-anim">⚠ Missed: prolonged-service opportunity</div>
+                                <div class="rl-chip ok rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Medico-legal phrasing suggested</div>
+                                <span class="rl-cap">Billing, coding, and documentation — caught live</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">In Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -7938,6 +8119,27 @@
                             <path d="M21 21l-4.35-4.35"/>
                             <path d="M11 7v4l3 2"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">P</b><span>Women 18–45 with symptomatic fibroids</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">I</b><span>Robotic myomectomy + ICG mapping</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">C</b><span>Conventional laparoscopic technique</span></div>
+                                <div class="rl-row rl-anim"><b style="color:#c9b8ff">O</b><span>EBL, OR time, 90-day QoL</span></div>
+                                <span class="rl-cap">PICO wizard designs the study with you</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><span>Enrollment</span><span class="rl-bar"></span><span>64 / 80</span></div>
+                                <div class="rl-chiprow rl-anim"><span class="rl-chip">ANOVA</span><span class="rl-chip">χ²</span><span class="rl-chip ok">p = 0.03</span></div>
+                                <div class="rl-chip rl-anim">Full participant audit trail</div>
+                                <span class="rl-cap">Built-in statistics engine — live as data lands</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span>Sandberg 2023 — verified in library</span></div>
+                                <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span>AAGL guideline 2024 — verified</span></div>
+                                <div class="rl-chip warn rl-anim">⚠ Citation 14: retracted — flagged</div>
+                                <span class="rl-cap">Manuscript editor validates every citation</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">In Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -7954,6 +8156,28 @@
                             <rect x="2" y="6" width="14" height="12" rx="2"/>
                             <path d="M22 8l-6 4 6 4z"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-frame rl-anim">
+                                    <span class="rl-pin" style="top:14px;left:12px">Adhesiolysis</span>
+                                    <span class="rl-pin" style="top:36px;right:14px">ICG perfusion check</span>
+                                    <div class="rl-scrub"></div>
+                                </div>
+                                <span class="rl-cap">AI watches the whole case — Whisper + OCR + Clinical AI</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><span>Key finding: posterior wall fibroid, enucleated intact</span></div>
+                                <div class="rl-row rl-anim"><span>Technique: barbed-suture 2-layer closure</span></div>
+                                <div style="display:flex;align-items:center;gap:10px" class="rl-anim"><span class="rl-ring" style="--p:94"><i>.94</i></span><span style="font-size:10.5px;color:#fff">Report confidence</span></div>
+                                <span class="rl-cap">Surgeon-grade AI report, formatted your way</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><span>🔍 "cases where I controlled bleeding during myomectomy"</span></div>
+                                <div class="rl-row rl-anim"><span>Mar 12 — robotic myomectomy · clip at 41:20</span></div>
+                                <div class="rl-row rl-anim"><span>Jan 08 — hysteroscopic resection · clip at 12:44</span></div>
+                                <span class="rl-cap">Natural-language search across your whole library</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">In Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -7971,6 +8195,27 @@
                             <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                             <rect x="2" y="6" width="10" height="8" rx="1"/>
                         </svg>
+                        <div class="app-reel" aria-hidden="true">
+                            <div class="reel-scene">
+                                <div class="rl-frame rl-anim">
+                                    <svg class="draw" viewBox="0 0 200 80" preserveAspectRatio="none"><path d="M28 58 C 52 22, 96 16, 122 34 S 176 62, 184 40"/></svg>
+                                </div>
+                                <span class="rl-cap">Draw on live imaging with Apple Pencil</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-frame rl-anim">
+                                    <span class="rl-pin" style="top:12px;left:14px">Fibroid — 4.2 cm</span>
+                                    <span class="rl-pin" style="bottom:14px;right:12px">Endometrial stripe</span>
+                                </div>
+                                <span class="rl-cap">Label anatomy and pathology in real time</span>
+                            </div>
+                            <div class="reel-scene">
+                                <div class="rl-row rl-anim"><span>DICOM · MRI pelvis — sagittal T2</span></div>
+                                <div class="rl-row rl-anim"><span>Side-by-side: imaging ↔ surgical video</span></div>
+                                <div class="rl-chip ok rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>Patient-ready walkthrough</div>
+                                <span class="rl-cap">Patients finally SEE their own anatomy</span>
+                            </div>
+                        </div>
                         <span class="app-visual-label">In Beta Testing</span>
                     </div>
                     <div class="app-meta">
@@ -11591,5 +11836,37 @@
     <div class="mz-sheet-content" id="mz-sheet-content"></div>
 </dialog>
 
+
+    <script>
+    /* App preview reel rotator (2026-07-22). Cycles .reel-scene inside each
+       .app-reel every 3.6s while the card is on screen. Honors
+       prefers-reduced-motion (scene 1 shown statically via CSS; no timer). */
+    (function () {
+        var reels = document.querySelectorAll('.app-reel');
+        if (!reels.length) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            reels.forEach(function (r) { var f = r.querySelector('.reel-scene'); if (f) f.classList.add('active'); });
+            return;
+        }
+        reels.forEach(function (r) {
+            var scenes = r.querySelectorAll('.reel-scene');
+            if (!scenes.length) return;
+            var i = 0, visible = true;
+            scenes[0].classList.add('active');
+            if ('IntersectionObserver' in window) {
+                visible = false;
+                new IntersectionObserver(function (es) {
+                    es.forEach(function (e) { visible = e.isIntersecting; });
+                }, { threshold: 0.2 }).observe(r);
+            }
+            setInterval(function () {
+                if (!visible || scenes.length < 2) return;
+                scenes[i].classList.remove('active');
+                i = (i + 1) % scenes.length;
+                scenes[i].classList.add('active');
+            }, 3600);
+        });
+    })();
+    </script>
 </body>
 </html>

@@ -83,7 +83,10 @@
     
         /* magazine-justify-2026-06-29 */
         section.panel p, details.qa .qa-answer p, .rung p, .mz-modal p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
-    </style>
+    
+        /* 2026-07-22 polish: no grey text in glass modals */
+        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #ffffff !important; }
+</style>
 </head>
 <body>
     <div class="wrap">

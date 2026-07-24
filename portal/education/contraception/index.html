@@ -1560,6 +1560,9 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 .mz-ai-disclaimer p { margin: 0; }
 .mz-ai-disclaimer a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .mz-ai-disclaimer a:hover, .mz-ai-disclaimer a:focus-visible { color: rgba(201,119,89,0.95); }
+
+        /* 2026-07-22 polish: no grey text in glass modals */
+        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #ffffff !important; }
 </style>
 <aside class="mz-ai-disclaimer" aria-label="AI-assisted content disclaimer">
 <p>This page was prepared with AI assistance to organize and improve readability of a high volume of clinical literature. It is provided strictly for educational purposes and is not medical advice. Treatment decisions should always be made together with your physician, based on your individual evaluation. If you spot an error or have a comment about the content, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
