@@ -9118,6 +9118,15 @@
                     // drawing actually finished on), not on a fixed timer that
                     // can drift from the real video length.
                     heroVideo.classList.add('ken-burns');
+                    // 2026-07-22 PERF — a settled <video> is still a live,
+                    // full-viewport, screen-blended video layer that the
+                    // compositor pays for on EVERY scrolled frame (desktop
+                    // "drag reveal" jank). 1.4s after the drawing completes,
+                    // swap it for the static last-frame image (same id +
+                    // classes, so blend/filter/Ken-Burns CSS carry over and
+                    // the look is pixel-identical — it's the frame the video
+                    // stopped on). Image layers are far cheaper to composite.
+                    setTimeout(() => { try { swapHeroToPoster(); } catch (e) {} }, 1400);
                 }, { once: true });
                 // 2026-06-25 — Static last-frame poster fallback ONLY on a
                 // genuine media load FAILURE — never on a blocked or slow

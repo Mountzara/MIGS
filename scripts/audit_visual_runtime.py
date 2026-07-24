@@ -158,6 +158,13 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             pass
     hero0 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
         const r=v.getBoundingClientRect();
+        // 2026-07-22 perf settle-swap: ~1.4s after the drawing completes the
+        // <video> is replaced by the static last-frame <img> (same id/classes).
+        // That IS the correct settled end-state — report it as such instead of
+        // sampling video-only fields off an image (None-crash).
+        if (v.tagName !== 'VIDEO')
+            return {poster:true, kb:v.classList.contains('ken-burns'),
+                    w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight};
         return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,
                 kb:v.classList.contains('ken-burns'), ended:v.ended,
                 w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight}; }""")
@@ -167,6 +174,18 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
                 kb:v.classList.contains('ken-burns'), ended:v.ended}; }""")
     if hero0 is None:
         res.append(chk(f"[{label}] hero video present", False, "#heroVideo not found"))
+    elif hero0.get("poster"):
+        # settled poster swap: the drawing played, ended, and was replaced by
+        # the static final frame with Ken Burns carried over. Playing + settle
+        # are satisfied by construction; coverage still asserted below.
+        res.append(chk(f"[{label}] hero video playing", bool(hero0.get("kb")),
+                       f"settled poster (img) kb={hero0.get('kb')}"))
+        edge = hero0["w"] >= hero0["vw"] * 0.98
+        res.append(chk(f"[{label}] hero video covers screen edge-to-edge", edge,
+                       f"poster width {hero0['w']:.0f}px vs viewport {hero0['vw']}px"))
+        covh = hero0["h"] >= hero0["vh"] * 0.98
+        res.append(chk(f"[{label}] hero video covers screen top-to-bottom", covh,
+                       f"poster height {hero0['h']:.0f}px vs viewport {hero0['vh']}px"))
     elif not reduce_motion:
         moved = abs(hero1["t"] - hero0["t"]) >= 0.02
         advancing = (not hero1["paused"]) and moved and hero0["ready"] >= 2
