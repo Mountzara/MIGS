@@ -203,6 +203,29 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         page.wait_for_selector(".ken-burns", timeout=14000, state="attached")
     except Exception:
         pass
+    # 4b) HERO SETTLES — plays ONCE then freezes on the final frame. The
+    # "advancing" check in (3) cannot tell a healthy play from an endless
+    # replay loop: the 2026-07-22 regression (retryHeroPlay re-entered via the
+    # 'canplay' fired by the ended-handler's own seek) wrapped the clip back
+    # to 0 forever and still passed this audit. Once .ken-burns is attached
+    # (i.e. the drawing finished), the video must be PAUSED at/near its
+    # duration with the heroEnded flag — and stay there across a 1.5s window.
+    if not reduce_motion:
+        settle0 = page.evaluate("""() => { const v=document.querySelector('#heroVideo');
+            if(!v || v.tagName!=='VIDEO' || !v.classList.contains('ken-burns')) return null;
+            return {t:v.currentTime, dur:v.duration||0, paused:v.paused, flag:v.dataset.heroEnded==='1'}; }""")
+        if settle0:
+            page.wait_for_timeout(1500)
+            settle1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo');
+                return v ? {t:v.currentTime, paused:v.paused} : null; }""")
+            wrapped = settle1 and (settle1["t"] < settle0["t"] - 0.5 or not settle1["paused"])
+            near_end = settle0["dur"] and settle0["t"] >= settle0["dur"] - 0.6
+            res.append(chk(f"[{label}] hero settles on final frame (no replay loop)",
+                           bool(settle0["paused"] and settle0["flag"] and near_end and not wrapped),
+                           f"t={settle0['t']:.1f}/{settle0['dur']:.1f} paused={settle0['paused']} "
+                           f"flag={settle0['flag']} then t={settle1['t']:.1f} paused={settle1['paused']}"
+                           if settle1 else "hero vanished mid-check"))
+
     kb0 = page.evaluate("""() => { const e=document.querySelector('.ken-burns'); if(!e) return null;
         const cs=getComputedStyle(e);
         return {name:cs.animationName, state:cs.animationPlayState, transform:cs.transform}; }""")

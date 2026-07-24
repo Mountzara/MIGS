@@ -261,6 +261,10 @@ the target element is in a section ABOVE the script tag.
    ships no H.264 — detected as readyState 0 + NETWORK_NO_SOURCE +
    canPlayType('avc1')='') are skipped LOUDLY as unjudgeable rather
    than false-failed; a decodable video that stalls still fails.
+   **Hero-settle assertion (2026-07-22b):** once `.ken-burns` attaches,
+   the hero must be PAUSED at ~duration with `dataset.heroEnded` and stay
+   there across 1.5s — catches the replay-loop class ("advancing" alone
+   passed an endlessly looping hero).
    Demote: `DEPLOY_VISUAL_GATE_SOFT=1`. Skip: `DEPLOY_SKIP_VISUAL_AUDIT=1`.
 9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
@@ -329,6 +333,21 @@ the target element is in a section ABOVE the script tag.
     decorative blockquote quote-marks are the only exemption. Reading
     text weight floor: 400 under 20px. Shells now have
     `:focus-visible` rings matching the homepage.
+    **2026-07-22 evening batch (all iPhone-report driven):** OLED
+    brightening (base `#120b22`, stage/overlay/glow lift + hero
+    brightness 1.45); `html` canvas carries the plum linear gradient
+    (deep scroll no longer goes flat-dark when the stage fades to .75);
+    hero `retryHeroPlay` guarded by `dataset.heroEnded` (ended-handler
+    seek fired `canplay` → endless replay loop) plus a bounded
+    300ms×20 determined-start poll (cached-media visits: canplay fired
+    before listeners attached, a rejected play() froze frame 1 until
+    tap); loader font-gate cap 6000ms→1600ms (fonts.ready on cellular
+    ate the whole cap — drawing now starts ~2.6s on throttled LTE);
+    `text-align: justify` removed on all 30 pages that had it; shells
+    force REAL glass modals (translucent plum + blur44 + -webkit-
+    prefix — posts embedded a 98.5%-opaque bg, trend briefs had no
+    blur at all) and ALL modal text `#fff` (headings/links stay brand
+    purple). Hero lock deliberately updated per change.
 
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 

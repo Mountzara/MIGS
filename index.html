@@ -9012,8 +9012,15 @@
                 heroURL ? preloadImageURL(heroURL) : Promise.resolve(),
                 waitForFonts()
             ]),
-            // Hard cap: never show loader longer than 6s
-            new Promise(resolve => setTimeout(resolve, 6000))
+            // Hard cap — keep the loader a BRAND MOMENT, not a font gate.
+            // Was 6000ms: on cellular, document.fonts.ready (18 Nunito Sans
+            // variants from Google) routinely hangs to the full cap, so the
+            // drawing didn't start until ~7-10s after open ("animation starts
+            // like 10 seconds later", 2026-07-22). 1600ms lets fast
+            // connections start fully dressed and slow ones start with the
+            // system-font fallback that swaps moments later — the drawing is
+            // the opening act and must never wait on typography.
+            new Promise(resolve => setTimeout(resolve, 1600))
         ]).then(() => {
             hideLoader();
             // Small breath between loader fade and hero start, feels more deliberate

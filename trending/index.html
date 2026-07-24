@@ -46,16 +46,29 @@
             outline-offset: 3px;
             border-radius: 4px;
         }
-        /* 2026-07-22 user directive: ALL glass-modal text pure white — the
-           embedded post CSS used grey-ish rgba(245,245,247,.6-.85) tiers,
-           which read muddy on the frosted glass. Overrides the per-post
-           <style> (shell CSS loads after body_html styles at equal
-           specificity, so !important guarantees the win). Purple section
-           headings (accent) are intentionally kept. */
-        .mz-jc-modal p, .mz-jc-modal li, .mz-jc-section p, .mz-jc-section li,
-        .mz-jc-abstract-body, .mz-jc-abstract-body p, .mz-jc-section-intro,
-        .mz-jc-modal .mz-jc-pico-grid, .mz-jc-modal td, .mz-jc-modal th,
-        .mz-jc-modal blockquote, .mz-jc-modal dd, .mz-jc-modal dt {
+        /* 2026-07-22 user directives, superseding the per-post embedded CSS:
+           (a) deep-dive modals must be REAL Apple glass — posts shipped
+               rgba(12,12,16,.985), 98.5% opaque ("non glass look"), and the
+               trend briefs had NO backdrop-filter at all. Translucent plum
+               tint + strong blur (with the -webkit- prefix iOS REQUIRES).
+           (b) ALL modal text pure white — no grey tiers. Section headings
+               and links keep brand purple (they are not grey). */
+        dialog.mz-jc-modal, dialog.deepdive-modal {
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%),
+                rgba(16, 11, 30, 0.68) !important;
+            -webkit-backdrop-filter: blur(44px) saturate(1.9) !important;
+            backdrop-filter: blur(44px) saturate(1.9) !important;
+            border: 1px solid rgba(255, 255, 255, 0.14) !important;
+            color: #ffffff !important;
+        }
+        dialog.mz-jc-modal::backdrop, dialog.deepdive-modal::backdrop {
+            background: rgba(6, 4, 14, 0.55);
+        }
+        dialog.mz-jc-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
+        label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *),
+        dialog.deepdive-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
+        label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *) {
             color: #ffffff !important;
         }
 
