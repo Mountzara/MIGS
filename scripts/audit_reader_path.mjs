@@ -269,6 +269,56 @@ for (const { shell, posts } of SHELLS) {
     await ctx.close();
 }
 
+
+// ---------- 3c. NO GREY TEXT anywhere on dark (user directive 2026-07-22) ----------
+// Walks every rendered text element on the homepage and a brief page; any
+// achromatic color with effective luminance 30-235 sitting on a dark backdrop
+// is a FAILURE. Light panels legitimately carry dark text and are skipped.
+{
+    const GREY_SURVEY = `(() => {
+        const lum = (r,g,b) => 0.2126*r+0.7152*g+0.0722*b;
+        let grey = 0, ex = [];
+        for (const el of document.querySelectorAll('body *')) {
+            if (!el.offsetHeight) continue;
+            const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 2);
+            if (!hasText) continue;
+            const m = (getComputedStyle(el).color.match(/[\\d.]+/g) || []).map(Number);
+            if (m.length < 3) continue;
+            const a = m.length > 3 ? m[3] : 1;
+            const er = m[0]*a, eg = m[1]*a, eb = m[2]*a;
+            if (!(Math.max(er,eg,eb)-Math.min(er,eg,eb) < 14 && Math.max(er,eg,eb) < 235 && Math.max(er,eg,eb) > 30)) continue;
+            let n = el, lightBg = false;
+            while (n && n !== document.documentElement) {
+                const bg = getComputedStyle(n).backgroundColor.match(/[\\d.]+/g);
+                if (bg && bg.length >= 3 && (bg.length < 4 || +bg[3] > 0.5)) { lightBg = lum(+bg[0],+bg[1],+bg[2]) > 140; break; }
+                n = n.parentElement;
+            }
+            if (lightBg) continue;
+            grey++;
+            if (ex.length < 4) ex.push(((typeof el.className==='string'?el.className:'')||el.tagName).toString().slice(0,30));
+        }
+        return { grey, ex };
+    })()`;
+    const roundup = (evidencePosts[0] || {}).id;
+    const targets = [`${BASE}/`];
+    if (roundup) targets.push(`${BASE}/evidence/?id=${encodeURIComponent(roundup)}`);
+    for (const t of targets) {
+        const { ctx, page } = await newPage({ width: 1280, height: 950 });
+        try {
+            await page.goto(`${t}${t.includes("?") ? "&" : "?"}cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+            await page.waitForTimeout(6000);
+            await page.evaluate(`(async () => { for (let y = 0; y < Math.min(document.body.scrollHeight, 22000); y += 900) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 40)); } })()`);
+            await page.waitForTimeout(600);
+            const r = await page.evaluate(GREY_SURVEY);
+            if (r.grey > 0) note(t.replace(BASE, ""), `${r.grey} GREY text element(s) on dark (must be white): ${r.ex.join(", ")}`);
+            else console.log(`  ✓  ${t.replace(BASE, "") || "/"} — zero grey text on dark`);
+        } catch (e) {
+            note(t.replace(BASE, ""), `grey survey failed: ${String(e.message).slice(0, 100)}`);
+        }
+        await ctx.close();
+    }
+}
+
 // ---------- 3. static pages + listings: no mobile horizontal overflow ----------
 for (const path of ["/", "/about/", "/evidence/", "/trending/"]) {
     const { ctx, page } = await newPage({ width: 390, height: 844 });

@@ -316,6 +316,20 @@ the target element is in a section ABOVE the script tag.
     site-wide mobile nav overflow, and 115–246px mobile overflow from
     legacy `.mz-ref-pop` popovers on W20/W21-era posts. Best-effort
     skip without Chromium. Skip: `DEPLOY_SKIP_READER_PATH_AUDIT=1`.
+    **No-grey enforcement (2026-07-22c):** the gate also walks every
+    rendered text element on `/` and one brief page — any achromatic
+    color with effective luminance 30–235 on a dark backdrop FAILS
+    (light panels legitimately carry dark text and are skipped). This
+    enforces the user directive "ALL text white on the dark theme":
+    the purge replaced solid greys (#86868b/#a1a1a6/#6e6e73/#d2d2d7),
+    alpha-white tiers (<0.93), `--gray-1..5`, `--text-secondary-dark`,
+    cv `--muted/--dim`, education `--fg-mid/soft/dim`, and post-body
+    embedded tiers (shell-level override; verdict/link/heading accent
+    colors preserved) across 71 pages. Survey went 141 → 0 live.
+    LESSON (round 2): a `color:\s*` regex also matches the tail of
+    `background-color:`/`border-color:` — property-anchor with
+    `(?<![-\w])` or you turn glass panels solid white (the runtime-CSS
+    gate caught exactly that before it shipped).
     **Contrast enforcement (2026-07-22):** the gate also samples homepage
     text elements (eyebrows, buttons, links, tags) and fails any below
     WCAG AA (4.5:1 small / 3:1 large) against the plum gradient's
