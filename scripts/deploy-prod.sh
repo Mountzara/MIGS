@@ -326,9 +326,42 @@ else
         -cf - . ) | ( cd "$STAGE_DIR" && tar -xf - )
 fi
 
+# ---------------------------------------------------------------------------
+# Oversized-file prune (added 2026-07-28)
+# ---------------------------------------------------------------------------
+# Cloudflare Pages rejects the ENTIRE deploy if any single file exceeds
+# 25 MiB. A stray large asset dropped anywhere in the repo therefore blocks
+# every subsequent deploy with an error that names the file but not the fix
+# — on 2026-07-28 a 185 MiB .m4v in docs/fmigs-year3/ hard-failed a deploy
+# that had already passed every pre-deploy gate.
+#
+# Large media belongs in R2 (mountzara-media, served at /media/<key>) per
+# the project CLAUDE.md, never in the Pages bundle. Prune anything over the
+# ceiling from the STAGE dir — the working tree is untouched — and say
+# loudly what was dropped so an asset that genuinely needed shipping isn't
+# lost silently. Runs after staging so it covers the rsync and tar paths
+# identically.
+PAGES_MAX_MIB=25
+OVERSIZED=$(find "$STAGE_DIR" -type f -size +${PAGES_MAX_MIB}M 2>/dev/null || true)
+if [ -n "$OVERSIZED" ]; then
+    echo "⚠️  Files over Cloudflare Pages' ${PAGES_MAX_MIB} MiB per-file limit — pruned from this deploy:"
+    while IFS= read -r big; do
+        [ -z "$big" ] && continue
+        sz=$(du -m "$big" 2>/dev/null | cut -f1)
+        echo "      - ${big#$STAGE_DIR/} (${sz} MiB)"
+        rm -f "$big"
+    done <<< "$OVERSIZED"
+    echo "   These were NOT deployed and were NOT removed from your working tree."
+    echo "   If any of them needs to be live, upload to R2 instead:"
+    echo "     TOKEN=\$(cat ~/.config/mountzara/upload-token.txt)"
+    echo "     curl -X PUT -H \"Authorization: Bearer \$TOKEN\" \\"
+    echo "       --data-binary @<file> https://mountzara.com/upload/<key>"
+    echo ""
+fi
+
 STAGED_FILES=$(find "$STAGE_DIR" -type f | wc -l | tr -d ' ')
 echo "📦 Staged $STAGED_FILES deployable files → $STAGE_DIR"
-echo "   Excluded: companion-app/ (native app) + build artifacts, wrangler.toml, .env*, .github/, .wrangler/"
+echo "   Excluded: companion-app/ (native app) + build artifacts, wrangler.toml, .env*, .github/, .wrangler/, files >${PAGES_MAX_MIB} MiB"
 echo ""
 
 # Deploy from the stage dir. There is no wrangler.toml there, so wrangler runs
