@@ -18,6 +18,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2026-07-28 — the repo's hermetic gates (no network, no browser, no
+      # creds) now also guard the CI path, so a push to main can never
+      # deploy content that the local deploy-prod.sh stack would block:
+      # canonical post-format tests, the fact-sync gate (false/private info),
+      # and the hero-animation lock.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fact-sync gate (canonical facts, privacy exclusions)
+        run: node scripts/audit_fact_sync.mjs
+      - name: Canonical post-format gate (hermetic fixtures)
+        run: node scripts/test_post_format_gate.mjs
+      - name: Hero animation lock
+        run: node scripts/hero_anim_fingerprint.mjs --check
+
       # §0.4.1 pre-deploy static-surface regression audit (added 2026-05-27).
       # Closes the "git push main bypasses the local deploy-prod.sh gate"
       # vector identified by the 2026-05-27 audit. The local

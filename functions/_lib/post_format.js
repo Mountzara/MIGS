@@ -103,6 +103,20 @@ export function auditPostFormat(post) {
             [/class="[^"]*\bmz-references-list\b/, "the references list"],
         ];
         const missing = REQUIRED.filter(([re]) => !re.test(h)).map(([, label]) => label);
+        // 2026-07-28 — the reader's TOC is part of the canonical roundup
+        // format (W25/28/29 shipped with none; the deploy-side render gate
+        // caught it, but the SCHEDULED pipeline publishes through THIS
+        // audit, so it must enforce the TOC too): a nav.mz-toc with >=2
+        // chips whose hrefs resolve to topic ids present in the body.
+        const tocChips = [...h.matchAll(/class="mz-toc-chip"[^>]*href="#([^"]+)"|href="#([^"]+)"[^>]*class="mz-toc-chip"/g)]
+            .map((m) => m[1] || m[2]).filter(Boolean);
+        const chipHrefs = [...h.matchAll(/<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"/g)].map((m) => m[1]);
+        const ids = new Set([...h.matchAll(/id="([^"]+)"/g)].map((m) => m[1]));
+        if (!/class="[^"]*\bmz-toc\b/.test(h) || chipHrefs.length < 2) {
+            missing.push("a jump-to-topic TOC nav (nav.mz-toc with >=2 chips)");
+        } else if (chipHrefs.some((t) => !ids.has(t))) {
+            missing.push("TOC chips that resolve to existing topic ids");
+        }
         // The per-topic groups must carry actual SYNTHESIS PROSE, not just be
         // empty card containers — W20/W21/W23/W24 each open every topic group
         // with a synthesis paragraph. Require ≥2 groups AND ≥2 synthesis blocks.
