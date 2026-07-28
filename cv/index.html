@@ -705,8 +705,8 @@
            shows; body keeps only its translucent glow/gradient on top. */
         html { background-color: var(--bg-base, var(--bg, var(--black, #07070a))); }
         body { background-color: transparent !important; }
-        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #000; opacity: 0.75; }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.75; }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     </style>
 </head>
 <body>

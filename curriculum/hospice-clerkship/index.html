@@ -102,9 +102,32 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
            shows; body keeps only its translucent glow/gradient on top. */
         html { background-color: var(--bg-base, var(--bg, var(--black, #07070a))); }
         body { background-color: transparent !important; }
-        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #000; opacity: 0.75; }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
-    </style>
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.75; }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+    
+/* 2026-07-28 — REAL Apple glass + balanced reading measure (user: panels
+   were "completely see-through", text hugged the left of a wide panel).
+   With the line-art stage now visible behind the page, backdrop blur has
+   true texture to frost; panels get the canonical glass recipe, and the
+   synthesis panel narrows to its text so nothing looks half-empty. */
+.synthesis {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%),
+        rgba(var(--glow-purple), 0.06);
+    backdrop-filter: blur(28px) saturate(1.8);
+    -webkit-backdrop-filter: blur(28px) saturate(1.8);
+    border: 1px solid rgba(255,255,255,0.14);
+    max-width: 940px;
+}
+.synthesis p { max-width: none; }
+.counter, .arch-phase, .stake-card, .comp-card, .site, .month-tile, .framework-card, .case-card, .svc-card {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid rgba(255,255,255,0.14);
+}
+</style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
