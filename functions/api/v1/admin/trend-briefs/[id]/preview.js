@@ -97,6 +97,12 @@ export async function onRequestGet(ctx) {
                 "x-robots-tag": "noindex, nofollow",
                 "x-frame-options": "SAMEORIGIN",   // allow iframe within /admin/
                 "referrer-policy": "strict-origin-when-cross-origin",
+                // REQUIRED: functions/api/_middleware.js rewrites any
+                // text/html response under /api/* into a JSON 404 to stop
+                // static-SPA fallthrough. This marker declares the HTML is
+                // intentional; the middleware strips it before the client
+                // sees it. Without this header the preview silently 404s.
+                "x-mz-html": "intentional",
             },
         });
     });
