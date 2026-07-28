@@ -9209,14 +9209,52 @@
                 // interaction at any time, so poll briefly until playback
                 // actually advances, then stop. Bounded (20 × 300ms) and
                 // self-cancelling on success, finish, or poster swap.
+                // 2026-07-22b — if the poll can't get the video moving within
+                // ~2.4s, the OS itself is refusing video autoplay (iOS Low
+                // Power Mode, Reduce Motion, or Auto-Play Video Previews off —
+                // all block EVERY programmatic play(), retries included).
+                // Animated IMAGES are exempt from those policies, so we swap
+                // to the animated WebP of the same drawing (v3's bulletproof
+                // path): it plays unconditionally, no tap required. At the
+                // ~8s mark it settles onto the static final frame and Ken
+                // Burns starts — mirroring the video 'ended' path exactly.
+                const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp?v=' + Date.now();
+                function swapHeroToAnimatedWebp() {
+                    const live = document.getElementById('heroVideo');
+                    if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
+                    const img = document.createElement('img');
+                    img.className = live.className;
+                    img.id = live.id;
+                    img.alt = '';
+                    img.decoding = 'async';
+                    img.src = HERO_ANIM_WEBP;
+                    if (live.parentNode) live.parentNode.replaceChild(img, live);
+                    setTimeout(() => {
+                        const cur = document.getElementById('heroVideo');
+                        if (!cur || cur.tagName !== 'IMG') return;
+                        cur.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+                        cur.classList.add('ken-burns');
+                        cur.dataset.heroEnded = '1';
+                    }, 8400);
+                }
                 let autoStartTries = 0;
                 const autoStartPoll = setInterval(() => {
                     const v = document.getElementById('heroVideo');
                     const done = !v || v.tagName !== 'VIDEO' ||
                         v.dataset.heroEnded === '1' ||
-                        (!v.paused && v.currentTime > 0.05) ||
-                        ++autoStartTries > 20;
+                        (!v.paused && v.currentTime > 0.05);
                     if (done) { clearInterval(autoStartPoll); return; }
+                    autoStartTries++;
+                    if (autoStartTries === 4) {
+                        // trouble brewing — warm the browser cache so a swap
+                        // at 2.4s starts the animation instantly
+                        try { new Image().src = HERO_ANIM_WEBP; } catch (e) {}
+                    }
+                    if (autoStartTries >= 8) {
+                        clearInterval(autoStartPoll);
+                        swapHeroToAnimatedWebp();
+                        return;
+                    }
                     retryHeroPlay();
                 }, 300);
             }
