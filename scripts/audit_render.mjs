@@ -107,6 +107,18 @@ for (const post of posts) {
             else out.groupsNestedMissing.push(g.id || "?");
         }
 
+        // --- TOC nav (2026-07-28): W25/28/29 shipped with ZERO internal
+        // anchors while the gold posts have a chip TOC + ~1000 anchor links;
+        // the old parity check matched the 'mz-toc-group-synthesis' substring
+        // as "TOC". Roundups must render a real TOC whose chips point at
+        // topic ids that exist. ---
+        out.tocChips = 0; out.tocDead = 0;
+        for (const a of document.querySelectorAll("nav.mz-toc a.mz-toc-chip")) {
+            out.tocChips++;
+            const href = a.getAttribute("href") || "";
+            if (!href.startsWith("#") || !document.getElementById(href.slice(1))) out.tocDead++;
+        }
+
         // --- deep-dive modals: authored (no pending) ---
         const modals = [...document.querySelectorAll('dialog')];
         out.modals = modals.length;
@@ -137,6 +149,8 @@ for (const post of posts) {
     } else if (r.synthTotal < r.groups) {
         problems.push(`${r.groups} topic groups but only ${r.synthTotal} synthesis paragraph(s) — reader sees topics with no AI summary`);
     }
+    if (r.tocChips < 2) problems.push(`no TOC nav renders (${r.tocChips} chips) — reader cannot jump to topics`);
+    else if (r.tocDead) problems.push(`${r.tocDead}/${r.tocChips} TOC chips point at MISSING ids`);
     if (r.pending) problems.push(`${r.pending}/${r.modals} deep-dive modals still show "Pending review" text`);
     if (r.modals > 0 && r.styledSignal !== "uppercase")
         problems.push(`deep-dive modals render UNSTYLED (heading text-transform="${r.styledSignal}", expected "uppercase" — the stylesheet is not reaching the modal grammar)`);
