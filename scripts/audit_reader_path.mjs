@@ -330,10 +330,19 @@ for (const { shell, posts } of SHELLS) {
 // still invisible (opacity < 0.1) — the "sections never appear" class.
 {
     const SCROLL_PAGES = ["/", "/about/", "/cv/", "/curriculum/"];
-    const VIEWPORTS = [{ w: 1440, h: 900, label: "desktop" }, { w: 390, h: 844, label: "mobile" }];
+    const VIEWPORTS = [{ w: 1440, h: 900, label: "desktop" }, { w: 390, h: 844, label: "mobile" },
+        // Reduce Motion is a common accessibility setting (and blocks iOS video
+        // autoplay, so our own user runs it). It disables animation — it must
+        // NEVER disable content: the 2026-07-22 bug left .evidence-card/
+        // .surgical-card/.reveal sections invisible forever under RM.
+        { w: 390, h: 844, label: "mobile-reduced-motion", rm: true }];
     for (const path of SCROLL_PAGES) {
         for (const vp of VIEWPORTS) {
-            const { ctx, page } = await newPage({ width: vp.w, height: vp.h });
+            const ctx2 = await browser.newContext({ viewport: { width: vp.w, height: vp.h },
+                reducedMotion: vp.rm ? "reduce" : "no-preference" });
+            const page = await ctx2.newPage();
+            await page.route("**/*", (r) => /\.(png|jpe?g|webp|svg|gif|woff2?|ttf|otf|mp4|webm|ico)(\?|$)/i.test(r.request().url()) ? r.abort() : r.continue());
+            const ctx = ctx2;
             const id = `${path}@${vp.label}`;
             try {
                 await page.goto(`${BASE}${path}?cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });

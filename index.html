@@ -7394,8 +7394,8 @@
 
             <div class="stats-row">
                 <div class="stat">
-                    <div class="stat-num">7+</div>
-                    <div class="stat-label">Peer-reviewed publications</div>
+                    <div class="stat-num">10</div>
+                    <div class="stat-label">Peer-reviewed publications &amp; presentations</div>
                 </div>
                 <div class="stat">
                     <div class="stat-num">4</div>
@@ -7452,7 +7452,7 @@
                 <a href="#apps" class="identity-card" data-identity="apps">
                     <span class="identity-card-eyebrow">Apps</span>
                     <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg></span>
-                    <span class="identity-card-label">Five native clinical apps in development</span>
+                    <span class="identity-card-label">Six native clinical apps in active beta testing</span>
                     <span class="identity-card-sub">macOS suite + iOS — clinical AI, surgical workflow, transcription, research, education</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
@@ -8474,7 +8474,7 @@
                                 <span class="tag year">2026</span>
                             </div>
                             <h3>Multifocal Endometriosis with Atypical Papillary Fragments: Appendiceal and Tubal Involvement in an Infertility Patient</h3>
-                            <div class="journal">Gynecology and Minimally Invasive Therapy · 2026 (Accepted)</div>
+                            <div class="journal">Gynecology and Minimally Invasive Therapy · 2026</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -8587,7 +8587,7 @@
                                 <span class="tag year">2020</span>
                             </div>
                             <h3>Robotic Myomectomy: 101</h3>
-                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.mig.2020.08.129 · Presented at AAGL Global Congress · 2020</div>
+                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress · 2020</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -8666,8 +8666,8 @@
                 </div>
                 <div class="award-tile">
                     <div class="award-year">2023</div>
-                    <h3>Excellence in CBG/MIGS</h3>
-                    <p>American Association of Gynecologic Laparoscopists, PGY4 recognition.</p>
+                    <h3>Excellence in Minimally Invasive Gynecology<span data-migs-exempt="official-award-name"></span></h3>
+                    <p>American Association of Gynecologic Laparoscopists (AAGL), PGY4 · 2023.</p>
                 </div>
                 <div class="award-tile">
                     <div class="award-year">2022 – 2023</div>
@@ -10920,7 +10920,23 @@
         //   it has already settled. Threshold 0 = "any pixel inside the trimmed root counts".
         const reveals = document.querySelectorAll('[data-reveal], .word-reveal');
         if (reduceMotion) {
+            // 2026-07-22 — CRITICAL: this branch previously revealed ONLY
+            // [data-reveal]/.word-reveal. The .evidence-card/.surgical-card
+            // and .reveal mechanisms are revealed by the observer + safety
+            // net, which live in the else-branch below — so for every
+            // Reduce-Motion user those sections stayed at opacity:0 FOREVER
+            // ("the appear effect doesn't work for all elements"). Reduce
+            // Motion means no animation — it must NEVER mean no content.
             reveals.forEach(el => el.classList.add('in'));
+            const rmRevealAll = () => {
+                document.querySelectorAll('[data-reveal]:not(.in), .word-reveal:not(.in), .evidence-card:not(.in), .surgical-card:not(.in)')
+                    .forEach(el => el.classList.add('in'));
+                document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+            };
+            rmRevealAll();
+            // cards are built by JS AFTER data fetches — a one-shot sweep at
+            // init misses them and they'd stay invisible forever under RM.
+            new MutationObserver(rmRevealAll).observe(document.body, { childList: true, subtree: true });
         } else {
             const revealObs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
