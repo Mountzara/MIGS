@@ -296,7 +296,7 @@ for (const { shell, posts } of SHELLS) {
             if (m.length < 3) continue;
             const a = m.length > 3 ? m[3] : 1;
             const er = m[0]*a, eg = m[1]*a, eb = m[2]*a;
-            if (!(Math.max(er,eg,eb)-Math.min(er,eg,eb) < 14 && Math.max(er,eg,eb) < 235 && Math.max(er,eg,eb) > 30)) continue;
+            if (!(Math.max(er,eg,eb)-Math.min(er,eg,eb) < 14 && Math.max(er,eg,eb) < 244 && Math.max(er,eg,eb) > 30)) continue;
             let n = el, lightBg = false;
             while (n && n !== document.documentElement) {
                 const bg = getComputedStyle(n).backgroundColor.match(/[\\d.]+/g);
