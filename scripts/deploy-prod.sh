@@ -591,3 +591,26 @@ if [ -z "${DEPLOY_SKIP_READER_PATH_AUDIT:-}" ]; then
         fi
     fi
 fi
+
+# ---------------------------------------------------------------------------
+# Video-source playability gate (2026-07-22). The visual audit's Chromium
+# cannot decode H.264, so reel autoplay was "codec-skipped" = NOT verified.
+# This validates every homepage <source> at the FILE level on live: 200,
+# video type, faststart moov, and a real ffmpeg decode of the first frames.
+# Skip with DEPLOY_SKIP_VIDEO_SRC_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_VIDEO_SRC_AUDIT:-}" ] && command -v node >/dev/null 2>&1 && [ -f scripts/audit_video_sources.mjs ]; then
+    echo ""
+    echo "🔍 Video-source gate — every reel URL playable at file level..."
+    if node scripts/audit_video_sources.mjs > /tmp/_video_src_audit.log 2>&1; then
+        tail -1 /tmp/_video_src_audit.log
+        echo "   ✅ video-source gate passed"
+    else
+        echo ""
+        echo "🛑 VIDEO-SOURCE GATE FAILED — a reel the homepage references is"
+        echo "   missing, mis-typed, not faststart, or undecodable:"
+        grep -E '✗' /tmp/_video_src_audit.log | head -10
+        echo "   Override: DEPLOY_SKIP_VIDEO_SRC_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+        exit 1
+    fi
+fi
