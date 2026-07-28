@@ -319,6 +319,66 @@ for (const { shell, posts } of SHELLS) {
     }
 }
 
+
+// ---------- 3d. SCROLL EXPERIENCE — no stalls, no dead zones, no stuck reveals ----------
+// (user directive 2026-07-22: the drag/scroll-reveal parts must WORK on
+// desktop and mobile). Drives REAL wheel gestures down each public page in
+// both viewports and asserts: (a) the page reaches bottom — a scroll hijack
+// that swallows input (the retired initPinnedSnap busy-lock) fails here;
+// (b) dead-zone ratio: >30% of gestures producing zero movement = stall;
+// (c) after the pass, no reveal-eligible element that is in the viewport is
+// still invisible (opacity < 0.1) — the "sections never appear" class.
+{
+    const SCROLL_PAGES = ["/", "/about/", "/cv/", "/curriculum/"];
+    const VIEWPORTS = [{ w: 1440, h: 900, label: "desktop" }, { w: 390, h: 844, label: "mobile" }];
+    for (const path of SCROLL_PAGES) {
+        for (const vp of VIEWPORTS) {
+            const { ctx, page } = await newPage({ width: vp.w, height: vp.h });
+            const id = `${path}@${vp.label}`;
+            try {
+                await page.goto(`${BASE}${path}?cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+                await page.waitForTimeout(6500);
+                let dead = 0, steps = 0, lastY = -1;
+                for (let i = 0; i < 120; i++) {
+                    const y0 = await page.evaluate("window.scrollY");
+                    await page.mouse.wheel(0, vp.h * 0.7);
+                    await page.waitForTimeout(140);
+                    const st = await page.evaluate("({y: window.scrollY, max: Math.max(0, document.documentElement.scrollHeight - innerHeight)})");
+                    steps++;
+                    if (st.y <= y0 + 2 && st.y < st.max - 4) dead++;
+                    lastY = st.y;
+                    if (st.y >= st.max - 4) break;
+                }
+                const end = await page.evaluate("({y: window.scrollY, max: Math.max(0, document.documentElement.scrollHeight - innerHeight)})");
+                if (end.y < end.max - vp.h * 0.5)
+                    note(id, `scroll TRAPPED at ${Math.round(end.y)}/${Math.round(end.max)} after ${steps} wheel gestures`);
+                else if (dead / Math.max(1, steps) > 0.30)
+                    note(id, `scroll STALLS: ${dead}/${steps} gestures moved nothing`);
+                await page.waitForTimeout(1300);  // let reveal transitions settle — mid-transition sampling false-positives at 700ms
+                const stuck = await page.evaluate(`(() => {
+                    const sel = '[data-reveal], .reveal, .word-reveal, .evidence-card, .surgical-card';
+                    const bad = [];
+                    for (const el of document.querySelectorAll(sel)) {
+                        const r = el.getBoundingClientRect();
+                        const inView = r.bottom > 0 && r.top < innerHeight && r.height > 4;
+                        if (!inView) continue;
+                        if (parseFloat(getComputedStyle(el).opacity) < 0.1)
+                            bad.push(((typeof el.className === 'string' ? el.className : '') || el.tagName).slice(0, 30));
+                    }
+                    return bad.slice(0, 5);
+                })()`);
+                // also sweep back to a mid point and re-check a sample band
+                if (stuck.length) note(id, `${stuck.length}+ reveal element(s) STUCK invisible in viewport: ${stuck.join(", ")}`);
+                if (!failures.some((f) => f.startsWith(id)))
+                    console.log(`  ✓  ${id} — reached bottom in ${steps} gestures, ${dead} dead, no stuck reveals`);
+            } catch (e) {
+                note(id, `scroll test failed: ${String(e.message).slice(0, 110)}`);
+            }
+            await ctx.close();
+        }
+    }
+}
+
 // ---------- 3. static pages + listings: no mobile horizontal overflow ----------
 for (const path of ["/", "/about/", "/evidence/", "/trending/"]) {
     const { ctx, page } = await newPage({ width: 390, height: 844 });

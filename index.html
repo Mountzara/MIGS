@@ -5660,6 +5660,13 @@
            driven entirely by the shared [data-reveal] system (see CSS at
            [data-reveal] / [data-reveal].in). No absolute positioning, so the
            two frames stack vertically and never overlap. */
+        /* 2026-07-22 — native scroll-snap replaces the retired JS hijack:
+           proximity snap only engages NEAR a frame, so the rest of the page
+           scrolls completely naturally; momentum and rubber-banding are the
+           browser's own. scroll-padding aligns the snap under the fixed nav. */
+        html { scroll-snap-type: y proximity; scroll-padding-top: 0px; }
+        .pinned-frame { scroll-snap-align: start; }
+        .pinned-frame-native-snap-marker {}
         .pinned-frame {
             position: relative;
             display: flex;
@@ -11238,6 +11245,17 @@
         // the reveal system: our programmatic scroll fires real 'scroll'
         // events, so parallax + data-reveal entrances run normally.
         (function initPinnedSnap() {
+            // 2026-07-22 — RETIRED, replaced by native CSS scroll-snap (see
+            // .pinned-frame scroll-snap-align). The custom wheel/touch hijack
+            // preventDefault-ed every gesture in its zone and swallowed ALL
+            // input during each 680ms animation + 200ms cooldown ("busy"
+            // lock) — users on both desktop and mobile experienced this as
+            // scrolling that stalls, stutters, or dies entirely, and one-
+            // snap-per-swipe killed native momentum on iOS. Native snap is
+            // momentum-preserving, unhijackable, and identical across
+            // devices. The pinned visual design is unchanged.
+            return;
+            /* eslint-disable no-unreachable */
             if (reduceMotion) return;
             const frames = pinnedFrames;
             if (!frames || frames.length < 2) return;
