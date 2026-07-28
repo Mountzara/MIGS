@@ -372,6 +372,24 @@ the target element is in a section ABOVE the script tag.
     blur at all) and ALL modal text `#fff` (headings/links stay brand
     purple). Hero lock deliberately updated per change.
 
+12. **Fact-sync gate (added 2026-07-28)** — `scripts/audit_fact_sync.mjs`,
+    hermetic, runs FIRST (before the hero lock), no override flag: scans
+    every deployable file (html/json/js outside staging exclusions) against
+    the canonical fact list — forbids the never-established UIC /
+    University of Illinois affiliation anywhere; requires departure
+    context on every "Riley Lloyd" mention (Year 3 addendum: duties
+    assumed by Dr. Sankey-Thomas); requires the three-year / 36-month
+    curriculum phrasing, the CV-canonical award name, and the full GMIT
+    citation; asserts `docs/` stays excluded from BOTH staging paths.
+    Origin story: the public curriculum data JSON kept UIC + departed
+    faculty long after the pages were corrected (two-worktree drift), and
+    the `docs/` tree — including the SFH risk-management letter — was
+    being served publicly. `docs/`, `*.doc`, `*.docx` now excluded from
+    staging; legacy 2024-v3 source .doc removed from public assets.
+    NOTE: the deploy token has no zone-cache scope, so removed files can
+    persist at the EDGE for up to max-age=14400 (4h) after removal;
+    dashboard Purge Everything clears instantly.
+
 ### 2.4 Admin auth canonical resolver (§10.3.1)
 
 **`ADMIN_USER` on Cloudflare Pages = `chris.mabini@gmail.com`** (NOT
