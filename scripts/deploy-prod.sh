@@ -105,6 +105,27 @@ if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ] && [ "$KB_GATE_OK" = "1" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Fact-sync gate (2026-07-28). Two worktrees edit this site; content facts
+# drifted from their data sources (UIC affiliation lived on in the public
+# curriculum JSON after the pages were corrected; internal docs/ was being
+# served publicly, including a risk-management letter). Hermetic scan of
+# every deployable file against the canonical fact list. No override flag:
+# a violation means false or private information is about to go public.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/audit_fact_sync.mjs ]; then
+    echo ""
+    echo "🔒 fact-sync gate — canonical facts across all deployable files..."
+    if node scripts/audit_fact_sync.mjs > /tmp/_fact_sync.log 2>&1; then
+        tail -1 /tmp/_fact_sync.log
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the fact-sync gate:"
+        grep -E '✗' /tmp/_fact_sync.log | head -10
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # HERO ANIMATION LOCK (codified 2026-07-04). The opening hero animation broke
 # on multiple revisions because unrelated edits (justify, headline wrapping, a
 # well-meaning "safety net") silently touched or interacted with the reveal
@@ -277,6 +298,9 @@ if [ -z "${RSYNC_MISSING:-}" ]; then
         --exclude='.env.*' \
         --exclude='scripts/' \
         --exclude='schema/' \
+        --exclude='docs/' \
+        --exclude='*.doc' \
+        --exclude='*.docx' \
         --exclude='*.md' \
         --exclude='*.sh' \
         --exclude='*.py' \
@@ -295,7 +319,8 @@ else
         --exclude='node_modules' --exclude='companion-app' --exclude='build' \
         --exclude='DerivedData' --exclude='.build' --exclude='*.xcuserstate' \
         --exclude='.DS_Store' --exclude='wrangler.toml' --exclude='.env' \
-        --exclude='.env.*' --exclude='scripts' --exclude='schema' \
+        --exclude='.env.*' --exclude='scripts' --exclude='schema' --exclude='docs' \
+        --exclude='*.doc' --exclude='*.docx' \
         --exclude='*.md' --exclude='*.sh' --exclude='*.py' \
         --exclude='.gitignore' --exclude='.gitattributes' \
         -cf - . ) | ( cd "$STAGE_DIR" && tar -xf - )
