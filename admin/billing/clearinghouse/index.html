@@ -47,7 +47,13 @@
         .result{margin-top:12px;font-size:13px;color:var(--fg-mid);background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;white-space:pre-wrap;}
         .muted{color:var(--fg-dim);} .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
         .center{text-align:center;padding:40px;color:var(--fg-soft);} .spin{width:24px;height:24px;border:2px solid rgba(var(--glow-purple),.25);border-top-color:var(--accent-soft);border-radius:50%;animation:s .9s linear infinite;margin:0 auto 12px;} @keyframes s{to{transform:rotate(360deg);}}
-    </style>
+    
+/* 2026-07-28 — explicit plum canvas (theme-consistency sweep) */
+html { background:
+    radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.12), transparent 56%),
+    linear-gradient(178deg, #171030 0%, #120b22 55%, #150e2a 100%); }
+</style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>

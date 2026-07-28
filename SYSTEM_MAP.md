@@ -330,6 +330,15 @@ the target element is in a section ABOVE the script tag.
     `background-color:`/`border-color:` — property-anchor with
     `(?<![-\w])` or you turn glass panels solid white (the runtime-CSS
     gate caught exactly that before it shipped).
+    **Theme-consistency enforcement (2026-07-28):** section 3e asserts on
+    a 9-page live set: backdrop stages (.page-bg-stage/.hero-bg-stage)
+    must NOT have an opaque background (the black-slab class that hid the
+    plum theme on 70 pages), their line-art must be screen-blended, and
+    the page canvas (html/body) must carry a gradient — a flat achromatic
+    near-black canvas fails. Root causes fixed 2026-07-28: the 2026-06-29
+    "move base to html" block's var-fallback chain bottomed out at legacy
+    #07070a on 65 pages (now an explicit plum gradient), and 5
+    admin/billing pages had no canvas at all.
     **Contrast enforcement (2026-07-22):** the gate also samples homepage
     text elements (eyebrows, buttons, links, tags) and fails any below
     WCAG AA (4.5:1 small / 3:1 large) against the plum gradient's

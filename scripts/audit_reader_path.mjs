@@ -398,6 +398,49 @@ for (const { shell, posts } of SHELLS) {
     }
 }
 
+
+// ---------- 3e. THEME CONSISTENCY — no black-slab backdrops, no flat canvases ----------
+// (2026-07-28, user-caught on /curriculum/.) Two bug classes shipped as
+// partial theme application: (a) fixed backdrop stages with an OPAQUE
+// background covering the plum body — the page reads black and glass has
+// nothing to frost; (b) page canvases whose var-fallback chains bottomed
+// out at legacy near-black, leaving flat canvases with no gradient. Both
+// are now hard assertions on a representative page set.
+{
+    const THEME_PAGES = ["/", "/about/", "/cv/", "/curriculum/", "/curriculum/cbg-migs/",
+        "/evidence/", "/trending/", "/education/endometriosis/", "/portal/login/"];
+    for (const path of THEME_PAGES) {
+        const { ctx, page } = await newPage({ width: 1366, height: 900 });
+        try {
+            await page.goto(`${BASE}${path}?cb=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+            await page.waitForTimeout(4000);
+            const r = await page.evaluate(`(() => {
+                const out = [];
+                for (const sel of ['.page-bg-stage', '.hero-bg-stage']) {
+                    const st = document.querySelector(sel);
+                    if (!st) continue;
+                    const m = (getComputedStyle(st).backgroundColor.match(/[\\d.]+/g) || []).map(Number);
+                    if (m.length >= 3 && (m.length < 4 || m[3] > 0.5)) out.push(sel + ' has OPAQUE background (hides theme)');
+                    const art = st.querySelector('img, video');
+                    if (art && getComputedStyle(art).mixBlendMode !== 'screen') out.push(sel + ' art not screen-blended (black slab)');
+                }
+                const gi = getComputedStyle(document.documentElement).backgroundImage + getComputedStyle(document.body).backgroundImage;
+                const pick = (el) => { const m = (getComputedStyle(el).backgroundColor.match(/[\\d.]+/g) || []).map(Number);
+                    return (m.length >= 3 && (m.length < 4 || m[3] > 0.1)) ? m.slice(0, 3) : null; };
+                const solid = pick(document.body) || pick(document.documentElement);
+                const dark = solid && Math.max(...solid) < 26 && (Math.max(...solid) - Math.min(...solid)) < 8;
+                if (!/gradient/.test(gi) && (dark || !solid)) out.push('page canvas flat/near-black with no gradient');
+                return out;
+            })()`);
+            if (r.length) note(`${path}@theme`, r.join("; "));
+            else console.log(`  ✓  ${path} — theme consistent (stage transparent, art blended, plum canvas)`);
+        } catch (e) {
+            note(`${path}@theme`, `theme check failed: ${String(e.message).slice(0, 100)}`);
+        }
+        await ctx.close();
+    }
+}
+
 // ---------- 3. static pages + listings: no mobile horizontal overflow ----------
 for (const path of ["/", "/about/", "/evidence/", "/trending/"]) {
     const { ctx, page } = await newPage({ width: 390, height: 844 });

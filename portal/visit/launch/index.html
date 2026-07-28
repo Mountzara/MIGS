@@ -117,7 +117,14 @@ footer a:hover { text-decoration: underline; }
            glass dashboard components frost against real texture, uniform with the
            rest of the site. Move the opaque page base to html so the z-index:-1
            art shows; body keeps only its translucent glow on top. Added 2026-06-29. */
-        html { background-color: var(--bg-base, var(--bg, var(--black, #07070a))); }
+        html { background:
+            radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
+            radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.12), transparent 56%),
+            linear-gradient(178deg, #171030 0%, #120b22 55%, #150e2a 100%);
+            /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
+               bottomed out at legacy #07070a black on pages whose tokens
+               didn't resolve, leaving flat near-black canvases (user-caught
+               on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.75; }
         .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
