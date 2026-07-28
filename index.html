@@ -3750,6 +3750,15 @@
             width: 22px; height: 22px; opacity: 0.5; z-index: 3;
         }
         .app-reel { position: absolute; inset: 0; overflow: hidden; }
+        /* App reels, video-first (2026-07-22): when a REAL screen recording
+           exists at /media/app-reel-<app>.mp4 it plays and the CSS scenes
+           hide; if the file is absent the <video> errors out and removes
+           itself, leaving the CSS scenes. Upload a recording and the card
+           upgrades itself with no code change. */
+        .app-reel-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; display: none; }
+        .app-reel.has-video .app-reel-video { display: block; }
+        .app-reel.has-video .reel-scene, .app-reel.has-video ~ .app-visual-label { display: none; }
+
         .reel-scene {
             position: absolute; inset: 0; opacity: 0; pointer-events: none;
             display: flex; flex-direction: column; justify-content: flex-start;
@@ -8028,6 +8037,11 @@
                             <circle cx="12" cy="13" r="2"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-clinical.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>ACOG PB 228 — Fibroids.pdf</span><span class="rl-bar"></span></div>
                                 <div class="rl-row rl-anim"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>AAGL myomectomy 2024.pdf</span><span class="rl-bar"></span></div>
@@ -8068,6 +8082,11 @@
                             <path d="M9 8h6M9 12h6M9 16h4"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-abog.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-line w80 rl-anim rl-redact"></div>
                                 <div class="rl-line w60 rl-anim rl-redact"></div>
@@ -8104,6 +8123,11 @@
                             <path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-transcription.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-wave rl-anim"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
                                 <div class="rl-row rl-anim"><span>"…three months of worsening pelvic pain, worse with menses…"</span></div>
@@ -8142,6 +8166,11 @@
                             <path d="M11 7v4l3 2"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-research.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-row rl-anim"><b style="color:#c9b8ff">P</b><span>Women 18–45 with symptomatic fibroids</span></div>
                                 <div class="rl-row rl-anim"><b style="color:#c9b8ff">I</b><span>Robotic myomectomy + ICG mapping</span></div>
@@ -8179,6 +8208,11 @@
                             <path d="M22 8l-6 4 6 4z"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-video.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-frame rl-anim">
                                     <span class="rl-pin" style="top:14px;left:12px">Adhesiolysis</span>
@@ -8218,6 +8252,11 @@
                             <rect x="2" y="6" width="10" height="8" rx="1"/>
                         </svg>
                         <div class="app-reel" aria-hidden="true">
+                            <video class="app-reel-video" muted autoplay loop playsinline preload="metadata" aria-hidden="true"
+                                   onerror="this.remove()"
+                                   oncanplay="this.closest('.app-reel').classList.add('has-video')">
+                                <source src="/media/app-reel-videoannotator.mp4" type="video/mp4" onerror="this.parentElement.remove()">
+                            </video>
                             <div class="reel-scene">
                                 <div class="rl-frame rl-anim">
                                     <svg class="draw" viewBox="0 0 200 80" preserveAspectRatio="none"><path d="M28 58 C 52 22, 96 16, 122 34 S 176 62, 184 40"/></svg>
@@ -8284,7 +8323,7 @@
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
                         <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
-                            <source src="/media/rpoc-golden-hysteroscope-reel.mp4" type="video/mp4">
+                            <source src="/media/rpoc-golden-hysteroscope-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <span class="video-preview-label">Watch the case</span>
@@ -8303,7 +8342,7 @@
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
                         <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
-                            <source src="/media/myomectomy-gel-port-reel.mp4" type="video/mp4">
+                            <source src="/media/myomectomy-gel-port-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <span class="video-preview-label">Watch the procedure</span>
@@ -8322,7 +8361,7 @@
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
                         <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
-                            <source src="/media/isthmocele-ashermans-reel.mp4" type="video/mp4">
+                            <source src="/media/isthmocele-ashermans-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <div class="play-button">
@@ -8345,7 +8384,7 @@
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
                         <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true">
-                            <source src="/media/rpoc-arcuate-reel.mp4" type="video/mp4">
+                            <source src="/media/rpoc-arcuate-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
                             <span class="video-preview-label">Watch the technique</span>
