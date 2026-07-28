@@ -252,12 +252,22 @@ for (const { shell, posts } of SHELLS) {
                 const el = [...document.querySelectorAll(sel)].find((e) => e.offsetHeight > 0);
                 if (!el) continue;
                 const cs = getComputedStyle(el);
+                // context-aware backdrop: walk ancestors for a solid-enough bg.
+                // Light panels (About) legitimately carry dark text — judging
+                // them against the dark page base false-fails (caught by the
+                // gate blocking its own pill fix, 2026-07-22).
+                let bg = BASE_BG, n = el.parentElement;
+                while (n && n !== document.documentElement) {
+                    const bm = (getComputedStyle(n).backgroundColor.match(/[\d.]+/g) || []).map(Number);
+                    if (bm.length >= 3 && (bm.length < 4 || bm[3] > 0.5)) { bg = bm.slice(0, 3); break; }
+                    n = n.parentElement;
+                }
                 const m = cs.color.match(/[\d.]+/g).map(Number);
                 const alpha = m.length > 3 ? m[3] : 1;
-                const fg = m.slice(0, 3).map((v, i) => Math.round(v * alpha + BASE_BG[i] * (1 - alpha)));
-                const r = ratio(fg, BASE_BG);
+                const fg = m.slice(0, 3).map((v, i) => Math.round(v * alpha + bg[i] * (1 - alpha)));
+                const r = ratio(fg, bg);
                 const large = parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.66 && parseInt(cs.fontWeight) >= 700);
-                if (r < (large ? 3.0 : 4.5)) out.push(`${label} (${sel}) at ${r.toFixed(2)}:1 color=${cs.color}`);
+                if (r < (large ? 3.0 : 4.5)) out.push(`${label} (${sel}) at ${r.toFixed(2)}:1 color=${cs.color} on rgb(${bg.join(",")})`);
             }
             return out;
         });

@@ -1451,9 +1451,12 @@
            edge + lit top so it still reads as glass over the drawing watermark. */
         .about-section .section-eyebrow,
         .apps-section .section-eyebrow {
-            color: var(--accent-soft);
-            border-color: rgba(118, 91, 217, 0.40);
-            background: rgba(118, 91, 217, 0.14);
+            /* 2026-07-22 — these pills sit on LIGHT panels: the light
+               accent-soft was unreadable there ("ABOUT pill unreadable").
+               Deep brand purple on the light tint reads ~8:1. */
+            color: #4c1d95;
+            border-color: rgba(109, 40, 217, 0.45);
+            background: rgba(118, 91, 217, 0.16);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
         }
 
@@ -1743,7 +1746,7 @@
         }
 
         .about-section .section-eyebrow {
-            color: var(--accent-soft);
+            color: #4c1d95;
         }
 
         .about-grid {
@@ -7356,15 +7359,20 @@
                  jank (per adversarial review). The frames are simply present and
                  the deliberate one-stroke snap delivers the motion. -->
             <div class="pinned-frames">
+                <!-- 2026-07-22 — reveals RESTORED: they were removed when the
+                     JS snap controller's landing "was the entrance"; with that
+                     hijack retired for native scroll-snap, the frames had no
+                     entrance at all ("no auto reveal when scrolling"). Element-
+                     level stagger: eyebrow -> headline -> sub. -->
                 <div class="pinned-frame">
-                    <span class="frame-eyebrow">The Foundation</span>
-                    <h2 class="frame-headline">Whole-person care, not just a diagnosis.</h2>
-                    <p class="frame-sub">Osteopathic Manipulative Treatment, anatomy-first reasoning, and a fellowship in OMM — built on the belief that structure and function inform every operation.</p>
+                    <span class="frame-eyebrow" data-reveal="fade">The Foundation</span>
+                    <h2 class="frame-headline" data-reveal data-stagger="1">Whole-person care, not just a diagnosis.</h2>
+                    <p class="frame-sub" data-reveal data-stagger="2">Osteopathic Manipulative Treatment, anatomy-first reasoning, and a fellowship in OMM — built on the belief that structure and function inform every operation.</p>
                 </div>
                 <div class="pinned-frame">
-                    <span class="frame-eyebrow">The Innovation</span>
-                    <h2 class="frame-headline">Engineered for the working surgeon.</h2>
-                    <p class="frame-sub">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
+                    <span class="frame-eyebrow" data-reveal="fade">The Innovation</span>
+                    <h2 class="frame-headline" data-reveal data-stagger="1">Engineered for the working surgeon.</h2>
+                    <p class="frame-sub" data-reveal data-stagger="2">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
                 </div>
             </div>
         </div>
