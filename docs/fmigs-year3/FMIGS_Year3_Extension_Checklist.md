@@ -734,7 +734,7 @@ The FMIGS program encourages attendance to CME for advanced surgical skills deve
 
 ### Awards and Recognition
 - Golden Hysteroscope Award — Best Video Abstract in Hysteroscopy, AAGL Global Congress 2024
-- George M. Morley Award — Best Gynecological Research, CAOG Annual Meeting 2023
+- Dr. George W. Morley Memorial Paper Award — CAOG 91st Annual Meeting, Indianapolis, 2024
 - Excellence in MIGS — AAGL 2023
 - Surgical Skills Chief — Ascension Illinois St. Alexius OB/GYN Residency (PGY4)
 
