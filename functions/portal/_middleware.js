@@ -92,8 +92,8 @@ const COMING_SOON_HTML = `<!doctype html>
             --bg-base: #120b22;
             --bg-soft: #0e0e13;
             --fg-strong: #ffffff;
-            --fg-mid: rgba(245, 245, 247, 0.84);
-            --fg-soft: rgba(245, 245, 247, 0.62);
+            --fg-mid: #ffffff;
+            --fg-soft: #ffffff;
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
             --glow-purple: 167, 139, 250;

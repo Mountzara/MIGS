@@ -33,7 +33,7 @@
             --bg: #120b22;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
-            --text-on-dark: #f5f5f7;
+            --text-on-dark: #ffffff;
             --text-secondary-dark: #a1a1a6;
         }
 
@@ -202,7 +202,7 @@
             font-weight: 600;
             letter-spacing: 0.08em;
             color: var(--white);
-            opacity: 0.95;
+            opacity: 1;  /* was 0.95 — read grey (2026-07-22 all-white directive) */
             transition: opacity 0.2s ease;
             white-space: nowrap;  /* never wrap to second row — user 2026-05-27 */
             flex-shrink: 0;

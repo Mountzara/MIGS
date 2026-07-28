@@ -33,7 +33,7 @@ export async function onRequest({ request, env }) {
             background:
                 radial-gradient(ellipse 80% 60% at 50% -10%, rgba(167, 139, 250, 0.18), transparent 60%),
                 #120b22;
-            color: rgba(245, 245, 247, 0.84);
+            color: #ffffff;
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
@@ -64,7 +64,7 @@ export async function onRequest({ request, env }) {
         }
         p {
             font-size: 14.5px; line-height: 1.6;
-            color: rgba(245, 245, 247, 0.74);
+            color: #ffffff;
             margin: 0 0 18px 0;
         }
         a.btn {
@@ -84,7 +84,7 @@ export async function onRequest({ request, env }) {
             background: rgba(167, 139, 250, 0.22);
         }
         a.btn.secondary {
-            color: rgba(245, 245, 247, 0.74);
+            color: #ffffff;
             background: rgba(255, 255, 255, 0.04);
             border-color: rgba(255, 255, 255, 0.12);
             margin-left: 8px;
@@ -93,7 +93,7 @@ export async function onRequest({ request, env }) {
         .small {
             margin-top: 22px;
             font-size: 11.5px;
-            color: rgba(245, 245, 247, 0.42);
+            color: #ffffff;
             line-height: 1.55;
         }
     </style>

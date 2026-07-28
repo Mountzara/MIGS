@@ -28,8 +28,8 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
     --glow-purple: 167, 139, 250;
     --bg-base: #120b22;
     --fg-strong: #ffffff;
-    --fg-mid: rgba(245, 245, 247, 0.88);
-    --fg-soft: rgba(245, 245, 247, 0.62);
+    --fg-mid: #ffffff;
+    --fg-soft: #ffffff;
     --hairline: rgba(255, 255, 255, 0.08);
   }
   * { box-sizing: border-box; }
