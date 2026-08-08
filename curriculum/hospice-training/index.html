@@ -27,12 +27,17 @@ html, body {
 a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--fg-strong); }
 
-.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(7,7,10,0.86); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px); }
+.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(10,7,20,0.96); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px); }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
-.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
-.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); white-space: nowrap; }
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-nav .crumb .crumb-item + .crumb-item::before { content: "·"; margin: 0 7px; color: var(--fg-dim); }
+@media (max-width: 680px) {
+    .site-nav .crumb .crumb-item:not(.crumb-page) { display: none; }
+    .site-nav .crumb .crumb-item + .crumb-item::before { content: none; margin: 0; }
+}
 .site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); white-space: nowrap; }
 .site-nav .right-actions a:hover { color: var(--fg-strong); }
 .site-nav .cta { background: rgba(var(--glow-purple), 0.16); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--accent-soft) !important; padding: 5px 14px; border-radius: 999px; font-weight: 500; transition: all 0.2s; }
 .site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
@@ -57,14 +62,14 @@ section.block h2 { font-weight: 300; font-size: clamp(22px, 3.2vw, 30px); letter
 section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 24px 0; line-height: 1.6; }
 section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-width: 70ch; margin: 0 0 14px 0; }
 
-.principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+.principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; align-items: start; }
 .principle-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
 .principle-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.05); }
 .principle-card .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
 .principle-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16.5px; }
 .principle-card p { margin: 0; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
 
-.component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; align-items: start; }
 .component-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; transition: border-color 0.22s ease; }
 .component-card:hover { border-color: rgba(var(--glow-purple), 0.32); }
 .component-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; }
@@ -104,7 +109,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* 2026-07-28 — REAL Apple glass + balanced reading measure (user: panels
    were "completely see-through", text hugged the left of a wide panel).
@@ -137,7 +142,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
     <nav class="site-nav" aria-label="Primary">
         <div class="inner">
             <a href="/" class="brand">Mount Zara</a>
-            <span class="crumb">· <a href="/curriculum/" style="color: inherit;">Curriculum Consulting</a> · Hospice Care Training</span>
+            <span class="crumb"><a href="/curriculum/" class="crumb-item" style="color: inherit;">Curriculum Consulting</a><span class="crumb-item crumb-page">Hospice Care Training</span></span>
             <div class="right-actions">
                 <a href="/curriculum/">All Curricula</a>
                 <a href="mailto:info@mountzara.com" class="cta">Engage</a>
@@ -162,11 +167,11 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
         </header>
 
         <div class="gap-banner">
-            <div class="lbl">Source archive</div>
+            <div class="lbl">Provenance</div>
             <p>
-                The full design document for this training program lives in the operator's institutional archive.
-                This page is built from confirmed program details only. The same end-to-end methodology is fully
-                detailed on the <a href="/curriculum/cbg-migs/">CBG/MIGS Fellowship case study</a>. To engage on
+                This program was designed and delivered by Dr. Mabini at Community Hospice in Dothan. The full
+                design document lives in the institutional archive, and the complete end-to-end methodology is
+                documented in the <a href="/curriculum/cbg-migs/">CBG/MIGS Fellowship case study</a>. To scope
                 a hospice or palliative-care training build,
                 <a href="mailto:info@mountzara.com?subject=Hospice%20training%20curriculum%20consult">email us</a>.
             </p>
@@ -174,7 +179,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
 
         <section class="block">
             <div class="eyebrow">Theoretical Anchors</div>
-            <h2>Designed for adults transitioning into hard work.</h2>
+            <h2>Designed for experienced clinicians entering end-of-life care.</h2>
             <p class="sub">
                 Clinicians moving into hospice and palliative care are not novice learners. They bring full clinical
                 identities — and have to undergo a real shift in how they relate to medicine, families, and the
@@ -184,7 +189,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                 <div class="principle-card">
                     <div class="label">Andragogy</div>
                     <h4>Knowles' Adult Learning Theory</h4>
-                    <p>Self-direction, prior-experience integration, problem-centered orientation. Clinicians enter with deep clinical knowledge but specific gaps in end-of-life work — the program built around what they brought, not what they didn't.</p>
+                    <p>Self-direction, prior-experience integration, problem-centered orientation. Clinicians enter with deep clinical knowledge and specific gaps in end-of-life work, so the program was built around the experience they already carried.</p>
                 </div>
                 <div class="principle-card">
                     <div class="label">Transformative</div>
@@ -229,11 +234,11 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                 </div>
                 <div class="component-card">
                     <h4>Mentored clinical experiences</h4>
-                    <p>Direct supervision, graduated autonomy, structured feedback. Clinicians learn the doing of palliative care, not just the knowing of it.</p>
+                    <p>Direct supervision, graduated autonomy, structured feedback. Clinicians build hands-on palliative skill one supervised case at a time.</p>
                 </div>
                 <div class="component-card">
                     <h4>Self-care + sustainability</h4>
-                    <p>Compassion fatigue, moral distress, burnout prevention. Hospice work is sustained only when clinician wellness is built into the program — not bolted on.</p>
+                    <p>Compassion fatigue, moral distress, burnout prevention. The program treats clinician wellness as a core component, because sustained hospice work depends on it.</p>
                 </div>
             </div>
         </section>
@@ -248,7 +253,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
             <p>
                 Christopher Z. Mabini, DO, MSAEd · Community Hospice, Dothan AL ·
                 M.S. Adult Education with concentration in Curriculum Development & Instructional Design ·
-                <a href="/curriculum/">All curricula</a> · <a href="/about/">About</a> · <a href="/cv/#curriculum">CV</a>
+                <a href="/curriculum/">All Curricula</a> · <a href="/about/">About</a> · <a href="/cv/#curriculum">CV</a>
             </p>
         </div>
 

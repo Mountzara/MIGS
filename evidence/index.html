@@ -62,6 +62,16 @@
             backdrop-filter: blur(28px) saturate(1.85) !important;  /* 44px was heavy while scrolling the 12-section modal; 28px is visually equal frost at a fraction of the compositing cost */
             border: 1px solid rgba(255, 255, 255, 0.14) !important;
             color: #ffffff !important;
+            /* 2026-08-08 — center the deep-dive dialog. The shell's universal
+               reset (* { margin: 0 }) overrode the UA's dialog margin:auto, so
+               modals rendered flush top-left with the right 40% of the viewport
+               empty. Restore centering explicitly. */
+            position: fixed !important;
+            inset: 0 !important;
+            margin: auto !important;
+            height: fit-content;
+            max-height: min(92vh, calc(100vh - 32px)) !important;
+            max-width: calc(100vw - 24px);
         }
                 .mz-ref-pop, .mz-ref-pop * { color: #ffffff !important; }
         .mz-verdict-label { color: #ffffff !important; }
@@ -242,18 +252,15 @@
         .brief-detail-back:hover { background: rgba(var(--glow-purple), 0.12); color: #fff; gap: 12px; }
         .brief-detail-meta { display: flex; gap: 12px; margin-bottom: 18px; }
         .brief-detail-title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 18px; color: var(--white); }
+        /* 2026-08-08 — was the "Claim under review" block. These are the
+           author's own posts, not fact-checks, so the summary now renders as
+           a plain standfirst: same panel, no label, no italics. */
         .brief-detail-claim {
             font-size: clamp(17px, 1.7vw, 20px); line-height: 1.55;
             color: #ffffff; margin-bottom: 36px; padding: 24px 28px;
             border-radius: 14px;
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
             border: 1px solid rgba(var(--glow-purple), 0.20);
-            font-style: italic;
-        }
-        .brief-detail-claim-label {
-            display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em;
-            text-transform: uppercase; color: rgba(var(--glow-purple), 0.95);
-            margin-bottom: 10px; font-style: normal;
         }
         .brief-detail-body { font-size: 16px; line-height: 1.75; color: #ffffff; }
         .brief-detail-body h2 { font-size: clamp(22px, 2.2vw, 30px); margin: 36px 0 12px; color: var(--white); letter-spacing: -0.018em; line-height: 1.2; font-weight: 600; }
@@ -297,6 +304,34 @@
     
         /* magazine-justify-2026-06-29 */
         .brief-detail-body, .brief-detail-body p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
+
+        /* 2026-08-08 — Study-design distribution card. Posts ship the markup
+           (.design-row > .label / .bar-bg > .bar-fill[data-width] / .count)
+           but no CSS or JS for it, so it rendered as bare label/number text
+           lines. Horizontal bars; widths are set from data-width at hydration. */
+        .brief-detail-body .design-chart .design-row {
+            display: grid; grid-template-columns: minmax(150px, 230px) 1fr 48px;
+            align-items: center; gap: 14px; margin: 12px 0;
+        }
+        .brief-detail-body .design-chart .design-row .label { font-size: 14px; line-height: 1.3; }
+        .brief-detail-body .design-chart .bar-bg {
+            height: 8px; border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08); overflow: hidden;
+        }
+        .brief-detail-body .design-chart .bar-fill {
+            display: block; height: 100%; width: 0; border-radius: 4px;
+            background: linear-gradient(90deg, rgba(167, 139, 250, 0.95), rgba(139, 92, 246, 0.5));
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .brief-detail-body .design-chart .count {
+            font-size: 14px; font-weight: 600; text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        @media (max-width: 640px) {
+            .brief-detail-body .design-chart .design-row { grid-template-columns: 108px 1fr 34px; gap: 10px; }
+            .brief-detail-body .design-chart .design-row .label { font-size: 12.5px; }
+            .brief-detail-body .design-chart .count { font-size: 13px; }
+        }
     </style>
 </head>
 <body>
@@ -358,6 +393,39 @@
         function esc(s) {
             return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
+        // Some stored posts arrive double-escaped ("&amp;amp;" in topic chips,
+        // "P &amp;lt; 0.001" in abstracts), so readers saw the raw entity text.
+        // Collapse one layer: "&amp;" followed by an entity body becomes that
+        // entity, so chips read "Pregnancy & Pathology" and abstracts "P < 0.001".
+        function fixDoubleEncoding(html) {
+            return String(html || '').replace(/&amp;((?:#\d{1,7}|#x[0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,31});)/g, '&$1');
+        }
+        // Topic-slug display names. Pipeline slugs ("csection scar", "mht",
+        // "pcos") leak into post ledes and jump-list chips; map the known ones
+        // and default to capitalizing the first letter.
+        const TOPIC_DISPLAY = {
+            'csection scar': 'C-section scar',
+            'mht': 'MHT',
+            'pcos': 'PCOS',
+            'nbi': 'NBI',
+            'icg': 'ICG',
+            'icg fluorescence': 'ICG fluorescence',
+            'pelvic pain': 'Pelvic pain',
+            'operative hysteroscopy': 'Operative hysteroscopy'
+        };
+        function topicDisplay(slug) {
+            const key = String(slug || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+            if (TOPIC_DISPLAY[key]) return TOPIC_DISPLAY[key];
+            return key.charAt(0).toUpperCase() + key.slice(1);
+        }
+        // Replace lowercase slug tokens inside prose (post titles, ledes,
+        // summaries). Only tokens whose display form is also correct
+        // mid-sentence — acronyms and "csection scar" — so correct prose like
+        // "adenomyosis" or "pelvic pain" mid-sentence is left alone.
+        const SLUG_TOKEN_RE = /\b(csection[ _]scar|icg[ _]fluorescence|mht|pcos|nbi|icg)\b/g;
+        function fixSlugTokens(text) {
+            return String(text || '').replace(SLUG_TOKEN_RE, m => TOPIC_DISPLAY[m.replace(/_/g, ' ')] || m);
+        }
         function verdictClass(v) {
             if (!v) return 'verdict-neutral';
             const upper = String(v).toUpperCase();
@@ -365,6 +433,88 @@
             if (upper.includes('UNSUPPORT') || upper.includes('NO EVIDENCE') || upper.includes('CONTRA')) return 'verdict-unsupported';
             if (upper.includes('MIXED') || upper.includes('PARTIAL') || upper.includes('LIMITED')) return 'verdict-mixed';
             return 'verdict-neutral';
+        }
+
+        // Post-hydration fixes for markup that ships inside body_html.
+        // Posts carry counter/bar/forest markup but none of the JS that the
+        // original standalone pages used to animate it, so without this pass
+        // the stat tiles read 0 forever and the design chart has no bars.
+        function enhancePost(root) {
+            // 1. Stat tiles: write the real numbers synchronously. No observer,
+            //    no dependency on scroll position or animation frames.
+            root.querySelectorAll('.counters .value[data-value]').forEach(el => {
+                el.textContent = el.getAttribute('data-value');
+            });
+            // 2. Study-design distribution bars: width from data-width (percent).
+            root.querySelectorAll('.design-chart .bar-fill[data-width]').forEach(el => {
+                const w = parseFloat(el.getAttribute('data-width'));
+                if (!isNaN(w)) el.style.width = Math.max(0, Math.min(100, w)) + '%';
+            });
+            // 3. Hide the machine-generated timestamp line from readers.
+            root.querySelectorAll('.meta div').forEach(el => {
+                if (/^\s*Generated\b/.test(el.textContent)) el.remove();
+            });
+            // 4. Topic-slug display names: fix prose tokens in the post's own
+            //    hero title/lede, and any chip or topic heading that is a bare
+            //    lowercase slug.
+            root.querySelectorAll('.mz-post-title, .mz-post-hero .subtitle').forEach(el => {
+                el.childNodes.forEach(n => {
+                    if (n.nodeType === 3) n.nodeValue = fixSlugTokens(n.nodeValue);
+                });
+            });
+            root.querySelectorAll('.mz-toc-chip, .topic-header h2').forEach(el => {
+                const textNode = Array.prototype.find.call(el.childNodes, n => n.nodeType === 3 && n.nodeValue.trim());
+                if (!textNode) return;
+                const raw = textNode.nodeValue.trim();
+                if (/^[a-z][a-z0-9 _\/-]*$/.test(raw)) {
+                    textNode.nodeValue = textNode.nodeValue.replace(raw, topicDisplay(raw));
+                }
+            });
+            // 5. Forest-plot x-axis: generated ticks can land close enough to
+            //    collide ("0.670.75"). Per axis, keep at most 4 labels with a
+            //    minimum spacing, and hide the gridlines of dropped labels.
+            root.querySelectorAll('.forest-plot svg').forEach(svg => {
+                const numeric = Array.prototype.filter.call(
+                    svg.querySelectorAll('text.tick'),
+                    t => /^\s*\d+(\.\d+)?\s*$/.test(t.textContent)
+                );
+                const groups = {};
+                numeric.forEach(t => {
+                    const y = t.getAttribute('y') || '0';
+                    (groups[y] = groups[y] || []).push(t);
+                });
+                const lines = Array.prototype.slice.call(svg.querySelectorAll('.tick-line'));
+                Object.keys(groups).forEach(y => {
+                    const g = groups[y].sort((a, b) => parseFloat(a.getAttribute('x')) - parseFloat(b.getAttribute('x')));
+                    const MIN_GAP = 44; // viewBox units; ~4 digits at 10px never touch
+                    let kept = [];
+                    let lastX = -Infinity;
+                    g.forEach(t => {
+                        const x = parseFloat(t.getAttribute('x'));
+                        if (x - lastX >= MIN_GAP) { kept.push(t); lastX = x; }
+                    });
+                    const last = g[g.length - 1];
+                    if (kept[kept.length - 1] !== last) {
+                        const lx = parseFloat(last.getAttribute('x'));
+                        if (kept.length > 1 && lx - parseFloat(kept[kept.length - 1].getAttribute('x')) < MIN_GAP) kept.pop();
+                        kept.push(last);
+                    }
+                    if (kept.length > 4) {
+                        const n = kept.length - 1;
+                        const idx = new Set([0, Math.round(n / 3), Math.round(2 * n / 3), n]);
+                        kept = kept.filter((t, i) => idx.has(i));
+                    }
+                    const keepSet = new Set(kept);
+                    g.forEach(t => {
+                        if (keepSet.has(t)) return;
+                        t.setAttribute('display', 'none');
+                        const x = parseFloat(t.getAttribute('x'));
+                        lines.forEach(ln => {
+                            if (Math.abs(parseFloat(ln.getAttribute('x1')) - x) < 0.6) ln.setAttribute('display', 'none');
+                        });
+                    });
+                });
+            });
         }
 
         async function loadList() {
@@ -383,11 +533,11 @@
                 grid.innerHTML = '<div class="brief-grid">' + briefs.map(b => `
                     <a class="brief-card" href="?id=${encodeURIComponent(b.id)}">
                         <div class="brief-meta">
-                            <span class="verdict-badge ${verdictClass(b.verdict)}">${esc(b.verdict || 'Reviewed')}</span>
+                            ${b.verdict ? `<span class="verdict-badge ${verdictClass(b.verdict)}">${esc(b.verdict)}</span>` : ''}
                             <span class="brief-date">${esc(fmtDate(b.published_at || b.created_at))}</span>
                         </div>
                         <h2 class="brief-card-title">${esc(b.title || '(Untitled)')}</h2>
-                        <p class="brief-summary">${esc(b.summary || '')}</p>
+                        <p class="brief-summary">${esc(fixSlugTokens(b.summary || ''))}</p>
                         <span class="brief-cta">Read the evidence <span>→</span></span>
                     </a>
                 `).join('') + '</div>';
@@ -404,16 +554,12 @@
                 const post = await res.json();
                 document.title = `${post.title || 'Post'} — CBG/MIGS Physician Blog`;
                 const claim = post.summary || '';
-                // Claim block is rendered only when the post has a non-empty
-                // summary. Weekly digests (CBG/MIGS Monday Mornings posts)
-                // intentionally leave summary blank since the hero lede
-                // already says what the digest covers — repeating it as a
-                // "Claim under review" preamble was redundant.
+                // Summary standfirst — rendered only when the post has a
+                // non-empty summary. No "Claim under review" label: these are
+                // the author's own posts, and fact-check framing does not
+                // belong on them.
                 const claimBlock = claim
-                    ? `<div class="brief-detail-claim">
-                        <span class="brief-detail-claim-label">Claim under review</span>
-                        ${esc(claim)}
-                    </div>`
+                    ? `<div class="brief-detail-claim">${esc(fixSlugTokens(claim))}</div>`
                     : '';
                 // Publication date — prominent at very top of post (per user
                 // directive 2026-05-21). Falls back to created_at if
@@ -422,15 +568,21 @@
                 const pubBlock = pubDateStr
                     ? `<p class="brief-detail-pubdate"><span class="brief-detail-pubdate-label">Published</span><span class="brief-detail-pubdate-date">${esc(pubDateStr)}</span></p>`
                     : '';
+                // Verdict badge only when the post carries a real verdict —
+                // no "Reviewed" fallback chrome on the author's own posts.
+                const badgeBlock = post.verdict
+                    ? `<div class="brief-detail-meta">
+                        <span class="verdict-badge ${verdictClass(post.verdict)}">${esc(post.verdict)}</span>
+                    </div>`
+                    : '';
                 document.getElementById('detailContent').innerHTML = `
                     ${pubBlock}
-                    <div class="brief-detail-meta">
-                        <span class="verdict-badge ${verdictClass(post.verdict)}">${esc(post.verdict || 'Reviewed')}</span>
-                    </div>
+                    ${badgeBlock}
                     <h1 class="brief-detail-title">${esc(post.title)}</h1>
                     ${claimBlock}
-                    <div class="brief-detail-body">${post.body_html || ''}</div>
+                    <div class="brief-detail-body">${fixDoubleEncoding(post.body_html)}</div>
                 `;
+                enhancePost(document.getElementById('detailContent'));
 
                 // Execute any <script> tags that came through innerHTML —
                 // innerHTML strips script execution by default, so we walk

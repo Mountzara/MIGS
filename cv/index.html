@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curriculum Vitae — Mount Zara</title>
-    <meta name="description" content="The full record — animated. Awards, publications, presentations, research, curriculum, hospital affiliations, training, and board credentials.">
+    <meta name="description" content="The full record: awards, publications, presentations, research, curriculum, hospital affiliations, training, and board credentials.">
     <link rel="canonical" href="https://mountzara.com/cv/">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +52,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(8, 8, 10, 0.72);
+            background: rgba(10, 7, 20, 0.96);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--line);
@@ -125,14 +125,15 @@
             -webkit-text-fill-color: transparent;
         }
         .hero-credentials {
-            display: inline-block;
-            font-size: 0.46em;
+            display: block;
+            font-size: 0.42em;
             font-weight: 300;
             font-style: italic;
+            line-height: 1.3;
+            margin-top: 0.18em;
             color: #ffffff;
-            -webkit-text-fill-color: rgba(255, 255, 255, 0.55);
+            -webkit-text-fill-color: #ffffff;
             letter-spacing: -0.01em;
-            vertical-align: 0.05em;
         }
         .hero-tagline {
             font-size: clamp(16px, 1.4vw, 19px);
@@ -198,28 +199,66 @@
             r: 7;
         }
         .milestone-year {
-            fill: rgba(255, 255, 255, 0.55);
+            fill: #ffffff;
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.1em;
             text-anchor: middle;
-            transition: fill 0.3s ease;
-        }
-        .milestone:hover .milestone-year,
-        .milestone.active .milestone-year {
-            fill: var(--white);
         }
         .milestone-label {
-            fill: rgba(255, 255, 255, 0.78);
+            fill: #ffffff;
             font-size: 11px;
             font-weight: 500;
             text-anchor: middle;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
-        .milestone:hover .milestone-label,
-        .milestone.active .milestone-label {
-            opacity: 1;
+        /* Mobile fallback list — the stretched SVG squishes text at narrow
+           widths, so below 860px swap it for a plain vertical list. */
+        .timeline-list {
+            display: none;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        @media (max-width: 860px) {
+            .timeline-svg { display: none; }
+            .timeline-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                border-left: 1.5px solid rgba(92, 182, 255, 0.4);
+                padding-left: 18px;
+            }
+            .timeline-list li {
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: baseline;
+                font-size: 12px;
+                color: #ffffff;
+            }
+            .timeline-list li::before {
+                content: '';
+                position: absolute;
+                left: -24px;
+                top: 3px;
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                background: var(--bg);
+                border: 2px solid var(--accent);
+            }
+            .timeline-list li.active::before { background: var(--accent); }
+            .tl-year {
+                min-width: 42px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                color: #ffffff;
+            }
+            .tl-label {
+                font-size: 12px;
+                color: #ffffff;
+            }
         }
 
         /* ========== Sticky section nav ========== */
@@ -689,8 +728,6 @@
             .topnav { padding: 14px 16px; }
             .nav-brand { font-size: 10px; letter-spacing: 0.18em; }
             .cv-hero { padding: 108px 20px 56px; min-height: auto; }
-            .timeline-svg { height: 80px; }
-            .milestone-label { display: none; }
             .section-nav { top: 52px; }
             .section-nav-link { font-size: 11px; padding: 12px 12px; }
             .cv-item { padding: 14px 16px; font-size: 14px; }
@@ -713,7 +750,7 @@
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     </style>
 </head>
 <body>
@@ -730,9 +767,9 @@
 
     <!-- Hero -->
     <header class="cv-hero">
-        <span class="hero-eyebrow">Curriculum Vitae · Interactive Edition</span>
-        <h1 class="hero-name">Christopher Z. Mabini<span class="hero-credentials"> · DO, MSAEd</span></h1>
-        <p class="hero-tagline">The full record — animated. From <em>UC Irvine</em> in 2002 to <em>Chicago practice</em> in 2026: every award, publication, presentation, and credential, ordered chronologically and revealed as you scroll.</p>
+        <span class="hero-eyebrow">Curriculum Vitae</span>
+        <h1 class="hero-name">Christopher Z. Mabini<span class="hero-credentials">DO,&nbsp;MSAEd</span></h1>
+        <p class="hero-tagline">The full record runs from <em>UC Irvine</em> in 2002 to <em>Chicago practice</em> in 2026: every award, publication, presentation, and credential.</p>
 
         <!-- Career arc timeline -->
         <div class="timeline" aria-hidden="true">
@@ -753,34 +790,42 @@
                 <g class="milestone" data-x="40">
                     <circle class="milestone-dot" cx="40" cy="48" r="5"/>
                     <text class="milestone-year" x="40" y="28">2007</text>
-                    <text class="milestone-label" x="40" y="76">BS · UCI</text>
+                    <text class="milestone-label" x="40" y="72" style="text-anchor: start;">BS · UCI</text>
                 </g>
                 <g class="milestone" data-x="220">
                     <circle class="milestone-dot" cx="220" cy="48" r="5"/>
                     <text class="milestone-year" x="220" y="28">2014</text>
-                    <text class="milestone-label" x="220" y="76">DO begins · ACOM</text>
+                    <text class="milestone-label" x="220" y="90">DO begins · ACOM</text>
                 </g>
                 <g class="milestone" data-x="400">
                     <circle class="milestone-dot" cx="400" cy="48" r="5"/>
                     <text class="milestone-year" x="400" y="28">2019</text>
-                    <text class="milestone-label" x="400" y="76">Residency · St. Alexius</text>
+                    <text class="milestone-label" x="400" y="72">Residency · St. Alexius</text>
                 </g>
                 <g class="milestone" data-x="580">
                     <circle class="milestone-dot" cx="580" cy="48" r="5"/>
                     <text class="milestone-year" x="580" y="28">2023</text>
-                    <text class="milestone-label" x="580" y="76">Fellowship · St. Francis</text>
+                    <text class="milestone-label" x="580" y="90">Fellowship · Saint Francis</text>
                 </g>
                 <g class="milestone" data-x="780">
                     <circle class="milestone-dot" cx="780" cy="48" r="5"/>
                     <text class="milestone-year" x="780" y="28">2024</text>
-                    <text class="milestone-label" x="780" y="76">Golden Hysteroscope</text>
+                    <text class="milestone-label" x="780" y="72">Golden Hysteroscope</text>
                 </g>
                 <g class="milestone active" data-x="1060">
                     <circle class="milestone-dot" cx="1060" cy="48" r="5"/>
                     <text class="milestone-year" x="1060" y="28">2026</text>
-                    <text class="milestone-label" x="1060" y="76">Practice · MountZara</text>
+                    <text class="milestone-label" x="1060" y="90" style="text-anchor: end;">Practice · MountZara</text>
                 </g>
             </svg>
+            <ol class="timeline-list">
+                <li><span class="tl-year">2007</span><span class="tl-label">BS · UCI</span></li>
+                <li><span class="tl-year">2014</span><span class="tl-label">DO begins · ACOM</span></li>
+                <li><span class="tl-year">2019</span><span class="tl-label">Residency · St. Alexius</span></li>
+                <li><span class="tl-year">2023</span><span class="tl-label">Fellowship · Saint Francis</span></li>
+                <li><span class="tl-year">2024</span><span class="tl-label">Golden Hysteroscope</span></li>
+                <li class="active"><span class="tl-year">2026</span><span class="tl-label">Practice · MountZara</span></li>
+            </ol>
         </div>
     </header>
 
@@ -809,9 +854,9 @@
         <section class="cv-section" id="education">
             <span class="cv-section-eyebrow">01 · Foundation</span>
             <h2>Education &amp; Training</h2>
-            <p class="cv-section-sub">Two decades of formal training across surgery, anatomy, education, and public health.</p>
+            <p class="cv-section-sub">From a bachelor's degree in 2002 to fellowship completion in 2026.</p>
             <div class="cv-items">
-                <div class="cv-item"><strong>Complex Benign Gynecology Fellowship <span data-migs-exempt="historical-name">(formerly MIGS)</span></strong><span class="meta">PRIME St. Francis Hospital, Evanston · 2023–2026</span></div>
+                <div class="cv-item"><strong>Complex Benign Gynecology Fellowship <span data-migs-exempt="historical-name">(formerly MIGS)</span></strong><span class="meta">PRIME Saint Francis Hospital, Evanston · 2023–2026</span></div>
                 <div class="cv-item"><strong>OBGYN Residency</strong><span class="meta">Ascension Illinois St. Alexius · ACGME 2201621094 · 2019–2023</span></div>
                 <div class="cv-item"><strong>Doctor of Osteopathic Medicine (DO)</strong><span class="meta">Alabama College of Osteopathic Medicine · 2014–2019</span></div>
                 <div class="cv-item"><strong>Anatomy &amp; OPP Preclinical Fellowship</strong><span class="meta">Alabama College of Osteopathic Medicine · 2015–2016</span></div>
@@ -835,7 +880,6 @@
         <section class="cv-section" id="awards">
             <span class="cv-section-eyebrow">03 · Recognition</span>
             <h2>Awards &amp; Honors</h2>
-            <p class="cv-section-sub">Peer-reviewed recognition across surgical research, video, and education.</p>
             <div class="cv-items">
                 <div class="cv-item featured"><strong>AAGL Golden Hysteroscope Award<span class="award">Best Video</span></strong><span class="meta">Best Video Abstract in Hysteroscopy · AAGL Global Congress, New Orleans · 2024</span></div>
                 <div class="cv-item featured"><strong>Dr. George W. Morley Memorial Paper Award<span class="award">CAOG</span></strong><span class="meta">CAOG 91st Annual Meeting, Indianapolis · October 2024</span></div>
@@ -859,7 +903,7 @@
         </section>
 
         <section class="cv-section" id="aagl">
-            <span class="cv-section-eyebrow">05 · AAGL Global Congress · 2020–2025</span>
+            <span class="cv-section-eyebrow">05 · AAGL Global Congress · <span style="white-space: nowrap;">2020–2025</span></span>
             <h2>AAGL Abstracts &amp; Video Presentations</h2>
             <p class="cv-section-sub">Seven peer-reviewed contributions to the AAGL Global Congress — including the 2024 Golden Hysteroscope Award.</p>
             <div class="cv-items">
@@ -889,7 +933,7 @@
             <h2>Active IRB Research</h2>
             <p class="cv-section-sub">Four active institutional review board studies, each tracking a specific CBG/MIGS frontier.</p>
             <div class="cv-items">
-                <div class="cv-item"><strong>ICG &amp; Endometriosis-Related Fibrosis</strong><span class="meta">PRIME Illinois St. Francis · IRB RIL20220137</span></div>
+                <div class="cv-item"><strong>ICG &amp; Endometriosis-Related Fibrosis</strong><span class="meta">PRIME Saint Francis Hospital, Evanston · IRB RIL20220137</span></div>
                 <div class="cv-item"><strong>NBI in Adenomyosis Detection during Hysteroscopy</strong><span class="meta">IRB RIL20240017</span></div>
                 <div class="cv-item"><strong>TAP Block Post-Op Pain RCT in ERAS Protocol</strong><span class="meta">IRB RIL20240009 · Lukish, Mabini, Tam, Ward, Siddique</span></div>
                 <div class="cv-item"><strong>ICG for Appendiceal Endometriosis Detection</strong><span class="meta">IRB RIL20240078</span></div>
@@ -899,9 +943,8 @@
         <section class="cv-section" id="curriculum">
             <span class="cv-section-eyebrow">08 · Education design</span>
             <h2>Curriculum Design &amp; Development</h2>
-            <p class="cv-section-sub">Educational programs designed across surgical training, hospice care, and adult learning.</p>
             <div class="cv-items">
-                <div class="cv-item"><strong>CBG/MIGS Fellowship AI &amp; Advanced Technologies Curriculum</strong><span class="meta">PRIME Illinois Saint Francis · 2024</span></div>
+                <div class="cv-item"><strong>CBG/MIGS Fellowship AI &amp; Advanced Technologies Curriculum</strong><span class="meta">PRIME Saint Francis Hospital, Evanston · 2024</span></div>
                 <div class="cv-item"><strong>CBG/MIGS Surgical Skills &amp; Didactics Curriculum</strong><span class="meta">Ascension Illinois St. Alexius OBGYN Residency · 2022</span></div>
                 <div class="cv-item"><strong>Pilot Hospice Core Clerkship Curriculum</strong><span class="meta">Alabama College of Osteopathic Medicine · 2018</span></div>
                 <div class="cv-item"><strong>Redefining Aging: Lifelong Purpose &amp; Passion</strong><span class="meta">Troy University · 2016</span></div>
@@ -911,7 +954,6 @@
         <section class="cv-section" id="rounds">
             <span class="cv-section-eyebrow">09 · Teaching</span>
             <h2>Grand Rounds Presentations</h2>
-            <p class="cv-section-sub">Selected didactics across CBG/MIGS programs and OBGYN residencies in Chicagoland.</p>
             <div class="cv-items">
                 <div class="cv-item"><strong>Basics of Total Laparoscopic Hysterectomy</strong><span class="meta"><span data-migs-exempt="external-program">Ascension &amp; Saint Joseph MIGS Didactics</span> · 2023, 2024</span></div>
                 <div class="cv-item"><strong>Laparoscopic Anatomy</strong><span class="meta"><span data-migs-exempt="external-program">Ascension &amp; Saint Joseph MIGS Didactics</span> · 2023, 2024</span></div>
@@ -934,25 +976,24 @@
         <section class="cv-section" id="hospitals">
             <span class="cv-section-eyebrow">11 · Affiliations · Chicagoland</span>
             <h2>Hospital Affiliations</h2>
-            <p class="cv-section-sub">Four hospital sites across the Chicagoland health systems.</p>
+            <p class="cv-section-sub">Four hospitals, in Evanston and Chicago.</p>
             <div class="cv-items two-col">
-                <div class="cv-item"><strong>PRIME St. Francis</strong><span class="meta">355 Ridge Ave, Evanston, IL</span></div>
-                <div class="cv-item"><strong>PRIME St. Mary</strong><span class="meta">2233 W. Division St, Chicago, IL</span></div>
-                <div class="cv-item"><strong>Ascension St. Joseph</strong><span class="meta">2900 N. Lakeshore Ave, Chicago, IL</span></div>
-                <div class="cv-item"><strong>Thorek Memorial Hospital</strong><span class="meta">850 W Irving Park Rd, Chicago, IL</span></div>
+                <div class="cv-item"><strong>PRIME Saint Francis Hospital, Evanston</strong><span class="meta">355 Ridge Ave., Evanston, IL</span></div>
+                <div class="cv-item"><strong>PRIME St. Mary</strong><span class="meta">2233 W. Division St., Chicago, IL</span></div>
+                <div class="cv-item"><strong>Ascension St. Joseph</strong><span class="meta">2900 N. Lake Shore Dr., Chicago, IL</span></div>
+                <div class="cv-item"><strong>Thorek Memorial Hospital</strong><span class="meta">850 W. Irving Park Rd., Chicago, IL</span></div>
             </div>
         </section>
 
         <section class="cv-section" id="memberships">
             <span class="cv-section-eyebrow">12 · Service</span>
             <h2>Memberships &amp; Committees</h2>
-            <p class="cv-section-sub">Active service across national societies and institutional committees.</p>
             <div class="cv-items two-col">
                 <div class="cv-item"><strong>American Association of Gynecologic Laparoscopists (AAGL)</strong><span class="meta">Member · 2019–Present</span></div>
                 <div class="cv-item"><strong>American College of Obstetricians and Gynecologists (ACOG)</strong><span class="meta">Member · 2018–Present</span></div>
                 <div class="cv-item"><strong>Central Association of OBGYN (CAOG)</strong><span class="meta">Member · 2023–Present</span></div>
                 <div class="cv-item"><strong>Chicago Gynecological Society</strong><span class="meta">Member · 2019–Present</span></div>
-                <div class="cv-item"><strong>PRIME St. Francis Robotic Steering Committee</strong><span class="meta">2023–Present</span></div>
+                <div class="cv-item"><strong>Robotic Steering Committee</strong><span class="meta">PRIME Saint Francis Hospital, Evanston · 2023–Present</span></div>
                 <div class="cv-item"><strong>Ascension COEMIG Committee</strong><span class="meta">2022–Present</span></div>
                 <div class="cv-item"><strong>Ascension ERAS Committee</strong><span class="meta">Former Resident Champion · 2022–2023</span></div>
             </div>
@@ -965,9 +1006,9 @@
             <div class="cv-items">
                 <div class="cv-item"><strong>Medtronic Advanced Hysteroscopy Course</strong><span class="meta">Medtronic Campus, Glendale, AZ · 2024</span></div>
                 <div class="cv-item"><strong>vNotes Provider Workshop</strong><span class="meta">Applied Medical, Rosemont, IL · 2024</span></div>
+                <div class="cv-item"><strong>SAAO Annual Convocation for Osteopathic Manipulative Treatment</strong><span class="meta">Colorado Springs · 2024</span></div>
                 <div class="cv-item"><strong><span data-migs-exempt="external-program">USF CAMLS Hysteroscopy / MIGS / Cadaver Course</span></strong><span class="meta">University of South Florida · 2023</span></div>
                 <div class="cv-item"><strong><span data-migs-exempt="external-program">SGS Advanced MIGS &amp; Cadaver Course</span></strong><span class="meta">Society of Gynecologic Surgeons, New Orleans · 2023</span></div>
-                <div class="cv-item"><strong>SAAO Annual Convocation for Osteopathic Manipulative Treatment</strong><span class="meta">Colorado Springs · 2024</span></div>
                 <div class="cv-item"><strong>Fascial Distortion Model (FDM)</strong><span class="meta">Academy of Fascial Distortion · 2016</span></div>
                 <div class="cv-item"><strong>Osteopathic Cranial Course</strong><span class="meta">Cranial Academy, Atlanta · 2016</span></div>
             </div>
@@ -976,11 +1017,11 @@
         <!-- Print PDF CTA -->
         <section class="cv-cta" id="print">
             <div class="cv-cta-eyebrow">Want a formal copy?</div>
-            <h2>Request a print-friendly PDF.</h2>
-            <p>A polished, single-document version delivered directly to your inbox — formatted for printing, sharing, or institutional review.</p>
+            <h2>Email for the PDF version.</h2>
+            <p>Send a short email and Dr. Mabini will reply with the print-formatted document, suitable for sharing or institutional review.</p>
             <button type="button" class="cv-cta-btn" onclick="requestPrintCV()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
-                Request print-friendly PDF
+                Email for the PDF version
             </button>
         </section>
 
@@ -1002,8 +1043,8 @@
             <button type="button" class="contact-modal-close" onclick="closeContactModal()" aria-label="Close">
                 <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
-            <h3 id="contactModalTitle">Request print-friendly CV</h3>
-            <p class="modal-sub">Send your request via any of the email options below — Dr. Mabini will reply with the PDF.</p>
+            <h3 id="contactModalTitle">Email for the PDF version</h3>
+            <p class="modal-sub">Use any of the email options below. Dr. Mabini replies with the document.</p>
             <div class="email-row">
                 <span class="email-text" id="contactEmail">cmabini@mountzara.com</span>
                 <button type="button" class="copy-btn" id="copyEmailBtn" onclick="copyEmail()">

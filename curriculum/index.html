@@ -52,7 +52,7 @@ a:hover { color: var(--fg-strong); }
 /* Site nav — matches /education/ */
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(7, 7, 10, 0.86);
+    background: rgba(10, 7, 20, 0.96);
     backdrop-filter: blur(22px) saturate(165%);
     -webkit-backdrop-filter: blur(22px) saturate(165%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -146,6 +146,11 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     gap: 14px;
     margin-top: 8px;
 }
+/* 2026-08-08 — six cards render 4+2 with dead space at desktop under
+   auto-fit; lock to 3 columns (3+3) once the viewport is wide enough. */
+@media (min-width: 880px) {
+    .framework-grid { grid-template-columns: repeat(3, 1fr); }
+}
 .framework-card {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.10);
@@ -237,6 +242,17 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .service-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16px; }
 .service-card p { margin: 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
+/* 2026-08-08 — group labels break the 12-card wall into four phases
+   (Assess / Design / Evaluate / Sustain). Same eyebrow grammar; the
+   label spans the full grid row so cards regroup at every width. */
+.svc-group-label {
+    grid-column: 1 / -1;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95);
+    margin: 14px 0 -2px 2px;
+}
+.svc-group-label:first-child { margin-top: 2px; }
 
 /* ===== Methodology cycle (visual diagram) ===== */
 .cycle {
@@ -370,7 +386,7 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         .hero .lede, section.block .sub { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -425,7 +441,7 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                 Fellowships, residencies, and clinical training programs are best served by curriculum that is
                 <strong style="color: var(--fg-strong); font-weight: 500;">designed, not assembled</strong> — grounded in evidence-based instructional design, anchored to
                 ACGME and accreditation requirements, and built around the way adult learners actually learn.
-                That is the work. This page is what it looks like, and how to engage on it.
+                That is the work. This page shows what it looks like and how to bring it to your program.
             </p>
             <div class="creds">
                 <span class="pill">DO · MSAEd</span>
@@ -439,7 +455,7 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
         <!-- WHAT CURRICULUM DESIGN ACTUALLY MEANS -->
         <section class="block" aria-labelledby="methodology">
             <div class="eyebrow">Methodology</div>
-            <h2 id="methodology">A curriculum is a designed system, not a syllabus.</h2>
+            <h2 id="methodology">A curriculum is a designed system.</h2>
             <p class="sub">
                 Every program below was built using the same end-to-end instructional-design cycle. Each phase
                 produces a deliverable. None of the phases are optional. Skipping context analysis or assessment
@@ -520,9 +536,8 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
             <div class="eyebrow">Built and Delivered</div>
             <h2 id="case-studies">Three curricula in production.</h2>
             <p class="sub">
-                Each was designed end-to-end against the methodology above and is currently in use at the host
-                institution. Click into each for the full architecture: context analysis, stakeholder map, needs
-                assessment, monthly didactic plan, assessment design, and the original source document for download.
+                Each was designed end-to-end against the methodology above and delivered at the host institution.
+                Click into any of the three for the full architecture and the design decisions behind it.
             </p>
 
             <div class="case-grid">
@@ -531,29 +546,36 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                     <h3>CBG/MIGS Fellowship Curriculum</h3>
                     <p class="institution">PRIME Illinois Saint Francis Hospital, Evanston · 2024–2025 · four-site rotation</p>
                     <p>
-                        Comprehensive curriculum for Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery
-                        fellowship — a three-year, competency-based program (extended from two years) with a
-                        multi-hospital architecture across SFH, SJH, SMH, and TMH. Monthly didactic
-                        plan, simulation integration, surgical-video review, AI-enhanced learning, equity-anchored
-                        needs assessment, competency-based milestones aligned to AAGL FMIGS program requirements —
-                        with Year 3 emphasizing independent surgical practice, teaching leadership, and transition to
-                        autonomous MIGS practice.
+                        A complete fellowship curriculum in Complex Benign Gynecology &amp; Minimally Invasive
+                        Gynecologic Surgery, written before the first fellow walked in the door. It maps a three-year,
+                        competency-based program across four hospital sites to the six ACGME competencies and AAGL
+                        FMIGS requirements. Monthly didactic plan · equity-anchored needs assessment · Year 3
+                        transition to independent practice.
                     </p>
                     <span class="read-more">Read the full curriculum →</span>
                 </a>
 
                 <a href="/curriculum/hospice-clerkship/" class="case-card">
-                    <div class="program-type">Medical Student Pilot Clerkship &amp; Clinician Training</div>
-                    <h3>Hospice &amp; Palliative Care Curriculum</h3>
-                    <p class="institution">Alabama College of Osteopathic Medicine · Community Hospice, Dothan AL · 2018</p>
+                    <div class="program-type">Medical Student Pilot Clerkship</div>
+                    <h3>Hospice Pilot Rotation Curriculum</h3>
+                    <p class="institution">Alabama College of Osteopathic Medicine · Dothan, AL · 2018</p>
                     <p>
-                        First-of-its-kind hospice and palliative care rotation at ACOM with a parallel training arm for
-                        working hospice care providers at Community Hospice, Dothan. Integrated Knowles' Adult Learning
-                        Theory, Kolb's experiential cycle, andragogy, transformative learning theory, and reflective
-                        practice models across both audiences. End-of-life care, family-centered communication, ethical
-                        decision-making, symptom management, team-based interdisciplinary rounds. Clinical immersion,
-                        debriefing sessions, narrative medicine, simulated family meetings, mentored clinical experiences,
-                        competency-based assessment.
+                        The first hospice and palliative care rotation at ACOM, designed and launched in 2018. It
+                        teaches end-of-life care through Knowles' andragogy, Kolb's experiential cycle, and structured
+                        reflective practice. Clinical immersion · simulated family meetings · narrative medicine.
+                    </p>
+                    <span class="read-more">Read the full curriculum →</span>
+                </a>
+
+                <a href="/curriculum/hospice-training/" class="case-card">
+                    <div class="program-type">Clinician Training Program</div>
+                    <h3>Hospice Care Training Program</h3>
+                    <p class="institution">Community Hospice · Dothan, AL</p>
+                    <p>
+                        A training curriculum for working hospice care providers, built alongside the ACOM clerkship.
+                        It draws on andragogy and transformative learning, written for adult clinicians moving into
+                        palliative care. Symptom management · family-centered communication · interdisciplinary team
+                        rounds.
                     </p>
                     <span class="read-more">Read the full curriculum →</span>
                 </a>
@@ -567,10 +589,11 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
             <p class="sub">
                 Whether starting a new fellowship from scratch, refreshing a stalled program, or auditing an
                 existing curriculum against current accreditation standards — these are the deliverables I
-                produce. Engagements scope to your institution's needs.
+                produce. Each engagement is tailored to your institution.
             </p>
 
             <div class="services">
+                <div class="svc-group-label">Assess</div>
                 <div class="service-card">
                     <h4>Needs assessment</h4>
                     <p>Community-level, patient-level, learner-level, and faculty-level needs assessment. Surveys, focus groups, gap analysis, equity audits. The foundation every other deliverable rests on.</p>
@@ -580,6 +603,12 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                     <p>Institutional resources, faculty expertise, technology inventory, patient population, community partnerships, accreditation context, regulatory alignment. Mapped against your specific program model.</p>
                 </div>
                 <div class="service-card">
+                    <h4>Curriculum audit & refresh</h4>
+                    <p>Diagnostic audit of an existing program: alignment to current ACGME milestones, completeness of context analysis, assessment validity, faculty satisfaction, learner outcomes. Refresh recommendations with phased implementation.</p>
+                </div>
+
+                <div class="svc-group-label">Design</div>
+                <div class="service-card">
                     <h4>Competency-based curriculum architecture</h4>
                     <p>ACGME / AAGL / ABOG / society-aligned competency milestones, learning objectives mapped to ACGME six core competencies, multi-year rotation structure across one or many sites.</p>
                 </div>
@@ -588,6 +617,20 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                     <p>Didactic curricula, simulation integration, case-based learning, structured surgical-video review, scientific writing modules, journal clubs, conference frameworks, deliberate-practice protocols.</p>
                 </div>
                 <div class="service-card">
+                    <h4>Multi-site rotation design</h4>
+                    <p>Coordinated curricula across multiple hospital sites with different patient populations, faculty profiles, and surgical case volumes. Same competencies, calibrated experience per site.</p>
+                </div>
+                <div class="service-card">
+                    <h4>Equity-anchored design</h4>
+                    <p>Curricula built with health equity, social determinants of health, and community needs at the center of the design. The measure of success is outcomes that close gaps.</p>
+                </div>
+                <div class="service-card">
+                    <h4>AI & advanced-technology integration</h4>
+                    <p>Embedding AI tools, surgical-intelligence platforms, video-analysis workflows, and simulation technology into one coherent learning experience. Every tool earns a defined instructional role.</p>
+                </div>
+
+                <div class="svc-group-label">Evaluate</div>
+                <div class="service-card">
                     <h4>Assessment design</h4>
                     <p>Formative and summative assessment frameworks, milestone-based evaluation, OSCEs, simulation-based assessment, case log validation, 360° evaluation, narrative feedback structures.</p>
                 </div>
@@ -595,29 +638,15 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                     <h4>Program evaluation</h4>
                     <p>Program-level evaluation and continuous improvement frameworks — Kirkpatrick four levels, Stufflebeam CIPP, AAMC outcome metrics. Feedback loops that actually inform iteration.</p>
                 </div>
-                <div class="service-card">
-                    <h4>Multi-site rotation design</h4>
-                    <p>Coordinated curricula across multiple hospital sites with different patient populations, faculty profiles, and surgical case volumes. Same competencies, calibrated experience per site.</p>
-                </div>
+
+                <div class="svc-group-label">Sustain</div>
                 <div class="service-card">
                     <h4>Faculty development</h4>
                     <p>Faculty-as-educator training, mentorship structures, "teaching the teacher" workshops, evaluation calibration, feedback skill-building. Sustains the curriculum after launch.</p>
                 </div>
                 <div class="service-card">
-                    <h4>Equity-anchored design</h4>
-                    <p>Curricula built with health equity, social determinants of health, and community needs explicitly central — not as an add-on module. Outcomes that close gaps, not perpetuate them.</p>
-                </div>
-                <div class="service-card">
                     <h4>Transfer-of-learning strategy</h4>
                     <p>Identifying and removing barriers that block graduates from translating fellowship training into independent practice — institutional, cognitive, motivational, structural.</p>
-                </div>
-                <div class="service-card">
-                    <h4>AI & advanced-technology integration</h4>
-                    <p>Embedding AI tools, surgical-intelligence platforms, video-analysis workflows, and simulation technology into a coherent learning experience — not as gadgetry, as instructional design.</p>
-                </div>
-                <div class="service-card">
-                    <h4>Curriculum audit & refresh</h4>
-                    <p>Diagnostic audit of an existing program: alignment to current ACGME milestones, completeness of context analysis, assessment validity, faculty satisfaction, learner outcomes. Refresh recommendations with phased implementation.</p>
                 </div>
             </div>
         </section>
@@ -627,8 +656,8 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
             <div class="eyebrow">Engagement Options</div>
             <h2 id="engagement">Four ways to work together.</h2>
             <p class="sub">
-                Engagements range from a single-workshop audit to a full multi-year curriculum build. Scope is set
-                during a 30-minute scoping call. Pricing is transparent and scoped per engagement.
+                Engagements range from a single-workshop audit to a full multi-year curriculum build. Scope and
+                pricing are set on a 30-minute scoping call, sized to what your program actually needs.
             </p>
 
             <div class="engage">

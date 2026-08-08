@@ -2462,10 +2462,12 @@
             width: min(94%, 960px);
             margin: 32px auto;
             max-height: calc(100vh - 64px);
-            /* Apple "Liquid Glass": translucent so the page refracts through, heavy
-               backdrop blur + vibrancy, a luminous 1px rim and a bright specular top
-               edge. NOT an opaque card — that reads as frost. */
-            background: linear-gradient(155deg, rgba(54, 50, 70, 0.55) 0%, rgba(26, 24, 34, 0.60) 55%, rgba(18, 16, 24, 0.62) 100%);
+            /* Apple "Liquid Glass" card: keeps the heavy backdrop blur + vibrancy,
+               luminous 1px rim and bright specular top edge. 2026-08-08 — fill
+               opacity raised from ~0.55–0.62 to ~0.90–0.95: at the old alphas the
+               page headline showed through sharply enough to optically merge with
+               the modal copy. The blur still frosts what little bleeds through. */
+            background: linear-gradient(155deg, rgba(54, 50, 70, 0.90) 0%, rgba(26, 24, 34, 0.93) 55%, rgba(18, 16, 24, 0.95) 100%);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(187, 165, 255, 0.30);
@@ -6887,6 +6889,11 @@
             width: 36px;
         }
 
+        /* "Swipe" only makes sense while the track actually scrolls (< 768px);
+           desktop shows all five cards, so it says "Choose" instead. Same
+           breakpoint as the track's overflow-x switch below. */
+        .im-hint-choose { display: none; }
+
         @media (min-width: 768px) {
             /* On desktop, show all 5 cards in a non-scrolling row;
                navigator becomes a compact navigational eyebrow rather
@@ -6901,6 +6908,8 @@
             .identity-card-num { width: 46px; height: 46px; border-radius: 12px; margin: 4px 0 2px; }
             .identity-card-num svg { width: 24px; height: 24px; }
             .identity-map-pips { display: none; }
+            .im-hint-swipe { display: none; }
+            .im-hint-choose { display: inline; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -7173,20 +7182,12 @@
             -webkit-backdrop-filter: none;
             backdrop-filter: none;
         }
-        /* Apps section is light: app-card-v2 stays a solid white→violet card,
-           including on hover (override the dark hover from the shared blocks). */
-        .app-card-v2,
-        .app-card-v2:hover {
-            -webkit-backdrop-filter: none;
-            backdrop-filter: none;
-            background: linear-gradient(135deg, #ffffff 0%, #f3f0fb 100%);
-            color: #0a0a0c;
-            border: 1px solid rgba(0, 0, 0, 0.07);
-        }
-        .app-card-v2:hover {
-            background: linear-gradient(135deg, #ffffff 0%, #ece7fb 100%);
-            border-color: rgba(118, 91, 217, 0.30);
-        }
+        /* 2026-08-08 — REMOVED the stale "apps section is light" override that
+           repainted .app-card-v2 white→violet with backdrop-filter:none. The
+           apps section has been DARK (rgba(0,0,0,0.45)) since 2026-06-25 and
+           the card text is white, so the light override rendered white text on
+           a near-white panel. Cards now keep the site-wide dark frosted glass
+           defined earlier in the cascade. */
 
         /* ==========================================================
            Magazine-style justified body copy (2026-06-29)
@@ -7441,7 +7442,7 @@
                 <div class="about-text-block">
                     <h3>Multidisciplinary by design.</h3>
                     <p>Dr. Mabini is a board-eligible minimally invasive gynecologic surgeon completing his Complex Benign Gynecology Fellowship at PRIME St. Francis Hospital in Evanston, IL.</p>
-                    <p>Trained as a Doctor of Osteopathic Medicine with an additional Anatomy & Osteopathic Manipulation Treatment fellowship, his practice integrates whole-person care with cutting-edge surgical and digital tools.</p>
+                    <p>Trained as a Doctor of Osteopathic Medicine with an additional Anatomy &amp; OPP Preclinical Fellowship, his practice integrates whole-person care with cutting-edge surgical and digital tools.</p>
                     <p>With a Master's in Adult Education and an active AI/LLM development practice, he bridges traditional osteopathic philosophy with surgical innovation and software engineering.</p>
                 </div>
                 <div class="about-text-block">
@@ -7466,8 +7467,8 @@
                     <div class="stat-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-num">5</div>
-                    <div class="stat-label">macOS apps in development</div>
+                    <div class="stat-num">6</div>
+                    <div class="stat-label">Native clinical apps in development</div>
                 </div>
             </div>
         </div>
@@ -7492,7 +7493,7 @@
         <div class="container-wide">
             <span class="section-eyebrow">Choose your path</span>
             <h2 class="section-headline">Five identities. One practice.</h2>
-            <p class="section-sub">Surgeon · researcher · engineer · educator · osteopath. Swipe to choose where to start.</p>
+            <p class="section-sub">Surgeon · researcher · engineer · educator · osteopath. <span class="im-hint-swipe">Swipe to choose where to start.</span><span class="im-hint-choose">Choose where to start.</span></p>
 
             <div class="identity-map-track" role="tablist">
                 <a href="#surgical" class="identity-card" data-identity="surgical">
@@ -7505,7 +7506,7 @@
                 <a href="#research" class="identity-card" data-identity="research">
                     <span class="identity-card-eyebrow">Research</span>
                     <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6.2L4.4 18A2 2 0 006.2 21h11.6a2 2 0 001.8-3L15 9.2V3"/><line x1="8" y1="3" x2="16" y2="3"/><line x1="6.5" y1="14" x2="17.5" y2="14"/></svg></span>
-                    <span class="identity-card-label">Seven-plus peer-reviewed publications</span>
+                    <span class="identity-card-label">Ten peer-reviewed publications &amp; presentations</span>
                     <span class="identity-card-sub">4 active IRB studies · 2 AAGL Global + CAOG awards</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
@@ -7520,7 +7521,7 @@
                     <span class="identity-card-eyebrow">Osteopathy</span>
                     <span class="identity-card-num" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4 4-4 13 0 17"/><path d="M12 3.5c4 4 4 13 0 17"/><circle cx="12" cy="12" r="2.2"/></svg></span>
                     <span class="identity-card-label">Six pillars of integrated OMT</span>
-                    <span class="identity-card-sub">DO · MSAEd · AOM fellowship — whole-person care anchored to ACOG-grade evidence</span>
+                    <span class="identity-card-sub">DO · MSAEd · Anatomy &amp; OPP Preclinical Fellowship — whole-person care anchored to ACOG-grade evidence</span>
                     <span class="identity-card-cta">Explore <span aria-hidden="true">→</span></span>
                 </a>
                 <a href="#curriculum" class="identity-card" data-identity="curriculum">
@@ -7580,8 +7581,8 @@
                 </div>
                 <div class="zero-card">
                     <div class="zero-num" data-count-target="95" data-count-suffix="%" data-count-prefix="&gt;">&gt;95%</div>
-                    <h3>Same day discharge</h3>
-                    <p>Major surgery without the major hospital stay &mdash; MIS means you get home sooner, in less pain, and faster recovery time.</p>
+                    <h3>Same-day discharge</h3>
+                    <p>Major surgery without the major hospital stay &mdash; MIS means you get home sooner, with less pain and a faster recovery.</p>
                 </div>
             </div>
 
@@ -7731,7 +7732,7 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="endometriosis-excision" aria-label="Open patient-centered details: Endometriosis Excision">Click for more info</button>
+                        <button type="button" class="domain-cta-btn" data-domain="endometriosis-excision" aria-label="Open patient-centered details: Endometriosis Excision">Excision treatment guide</button>
                     </div>
                 </article>
 
@@ -7750,7 +7751,7 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Robotic and Laparoscopic Myomectomy">Click for more info</button>
+                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Robotic and Laparoscopic Myomectomy">Myomectomy guide</button>
                     </div>
                 </article>
 
@@ -7770,8 +7771,8 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="hysterectomy-mis" aria-label="Open patient-centered details: Complex Minimally Invasive Hysterectomy">Click for more info &middot; hysterectomy</button>
-                        <button type="button" class="domain-cta-btn ghost" data-domain="vnotes" aria-label="Open patient-centered details: vNOTES">Click for more info &middot; vNOTES</button>
+                        <button type="button" class="domain-cta-btn" data-domain="hysterectomy-mis" aria-label="Open patient-centered details: Complex Minimally Invasive Hysterectomy">Hysterectomy guide</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="vnotes" aria-label="Open patient-centered details: vNOTES">vNOTES approach</button>
                     </div>
                 </article>
 
@@ -7791,8 +7792,8 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="operative-hysteroscopy" aria-label="Open patient-centered details: Operative Hysteroscopy">Click for more info &middot; operative</button>
-                        <button type="button" class="domain-cta-btn ghost" data-domain="office-hysteroscopy" aria-label="Open patient-centered details: Office Hysteroscopy and Vaginoscopy">Click for more info &middot; in-office</button>
+                        <button type="button" class="domain-cta-btn" data-domain="operative-hysteroscopy" aria-label="Open patient-centered details: Operative Hysteroscopy">Operative hysteroscopy</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="office-hysteroscopy" aria-label="Open patient-centered details: Office Hysteroscopy and Vaginoscopy">Office hysteroscopy</button>
                     </div>
                 </article>
 
@@ -7812,7 +7813,7 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Uterine-sparing myomectomy">Click for more info &middot; uterine sparing</button>
+                        <button type="button" class="domain-cta-btn" data-domain="myomectomy" aria-label="Open patient-centered details: Uterine-sparing myomectomy">Uterine-sparing myomectomy</button>
                     </div>
                 </article>
 
@@ -7830,7 +7831,7 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="pelvic-reconstruction" aria-label="Open patient-centered details: Pelvic Reconstruction">Click for more info</button>
+                        <button type="button" class="domain-cta-btn" data-domain="pelvic-reconstruction" aria-label="Open patient-centered details: Pelvic Reconstruction">Reconstruction guide</button>
                     </div>
                 </article>
 
@@ -7849,8 +7850,8 @@
                         </ul>
                     </div>
                     <div class="hub-content-cta">
-                        <button type="button" class="domain-cta-btn" data-domain="adhesiolysis" aria-label="Open patient-centered details: Complex Adhesiolysis">Click for more info &middot; adhesiolysis</button>
-                        <button type="button" class="domain-cta-btn ghost" data-domain="urologic-cross-specialty" aria-label="Open patient-centered details: Urologic and Cross-Specialty">Click for more info &middot; cross-specialty</button>
+                        <button type="button" class="domain-cta-btn" data-domain="adhesiolysis" aria-label="Open patient-centered details: Complex Adhesiolysis">Adhesiolysis guide</button>
+                        <button type="button" class="domain-cta-btn ghost" data-domain="urologic-cross-specialty" aria-label="Open patient-centered details: Urologic and Cross-Specialty">Cross-specialty procedures</button>
                     </div>
                 </article>
             </div>
@@ -8457,28 +8458,6 @@
                     </div>
                 </div>
 
-                <!-- Morley Award -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag award">George W. Morley Memorial Paper Award</span>
-                                <span class="tag">ICG · Endometriosis</span>
-                                <span class="tag year">2024</span>
-                            </div>
-                            <h3>Use of Indocyanine Green (ICG) in Detecting Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
-                            <div class="journal">CAOG Annual Regional Conference · Indianapolis, 2022</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-inner">
-                            <span class="ai-badge">AI Snapshot</span>
-                            <p>Endometriosis-related fibrosis can be visually subtle, easily missed under standard white-light visualization. This award-winning research applies ICG fluorescence — typically used for vascular mapping — to highlight inflammatory and fibrotic tissue changes intraoperatively. The result is a more sensitive, real-time identification of disease, with implications for more complete excision and improved long-term symptom relief.</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- NBI Adenomyosis -->
                 <div class="research-item">
                     <button class="research-toggle" onclick="toggleResearch(this)">
@@ -8556,7 +8535,7 @@
                                 <span class="tag year">2022</span>
                             </div>
                             <h3>The Use of Indocyanine Green (ICG) in the Detection of Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
-                            <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Also CAOG Annual Regional Conference, Indianapolis, IN · September 2022</div>
+                            <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Dr. George W. Morley Memorial Paper Award, CAOG 91st Annual Meeting, Indianapolis · October 2024</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -8764,7 +8743,8 @@
                     </div>
                     <h4>Hospice &amp; Palliative Care Curriculum</h4>
                     <p class="curriculum-institution">Alabama College of Osteopathic Medicine · Community Hospice, Dothan</p>
-                    <p>Designed and launched a hospice and palliative care rotation for medical students at ACOM &mdash; the first of its kind &mdash; with a parallel training arm for working hospice care providers at Community Hospice, Dothan. Integrated Adult Learning principles (Knowles), experiential learning frameworks (Kolb), andragogy, transformative learning theory, and reflective practice models across both audiences. Coursework spans clinical immersion, debriefing sessions, narrative medicine, simulated family meetings, family-centered communication, ethical decision-making, symptom management, and team-based interdisciplinary rounds &mdash; addressing the unique learning needs of medical students entering palliative care and adult healthcare professionals transitioning into it.</p>
+                    <p>Designed and launched a hospice and palliative care rotation for medical students at ACOM &mdash; the first of its kind &mdash; with a parallel training arm for working hospice care providers at Community Hospice, Dothan.</p>
+                    <p style="margin-top: 12px;">Both tracks are built on Knowles' adult learning principles and Kolb's experiential learning cycle. Coursework centers on clinical immersion, simulated family meetings, and team-based interdisciplinary rounds.</p>
                     <p style="margin-top: 14px; font-size: 13px;"><a href="/curriculum/hospice-clerkship/" style="color: rgba(167, 139, 250, 0.95); font-weight: 500;">Read the case study →</a></p>
                 </div>
 
@@ -8830,7 +8810,7 @@
                 <div class="timeline-row">
                     <div class="year">2015 — 2016</div>
                     <div>
-                        <h4>Anatomy &amp; Osteopathic Principles Fellowship</h4>
+                        <h4>Anatomy &amp; OPP Preclinical Fellowship</h4>
                         <p>Alabama College of Osteopathic Medicine — competitive fellowship in human anatomy instruction and OMM.</p>
                     </div>
                 </div>

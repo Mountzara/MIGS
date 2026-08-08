@@ -421,6 +421,37 @@ the target element is in a section ABOVE the script tag.
     cbg-migs modals rewritten as curated synthesis (v3.1) — no raw
     reading-list/projection-table dumps; regenerate via scratchpad
     `build_curric_deep2.py`, never hand-edit facts in.
+    **2026-08-08 quality batch (9-page audit → 8 parallel fix agents):**
+    homepage apps cards were WHITE text on a near-white panel (stale
+    light-era override removed; cards are dark glass again —
+    `audit_runtime_css.py` now asserts glass ON + white text there, the
+    old "light-section solid" assertion is retired); duplicate ICG
+    publication merged with CV-verified provenance; apps=6 and
+    "Ten peer-reviewed publications & presentations" (exact list count)
+    everywhere; fellowship name canonical "Anatomy & OPP Preclinical
+    Fellowship". /curriculum/ hub: third case card added
+    (hospice-training) so "Three curricula" is true; card copy
+    de-noun-piled. cbg-migs: Y3 tiles shortened (overflow 0), sim grid
+    3×3 with per-session modality lines, synthesis dedup. about/: heading
+    grammar, "The following month" timeline fix, honest PDF-request copy,
+    envelope icons. cv/: credential middot, visible timeline labels,
+    near-opaque top bar, Lake Shore Dr. address, canonical hospital
+    naming, SAAO order. evidence/ shell: counters render final values
+    synchronously, double-encoded entities fixed, slug display-name map,
+    Generated-timestamp hidden, design-distribution bars, centered
+    modal, REVIEWED/CLAIM chrome removed, forest-tick thinning.
+    trending/ shell: single human date (ISO pill suppressed), slug
+    labels, explicit dark html background-color (white overscroll flash),
+    eyebrow relabel, takeaways de-quoted, single-column refs +
+    HIDE ABSTRACT toggle, card foot anchored, duplicate digest header
+    suppressed — `audit_reader_path.mjs` title assertion now accepts the
+    embedded `.mz-post-title` when the shell suppresses its own block
+    (must be VISIBLE either way). hospice pages: provenance box
+    rewritten first-person (never "the operator"), breadcrumb middots
+    now CSS-generated separators, X-not-Y density capped. R2 content:
+    testosterone brief's "FDA-approved compounded cream" contradiction
+    corrected in posts JSON (no FDA-approved female testosterone product
+    exists in the US).
 
 12. **Fact-sync gate (added 2026-07-28)** — `scripts/audit_fact_sync.mjs`,
     hermetic, runs FIRST (before the hero lock), no override flag: scans

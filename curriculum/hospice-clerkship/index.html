@@ -27,12 +27,17 @@ html, body {
 a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--fg-strong); }
 
-.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(7,7,10,0.86); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px); }
+.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(10,7,20,0.96); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px); }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
-.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
-.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
+.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); white-space: nowrap; }
+.site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-nav .crumb .crumb-item + .crumb-item::before { content: "·"; margin: 0 7px; color: var(--fg-dim); }
+@media (max-width: 680px) {
+    .site-nav .crumb .crumb-item:not(.crumb-page) { display: none; }
+    .site-nav .crumb .crumb-item + .crumb-item::before { content: none; margin: 0; }
+}
 .site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); }
+.site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); white-space: nowrap; }
 .site-nav .right-actions a:hover { color: var(--fg-strong); }
 .site-nav .cta { background: rgba(var(--glow-purple), 0.16); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--accent-soft) !important; padding: 5px 14px; border-radius: 999px; font-weight: 500; transition: all 0.2s; }
 .site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
@@ -63,14 +68,18 @@ section.block h2 { font-weight: 300; font-size: clamp(22px, 3.2vw, 30px); letter
 section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 24px 0; line-height: 1.6; }
 section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-width: 70ch; margin: 0 0 14px 0; }
 
-.principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+.principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; align-items: start; }
 .principle-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
 .principle-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.05); }
 .principle-card .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
 .principle-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16.5px; }
 .principle-card p { margin: 0; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
+.principle-card ul { margin: 8px 0 0 0; padding-left: 18px; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
+.principle-card li { margin: 0 0 6px 0; }
+.principle-card li:last-child { margin-bottom: 0; }
+.nowrap { white-space: nowrap; }
 
-.component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; align-items: start; }
 .component-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; transition: border-color 0.22s ease; }
 .component-card:hover { border-color: rgba(var(--glow-purple), 0.32); }
 .component-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; }
@@ -110,7 +119,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* 2026-07-28 — REAL Apple glass + balanced reading measure (user: panels
    were "completely see-through", text hugged the left of a wide panel).
@@ -143,7 +152,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
     <nav class="site-nav" aria-label="Primary">
         <div class="inner">
             <a href="/" class="brand">Mount Zara</a>
-            <span class="crumb">· <a href="/curriculum/" style="color: inherit;">Curriculum Consulting</a> · Hospice Pilot Rotation</span>
+            <span class="crumb"><a href="/curriculum/" class="crumb-item" style="color: inherit;">Curriculum Consulting</a><span class="crumb-item crumb-page">Hospice Pilot Rotation</span></span>
             <div class="right-actions">
                 <a href="/curriculum/">All Curricula</a>
                 <a href="mailto:info@mountzara.com" class="cta">Engage</a>
@@ -163,18 +172,18 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                 adult learners actually internalize hard material.
             </p>
             <p class="author-line">
-                <strong>Christopher Z. Mabini, DO, MSAEd</strong> · Alabama College of Osteopathic Medicine, Dothan AL · 2018
+                <strong>Christopher Z. Mabini, DO, MSAEd</strong> · Alabama College of Osteopathic Medicine, Dothan AL · Pilot launched 2018
             </p>
         </header>
 
         <div class="gap-banner">
-            <div class="lbl">Source archive</div>
+            <div class="lbl">Provenance</div>
             <p>
-                The original curriculum design document for this rotation lives in the operator's institutional
-                archive. This page is built from confirmed program details only. Want the deep architecture?
-                The same end-to-end methodology used here is fully detailed on the
-                <a href="/curriculum/cbg-migs/">CBG/MIGS Fellowship case study</a>. To engage on a comparable
-                hospice or palliative-care curriculum build,
+                This rotation was designed and delivered by Dr. Mabini at the Alabama College of Osteopathic
+                Medicine. The original design document lives in the institutional archive, and the complete
+                end-to-end methodology is documented in the
+                <a href="/curriculum/cbg-migs/">CBG/MIGS Fellowship case study</a>. To scope a comparable
+                hospice or palliative-care curriculum,
                 <a href="mailto:info@mountzara.com?subject=Hospice%20curriculum%20design%20consult">email us</a>.
             </p>
         </div>
@@ -188,17 +197,23 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                 <div class="principle-card">
                     <div class="label">Andragogy</div>
                     <h4>Knowles' Adult Learning Theory</h4>
-                    <p>Adult learners need self-direction, prior-experience integration, problem-centered orientation, and intrinsic motivation. The rotation was designed to put medical students in charge of their own engagement with end-of-life cases — not lecture them at it.</p>
+                    <p>Adult learners need self-direction, integration of prior experience, and a problem-centered orientation. The rotation put medical students in charge of their own engagement with end-of-life cases.</p>
                 </div>
                 <div class="principle-card">
                     <div class="label">Experiential cycle</div>
                     <h4>Kolb's Experiential Learning</h4>
-                    <p>Concrete experience (in hospice with patients and families) → reflective observation (structured debrief) → abstract conceptualization (didactic synthesis) → active experimentation (the next family meeting, the next symptom-management decision). The full cycle, not just immersion.</p>
+                    <p>The rotation was built to run Kolb's complete cycle:</p>
+                    <ul>
+                        <li>Concrete experience: hospice care with patients and families</li>
+                        <li>Reflective observation: structured debrief</li>
+                        <li>Abstract conceptualization: didactic synthesis</li>
+                        <li>Active experimentation: the next family meeting, the next symptom-management decision</li>
+                    </ul>
                 </div>
                 <div class="principle-card">
                     <div class="label">Reflective practice</div>
                     <h4>Narrative medicine + Schön</h4>
-                    <p>Reflection-in-action and reflection-on-action are the engine of competency growth in hard emotional territory. The rotation built in structured reflective journaling, narrative-medicine writing, and faculty-facilitated debriefs.</p>
+                    <p>Reflection-in-action and reflection-on-action are the engine of competency growth in hard emotional territory. The rotation built in structured reflective journaling, narrative-medicine writing, and faculty-facilitated debriefs. Students wrote after emotionally significant encounters and revisited those entries with faculty.</p>
                 </div>
             </div>
         </section>
@@ -206,10 +221,13 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
         <section class="block">
             <div class="eyebrow">Components</div>
             <h2>What the rotation actually included.</h2>
+            <p class="sub">This was the first hospice and palliative care rotation at ACOM. Landing it took
+            multi-stakeholder work with ACOM administration, Community Hospice in Dothan, and student affairs;
+            Dr. Mabini designed, launched, and led the inaugural offering.</p>
             <div class="component-grid">
                 <div class="component-card">
                     <h4>Clinical immersion</h4>
-                    <p>Direct patient and family engagement in the hospice setting under faculty supervision. Real cases, real conversations, real symptom management decisions — not simulated.</p>
+                    <p>Direct patient and family engagement in the hospice setting under faculty supervision. Real cases, real conversations, real symptom-management decisions.</p>
                 </div>
                 <div class="component-card">
                     <h4>Structured debriefing</h4>
@@ -233,18 +251,14 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
                 </div>
                 <div class="component-card">
                     <h4>Competency-based assessment</h4>
-                    <p>Faculty assessment against defined hospice/palliative-care competencies, plus self-assessment, plus reflective-journal review. Triangulated evaluation, not just an end-of-rotation grade.</p>
-                </div>
-                <div class="component-card">
-                    <h4>First-of-its-kind at ACOM</h4>
-                    <p>Designed, launched, and led the inaugural rotation. Multi-stakeholder engagement with ACOM administration, Community Hospice (Dothan), and student affairs to land the program.</p>
+                    <p>Faculty assessment against defined hospice/palliative-care competencies, plus self-assessment, plus reflective-journal review. Each student's evaluation was triangulated across all three sources.</p>
                 </div>
             </div>
         </section>
 
         <div class="cta-block">
-            <h3>Need a hospice, palliative care, or end-of-life curriculum?</h3>
-            <p>Whether designing a rotation, building faculty development around end-of-life care, or refreshing an existing program — the same design methodology applies. Let's talk scope.</p>
+            <h3>Need a hospice, palliative care, or <span class="nowrap">end-of-life</span> curriculum?</h3>
+            <p>Whether designing a rotation, building faculty development around <span class="nowrap">end-of-life</span> care, or refreshing an existing program, the same design methodology applies. Let's talk scope.</p>
             <a href="mailto:info@mountzara.com?subject=Hospice%20curriculum%20design%20consult" class="btn">Email info@mountzara.com →</a>
         </div>
 
@@ -252,7 +266,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
             <p>
                 Christopher Z. Mabini, DO, MSAEd · Alabama College of Osteopathic Medicine 2014–2019 ·
                 M.S. Adult Education with concentration in Curriculum Development & Instructional Design ·
-                <a href="/curriculum/">All curricula</a> · <a href="/about/">About</a> · <a href="/cv/#curriculum">CV</a>
+                <a href="/curriculum/">All Curricula</a> · <a href="/about/">About</a> · <a href="/cv/#curriculum">CV</a>
             </p>
         </div>
 

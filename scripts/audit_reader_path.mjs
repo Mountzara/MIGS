@@ -144,7 +144,17 @@ for (const { shell, posts } of SHELLS) {
                 const vis = (el) => !!el && el.offsetHeight > 0;
                 const out = {};
                 out.notFound = !!document.querySelector("#detailContent .empty");
-                out.title = norm(document.querySelector(".brief-detail-title, .post-detail-title")?.textContent);
+                // 2026-08-08 — the trending shell now suppresses its own
+                // title block when body_html ships a full hero (single-header
+                // fix: readers previously saw the same title twice). Accept
+                // whichever title element is actually VISIBLE to the reader —
+                // shell block or embedded .mz-post-title — never an invisible
+                // one.
+                const titleEl = [
+                    document.querySelector(".brief-detail-title, .post-detail-title"),
+                    document.querySelector(".post-detail-body .mz-post-title, .brief-detail-body .mz-post-title"),
+                ].find((el) => vis(el) && norm(el.textContent).length > 0);
+                out.title = norm(titleEl?.textContent);
                 out.bodyChars = norm(document.querySelector(".brief-detail-body, .post-detail-body")?.textContent).length;
                 const groups = [...document.querySelectorAll(".topic-section, .mz-topic-group")];
                 out.groups = groups.length;

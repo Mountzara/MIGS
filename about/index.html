@@ -351,10 +351,10 @@
             margin: 0 0 clamp(28px, 3vw, 40px);
         }
 
-        /* Scene 3 — quote */
+        /* Scene 3 — deck line */
         .cover-quote {
             font-family: 'Avenir Next', Georgia, 'Times New Roman', serif;
-            font-style: italic;
+            font-style: normal;
             font-weight: 300;
             font-size: clamp(20px, 2.8vw, 36px);
             line-height: 1.08;
@@ -562,8 +562,7 @@
                 padding: 0 clamp(20px, 5vw, 32px) clamp(150px, 26vw, 200px);
             }
             .cover-scroll-cue {
-                font-size: 9px;
-                letter-spacing: 0.28em;
+                display: none;
             }
             .cover-name {
                 font-size: clamp(34px, 8vw, 52px);
@@ -597,7 +596,9 @@
                 line-height: 1.4;
             }
             .cover-footer {
-                gap: 6px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
                 padding-top: 14px;
             }
             .credit-value {
@@ -632,11 +633,6 @@
                     radial-gradient(circle at 100% 0%,   rgba(18,11,34,0.70), rgba(18,11,34,0) 32%),
                     radial-gradient(circle at 0% 100%,   rgba(18,11,34,0.70), rgba(18,11,34,0) 36%),
                     radial-gradient(circle at 100% 100%, rgba(18,11,34,0.70), rgba(18,11,34,0) 36%);
-            }
-            .cover-footer {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
             }
             .cover-runtime {
                 text-align: left;
@@ -1354,7 +1350,7 @@
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         .chapter p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -1418,7 +1414,7 @@
                     <!-- Scene 3: The journey -->
                     <div class="cover-scene cover-scene--3">
                         <p class="cover-statement-sub">A journey shaped by purpose</p>
-                        <p class="cover-quote">"From a hospice in California to the operating rooms of Chicago."</p>
+                        <p class="cover-quote">From a hospice in California to the operating rooms of Chicago.</p>
                         <p class="cover-quote-sub">Built on osteopathic principles, surgical excellence, and applied AI — refined across four hospital sites in the Chicagoland area and every required CBG/MIGS milestone.</p>
                     </div>
                 </div>
@@ -1472,7 +1468,7 @@
 
         <div class="interlude">
             <span class="interlude-eyebrow">By the numbers</span>
-            <h3>A practice measured in surgeries, papers, and people taught.</h3>
+            <h3>A record in research and national recognition.</h3>
             <div class="interlude-grid">
                 <div class="interlude-stat">
                     <span class="num">9+</span>
@@ -1495,10 +1491,10 @@
 
         <section class="chapter">
             <span class="chapter-num">Chapter Four — Innovation</span>
-            <h2>Where women's health and surgery meets innovation.</h2>
+            <h2>Where women's health and surgery meet innovation.</h2>
             <p>At <strong>PRIME St. Francis Hospital</strong> in Evanston, Illinois, Dr. Mabini entered the Complex Benign Gynecology Fellowship determined to push the field, not just inhabit it.</p>
             <p>His pioneering research with <strong>Indocyanine Green (ICG)</strong> imaging — using fluorescent dye in ways the field hadn't traditionally explored — earned the <strong>Dr. George W. Morley Memorial Paper Award</strong> at the CAOG 91st Annual Meeting in Indianapolis, October 2024. The work showed that ICG could illuminate endometriosis-related fibrosis and inflammatory changes invisible under standard white light. It had implications for how aggressively, and how completely, the disease could be excised.</p>
-            <p>One year later, his video abstract on a <strong>visually directed hysteroscopic approach to retained products of conception in an arcuate uterus</strong> — a case that classically defies blind dilation and curettage — won the <strong>AAGL Golden Hysteroscope Award</strong> at the 2024 Global Congress in New Orleans. Best Video Abstract in Hysteroscopy. National recognition. Raising the bar in surgical education.</p>
+            <p>The following month, his video abstract on a <strong>visually directed hysteroscopic approach to retained products of conception in an arcuate uterus</strong> — a case that classically defies blind dilation and curettage — won the <strong>AAGL Golden Hysteroscope Award</strong> at the 2024 Global Congress in New Orleans. Best Video Abstract in Hysteroscopy. National recognition. Raising the bar in surgical education.</p>
             <p>Behind both awards: the same instinct from his mother's hospice. <em>See clearly. Then do the work.</em></p>
         </section>
 
@@ -1543,8 +1539,8 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
                 </span>
                 <span class="cv-badge-text">
-                    <span class="cv-badge-label">Request print-friendly PDF</span>
-                    <span class="cv-badge-meta">Sent direct to your inbox</span>
+                    <span class="cv-badge-label">Request the PDF version</span>
+                    <span class="cv-badge-meta">Email Dr. Mabini and he will reply with the document</span>
                 </span>
                 <span class="cv-badge-arrow" aria-hidden="true">→</span>
             </button>
@@ -1614,14 +1610,14 @@
                 </a>
                 <a href="https://outlook.office.com/mail/deeplink/compose?to=info@mountzara.com" target="_blank" rel="noopener" class="modal-action">
                     <span class="modal-action-label">
-                        <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="1.5"/><path d="M16 9l5-2v10l-5-2"/></svg></span>
+                        <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
                         Outlook
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
                 </a>
                 <a href="https://compose.mail.yahoo.com/?to=info@mountzara.com" target="_blank" rel="noopener" class="modal-action">
                     <span class="modal-action-label">
-                        <span class="modal-action-icon"><svg viewBox="0 0 24 24"><path d="M4 6l8 8 8-8M12 14v6"/></svg></span>
+                        <span class="modal-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
                         Yahoo Mail
                     </span>
                     <span class="modal-action-arrow">&rarr;</span>
@@ -1662,6 +1658,8 @@
             contactModalEl.querySelectorAll('a[href]').forEach(a => {
                 if (!MAILTO_DEFAULTS.has(a)) MAILTO_DEFAULTS.set(a, a.getAttribute('href'));
                 const base = MAILTO_DEFAULTS.get(a);
+                // Only mail links understand subject/body — leave LinkedIn etc. alone
+                if (!/^mailto:|mail\.google|outlook\.office|mail\.yahoo/.test(base)) return;
                 const sep = base.includes('?') ? '&' : '?';
                 a.setAttribute('href', `${base}${sep}subject=${subj}&body=${bod}`);
             });
@@ -1673,8 +1671,8 @@
         }
         function requestPrintCV() {
             setMailtoSubject(
-                'Print-friendly CV request',
-                'Hi Dr. Mabini,\n\nI\'d like to request a print-friendly copy of your CV. Please send it to this email when convenient.\n\nThank you,\n'
+                'CV PDF request',
+                'Hi Dr. Mabini,\n\nI\'d like to request the PDF version of your CV. Please send it to this email when convenient.\n\nThank you,\n'
             );
             openContactModal();
         }

@@ -22,7 +22,11 @@
             --text-on-dark: #ffffff;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+        /* Explicit dark plum bottom layer on the root element — without it the
+           html/body computed background is transparent and the browser's white
+           canvas flashes through mid-scroll (overscroll, rubber-banding).
+           The body's gradients paint above this. */
+        html { scroll-behavior: smooth; background-color: #120b22; }
         body {
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
             /* 2026-07-22 — pure-black band -> deep plum near-black with soft purple
@@ -349,9 +353,13 @@
             font-size: 14.5px;
             line-height: 1.62;
             color: #ffffff;
-            flex: 1;
             margin-bottom: 18px;
         }
+        /* Cards in a grid row stretch to the tallest sibling. Anchor the
+           tag/CTA footer to the card bottom so any leftover height sits
+           predictably between the summary and the footer, not stretched
+           through the summary box (the old `flex: 1` on .post-summary). */
+        .post-card-foot { margin-top: auto; }
         .post-topics {
             display: flex;
             gap: 6px;
@@ -549,6 +557,25 @@
     
         /* magazine-justify-2026-06-29 */
         .post-detail-subtitle, .post-detail-body, .post-detail-body p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
+
+        /* 2026-08-08 shell-level overrides for the injected post body
+           (body_html arrives from the API with its own embedded styles;
+           these outrank them by specificity). */
+        /* One date per digest. The shell already renders the post's
+           published date at the top (.post-detail-pubdate, from the
+           published_at field); the body embeds a second, conflicting
+           "Published" line stamped at generation time. Hide it. */
+        .post-detail-body .mz-post-pubdate { display: none !important; }
+        /* "Closing thoughts" takeaways are the author's summary points,
+           not quotations — drop the decorative quote glyph the embedded
+           style paints and reclaim its indent. Plain list panels remain. */
+        .post-detail-body .mz-counseling li { padding-left: 16px; }
+        .post-detail-body .mz-counseling li::before { content: none; }
+        /* Reference cards: the embedded two-column grid leaves the
+           neighbor card floating over empty space whenever one card's
+           abstract expander opens. Single column reads better and keeps
+           expansion self-contained. */
+        .post-detail-body .mz-cite-grid { grid-template-columns: 1fr; }
     </style>
 </head>
 <body>
@@ -571,7 +598,7 @@
     <!-- Listing view -->
     <div id="listingView">
         <section class="hero">
-            <span class="eyebrow">Trend Briefs · Influencer Page</span>
+            <span class="eyebrow">Trend Briefs · Viral claims, checked against the literature</span>
             <h1 class="title">When a viral claim hits the clinic. <span class="title-accent">Here's what the literature actually says.</span></h1>
             <p class="subtitle">When a claim about women's health makes the rounds online, it deserves an honest, careful look. Each brief here walks through the underlying biology and the published clinical evidence, side by side, and arrives at a plain-language verdict — so anyone reading can weigh the science alongside the headline.</p>
         </section>
@@ -618,6 +645,31 @@
                 { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
             ));
         }
+        // week_label on trend briefs carries the pipeline's raw ISO date
+        // ("2026-05-19") — an internal ID, not UI. Rendering it produced a
+        // second, conflicting date pill next to the formatted published
+        // date. Only surface week_label when it is an actual label.
+        function badgeLabel(label) {
+            const s = String(label ?? '').trim();
+            if (!s || /^\d{4}-\d{2}-\d{2}/.test(s)) return '';
+            return s;
+        }
+        // topics_covered arrives as raw taxonomy slugs ("mht",
+        // "pelvic_pain") — map to display labels; default: underscores to
+        // spaces, capitalize the first letter.
+        const TOPIC_LABELS = {
+            mht: 'MHT',
+            pelvic_pain: 'Pelvic pain',
+            endometriosis: 'Endometriosis'
+        };
+        function topicLabel(slug) {
+            const s = String(slug ?? '').trim();
+            if (!s) return '';
+            const mapped = TOPIC_LABELS[s.toLowerCase()];
+            if (mapped) return mapped;
+            const words = s.replace(/_/g, ' ');
+            return words.charAt(0).toUpperCase() + words.slice(1);
+        }
 
         async function loadList() {
             try {
@@ -634,18 +686,23 @@
                     `;
                     return;
                 }
-                grid.innerHTML = '<div class="post-grid">' + posts.map(p => `
+                grid.innerHTML = '<div class="post-grid">' + posts.map(p => {
+                    const badge = badgeLabel(p.week_label);
+                    return `
                     <a class="post-card" href="?id=${encodeURIComponent(p.id)}">
                         <div class="post-meta">
-                            <span class="post-badge">${esc(p.week_label || 'Weekly digest')}</span>
+                            ${badge ? `<span class="post-badge">${esc(badge)}</span>` : ''}
                             <span class="post-date">${esc(fmtDate(p.published_at || p.created_at))}</span>
                         </div>
                         <h2 class="post-card-title">${esc(p.title || '(Untitled)')}</h2>
                         <p class="post-summary">${esc(p.summary || '')}</p>
-                        ${(p.topics_covered || []).length ? '<div class="post-topics">' + p.topics_covered.slice(0, 4).map(t => `<span class="post-topic">${esc(t)}</span>`).join('') + '</div>' : ''}
-                        <span class="post-cta">Read the digest <span class="post-cta-arrow">→</span></span>
+                        <div class="post-card-foot">
+                            ${(p.topics_covered || []).length ? '<div class="post-topics">' + p.topics_covered.slice(0, 4).map(t => `<span class="post-topic">${esc(topicLabel(t))}</span>`).join('') + '</div>' : ''}
+                            <span class="post-cta">Read the digest <span class="post-cta-arrow">→</span></span>
+                        </div>
                     </a>
-                `).join('') + '</div>';
+                `;
+                }).join('') + '</div>';
                 // Stagger reveal
                 document.querySelectorAll('.post-card').forEach((card, i) => {
                     setTimeout(() => card.classList.add('in'), 80 * i);
@@ -669,14 +726,29 @@
                 const pubBlock = pubDateStr
                     ? `<p class="post-detail-pubdate"><span class="post-detail-pubdate-label">Published</span><span class="post-detail-pubdate-date">${esc(pubDateStr)}</span></p>`
                     : '';
+                // week_label is an internal ISO date on trend briefs —
+                // badgeLabel() suppresses it so the digest header carries
+                // exactly one date (the pubBlock above).
+                const badge = badgeLabel(post.week_label);
+                const metaBlock = badge
+                    ? `<div class="post-detail-meta"><span class="post-badge">${esc(badge)}</span></div>`
+                    : '';
+                // Trend-brief bodies open with their own full hero header
+                // (.mz-post-hero: eyebrow, title, lede, verdict gauge).
+                // Rendering the shell's title/subtitle block above it
+                // duplicated the listing card on top of the article header —
+                // skip the shell block when the body brings its own.
+                const bodyHtml = post.body_html || '';
+                const bodyHasHero = /class="[^"]*\bmz-post-hero\b/.test(bodyHtml)
+                    && /class="[^"]*\bmz-post-title\b/.test(bodyHtml);
+                const shellHeader = bodyHasHero ? '' : `
+                    <h1 class="post-detail-title">${esc(post.title)}</h1>
+                    <p class="post-detail-subtitle">${esc(post.summary)}</p>`;
                 document.getElementById('detailContent').innerHTML = `
                     ${pubBlock}
-                    <div class="post-detail-meta">
-                        <span class="post-badge">${esc(post.week_label || 'Weekly digest')}</span>
-                    </div>
-                    <h1 class="post-detail-title">${esc(post.title)}</h1>
-                    <p class="post-detail-subtitle">${esc(post.summary)}</p>
-                    <div class="post-detail-body">${post.body_html || ''}</div>
+                    ${metaBlock}
+                    ${shellHeader}
+                    <div class="post-detail-body">${bodyHtml}</div>
                 `;
 
                 // Execute any <script> tags that came through innerHTML —
@@ -692,6 +764,19 @@
                     Array.from(oldScript.attributes).forEach(function (a) { s.setAttribute(a.name, a.value); });
                     s.text = oldScript.textContent;
                     oldScript.parentNode.replaceChild(s, oldScript);
+                });
+
+                // The embedded abstract expanders only swap a +/− glyph on
+                // open, so the label barely changes state. Swap the summary
+                // text itself: closed reads the body's own label, open reads
+                // "Hide abstract" (the embedded CSS uppercases it).
+                document.querySelectorAll('#detailContent details.mz-abstract').forEach(function (d) {
+                    var sum = d.querySelector('summary');
+                    if (!sum) return;
+                    var closedLabel = sum.textContent.trim() || 'Read the full abstract';
+                    var apply = function () { sum.textContent = d.open ? 'Hide abstract' : closedLabel; };
+                    d.addEventListener('toggle', apply);
+                    apply();
                 });
             } catch (e) {
                 document.getElementById('detailContent').innerHTML = `<div class="empty">Post not found: ${esc(e.message || String(e))}</div>`;

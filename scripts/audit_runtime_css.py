@@ -217,11 +217,13 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             f"backdrop-filter={bf!r} bg={bg!r} ({g['count']} elements)"
         ))
 
-    # Light-section cards: stay solid (no glass), because dark line-art through
-    # translucent white doesn't create enough contrast for glass.
-    # 2026-06-25 — Removed .about-text-block; user wants glass on those cards.
+    # 2026-08-08 — .app-card-v2 moved OUT of this list: the apps section has
+    # been a dark section since 2026-06-25, and a stale light-era override was
+    # painting the cards near-white under white text (illegible — site-wide
+    # quality audit, CRITICAL). The cards are now dark glass like every other
+    # dark-section card, asserted below instead: glass ON + white text.
     light_solid = page.evaluate("""() => {
-        const targets = ['.app-card-v2'];
+        const targets = [];
         const out = [];
         for (const sel of targets) {
             const el = document.querySelector(sel);
@@ -243,6 +245,31 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             f"light-section {g['selector']} solid (no glass)",
             "blur(" not in bf,
             f"backdrop-filter={bf!r}"
+        ))
+
+    # 2026-08-08 — app cards are dark glass with white, legible text (see note
+    # above). Assert glass is ON and the body copy is white so the illegible
+    # white-on-white regression class can never ship again.
+    app_glass = page.evaluate("""() => {
+        const el = document.querySelector('.app-card-v2');
+        if (!el) return { present: false };
+        const cs = getComputedStyle(el);
+        const p = el.querySelector('p, .app-card-copy p, h3');
+        return { present: true,
+                 backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+                 textColor: p ? getComputedStyle(p).color : null };
+    }""")
+    if app_glass.get("present"):
+        bf = app_glass.get("backdropFilter") or "none"
+        results.append(make_check(
+            "apps .app-card-v2 dark glass ON",
+            "blur(" in bf,
+            f"backdrop-filter={bf!r}"
+        ))
+        results.append(make_check(
+            "apps .app-card-v2 text is white",
+            app_glass.get("textColor") == "rgb(255, 255, 255)",
+            f"color={app_glass.get('textColor')!r}"
         ))
 
     # Sections must be translucent so hero drawing shows through
