@@ -158,7 +158,7 @@
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     </style>
 </head>
 <body>
