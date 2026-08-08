@@ -9260,20 +9260,30 @@
                         cur.dataset.heroEnded = '1';
                     }, 8400);
                 }
-                let autoStartTries = 0;
+                let autoStartTries = 0;  // ticks where media is READY yet refuses to advance
+                let autoStartTicks = 0;  // every tick, ready or still buffering
                 const autoStartPoll = setInterval(() => {
                     const v = document.getElementById('heroVideo');
                     const done = !v || v.tagName !== 'VIDEO' ||
                         v.dataset.heroEnded === '1' ||
                         (!v.paused && v.currentTime > 0.05);
                     if (done) { clearInterval(autoStartPoll); return; }
-                    autoStartTries++;
+                    autoStartTicks++;
+                    // 2026-08-08 — a strike against video autoplay only counts
+                    // when the media is READY to play (readyState >= 3) yet
+                    // still not advancing: that is an OS policy block (Low
+                    // Power Mode / Reduce Motion / Auto-Play previews off) and
+                    // the animated WebP is the right answer. readyState < 3
+                    // just means BUFFERING on a slow network — bailing to the
+                    // equally-undownloaded WebP at a flat 2.4s was part of the
+                    // cold-cache "all out of timing and sync" bug.
+                    if (v.readyState >= 3) autoStartTries++;
                     if (autoStartTries === 4) {
                         // trouble brewing — warm the browser cache so a swap
-                        // at 2.4s starts the animation instantly
+                        // moments later starts the animation instantly
                         try { new Image().src = HERO_ANIM_WEBP; } catch (e) {}
                     }
-                    if (autoStartTries >= 8) {
+                    if (autoStartTries >= 8 || autoStartTicks >= 40) {
                         clearInterval(autoStartPoll);
                         swapHeroToAnimatedWebp();
                         return;
@@ -9281,6 +9291,28 @@
                     retryHeroPlay();
                 }, 300);
             }
+            // 2026-08-08 — the text cascade and the Ken-Burns fallback used
+            // to run on timers anchored to startHeroSequence(); on a slow
+            // network the drawing could still be buffering when they fired
+            // ("all out of timing and sync"). Both are now anchored to the
+            // moment the animation is ACTUALLY advancing — video playing past
+            // frame 1, or the element swapped to an <img> (poster or animated
+            // WebP, which starts the instant it attaches) — with a bounded
+            // fallback so the text can never be stranded invisible.
+            function whenHeroAnimating(cb) {
+                let fired = false;
+                const fire = () => { if (!fired) { fired = true; cb(); } };
+                const iv = setInterval(() => {
+                    const cur = document.getElementById('heroVideo');
+                    if (!cur || cur.tagName !== 'VIDEO' ||
+                        cur.dataset.heroEnded === '1' ||
+                        (!cur.paused && cur.currentTime > 0.05)) {
+                        clearInterval(iv); fire();
+                    }
+                }, 120);
+                setTimeout(() => { clearInterval(iv); fire(); }, 12000);
+            }
+            whenHeroAnimating(() => {
             // Cascade hero text in Apple-style — past the animation midpoint
             // so the visual sequence has time to establish before the
             // overlay appears.
@@ -9313,11 +9345,15 @@
                 setTimeout(kickHeroGlass, 600);
                 setTimeout(kickHeroGlass, 1500);
             }, HERO_TEXT_DELAY_MS);
-            // Ken Burns after the animation finishes
+            // Ken Burns after the animation finishes — a mop-up only: the
+            // video 'ended' handler and the WebP settle path are the primary
+            // triggers; this covers a missed 'ended', timed from the TRUE
+            // animation start rather than from startHeroSequence().
             setTimeout(() => {
                 const liveHero = document.getElementById('heroVideo');
                 if (liveHero) liveHero.classList.add('ken-burns');
-            }, ANIMATION_DURATION_MS);
+            }, ANIMATION_DURATION_MS + 400);
+            });
         }
 
         function hideLoader() {
@@ -9326,23 +9362,48 @@
             setTimeout(() => pageLoader.classList.add('removed'), 800);
         }
 
-        // Preload WebP (decoded but never attached, so its animation isn't consumed)
-        // and wait for fonts. Then hide loader and start fresh animation.
-        const heroURL = heroVideo ? heroVideo.dataset.src : null;
-        Promise.race([
-            Promise.all([
-                heroURL ? preloadImageURL(heroURL) : Promise.resolve(),
-                waitForFonts()
-            ]),
-            // Hard cap — keep the loader a BRAND MOMENT, not a font gate.
-            // Was 6000ms: on cellular, document.fonts.ready (18 Nunito Sans
-            // variants from Google) routinely hangs to the full cap, so the
-            // drawing didn't start until ~7-10s after open ("animation starts
-            // like 10 seconds later", 2026-07-22). 1600ms lets fast
-            // connections start fully dressed and slow ones start with the
-            // system-font fallback that swaps moments later — the drawing is
-            // the opening act and must never wait on typography.
-            new Promise(resolve => setTimeout(resolve, 1600))
+        // 2026-08-08 — READINESS-GATED LOADER (user: "allow the progress
+        // loading when page opens and loads until entire page is ready to
+        // execute — it seems all out of timing and sync"). The previous gate
+        // raced fonts against a flat 1600ms timer and NEVER waited on the
+        // hero media itself (heroVideo.dataset.src is null on the <video>
+        // hero, so preloadImageURL was a no-op). On a cold cache the loader
+        // dropped at 1.6s with nothing buffered: play() stalled, the
+        // auto-start poll misread the buffering as an OS autoplay block and
+        // bailed to the (equally undownloaded) animated WebP, and the text
+        // cascade + Ken Burns ran on blind timers — visibly out of sync.
+        // Now the loader holds until the hero can actually play through
+        // (readyState >= 3 / canplaythrough), fonts get a bounded slot, and
+        // a hard cap keeps the worst case well below the old 10s font-gate
+        // bug: fast repeat visits get a ~0.7s brand moment, a normal first
+        // visit starts in sync and fully dressed at 1–3s, and only truly
+        // slow cellular rides the loader to the cap.
+        const LOADER_MIN_MS = 700;      // never a subliminal flash
+        const FONT_WAIT_CAP_MS = 2000;  // typography may never hold the page
+        const HERO_WAIT_CAP_MS = 6500;  // absolute worst-case loader time
+        function delayMs(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+        function waitForHeroMedia() {
+            const v = document.getElementById('heroVideo');
+            if (!v || v.tagName !== 'VIDEO' || v.readyState >= 3) return Promise.resolve();
+            return new Promise(resolve => {
+                // interval + events: canplaythrough may already have fired on
+                // a cached repeat visit before this listener attaches, and a
+                // poster/WebP swap replaces the element entirely — the poll
+                // catches every path the events can miss.
+                const iv = setInterval(() => {
+                    const cur = document.getElementById('heroVideo');
+                    if (!cur || cur.tagName !== 'VIDEO' || cur.readyState >= 3) {
+                        clearInterval(iv); resolve();
+                    }
+                }, 150);
+                v.addEventListener('canplaythrough', () => { clearInterval(iv); resolve(); }, { once: true });
+                v.addEventListener('error', () => { clearInterval(iv); resolve(); }, { once: true });
+            });
+        }
+        Promise.all([
+            Promise.race([waitForHeroMedia(), delayMs(HERO_WAIT_CAP_MS)]),
+            Promise.race([waitForFonts(), delayMs(FONT_WAIT_CAP_MS)]),
+            delayMs(LOADER_MIN_MS)
         ]).then(() => {
             hideLoader();
             // Small breath between loader fade and hero start, feels more deliberate

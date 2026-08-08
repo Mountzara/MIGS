@@ -371,6 +371,22 @@ the target element is in a section ABOVE the script tag.
     prefix — posts embedded a 98.5%-opaque bg, trend briefs had no
     blur at all) and ALL modal text `#fff` (headings/links stay brand
     purple). Hero lock deliberately updated per change.
+    **2026-08-08 readiness-gated loader (user: page "opens all out of
+    timing and sync"):** the loader gate raced fonts vs a flat 1600ms
+    timer and never waited on the hero media (`heroVideo.dataset.src`
+    is null on the `<video>` hero → `preloadImageURL` was a no-op), so
+    cold-cache visits started with nothing buffered and every timer
+    drifted. Now `waitForHeroMedia()` holds the loader until
+    `readyState >= 3`/`canplaythrough` (interval+event, survives
+    element swaps), fonts get a bounded 2000ms slot, min 700ms brand
+    moment, hard cap 6500ms. The determined-start poll only counts
+    strikes toward the animated-WebP bail when `readyState >= 3`
+    (buffering ≠ policy block; absolute bail at 40 ticks), and the
+    hero text cascade + Ken-Burns mop-up are anchored to
+    `whenHeroAnimating()` (video advancing past frame 1 or swapped to
+    `<img>`; 12s stranded-text fallback) instead of blind timers from
+    `startHeroSequence()`. Verified fast / throttled / autoplay-blocked
+    (scratchpad `verify_loader_gate.py`). Hero lock updated per change.
 
 12. **Fact-sync gate (added 2026-07-28)** — `scripts/audit_fact_sync.mjs`,
     hermetic, runs FIRST (before the hero lock), no override flag: scans
@@ -680,6 +696,19 @@ as the first argument so `getSession`'s `last_seen_at` UPDATE goes via
 
 `index.html` (~10K lines — see §3, §4), `about/`, `evidence/`, `trending/`,
 `cv/`, `curriculum/` (`cbg-migs/`, `hospice-clerkship/`, `hospice-training/`)
+
+**`curriculum/cbg-migs/` Year-3 deep-dive layer (2026-08-08):** beyond the
+16 chapter chips, the page now carries 32 `[data-mkey]` triggers feeding a
+`DETAIL_DATA` registry through the same `#ch-modal` chrome — 12 clickable
+Year-3 month tiles (faculty/objectives/reading/videos), 4
+graduated-responsibility cards (Y1/Y2/Y3 + milestone table), 6
+week-in-Year-3 day cards, 9 simulation-series cards, and the case-volume
+projection table. Content is generated from `docs/fmigs-year3/`
+(checklist md + PGY7 overview PDF) via the session builder
+(`build_curric_deep.py`); NEVER hand-edit facts into the modals without
+re-checking those sources — and never any UIC affiliation (fact-sync gate
+enforces). The counter animator is generalized (`animateCounter` +
+per-row IntersectionObserver) because the page has two `.counter-row`s.
 
 **R11 lock-step (2026-06-10; relocated 2026-06-25):** the 14-row visit-type →
 modality matrix mirroring `functions/_lib/visit_types.js` was MOVED off the
