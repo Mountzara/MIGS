@@ -448,7 +448,11 @@
         }
 
         .hero-video.ken-burns {
-            animation: heroKenBurnsSlow 45s ease-in-out infinite alternate;
+            /* 2026-08-08 PERF — one 45s zoom-in that then HOLDS (forwards),
+               not infinite alternate: a forever-animating transform on this
+               full-viewport screen-blended layer forced the compositor to
+               re-blend every frame for the life of the page. */
+            animation: heroKenBurnsSlow 45s ease-in-out 1 forwards;
         }
 
         @keyframes heroKenBurnsSlow {
@@ -476,7 +480,8 @@
                 transform: translate(-48%, -50%) rotate(-30deg) scale(2.86);
             }
             .hero-video.ken-burns {
-                animation: heroKenBurnsSlowMobile 45s ease-in-out infinite alternate;
+                /* same PERF rationale as the desktop rule: run once, hold */
+                animation: heroKenBurnsSlowMobile 45s ease-in-out 1 forwards;
             }
             @keyframes heroKenBurnsSlowMobile {
                 0% {
@@ -3805,11 +3810,16 @@
         .rl-redact::after { content: ''; position: absolute; inset: -1px; width: 0; border-radius: 3px; background: #0d0a18; border: 1px solid rgba(167,139,250,0.6); }
         .reel-scene.active .rl-redact::after { animation: rlFill 0.7s 1.0s ease forwards; }
         .rl-wave { display: flex; align-items: center; gap: 3px; height: 26px; }
-        .rl-wave i { width: 3px; border-radius: 2px; background: #b7a3ff; height: 30%; }
+        /* 2026-08-08 PERF — the wave bars animate transform:scaleY, NOT height:
+           the height version forced a layout pass on every frame for 14
+           elements, forever (measured: killing the infinite animations took
+           idle frame time from 259ms to 21ms). scaleY composites on the GPU
+           and is visually identical (bars grow from center either way). */
+        .rl-wave i { width: 3px; border-radius: 2px; background: #b7a3ff; height: 96%; transform: scaleY(0.31); }
         .reel-scene.active .rl-wave i { animation: rlWave 0.9s ease-in-out infinite alternate; }
         .rl-wave i:nth-child(2n) { animation-delay: 0.12s; } .rl-wave i:nth-child(3n) { animation-delay: 0.22s; }
         .rl-wave i:nth-child(4n) { animation-delay: 0.30s; } .rl-wave i:nth-child(5n) { animation-delay: 0.05s; }
-        @keyframes rlWave { from { height: 22%; } to { height: 96%; } }
+        @keyframes rlWave { from { transform: scaleY(0.23); } to { transform: scaleY(1); } }
         .rl-forest { display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; }
         .rl-forest .fp { position: relative; height: 8px; }
         .rl-forest .fp i { position: absolute; top: 3px; height: 2px; background: rgba(255,255,255,0.5); border-radius: 1px; }
@@ -4197,20 +4207,38 @@
             margin-bottom: 12px;
         }
 
+        /* 2026-08-08 PERF — the pulse used to animate box-shadow spread, which
+           repaints on every frame for all 13 badges forever. The dot is now
+           static and the expanding ring is a pseudo-element animating only
+           transform + opacity (GPU-composited, same visual). */
+        .ai-badge {
+            position: relative;
+        }
         .ai-badge::before {
             content: '';
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background: var(--accent);
-            box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.6);
+        }
+        .ai-badge::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            margin-top: -4px;
+            border-radius: 50%;
+            background: rgba(109, 40, 217, 0.6);
             animation: pulse 2s infinite;
+            pointer-events: none;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.6); }
-            70% { box-shadow: 0 0 0 8px rgba(109, 40, 217, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0); }
+            0% { transform: scale(1); opacity: 0.6; }
+            70% { transform: scale(2.6); opacity: 0; }
+            100% { transform: scale(2.6); opacity: 0; }
         }
 
         .research-detail-inner p {
@@ -4439,14 +4467,10 @@
             height: 100%;
             object-fit: cover;
             border-radius: 12px;
-            animation: video-preview-fade 10s infinite ease-in-out;
+            /* 2026-08-08 PERF — removed the infinite 10s opacity dip
+               (video-preview-fade): a barely-visible effect that kept four
+               video layers permanently in the animation pipeline. */
             pointer-events: none; /* clicks pass through to the parent */
-        }
-
-        @keyframes video-preview-fade {
-            0%, 80%  { opacity: 1; }
-            92%      { opacity: 0.55; }
-            100%     { opacity: 1; }
         }
 
         .research-card-video:hover .video-preview {
@@ -7214,6 +7238,25 @@
         .about-section .section-sub { color: #3a3a3c; }
         .about-text-block p { color: #3a3a3c; }
         .about-text-block p strong { color: #1d1d1f; }
+
+        /* 2026-08-08 PERF — closed full-viewport overlays used to stay
+           display:flex at opacity:0, keeping their backdrop-filter roots alive
+           in the compositor layer tree permanently (measured: 16 hidden blur
+           roots at every scroll position; backdrop-filter carries ~90% of
+           scroll stalls on throttled mobile). Closed is now display:none —
+           same pattern .video-modal already uses. The open fade runs as an
+           ANIMATION (animations fire on display toggle; transitions do not).
+           Close is intentionally instant. */
+        @keyframes mzOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .app-modal, .contact-modal, .surgical-hub-panel { display: none; }
+        .app-modal.open, .contact-modal.open {
+            display: flex;
+            animation: mzOverlayIn 380ms ease both;
+        }
+        .surgical-hub-panel:not([hidden]) {
+            display: flex;
+            animation: mzOverlayIn 380ms ease both;
+        }
 </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
@@ -8291,7 +8334,7 @@
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true" poster="/media/rpoc-golden-hysteroscope-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/rpoc-golden-hysteroscope-reel-v2-poster.jpg">
                             <source src="/media/rpoc-golden-hysteroscope-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8310,7 +8353,7 @@
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true" poster="/media/myomectomy-gel-port-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/myomectomy-gel-port-reel-v2-poster.jpg">
                             <source src="/media/myomectomy-gel-port-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8329,7 +8372,7 @@
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true" poster="/media/isthmocele-ashermans-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/isthmocele-ashermans-reel-v2-poster.jpg">
                             <source src="/media/isthmocele-ashermans-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8352,7 +8395,7 @@
                     <p class="research-card-journal">AAGL Global Congress · Surgical Video Library</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
-                        <video class="video-preview" muted autoplay loop playsinline preload="auto" aria-hidden="true" poster="/media/rpoc-arcuate-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/rpoc-arcuate-reel-v2-poster.jpg">
                             <source src="/media/rpoc-arcuate-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -9423,6 +9466,14 @@
                 const wantsAutoplay = v.autoplay || isHero ||
                                       v.classList.contains('video-preview');
                 if (!wantsAutoplay || !v.paused || v.tagName !== 'VIDEO') return;
+                // 2026-08-08 PERF — reels are IO-gated now: never wake a
+                // preview that is far offscreen (its IO pauses it on exit; a
+                // first-gesture play here would immediately fight that and
+                // restart the download the preload=none change deferred).
+                if (v.classList.contains('video-preview')) {
+                    const r = v.getBoundingClientRect();
+                    if (r.bottom < -window.innerHeight || r.top > window.innerHeight * 2) return;
+                }
                 // Never RESTART the hero once it has played: if it finished
                 // (flagged in the 'ended' handler) or already advanced past
                 // frame 1, calling play() on a finished clip seeks it back to 0
@@ -11742,6 +11793,17 @@
         // first user interaction as a last-resort fallback for autoplay-blocking
         // policies.
         (function ensureVideoPreviewsAutoplay() {
+            // 2026-08-08 PERF — the reels are now preload="none" with NO
+            // autoplay attribute: with preload=auto+autoplay all four mp4s
+            // (10.0 MB combined) downloaded at page open ~18 viewports above
+            // them, competing with the hero the loader waits on, and then sat
+            // in "playing" state while offscreen. Playback (and therefore the
+            // download) starts only when a reel approaches the viewport, and
+            // pauses again when it leaves.
+            const nearViewport = (v) => {
+                const r = v.getBoundingClientRect();
+                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
+            };
             const tryPlay = (v) => {
                 if (!v || !v.paused) return;
                 const p = v.play();
@@ -11749,7 +11811,9 @@
                     p.catch(() => { /* autoplay blocked — handled by fallback below */ });
                 }
             };
-            const playAll = () => document.querySelectorAll('.video-preview').forEach(tryPlay);
+            const playAll = () => document.querySelectorAll('.video-preview').forEach(v => {
+                if (nearViewport(v)) tryPlay(v);
+            });
 
             // Initial pass once the DOM is ready
             if (document.readyState === 'loading') {
@@ -11758,13 +11822,16 @@
                 playAll();
             }
 
-            // Retry as previews enter the viewport (so Safari has a fresh nudge)
+            // Play as previews approach the viewport; PAUSE when they leave
+            // (four simultaneous decoders for invisible video was measured
+            // compositor load and battery drain on phones).
             if ('IntersectionObserver' in window) {
                 const io = new IntersectionObserver((entries) => {
                     entries.forEach((entry) => {
                         if (entry.isIntersecting) tryPlay(entry.target);
+                        else if (!entry.target.paused) entry.target.pause();
                     });
-                }, { threshold: 0.1 });
+                }, { threshold: 0, rootMargin: '50% 0% 50% 0%' });
                 document.querySelectorAll('.video-preview').forEach((v) => io.observe(v));
             }
 
@@ -11840,13 +11907,23 @@
         (function initVideoPreviews() {
             const previews = document.querySelectorAll('.video-preview');
             if (!previews.length) return;
+            // 2026-08-08 PERF — this legacy block was the second, unguarded
+            // play() path: it started ALL four reels at page open, defeating
+            // preload="none" and re-downloading 10 MB ~18 viewports above the
+            // fold. Only wake a reel that is already near the viewport; the
+            // IntersectionObserver below owns everything else.
+            const nearVp = (v) => {
+                const r = v.getBoundingClientRect();
+                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
+            };
             previews.forEach((video) => {
                 video.muted = true;
                 video.playsInline = true;
                 video.loop = true;
+                if (!nearVp(video)) return;
                 video.play().catch(() => {
                     const retry = () => {
-                        video.play().catch(() => {});
+                        if (nearVp(video)) video.play().catch(() => {});
                     };
                     document.addEventListener('click', retry, { once: true });
                     document.addEventListener('touchstart', retry, { once: true });
@@ -12042,6 +12119,13 @@
        autoplay. Now a video element is created ONLY after a HEAD request
        confirms the recording exists. */
     (function () {
+        // 2026-08-08 PERF — defer the 6 HEAD probes off the open path (they
+        // all 404 today and were firing at t≈0.6s, in the middle of the
+        // loader's critical window). Idle-time or first scroll, whichever
+        // comes first.
+        var fired = false;
+        function runAppReelChecks() {
+        if (fired) return; fired = true;
         document.querySelectorAll('.app-card-v2[data-app]').forEach(function (card) {
             var app = card.getAttribute('data-app');
             var reel = card.querySelector('.app-reel');
@@ -12060,6 +12144,13 @@
                 var p = v.play(); if (p && p.catch) p.catch(function () {});
             }).catch(function () {});
         });
+        }
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(runAppReelChecks, { timeout: 8000 });
+        } else {
+            setTimeout(runAppReelChecks, 5000);
+        }
+        window.addEventListener('scroll', runAppReelChecks, { once: true, passive: true });
     })();
     </script>
 </body>

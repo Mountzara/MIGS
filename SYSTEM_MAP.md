@@ -387,6 +387,40 @@ the target element is in a section ABOVE the script tag.
     `<img>`; 12s stranded-text fallback) instead of blind timers from
     `startHeroSequence()`. Verified fast / throttled / autoplay-blocked
     (scratchpad `verify_loader_gate.py`). Hero lock updated per change.
+    **2026-08-08 measured-perf batch (workflow-diagnosed on live site):**
+    backdrop-filter glass = ~90% of throttled-mobile scroll stalls (A/B);
+    infinite `rlWave` height + `pulse` box-shadow animations kept idle
+    frame time at 259ms (21ms with them off). Fixes: rlWave→scaleY,
+    pulse→transform/opacity ring on `::after`, hero Ken Burns bounded to
+    one 45s run (`forwards`), closed `.app-modal`/`.contact-modal`/
+    `.surgical-hub-panel` now display:none (were permanent full-viewport
+    blur roots at opacity:0; open-fade via `mzOverlayIn` ANIMATION —
+    close is instant by design), 4 surgical reels preload="none" w/o
+    autoplay attr (10.0MB no longer downloads at open; TWO legacy play()
+    paths — `ensureVideoPreviewsAutoplay` and `initVideoPreviews` — are
+    both proximity-gated now, IO pauses off-screen reels), app-reel HEAD
+    probes deferred to idle/first-scroll. Ruled out by A/B: scroll-snap
+    removal (made it worse) — do not remove snap for perf.
+    **2026-08-08 art-dominance sweep (68 subpages):** `.page-bg-stage`
+    opacity 0.75→0.42 and `.page-bg-art` filter saturate(2.0)→1.5,
+    brightness(1.28)→1.08, contrast(1.28)→1.12 — at desktop widths the
+    boosted strokes crossed naked headings/ledes at near-full strength.
+    Homepage hero stage untouched (different mechanism + vignette).
+    **2026-08-08 /curriculum/ CSS-comment catastrophe:** the header
+    comment contained the path `/education/*/` — its `*/` closed the
+    comment early, the parser ate the entire `:root` block, every
+    `var(--fg-*)` failed, and all text without a literal-color override
+    rendered BLACK on dark (pills, footer, CTA copy, cycle descs).
+    Fixed the comment; `audit_route_render.py` now asserts on every
+    route that referenced design tokens actually resolve
+    (`ALL-TOKENS-MISSING` fail). NEVER put a path containing `*/`
+    inside a CSS comment.
+    **2026-08-08 Kothari purge:** Dr. Kothari is NOT final faculty (user
+    directive) — removed from curriculum/cbg-migs/ (only deployable
+    mention) and added to the fact-sync forbidden list alongside UIC.
+    cbg-migs modals rewritten as curated synthesis (v3.1) — no raw
+    reading-list/projection-table dumps; regenerate via scratchpad
+    `build_curric_deep2.py`, never hand-edit facts in.
 
 12. **Fact-sync gate (added 2026-07-28)** — `scripts/audit_fact_sync.mjs`,
     hermetic, runs FIRST (before the hero lock), no override flag: scans

@@ -12,7 +12,7 @@
     <style>
 /* ============================================================
    /curriculum/ — Consulting overview page
-   Visual grammar matches /education/*/ pages exactly:
+   Visual grammar matches the /education/ pages exactly:
    purple Apple-glass, Avenir Next / Nunito Sans, no blue,
    mzRise cascade animations, prefers-reduced-motion override.
    §3.10 design principles enforced.
@@ -248,7 +248,7 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .cycle-stages {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
     gap: 10px;
     margin-top: 14px;
 }
@@ -269,7 +269,7 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     margin-bottom: 6px;
 }
 .cycle-stage .name { display: block; color: var(--fg-strong); font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; }
-.cycle-stage .desc { display: block; color: var(--fg-soft); font-size: 11.5px; margin-top: 3px; line-height: 1.35; }
+.cycle-stage .desc { display: block; color: var(--fg-soft); font-size: 12.5px; margin-top: 3px; line-height: 1.4; }
 
 /* ===== Engagement section ===== */
 .engage {
@@ -369,8 +369,8 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
-        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.75; }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(2.0) brightness(1.28) contrast(1.28); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         .hero .lede, section.block .sub { text-align: left; -webkit-hyphens: manual; hyphens: manual; }

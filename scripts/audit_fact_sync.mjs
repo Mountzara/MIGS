@@ -36,6 +36,10 @@ const fail = (m) => { console.error("  ✗ " + m); failed++; };
 for (const f of files) {
     let s; try { s = readFileSync(f, "utf8"); } catch { continue; }
     if (/\bUIC\b|University of Illinois/.test(s)) fail(`${f}: contains forbidden UIC / University of Illinois`);
+    // 2026-08-08 user directive: Dr. Kothari is NOT final faculty — must not
+    // appear anywhere on the site (source PDFs in docs/ mention her; docs/
+    // are excluded from deploys, but page content must never quote her in).
+    if (/Kothari/i.test(s)) fail(`${f}: contains 'Kothari' — not final faculty, forbidden on site`);
     let i = -1;
     while ((i = s.indexOf("Riley Lloyd", i + 1)) !== -1) {
         if (!/depart/i.test(s.slice(Math.max(0, i - 250), i + 250))) { fail(`${f}: 'Riley Lloyd' without departure context`); break; }

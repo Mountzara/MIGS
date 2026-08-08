@@ -166,6 +166,30 @@ def main():
                     page.wait_for_selector(sel, timeout=15000, state="attached")
                 except Exception:
                     return f"RENDER {path}: selector '{sel}' never appeared (page JS broken?)"
+            # 2026-08-08 — CSS design-token integrity. A header comment on
+            # /curriculum/ contained the path "/education/*/", whose "*/"
+            # terminated the CSS comment early; the parser then swallowed the
+            # entire :root block, every var(--fg-*) failed to resolve, and all
+            # text without a literal-color override rendered BLACK on the dark
+            # theme (user-caught; no gate saw it because none asserted token
+            # resolution). Any page that styles with custom properties must
+            # actually have them resolve.
+            tok = page.evaluate(
+                "() => {"
+                " const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('');"
+                " const names = ['--fg-strong','--fg-mid','--accent','--white','--text-on-dark']"
+                # exact close-paren form only: `var(--x)` with NO fallback is the
+                # form that renders invalid when the token is undefined;
+                # `var(--x, #fff)` is self-sufficient and must not count.
+                "   .filter(n => css.includes('var(' + n + ')'));"
+                " if (!names.length) return 'no-vars';"
+                " const cs = getComputedStyle(document.documentElement);"
+                " const missing = names.filter(n => (cs.getPropertyValue(n) || '').trim() === '');"
+                " return missing.length === names.length ? 'ALL-TOKENS-MISSING' : 'ok';"
+                "}")
+            if tok == "ALL-TOKENS-MISSING":
+                return (f"RENDER {path}: CSS custom properties never resolved "
+                        f"(:root block dropped — check for '*/' inside comments)")
             return None
         except Exception as e:
             return f"RENDER {path}: load failed — {str(e)[:160]}"
