@@ -142,6 +142,16 @@
         window.__mzHeroStarted = true;
         window.__mzHeroTouch = touch;
 
+        // Start fetching the animation bytes NOW (HTTP cache when warm; on a
+        // hard reload this runs in parallel with everything else), so a swap
+        // later paints immediately instead of attaching an empty element.
+        var heroBytes = null;
+        try {
+            heroBytes = fetch(WEBP, { cache: 'force-cache' })
+                .then(function (r) { return r.arrayBuffer(); })
+                .catch(function () { return null; });
+        } catch (e) {}
+
         function settleLater(img) {
             setTimeout(function () {
                 if (!img || img.tagName !== 'IMG') return;
@@ -153,47 +163,39 @@
         function toAnimatedImage() {
             var live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO') return null;
-            var img = document.createElement('img');
-            img.className = live.className;
-            img.id = live.id;
-            img.alt = '';
-            img.decoding = 'async';
-            // 2026-08-09c — THE DRAWING MUST PLAY, EVERY VISIT. The clip is a
-            // play-once animated image, and Safari serves a repeat view from
-            // memory at its FINAL frame without replaying (the user's third
-            // recording: the finished art popped in behind the monogram and
-            // nothing ever drew). A per-view blob URL makes Safari treat it
-            // as a brand-new animation — bytes still come from HTTP cache,
-            // nothing re-downloads, and the drawing plays from stroke one.
-            // A plain blob was not enough: WebKit caches DECODED animations
-            // by content, so identical bytes under a new URL still showed the
-            // final frame (verified on production). Appending a tiny unique
-            // padding chunk (and fixing the RIFF size) makes the bytes
-            // themselves different every view — the decoder cannot match its
-            // cache and must play the animation from the first stroke.
-            try {
-                fetch(WEBP, { cache: 'force-cache' })
-                    .then(function (r) { return r.arrayBuffer(); })
-                    .then(function (buf) {
-                        var src = new Uint8Array(buf);
-                        var pad = new Uint8Array(12);
-                        pad.set([0x58, 0x54, 0x52, 0x41]);          // 'XTRA'
-                        pad[4] = 4;                                  // chunk size 4
-                        var rnd = Math.floor(Math.random() * 0xffffffff);
-                        pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
-                        pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
-                        var out = new Uint8Array(src.length + 12);
-                        out.set(src); out.set(pad, src.length);
-                        var riffSize = out.length - 8;
-                        out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
-                        out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
-                        img.src = URL.createObjectURL(new Blob([out], { type: 'image/webp' }));
-                    })
-                    .catch(function () { img.src = WEBP + '?replay=' + Date.now(); });
-            } catch (e) { img.src = WEBP; }
-            if (live.parentNode) live.parentNode.replaceChild(img, live);
-            settleLater(img);
-            return img;
+            var doSwap = function (srcUrl) {
+                var cur = document.getElementById('heroVideo');
+                if (!cur || cur.tagName !== 'VIDEO') return;
+                var img = document.createElement('img');
+                img.className = cur.className;
+                img.id = cur.id;
+                img.alt = '';
+                img.decoding = 'async';
+                img.src = srcUrl;
+                if (cur.parentNode) cur.parentNode.replaceChild(img, cur);
+                settleLater(img);
+            };
+            var fallback = function () { doSwap(WEBP + '?replay=' + Date.now()); };
+            if (!heroBytes) { fallback(); return null; }
+            heroBytes.then(function (buf) {
+                if (!buf) { fallback(); return; }
+                // content-unique bytes so WebKit's decoded-animation cache
+                // cannot serve the final frame (padding chunk + RIFF fixup)
+                var src = new Uint8Array(buf);
+                var pad = new Uint8Array(12);
+                pad.set([0x58, 0x54, 0x52, 0x41]);
+                pad[4] = 4;
+                var rnd = Math.floor(Math.random() * 0xffffffff);
+                pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
+                pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
+                var out = new Uint8Array(src.length + 12);
+                out.set(src); out.set(pad, src.length);
+                var riffSize = out.length - 8;
+                out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
+                out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
+                doSwap(URL.createObjectURL(new Blob([out], { type: 'image/webp' })));
+            });
+            return null;
         }
         function hideLoaderNow() {
             if (!loader) return;
@@ -227,8 +229,12 @@
                 var el = document.getElementById('heroVideo');
                 if (!el) { clearInterval(iv); runChoreography(); return; }
                 if (el.tagName === 'IMG') {
-                    clearInterval(iv);
-                    setTimeout(runChoreography, 1300);  // first strokes land before the monogram
+                    // only once the image has real data — an attached-but-empty
+                    // element put the monogram over a blank canvas for seconds
+                    if (el.complete && el.naturalWidth > 0) {
+                        clearInterval(iv);
+                        setTimeout(runChoreography, 1300); // strokes land first
+                    }
                     return;
                 }
                 if (el.tagName === 'VIDEO' && !el.paused && el.currentTime > 0.5) {
@@ -2003,7 +2009,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=396efcb0eb" defer></script>
+    <script src="/assets/js/home.js?v=29ee6bcc00" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

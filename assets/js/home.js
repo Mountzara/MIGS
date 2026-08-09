@@ -2933,10 +2933,17 @@
                 return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
             };
             const tryPlay = (v) => {
-                if (!v || !v.paused) return;
+                if (!v || v.tagName !== 'VIDEO' || !v.paused) return;
                 const p = v.play();
                 if (p && typeof p.then === 'function') {
-                    p.catch(() => { /* autoplay blocked — handled by fallback below */ });
+                    p.catch(() => {
+                        // a rejected play() is a definitive autoplay refusal —
+                        // two strikes and the reel becomes its animated preview
+                        // immediately instead of waiting out a poll timer
+                        const n = (+(v.dataset.mzRefused || 0)) + 1;
+                        v.dataset.mzRefused = String(n);
+                        if (n >= 2 && typeof swapToPreview === 'function') swapToPreview(v);
+                    });
                 }
             };
             const playAll = () => document.querySelectorAll('.video-preview').forEach(v => {
@@ -2959,6 +2966,27 @@
                 // thumbnails is not working"). On approach: switch preload,
                 // load(), then play as soon as it is playable — and keep a
                 // first-touch retry for browsers that refuse until a gesture.
+                // 2026-08-09 — the user's Safari refuses ALL video autoplay
+                // (proven across four screen recordings: the hero video never
+                // played once). No retry can beat that setting, so a reel that
+                // will not advance is replaced by a looping animated preview
+                // built from the same footage — images are exempt from
+                // autoplay policy. Clicking still opens the full video modal.
+                const swapToPreview = (v) => {
+                    if (v.dataset.mzPreviewed === '1') return;
+                    v.dataset.mzPreviewed = '1';
+                    const srcEl = v.querySelector('source[src*="reel-v2"]');
+                    const src = srcEl ? srcEl.getAttribute('src') : (v.currentSrc || '');
+                    const m = src.match(/([a-z0-9-]+reel-v2)/i);
+                    if (!m) return;
+                    const img = document.createElement('img');
+                    img.className = v.className;
+                    img.alt = '';
+                    img.decoding = 'async';
+                    img.src = '/media/' + m[1] + '-preview.webp';
+                    img.style.pointerEvents = 'none';
+                    if (v.parentNode) v.parentNode.replaceChild(img, v);
+                };
                 const wake = (v) => {
                     if (v.dataset.mzWoken === '1') { tryPlay(v); return; }
                     v.dataset.mzWoken = '1';
@@ -2969,10 +2997,13 @@
                     ['loadeddata', 'canplay', 'canplaythrough'].forEach((ev) =>
                         v.addEventListener(ev, () => tryPlay(v), { once: true }));
                     tryPlay(v);
-                    // poll briefly: cached media can fire its events before we listen
+                    // poll briefly: cached media can fire its events before we
+                    // listen. If after ~2.4s of being in view the reel still has
+                    // not advanced, autoplay is refused — switch to the preview.
                     let n = 0;
                     const iv = setInterval(() => {
-                        if (++n > 12 || (!v.paused && v.currentTime > 0.05)) { clearInterval(iv); return; }
+                        if (!v.isConnected || (!v.paused && v.currentTime > 0.05)) { clearInterval(iv); return; }
+                        if (++n > 3) { clearInterval(iv); swapToPreview(v); return; }
                         tryPlay(v);
                     }, 300);
                 };
