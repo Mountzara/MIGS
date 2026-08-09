@@ -452,6 +452,33 @@ the target element is in a section ABOVE the script tag.
     partially-unpainted frames, and re-confirms every candidate by
     scrolling it to viewport centre. Do not "simplify" it back to
     ancestor-walking; that is what produced 169 phantom failures.
+    **2026-08-08c opening animation — FILMED, not reasoned about
+    (`scratchpad/filmstrip.py`, `opening_timing.py`):** the readiness gate
+    added earlier waited for `canplaythrough` (readyState 4 = whole clip
+    buffered), which held the loader 3.4s at 1.5 Mbps and up to its 6.5s
+    cap on slower links — the reader watched a spinner. It now waits for
+    readyState >= 2 (first frame decodable) with a 1.5s cap. Separately,
+    a refused autoplay was only noticed after ~1.1s of poll strikes, so a
+    frozen frame sat on screen; the rejected play() promise is now used
+    directly (retry once, fall back to the animated WebP at 400ms).
+    MEASURED on live: loader clears at 1.9-3.0s by connection and the
+    drawing starts 276-351ms later in every condition, 683ms with
+    autoplay refused. Keep the loader tied to first-frame readiness; do
+    NOT reintroduce a full-buffer wait.
+    **Surgical reels:** `preload="none"` without the autoplay attribute
+    stopped playback entirely on real devices (an element with no data
+    cannot start from play() alone). They now carry `autoplay
+    preload="metadata"` — cold open costs ~1 KB of range probes instead
+    of the old 10 MB, native autoplay is back, and the IntersectionObserver
+    still pauses them off-screen. The grid is 2x2 by explicit rule: a
+    4-across row (added to avoid an orphan) shrank the thumbnails.
+    **Modals** (`scripts/audit_modals.py`, new): cbg-migs chapter/detail
+    cards were 720px inside a 1440px window — now 1040px so the milestone
+    table and month detail use the space; app-modal bodies clip their own
+    horizontal overflow (52px on a 390px screen); `.omt-modal` and
+    `.evidence-modal` join the display:none-when-closed set. The nine
+    practice-area modals were verified rich (7-9.6k chars each) — a
+    "Coming soon" panel only appears for an invalid slug.
     **2026-08-08 quality batch (9-page audit → 8 parallel fix agents):**
     homepage apps cards were WHITE text on a near-white panel (stale
     light-era override removed; cards are dark glass again —

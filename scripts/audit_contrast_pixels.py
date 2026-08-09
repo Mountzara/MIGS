@@ -67,6 +67,10 @@ COLLECT = r"""
     const cs = getComputedStyle(el);
     let fg = parseRGB(cs.color);
     if (!fg) return;
+    // Text caught mid reveal-animation reports its transitional alpha (0.08),
+    // which is not a shipped color. Real designs never ship <35% alpha body
+    // text; judging it produced phantom failures on scroll-revealed links.
+    if (fg[3] < 0.35) return;
     const clipped = (cs.webkitBackgroundClip || cs.backgroundClip) === 'text'
                     && cs.backgroundImage !== 'none';
     if (clipped) {

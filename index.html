@@ -7404,11 +7404,27 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
    counts now divide the item counts evenly at desktop widths. */
 @media (min-width: 1100px) {
     .surgical-hub-grid { grid-template-columns: repeat(4, 1fr) !important; }
-    .research-cards    { grid-template-columns: repeat(4, 1fr) !important; }
+    /* 2026-08-08b — surgical reels stay 2x2 (user: 4-across made the
+       thumbnails tiny). Four cards, two rows, no orphan either way. */
+    .research-cards    { grid-template-columns: repeat(2, 1fr) !important; }
     .awards-grid       { grid-template-columns: repeat(3, 1fr) !important; }
     .bento-grid        { grid-template-columns: repeat(3, 1fr) !important; }
     /* five identity cards sat 4 + 1 */
     .identity-map-track { grid-template-columns: repeat(5, 1fr) !important; }
+}
+
+/* 2026-08-08 — measured: 52px of horizontal overflow inside the app modal on
+   a 390px screen (wide media/tables in the body), and .omt-modal /
+   .evidence-modal were still mounted full-viewport at opacity 0 like the
+   others were, keeping their layers alive for a dialog nobody opened. */
+.app-modal-body, .app-modal-scroll { overflow-x: hidden; }
+.app-modal-body img, .app-modal-body table, .app-modal-body pre,
+.app-modal-scroll img, .app-modal-scroll table { max-width: 100%; }
+.omt-modal, .evidence-modal { display: none; }
+.omt-modal.open, .omt-modal.active, .omt-modal:not([hidden]),
+.evidence-modal.open, .evidence-modal.active, .evidence-modal:not([hidden]) {
+    display: flex;
+    animation: mzOverlayIn 380ms ease both;
 }
 </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
@@ -8487,7 +8503,7 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
-                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/rpoc-golden-hysteroscope-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/rpoc-golden-hysteroscope-reel-v2-poster.jpg">
                             <source src="/media/rpoc-golden-hysteroscope-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8506,7 +8522,7 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
                     <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
-                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/myomectomy-gel-port-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/myomectomy-gel-port-reel-v2-poster.jpg">
                             <source src="/media/myomectomy-gel-port-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8525,7 +8541,7 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
                     <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
-                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/isthmocele-ashermans-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/isthmocele-ashermans-reel-v2-poster.jpg">
                             <source src="/media/isthmocele-ashermans-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -8548,7 +8564,7 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                     <p class="research-card-journal">AAGL Global Congress · Surgical Video Library</p>
                     <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
-                        <video class="video-preview" muted loop playsinline preload="none" aria-hidden="true" poster="/media/rpoc-arcuate-reel-v2-poster.jpg">
+                        <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/rpoc-arcuate-reel-v2-poster.jpg">
                             <source src="/media/rpoc-arcuate-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
@@ -9365,7 +9381,24 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                 // tap/scroll. We deliberately do NOT swap to the poster here.
                 const playPromise = heroVideo.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {});
+                    // 2026-08-08b — USE the rejection instead of swallowing it.
+                    // A refused autoplay rejects within milliseconds, but the
+                    // poll below needed ~1.1s of strikes to notice, so a frozen
+                    // first frame sat on screen that whole time (measured).
+                    // A rejection can also be a transient AbortError from the
+                    // pause -> seek -> play sequence, so retry once and only
+                    // fall back if the drawing genuinely has not moved.
+                    playPromise.catch(() => {
+                        try { new Image().src = HERO_ANIM_WEBP; } catch (e) {}
+                        retryHeroPlay();
+                        setTimeout(() => {
+                            const v = document.getElementById('heroVideo');
+                            if (v && v.tagName === 'VIDEO' && v.dataset.heroEnded !== '1'
+                                && (v.paused || v.currentTime <= 0.04)) {
+                                swapHeroToAnimatedWebp();
+                            }
+                        }, 400);
+                    });
                 }
                 // 2026-07-13 — Reliability net: that single play() rejects
                 // silently if it lost the user-activation window or fired a beat
@@ -9435,6 +9468,12 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                         cur.dataset.heroEnded = '1';
                     }, 8400);
                 }
+                // 2026-08-08b — MEASURED ON FILM: with autoplay refused the hero
+                // sat frozen on frame 1 for many seconds before the animated
+                // WebP took over, which is exactly the "animation is off" the
+                // reader sees. Strikes now start the swap after ~0.9s of
+                // ready-but-not-advancing, and the WebP is warmed on the FIRST
+                // strike so the swap paints immediately.
                 let autoStartTries = 0;  // ticks where media is READY yet refuses to advance
                 let autoStartTicks = 0;  // every tick, ready or still buffering
                 const autoStartPoll = setInterval(() => {
@@ -9452,13 +9491,13 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                     // just means BUFFERING on a slow network — bailing to the
                     // equally-undownloaded WebP at a flat 2.4s was part of the
                     // cold-cache "all out of timing and sync" bug.
-                    if (v.readyState >= 3) autoStartTries++;
-                    if (autoStartTries === 4) {
-                        // trouble brewing — warm the browser cache so a swap
+                    if (v.readyState >= 2) autoStartTries++;
+                    if (autoStartTries === 1) {
+                        // trouble brewing — warm the browser cache so the swap
                         // moments later starts the animation instantly
                         try { new Image().src = HERO_ANIM_WEBP; } catch (e) {}
                     }
-                    if (autoStartTries >= 8 || autoStartTicks >= 40) {
+                    if (autoStartTries >= 3 || autoStartTicks >= 16) {
                         clearInterval(autoStartPoll);
                         swapHeroToAnimatedWebp();
                         return;
@@ -9554,12 +9593,19 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
         // visit starts in sync and fully dressed at 1–3s, and only truly
         // slow cellular rides the loader to the cap.
         const LOADER_MIN_MS = 700;      // never a subliminal flash
-        const FONT_WAIT_CAP_MS = 2000;  // typography may never hold the page
-        const HERO_WAIT_CAP_MS = 6500;  // absolute worst-case loader time
+        const FONT_WAIT_CAP_MS = 1200;  // typography may never hold the page
+        // 2026-08-08b — MEASURED ON FILM. Waiting for canplaythrough
+        // (readyState 4 = the whole clip buffered) held the loader 3.4s on a
+        // 1.5 Mbps connection and up to the 6.5s cap on slower ones: the
+        // reader stared at a spinner while nothing happened. The drawing only
+        // needs its FIRST FRAME to begin; the rest streams while it plays.
+        // Gate on readyState >= 2 (HAVE_CURRENT_DATA) with a hard 1.5s cap.
+        const HERO_WAIT_CAP_MS = 1500;  // absolute worst-case loader time
+        const HERO_READY_STATE = 2;     // HAVE_CURRENT_DATA — first frame decodable
         function delayMs(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         function waitForHeroMedia() {
             const v = document.getElementById('heroVideo');
-            if (!v || v.tagName !== 'VIDEO' || v.readyState >= 3) return Promise.resolve();
+            if (!v || v.tagName !== 'VIDEO' || v.readyState >= HERO_READY_STATE) return Promise.resolve();
             return new Promise(resolve => {
                 // interval + events: canplaythrough may already have fired on
                 // a cached repeat visit before this listener attaches, and a
@@ -9567,11 +9613,11 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                 // catches every path the events can miss.
                 const iv = setInterval(() => {
                     const cur = document.getElementById('heroVideo');
-                    if (!cur || cur.tagName !== 'VIDEO' || cur.readyState >= 3) {
+                    if (!cur || cur.tagName !== 'VIDEO' || cur.readyState >= HERO_READY_STATE) {
                         clearInterval(iv); resolve();
                     }
-                }, 150);
-                v.addEventListener('canplaythrough', () => { clearInterval(iv); resolve(); }, { once: true });
+                }, 100);
+                v.addEventListener('loadeddata', () => { clearInterval(iv); resolve(); }, { once: true });
                 v.addEventListener('error', () => { clearInterval(iv); resolve(); }, { once: true });
             });
         }
@@ -11985,13 +12031,42 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
             // (four simultaneous decoders for invisible video was measured
             // compositor load and battery drain on phones).
             if ('IntersectionObserver' in window) {
+                // 2026-08-08b — preload="none" means the element holds NO data,
+                // so play() alone does nothing (user: "autoplay of the surgical
+                // thumbnails is not working"). On approach: switch preload,
+                // load(), then play as soon as it is playable — and keep a
+                // first-touch retry for browsers that refuse until a gesture.
+                const wake = (v) => {
+                    if (v.dataset.mzWoken === '1') { tryPlay(v); return; }
+                    v.dataset.mzWoken = '1';
+                    v.muted = true; v.playsInline = true; v.loop = true;
+                    v.setAttribute('playsinline', '');
+                    v.setAttribute('webkit-playsinline', '');
+                    try { v.preload = 'auto'; v.load(); } catch (e) {}
+                    ['loadeddata', 'canplay', 'canplaythrough'].forEach((ev) =>
+                        v.addEventListener(ev, () => tryPlay(v), { once: true }));
+                    tryPlay(v);
+                    // poll briefly: cached media can fire its events before we listen
+                    let n = 0;
+                    const iv = setInterval(() => {
+                        if (++n > 12 || (!v.paused && v.currentTime > 0.05)) { clearInterval(iv); return; }
+                        tryPlay(v);
+                    }, 300);
+                };
                 const io = new IntersectionObserver((entries) => {
                     entries.forEach((entry) => {
-                        if (entry.isIntersecting) tryPlay(entry.target);
+                        if (entry.isIntersecting) wake(entry.target);
                         else if (!entry.target.paused) entry.target.pause();
                     });
-                }, { threshold: 0, rootMargin: '50% 0% 50% 0%' });
+                }, { threshold: 0, rootMargin: '75% 0% 75% 0%' });
                 document.querySelectorAll('.video-preview').forEach((v) => io.observe(v));
+                // first real interaction unblocks any policy-held reel in view
+                ['touchstart', 'pointerdown', 'scroll'].forEach((ev) =>
+                    window.addEventListener(ev, () => {
+                        document.querySelectorAll('.video-preview').forEach((v) => {
+                            if (nearViewport(v)) wake(v);
+                        });
+                    }, { once: true, passive: true }));
             }
 
             // Fallback: one-time user interaction unblocks autoplay everywhere
