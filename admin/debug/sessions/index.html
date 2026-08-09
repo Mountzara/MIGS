@@ -11,7 +11,7 @@
 <script src="/admin/_nav.js"></script>
 <style>
 :root {
-    --bg-base: #120b22;
+    --bg-base: #120f1b;
     --fg-strong: #ffffff;
     --fg-mid: #ffffff;
     --fg-soft: #ffffff;
@@ -303,9 +303,9 @@ table.trace .detail {
            rest of the site. Move the opaque page base to html so the z-index:-1
            art shows; body keeps only its translucent glow on top. Added 2026-06-29. */
         html { background:
-            radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
-            radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.12), transparent 56%),
-            linear-gradient(178deg, #171030 0%, #120b22 55%, #150e2a 100%);
+            radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
+            radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
+            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
                bottomed out at legacy #07070a black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
@@ -313,7 +313,52 @@ table.trace .detail {
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
         .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
-    </style>
+    
+/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
+   Audit found: contrast failures concentrated on translucent "light" panels,
+   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
+   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
+   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
+nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
+.nav-back, .nav-brand, .brand, .crumb a {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+/* Pips keep their small dot but get a real 24px hit area via padding. */
+.mz-grid-pip, .carousel-pip, [class*="-pip"] {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    background-clip: content-box;
+    box-sizing: border-box;
+}
+.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Focus must be visible on every interactive element, on any background. */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+summary:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 3px solid #c4b5fd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+.skip-link {
+    background: #2e1065 !important;
+    color: #ffffff !important;
+    border: 1px solid #c4b5fd;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>

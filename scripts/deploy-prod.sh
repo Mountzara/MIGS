@@ -651,6 +651,34 @@ if [ -z "${DEPLOY_SKIP_READER_PATH_AUDIT:-}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# WCAG contrast gate, PIXEL-MEASURED (2026-08-08). Every previous attempt to
+# compute contrast by compositing CSS layers was wrong on this site (fixed art
+# + screen blends + backdrop-filter glass + gradients): it scored a cream app
+# mock as dark plum and white body copy as failing. This renders each page
+# twice per scroll position — once normally, once with every glyph made
+# transparent — and samples the second frame behind each line of text, so the
+# measured backdrop is what the reader actually sees.
+# Skip with DEPLOY_SKIP_CONTRAST_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
+    echo ""
+    echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."
+    if python3 scripts/audit_contrast_pixels.py https://mountzara.com > /tmp/_contrast_audit.log 2>&1; then
+        tail -1 /tmp/_contrast_audit.log
+        echo "   ✅ contrast gate passed"
+    else
+        echo ""
+        echo "🛑 CONTRAST GATE FAILED — text on this site does not meet WCAG"
+        echo "   4.5:1 (3:1 for large text) against its real painted backdrop:"
+        grep -E '✗|:1 \(need' /tmp/_contrast_audit.log | head -20
+        echo ""
+        echo "   Full log: /tmp/_contrast_audit.log"
+        echo "   Override: DEPLOY_SKIP_CONTRAST_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Video-source playability gate (2026-07-22). The visual audit's Chromium
 # cannot decode H.264, so reel autoplay was "codec-skipped" = NOT verified.
 # This validates every homepage <source> at the FILE level on live: 200,

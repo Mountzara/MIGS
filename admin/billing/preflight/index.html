@@ -41,9 +41,54 @@
     
 /* 2026-07-28 — explicit plum canvas (theme-consistency sweep) */
 html { background:
-    radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
-    radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.12), transparent 56%),
-    linear-gradient(178deg, #171030 0%, #120b22 55%, #150e2a 100%); }
+    radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
+    radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
+    linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%); }
+
+/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
+   Audit found: contrast failures concentrated on translucent "light" panels,
+   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
+   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
+   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
+nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
+.nav-back, .nav-brand, .brand, .crumb a {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+/* Pips keep their small dot but get a real 24px hit area via padding. */
+.mz-grid-pip, .carousel-pip, [class*="-pip"] {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    background-clip: content-box;
+    box-sizing: border-box;
+}
+.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Focus must be visible on every interactive element, on any background. */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+summary:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 3px solid #c4b5fd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+.skip-link {
+    background: #2e1065 !important;
+    color: #ffffff !important;
+    border: 1px solid #c4b5fd;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
 </style>
 </head>
 <body>

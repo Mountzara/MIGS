@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #120b22;
+            --bg: #120f1b;
             --white: #ffffff;
             --gray-1: rgba(255, 255, 255, 0.72);
             --gray-2: rgba(255, 255, 255, 0.5);
@@ -35,7 +35,7 @@
             background:
                 radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
                 radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.14), transparent 56%),
-                linear-gradient(178deg, #171030 0%, #120b22 55%, #150e2a 100%);
+                linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
             color: var(--text-on-dark);
             min-height: 100vh;
             line-height: 1.5;
@@ -146,7 +146,7 @@
         }
         .hero::before {
             content: ''; position: absolute; inset: 0;
-            background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(var(--glow-purple), 0.16), transparent 60%);
+            background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(var(--glow-purple), 0.09), transparent 62%);
             pointer-events: none;
         }
         .eyebrow {
@@ -332,7 +332,74 @@
             .brief-detail-body .design-chart .design-row .label { font-size: 12.5px; }
             .brief-detail-body .design-chart .count { font-size: 13px; }
         }
-    </style>
+    
+/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
+   Audit found: contrast failures concentrated on translucent "light" panels,
+   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
+   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
+   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
+nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
+.nav-back, .nav-brand, .brand, .crumb a {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+/* Pips keep their small dot but get a real 24px hit area via padding. */
+.mz-grid-pip, .carousel-pip, [class*="-pip"] {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    background-clip: content-box;
+    box-sizing: border-box;
+}
+.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Focus must be visible on every interactive element, on any background. */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+summary:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 3px solid #c4b5fd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+.skip-link {
+    background: #2e1065 !important;
+    color: #ffffff !important;
+    border: 1px solid #c4b5fd;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===== 2026-08-08 width consistency =====
+   Measured: containers disagreed page-to-page (1040/1080/1140/1180/1200) and
+   within pages (contact 760, footer 1024 against a 1140 body), so sections
+   visibly stopped short of one another. One measure per page, wider on large
+   screens; prose keeps its own reading cap so line length stays sane. */
+.container, .container-wide, .wrap, main.container, .footer-content {
+    max-width: 1280px !important;
+}
+@media (max-width: 1360px) {
+    .container, .container-wide, .wrap, main.container, .footer-content {
+        max-width: 1180px !important;
+    }
+}
+.contact-section .container { max-width: 1280px !important; }
+/* prose stays readable even as the shell widens */
+.hero .lede, section.block .sub, .synthesis p, .about-text-block p { max-width: 72ch; }
+
+/* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
+   (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
+.eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
+.footer-brand a, .site-footer a, footer a { color: #c4b5fd !important; }
+</style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true">

@@ -30,7 +30,7 @@
                that is the value the whole site actually rendered; made it
                canonical and removed the late duplicate. */
             --glow-purple: 139, 92, 246;
-            --bg: #120b22;
+            --bg: #120f1b;
             --bg-soft: #1d1d1f;
             --bg-light: #f5f5f7;
             --text-on-dark: #ffffff;
@@ -378,10 +378,17 @@
             inset: 0;
             z-index: 2;
             pointer-events: none;
+            /* 2026-08-08 — TONED. At 0.30/0.26 glows over a 0.46 plum wash this
+               overlay was the washed-out purple the user objected to ("too
+               purple ... looks washed out"), and it is also what pushed the
+               sticky nav and the pinned-frame headlines below 4.5:1: their
+               ground was a bright lavender instead of a dark one. Same hue,
+               roughly half the wash, deeper base — the drawing still reads
+               through, the text has something dark to sit on. */
             background:
-                radial-gradient(120vmax 85vmax at 78% -8%, rgba(150, 105, 255, 0.30), transparent 62%),
-                radial-gradient(95vmax 75vmax at 8% 108%, rgba(122, 52, 235, 0.26), transparent 58%),
-                linear-gradient(163deg, rgba(62, 40, 118, 0.46) 0%, rgba(44, 28, 86, 0.42) 46%, rgba(54, 34, 102, 0.46) 100%);
+                radial-gradient(120vmax 85vmax at 78% -8%, rgba(150, 105, 255, 0.15), transparent 64%),
+                radial-gradient(95vmax 75vmax at 8% 108%, rgba(122, 52, 235, 0.13), transparent 60%),
+                linear-gradient(163deg, rgba(40, 27, 74, 0.60) 0%, rgba(28, 19, 54, 0.58) 46%, rgba(35, 23, 66, 0.60) 100%);
         }
         .hero-video {
             position: absolute;
@@ -1719,7 +1726,7 @@
                is not good enough on non-black backgrounds"). The more visible
                drawing gives the glass cards/pills real texture to frost instead
                of a flat near-white field that backdrop-filter can't show. */
-            background-color: rgba(255, 255, 255, 0.60);
+            background-color: rgba(255, 255, 255, 0.97);
             color: var(--dark);
         }
 
@@ -2820,7 +2827,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: rgba(167, 139, 250, 0.85);
-            color: rgba(139, 92, 246, 0.85);
+            color: #c4b5fd;
             transition: color 0.3s ease;
         }
         .pop-evidence-cta .arrow {
@@ -2985,7 +2992,7 @@
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: rgba(167, 139, 250, 0.85);
-            color: rgba(139, 92, 246, 0.85);
+            color: #c4b5fd;
         }
         .evidence-card h4 {
             font-size: 18px;
@@ -3300,7 +3307,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(139, 92, 246, 0.95);
+            color: #c4b5fd;
             margin: 0 0 14px;
         }
         .evidence-section-subhead {
@@ -3856,7 +3863,15 @@
         /* warm (cream) visual variant: reel content flips to dark-on-cream */
         .app-visual.warm .rl-row { background: rgba(30, 18, 55, 0.10); border-color: rgba(30, 18, 55, 0.18); color: #2b1c4d; }
         .app-visual.warm .rl-row .ic { stroke: #6d28d9; }
-        .app-visual.warm .rl-cap { color: #2b1c4d; text-shadow: none; }
+        /* 2026-08-08 — this caption is absolutely positioned at the bottom of the
+           cream app mock and can extend past it onto the dark card, where the deep
+           violet measured 1.30:1. A light chip keeps it legible on either ground. */
+        .app-visual.warm .rl-cap {
+            color: #2b1c4d; text-shadow: none;
+            background: rgba(255, 246, 234, 0.94);
+            padding: 4px 10px; border-radius: 8px;
+            left: 10px; right: 10px; width: auto;
+        }
         .app-visual.warm .rl-line { background: rgba(30, 18, 55, 0.28); }
         .app-visual.warm .rl-chip { background: rgba(109, 40, 217, 0.12); border-color: rgba(109, 40, 217, 0.4); color: #4c1d95; }
         .app-visual.warm .rl-chip.ok { color: #14532d; }
@@ -7265,6 +7280,136 @@
             display: flex;
             animation: mzOverlayIn 380ms ease both;
         }
+
+/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
+   Audit found: contrast failures concentrated on translucent "light" panels,
+   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
+   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
+   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
+nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
+.nav-back, .nav-brand, .brand, .crumb a {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+/* Pips keep their small dot but get a real 24px hit area via padding. */
+.mz-grid-pip, .carousel-pip, [class*="-pip"] {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    background-clip: content-box;
+    box-sizing: border-box;
+}
+.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Focus must be visible on every interactive element, on any background. */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+summary:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 3px solid #c4b5fd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+.skip-link {
+    background: #2e1065 !important;
+    color: #ffffff !important;
+    border: 1px solid #c4b5fd;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===== 2026-08-08 width consistency =====
+   Measured: containers disagreed page-to-page (1040/1080/1140/1180/1200) and
+   within pages (contact 760, footer 1024 against a 1140 body), so sections
+   visibly stopped short of one another. One measure per page, wider on large
+   screens; prose keeps its own reading cap so line length stays sane. */
+.container, .container-wide, .wrap, main.container, .footer-content {
+    max-width: 1280px !important;
+}
+@media (max-width: 1360px) {
+    .container, .container-wide, .wrap, main.container, .footer-content {
+        max-width: 1180px !important;
+    }
+}
+.contact-section .container { max-width: 1280px !important; }
+/* prose stays readable even as the shell widens */
+.hero .lede, section.block .sub, .synthesis p, .about-text-block p { max-width: 72ch; }
+
+/* 2026-08-08 — the About interlude is a genuinely light panel (0.97 white);
+   its own text must be dark. Scoped so .stat-label on dark sections keeps
+   its light color (a blanket change made those 1.36:1). */
+.about-section .stat-label { color: #322c3a; }
+.about-section .stat-num   { color: #4c1d95; }
+
+/* 2026-08-08 — the sticky nav was rgba(0,0,0,0.28): over the light About
+   interlude its white links measured 1.00:1 (invisible). A near-opaque dark
+   ground keeps every nav label legible over ANY section, light or dark. */
+.main-nav, nav.main-nav {
+    background: rgba(12, 9, 22, 0.94) !important;
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+/* Small accent text needs a lighter violet than #a78bfa/#8b5cf6 to clear
+   4.5:1 on glass (measured 3.2-4.4:1 before). Large display text keeps the
+   brand violet. */
+.identity-card-eyebrow, .identity-card-cta, .bento-cta, .nav-portal-badge,
+.evidence-modal-eyebrow, .eyebrow, .pill, .ch-num, .ph-label, .mo, .tile-more,
+.brief-cta, .post-cta, .label {
+    color: #c4b5fd !important;
+}
+
+/* ===== 2026-08-08 — About interlude: ONE coherent surface =====
+   This section had accumulated contradictory rules across sessions: a
+   translucent-white panel (0.60 -> 0.97), `color: var(--dark)` on the section,
+   `.section-sub { color:#ffffff }` at line ~1739 and `{ color:#3a3a3c }` at
+   ~7253, plus glass tuned for a light ground. Measured result: white text on a
+   light panel AND near-black text on a dark ground in the same section (1.00 -
+   1.70:1 both ways), and the sticky nav crossing a bright band. It is now a
+   DARK surface like every other section — one ground, one text palette. */
+.about-section {
+    background-color: rgba(18, 15, 27, 0.88) !important;
+    color: #ffffff !important;
+}
+.about-section .section-headline,
+.about-section .section-headline.in {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: none !important;
+}
+.about-section .section-sub,
+.about-section .about-text-block p { color: #ffffff !important; }
+.about-section .about-text-block p strong,
+.about-section h3 { color: #ffffff !important; }
+.about-section .section-eyebrow { color: #c4b5fd !important; background: rgba(196, 181, 253, 0.14) !important; }
+/* Section eyebrows outside the (light) About panel sit on dark bands, where
+   the deep violet measured 1.37:1. Light violet everywhere else. */
+section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
+.about-section .stat-num  { color: #c4b5fd !important; }
+.about-section .stat-label { color: #ffffff !important; }
+.about-section .about-text-block {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* 2026-08-08 — grid rows that left a trailing gap (measured): hub 7 items in
+   3 cols left a lone card; research 4 in 3; awards/bento 6 in 4 and 3. Column
+   counts now divide the item counts evenly at desktop widths. */
+@media (min-width: 1100px) {
+    .surgical-hub-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    .research-cards    { grid-template-columns: repeat(4, 1fr) !important; }
+    .awards-grid       { grid-template-columns: repeat(3, 1fr) !important; }
+    .bento-grid        { grid-template-columns: repeat(3, 1fr) !important; }
+    /* five identity cards sat 4 + 1 */
+    .identity-map-track { grid-template-columns: repeat(5, 1fr) !important; }
+}
 </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->

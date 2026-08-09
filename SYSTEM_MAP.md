@@ -421,6 +421,37 @@ the target element is in a section ABOVE the script tag.
     cbg-migs modals rewritten as curated synthesis (v3.1) — no raw
     reading-list/projection-table dumps; regenerate via scratchpad
     `build_curric_deep2.py`, never hand-edit facts in.
+    **2026-08-08 accessibility + palette + width pass (user: "too purple ...
+    washed out", "you have failed in every regard" on accessibility, "sections
+    only take up part of the screen"):** all three had overlapping causes.
+    (a) PALETTE — the wash was NOT the canvas gradient but
+    `.hero-bg-vignette` (glows 0.30/0.26 over a 0.46 plum wash); now
+    0.15/0.13 over a deeper 0.60 base, plus canvas saturation cut ~45%
+    (#171030→#191526, #120b22→#120f1b, #150e2a→#161321) across 315 sites.
+    (b) ACCESSIBILITY — measured, not assumed, by the NEW
+    `scripts/audit_contrast_pixels.py` (now a deploy gate, skip flag
+    DEPLOY_SKIP_CONTRAST_AUDIT). Fixed: homepage About interlude had
+    accumulated contradictory rules over sessions (light panel + `color:
+    var(--dark)` + `.section-sub{#fff}` + a later `{#3a3a3c}`) producing
+    white-on-light AND near-black-on-dark in ONE section — it is now a
+    single dark surface with white text; sticky nav 0.28→0.94 alpha
+    (white links measured 1.00:1 crossing a light band); small accent
+    text #a78bfa/#8b5cf6→#c4b5fd (3.2-4.4:1 → 10:1); tap targets ≥24px
+    (pips were 7x7); visible focus rings; skip link on #2e1065.
+    (c) WIDTHS — containers disagreed page-to-page (1040/1080/1140/1180/
+    1200) and within pages (contact 760, footer 1024 vs a 1140 body);
+    unified to 1280 (1180 under 1360px) and grid column counts now divide
+    their item counts (hub 7→4 cols, cycle 6→3, detail-grid scoped per
+    section) so no row strands a lone card.
+    **The contrast gate's method matters:** four attempts to compute
+    contrast by compositing CSS layers all gave wrong answers on this
+    site. It now renders each page twice per scroll position — once
+    normally, once with every glyph transparent (and background-clip:text
+    backgrounds neutralized, or the glyphs paint themselves) — samples
+    only points that hit-test back to the text element, discards
+    partially-unpainted frames, and re-confirms every candidate by
+    scrolling it to viewport centre. Do not "simplify" it back to
+    ancestor-walking; that is what produced 169 phantom failures.
     **2026-08-08 quality batch (9-page audit → 8 parallel fix agents):**
     homepage apps cards were WHITE text on a near-white panel (stale
     light-era override removed; cards are dark glass again —
