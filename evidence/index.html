@@ -109,7 +109,7 @@
             /* 2026-07-22 — was opaque #000, which sat OVER the body's plum
                gradient and hid it. Transparent stage lets the gradient show;
                the art screens its own black away (see .page-bg-art). */
-            background: transparent; opacity: 0.75;
+            background: transparent; opacity: 0.30; /* 2026-08-08d — LOOKED AT IT: at 0.75 the drawing ran straight through the hero headline and lede on these near-black shells; the earlier sweep missed them because their comment text differed. Texture stays, text wins. */
         }
         .page-bg-art {
             position: absolute; top: 50%; left: 50%;

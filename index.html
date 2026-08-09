@@ -4408,7 +4408,7 @@
                 0 1px 0 rgba(255, 255, 255, 0.18) inset,
                 0 -1px 0 rgba(255, 255, 255, 0.06) inset,
                 0 30px 70px -20px rgba(0, 0, 0, 0.7),
-                0 12px 30px -8px rgba(92, 182, 255, 0.15);
+                0 12px 30px -8px rgba(196, 181, 253, 0.15);
         }
 
         .research-card:hover::after {
@@ -7411,6 +7411,9 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
    counts now divide the item counts evenly at desktop widths. */
 @media (min-width: 1100px) {
     .surgical-hub-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    /* 2026-08-08d — LOOKED AT IT: 7 tiles in 4 columns left a visible empty
+       slot in row two. The last tile spans the gap so both rows are full. */
+    .surgical-hub-grid > *:last-child { grid-column: span 2; }
     /* 2026-08-08b — surgical reels stay 2x2 (user: 4-across made the
        thumbnails tiny). Four cards, two rows, no orphan either way. */
     .research-cards    { grid-template-columns: repeat(2, 1fr) !important; }
@@ -7438,6 +7441,20 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
     display: flex;
     animation: mzOverlayIn 380ms ease both;
 }
+
+/* 2026-08-08d — LOOKED AT IT: the reel label sat dead-centre over the frame
+   and collided with the slide text inside the video ("WATCH THE PROCEDURE"
+   printed across the myomectomy title), and only one of the four cards had a
+   play button. Label now sits at the bottom on the scrim; every card gets the
+   same play affordance. */
+.video-preview-overlay { position: absolute; }
+.video-preview-label {
+    position: absolute;
+    left: 12px; right: 12px; bottom: 12px;
+    text-align: center;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+}
+.research-card-video:hover .video-preview-overlay { justify-content: center; padding-bottom: 0; }
 </style>
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
@@ -8519,6 +8536,11 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                             <source src="/media/rpoc-golden-hysteroscope-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
                             <span class="video-preview-label">Watch the case</span>
                         </div>
                     </div>
@@ -8538,6 +8560,11 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                             <source src="/media/myomectomy-gel-port-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
                             <span class="video-preview-label">Watch the procedure</span>
                         </div>
                     </div>
@@ -8580,6 +8607,11 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                             <source src="/media/rpoc-arcuate-reel-v2.mp4" type="video/mp4">
                         </video>
                         <div class="video-preview-overlay">
+                            <div class="play-button">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
                             <span class="video-preview-label">Watch the technique</span>
                         </div>
                     </div>
