@@ -158,7 +158,19 @@
             img.id = live.id;
             img.alt = '';
             img.decoding = 'async';
-            img.src = WEBP;
+            // 2026-08-09c — THE DRAWING MUST PLAY, EVERY VISIT. The clip is a
+            // play-once animated image, and Safari serves a repeat view from
+            // memory at its FINAL frame without replaying (the user's third
+            // recording: the finished art popped in behind the monogram and
+            // nothing ever drew). A per-view blob URL makes Safari treat it
+            // as a brand-new animation — bytes still come from HTTP cache,
+            // nothing re-downloads, and the drawing plays from stroke one.
+            try {
+                fetch(WEBP, { cache: 'force-cache' })
+                    .then(function (r) { return r.blob(); })
+                    .then(function (b) { img.src = URL.createObjectURL(b); })
+                    .catch(function () { img.src = WEBP + '?replay=' + Date.now(); });
+            } catch (e) { img.src = WEBP; }
             if (live.parentNode) live.parentNode.replaceChild(img, live);
             settleLater(img);
             return img;
@@ -196,7 +208,7 @@
                 if (!el) { clearInterval(iv); runChoreography(); return; }
                 if (el.tagName === 'IMG') {
                     clearInterval(iv);
-                    setTimeout(runChoreography, 700);   // image draws from blank
+                    setTimeout(runChoreography, 1300);  // first strokes land before the monogram
                     return;
                 }
                 if (el.tagName === 'VIDEO' && !el.paused && el.currentTime > 0.5) {
@@ -242,12 +254,16 @@
             // his film showed the video mounted but never visibly advancing
             // for ~6 seconds; do not wait around — the animated image is
             // preloaded and starts drawing the moment it is attached
+            // 1.2s was too eager: a video that starts at 1.3-1.5s (typical
+            // cold Safari) was being discarded every time, forcing the image
+            // path. The video gets 1.8s; the image path now replays properly
+            // either way, so nothing is lost if the swap does happen.
             setTimeout(function () {
                 var cur = document.getElementById('heroVideo');
                 if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.15)) {
                     toAnimatedImage();
                 }
-            }, 1200);
+            }, 1800);
         }
     })();
     </script>
@@ -1967,7 +1983,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=0382b7fb76" defer></script>
+    <script src="/assets/js/home.js?v=712cc8b360" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

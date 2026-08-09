@@ -116,7 +116,14 @@
             img.id = live.id;
             img.alt = '';
             img.decoding = 'async';
-            img.src = HERO_ANIM_WEBP;
+            // per-view blob URL so Safari replays the animation instead of
+            // showing the cached FINAL frame (see bootstrap toAnimatedImage)
+            try {
+                fetch(HERO_ANIM_WEBP, { cache: 'force-cache' })
+                    .then((r) => r.blob())
+                    .then((b) => { img.src = URL.createObjectURL(b); })
+                    .catch(() => { img.src = HERO_ANIM_WEBP + '?replay=' + Date.now(); });
+            } catch (e) { img.src = HERO_ANIM_WEBP; }
             if (live.parentNode) live.parentNode.replaceChild(img, live);
             // settle on the final frame and start Ken Burns, mirroring the
             // video 'ended' path
