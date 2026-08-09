@@ -20,10 +20,6 @@
    in the cache by the time the hero can paint. It touches no DOM. */
 (function () {
     try {
-        var touch = (window.matchMedia
-            && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
-            || (navigator.maxTouchPoints || 0) > 0;
-        if (!touch) return;
         var img = new Image();
         img.decoding = 'async';
         img.src = 'https://mountzara.com/media/hero-animation-hd.webp';
@@ -172,26 +168,44 @@
             loader.classList.add('hidden');
             setTimeout(function () { loader.classList.add('removed'); }, 700);
         }
-        // 2026-08-09 — THE OPENING CHOREOGRAPHY (as specified, in order):
-        //   loader -> drawing plays -> MZ monogram -> "A passion for
-        //   women's health." -> sub copy -> credentials.
-        // One class add starts the whole sequence; the per-child
-        // transition-delays in the stylesheet space the steps 0.9s apart so
-        // each element clearly follows the previous with no dead gap. The
-        // headline's word-stagger (.in) fires in lockstep with its slot.
-        function revealHeroTextSoon() {
+        // ===== 2026-08-09b — ONE OWNER, ONE ANCHOR ======================
+        // The user's second recording showed the monogram appearing at ~3.5s
+        // and then sitting on an EMPTY canvas for five seconds because two
+        // racing code paths each ran half the reveal, and the desktop video
+        // never visibly advanced. Rules now:
+        //   * this block is the ONLY writer of .visible/.in (home.js defers);
+        //   * the anchor is VISIBLE DRAWING MOTION — video past its blank
+        //     opening frames, or the animated image attached;
+        //   * a video that is not advancing within 1.2s is replaced by the
+        //     animated image immediately, on every device.
+        // Sequence from the anchor: monogram +0, headline +900, sub +1800,
+        // credentials +2600 (the stylesheet's per-child delays).
+        function runChoreography() {
+            if (window.__mzHeroTextRan) return;
+            window.__mzHeroTextRan = true;
+            var hc = document.querySelector('.hero-content-delayed');
+            if (hc) hc.classList.add('visible');
             setTimeout(function () {
-                if (window.__mzHeroTextRan) return;
-                window.__mzHeroTextRan = true;
-                var hc = document.querySelector('.hero-content-delayed');
-                if (hc) hc.classList.add('visible');
-                setTimeout(function () {
-                    var title = document.querySelector('.hero-title');
-                    if (title) title.classList.add('in');
-                }, 900);   // matches the headline's transition-delay slot
-            }, 1100);      // the clip draws from a blank canvas; its first
-                           // strokes are clearly on screen ~1s in — the
-                           // monogram enters just after they are
+                var title = document.querySelector('.hero-title');
+                if (title) title.classList.add('in');
+            }, 900);
+        }
+        function anchorOnDrawing() {
+            var iv = setInterval(function () {
+                var el = document.getElementById('heroVideo');
+                if (!el) { clearInterval(iv); runChoreography(); return; }
+                if (el.tagName === 'IMG') {
+                    clearInterval(iv);
+                    setTimeout(runChoreography, 700);   // image draws from blank
+                    return;
+                }
+                if (el.tagName === 'VIDEO' && !el.paused && el.currentTime > 0.5) {
+                    clearInterval(iv);                   // past the blank opening
+                    runChoreography();
+                    return;
+                }
+            }, 100);
+            setTimeout(function () { clearInterval(iv); runChoreography(); }, 7000);
         }
 
         if (touch) {
@@ -206,7 +220,7 @@
                 v.classList.add('playing');
                 toAnimatedImage();
                 hideLoaderNow();
-                revealHeroTextSoon();
+                anchorOnDrawing();
             };
             if (pre.complete) { go(); }
             pre.onload = go;
@@ -224,30 +238,16 @@
             v.addEventListener('loadeddata', start, { once: true });
             v.addEventListener('canplay', start, { once: true });
             setTimeout(hideLoaderNow, 900);
-            // 2026-08-09 — THE USER'S SCREEN RECORDING showed the text fully
-            // composed at ~1s while the drawing's first stroke appeared at
-            // ~5s: the timers fired whether or not the drawing had started.
-            // The cascade now waits for PLAYBACK TO ACTUALLY ADVANCE — the
-            // drawing leads, the text follows. (Absolute 6s fallback so the
-            // text can never be stranded if the video never starts.)
-            var cascadeArmed = false;
-            var armCascade = function () {
-                if (cascadeArmed) return;
-                cascadeArmed = true;
-                revealHeroTextSoon();
-            };
-            v.addEventListener('timeupdate', function onTu() {
-                if (v.currentTime > 0.1) { v.removeEventListener('timeupdate', onTu); armCascade(); }
-            });
-            setTimeout(armCascade, 6000);
-            // if the clip cannot get moving, fall back to the animated image
+            anchorOnDrawing();
+            // his film showed the video mounted but never visibly advancing
+            // for ~6 seconds; do not wait around — the animated image is
+            // preloaded and starts drawing the moment it is attached
             setTimeout(function () {
                 var cur = document.getElementById('heroVideo');
-                if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.05)) {
+                if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.15)) {
                     toAnimatedImage();
-                    armCascade();
                 }
-            }, 2600);
+            }, 1200);
         }
     })();
     </script>
@@ -1967,7 +1967,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=c59d67c584" defer></script>
+    <script src="/assets/js/home.js?v=0382b7fb76" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

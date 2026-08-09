@@ -133,39 +133,19 @@
         // starts the drawing before this script exists, so the cascade needs
         // to be runnable without going through the video branch.
         function runHeroTextCascade() {
-            // 2026-08-09 — mirror of the bootstrap choreography, kept in sync:
-            // monogram enters 0.8s after the drawing starts, the headline's
-            // word-stagger 0.9s later, sub copy and credentials follow via the
-            // stylesheet's per-child delays. Whichever of the two paths runs
-            // first claims __mzHeroTextRan; the other becomes a no-op.
-            if (window.__mzHeroTextRan) return;
+            // 2026-08-09b — the early bootstrap in index.html is the ONLY
+            // owner of the opening choreography (two racing writers produced
+            // the half-revealed state in the user's recording: monogram up at
+            // 3.5s, headline at 12s). This late-script path exists solely as
+            // a safety net for the no-bootstrap case.
+            if (window.__mzHeroStarted || window.__mzHeroTextRan) return;
             window.__mzHeroTextRan = true;
             const hc = document.querySelector('.hero-content-delayed');
-            // 2026-08-09 — event-driven like the bootstrap: wait for the
-            // drawing to actually be on screen (video advancing or the
-            // animated image attached) before the text build begins.
-            const begin = () => setTimeout(() => {
-                if (hc) hc.classList.add('visible');
-                setTimeout(() => {
-                    const titleEl = document.querySelector('.hero-title');
-                    if (titleEl) titleEl.classList.add('in');
-                }, 900);
-                try {
-                    kickHeroGlass();
-                    setTimeout(kickHeroGlass, 600);
-                    setTimeout(kickHeroGlass, 1500);
-                } catch (e) {}
-            }, 1100);
-            let fired = false;
-            const arm = () => { if (!fired) { fired = true; begin(); } };
-            const iv = setInterval(() => {
-                const v = document.getElementById('heroVideo');
-                if (!v) { clearInterval(iv); arm(); return; }
-                if (v.tagName === 'IMG' || (v.tagName === 'VIDEO' && !v.paused && v.currentTime > 0.1)) {
-                    clearInterval(iv); arm();
-                }
-            }, 120);
-            setTimeout(() => { clearInterval(iv); arm(); }, 6000);
+            if (hc) hc.classList.add('visible');
+            setTimeout(() => {
+                const titleEl = document.querySelector('.hero-title');
+                if (titleEl) titleEl.classList.add('in');
+            }, 900);
         }
 
         function startHeroSequence() {
