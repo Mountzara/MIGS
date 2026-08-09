@@ -3819,6 +3819,13 @@
            and is visually identical (bars grow from center either way). */
         .rl-wave i { width: 3px; border-radius: 2px; background: #b7a3ff; height: 96%; transform: scaleY(0.31); }
         .reel-scene.active .rl-wave i { animation: rlWave 0.9s ease-in-out infinite alternate; }
+        /* 2026-08-08 PERF — infinite decorative animations pause while their
+           element is off-screen (an IO toggles .mz-offscreen on .rl-wave and
+           .ai-badge hosts). Even compositor-cheap infinite animations keep the
+           pipeline ticking forever; the perf re-measure still showed them as
+           the main residual idle cost. */
+        .mz-offscreen .rl-wave i, .mz-offscreen.rl-wave i { animation-play-state: paused; }
+        .mz-offscreen.ai-badge::after { animation-play-state: paused; }
         .rl-wave i:nth-child(2n) { animation-delay: 0.12s; } .rl-wave i:nth-child(3n) { animation-delay: 0.22s; }
         .rl-wave i:nth-child(4n) { animation-delay: 0.30s; } .rl-wave i:nth-child(5n) { animation-delay: 0.05s; }
         @keyframes rlWave { from { transform: scaleY(0.23); } to { transform: scaleY(1); } }
@@ -9467,6 +9474,33 @@
         }
         ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(ev =>
             window.addEventListener(ev, recoverPausedVideos, { once: true, passive: true }));
+
+        // 2026-08-08 PERF — pause the infinite decorative animations (reel
+        // waveforms, AI-badge pulse rings) while off-screen. NOT an
+        // IntersectionObserver: the carousel init clones/moves cards after
+        // load, so per-element observers end up tracking stale nodes and
+        // clones inherit a baked-in class (verified: badge in-viewport but
+        // still flagged). A throttled scroll sampler over a fresh
+        // querySelectorAll always sees the live DOM; ~26 rect reads at most
+        // 4x/second is negligible.
+        (function () {
+            let animTick = 0;
+            function sampleAnimVisibility() {
+                const now = performance.now();
+                if (now - animTick < 250) return;
+                animTick = now;
+                const vh = window.innerHeight;
+                document.querySelectorAll('.rl-wave, .ai-badge').forEach((el) => {
+                    const r = el.getBoundingClientRect();
+                    const off = r.bottom < -vh * 0.25 || r.top > vh * 1.25;
+                    el.classList.toggle('mz-offscreen', off);
+                });
+            }
+            window.addEventListener('scroll', () => requestAnimationFrame(sampleAnimVisibility), { passive: true });
+            window.addEventListener('resize', () => requestAnimationFrame(sampleAnimVisibility), { passive: true });
+            setTimeout(sampleAnimVisibility, 1200);
+            setTimeout(sampleAnimVisibility, 4000);
+        })();
 
         // Fade out persistent bg after user scrolls past the pinned showcase
         if (heroBgStage) {

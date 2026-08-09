@@ -452,6 +452,23 @@ the target element is in a section ABOVE the script tag.
     testosterone brief's "FDA-approved compounded cream" contradiction
     corrected in posts JSON (no FDA-approved female testosterone product
     exists in the US).
+    **2026-08-08 all-36-months clickable (user: "where the fuck are the
+    details for YEAR 1 / YEAR 2 ... you only include year 3 details"):**
+    the deep-dive layer originally wired only the 12 Y3 tiles. Y1/Y2
+    detail is extracted from chapter 12 of
+    `assets/curriculum/fmigs-cbg-migs.json` — month boundaries there are
+    PARAGRAPH BLOCKS ("August (Y1) - ..."), not section headings, and
+    September (Y2) has NO marker in the source (inferred from the
+    endometriosis-medical sections between Aug and Oct Y2). Scripts:
+    scratchpad `extract_y12.py` -> /tmp/_y12data.json ->
+    `build_y12_modals.py`, which merges 24 entries into the existing
+    `DETAIL_DATA` (56 total) and converts the tiles to buttons. Two
+    source defects repaired at build time: a lost inter-word space
+    ("thepelvic") and escape-order (escape text BEFORE appending
+    `&hellip;`, or it renders as `&amp;hellip;`). Tile-copy correction:
+    May Y1 said "Specialty topics & quality improvement" but chapter 12
+    documents "Surgical Complications: Vascular, Bleeding, Vaginal Cuff"
+    — the complications series is now I (Apr) / II (May) / III (Jun).
 
 12. **Fact-sync gate (added 2026-07-28)** — `scripts/audit_fact_sync.mjs`,
     hermetic, runs FIRST (before the hero lock), no override flag: scans
