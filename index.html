@@ -9339,9 +9339,60 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
             }
         }
 
+        // ===== 2026-08-08e — PHONES DO NOT DEPEND ON VIDEO AUTOPLAY =====
+        // Reported repeatedly: on iPhone the drawing "freezes and requires a
+        // click". That is the OS refusing programmatic video playback (Low
+        // Power Mode / Reduce Motion / Auto-Play Video off) — every retry a
+        // script can make is refused too, so no amount of poll tuning fixes
+        // it. Animated IMAGES carry no such policy: they run unconditionally,
+        // with no gesture. On touch devices the hero therefore uses the
+        // animated WebP of the same drawing as its PRIMARY source and the
+        // <video> is never asked to play.
+        //
+        // The URL also lost its `?v=` + Date.now() cache-buster, which was
+        // defeating a year-long immutable cache and re-downloading 1.2 MB on
+        // EVERY page open — on cellular that alone reads as a frozen hero.
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+        const HERO_TOUCH = (window.matchMedia
+            && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+            || (navigator.maxTouchPoints || 0) > 0;
+        // start the download immediately on touch so the loader has something
+        // to wait for and the swap paints instantly
+        let heroWebpPreload = null;
+        if (HERO_TOUCH) {
+            try { heroWebpPreload = new Image(); heroWebpPreload.src = HERO_ANIM_WEBP; } catch (e) {}
+        }
+        function swapHeroToAnimatedWebp() {
+            const live = document.getElementById('heroVideo');
+            if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
+            const img = document.createElement('img');
+            img.className = live.className;
+            img.id = live.id;
+            img.alt = '';
+            img.decoding = 'async';
+            img.src = HERO_ANIM_WEBP;
+            if (live.parentNode) live.parentNode.replaceChild(img, live);
+            // settle on the final frame and start Ken Burns, mirroring the
+            // video 'ended' path
+            setTimeout(() => {
+                const cur = document.getElementById('heroVideo');
+                if (!cur || cur.tagName !== 'IMG') return;
+                cur.src = HERO_LAST_FRAME;
+                cur.classList.add('ken-burns');
+                cur.dataset.heroEnded = '1';
+            }, 8400);
+        }
+
         function startHeroSequence() {
             if (!heroVideo || !heroContent) return;
             heroVideo.classList.add('playing');
+            // Touch device: go straight to the animated image. No play(), no
+            // retry poll, no dependence on an autoplay permission we cannot
+            // win. The text cascade below is unchanged.
+            if (HERO_TOUCH) {
+                swapHeroToAnimatedWebp();
+            }
             // Legacy <img data-src=...> branch retained for forward
             // compatibility — currently a no-op (hero is now <video>).
             const url = heroVideo.dataset.src;
@@ -9355,7 +9406,7 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
             // swap to <img src=hero-animation-hd.webp> so they never see a
             // play button overlay. The WebP at full 1920x1080 is the
             // bulletproof fallback that worked in v3.
-            if (heroVideo.tagName === 'VIDEO') {
+            if (heroVideo.tagName === 'VIDEO' && !HERO_TOUCH) {
                 heroVideo.muted = true;
                 heroVideo.defaultMuted = true;
                 heroVideo.playsInline = true;
@@ -9493,25 +9544,9 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                 // path): it plays unconditionally, no tap required. At the
                 // ~8s mark it settles onto the static final frame and Ken
                 // Burns starts — mirroring the video 'ended' path exactly.
-                const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp?v=' + Date.now();
-                function swapHeroToAnimatedWebp() {
-                    const live = document.getElementById('heroVideo');
-                    if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
-                    const img = document.createElement('img');
-                    img.className = live.className;
-                    img.id = live.id;
-                    img.alt = '';
-                    img.decoding = 'async';
-                    img.src = HERO_ANIM_WEBP;
-                    if (live.parentNode) live.parentNode.replaceChild(img, live);
-                    setTimeout(() => {
-                        const cur = document.getElementById('heroVideo');
-                        if (!cur || cur.tagName !== 'IMG') return;
-                        cur.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
-                        cur.classList.add('ken-burns');
-                        cur.dataset.heroEnded = '1';
-                    }, 8400);
-                }
+                // HERO_ANIM_WEBP / swapHeroToAnimatedWebp now live at top level
+                // (see above startHeroSequence) so the touch path can use them
+                // without going through the video branch at all.
                 // 2026-08-08b — MEASURED ON FILM: with autoplay refused the hero
                 // sat frozen on frame 1 for many seconds before the animated
                 // WebP took over, which is exactly the "animation is off" the
@@ -9648,6 +9683,15 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
         const HERO_READY_STATE = 2;     // HAVE_CURRENT_DATA — first frame decodable
         function delayMs(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         function waitForHeroMedia() {
+            // On touch the hero IS the animated WebP, so wait for that image.
+            if (HERO_TOUCH) {
+                if (!heroWebpPreload) return Promise.resolve();
+                if (heroWebpPreload.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    heroWebpPreload.addEventListener('load', resolve, { once: true });
+                    heroWebpPreload.addEventListener('error', resolve, { once: true });
+                });
+            }
             const v = document.getElementById('heroVideo');
             if (!v || v.tagName !== 'VIDEO' || v.readyState >= HERO_READY_STATE) return Promise.resolve();
             return new Promise(resolve => {
