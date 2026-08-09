@@ -25,8 +25,24 @@ import { fileURLToPath } from "url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const INDEX = join(HERE, "..", "index.html");
+const HOME_JS = join(HERE, "..", "assets", "js", "home.js");
+const HOME_CSS = join(HERE, "..", "assets", "css", "home.css");
 const LOCK = join(HERE, "hero_animation.lock");
-const html = readFileSync(INDEX, "utf8");
+// 2026-08-08 — the homepage's 249 KB of animation JS moved OUT of index.html
+// into assets/js/home.js (inline, Safari had to parse it all before the
+// opening could start — measured 9s to first movement). The animation-critical
+// regions now live across both files, so fingerprint the pair. Reading them
+// concatenated keeps every existing extractor working unchanged.
+let js = "", css = "";
+try { js = readFileSync(HOME_JS, "utf8"); } catch { /* still inline */ }
+try { css = readFileSync(HOME_CSS, "utf8"); } catch { /* still inline */ }
+// The homepage's CSS moved out too (2026-08-08): 266 KB of inline styles sat
+// ahead of the hero markup, so on a cold visit nothing painted until all of it
+// had arrived. Fingerprint index.html + the extracted JS + the extracted CSS
+// together so the animation lock still covers every region it used to.
+const html = readFileSync(INDEX, "utf8")
+    + "\n/* --- assets/js/home.js --- */\n" + js
+    + "\n<style>\n" + css + "\n</style>\n";
 
 // --- balanced-block extraction (string/comment-naive, fine for this file) ---
 function block(startIdx, open, close) {

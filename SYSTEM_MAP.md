@@ -830,6 +830,36 @@ as the first argument so `getSession`'s `last_seen_at` UPDATE goes via
 
 ---
 
+
+### 8.0 Homepage asset split (2026-08-08) — READ BEFORE EDITING index.html
+
+`index.html` no longer carries its CSS or its main JavaScript inline:
+
+| file | was | now |
+|---|---|---|
+| `index.html` | 682 KB (266 KB `<style>` + 249 KB `<script>`) | ~150 KB markup |
+| `assets/css/home.css` | — | the extracted stylesheet |
+| `assets/js/home.js` | — | the extracted script, loaded `defer` |
+
+**Why:** measured in REAL WebKit (Safari's engine, now installed in the
+container — `playwright install-deps webkit && playwright install webkit`).
+With everything inline, Safari had to download and parse the entire document
+before a single line could run: the opening animation did not begin for
+**9.0 seconds** and the screen did not change a pixel for 4+ of them. Chromium
+parses it fast enough to hide the problem, which is why headless Chromium
+testing never caught it.
+
+Also in index.html and NOT to be moved back:
+* a head-level script BEFORE the stylesheet link that starts the 1.2 MB
+  animated-drawing download on touch devices;
+* an in-body bootstrap immediately after the hero markup that starts the
+  drawing, releases the loader and reveals the hero text without waiting for
+  `home.js` (guards: `__mzHeroStarted`, `__mzHeroTextRan`).
+
+`scripts/hero_anim_fingerprint.mjs` fingerprints index.html + home.js +
+home.css together; editing any of the three requires `--update` after
+visually verifying the opening.
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages
