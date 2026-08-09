@@ -214,6 +214,26 @@ def _frame_is_blank(img):
     return _blank_fraction(img) > 0.25
 
 
+REST_OVERLAY = """() => {
+  // A closed dialog must not paint. On 2026-08-08 a rule matching
+  // `.omt-modal:not([hidden])` — a modal that opens by CLASS and never uses
+  // the hidden attribute — left two full-viewport backdrop-filter layers
+  // permanently visible, and the ENTIRE SITE rendered blurred in production.
+  return [...document.querySelectorAll('*')].filter(el => {
+    const cs = getComputedStyle(el);
+    const bf = cs.backdropFilter || cs.webkitBackdropFilter || '';
+    if (!/blur\\(/.test(bf)) return false;
+    if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < 0.05) return false;
+    const r = el.getBoundingClientRect();
+    return r.width >= innerWidth * 0.9 && r.height >= innerHeight * 0.9;
+  }).map(el => ({
+    cls: String(el.className || el.tagName).slice(0, 48),
+    opacity: getComputedStyle(el).opacity,
+    filter: (getComputedStyle(el).backdropFilter || '').slice(0, 30),
+  }));
+}"""
+
+
 def audit_page(page, dpr, scroll_y=0):
     """Returns failures for the CURRENT scroll position."""
     items = page.evaluate(COLLECT)
@@ -310,6 +330,13 @@ def main():
                     report.setdefault(path, {})[label] = {"error": str(e)[:90]}
                     continue
                 page.wait_for_timeout(1400)
+                stuck = page.evaluate(REST_OVERLAY)
+                if stuck:
+                    for o in stuck:
+                        print(f"  ✗ {path} [{label}] FULL-PAGE OVERLAY VISIBLE AT REST: "
+                              f".{o['cls']} opacity={o['opacity']} {o['filter']} "
+                              f"— the whole page renders blurred")
+                    total += len(stuck)
                 seen, fails = set(), []
                 height = page.evaluate("document.body.scrollHeight")
                 step = vp["height"]

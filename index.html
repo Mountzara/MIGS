@@ -7280,6 +7280,13 @@
             display: flex;
             animation: mzOverlayIn 380ms ease both;
         }
+        /* belt and braces: a closed overlay must never paint, whatever the
+           open-state convention is (class vs attribute) */
+        .app-modal:not(.open), .contact-modal:not(.open),
+        .omt-modal:not(.open), .evidence-modal:not(.open),
+        .surgical-hub-panel[hidden] {
+            display: none !important;
+        }
 
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -7421,8 +7428,13 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
 .app-modal-body img, .app-modal-body table, .app-modal-body pre,
 .app-modal-scroll img, .app-modal-scroll table { max-width: 100%; }
 .omt-modal, .evidence-modal { display: none; }
-.omt-modal.open, .omt-modal.active, .omt-modal:not([hidden]),
-.evidence-modal.open, .evidence-modal.active, .evidence-modal:not([hidden]) {
+/* 2026-08-08c CRITICAL FIX — the previous version of this rule included
+   `:not([hidden])`. These two modals open with a CLASS and never carry the
+   hidden attribute, so that selector matched them while CLOSED: both became
+   display:flex, and `animation: ... both` forced opacity to 1, leaving two
+   full-viewport backdrop-filter layers permanently over the site. The whole
+   page rendered blurred. Match ONLY the real open state. */
+.omt-modal.open, .evidence-modal.open {
     display: flex;
     animation: mzOverlayIn 380ms ease both;
 }
