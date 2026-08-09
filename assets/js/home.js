@@ -133,19 +133,26 @@
         // starts the drawing before this script exists, so the cascade needs
         // to be runnable without going through the video branch.
         function runHeroTextCascade() {
+            // 2026-08-09 — mirror of the bootstrap choreography, kept in sync:
+            // monogram enters 0.8s after the drawing starts, the headline's
+            // word-stagger 0.9s later, sub copy and credentials follow via the
+            // stylesheet's per-child delays. Whichever of the two paths runs
+            // first claims __mzHeroTextRan; the other becomes a no-op.
             if (window.__mzHeroTextRan) return;
             window.__mzHeroTextRan = true;
             const hc = document.querySelector('.hero-content-delayed');
             setTimeout(() => {
                 if (hc) hc.classList.add('visible');
-                const titleEl = document.querySelector('.hero-title');
-                if (titleEl) titleEl.classList.add('in');
+                setTimeout(() => {
+                    const titleEl = document.querySelector('.hero-title');
+                    if (titleEl) titleEl.classList.add('in');
+                }, 900);
                 try {
                     kickHeroGlass();
                     setTimeout(kickHeroGlass, 600);
                     setTimeout(kickHeroGlass, 1500);
                 } catch (e) {}
-            }, HERO_TEXT_DELAY_MS);
+            }, 800);
         }
 
         function startHeroSequence() {

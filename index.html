@@ -172,18 +172,24 @@
             loader.classList.add('hidden');
             setTimeout(function () { loader.classList.add('removed'); }, 700);
         }
-        // The text cascade also lived in the late script, so on Safari the
-        // headline did not appear until ~10.9s. Run it here, 2.5s after the
-        // drawing starts, and flag it so the late script does not repeat it.
+        // 2026-08-09 — THE OPENING CHOREOGRAPHY (as specified, in order):
+        //   loader -> drawing plays -> MZ monogram -> "A passion for
+        //   women's health." -> sub copy -> credentials.
+        // One class add starts the whole sequence; the per-child
+        // transition-delays in the stylesheet space the steps 0.9s apart so
+        // each element clearly follows the previous with no dead gap. The
+        // headline's word-stagger (.in) fires in lockstep with its slot.
         function revealHeroTextSoon() {
             setTimeout(function () {
                 if (window.__mzHeroTextRan) return;
                 window.__mzHeroTextRan = true;
                 var hc = document.querySelector('.hero-content-delayed');
                 if (hc) hc.classList.add('visible');
-                var title = document.querySelector('.hero-title');
-                if (title) title.classList.add('in');
-            }, 2500);
+                setTimeout(function () {
+                    var title = document.querySelector('.hero-title');
+                    if (title) title.classList.add('in');
+                }, 900);   // matches the headline's transition-delay slot
+            }, 800);       // monogram enters once the drawing is visibly underway
         }
 
         if (touch) {

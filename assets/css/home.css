@@ -653,12 +653,16 @@
         .hero-content-delayed.visible > .hero-meta {
             transform: none;
         }
-        /* Stagger each child for a cascading Apple-style reveal */
-        .hero-content-delayed.visible > *:nth-child(1) { transition-delay: 0ms; }
-        .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 140ms; }
-        .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 280ms; }
-        .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 420ms; }
-        .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 560ms; }
+        /* 2026-08-09 — THE OPENING ORDER, as specified: the drawing plays,
+           then the MZ monogram, then "A passion for women's health.", then
+           the sub copy, then the credentials — each clearly AFTER the
+           previous, with 1s fades that overlap so the build never stalls.
+           The old 140ms gaps made everything land as one clump. */
+        .hero-content-delayed.visible > *:nth-child(1) { transition-delay: 0ms; }    /* monogram */
+        .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 900ms; }  /* headline */
+        .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 1800ms; } /* sub copy */
+        .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 2600ms; } /* credentials */
+        .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 3200ms; }
 
 
         /* Monogram stage */
