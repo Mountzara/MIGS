@@ -9553,6 +9553,42 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                 // reader sees. Strikes now start the swap after ~0.9s of
                 // ready-but-not-advancing, and the WebP is warmed on the FIRST
                 // strike so the swap paints immediately.
+                // ===== 2026-08-08f — STALL WATCHDOG (reproduced defect) =====
+                // The auto-start poll below stops the moment playback begins.
+                // If anything pauses the drawing AFTER that — Low Power Mode
+                // engaging mid-play, a decode stall, the tab backgrounding, a
+                // cellular buffer starving — nothing was watching, so the hero
+                // sat frozen at that frame until the reader tapped the page.
+                // That is exactly the "freezes, requires me to click" report,
+                // and it is a hole in this code, not a device policy: it
+                // reproduces on a normal desktop browser by pausing the video
+                // at t=1.2s (it then stayed at 1.2s indefinitely).
+                // This watchdog runs for the whole drawing: if currentTime
+                // stops advancing while the clip is unfinished, resume it; if
+                // resuming does not take, fall back to the animated image,
+                // which needs no permission and cannot stall.
+                let lastSeen = -1, stalls = 0;
+                const stallWatch = setInterval(() => {
+                    const v = document.getElementById('heroVideo');
+                    if (!v || v.tagName !== 'VIDEO' || v.dataset.heroEnded === '1') {
+                        clearInterval(stallWatch); return;
+                    }
+                    if (Number.isFinite(v.duration) && v.currentTime >= v.duration - 0.12) {
+                        clearInterval(stallWatch); return;      // finished normally
+                    }
+                    const advanced = v.currentTime > lastSeen + 0.05;
+                    lastSeen = Math.max(lastSeen, v.currentTime);
+                    if (advanced || v.currentTime <= 0.04) { stalls = 0; return; }
+                    stalls++;
+                    if (stalls === 1 || stalls === 2) {
+                        const pr = v.play();
+                        if (pr && typeof pr.catch === 'function') pr.catch(() => {});
+                    } else if (stalls >= 3) {
+                        clearInterval(stallWatch);
+                        swapHeroToAnimatedWebp();
+                    }
+                }, 500);
+
                 let autoStartTries = 0;  // ticks where media is READY yet refuses to advance
                 let autoStartTicks = 0;  // every tick, ready or still buffering
                 const autoStartPoll = setInterval(() => {
