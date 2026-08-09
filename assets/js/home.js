@@ -119,9 +119,24 @@
             // per-view blob URL so Safari replays the animation instead of
             // showing the cached FINAL frame (see bootstrap toAnimatedImage)
             try {
+                // content-unique bytes per view — see bootstrap toAnimatedImage
                 fetch(HERO_ANIM_WEBP, { cache: 'force-cache' })
-                    .then((r) => r.blob())
-                    .then((b) => { img.src = URL.createObjectURL(b); })
+                    .then((r) => r.arrayBuffer())
+                    .then((buf) => {
+                        const src = new Uint8Array(buf);
+                        const pad = new Uint8Array(12);
+                        pad.set([0x58, 0x54, 0x52, 0x41]);
+                        pad[4] = 4;
+                        const rnd = Math.floor(Math.random() * 0xffffffff);
+                        pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
+                        pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
+                        const out = new Uint8Array(src.length + 12);
+                        out.set(src); out.set(pad, src.length);
+                        const riffSize = out.length - 8;
+                        out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
+                        out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
+                        img.src = URL.createObjectURL(new Blob([out], { type: 'image/webp' }));
+                    })
                     .catch(() => { img.src = HERO_ANIM_WEBP + '?replay=' + Date.now(); });
             } catch (e) { img.src = HERO_ANIM_WEBP; }
             if (live.parentNode) live.parentNode.replaceChild(img, live);

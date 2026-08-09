@@ -165,10 +165,30 @@
             // nothing ever drew). A per-view blob URL makes Safari treat it
             // as a brand-new animation — bytes still come from HTTP cache,
             // nothing re-downloads, and the drawing plays from stroke one.
+            // A plain blob was not enough: WebKit caches DECODED animations
+            // by content, so identical bytes under a new URL still showed the
+            // final frame (verified on production). Appending a tiny unique
+            // padding chunk (and fixing the RIFF size) makes the bytes
+            // themselves different every view — the decoder cannot match its
+            // cache and must play the animation from the first stroke.
             try {
                 fetch(WEBP, { cache: 'force-cache' })
-                    .then(function (r) { return r.blob(); })
-                    .then(function (b) { img.src = URL.createObjectURL(b); })
+                    .then(function (r) { return r.arrayBuffer(); })
+                    .then(function (buf) {
+                        var src = new Uint8Array(buf);
+                        var pad = new Uint8Array(12);
+                        pad.set([0x58, 0x54, 0x52, 0x41]);          // 'XTRA'
+                        pad[4] = 4;                                  // chunk size 4
+                        var rnd = Math.floor(Math.random() * 0xffffffff);
+                        pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
+                        pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
+                        var out = new Uint8Array(src.length + 12);
+                        out.set(src); out.set(pad, src.length);
+                        var riffSize = out.length - 8;
+                        out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
+                        out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
+                        img.src = URL.createObjectURL(new Blob([out], { type: 'image/webp' }));
+                    })
                     .catch(function () { img.src = WEBP + '?replay=' + Date.now(); });
             } catch (e) { img.src = WEBP; }
             if (live.parentNode) live.parentNode.replaceChild(img, live);
@@ -1983,7 +2003,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=712cc8b360" defer></script>
+    <script src="/assets/js/home.js?v=396efcb0eb" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {
