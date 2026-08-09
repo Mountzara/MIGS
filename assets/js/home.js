@@ -141,7 +141,10 @@
             if (window.__mzHeroTextRan) return;
             window.__mzHeroTextRan = true;
             const hc = document.querySelector('.hero-content-delayed');
-            setTimeout(() => {
+            // 2026-08-09 — event-driven like the bootstrap: wait for the
+            // drawing to actually be on screen (video advancing or the
+            // animated image attached) before the text build begins.
+            const begin = () => setTimeout(() => {
                 if (hc) hc.classList.add('visible');
                 setTimeout(() => {
                     const titleEl = document.querySelector('.hero-title');
@@ -152,7 +155,17 @@
                     setTimeout(kickHeroGlass, 600);
                     setTimeout(kickHeroGlass, 1500);
                 } catch (e) {}
-            }, 800);
+            }, 1100);
+            let fired = false;
+            const arm = () => { if (!fired) { fired = true; begin(); } };
+            const iv = setInterval(() => {
+                const v = document.getElementById('heroVideo');
+                if (!v) { clearInterval(iv); arm(); return; }
+                if (v.tagName === 'IMG' || (v.tagName === 'VIDEO' && !v.paused && v.currentTime > 0.1)) {
+                    clearInterval(iv); arm();
+                }
+            }, 120);
+            setTimeout(() => { clearInterval(iv); arm(); }, 6000);
         }
 
         function startHeroSequence() {
@@ -247,7 +260,14 @@
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
-                heroVideo.addEventListener('error', swapHeroToPoster);
+                heroVideo.addEventListener('error', () => {
+                    // 2026-08-09 — a failed video used to swap in the FINISHED
+                    // drawing instantly (observed on production when a cached
+                    // entry errored): the one path left that skipped "the
+                    // drawing plays". The animated image draws itself and then
+                    // settles, so the sequence holds even on media failure.
+                    try { swapHeroToAnimatedWebp(); } catch (e) { swapHeroToPoster(); }
+                });
                 // Kick off playback. A blocked autoplay leaves the video paused
                 // at frame 1; recoverPausedVideos retries it on the first
                 // tap/scroll. We deliberately do NOT swap to the poster here.

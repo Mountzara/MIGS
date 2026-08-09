@@ -31,7 +31,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css">
+<link rel="stylesheet" href="/assets/css/home.css?v=e4828432fc">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -189,7 +189,9 @@
                     var title = document.querySelector('.hero-title');
                     if (title) title.classList.add('in');
                 }, 900);   // matches the headline's transition-delay slot
-            }, 800);       // monogram enters once the drawing is visibly underway
+            }, 1100);      // the clip draws from a blank canvas; its first
+                           // strokes are clearly on screen ~1s in — the
+                           // monogram enters just after they are
         }
 
         if (touch) {
@@ -222,12 +224,28 @@
             v.addEventListener('loadeddata', start, { once: true });
             v.addEventListener('canplay', start, { once: true });
             setTimeout(hideLoaderNow, 900);
-            revealHeroTextSoon();
+            // 2026-08-09 — THE USER'S SCREEN RECORDING showed the text fully
+            // composed at ~1s while the drawing's first stroke appeared at
+            // ~5s: the timers fired whether or not the drawing had started.
+            // The cascade now waits for PLAYBACK TO ACTUALLY ADVANCE — the
+            // drawing leads, the text follows. (Absolute 6s fallback so the
+            // text can never be stranded if the video never starts.)
+            var cascadeArmed = false;
+            var armCascade = function () {
+                if (cascadeArmed) return;
+                cascadeArmed = true;
+                revealHeroTextSoon();
+            };
+            v.addEventListener('timeupdate', function onTu() {
+                if (v.currentTime > 0.1) { v.removeEventListener('timeupdate', onTu); armCascade(); }
+            });
+            setTimeout(armCascade, 6000);
             // if the clip cannot get moving, fall back to the animated image
             setTimeout(function () {
                 var cur = document.getElementById('heroVideo');
                 if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.05)) {
                     toAnimatedImage();
+                    armCascade();
                 }
             }, 2600);
         }
@@ -1949,7 +1967,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js" defer></script>
+    <script src="/assets/js/home.js?v=c59d67c584" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {
