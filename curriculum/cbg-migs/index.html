@@ -146,23 +146,67 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 
 .timeline-wrap { position: relative; }
 .timeline-year { margin-bottom: 24px; }
-.timeline-year .yr-label { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px; padding-left: 4px; }
-.timeline-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; }
-@media (max-width: 760px) { .timeline-grid { grid-template-columns: repeat(6, 1fr); } }
-@media (max-width: 480px) { .timeline-grid { grid-template-columns: repeat(3, 1fr); } }
+/* 2026-08-10 TIMELINE REDESIGN. Was a 12-across grid of ~90px chips with
+   11.5px type — 36 unreadable thumbnails (owner: "small and ridiculous").
+   Now a real card grid: cards size themselves (min 250px), so it lands at
+   4-across on desktop, 3 on laptop, 2 on tablet, 1 on phone, and the topic
+   is set at readable size with room to breathe. */
+.timeline-year { margin-bottom: 44px; }
+.timeline-year .yr-label {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(var(--glow-purple), 0.95); margin: 0 0 16px 0; padding: 0 0 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+.timeline-year .yr-label .yr-sub {
+    font-size: 12.5px; font-weight: 400; letter-spacing: 0.01em;
+    text-transform: none; color: var(--fg-soft);
+}
+.timeline-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+@media (max-width: 560px) { .timeline-grid { grid-template-columns: 1fr; } }
 .month-tile {
-    padding: 12px 10px;
+    padding: 18px 18px 16px 18px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 9px;
-    transition: all 0.22s ease;
-    text-align: center;
-    min-height: 86px;
-    display: flex; flex-direction: column; justify-content: space-between;
+    border-radius: 14px;
+    transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+    text-align: left;
+    min-height: 132px;
+    display: flex; flex-direction: column; gap: 10px;
 }
-.month-tile:hover { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.4); transform: translateY(-2px); }
-.month-tile .mo { font-size: 10px; font-weight: 700; letter-spacing: 0.10em; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px; }
-.month-tile .topic { font-size: 11.5px; color: var(--fg-mid); line-height: 1.35; }
+.month-tile:hover { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.42); transform: translateY(-2px); }
+.month-tile .mo {
+    display: inline-flex; align-self: flex-start; align-items: center;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    color: #c4b5fd; background: rgba(var(--glow-purple), 0.16);
+    border: 1px solid rgba(var(--glow-purple), 0.34);
+    padding: 4px 10px; border-radius: 999px; margin: 0;
+}
+.month-tile .topic { font-size: 15px; color: var(--fg-strong); line-height: 1.42; font-weight: 400; flex: 1; }
+.month-tile .tile-more { margin-top: auto; }
+
+/* Modules Dr. Mabini authored himself — these must read as HIS work, not
+   as anonymous line items in someone else's syllabus. */
+.authored-band { margin: 0 0 44px 0; }
+.authored-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.authored-card {
+    padding: 24px;
+    border-radius: 16px;
+    background:
+        linear-gradient(135deg, rgba(var(--glow-purple), 0.16) 0%, rgba(var(--glow-purple), 0.06) 100%);
+    border: 1px solid rgba(var(--glow-purple), 0.42);
+    display: flex; flex-direction: column; gap: 10px;
+}
+.authored-card .abadge {
+    display: inline-flex; align-self: flex-start; align-items: center; gap: 7px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #cdbcff; background: rgba(var(--glow-purple), 0.22);
+    border: 1px solid rgba(var(--glow-purple), 0.5);
+    padding: 5px 11px; border-radius: 999px;
+}
+.authored-card h4 { margin: 2px 0 0 0; font-size: 19px; font-weight: 500; color: var(--fg-strong); line-height: 1.28; }
+.authored-card .ameta { font-size: 12.5px; color: #c4b5fd; font-weight: 500; letter-spacing: 0.01em; }
+.authored-card p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
 
 .stakeholder-svg { width: 100%; max-width: 760px; margin: 0 auto; display: block; }
 .stake-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 36px; }
@@ -491,9 +535,28 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="tl-h">Thirty-six months, thirty-six focused topics.</h2>
             <p class="sub">Each month carries its own educational objectives, FMIGS reading list, SurgeryU video assignments, simulation training, case-based learning, and end-of-month assessment. The progression is intentional: anatomy &amp; foundations in Y1; complex disease, special populations, and emerging topics in Y2; and advanced, subspecialty-level mastery with independent practice and teaching leadership in Y3. Every one of the thirty-six months is clickable &mdash; objectives, assigned reading, operative video, simulation, and how the month is assessed.</p>
 
+            
+            <div class="authored-band">
+                <div class="yr-label">Modules I authored<span class="yr-sub">Designed and written by Dr. Mabini, taught inside this fellowship</span></div>
+                <div class="authored-grid">
+                    <div class="authored-card">
+                        <span class="abadge">Authored module</span>
+                        <h4>Artificial Intelligence &amp; Advanced Technologies</h4>
+                        <div class="ameta">2024 · MIGS fellowship curriculum · PRIME Illinois Saint Francis Hospital, Department of MIGS</div>
+                        <p>Institutional curriculum design covering artificial intelligence and emerging surgical technology for fellows &mdash; what these systems can and cannot do at the console and in the clinic, how to appraise the evidence behind them, and how to adopt them without ceding surgical judgment.</p>
+                    </div>
+                    <div class="authored-card">
+                        <span class="abadge">Authored module</span>
+                        <h4>Gynecologic Imaging</h4>
+                        <div class="ameta">Longitudinal module · MIGS fellowship curriculum</div>
+                        <p>Imaging as an operative instrument rather than a report to read: ultrasound and MRI interpretation for the benign pelvis, mapping disease before the first incision, and carrying those findings into the operative plan.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="timeline-wrap">
                 <div class="timeline-year">
-                    <div class="yr-label">Year 1 — Foundations</div>
+                    <div class="yr-label">Year 1 · Foundations<span class="yr-sub">Anatomy, physiology, energy, core operative technique, and the complication trilogy</span></div>
                     <div class="timeline-grid">
                         <button class="month-tile" data-mkey="y1-aug" aria-haspopup="dialog"><div class="mo">AUG · Y1</div><div class="topic">Pelvic anatomy + retroperitoneal dissection + research</div><span class="tile-more">Details</span></button>
                         <button class="month-tile" data-mkey="y1-sep" aria-haspopup="dialog"><div class="mo">SEP · Y1</div><div class="topic">Menstrual cycle physiology &amp; AUB</div><span class="tile-more">Details</span></button>
@@ -510,7 +573,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </div>
                 </div>
                 <div class="timeline-year">
-                    <div class="yr-label">Year 2 — Complex disease &amp; advanced topics</div>
+                    <div class="yr-label">Year 2 · Complex Disease &amp; Advanced Topics<span class="yr-sub">Endometriosis, adenomyosis, pain, congenital anomalies, and special populations</span></div>
                     <div class="timeline-grid">
                         <button class="month-tile" data-mkey="y2-aug" aria-haspopup="dialog"><div class="mo">AUG · Y2</div><div class="topic">Tissue retrieval &amp; extraction</div><span class="tile-more">Details</span></button>
                         <button class="month-tile" data-mkey="y2-sep" aria-haspopup="dialog"><div class="mo">SEP · Y2</div><div class="topic">Endometriosis I</div><span class="tile-more">Details</span></button>
@@ -527,7 +590,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </div>
                 </div>
                 <div class="timeline-year">
-                    <div class="yr-label">Year 3 — Mastery, independent practice &amp; teaching leadership</div>
+                    <div class="yr-label">Year 3 · Mastery &amp; Teaching Leadership<span class="yr-sub">Subspecialty-level operating, independent practice, and leading the teaching service</span></div>
                     <div class="timeline-grid">
                         <button class="month-tile" data-mkey="y3-aug" aria-haspopup="dialog"><div class="mo">AUG · Y3</div><div class="topic">Refractory endometriosis management</div><span class="tile-more">Details</span></button>
                         <button class="month-tile" data-mkey="y3-sep" aria-haspopup="dialog"><div class="mo">SEP · Y3</div><div class="topic">Complex DIE resection</div><span class="tile-more">Details</span></button>
