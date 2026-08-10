@@ -285,7 +285,7 @@
                 if (vg) vg.style.visibility = 'hidden';       // baked in
                 mzlog('canvas armed: base painted, atlas '
                     + (atlasImg.complete && atlasImg.naturalWidth ? 'ready' : 'loading'));
-                ctx.drawImage(baseImg, 0, 0);
+                ctx.drawImage(baseImg, 0, 0, cv.width, cv.height);
                 cv.id = 'heroVideo';
                 cv.style.opacity = '1';
                 window.__mzHeroBytesPending = false;
