@@ -107,9 +107,10 @@ const PARTS = [
     fn("runChoreography"),
     fn("anchorOnDrawing"),
     fn("toAnimatedImage"),
-    fn("heroDrawUrl"),
     fn("settleLater"),
     fn("hideLoaderNow"),
+    rule(".hero-video.wipe-in"),
+    rule("@keyframes heroWipeIn"),
     // --- autoplay-refusal machinery (hero swap + reel previews) ---
     fn("swapHeroToAnimatedWebp"),
     constFn("swapToPreview"),

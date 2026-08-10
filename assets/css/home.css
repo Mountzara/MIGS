@@ -455,6 +455,23 @@
             display: none !important;
         }
 
+        /* 2026-08-10d — THE UNIVERSAL REVEAL. One static 15KB frame swept in
+           along the drawing's diagonal by a clip-path inset animation. The
+           inset animates in the ELEMENT's pre-rotation space, so left→right
+           here renders as bottom-left→top-right on screen after the -22deg
+           transform — following the line-art's flow. clip-path inset() is a
+           cheap, identically-supported primitive in every modern engine;
+           the 72-frame animated WebP it replaces cost ~95MP of decode that
+           froze weaker machines' main threads for seconds (user recording 5).
+           ken-burns later replaces the animation property — by then the wipe
+           is long finished and clip-path's default (none) equals its end state. */
+        .hero-video.wipe-in {
+            animation: heroWipeIn 2.4s cubic-bezier(0.45, 0.05, 0.25, 1) both;
+        }
+        @keyframes heroWipeIn {
+            from { clip-path: inset(0 100% 0 0); }
+            to   { clip-path: inset(0 0 0 0); }
+        }
         .hero-video.ken-burns {
             /* 2026-08-08 PERF — one 45s zoom-in that then HOLDS (forwards),
                not infinite alternate: a forever-animating transform on this

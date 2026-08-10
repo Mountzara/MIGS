@@ -97,7 +97,7 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v2.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp'; // static frame — the wipe reveals it (2026-08-10d)
         const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
@@ -109,66 +109,40 @@
             try { heroWebpPreload = new Image(); heroWebpPreload.src = HERO_ANIM_WEBP; } catch (e) {}
         }
         function swapHeroToAnimatedWebp() {
+            // 2026-08-10d — universal reveal, mirroring the bootstrap: ONE
+            // static frame (a single small decode) swept in by the CSS
+            // clip-path wipe. The multi-frame animated WebP is dead on this
+            // path — decoding ~95MP froze weak machines' main threads for
+            // seconds (user recording 5); no delivery trick fixes decode.
             const live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
-            const img = document.createElement('img');
-            img.className = live.className;
-            img.id = live.id;
+            const img = document.getElementById('heroImgSlot') || document.createElement('img');
             img.alt = '';
             img.decoding = 'async';
-            // Server-padded replay URL: /media/…?replay=1 appends a random
-            // no-op chunk so the bytes are unique per view and Safari's
-            // CONTENT-keyed decoded-animation cache can never serve the
-            // final frame. Client-side blob padding was abandoned
-            // 2026-08-10 — some WebKit builds refuse to decode a large
-            // animated WebP from a blob: URL entirely. Full-fetch first,
-            // then attach on the same (now-cached) URL: a streamed animated
-            // WebP freezes mid-draw whenever the network falls behind.
             window.__mzHeroBytesPending = true;
-            img.onload = () => { window.__mzHeroBytesPending = false; };
-            img.onerror = () => { window.__mzHeroBytesPending = false; };
-            const replayUrl = HERO_ANIM_WEBP + '?replay=1&t=' + Date.now();
-            let attached = false;
-            const attachSrc = (src) => {
-                if (attached) return;
-                attached = true;
-                img.src = src;
+            const attach = () => {
+                window.__mzHeroBytesPending = false;
+                const vid = document.getElementById('heroVideo');
+                if (!vid || vid.tagName !== 'VIDEO') return;
+                try { vid.pause(); } catch (e) {}
+                vid.removeAttribute('id');
+                vid.style.visibility = 'hidden';
+                img.id = 'heroVideo';
+                img.className = vid.className + ' wipe-in';
+                img.style.opacity = '1';
+                if (!img.parentNode && vid.parentNode) vid.parentNode.appendChild(img);
             };
-            // data: URL from the fetched bytes — playback never touches the
-            // network, so it cannot stall mid-stroke (same-URL handoff still
-            // froze on the user's Safari when the img missed the primed
-            // cache; blob: is refused by some WebKit builds; data: verified).
-            try {
-                fetch(replayUrl, { cache: 'force-cache' })
-                    .then((r) => r.arrayBuffer())
-                    .then((buf) => {
-                        const bytes = new Uint8Array(buf);
-                        let bin = '';
-                        for (let i = 0; i < bytes.length; i += 0x8000) {
-                            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-                        }
-                        attachSrc('data:image/webp;base64,' + btoa(bin));
-                    })
-                    .catch(() => attachSrc(replayUrl));
-            } catch (e) { attachSrc(replayUrl); }
-            setTimeout(() => attachSrc(replayUrl), 4000);
-            if (live.parentNode) live.parentNode.replaceChild(img, live);
-            // settle on the final frame and start Ken Burns. 5600: after
-            // the full text cascade, before dead screen — and pre-decoded,
-            // so the swap never stalls a paint mid-word-reveal (see
-            // bootstrap settleLater for the full timing rationale).
-            const preLast = new Image();
-            preLast.decoding = 'async';
-            preLast.src = HERO_LAST_FRAME;
-            try { if (preLast.decode) preLast.decode().catch(() => {}); } catch (e) {}
+            img.onload = attach;
+            img.onerror = () => { window.__mzHeroBytesPending = false; };
+            img.src = HERO_LAST_FRAME;
+            if (img.complete && img.naturalWidth > 0) attach();
             setTimeout(() => {
                 const cur = document.getElementById('heroVideo');
                 if (!cur || cur.tagName !== 'IMG') return;
-                cur.src = HERO_LAST_FRAME;
                 cur.classList.add('ken-burns');
                 cur.dataset.heroEnded = '1';
                 const heroSec = document.querySelector('.hero');
-                if (heroSec) heroSec.classList.add('settled');   // enables glass
+                if (heroSec) heroSec.classList.add('settled');
             }, 5600);
         }
 

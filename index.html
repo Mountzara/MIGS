@@ -39,12 +39,12 @@
     try {
         var img = new Image();
         img.decoding = 'async';
-        img.src = 'https://mountzara.com/media/hero-animation-lite-v2.webp';
+        img.src = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
         window.__mzHeroPre = img;
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=1b645cd5e7">
+<link rel="stylesheet" href="/assets/css/home.css?v=dbeed25e2f">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -156,7 +156,7 @@
         var v = document.getElementById('heroVideo');
         var loader = document.getElementById('pageLoader');
         if (!v) return;
-        var WEBP = 'https://mountzara.com/media/hero-animation-lite-v2.webp';
+        var WEBP = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp'; /* static frame — the wipe reveals it; no multi-frame decode */
         var LAST = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
         var touch = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
@@ -164,49 +164,14 @@
         window.__mzHeroStarted = true;
         window.__mzHeroTouch = touch;
 
-        // Start fetching the animation bytes NOW (HTTP cache when warm; on a
-        // hard reload this runs in parallel with everything else), so a swap
-        // later paints immediately instead of attaching an empty element.
         window.__mzHeroBytesPending = false;
-        // Which URL draws? Safari's decoded-animation cache is keyed by
-        // CONTENT — a repeat visit shows a play-once animated WebP already
-        // settled on its FINAL frame. First visit: the plain (preloaded,
-        // HTTP-cached) URL — the decoded cache is cold, it plays. Repeat
-        // visit: the ?replay endpoint, where the media worker appends a
-        // random padding chunk so the bytes are unique every time. A
-        // client-side blob-URL pad was abandoned 2026-08-10: some WebKit
-        // builds refuse to decode a large animated WebP from blob: at all.
-        function heroDrawUrl() {
-            var seen = true;                 // safest default: unique bytes
-            try {
-                seen = localStorage.getItem('mzHeroSeen') === '1';
-                localStorage.setItem('mzHeroSeen', '1');
-            } catch (e) {}
-            return seen ? (WEBP + '?replay=1&t=' + Date.now()) : WEBP;
-        }
 
         function settleLater(img) {
-            // 5600: after the FULL text cascade (choreo+3.6s ends the
-            // credentials), before any dead screen sets in. Not 8400 — the
-            // strokes are done by ~3.5s and the clip then holds a frozen
-            // frame, leaving ~4s of dead canvas. Not 4400 either — that
-            // fired MID-CASCADE, and the last-frame swap's fetch+decode
-            // blocked paint exactly while the headline words (heavy
-            // background-clip:text repaints) were mid-transition: the text
-            // visibly froze after "A passion" (user report). The last frame
-            // is also pre-decoded below so the swap itself never stalls a
-            // paint.
-            // prefetch at +3000 — after the strokes finish (~3.5s), well
-            // before the 5600 swap; nothing shares the wire with the drawing
-            setTimeout(function () {
-                var pre = new Image();
-                pre.decoding = 'async';
-                pre.src = LAST;
-                try { if (pre.decode) pre.decode().catch(function () {}); } catch (e) {}
-            }, 3000);
+            // The image IS the final frame already — settle is just the zoom
+            // and the settled signal. 5600: after the full text cascade
+            // (choreo+3.6s ends the credentials).
             setTimeout(function () {
                 if (!img || img.tagName !== 'IMG') return;
-                img.src = LAST;
                 img.classList.add('ken-burns');
                 img.dataset.heroEnded = '1';
                 var hero = document.querySelector('.hero');
@@ -214,6 +179,19 @@
                 try { window.dispatchEvent(new Event('mz:hero-settled')); } catch (e) {}
             }, 5600);
         }
+        // ===== 2026-08-10d — THE UNIVERSAL DRAWING REVEAL ================
+        // The multi-frame animated WebP is DEAD on the no-autoplay path.
+        // The user's fifth recording showed why every variant of it froze
+        // his Safari: decoding a 72-frame 1536x864 animation (~95 MP; the
+        // original was ~400 MP) blocks a weak machine's main thread for
+        // seconds — the monogram (composited fade) landed, then the
+        // headline (main-thread-painted text) froze for ~4s. No delivery
+        // trick fixes decode cost. What every browser executes identically
+        // and cheaply: ONE static image (15 KB, a single 1.3 MP decode)
+        // revealed with a clip-path wipe along the drawing's diagonal
+        // (inset() in the element's pre-rotation space = bottom-left to
+        // top-right on screen). Video keeps playing the true stroke
+        // animation wherever autoplay is allowed.
         function toAnimatedImage() {
             var live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO') return null;
@@ -222,54 +200,23 @@
             var img = document.getElementById('heroImgSlot');
             if (!img) return null;
             window.__mzHeroBytesPending = true;
-            img.onload = function () { window.__mzHeroBytesPending = false; };
-            img.onerror = function () { window.__mzHeroBytesPending = false; };
-            var url = heroDrawUrl();
-            var attached = false;
-            var attach = function (src) {
-                if (attached) return;
-                attached = true;
+            var attach = function () {
+                window.__mzHeroBytesPending = false;
                 var vid = document.getElementById('heroVideo');
                 if (!vid || vid.tagName !== 'VIDEO') return;
-                // ZERO-LAYOUT handoff: both elements pre-exist in the markup,
-                // so this is src + id + visibility/opacity only. replaceChild
-                // here forced a 400-660ms full-document layout mid-drawing on
-                // a slow machine (traced) — with a DOM this size, ANY forced
-                // layout IS the freeze.
+                // zero-layout handoff: both elements pre-exist in the markup
                 try { vid.pause(); } catch (e) {}
                 vid.removeAttribute('id');
                 vid.style.visibility = 'hidden';
                 img.id = 'heroVideo';
-                img.className = vid.className;
-                img.src = src;
+                img.className = vid.className + ' wipe-in';
                 img.style.opacity = '1';
                 settleLater(img);
             };
-            // The bytes the animation plays from are the bytes we already
-            // fetched, handed over as a data: URL — playback can never touch
-            // the network, so a mid-stroke freeze is structurally impossible.
-            // (A same-URL img.src handoff still froze on the user's Safari:
-            // if the img misses the cache the fetch primed, it re-downloads
-            // and STREAMS, and Safari animates a WebP at network pace. blob:
-            // URLs are not an option — some WebKit builds refuse to decode a
-            // large animated WebP from blob: entirely; data: decodes in
-            // ~50ms, verified.) If the fetch fails or takes >4s, attach the
-            // plain URL and stream — a drawing that may pause beats an
-            // empty canvas.
-            try {
-                fetch(url, { cache: 'force-cache' })
-                    .then(function (r) { return r.arrayBuffer(); })
-                    .then(function (buf) {
-                        var bytes = new Uint8Array(buf);
-                        var bin = '';
-                        for (var i = 0; i < bytes.length; i += 0x8000) {
-                            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-                        }
-                        attach('data:image/webp;base64,' + btoa(bin));
-                    })
-                    .catch(function () { attach(url); });
-            } catch (e) { attach(url); }
-            setTimeout(function () { attach(url); }, 4000);
+            img.onload = attach;
+            img.onerror = function () { window.__mzHeroBytesPending = false; };
+            img.src = LAST;
+            if (img.complete && img.naturalWidth > 0) attach();
             return null;
         }
         function hideLoaderNow() {
@@ -349,7 +296,7 @@
             if (pre.complete) { go(); }
             pre.onload = go;
             pre.onerror = go;
-            if (!pre.src) pre.src = WEBP;
+            if (!pre.src) pre.src = LAST;
             setTimeout(go, 2200);            // never wait longer than this
         } else {
             v.classList.add('playing');
@@ -2149,7 +2096,7 @@
        need; interactivity arrives when the hero settles (6.2s) or the
        INSTANT the user shows intent (scroll/tap/key), whichever is first. */
     (function () {
-        var SRC = '/assets/js/home.js?v=44a4cddf84';
+        var SRC = '/assets/js/home.js?v=382771b416';
         var load = function () {
             if (window.__mzHomeLoaded) return;
             window.__mzHomeLoaded = true;
