@@ -230,7 +230,7 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         // sampling video-only fields off an image (None-crash).
         if (v.tagName !== 'VIDEO')
             return {poster:true, kb:v.classList.contains('ken-burns'),
-                    drawing:/hero-animation/.test(v.currentSrc || v.src || ''),
+                    drawing:/hero-animation|^data:image\\/webp/.test(v.currentSrc || v.src || ''),
                     nw:v.naturalWidth,
                     w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight};
         return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,

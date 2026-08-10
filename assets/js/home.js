@@ -129,18 +129,29 @@
             img.onerror = () => { window.__mzHeroBytesPending = false; };
             const replayUrl = HERO_ANIM_WEBP + '?replay=1&t=' + Date.now();
             let attached = false;
-            const attachSrc = () => {
+            const attachSrc = (src) => {
                 if (attached) return;
                 attached = true;
-                img.src = replayUrl;
+                img.src = src;
             };
+            // data: URL from the fetched bytes — playback never touches the
+            // network, so it cannot stall mid-stroke (same-URL handoff still
+            // froze on the user's Safari when the img missed the primed
+            // cache; blob: is refused by some WebKit builds; data: verified).
             try {
                 fetch(replayUrl, { cache: 'force-cache' })
                     .then((r) => r.arrayBuffer())
-                    .catch(() => null)
-                    .then(attachSrc);
-            } catch (e) { attachSrc(); }
-            setTimeout(attachSrc, 4000);
+                    .then((buf) => {
+                        const bytes = new Uint8Array(buf);
+                        let bin = '';
+                        for (let i = 0; i < bytes.length; i += 0x8000) {
+                            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+                        }
+                        attachSrc('data:image/webp;base64,' + btoa(bin));
+                    })
+                    .catch(() => attachSrc(replayUrl));
+            } catch (e) { attachSrc(replayUrl); }
+            setTimeout(() => attachSrc(replayUrl), 4000);
             if (live.parentNode) live.parentNode.replaceChild(img, live);
             // settle on the final frame and start Ken Burns. 5600: after
             // the full text cascade, before dead screen — and pre-decoded,

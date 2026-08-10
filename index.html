@@ -174,10 +174,14 @@
             // visibly froze after "A passion" (user report). The last frame
             // is also pre-decoded below so the swap itself never stalls a
             // paint.
-            var pre = new Image();
-            pre.decoding = 'async';
-            pre.src = LAST;
-            try { if (pre.decode) pre.decode().catch(function () {}); } catch (e) {}
+            // prefetch at +3000 — after the strokes finish (~3.5s), well
+            // before the 5600 swap; nothing shares the wire with the drawing
+            setTimeout(function () {
+                var pre = new Image();
+                pre.decoding = 'async';
+                pre.src = LAST;
+                try { if (pre.decode) pre.decode().catch(function () {}); } catch (e) {}
+            }, 3000);
             setTimeout(function () {
                 if (!img || img.tagName !== 'IMG') return;
                 img.src = LAST;
@@ -198,29 +202,40 @@
             img.onerror = function () { window.__mzHeroBytesPending = false; };
             var url = heroDrawUrl();
             var attached = false;
-            var attach = function () {
+            var attach = function (src) {
                 if (attached) return;
                 attached = true;
                 var cur = document.getElementById('heroVideo');
                 if (!cur || cur.tagName !== 'VIDEO') return;
-                img.src = url;
+                img.src = src;
                 if (cur.parentNode) cur.parentNode.replaceChild(img, cur);
                 settleLater(img);
             };
-            // Pull the WHOLE file down first, then attach with img.src on the
-            // SAME (now HTTP-cached) URL. Safari animates a WebP while it
-            // streams, so attaching before the bytes are local froze the
-            // drawing mid-stroke whenever the network fell behind (user:
-            // "freezes for 2-3 seconds midway then finishes"). If the
-            // network is slow, give up at 4s and stream anyway — a drawing
-            // that may pause beats an empty canvas.
+            // The bytes the animation plays from are the bytes we already
+            // fetched, handed over as a data: URL — playback can never touch
+            // the network, so a mid-stroke freeze is structurally impossible.
+            // (A same-URL img.src handoff still froze on the user's Safari:
+            // if the img misses the cache the fetch primed, it re-downloads
+            // and STREAMS, and Safari animates a WebP at network pace. blob:
+            // URLs are not an option — some WebKit builds refuse to decode a
+            // large animated WebP from blob: entirely; data: decodes in
+            // ~50ms, verified.) If the fetch fails or takes >4s, attach the
+            // plain URL and stream — a drawing that may pause beats an
+            // empty canvas.
             try {
                 fetch(url, { cache: 'force-cache' })
                     .then(function (r) { return r.arrayBuffer(); })
-                    .catch(function () { return null; })
-                    .then(attach);
-            } catch (e) { attach(); }
-            setTimeout(attach, 4000);
+                    .then(function (buf) {
+                        var bytes = new Uint8Array(buf);
+                        var bin = '';
+                        for (var i = 0; i < bytes.length; i += 0x8000) {
+                            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+                        }
+                        attach('data:image/webp;base64,' + btoa(bin));
+                    })
+                    .catch(function () { attach(url); });
+            } catch (e) { attach(url); }
+            setTimeout(function () { attach(url); }, 4000);
             return null;
         }
         function hideLoaderNow() {
@@ -2083,7 +2098,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=f7d9a868ea" defer></script>
+    <script src="/assets/js/home.js?v=27cbedaf77" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {
