@@ -92,6 +92,7 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
 
     # 1) IMAGES loaded
     broken = page.evaluate("""() => [...document.images]
+        .filter(i => (i.currentSrc || i.src))   // src-less = intentional slot (e.g. #heroImgSlot), not broken
         .filter(i => i.offsetParent !== null && i.complete && i.naturalWidth === 0)
         .map(i => i.currentSrc || i.src).slice(0,8)""")
     res.append(chk(f"[{label}] all visible images loaded", not broken,
@@ -191,7 +192,10 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             t2 = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
                 return v && v.tagName === 'VIDEO' ? (v.currentTime || 0) : null; }""", ri)
             frozen = t2 is not None and abs(t2 - b["t"]) < 0.02
-        if b["paused"] or b["ready"] < 2 or frozen:
+        # ready<2 alone is NOT failure while time advances — a looping video
+        # reports HAVE_METADATA for an instant at the wrap (observed:
+        # Δt=-0.55, paused=False flagged as not-playing). Paused or frozen is.
+        if b["paused"] or frozen:
             # networkState 3 = NETWORK_NO_SOURCE: the ENGINE rejected every
             # source (codec unsupported in this test build) — distinct from a
             # slow network (state 2 = NETWORK_LOADING), which still FAILS.
@@ -391,7 +395,15 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         # stuck, not mid-transition. (Verified: stuck count 67→1→0 across the
         # settle window; permanently-stuck would stay >0.)
         page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
-        page.wait_for_timeout(2600)
+        # 2026-08-10 — home.js (which owns the reveal safety nets) now loads
+        # on first scroll rather than at parse, so the fling above may START
+        # its fetch+eval. 2600ms sometimes sampled mid-init (award tiles WITH
+        # .in mid-fade). Wait for the script, then the settle window.
+        try:
+            page.wait_for_function("() => !!window.__mzHomeLoaded", timeout=8000)
+        except Exception:
+            pass
+        page.wait_for_timeout(4000)
         stuck = page.evaluate(r"""() => {
             const sels=['[data-reveal]','.word-reveal','.evidence-card','.surgical-card','.reveal'];
             const set=new Set(); sels.forEach(s=>document.querySelectorAll(s).forEach(e=>set.add(e)));

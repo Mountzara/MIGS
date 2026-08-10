@@ -339,8 +339,13 @@ def audit_homepage(page) -> list[dict[str, Any]]:
     # edit kills the real glass, this fails. (.hero-sub is the owner's
     # canonical 'Foundation/Innovation' glass recipe; nav floats over the hero;
     # the pinned pills frost the fixed drawing.)
+    # 2026-08-10 — .hero-sub is NO LONGER a glass target: the hero panels
+    # keep one consistent translucent-card look from first paint to rest
+    # (live blur over the animating drawing was a measured freeze driver,
+    # and a settle-time glass switch-on read as a contrast jump — user
+    # report). Frost is asserted only where it never overlays the opening.
     real_glass = page.evaluate("""() => {
-        const targets = ['.hero-sub', 'nav.main-nav', '.pinned-frame .frame-eyebrow'];
+        const targets = ['nav.main-nav', '.pinned-frame .frame-eyebrow'];
         const out = [];
         for (const sel of targets) {
             const el = document.querySelector(sel);

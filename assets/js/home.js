@@ -98,7 +98,7 @@
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
         const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-lite-v1.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -167,6 +167,8 @@
                 cur.src = HERO_LAST_FRAME;
                 cur.classList.add('ken-burns');
                 cur.dataset.heroEnded = '1';
+                const heroSec = document.querySelector('.hero');
+                if (heroSec) heroSec.classList.add('settled');   // enables glass
             }, 5600);
         }
 
@@ -277,7 +279,7 @@
                     fallback.id = live.id;
                     fallback.alt = '';
                     fallback.decoding = 'async';
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-lite-v1.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.

@@ -501,6 +501,42 @@ the target element is in a section ABOVE the script tag.
     loader → drawing → monogram → headline → sub → credentials, anchored
     on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
     `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
+    **2026-08-10c THE FREEZE WAS THE MAIN THREAD, NOT THE MEDIA** (traced
+    with CDP under 6x CPU throttle after the asset diet still froze):
+    full-document layouts cost 400-730ms EACH on this DOM. Mid-opening
+    layout triggers, all now eliminated — treat every one as a regression
+    class: (1) **WEB FONTS**: the Google link loaded 18 Nunito Sans
+    variants, each arrival forcing a swap-relayout (350-730ms at 2.0s and
+    2.7s — the user's "freezes 2-3s midway"). Now ONE self-hosted
+    variable woff2 (`assets/fonts/nunito-sans-var.woff2`, 31KB, weights
+    200-1000, + italic 14KB), preloaded `fetchpriority=high`, latin
+    unicode-range, @font-face inline in the head — the single swap lands
+    while the loader still covers. Layout total 2192ms → 824ms, all
+    under the loader. Do NOT reintroduce a fonts.googleapis stylesheet
+    on the homepage. (2) **DOM swaps**: `#heroImgSlot` (an empty img,
+    `opacity:0`) is PRE-PLACED next to the hero video; the video→img
+    handoff is src/id/visibility/opacity flips only — replaceChild was a
+    full-layout freeze. The slot having no src is intentional (the
+    visual audit's broken-image check exempts src-less imgs). (3) the
+    loader's `.removed` is `visibility:hidden`, NOT display:none.
+    (4) **home.js loads AFTER the opening**: a tiny in-head loader
+    injects it on `mz:hero-settled` (+600ms; dispatched by both settle
+    paths), on first user intent (scroll/tap/key), or at 11s — its init
+    layouts froze the cascade when it evaluated mid-opening (a fixed
+    6.2s timer landed right after the headline: user report "freezes
+    after 'A passion for women's health.'"). (5) remaining known stall:
+    Cloudflare's zone-injected challenge script (~650ms throttled,
+    ~100ms real) — not controllable from Pages scope. (6) CONSISTENCY
+    (user: "colors turn more sharp/contrast when the animation ends"):
+    the settle frame is `hero-last-frame-lite-v1.webp` — the lite
+    animation's OWN final frame re-encoded (pixel-equivalent, verified),
+    never the old 1080p v2 frame; hero panels (.hero-sub/.hero-meta)
+    keep ONE translucent-card look permanently — no settle-time glass
+    switch-on (that pop read as a contrast jump; live blur over the
+    animating drawing was also a freeze contributor). The monogram is
+    pre-baked white+shadow (`monogram-white.png`) — no
+    brightness/invert/drop-shadow filter chain; the halo gradient is
+    soft WITHOUT filter:blur(40px).
     **2026-08-10b THE ASSET ITSELF WAS THE ROOT CAUSE** (user: "the fix
     shouldn't require multiple trys" — correct): every freeze traced to
     moving a 1.2 MB animation whose strokes END AT FRAME 70 (2.9s) —

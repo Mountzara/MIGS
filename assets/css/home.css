@@ -532,7 +532,12 @@
             pointer-events: none;
         }
         .page-loader.removed {
-            display: none;
+            /* visibility, NOT display:none — flipping display on anything
+               forces a full-document layout, which costs 400-660ms on a
+               slow machine with this DOM (traced: one of the three
+               mid-opening freezes). visibility:hidden skips hit-testing
+               and AT the same way, with zero layout. */
+            visibility: hidden;
         }
         .page-loader-inner {
             display: flex;
@@ -621,16 +626,28 @@
         .hero-sub {
             position: relative;
             display: inline-block;
-            /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
-               blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
-               made it look opaque/heavy instead of glassy. */
-            background: rgba(255, 255, 255, 0.08);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            backdrop-filter: saturate(180%) blur(20px);
+            /* NO live blur while the drawing animates. This panel fades in
+               MID-DRAWING, and backdrop-filter re-filters the animating
+               frames beneath it on every frame — measured: 683ms frozen
+               frames landing exactly at its entrance on a throttled CPU
+               (the user's "freezes midway"). During the opening it is a
+               translucent card; .hero.settled (added when the drawing
+               settles) turns on the real glass over a now-static ground,
+               where it costs a one-time filter. Recipe otherwise per
+               2026-06-25: fill 0.08→0.12 compensates for the missing frost
+               during the opening. */
+            background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             padding: 16px 24px;
         }
+        /* NO settled-state glass switch-on. The panels keep ONE look from
+           first paint to rest (user: "it should be consistent all the way
+           through" — the blur materializing at settle read as a contrast
+           jump). The translucent 0.12 card IS the hero panel design now;
+           live backdrop blur over the animating drawing was also the
+           measured freeze driver that started this. Frost remains on the
+           nav and pinned pills, which never overlay the opening. */
         .hero-content-delayed > * {
             opacity: 0;
             transform: translateY(24px);
@@ -683,8 +700,11 @@
         .monogram-halo {
             position: absolute;
             inset: -15%;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
-            filter: blur(40px);
+            /* soft falloff IN the gradient — the old filter:blur(40px) on
+               this full-stage layer was live GPU blur composited over the
+               animating drawing (measured freeze driver). A radial gradient
+               is already soft; blurring it bought nothing but cost. */
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 40%, transparent 72%);
             pointer-events: none;
         }
 
@@ -695,7 +715,11 @@
             width: 100%;
             height: auto;
             display: block;
-            filter: brightness(0) invert(1) drop-shadow(0 8px 32px rgba(0,0,0,0.6));
+            /* no filters: white + shadow are BAKED into monogram-white.png.
+               brightness(0) invert(1) drop-shadow() re-rasterized the whole
+               chain on every frame of this entrance animation, while the
+               drawing was animating underneath — a measured freeze driver
+               on weaker GPUs. */
             opacity: 0.98;
             animation: monogramFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
             margin-bottom: 0;
@@ -1242,11 +1266,11 @@
             /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
                blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
                made it look opaque/heavy instead of glassy. */
-            background: rgba(255, 255, 255, 0.08);
+            /* glass gated behind .hero.settled like .hero-sub — this panel
+               fades in at +2600ms, still mid-drawing (see .hero-sub note) */
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             overflow: hidden;
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
