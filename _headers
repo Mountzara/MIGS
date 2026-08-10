@@ -45,3 +45,15 @@
 /drafts/*
   X-Robots-Tag: noindex, nofollow, noai, noimageai
   Cache-Control: no-store, max-age=0
+
+# Homepage HTML — never served from a stale browser cache.
+# 2026-08-10: the opening choreography lives INLINE in index.html (the
+# bootstrap owns it), so a browser holding an old copy of this document
+# runs old choreography no matter how many times the site is deployed —
+# indistinguishable, from the viewer's side, from "the fix did nothing".
+# The heavy assets stay immutably cached; only this 170KB document
+# revalidates every time.
+/
+  Cache-Control: no-store, max-age=0
+/index.html
+  Cache-Control: no-store, max-age=0
