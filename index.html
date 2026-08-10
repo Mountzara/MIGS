@@ -39,12 +39,16 @@
     try {
         var img = new Image();
         img.decoding = 'async';
-        img.src = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
+        img.src = 'https://mountzara.com/media/hero-draw-base-v1.webp';
         window.__mzHeroPre = img;
+        var atl = new Image();
+        atl.decoding = 'async';
+        atl.src = 'https://mountzara.com/media/hero-draw-atlas-v1.webp';
+        window.__mzHeroPreAtlas = atl;
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=532ede78ec">
+<link rel="stylesheet" href="/assets/css/home.css?v=94d5c3c0af">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -135,6 +139,13 @@
              exist, because replaceChild forced a 400-660ms full-document
              layout mid-drawing on a slow machine (traced 2026-08-10) -->
         <img class="hero-video" id="heroImgSlot" alt="" decoding="async" style="opacity:0">
+        <!-- 2026-08-10f — the drawing plays HERE for every browser that
+             refuses video autoplay: base composite drawn once, then the
+             stroke patches stamp on at the original frame timing. The
+             whole hero stack (gradient, glows, blend, filter, vignette,
+             rotation) is BAKED into these pixels offline — at runtime this
+             is one opaque layer and ~217 tiny drawImage calls. -->
+        <canvas class="hero-canvas" id="heroCanvas" width="1440" height="900" style="opacity:0" aria-hidden="true"></canvas>
         <div class="hero-bg-vignette"></div>
     </div>
 
@@ -171,7 +182,7 @@
             // and the settled signal. 5600: after the full text cascade
             // (choreo+3.6s ends the credentials).
             setTimeout(function () {
-                if (!img || img.tagName !== 'IMG') return;
+                if (!img || (img.tagName !== 'IMG' && img.tagName !== 'CANVAS')) return;
                 img.classList.add('ken-burns');
                 img.dataset.heroEnded = '1';
                 var hero = document.querySelector('.hero');
@@ -179,46 +190,115 @@
                 try { window.dispatchEvent(new Event('mz:hero-settled')); } catch (e) {}
             }, 5600);
         }
-        // ===== 2026-08-10d — THE UNIVERSAL DRAWING REVEAL ================
-        // The multi-frame animated WebP is DEAD on the no-autoplay path.
-        // The user's fifth recording showed why every variant of it froze
-        // his Safari: decoding a 72-frame 1536x864 animation (~95 MP; the
-        // original was ~400 MP) blocks a weak machine's main thread for
-        // seconds — the monogram (composited fade) landed, then the
-        // headline (main-thread-painted text) froze for ~4s. No delivery
-        // trick fixes decode cost. What every browser executes identically
-        // and cheaply: ONE static image (15 KB, a single 1.3 MP decode)
-        // revealed with a clip-path wipe along the drawing's diagonal
-        // (inset() in the element's pre-rotation space = bottom-left to
-        // top-right on screen). Video keeps playing the true stroke
-        // animation wherever autoplay is allowed.
-        function toAnimatedImage() {
+        // ===== 2026-08-10f — THE DRAWING, AT PLAIN-HTML COST =============
+        // The real stroke animation for every browser that refuses video
+        // autoplay. Recording 5 proved decode cost was the freeze (~95 MP
+        // of animated-WebP frames blocked a weak Mac ~4s); recording-4-era
+        // work proved live blend/filter layers stall too. So both costs
+        // are paid OFFLINE: the entire hero stack (gradient, glows, screen
+        // blend, color filter, vignette, rotation) is baked into a base
+        // composite (8 KB) plus an atlas of ONLY the pixels that change
+        // per frame (63 KB, 2.9 MP decoded once — the stroke tips). At
+        // runtime: draw base, then stamp one frame's patches per tick —
+        // a handful of tiny drawImage calls, nothing else. Canvas 2D
+        // drawImage is 2010-era tech that behaves identically everywhere.
+        var DRAW_BASE = 'https://mountzara.com/media/hero-draw-base-v1.webp';
+        var DRAW_ATLAS = 'https://mountzara.com/media/hero-draw-atlas-v1.webp';
+        var DRAW_META = 'https://mountzara.com/media/hero-draw-meta-v1.json';
+        function fallbackFade() {
+            // last resort (canvas/meta unavailable): static frame + fade
+            var img = document.getElementById('heroImgSlot');
+            var vid = document.getElementById('heroVideo');
+            if (!img || !vid || vid.tagName !== 'VIDEO') return;
+            img.onload = function () {
+                window.__mzHeroBytesPending = false;
+                var v2 = document.getElementById('heroVideo');
+                if (!v2 || v2.tagName !== 'VIDEO') return;
+                try { v2.pause(); } catch (e) {}
+                v2.removeAttribute('id');
+                v2.style.visibility = 'hidden';
+                img.id = 'heroVideo';
+                img.className = v2.className + ' wipe-in';
+                img.style.opacity = '1';
+                settleLater(img);
+            };
+            img.src = LAST;
+        }
+        function toCanvasDrawing() {
             var live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO') return null;
             if (window.__mzToImg) return null;
             window.__mzToImg = true;
-            var img = document.getElementById('heroImgSlot');
-            if (!img) return null;
+            var cv = document.getElementById('heroCanvas');
+            var ctx = null;
+            try { ctx = cv && cv.getContext && cv.getContext('2d'); } catch (e) {}
+            if (!ctx) { fallbackFade(); return null; }
             window.__mzHeroBytesPending = true;
-            var attach = function () {
-                window.__mzHeroBytesPending = false;
+            var baseImg = new Image(); baseImg.decoding = 'async';
+            var atlasImg = new Image(); atlasImg.decoding = 'async';
+            var meta = null, started = false, failed = false;
+            function fail() { if (!failed && !started) { failed = true; fallbackFade(); } }
+            function start() {
+                if (started || failed || !meta || !baseImg.complete || !baseImg.naturalWidth) return;
+                started = true;
                 var vid = document.getElementById('heroVideo');
-                if (!vid || vid.tagName !== 'VIDEO') return;
-                // zero-layout handoff: both elements pre-exist in the markup
-                try { vid.pause(); } catch (e) {}
-                vid.removeAttribute('id');
-                vid.style.visibility = 'hidden';
-                img.id = 'heroVideo';
-                img.className = vid.className + ' wipe-in';
-                img.style.opacity = '1';
-                settleLater(img);
-            };
-            img.onload = attach;
-            img.onerror = function () { window.__mzHeroBytesPending = false; };
-            img.src = LAST;
-            if (img.complete && img.naturalWidth > 0) attach();
+                if (vid && vid.tagName === 'VIDEO') {
+                    try { vid.pause(); } catch (e) {}
+                    vid.removeAttribute('id');
+                    vid.style.visibility = 'hidden';   // zero-layout handoff
+                }
+                var vg = document.querySelector('.hero-bg-vignette');
+                if (vg) vg.style.visibility = 'hidden';       // baked in
+                ctx.drawImage(baseImg, 0, 0);
+                cv.id = 'heroVideo';
+                cv.dataset.mzArt = '1';
+                cv.style.opacity = '1';
+                window.__mzHeroBytesPending = false;
+                var frames = meta.frames, durs = meta.durs;
+                var acc = [0];
+                for (var i = 0; i < durs.length; i++) acc.push(acc[i] + durs[i]);
+                var drawFrame = function (fi) {
+                    var list = frames[fi];
+                    for (var k = 0; k < list.length; k++) {
+                        var m = list[k];
+                        ctx.drawImage(atlasImg, m[0], m[1], m[2], m[3], m[4], m[5], m[2], m[3]);
+                    }
+                };
+                var finish = function () { cv.dataset.heroEnded = '1'; };
+                var reduce = window.matchMedia
+                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                var play = function () {
+                    if (reduce) {
+                        for (var f = 0; f < frames.length; f++) drawFrame(f);
+                        finish();
+                        return;
+                    }
+                    var t0 = performance.now(), next = 0;
+                    var tick = function () {
+                        var el = performance.now() - t0;
+                        while (next < frames.length && acc[next] <= el) { drawFrame(next); next++; }
+                        if (next < frames.length) requestAnimationFrame(tick);
+                        else finish();
+                    };
+                    requestAnimationFrame(tick);
+                };
+                if (atlasImg.complete && atlasImg.naturalWidth) play();
+                else { atlasImg.onload = play; atlasImg.onerror = finish; }
+                settleLater(cv);
+            }
+            baseImg.onload = start;
+            baseImg.onerror = fail;
+            baseImg.src = DRAW_BASE;
+            atlasImg.src = DRAW_ATLAS;
+            try {
+                fetch(DRAW_META).then(function (r) { return r.json(); })
+                    .then(function (m) { meta = m; start(); })
+                    .catch(fail);
+            } catch (e) { fail(); }
+            setTimeout(fail, 5000);           // nothing arrived: fade instead
             return null;
         }
+        window.__mzToCanvasDrawing = toCanvasDrawing;
         function hideLoaderNow() {
             if (!loader) return;
             loader.classList.add('hidden');
@@ -250,6 +330,15 @@
             var iv = setInterval(function () {
                 var el = document.getElementById('heroVideo');
                 if (!el) { clearInterval(iv); runChoreography(); return; }
+                if (el.tagName === 'CANVAS') {
+                    // the base composite is painted and the strokes are
+                    // stamping — that IS visible drawing
+                    if (el.dataset.mzArt === '1') {
+                        clearInterval(iv);
+                        setTimeout(runChoreography, 1300); // strokes land first
+                    }
+                    return;
+                }
                 if (el.tagName === 'IMG') {
                     // only once the image has real data — an attached-but-empty
                     // element put the monogram over a blank canvas for seconds
@@ -289,7 +378,7 @@
                 if (swapped) return;
                 swapped = true;
                 v.classList.add('playing');
-                toAnimatedImage();
+                toCanvasDrawing();
                 hideLoaderNow();
                 anchorOnDrawing();
             };
@@ -313,7 +402,7 @@
                     if (err && err.name === 'NotAllowedError' && !window.__mzAutoplayRefused) {
                         window.__mzAutoplayRefused = true;
                         try { window.dispatchEvent(new Event('mz:autoplay-refused')); } catch (e) {}
-                        toAnimatedImage();
+                        toCanvasDrawing();
                     }
                 });
             };
@@ -362,7 +451,7 @@
             setTimeout(function () {
                 var cur = document.getElementById('heroVideo');
                 if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.15)) {
-                    toAnimatedImage();
+                    toCanvasDrawing();
                 }
             }, 1800);
         }
@@ -2096,7 +2185,7 @@
        need; interactivity arrives when the hero settles (6.2s) or the
        INSTANT the user shows intent (scroll/tap/key), whichever is first. */
     (function () {
-        var SRC = '/assets/js/home.js?v=382771b416';
+        var SRC = '/assets/js/home.js?v=6bcc26bffa';
         var load = function () {
             if (window.__mzHomeLoaded) return;
             window.__mzHomeLoaded = true;

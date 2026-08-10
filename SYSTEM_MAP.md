@@ -501,7 +501,33 @@ the target element is in a section ABOVE the script tag.
     loader → drawing → monogram → headline → sub → credentials, anchored
     on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
     `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
-    **2026-08-10d THE ANIMATED WEBP IS DEAD — THE REVEAL IS A WIPE.**
+    **2026-08-10f THE DRAWING DRAWS ITSELF AGAIN — BAKED CANVAS PATCHES.**
+    The user refused a static reveal ("I refuse simple appear instead of
+    actual animation of my drawing") — rightly. The real stroke animation
+    is back on the no-autoplay path at plain-HTML cost: the ENTIRE hero
+    stack (stage gradient + glows + screen blend + color filter + vignette
+    + rotation) is baked OFFLINE into browser-true composites — captured
+    from the live page itself rendering each frame (not modeled; a PIL
+    model missed the above-art vignette and blend subtleties) — then
+    reduced to `hero-draw-base-v1.webp` (8 KB, the art-free stage) plus
+    `hero-draw-atlas-v1.webp` (63 KB, 2.9 MP decoded once: ONLY the
+    pixels that change per frame — the stroke tips, ≤10 rects/frame,
+    grain-noise cells filtered) plus `hero-draw-meta-v1.json` (6 KB
+    timings/rects). Runtime = `#heroCanvas` (pre-placed in
+    `.hero-bg-stage`, 1440×900, object-fit cover): draw base once, stamp
+    one frame's patches per rAF tick at the original cadence — a handful
+    of tiny drawImage calls, no blend, no filter, no decode storm, no
+    layout. Replay fidelity vs the browser's own final render: 0.35/255
+    mean. Reduce Motion draws all patches instantly. The canvas takes the
+    `#heroVideo` id at handoff (`dataset.mzArt='1'` = drawing visible —
+    the anchor and audits key on it); its settle zoom is
+    `@keyframes heroCanvasZoom` (plain scale — NOT the rotated KenBurns
+    keyframes). `fallbackFade()` (static frame + opacity) remains as the
+    canvas/meta-failure net. Rebuild pipeline lives in this session's
+    scratchpad pattern: capture per-frame composites off the live page at
+    1440×900 dpr1 (data-URL src swaps on #heroVideo), diff → cluster →
+    atlas. mp4 video still plays where autoplay is allowed.
+    **2026-08-10d (superseded by f) THE REVEAL WAS BRIEFLY A WIPE.**
     Recording 5 proved the last freeze was DECODE COST: ~95MP of animated
     WebP frames blocked a weak Mac's main thread ~4s (monogram landed —
     composited fade — while the main-thread-painted headline froze). The

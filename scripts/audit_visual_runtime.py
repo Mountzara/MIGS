@@ -80,6 +80,7 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             """() => { const v = document.querySelector('#heroVideo');
                  if (!v) return false;
                  if (v.tagName === 'VIDEO') return v.currentTime > 0.05;
+                 if (v.tagName === 'CANVAS') return v.dataset.mzArt === '1';
                  return v.complete && v.naturalWidth > 0; }""",
             timeout=14000)
         started = True
@@ -150,6 +151,16 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         n_reels = 0                        # skip the motion-judging loop below
     else:
         n_reels = page.evaluate("() => document.querySelectorAll('.video-preview').length")
+    # home.js OWNS the reel wake/swap machinery and loads on settle or first
+    # user intent (2026-08-10c) — the scroll below triggers it. Judging reel
+    # #0 before the script has evaluated judges the loader, not the page.
+    if n_reels:
+        page.evaluate("() => window.scrollTo(0, Math.min(600, document.body.scrollHeight))")
+        try:
+            page.wait_for_function("() => !!window.__mzHomeLoaded", timeout=15000)
+        except Exception:
+            pass
+        page.wait_for_timeout(1200)
     bad, undecodable, judged = [], [], 0
     for ri in range(n_reels):
         page.evaluate("""(i) => { const el = document.querySelectorAll('.video-preview')[i];
@@ -259,8 +270,8 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         // sampling video-only fields off an image (None-crash).
         if (v.tagName !== 'VIDEO')
             return {poster:true, kb:v.classList.contains('ken-burns'),
-                    drawing:/hero-animation|hero-last-frame|^data:image\\/webp/.test(v.currentSrc || v.src || ''),
-                    nw:v.naturalWidth,
+                    drawing:(v.tagName === 'CANVAS' && v.dataset.mzArt === '1') || /hero-animation|hero-last-frame|^data:image\\/webp/.test(v.currentSrc || v.src || ''),
+                    nw:(v.tagName === 'CANVAS' ? v.width : v.naturalWidth),
                     w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight};
         return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,
                 kb:v.classList.contains('ken-burns'), ended:v.ended,
@@ -378,7 +389,10 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         res.append(chk(f"[{label}] ken-burns animation present", False,
                        ".ken-burns never applied within 14s (drawing-animation may have stalled)"))
     else:
-        applied = "kenburns" in kb0["name"].lower() and kb0["state"] == "running"
+        # heroCanvasZoom is the canvas hero's settle zoom (2026-08-10f) —
+        # same role as the KenBurns keyframes on the img/video hero
+        applied = (("kenburns" in kb0["name"].lower() or "canvaszoom" in kb0["name"].lower())
+                   and kb0["state"] == "running")
         res.append(chk(f"[{label}] ken-burns animation applied + running", applied,
                        f"name={kb0['name']} state={kb0['state']}"))
         res.append(chk(f"[{label}] ken-burns is actually animating (transform changes)",

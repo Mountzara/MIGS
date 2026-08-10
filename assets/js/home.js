@@ -116,6 +116,12 @@
             // seconds (user recording 5); no delivery trick fixes decode.
             const live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
+            // the bootstrap owns the real path — its canvas drawing plays
+            // the actual strokes; this body is only the no-bootstrap net
+            if (typeof window.__mzToCanvasDrawing === 'function') {
+                window.__mzToCanvasDrawing();
+                return;
+            }
             const img = document.getElementById('heroImgSlot') || document.createElement('img');
             img.alt = '';
             img.decoding = 'async';
