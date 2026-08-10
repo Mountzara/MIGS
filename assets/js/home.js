@@ -97,7 +97,7 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
         const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)

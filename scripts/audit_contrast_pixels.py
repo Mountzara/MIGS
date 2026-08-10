@@ -330,6 +330,16 @@ def main():
                     report.setdefault(path, {})[label] = {"error": str(e)[:90]}
                     continue
                 page.wait_for_timeout(1400)
+                # FREEZE TIME-ROTATING CONTENT. The homepage app-demo scenes
+                # rotate every 3.6s; the two render passes (backdrop vs glyph)
+                # can catch DIFFERENT scenes, measuring one scene's text
+                # against another scene's ground (observed: .rl-cap "1.04:1"
+                # on one deploy, clean on the rerun with zero diffs between).
+                # Neutralize every interval-driven rotator before measuring.
+                page.evaluate("""() => {
+                    const top = setInterval(() => {}, 100000);
+                    for (let i = 1; i <= top; i++) clearInterval(i);
+                }""")
                 stuck = page.evaluate(REST_OVERLAY)
                 if stuck:
                     for o in stuck:

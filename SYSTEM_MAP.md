@@ -501,6 +501,16 @@ the target element is in a section ABOVE the script tag.
     loader → drawing → monogram → headline → sub → credentials, anchored
     on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
     `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
+    **2026-08-10b THE ASSET ITSELF WAS THE ROOT CAUSE** (user: "the fix
+    shouldn't require multiple trys" — correct): every freeze traced to
+    moving a 1.2 MB animation whose strokes END AT FRAME 70 (2.9s) —
+    the remaining 123 frames were a frozen hold, at 1920×1080 behind
+    text. The drawing is now `/media/hero-animation-lite-v1.webp`:
+    72 frames, 1536×864, q50, **171 KB** — it arrives before it is
+    needed on any plausible connection. Rebuild recipe: PIL over the
+    original, cut at last-motion frame +1, LANCZOS to 1536×864,
+    quality 50, method 6, loop=1. All prior delivery hardening remains
+    below (each layer still guards a real failure mode).
     Pieces that must not regress: (a) REPLAY IS SERVER-SIDE:
     `/media/<key>.webp?replay=1&t=<now>` makes `functions/media/[[path]].js`
     append a 12-byte random XTRA chunk + RIFF-size fixup, so every view
