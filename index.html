@@ -372,7 +372,23 @@
                 settleLater(cv);
             }
             baseImg.onload = start;
-            baseImg.onerror = function () { fail('base image error'); };
+            // one retry before giving up: a single dropped request used to
+            // cost the whole animation and silently show the finished art
+            var retried = false;
+            baseImg.onerror = function () {
+                if (!retried) {
+                    retried = true;
+                    mzlog('base image error — retrying');
+                    setTimeout(function () { baseImg.src = DRAW_BASE + '?r=' + Date.now(); }, 400);
+                    return;
+                }
+                fail('base image error (after retry)');
+            };
+            atlasImg.onerror = function () {
+                mzlog('atlas error — retrying');
+                atlasImg.onerror = null;
+                setTimeout(function () { atlasImg.src = DRAW_ATLAS + '?r=' + Date.now(); }, 400);
+            };
             baseImg.src = DRAW_BASE;
             atlasImg.src = DRAW_ATLAS;
             // META IS INLINE (below) — no fetch, no CSP surface, no timeout
