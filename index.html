@@ -226,6 +226,7 @@
                 img.className = v2.className + ' wipe-in';
                 img.style.opacity = '1';
                 settleLater(img);
+                setTimeout(runChoreography, 1300);   // same direct drive
             };
             img.src = LAST;
         }
@@ -281,6 +282,14 @@
                     // the anchor keys on THIS moment: the drawing is now
                     // visibly in progress, monogram follows +1300ms
                     cv.dataset.mzArt = '1';
+                    // AND DRIVE THE CASCADE DIRECTLY FROM HERE. Relying on
+                    // the polling anchor to notice cost him 3.25 seconds of
+                    // dead screen: in his recording the poll never caught
+                    // the canvas, so the text waited out the 7s emergency
+                    // fallback. The drawing knows exactly when it started —
+                    // it schedules the reveal itself. (runChoreography is
+                    // idempotent: whichever path fires first wins.)
+                    setTimeout(runChoreography, 1300);
                     // 2026-08-10g — THE DRAWING PLAYS UNDER REDUCE MOTION
                     // TOO. It used to stamp all 72 frames at once there
                     // (measured: whole drawing done in 364ms vs 2967ms) —
@@ -347,12 +356,25 @@
         function hideLoaderNow() {
             if (!loader) { window.__mzLoaderGone = true; return; }
             loader.classList.add('hidden');
-            // the drawing waits for this flag: on a fast machine with the
-            // 77KB pre-cached, the strokes played out BEHIND the loader and
-            // the reveal showed a finished static image (user report). Set
-            // ~250ms into the 700ms fade — stamps begin as the veil lifts.
-            setTimeout(function () { window.__mzLoaderGone = true; }, 250);
             setTimeout(function () { loader.classList.add('removed'); }, 700);
+            // THE DRAWING WAITS FOR THE CURTAIN TO ACTUALLY BE GONE — the
+            // element's own measured opacity, not a timer. A fixed 250ms
+            // assumed the 700ms fade takes 700ms; on a hitching machine it
+            // took seconds, and the strokes played out BEHIND the black
+            // loader (his recording: 80% of the drawing already there the
+            // instant the curtain lifted, i.e. "a static image").
+            var poll = setInterval(function () {
+                var op = 1;
+                try { op = parseFloat(getComputedStyle(loader).opacity); } catch (e) { op = 0; }
+                if (loader.classList.contains('removed') || !(op > 0.05)) {
+                    clearInterval(poll);
+                    window.__mzLoaderGone = true;
+                }
+            }, 50);
+            setTimeout(function () {           // hard cap, never hang
+                clearInterval(poll);
+                window.__mzLoaderGone = true;
+            }, 3000);
         }
         // ===== 2026-08-09b — ONE OWNER, ONE ANCHOR ======================
         // The user's second recording showed the monogram appearing at ~3.5s
