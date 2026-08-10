@@ -109,7 +109,7 @@ const PARTS = [
     fn("toCanvasDrawing"),
     fn("fallbackFade"),
     rule(".hero-canvas"),
-    rule("@keyframes heroCanvasZoom"),
+    
     fn("settleLater"),
     fn("hideLoaderNow"),
     rule(".hero-video.wipe-in"),

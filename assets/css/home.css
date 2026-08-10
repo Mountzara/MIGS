@@ -470,20 +470,21 @@
            IN its pixels, painted offline. One opaque layer; the only
            runtime work is tiny drawImage stamps as the strokes land. Its
            zoom is a plain scale — no blend to re-compute. */
+        /* 2026-08-10h — the canvas now carries .hero-video too, so its
+           position, size, object-fit and diagonal transform come from that
+           one rule: the drawing lands exactly where the original video did.
+           Only two overrides are needed here. */
         .hero-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            /* keep .hero-video's screen blend: the artwork's ink is WHITE
+               chalk — the mauve everyone sees is that white screened over the
+               purple stage. Baking a fixed background into the ink instead
+               produced grey-on-grey and washed the hero out. The canvas is
+               repainted only where the pen moves, so the blend has little to
+               re-do per frame. */
+            mix-blend-mode: screen;
             pointer-events: none;
         }
-        .hero-canvas.ken-burns {
-            animation: heroCanvasZoom 45s ease-in-out 1 forwards;
-        }
-        @keyframes heroCanvasZoom {
-            from { transform: scale(1); }
-            to   { transform: scale(1.06); }
+
         }
         .hero-video.wipe-in {
             /* 2026-08-10e — OPACITY, not clip-path. The clip-path wipe
