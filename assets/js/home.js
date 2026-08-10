@@ -97,8 +97,8 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-lite-v1.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v2.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -279,7 +279,7 @@
                     fallback.id = live.id;
                     fallback.alt = '';
                     fallback.decoding = 'async';
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-lite-v1.webp';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
@@ -2998,6 +2998,27 @@
                 window.__mzAutoplayRefused = true;
                 document.querySelectorAll('video.video-preview').forEach(swapToPreview);
             };
+            // STANDING STALL GUARD — a reel can start, pass the wake poll,
+            // and then hang forever on a decoder stall (observed: playing
+            // flag on, currentTime frozen for 8s+). Any in-view reel whose
+            // clock hasn't moved across two 4s ticks becomes its animated
+            // preview. Cheap: four videos, one read each.
+            setInterval(() => {
+                document.querySelectorAll('video.video-preview').forEach((v) => {
+                    if (v.paused || !v.isConnected) { delete v.dataset.mzStallT; return; }
+                    const r = v.getBoundingClientRect();
+                    if (r.bottom < 0 || r.top > window.innerHeight) return;
+                    const t = v.currentTime.toFixed(2);
+                    if (v.dataset.mzStallT === t) {
+                        const n = (+(v.dataset.mzStallN || 0)) + 1;
+                        v.dataset.mzStallN = String(n);
+                        if (n >= 2) swapToPreview(v);
+                    } else {
+                        v.dataset.mzStallT = t;
+                        v.dataset.mzStallN = '0';
+                    }
+                });
+            }, 3000);
             window.addEventListener('mz:autoplay-refused', swapAll);
             if (window.__mzAutoplayRefused) {
                 if (document.readyState === 'loading') {

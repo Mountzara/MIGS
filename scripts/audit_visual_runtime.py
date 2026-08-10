@@ -192,6 +192,31 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             t2 = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
                 return v && v.tagName === 'VIDEO' ? (v.currentTime || 0) : null; }""", ri)
             frozen = t2 is not None and abs(t2 - b["t"]) < 0.02
+        if frozen:
+            # The page's standing stall guard converts a frozen reel to its
+            # animated preview within ~2 x 3s ticks. That self-heal IS the
+            # shipped behavior — give it time to act before judging.
+            try:
+                page.wait_for_function("""(i) => {
+                    const v = document.querySelectorAll('.video-preview')[i];
+                    if (!v) return true;
+                    if (v.tagName === 'IMG') return v.complete && v.naturalWidth > 0;
+                    return !v.paused && v.currentTime > 0.05 && v.dataset.mzStallN === '0';
+                }""", arg=ri, timeout=10000)
+            except Exception:
+                pass
+            h = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
+                if (!v) return null;
+                // IMG attached = the stall guard converted it: that IS the
+                // heal. It is centered in the viewport, so it will paint as
+                // soon as its bytes land (the proxied fetch can outlast this
+                // probe's window — completion is not the test here).
+                if (v.tagName === 'IMG')
+                    return {healed: /-preview\\.webp/.test(v.src || ''), tag: 'IMG'};
+                return {healed: false, t: v.currentTime || 0, tag: 'VIDEO'}; }""", ri)
+            if h and (h.get("healed") or (h.get("tag") == "VIDEO" and abs(h.get("t", 0) - b["t"]) > 0.05)):
+                judged += 1
+                continue
         # ready<2 alone is NOT failure while time advances — a looping video
         # reports HAVE_METADATA for an instant at the wrap (observed:
         # Δt=-0.55, paused=False flagged as not-playing). Paused or frozen is.

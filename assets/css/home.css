@@ -400,10 +400,15 @@
             object-fit: contain;        /* show the WHOLE drawing, never distort */
             opacity: 1;
             pointer-events: none;
-            /* 2026-06-13 — push saturation/brightness/contrast so the mauve
-               line-art is vivid: that vivid drawing IS the contrast that lets the
-               frosted-glass cards read as real Apple glass. */
-            filter: saturate(2.0) brightness(1.45) contrast(1.28); /* +brightness 2026-07-22: offsets the stronger plum overlay so the line-art stays vivid */
+            /* 2026-08-10 — NO CSS filter on the image hero: Safari re-runs a
+               filter chain over the full rendered layer (~9MP at desktop
+               size) on EVERY animation frame — a per-frame GPU cost that
+               froze the drawing on weaker Macs and that no Linux test
+               browser models. The exact same saturate(2.0) brightness(1.45)
+               contrast(1.28) math is BAKED into the pixels of
+               hero-animation-lite-v2.webp / hero-last-frame-lite-v2.webp.
+               The <video> keeps the live filter below — its pixels are the
+               unbaked originals. */
             /* 2026-07-22 — screen-blend the video so its black pixels become
                transparent: the mauve line-art now draws ITSELF directly onto
                the purple-gradient stage instead of carrying its own black
@@ -417,6 +422,10 @@
                -48%) so the drawing fills space better while showing the majority
                of the anatomical illustration. */
             transform: translate(-48%, -50%) rotate(-22deg) scale(2.09);
+        }
+        /* live filter for the VIDEO path only — see the baked-pixels note above */
+        video.hero-video {
+            filter: saturate(2.0) brightness(1.45) contrast(1.28);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
            (the giant "tap to play" button) when the hero <video> first
