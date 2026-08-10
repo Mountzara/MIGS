@@ -518,7 +518,7 @@ the target element is in a section ABOVE the script tag.
     one frame's patches per rAF tick at the original cadence — a handful
     of tiny drawImage calls, no blend, no filter, no decode storm, no
     layout. Replay fidelity vs the browser's own final render: 0.35/255
-    mean. Reduce Motion draws all patches instantly. The canvas takes the
+    mean. Reduce Motion draws all patches instantly. THE STROKES WAIT FOR THE CURTAIN: play() blocks on `window.__mzLoaderGone` (set ~250ms into the loader fade; 6s safety valve) — on a fast machine with the 77KB pre-cached the drawing played out BEHIND the loader and the reveal showed a finished static image (user report). `dataset.mzArt` is set at visible play start, so the monogram anchor (+1300ms) counts from strokes the viewer can actually see. The canvas takes the
     `#heroVideo` id at handoff (`dataset.mzArt='1'` = drawing visible —
     the anchor and audits key on it); its settle zoom is
     `@keyframes heroCanvasZoom` (plain scale — NOT the rotated KenBurns

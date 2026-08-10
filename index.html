@@ -251,7 +251,6 @@
                 if (vg) vg.style.visibility = 'hidden';       // baked in
                 ctx.drawImage(baseImg, 0, 0);
                 cv.id = 'heroVideo';
-                cv.dataset.mzArt = '1';
                 cv.style.opacity = '1';
                 window.__mzHeroBytesPending = false;
                 var frames = meta.frames, durs = meta.durs;
@@ -268,6 +267,15 @@
                 var reduce = window.matchMedia
                     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 var play = function () {
+                    // never draw behind the loader — the audience must SEE
+                    // the strokes land. (Safety valve at 6s absolute.)
+                    if (!window.__mzLoaderGone && performance.now() < 6000) {
+                        setTimeout(play, 80);
+                        return;
+                    }
+                    // the anchor keys on THIS moment: the drawing is now
+                    // visibly in progress, monogram follows +1300ms
+                    cv.dataset.mzArt = '1';
                     if (reduce) {
                         for (var f = 0; f < frames.length; f++) drawFrame(f);
                         finish();
@@ -300,8 +308,13 @@
         }
         window.__mzToCanvasDrawing = toCanvasDrawing;
         function hideLoaderNow() {
-            if (!loader) return;
+            if (!loader) { window.__mzLoaderGone = true; return; }
             loader.classList.add('hidden');
+            // the drawing waits for this flag: on a fast machine with the
+            // 77KB pre-cached, the strokes played out BEHIND the loader and
+            // the reveal showed a finished static image (user report). Set
+            // ~250ms into the 700ms fade — stamps begin as the veil lifts.
+            setTimeout(function () { window.__mzLoaderGone = true; }, 250);
             setTimeout(function () { loader.classList.add('removed'); }, 700);
         }
         // ===== 2026-08-09b — ONE OWNER, ONE ANCHOR ======================
