@@ -291,14 +291,41 @@
                     // not vestibular motion; what Reduce Motion legitimately
                     // suppresses here is the big Ken-Burns ZOOM, which stays
                     // off (see settleLater).
-                    var t0 = performance.now(), next = 0;
-                    var tick = function () {
-                        var el = performance.now() - t0;
-                        while (next < frames.length && acc[next] <= el) { drawFrame(next); next++; }
+                    // FRAME-PACED, NOT WALL-CLOCK. The previous loop advanced
+                    // to `performance.now() - t0`, so ANY stall — a
+                    // backgrounded tab (rAF suspends completely), a slow
+                    // load, a main-thread hitch — made it dump every
+                    // remaining frame in ONE tick: the drawing "appeared"
+                    // finished and static, which is exactly what the owner
+                    // kept seeing while every instrument reported a healthy
+                    // animation. Capping the per-tick advance means the
+                    // strokes are ALWAYS drawn one after another, however
+                    // long the page was stalled or hidden.
+                    var elapsed = 0, next = 0, last = performance.now();
+                    var MAX_STEP = 90;            // ms of animation per frame
+                    var tick = function (now) {
+                        var dt = (now || performance.now()) - last;
+                        last = (now || performance.now());
+                        if (dt < 0) dt = 0;
+                        elapsed += (dt > MAX_STEP ? MAX_STEP : dt);
+                        while (next < frames.length && acc[next] <= elapsed) { drawFrame(next); next++; }
                         if (next < frames.length) requestAnimationFrame(tick);
                         else finish();
                     };
-                    requestAnimationFrame(tick);
+                    // never start against a hidden tab: rAF is suspended
+                    // there, and the first visible tick would otherwise be
+                    // the one that catches up
+                    if (typeof document.hidden === 'boolean' && document.hidden) {
+                        var onShow = function () {
+                            if (document.hidden) return;
+                            document.removeEventListener('visibilitychange', onShow);
+                            last = performance.now();
+                            requestAnimationFrame(tick);
+                        };
+                        document.addEventListener('visibilitychange', onShow);
+                    } else {
+                        requestAnimationFrame(tick);
+                    }
                 };
                 if (atlasImg.complete && atlasImg.naturalWidth) play();
                 else { atlasImg.onload = play; atlasImg.onerror = finish; }
