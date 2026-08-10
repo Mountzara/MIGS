@@ -68,10 +68,19 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # (the 8s "drawing" animation), and JS adds .ken-burns. So we do NOT hardcode
     # a wait — we poll up to 14s for the hero sequence to actually begin
     # (#heroVideo.currentTime advancing), then give it a moment to settle.
+    # 2026-08-10 — "started" must match the CURRENT architecture: on touch
+    # devices (and whenever autoplay is refused) the bootstrap replaces the
+    # hero <video> with the animated-WebP <img>, which has no currentTime.
+    # Started = video visibly advancing OR the animated image attached with
+    # real pixel data. currentTime-only made every real-WebKit iPhone run
+    # fail by definition.
     started = False
     try:
         page.wait_for_function(
-            "() => { const v=document.querySelector('#heroVideo'); return v && v.currentTime > 0.05; }",
+            """() => { const v = document.querySelector('#heroVideo');
+                 if (!v) return false;
+                 if (v.tagName === 'VIDEO') return v.currentTime > 0.05;
+                 return v.complete && v.naturalWidth > 0; }""",
             timeout=14000)
         started = True
     except Exception:
@@ -104,13 +113,18 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # gives them a fair chance to start and avoids failing on a momentary mid-
     # load sample, while still catching a video that GENUINELY never autoplays
     # on this engine (the real iOS/WebKit autoplay-reliability failure).
-    try:
-        page.wait_for_function("""() => {
-            const vs=[...document.querySelectorAll('video[autoplay]')].filter(v=>v.offsetParent!==null);
-            return vs.length>0 && vs.every(v=>!v.paused && v.readyState>=2);
-        }""", timeout=8000)
-    except Exception:
-        pass
+    # 2026-08-10 — judge the reels AS A VIEWER MEETS THEM. They are
+    # preload="none" and wake only near the viewport (measured perf: eager
+    # loading cost 10 MB at page open), so sampling them 18 viewports
+    # offscreen proves nothing. Scroll the first reel into view, give the
+    # wake/refusal machinery time to act, then require MOTION: a playing
+    # video OR the looping animated preview it swaps to when this engine
+    # refuses (or cannot decode) video autoplay — that swap IS the shipped
+    # behavior for the user's Safari, which refuses all video autoplay.
+    # One reel at a time, centered in the viewport, exactly as a scrolling
+    # viewer meets it: the wake machinery is viewport-driven and the preview
+    # images are loading=lazy, so judging all four from one scroll position
+    # reports designed-in idleness as failure.
     # confirm time is advancing (not frozen) with a short two-sample check.
     # `decodable` calibration (2026-07-22): Playwright's Chromium test build
     # ships WITHOUT proprietary codecs, so an mp4-only <video> reports
@@ -119,32 +133,60 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # ENGINE cannot decode is unjudgeable — report it as skipped, loudly,
     # instead of failing the audit. A decodable video that genuinely fails
     # to autoplay (paused / frozen / never buffers) still FAILS.
-    s0 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
-        .filter(v=>v.offsetParent!==null).map((v,i)=>({i,t:v.currentTime,paused:v.paused,ready:v.readyState}))""")
-    page.wait_for_timeout(700)
-    s1 = page.evaluate("""() => [...document.querySelectorAll('video[autoplay]')]
-        .filter(v=>v.offsetParent!==null).map((v,i)=>({
-            i,t:v.currentTime,paused:v.paused,ready:v.readyState,net:v.networkState,
-            src:(v.currentSrc||v.src||'').split('/').pop(),
-            h264:v.canPlayType('video/mp4; codecs="avc1.42E01E"')!==''}))""")
-    bad, undecodable = [], []
-    for a, b in zip(s0, s1):
+    n_reels = page.evaluate("() => document.querySelectorAll('.video-preview').length")
+    bad, undecodable, judged = [], [], 0
+    for ri in range(n_reels):
+        page.evaluate("""(i) => { const el = document.querySelectorAll('.video-preview')[i];
+            if (el) el.scrollIntoView({block: 'center'}); }""", ri)
+        try:
+            page.wait_for_function("""(i) => {
+                const v = document.querySelectorAll('.video-preview')[i];
+                if (!v) return true;
+                return v.tagName === 'IMG' ? (v.complete && v.naturalWidth > 0)
+                                           : (!v.paused && v.readyState >= 2);
+            }""", arg=ri, timeout=5000)
+        except Exception:
+            pass
+        a = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
+            return v ? {tag: v.tagName, t: v.currentTime || 0} : null; }""", ri)
+        page.wait_for_timeout(500)
+        b = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
+            if (!v) return null;
+            return {tag: v.tagName, t: v.currentTime || 0, paused: !!v.paused,
+                ready: v.readyState || 0,
+                net: v.networkState === undefined ? -1 : v.networkState,
+                src: (v.currentSrc || v.src || '').split('/').pop().split('?')[0],
+                preview: v.tagName === 'IMG' && /-preview\\.webp/.test(v.src || '')
+                         && v.complete && v.naturalWidth > 0,
+                h264: v.canPlayType ? v.canPlayType('video/mp4; codecs="avc1.42E01E"') !== '' : false}; }""", ri)
+        if not a or not b:
+            continue
+        if b.get("preview"):
+            judged += 1                     # animated preview attached = motion
+            continue
+        if b["tag"] == "IMG":
+            bad.append(f"video#{ri}(img-not-loaded:{b['src']})")
+            continue
         frozen = abs(b["t"] - a["t"]) < 0.02   # loop-wrap (t1<t0) is fine; frozen is not
         if b["paused"] or b["ready"] < 2 or frozen:
             # networkState 3 = NETWORK_NO_SOURCE: the ENGINE rejected every
             # source (codec unsupported in this test build) — distinct from a
             # slow network (state 2 = NETWORK_LOADING), which still FAILS.
             if b["ready"] == 0 and b["net"] == 3 and not b["h264"]:
-                undecodable.append(b["src"] or f"video#{a['i']}")
+                undecodable.append(b["src"] or f"video#{ri}")
             else:
-                bad.append(f"video#{a['i']}(paused={b['paused']},Δt={b['t']-a['t']:.2f})")
-    judged = len(s1) - len(undecodable)
+                bad.append(f"video#{ri}(paused={b['paused']},Δt={b['t']-a['t']:.2f})")
+        else:
+            judged += 1
     if undecodable:
         print(f"  [{label}] ⏭  {len(undecodable)} video(s) NOT judgeable — this engine lacks their "
               f"codec (no H.264 in Playwright Chromium): {undecodable}")
     res.append(chk(f"[{label}] autoplay videos are playing", not bad and judged >= 0,
                    f"{len(bad)} not playing after 8s: {bad}" if bad
                    else f"{judged} playing" + (f" ({len(undecodable)} codec-skipped)" if undecodable else "")))
+    # back to the top — the hero checks below measure the hero as presented
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(400)
 
     # 3) HERO video plays + covers the screen edge-to-edge. Under Reduce Motion
     # the hero legitimately pauses at the end of the drawing (handled in 4); for
@@ -170,8 +212,15 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
                 w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight}; }""")
     page.wait_for_timeout(700)
     hero1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo'); if(!v) return null;
+        // the settle-swap (ended +1.4s) can land between the two samples —
+        // a poster here means the video played, ended, and settled: correct.
+        if (v.tagName !== 'VIDEO')
+            return {poster:true, paused:true, t:null, dur:null,
+                    kb:v.classList.contains('ken-burns'), ended:true};
         return {paused:v.paused, t:v.currentTime, dur:v.duration,
                 kb:v.classList.contains('ken-burns'), ended:v.ended}; }""")
+    if hero1 and hero1.get("poster") and hero0 and not hero0.get("poster"):
+        hero1 = {**hero1, "t": hero0["t"], "dur": hero0.get("dur")}
     if hero0 is None:
         res.append(chk(f"[{label}] hero video present", False, "#heroVideo not found"))
     elif hero0.get("poster"):
@@ -236,8 +285,13 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         if settle0:
             page.wait_for_timeout(1500)
             settle1 = page.evaluate("""() => { const v=document.querySelector('#heroVideo');
-                return v ? {t:v.currentTime, paused:v.paused} : null; }""")
-            wrapped = settle1 and (settle1["t"] < settle0["t"] - 0.5 or not settle1["paused"])
+                if (!v) return null;
+                // poster swap (ended +1.4s) inside this window = settled, not
+                // wrapped — sampling currentTime off the <img> crashed here
+                if (v.tagName !== 'VIDEO') return {poster:true, t:-1, paused:true};
+                return {t:v.currentTime, paused:v.paused}; }""")
+            wrapped = settle1 and not settle1.get("poster") and (
+                settle1["t"] < settle0["t"] - 0.5 or not settle1["paused"])
             near_end = settle0["dur"] and settle0["t"] >= settle0["dur"] - 0.6
             res.append(chk(f"[{label}] hero settles on final frame (no replay loop)",
                            bool(settle0["paused"] and settle0["flag"] and near_end and not wrapped),

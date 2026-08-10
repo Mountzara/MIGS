@@ -252,6 +252,13 @@ the target element is in a section ABOVE the script tag.
    SILENTLY SKIPPED in the remote deploy environment — which let a
    stale `#how-you-visit` manifest selector (element moved to portal
    2026-06-25, commit 5953296) sit undetected for a month.
+   **2026-08-10 — the TLS cap is CHROMIUM-ONLY** (`_with_chromium_tls_cap`,
+   applied inside `launch_chromium`, no longer inside `_with_env_proxy`):
+   passing `--ssl-version-max` to `launch_engine('webkit')` killed WebKit
+   at startup ("browser has been closed"), so every 'webkit' audit had
+   silently run on Chromium since 7-22. WebKit is installed in this
+   container and now launches natively; keep engine-specific args with
+   the engine.
 8b. **Visual/interactive audit — HARD gate since 2026-07-22** —
    `scripts/audit_visual_runtime.py`: images loaded, autoplay videos
    playing, hero video starts/covers, Ken-Burns actually animating,
@@ -265,6 +272,18 @@ the target element is in a section ABOVE the script tag.
    the hero must be PAUSED at ~duration with `dataset.heroEnded` and stay
    there across 1.5s — catches the replay-loop class ("advancing" alone
    passed an endlessly looping hero).
+   **2026-08-10 viewer-faithful recalibration (33/33 on live, real WebKit
+   for the first time — see 8a's TLS-cap note):** "hero started" accepts
+   the animated-IMG hero (`complete && naturalWidth > 0`) — on touch and
+   under refused autoplay the hero is never a `<video>`, so the
+   currentTime-only check failed real-WebKit iPhone by definition. Reels
+   are judged ONE AT A TIME, each scrolled to viewport center first —
+   they are viewport-woken `preload="none"` videos with `loading=lazy`
+   preview imgs, so sampling all four from one scroll position reports
+   designed-in idleness as failure; pass = playing video OR loaded
+   animated preview. Both hero samples and the settle check treat a
+   mid-window `ended`+1.4s poster swap as settled (sampling currentTime
+   off the swapped `<img>` crashed the audit).
    Demote: `DEPLOY_VISUAL_GATE_SOFT=1`. Skip: `DEPLOY_SKIP_VISUAL_AUDIT=1`.
 9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
@@ -472,6 +491,39 @@ the target element is in a section ABOVE the script tag.
     of the old 10 MB, native autoplay is back, and the IntersectionObserver
     still pauses them off-screen. The grid is 2x2 by explicit rule: a
     4-across row (added to avoid an orphan) shrank the thumbnails.
+    **2026-08-09/10 opening choreography + autoplay-refused Safari (four
+    user recordings, root-caused one per recording):** the user's Safari
+    refuses ALL video autoplay (site-wide "Never Auto-Play" — the hero
+    video never played once across four recordings), so every video path
+    needs an animated-image fallback. Current contract, owned ENTIRELY by
+    the in-body bootstrap in `index.html` (home.js's `startHeroSequence`
+    returns early; its cascade is a no-bootstrap safety net only):
+    loader → drawing → monogram → headline → sub → credentials, anchored
+    on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
+    `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
+    Pieces that must not regress: (a) `heroBytes` fetch starts at
+    bootstrap top; the IMG swap waits for bytes — attaching an empty img
+    put the monogram over a blank canvas (recording 4); (b) every replay
+    appends a 12-byte XTRA chunk + RIFF-size fixup so WebKit's
+    CONTENT-keyed decoded-animation cache cannot serve the final frame
+    (recording 3 — a plain blob URL is NOT enough); (c) a hero `play()`
+    rejection with `err.name === 'NotAllowedError'` swaps the hero
+    immediately (no 1800ms stall wait), sets `__mzAutoplayRefused`, and
+    dispatches `mz:autoplay-refused`; (d) `home.js` listens and converts
+    ALL FOUR reels to their looping animated previews at once
+    (`/media/<name>-reel-v2-preview.webp` in R2, 480px/12fps/6s cut from
+    the liveliest frame-diff window, `loading=lazy`) — one refusal is a
+    site-wide setting, nobody scrolls onto a frozen thumbnail; reels also
+    self-convert on their own NotAllowedError or a ~1.2s no-advance poll.
+    `swapToPreview` lives at the IIFE's FUNCTION scope — it was
+    block-scoped inside the IntersectionObserver branch, which made the
+    fast path dead (`typeof` on an out-of-scope const is 'undefined').
+    (e) the bootstrap ALSO owns the settle: video `ended` → ken-burns →
+    static last-frame poster swap at +1.4s. home.js's ended-handler never
+    registers (early return), so without (e) a fast desktop load left a
+    live full-viewport video layer composited forever and no Ken Burns —
+    caught by the visual gate the first time its chromium loaded the
+    video quickly.
     **Modals** (`scripts/audit_modals.py`, new): cbg-migs chapter/detail
     cards were 720px inside a 1440px window — now 1040px so the milestone
     table and month detail use the space; app-modal bodies clip their own

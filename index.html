@@ -270,11 +270,48 @@
             try { v.muted = true; v.playsInline = true; } catch (e) {}
             var start = function () {
                 var p = v.play();
-                if (p && p.catch) p.catch(function () {});
+                if (p && p.catch) p.catch(function (err) {
+                    // NotAllowedError is Safari's site-wide "Never Auto-Play"
+                    // (his setting, proven across four recordings). It is
+                    // definitive and arrives in milliseconds — no reason to
+                    // sit through the 1800ms stall timer. Swap the hero to
+                    // the animated image now and tell home.js so every reel
+                    // becomes its animated preview before he scrolls to them.
+                    if (err && err.name === 'NotAllowedError' && !window.__mzAutoplayRefused) {
+                        window.__mzAutoplayRefused = true;
+                        try { window.dispatchEvent(new Event('mz:autoplay-refused')); } catch (e) {}
+                        toAnimatedImage();
+                    }
+                });
             };
             start();
             v.addEventListener('loadeddata', start, { once: true });
             v.addEventListener('canplay', start, { once: true });
+            // Settle is OWNED HERE too: home.js's startHeroSequence returns
+            // early when the bootstrap ran (always), so its 'ended' handler
+            // never registers. Without this, a fast video load meant no Ken
+            // Burns and a live full-viewport video layer composited on every
+            // scrolled frame forever.
+            v.addEventListener('ended', function () {
+                try {
+                    if (isFinite(v.duration)) v.currentTime = Math.max(0, v.duration - 0.04);
+                    v.pause();
+                } catch (e) {}
+                v.dataset.heroEnded = '1';
+                v.classList.add('ken-burns');
+                setTimeout(function () {
+                    var cur = document.getElementById('heroVideo');
+                    if (!cur || cur.tagName !== 'VIDEO') return;
+                    var img = document.createElement('img');
+                    img.className = cur.className;   // carries ken-burns
+                    img.id = cur.id;
+                    img.alt = '';
+                    img.decoding = 'async';
+                    img.src = LAST;
+                    img.dataset.heroEnded = '1';
+                    if (cur.parentNode) cur.parentNode.replaceChild(img, cur);
+                }, 1400);
+            }, { once: true });
             setTimeout(hideLoaderNow, 900);
             anchorOnDrawing();
             // his film showed the video mounted but never visibly advancing
@@ -2009,7 +2046,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=29ee6bcc00" defer></script>
+    <script src="/assets/js/home.js?v=de5791c644" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

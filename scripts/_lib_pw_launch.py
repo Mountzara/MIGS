@@ -75,15 +75,31 @@ def _with_env_proxy(kwargs: dict) -> dict:
     # plain-HTTP localhost requests (local preview servers) must go direct
     kw["proxy"] = {"server": server,
                    "bypass": os.environ.get("NO_PROXY", "localhost,127.0.0.1")}
-    # The egress proxy's TLS-interception stack RESETS Chromium's TLS 1.3
-    # ClientHello (hybrid post-quantum key share); curl's 1.3 hello passes,
-    # every Chromium navigation died with net::ERR_CONNECTION_RESET
-    # (diagnosed 2026-07-22: raw CONNECT succeeds, handshake inside the
-    # tunnel resets; --ssl-version-max=tls1.2 → clean load with certificate
-    # verification still fully ON via the proxy CA in the NSS store).
-    # Capping the version is NOT disabling verification, and only applies
-    # here — inside a proxied container. On an unproxied machine (the Mac)
-    # this branch never runs.
+    return kw
+
+
+def _with_chromium_tls_cap(kwargs: dict) -> dict:
+    """Chromium-ONLY launch args for the proxied container.
+
+    The egress proxy's TLS-interception stack RESETS Chromium's TLS 1.3
+    ClientHello (hybrid post-quantum key share); curl's 1.3 hello passes,
+    every Chromium navigation died with net::ERR_CONNECTION_RESET
+    (diagnosed 2026-07-22: raw CONNECT succeeds, handshake inside the
+    tunnel resets; --ssl-version-max=tls1.2 → clean load with certificate
+    verification still fully ON via the proxy CA in the NSS store).
+    Capping the version is NOT disabling verification, and only applies
+    here — inside a proxied container. On an unproxied machine (the Mac)
+    this branch never runs.
+
+    2026-08-09 — this used to live inside _with_env_proxy, which meant
+    launch_engine('webkit') ALSO received the flag; WebKit dies at startup
+    on the unknown Chromium switch ("browser has been closed"), so every
+    'webkit' audit silently ran on Chromium instead. Engine-specific args
+    stay with the engine.
+    """
+    if not (os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")):
+        return kwargs
+    kw = dict(kwargs)
     args = list(kw.get("args") or [])
     if not any(a.startswith("--ssl-version-max") for a in args):
         args.append("--ssl-version-max=tls1.2")
@@ -96,7 +112,7 @@ def launch_chromium(p, **kwargs):
 
     Returns (browser, "chromium", note).
     """
-    kwargs = _with_env_proxy(kwargs)
+    kwargs = _with_chromium_tls_cap(_with_env_proxy(kwargs))
     try:
         return p.chromium.launch(**kwargs), "chromium", ""
     except Exception as native_err:

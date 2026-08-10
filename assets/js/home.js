@@ -2932,17 +2932,57 @@
                 const r = v.getBoundingClientRect();
                 return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
             };
+            // 2026-08-09c — swapToPreview lives at FUNCTION scope. Its first
+            // home was inside the IntersectionObserver block, which made the
+            // fast path below dead code: tryPlay's closure could not see the
+            // inner-block const, so `typeof swapToPreview` was always
+            // 'undefined' and every swap waited out the ~1.2s poll instead.
+            const swapToPreview = (v) => {
+                if (!v || v.tagName !== 'VIDEO' || v.dataset.mzPreviewed === '1') return;
+                const srcEl = v.querySelector('source[src*="reel-v2"]');
+                const src = srcEl ? srcEl.getAttribute('src') : (v.currentSrc || '');
+                const m = src.match(/([a-z0-9-]+reel-v2)/i);
+                if (!m) return;
+                v.dataset.mzPreviewed = '1';
+                const img = document.createElement('img');
+                img.className = v.className;
+                img.alt = '';
+                img.decoding = 'async';
+                img.loading = 'lazy';   // offscreen previews fetch on approach
+                img.src = '/media/' + m[1] + '-preview.webp';
+                img.style.pointerEvents = 'none';
+                if (v.parentNode) v.parentNode.replaceChild(img, v);
+            };
+            // One definitive refusal means the SETTING is site-wide (Safari's
+            // "Never Auto-Play"), so every reel converts at once — nobody
+            // should scroll onto a frozen thumbnail waiting for its own
+            // rejection to come in. Signal arrives from the hero video's
+            // play() (index.html bootstrap) or from any reel below.
+            const swapAll = () => {
+                window.__mzAutoplayRefused = true;
+                document.querySelectorAll('video.video-preview').forEach(swapToPreview);
+            };
+            window.addEventListener('mz:autoplay-refused', swapAll);
+            if (window.__mzAutoplayRefused) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', swapAll, { once: true });
+                } else {
+                    swapAll();
+                }
+            }
             const tryPlay = (v) => {
                 if (!v || v.tagName !== 'VIDEO' || !v.paused) return;
                 const p = v.play();
                 if (p && typeof p.then === 'function') {
-                    p.catch(() => {
-                        // a rejected play() is a definitive autoplay refusal —
-                        // two strikes and the reel becomes its animated preview
-                        // immediately instead of waiting out a poll timer
+                    p.catch((err) => {
+                        // NotAllowedError = autoplay policy, definitive and
+                        // site-wide: convert everything immediately. Other
+                        // rejections (AbortError from an offscreen pause())
+                        // keep the two-strike per-reel counter.
+                        if (err && err.name === 'NotAllowedError') { swapAll(); return; }
                         const n = (+(v.dataset.mzRefused || 0)) + 1;
                         v.dataset.mzRefused = String(n);
-                        if (n >= 2 && typeof swapToPreview === 'function') swapToPreview(v);
+                        if (n >= 2) swapToPreview(v);
                     });
                 }
             };
@@ -2972,21 +3012,6 @@
                 // will not advance is replaced by a looping animated preview
                 // built from the same footage — images are exempt from
                 // autoplay policy. Clicking still opens the full video modal.
-                const swapToPreview = (v) => {
-                    if (v.dataset.mzPreviewed === '1') return;
-                    v.dataset.mzPreviewed = '1';
-                    const srcEl = v.querySelector('source[src*="reel-v2"]');
-                    const src = srcEl ? srcEl.getAttribute('src') : (v.currentSrc || '');
-                    const m = src.match(/([a-z0-9-]+reel-v2)/i);
-                    if (!m) return;
-                    const img = document.createElement('img');
-                    img.className = v.className;
-                    img.alt = '';
-                    img.decoding = 'async';
-                    img.src = '/media/' + m[1] + '-preview.webp';
-                    img.style.pointerEvents = 'none';
-                    if (v.parentNode) v.parentNode.replaceChild(img, v);
-                };
                 const wake = (v) => {
                     if (v.dataset.mzWoken === '1') { tryPlay(v); return; }
                     v.dataset.mzWoken = '1';
