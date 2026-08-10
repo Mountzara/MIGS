@@ -466,11 +466,20 @@
            ken-burns later replaces the animation property — by then the wipe
            is long finished and clip-path's default (none) equals its end state. */
         .hero-video.wipe-in {
-            animation: heroWipeIn 2.4s cubic-bezier(0.45, 0.05, 0.25, 1) both;
+            /* 2026-08-10e — OPACITY, not clip-path. The clip-path wipe
+               invalidated this rotated, scaled (~9MP rendered),
+               screen-blended layer on every animation frame — a full
+               re-blend at 60fps, WORSE than the animated file it replaced
+               (user: "its even worse"). Opacity is the one reveal primitive
+               that stays composited even on a blended layer: the browser
+               blends once and fades the result. Nothing may animate
+               clip/mask/filter/size on this layer — transform (Ken Burns,
+               45s, starts after the cascade) is the only sanctioned motion. */
+            animation: heroFadeIn 0.9s ease-out both;
         }
-        @keyframes heroWipeIn {
-            from { clip-path: inset(0 100% 0 0); }
-            to   { clip-path: inset(0 0 0 0); }
+        @keyframes heroFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
         .hero-video.ken-burns {
             /* 2026-08-08 PERF — one 45s zoom-in that then HOLDS (forwards),

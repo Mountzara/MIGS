@@ -110,7 +110,7 @@ const PARTS = [
     fn("settleLater"),
     fn("hideLoaderNow"),
     rule(".hero-video.wipe-in"),
-    rule("@keyframes heroWipeIn"),
+    rule("@keyframes heroFadeIn"),
     // --- autoplay-refusal machinery (hero swap + reel previews) ---
     fn("swapHeroToAnimatedWebp"),
     constFn("swapToPreview"),
