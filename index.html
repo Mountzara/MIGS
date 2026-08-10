@@ -145,56 +145,82 @@
         // Start fetching the animation bytes NOW (HTTP cache when warm; on a
         // hard reload this runs in parallel with everything else), so a swap
         // later paints immediately instead of attaching an empty element.
-        var heroBytes = null;
-        try {
-            heroBytes = fetch(WEBP, { cache: 'force-cache' })
-                .then(function (r) { return r.arrayBuffer(); })
-                .catch(function () { return null; });
-        } catch (e) {}
+        window.__mzHeroBytesPending = false;
+        // Which URL draws? Safari's decoded-animation cache is keyed by
+        // CONTENT — a repeat visit shows a play-once animated WebP already
+        // settled on its FINAL frame. First visit: the plain (preloaded,
+        // HTTP-cached) URL — the decoded cache is cold, it plays. Repeat
+        // visit: the ?replay endpoint, where the media worker appends a
+        // random padding chunk so the bytes are unique every time. A
+        // client-side blob-URL pad was abandoned 2026-08-10: some WebKit
+        // builds refuse to decode a large animated WebP from blob: at all.
+        function heroDrawUrl() {
+            var seen = true;                 // safest default: unique bytes
+            try {
+                seen = localStorage.getItem('mzHeroSeen') === '1';
+                localStorage.setItem('mzHeroSeen', '1');
+            } catch (e) {}
+            return seen ? (WEBP + '?replay=1&t=' + Date.now()) : WEBP;
+        }
 
         function settleLater(img) {
+            // 5600: after the FULL text cascade (choreo+3.6s ends the
+            // credentials), before any dead screen sets in. Not 8400 — the
+            // strokes are done by ~3.5s and the clip then holds a frozen
+            // frame, leaving ~4s of dead canvas. Not 4400 either — that
+            // fired MID-CASCADE, and the last-frame swap's fetch+decode
+            // blocked paint exactly while the headline words (heavy
+            // background-clip:text repaints) were mid-transition: the text
+            // visibly froze after "A passion" (user report). The last frame
+            // is also pre-decoded below so the swap itself never stalls a
+            // paint.
+            var pre = new Image();
+            pre.decoding = 'async';
+            pre.src = LAST;
+            try { if (pre.decode) pre.decode().catch(function () {}); } catch (e) {}
             setTimeout(function () {
                 if (!img || img.tagName !== 'IMG') return;
                 img.src = LAST;
                 img.classList.add('ken-burns');
                 img.dataset.heroEnded = '1';
-            }, 8400);
+            }, 5600);
         }
         function toAnimatedImage() {
             var live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO') return null;
-            var doSwap = function (srcUrl) {
+            var img = document.createElement('img');
+            img.className = live.className;
+            img.id = live.id;
+            img.alt = '';
+            img.decoding = 'async';
+            window.__mzHeroBytesPending = true;
+            img.onload = function () { window.__mzHeroBytesPending = false; };
+            img.onerror = function () { window.__mzHeroBytesPending = false; };
+            var url = heroDrawUrl();
+            var attached = false;
+            var attach = function () {
+                if (attached) return;
+                attached = true;
                 var cur = document.getElementById('heroVideo');
                 if (!cur || cur.tagName !== 'VIDEO') return;
-                var img = document.createElement('img');
-                img.className = cur.className;
-                img.id = cur.id;
-                img.alt = '';
-                img.decoding = 'async';
-                img.src = srcUrl;
+                img.src = url;
                 if (cur.parentNode) cur.parentNode.replaceChild(img, cur);
                 settleLater(img);
             };
-            var fallback = function () { doSwap(WEBP + '?replay=' + Date.now()); };
-            if (!heroBytes) { fallback(); return null; }
-            heroBytes.then(function (buf) {
-                if (!buf) { fallback(); return; }
-                // content-unique bytes so WebKit's decoded-animation cache
-                // cannot serve the final frame (padding chunk + RIFF fixup)
-                var src = new Uint8Array(buf);
-                var pad = new Uint8Array(12);
-                pad.set([0x58, 0x54, 0x52, 0x41]);
-                pad[4] = 4;
-                var rnd = Math.floor(Math.random() * 0xffffffff);
-                pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
-                pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
-                var out = new Uint8Array(src.length + 12);
-                out.set(src); out.set(pad, src.length);
-                var riffSize = out.length - 8;
-                out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
-                out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
-                doSwap(URL.createObjectURL(new Blob([out], { type: 'image/webp' })));
-            });
+            // Pull the WHOLE file down first, then attach with img.src on the
+            // SAME (now HTTP-cached) URL. Safari animates a WebP while it
+            // streams, so attaching before the bytes are local froze the
+            // drawing mid-stroke whenever the network fell behind (user:
+            // "freezes for 2-3 seconds midway then finishes"). If the
+            // network is slow, give up at 4s and stream anyway — a drawing
+            // that may pause beats an empty canvas.
+            try {
+                fetch(url, { cache: 'force-cache' })
+                    .then(function (r) { return r.arrayBuffer(); })
+                    .catch(function () { return null; })
+                    .then(attach);
+            } catch (e) { attach(); }
+            setTimeout(attach, 4000);
             return null;
         }
         function hideLoaderNow() {
@@ -243,7 +269,18 @@
                     return;
                 }
             }, 100);
-            setTimeout(function () { clearInterval(iv); runChoreography(); }, 7000);
+            // Fallback: never hang the text forever — but never fire it
+            // OVER a drawing that is still arriving either. Measured on a
+            // proxy-throttled connection: the 1.2 MB image landed at 12s and
+            // a blind 7s fallback put the monogram on a blank canvas — the
+            // exact recording-4 defect, order is the contract. While the
+            // byte fetch is in flight, extend once to 14s; the interval
+            // above still anchors the moment the image is ready.
+            var giveUp = function () { clearInterval(iv); runChoreography(); };
+            setTimeout(function () {
+                if (window.__mzHeroBytesPending) { setTimeout(giveUp, 7000); }
+                else { giveUp(); }
+            }, 7000);
         }
 
         if (touch) {
@@ -2046,7 +2083,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=de5791c644" defer></script>
+    <script src="/assets/js/home.js?v=f7d9a868ea" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

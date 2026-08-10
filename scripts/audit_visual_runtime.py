@@ -133,7 +133,22 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # ENGINE cannot decode is unjudgeable — report it as skipped, loudly,
     # instead of failing the audit. A decodable video that genuinely fails
     # to autoplay (paused / frozen / never buffers) still FAILS.
-    n_reels = page.evaluate("() => document.querySelectorAll('.video-preview').length")
+    if reduce_motion:
+        # Reduce Motion: the site deliberately rests the reels on their
+        # posters (home.js strips autoplay and pauses them) — autoplaying
+        # surgical loops against an OS less-motion request is the defect,
+        # not the pass state. Assert they are actually at rest.
+        page.evaluate("""() => { const el = document.querySelector('.video-preview');
+            if (el) el.scrollIntoView({block: 'center'}); }""")
+        page.wait_for_timeout(1500)
+        still = page.evaluate("""() => [...document.querySelectorAll('video.video-preview')]
+            .filter(v => !v.paused).length""")
+        res.append(chk(f"[{label}] reels rest under Reduce Motion", still == 0,
+                       f"{still} reel(s) auto-playing despite prefers-reduced-motion"
+                       if still else "all reels at rest on posters"))
+        n_reels = 0                        # skip the motion-judging loop below
+    else:
+        n_reels = page.evaluate("() => document.querySelectorAll('.video-preview').length")
     bad, undecodable, judged = [], [], 0
     for ri in range(n_reels):
         page.evaluate("""(i) => { const el = document.querySelectorAll('.video-preview')[i];
@@ -168,6 +183,14 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
             bad.append(f"video#{ri}(img-not-loaded:{b['src']})")
             continue
         frozen = abs(b["t"] - a["t"]) < 0.02   # loop-wrap (t1<t0) is fine; frozen is not
+        if frozen and not b["paused"] and b["ready"] >= 2:
+            # a playing 6s loop can wrap between samples and land within
+            # 20ms of where it started (measured: Δt=-0.02 false-failed the
+            # gate) — confirm stillness with a second window before failing
+            page.wait_for_timeout(700)
+            t2 = page.evaluate("""(i) => { const v = document.querySelectorAll('.video-preview')[i];
+                return v && v.tagName === 'VIDEO' ? (v.currentTime || 0) : null; }""", ri)
+            frozen = t2 is not None and abs(t2 - b["t"]) < 0.02
         if b["paused"] or b["ready"] < 2 or frozen:
             # networkState 3 = NETWORK_NO_SOURCE: the ENGINE rejected every
             # source (codec unsupported in this test build) — distinct from a
@@ -181,9 +204,10 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     if undecodable:
         print(f"  [{label}] ⏭  {len(undecodable)} video(s) NOT judgeable — this engine lacks their "
               f"codec (no H.264 in Playwright Chromium): {undecodable}")
-    res.append(chk(f"[{label}] autoplay videos are playing", not bad and judged >= 0,
-                   f"{len(bad)} not playing after 8s: {bad}" if bad
-                   else f"{judged} playing" + (f" ({len(undecodable)} codec-skipped)" if undecodable else "")))
+    if not reduce_motion:
+        res.append(chk(f"[{label}] autoplay videos are playing", not bad and judged >= 0,
+                       f"{len(bad)} not playing after 8s: {bad}" if bad
+                       else f"{judged} playing" + (f" ({len(undecodable)} codec-skipped)" if undecodable else "")))
     # back to the top — the hero checks below measure the hero as presented
     page.evaluate("() => window.scrollTo(0, 0)")
     page.wait_for_timeout(400)
@@ -206,6 +230,8 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         // sampling video-only fields off an image (None-crash).
         if (v.tagName !== 'VIDEO')
             return {poster:true, kb:v.classList.contains('ken-burns'),
+                    drawing:/hero-animation/.test(v.currentSrc || v.src || ''),
+                    nw:v.naturalWidth,
                     w:r.width, vw:window.innerWidth, h:r.height, vh:window.innerHeight};
         return {paused:v.paused, t:v.currentTime, ready:v.readyState, dur:v.duration,
                 kb:v.classList.contains('ken-burns'), ended:v.ended,
@@ -224,11 +250,15 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     if hero0 is None:
         res.append(chk(f"[{label}] hero video present", False, "#heroVideo not found"))
     elif hero0.get("poster"):
-        # settled poster swap: the drawing played, ended, and was replaced by
-        # the static final frame with Ken Burns carried over. Playing + settle
-        # are satisfied by construction; coverage still asserted below.
-        res.append(chk(f"[{label}] hero video playing", bool(hero0.get("kb")),
-                       f"settled poster (img) kb={hero0.get('kb')}"))
+        # IMG hero = either the animated drawing itself (mid-play, src is the
+        # hero-animation WebP with real pixels — that IS "playing") or the
+        # settled last-frame poster with Ken Burns carried over. Demanding kb
+        # on the mid-draw image false-failed any profile that reached this
+        # sample inside the ~8s drawing window.
+        ok_img = bool(hero0.get("kb")) or (hero0.get("drawing") and (hero0.get("nw") or 0) > 0)
+        res.append(chk(f"[{label}] hero video playing", ok_img,
+                       f"settled poster (img) kb={hero0.get('kb')}" if not hero0.get("drawing")
+                       else f"drawing animation attached (nw={hero0.get('nw')}) kb={hero0.get('kb')}"))
         edge = hero0["w"] >= hero0["vw"] * 0.98
         res.append(chk(f"[{label}] hero video covers screen edge-to-edge", edge,
                        f"poster width {hero0['w']:.0f}px vs viewport {hero0['vw']}px"))

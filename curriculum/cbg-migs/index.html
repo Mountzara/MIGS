@@ -191,7 +191,11 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 }
 .site:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.4); }
 .site.in-progress { background: rgba(var(--glow-purple), 0.04); border: 1px dashed rgba(var(--glow-purple), 0.32); }
-.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: var(--accent-soft); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
+/* #b7a4fc not var(--accent-soft): 11px/700 on the measured glass ground
+   rgb(64,58,67) — #a78bfa is 4.05:1 (pixel-measured deploy gate), #b7a4fc
+   is 5.11:1. Body-size links elsewhere pass with the token; this chip is
+   the smallest text on the page. */
+.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: #b7a4fc; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
 .site h4 { margin: 0 0 4px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.25; }
 .site .city { font-size: 12px; color: var(--fg-soft); margin-bottom: 12px; }
 .site .focus { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
@@ -361,6 +365,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .modal-body .mz-table { min-width: 0; }
 @media (max-width: 720px) {
     .modal-body { padding: 24px 18px; }
+    /* On a phone the synthesis panel is taller than the viewport, so its
+       blur(28px) backdrop-filter becomes a FULL-SCREEN live blur at rest —
+       flagged by the deploy contrast gate, and backdrop-filter is the
+       measured #1 scroll-stall driver on throttled mobile. Same recipe as
+       .month-tile/.kd-pill: translucent card instead of live glass. */
+    .synthesis {
+        backdrop-filter: none; -webkit-backdrop-filter: none;
+        background:
+            linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.045) 55%, rgba(255,255,255,0.07) 100%),
+            rgba(26, 22, 32, 0.82);
+    }
 }
 </style>
 </head>

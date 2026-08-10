@@ -501,12 +501,24 @@ the target element is in a section ABOVE the script tag.
     loader → drawing → monogram → headline → sub → credentials, anchored
     on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
     `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
-    Pieces that must not regress: (a) `heroBytes` fetch starts at
-    bootstrap top; the IMG swap waits for bytes — attaching an empty img
-    put the monogram over a blank canvas (recording 4); (b) every replay
-    appends a 12-byte XTRA chunk + RIFF-size fixup so WebKit's
-    CONTENT-keyed decoded-animation cache cannot serve the final frame
-    (recording 3 — a plain blob URL is NOT enough); (c) a hero `play()`
+    Pieces that must not regress: (a) REPLAY IS SERVER-SIDE:
+    `/media/<key>.webp?replay=1&t=<now>` makes `functions/media/[[path]].js`
+    append a 12-byte random XTRA chunk + RIFF-size fixup, so every view
+    gets byte-unique content over a PLAIN URL and WebKit's CONTENT-keyed
+    decoded-animation cache can never serve the final frame (recording 3).
+    Client-side padding via blob: URLs was abandoned 2026-08-10 — some
+    WebKit builds refuse to decode a large animated WebP from blob:
+    entirely (`complete=true, naturalWidth=0`), which put the monogram
+    over a blank canvas while every fresh-context test passed (fresh
+    contexts have a cold decoded cache, so the plain-URL fallback always
+    drew). First visit uses the plain preloaded URL (localStorage
+    `mzHeroSeen` gates this); repeats use ?replay. (b) FETCH-FIRST
+    ATTACH: `toAnimatedImage` fetches the FULL file, then sets img.src to
+    the SAME now-HTTP-cached URL (the ?replay response is
+    `private, max-age=300`, NOT no-store, for exactly this handoff) —
+    Safari animates a WebP while it streams, so attaching early froze the
+    drawing mid-stroke whenever the network fell behind (user: "freezes
+    2-3s midway"). 4s cap, then stream anyway. (c) a hero `play()`
     rejection with `err.name === 'NotAllowedError'` swaps the hero
     immediately (no 1800ms stall wait), sets `__mzAutoplayRefused`, and
     dispatches `mz:autoplay-refused`; (d) `home.js` listens and converts
@@ -521,9 +533,20 @@ the target element is in a section ABOVE the script tag.
     (e) the bootstrap ALSO owns the settle: video `ended` → ken-burns →
     static last-frame poster swap at +1.4s. home.js's ended-handler never
     registers (early return), so without (e) a fast desktop load left a
-    live full-viewport video layer composited forever and no Ken Burns —
-    caught by the visual gate the first time its chromium loaded the
-    video quickly.
+    live full-viewport video layer composited forever and no Ken Burns.
+    (f) IMG-path settle (`settleLater`) fires at attach+5600ms — AFTER
+    the text cascade (choreo+3.6s ends the credentials). The clip's
+    strokes finish at ~3.5s and the remaining 4.4s is a frozen hold, so
+    8400 left ~4s of dead canvas; but 4400 fired MID-CASCADE and the
+    last-frame fetch+decode blocked paint while the headline's
+    background-clip:text words were mid-transition — the text visibly
+    froze after "A passion" (user report). LAST is pre-decoded
+    (`img.decode()`) so the swap never costs a paint stall. Change any
+    cascade timing and 5600 must move with it. (g) REDUCE MOTION rests
+    the reels on their posters: ensureVideoPreviewsAutoplay strips
+    autoplay+pauses and returns; recoverPausedVideos, initVideoPreviews,
+    the research-card IO, and the modal-close resume are ALL
+    reduce-motion-gated (each was found replaying the rested reels).
     **Modals** (`scripts/audit_modals.py`, new): cbg-migs chapter/detail
     cards were 720px inside a 1440px window — now 1040px so the milestone
     table and month detail use the space; app-modal bodies clip their own

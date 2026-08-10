@@ -116,39 +116,47 @@
             img.id = live.id;
             img.alt = '';
             img.decoding = 'async';
-            // per-view blob URL so Safari replays the animation instead of
-            // showing the cached FINAL frame (see bootstrap toAnimatedImage)
+            // Server-padded replay URL: /media/…?replay=1 appends a random
+            // no-op chunk so the bytes are unique per view and Safari's
+            // CONTENT-keyed decoded-animation cache can never serve the
+            // final frame. Client-side blob padding was abandoned
+            // 2026-08-10 — some WebKit builds refuse to decode a large
+            // animated WebP from a blob: URL entirely. Full-fetch first,
+            // then attach on the same (now-cached) URL: a streamed animated
+            // WebP freezes mid-draw whenever the network falls behind.
+            window.__mzHeroBytesPending = true;
+            img.onload = () => { window.__mzHeroBytesPending = false; };
+            img.onerror = () => { window.__mzHeroBytesPending = false; };
+            const replayUrl = HERO_ANIM_WEBP + '?replay=1&t=' + Date.now();
+            let attached = false;
+            const attachSrc = () => {
+                if (attached) return;
+                attached = true;
+                img.src = replayUrl;
+            };
             try {
-                // content-unique bytes per view — see bootstrap toAnimatedImage
-                fetch(HERO_ANIM_WEBP, { cache: 'force-cache' })
+                fetch(replayUrl, { cache: 'force-cache' })
                     .then((r) => r.arrayBuffer())
-                    .then((buf) => {
-                        const src = new Uint8Array(buf);
-                        const pad = new Uint8Array(12);
-                        pad.set([0x58, 0x54, 0x52, 0x41]);
-                        pad[4] = 4;
-                        const rnd = Math.floor(Math.random() * 0xffffffff);
-                        pad[8] = rnd & 255; pad[9] = (rnd >> 8) & 255;
-                        pad[10] = (rnd >> 16) & 255; pad[11] = (rnd >> 24) & 255;
-                        const out = new Uint8Array(src.length + 12);
-                        out.set(src); out.set(pad, src.length);
-                        const riffSize = out.length - 8;
-                        out[4] = riffSize & 255; out[5] = (riffSize >> 8) & 255;
-                        out[6] = (riffSize >> 16) & 255; out[7] = (riffSize >> 24) & 255;
-                        img.src = URL.createObjectURL(new Blob([out], { type: 'image/webp' }));
-                    })
-                    .catch(() => { img.src = HERO_ANIM_WEBP + '?replay=' + Date.now(); });
-            } catch (e) { img.src = HERO_ANIM_WEBP; }
+                    .catch(() => null)
+                    .then(attachSrc);
+            } catch (e) { attachSrc(); }
+            setTimeout(attachSrc, 4000);
             if (live.parentNode) live.parentNode.replaceChild(img, live);
-            // settle on the final frame and start Ken Burns, mirroring the
-            // video 'ended' path
+            // settle on the final frame and start Ken Burns. 5600: after
+            // the full text cascade, before dead screen — and pre-decoded,
+            // so the swap never stalls a paint mid-word-reveal (see
+            // bootstrap settleLater for the full timing rationale).
+            const preLast = new Image();
+            preLast.decoding = 'async';
+            preLast.src = HERO_LAST_FRAME;
+            try { if (preLast.decode) preLast.decode().catch(() => {}); } catch (e) {}
             setTimeout(() => {
                 const cur = document.getElementById('heroVideo');
                 if (!cur || cur.tagName !== 'IMG') return;
                 cur.src = HERO_LAST_FRAME;
                 cur.classList.add('ken-burns');
                 cur.dataset.heroEnded = '1';
-            }, 8400);
+            }, 5600);
         }
 
         // The hero text cascade, callable on its own. The early bootstrap
@@ -562,6 +570,10 @@
         // autoplay video once. Passive + { once:true } so it never costs
         // scroll performance and never fights a deliberate user pause.
         function recoverPausedVideos() {
+            // Reduce Motion: paused IS the correct state for the reels —
+            // recovery on first gesture was silently re-playing all four
+            // right after ensureVideoPreviewsAutoplay had rested them.
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             document.querySelectorAll('video').forEach(v => {
                 const isHero = v.id === 'heroVideo';
                 const wantsAutoplay = v.autoplay || isHero ||
@@ -2921,6 +2933,17 @@
         // first user interaction as a last-resort fallback for autoplay-blocking
         // policies.
         (function ensureVideoPreviewsAutoplay() {
+            // 2026-08-10 Reduce Motion: never auto-play the surgical loops.
+            // A user who asked the OS for less motion should not get four
+            // autoplaying surgery reels — and WebKit under Reduce Motion
+            // freezes them anyway (play() resolves, currentTime never
+            // advances). Rest on the posters; click still opens the player.
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelectorAll('video.video-preview').forEach((v) => {
+                    try { v.removeAttribute('autoplay'); v.pause(); } catch (e) {}
+                });
+                return;
+            }
             // 2026-08-08 PERF — the reels are now preload="none" with NO
             // autoplay attribute: with preload=auto+autoplay all four mp4s
             // (10.0 MB combined) downloaded at page open ~18 viewports above
@@ -3101,10 +3124,13 @@
             if (window.__mzPrevFocus && document.contains(window.__mzPrevFocus)) window.__mzPrevFocus.focus();
             window.__mzPrevFocus = null;
 
-            // Resume the muted auto-previews on the cards.
-            document.querySelectorAll('.video-preview').forEach((v) => {
-                v.play().catch(() => {});
-            });
+            // Resume the muted auto-previews on the cards (not under Reduce
+            // Motion — rest is their correct state there).
+            if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                document.querySelectorAll('.video-preview').forEach((v) => {
+                    v.play().catch(() => {});
+                });
+            }
         }
 
         // Close modal on Escape key
@@ -3118,6 +3144,8 @@
         // Some browsers block autoplay despite muted+playsinline; explicit
         // .play() after DOM ready + intersection-based play/pause is reliable.
         (function initVideoPreviews() {
+            // Reduce Motion: reels rest on posters (see ensureVideoPreviewsAutoplay)
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             const previews = document.querySelectorAll('.video-preview');
             if (!previews.length) return;
             // 2026-08-08 PERF — this legacy block was the second, unguarded
@@ -3179,6 +3207,8 @@
         // so no seeking is needed — just trigger playback.
         // ============================================================
         (function () {
+            // Reduce Motion: reels rest on posters (see ensureVideoPreviewsAutoplay)
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             const previews = document.querySelectorAll('video.video-preview');
             if (!previews.length || !('IntersectionObserver' in window)) return;
 
