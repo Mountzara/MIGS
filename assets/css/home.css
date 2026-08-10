@@ -5883,11 +5883,38 @@
             .pinned-frames { gap: 0; }
         }
 
-        /* Respect prefers-reduced-motion */
+        /* Respect prefers-reduced-motion — WITHOUT deleting the opening.
+           2026-08-10g: this block used to force `.hero-inner { opacity: 1 }`,
+           so for a Reduce-Motion viewer the monogram, headline, sub copy and
+           credentials were ALL on screen the instant the loader lifted —
+           no order, no sequence. Combined with the canvas drawing (which
+           also used to stamp instantly there), the owner's Mac showed a
+           finished, static hero every single time, which is what he kept
+           reporting while every other fix missed it.
+           The distinction that matters: what Reduce Motion is FOR is
+           suppressing large-scale movement — travel, parallax, zoom, spin.
+           A cross-fade in place is not that. So the sequence still runs,
+           as OPACITY ONLY: every transform is stripped, the drawing plays,
+           the zoom does not. Order preserved, motion removed. */
         @media (prefers-reduced-motion: reduce) {
-            [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
-            .word-reveal > .w { opacity: 1; transform: none; }
-            .hero-inner, .monogram-stage { transform: none !important; opacity: 1 !important; animation: none !important; }
+            /* below-fold content: just show it, no travel, no waiting */
+            [data-reveal] { opacity: 1; transform: none !important; filter: none !important; transition: none; }
+            /* the hero opening keeps its ORDER — opacity only. These carry
+               !important on BOTH states so the [data-reveal] rule above can
+               never force a hero child visible ahead of its turn. The
+               per-child transition-delay (0/900/1800/2600ms) is deliberately
+               NOT touched: no shorthand here, or the stagger collapses. */
+            .hero-content-delayed > * { opacity: 0 !important; transform: none !important; }
+            .hero-content-delayed.visible > * { opacity: 1 !important; }
+            .hero-content-delayed > * {
+                transition-property: opacity !important;
+                transition-duration: 0.8s !important;
+            }
+            .word-reveal .w { opacity: 0 !important; transform: none !important; }
+            .word-reveal.in .w { opacity: 1 !important; }
+            .hero-inner, .monogram-stage { transform: none !important; animation: none !important; }
+            /* the zoom is the real vestibular motion — it alone is dropped */
+            .hero-video.ken-burns, .hero-canvas.ken-burns { animation: none !important; }
         }
 
         /* ========== Responsive ========== */

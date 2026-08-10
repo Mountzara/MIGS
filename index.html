@@ -48,7 +48,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=94d5c3c0af">
+<link rel="stylesheet" href="/assets/css/home.css?v=17e1e998c8">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -183,7 +183,12 @@
             // (choreo+3.6s ends the credentials).
             setTimeout(function () {
                 if (!img || (img.tagName !== 'IMG' && img.tagName !== 'CANVAS')) return;
-                img.classList.add('ken-burns');
+                // the slow zoom is the one piece of real vestibular motion
+                // in the opening — it, and only it, is dropped under
+                // Reduce Motion (the drawing itself still plays)
+                var noZoom = window.matchMedia
+                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (!noZoom) img.classList.add('ken-burns');
                 img.dataset.heroEnded = '1';
                 var hero = document.querySelector('.hero');
                 if (hero) hero.classList.add('settled');
@@ -276,11 +281,16 @@
                     // the anchor keys on THIS moment: the drawing is now
                     // visibly in progress, monogram follows +1300ms
                     cv.dataset.mzArt = '1';
-                    if (reduce) {
-                        for (var f = 0; f < frames.length; f++) drawFrame(f);
-                        finish();
-                        return;
-                    }
+                    // 2026-08-10g — THE DRAWING PLAYS UNDER REDUCE MOTION
+                    // TOO. It used to stamp all 72 frames at once there
+                    // (measured: whole drawing done in 364ms vs 2967ms) —
+                    // the owner's Mac has Reduce Motion on, so for him the
+                    // art was ALWAYS a finished static image the instant
+                    // the loader lifted, no matter what else was fixed.
+                    // A line drawing revealing itself in place is content,
+                    // not vestibular motion; what Reduce Motion legitimately
+                    // suppresses here is the big Ken-Burns ZOOM, which stays
+                    // off (see settleLater).
                     var t0 = performance.now(), next = 0;
                     var tick = function () {
                         var el = performance.now() - t0;
@@ -2198,7 +2208,7 @@
        need; interactivity arrives when the hero settles (6.2s) or the
        INSTANT the user shows intent (scroll/tap/key), whichever is first. */
     (function () {
-        var SRC = '/assets/js/home.js?v=6bcc26bffa';
+        var SRC = '/assets/js/home.js?v=30c47dcc4c';
         var load = function () {
             if (window.__mzHomeLoaded) return;
             window.__mzHomeLoaded = true;

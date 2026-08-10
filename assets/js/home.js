@@ -3071,6 +3071,10 @@
                 };
                 const io = new IntersectionObserver((entries) => {
                     entries.forEach((entry) => {
+                        // a swapped-in preview IMG has no pause(): calling it
+                        // threw on every scroll and killed the rest of this
+                        // callback (observed in the WebKit console)
+                        if (entry.target.tagName !== 'VIDEO') { io.unobserve(entry.target); return; }
                         if (entry.isIntersecting) wake(entry.target);
                         else if (!entry.target.paused) entry.target.pause();
                     });
