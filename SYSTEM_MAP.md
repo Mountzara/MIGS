@@ -501,6 +501,22 @@ the target element is in a section ABOVE the script tag.
     loader → drawing → monogram → headline → sub → credentials, anchored
     on VISIBLE drawing (video `currentTime > 0.5`, or the animated IMG
     `complete && naturalWidth > 0`, then +1300ms; 7s hard fallback).
+    **2026-08-10d THE ANIMATED WEBP IS DEAD — THE REVEAL IS A WIPE.**
+    Recording 5 proved the last freeze was DECODE COST: ~95MP of animated
+    WebP frames blocked a weak Mac's main thread ~4s (monogram landed —
+    composited fade — while the main-thread-painted headline froze). The
+    no-autoplay opening is now ONE static frame
+    (`hero-last-frame-lite-v2.webp`, 15KB, single 1.3MP decode, filter
+    baked in) revealed by `.hero-video.wipe-in` — a 2.4s clip-path
+    `inset()` animation that sweeps in pre-rotation element space
+    (renders bottom-left→top-right after the -22deg transform). The
+    client has NO fetch/base64/replay/localStorage machinery left; all
+    preloads (head kick, home.js constants) point at the static frame.
+    The mp4 video still plays the true stroke animation where autoplay
+    is allowed; `functions/media` keeps the ?replay endpoint (unused by
+    the client, harmless). Do not reintroduce a multi-frame animated
+    image on the hero path — every variant of it froze the user's
+    machine across five recordings.
     **2026-08-10c THE FREEZE WAS THE MAIN THREAD, NOT THE MEDIA** (traced
     with CDP under 6x CPU throttle after the asset diet still froze):
     full-document layouts cost 400-730ms EACH on this DOM. Mid-opening
