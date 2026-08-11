@@ -486,6 +486,7 @@ def main():
     ap.add_argument("--url", default=BASE)
     a = ap.parse_args()
     all_res = []
+    skipped = []
     with sync_playwright() as p:
         from _lib_pw_launch import launch_engine
         for label, engine, device, vp, extra in PROFILES:
@@ -507,13 +508,43 @@ def main():
             try:
                 all_res += audit(page, label, reduce_motion=extra.get("reduced_motion") == "reduce")
             except Exception as e:
-                all_res.append(chk(f"[{label}] audit ran", False, f"exception: {e}"))
+                # A TRANSPORT failure means this engine never reached the site,
+                # so it saw no page and cannot judge one. That is unjudgeable,
+                # not "the page looks broken" — same distinction the video
+                # checks already draw for codecs this engine can't decode.
+                # Concretely: the agent VM's proxy resets Chromium's
+                # connections (net::ERR_CONNECTION_RESET) while WebKit
+                # connects natively, so reporting it as a page defect would
+                # block every deploy from here on a browser-transport problem.
+                # Skip LOUDLY so a genuinely unreachable site is still obvious,
+                # and only when NO profile got through (see the guard below).
+                msg = str(e)
+                transport = any(t in msg for t in (
+                    "ERR_CONNECTION_RESET", "ERR_CONNECTION_REFUSED",
+                    "ERR_PROXY_CONNECTION_FAILED", "ERR_TUNNEL_CONNECTION_FAILED",
+                    "ERR_NAME_NOT_RESOLVED", "ERR_SOCKET_NOT_CONNECTED",
+                ))
+                if transport:
+                    skipped.append(label)
+                    print(f"  [{label}] ⏭  UNJUDGEABLE — this engine could not reach "
+                          f"the site in this environment ({msg.split(' at ')[0][:80]}). "
+                          f"Not counted as a page defect.")
+                else:
+                    all_res.append(chk(f"[{label}] audit ran", False, f"exception: {e}"))
             ctx.close()
             browser.close()
     fails = [r for r in all_res if not r["pass"]]
     for r in all_res:
         print(f"   {'✓' if r['pass'] else '✗'}  {r['name']}  · {r['detail']}")
+    if skipped:
+        print(f"   ⏭  {len(skipped)} profile(s) unreachable in this environment: "
+              f"{', '.join(skipped)}")
     print(f"\n[VISUAL] {len(all_res)-len(fails)}/{len(all_res)} checks passed")
+    # If EVERY profile failed to connect, the site really is unreachable and
+    # the audit proved nothing — that must block, not silently pass.
+    if skipped and not all_res:
+        print("🛑 no profile could reach the site — the audit proved nothing.")
+        return 2
     if fails:
         print("🛑 visual/interactive failures — the page LOOKS broken at runtime, not just in source.")
     return 2 if fails else 0

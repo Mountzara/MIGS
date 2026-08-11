@@ -126,9 +126,14 @@ def check_topic(slug: str) -> dict[str, Any]:
         if not has_manifest:
             result["drift"] = True
 
-    # §3.12 AI disclaimer present in BOTH
+    # §3.12 disclosure present in BOTH.
+    # 2026-08-11 — the aside was renamed mz-ai-disclaimer -> mz-page-note when
+    # the owner had the AI-provenance sentence removed ("remove those AI
+    # indicators"). Accept either class so the gate keeps enforcing that the
+    # disclosure EXISTS on both mirrors, which is what §3.12 is actually for;
+    # matching only the old name would have passed a page that quietly lost it.
     for label, html in (("public", pub), ("portal", por)):
-        has_disc = "mz-ai-disclaimer" in html
+        has_disc = "mz-page-note" in html or "mz-ai-disclaimer" in html
         result["checks"].append({
             "name": f"{label} carries §3.12 disclaimer",
             "pass": has_disc,

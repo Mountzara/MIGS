@@ -194,10 +194,14 @@ def main():
         except Exception as e:
             return f"RENDER {path}: load failed — {str(e)[:160]}"
 
-    from _lib_pw_launch import launch_chromium
+    from _lib_pw_launch import launch_reachable
 
     with sync_playwright() as p:
-        browser, _, launch_note = launch_chromium(p)
+        # Probe the live origin and use whichever engine can actually reach it.
+        # Chromium is tried first; on the agent VM its connections are reset by
+        # the proxy, which previously made this gate report every route as
+        # broken when the browser simply had no network. See launch_reachable().
+        browser, engine_used, launch_note = launch_reachable(p, args.base.rstrip('/') + '/')
         if launch_note:
             print(f"  (launcher: {launch_note})")
         ctx = browser.new_context(

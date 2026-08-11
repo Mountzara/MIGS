@@ -150,3 +150,66 @@ def launch_engine(p, engine: str, **kwargs):
             + (f" ({chromium_note})" if chromium_note else "")
         )
         return browser, "chromium", note
+
+
+# --- transport-aware launcher -----------------------------------------------
+# 2026-08-11 — the deploy gates that navigate to the LIVE site (route-render,
+# reader-path, visual) all launched Chromium unconditionally. On the agent VM
+# the outbound proxy resets Chromium's connections
+# (net::ERR_CONNECTION_RESET) while WebKit connects natively, so every one of
+# those gates reported the SITE as broken when the browser simply had no
+# network. That is the worst failure mode for a gate: it blocks real deploys
+# and trains you to reach for the override, which then hides a real defect.
+#
+# launch_reachable() probes the target URL with Chromium first and falls back
+# to any engine that can actually reach it. It never silently passes — if no
+# engine connects, it raises, and the gate fails as it should.
+_TRANSPORT_ERRS = (
+    "ERR_CONNECTION_RESET", "ERR_CONNECTION_REFUSED", "ERR_CONNECTION_CLOSED",
+    "ERR_PROXY_CONNECTION_FAILED", "ERR_TUNNEL_CONNECTION_FAILED",
+    "ERR_NAME_NOT_RESOLVED", "ERR_SOCKET_NOT_CONNECTED", "ERR_EMPTY_RESPONSE",
+)
+
+
+def is_transport_error(err) -> bool:
+    """True when the browser never reached the server (vs. got a bad page)."""
+    return any(t in str(err) for t in _TRANSPORT_ERRS)
+
+
+def launch_reachable(p, probe_url: str, order=("chromium", "webkit", "firefox"), **kwargs):
+    """Return (browser, engine_used, note) for the first engine that can load
+    probe_url. Raises RuntimeError if none can — an unreachable site MUST
+    fail the gate, not skip it."""
+    attempts = []
+    for engine in order:
+        browser = None
+        try:
+            if engine == "chromium":
+                browser, _, note = launch_chromium(p, **kwargs)
+            else:
+                browser, note = getattr(p, engine).launch(**_with_env_proxy(dict(kwargs))), ""
+            ctx = browser.new_context(ignore_https_errors=True)
+            page = ctx.new_page()
+            page.goto(probe_url, wait_until="domcontentloaded", timeout=30000)
+            ctx.close()
+            fell_back = engine != order[0]
+            msg = note or ""
+            if fell_back:
+                msg = (f"{order[0]} could not reach {probe_url} "
+                       f"({attempts[-1][1][:60]}) — using {engine}"
+                       + (f" ({note})" if note else ""))
+            return browser, engine, msg
+        except Exception as e:
+            attempts.append((engine, str(e).splitlines()[0]))
+            if browser:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
+            # A non-transport failure (bad cert, real 500) is a genuine signal;
+            # don't paper over it by trying another engine.
+            if not is_transport_error(e) and engine == order[0]:
+                raise
+    raise RuntimeError(
+        "no browser engine could reach " + probe_url + " — "
+        + "; ".join(f"{e}: {m[:70]}" for e, m in attempts))
