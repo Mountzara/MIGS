@@ -56,7 +56,6 @@
             background: transparent;  /* html canvas gradient shows through (2026-07-22) */
             color: var(--text-on-dark);
             overflow-x: hidden;
-            font-feature-settings: "ss01", "cv11";
             line-height: 1.4;
         }
 
@@ -3836,7 +3835,6 @@
            pipeline ticking forever; the perf re-measure still showed them as
            the main residual idle cost. */
         .mz-offscreen .rl-wave i, .mz-offscreen.rl-wave i { animation-play-state: paused; }
-        .mz-offscreen.ai-badge::after { animation-play-state: paused; }
         .rl-wave i:nth-child(2n) { animation-delay: 0.12s; } .rl-wave i:nth-child(3n) { animation-delay: 0.22s; }
         .rl-wave i:nth-child(4n) { animation-delay: 0.30s; } .rl-wave i:nth-child(5n) { animation-delay: 0.05s; }
         @keyframes rlWave { from { transform: scaleY(0.23); } to { transform: scaleY(1); } }
@@ -4223,45 +4221,7 @@
             padding-top: 28px;
         }
 
-        .ai-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--accent-soft);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
 
-        /* 2026-08-08 PERF — the pulse used to animate box-shadow spread, which
-           repaints on every frame for all 13 badges forever. The dot is now
-           static and the expanding ring is a pseudo-element animating only
-           transform + opacity (GPU-composited, same visual). */
-        .ai-badge {
-            position: relative;
-        }
-        .ai-badge::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-        }
-        .ai-badge::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 8px;
-            height: 8px;
-            margin-top: -4px;
-            border-radius: 50%;
-            background: rgba(109, 40, 217, 0.6);
-            animation: pulse 2s infinite;
-            pointer-events: none;
-        }
 
         @keyframes pulse {
             0% { transform: scale(1); opacity: 0.6; }
@@ -5728,7 +5688,7 @@
            proximity snap only engages NEAR a frame, so the rest of the page
            scrolls completely naturally; momentum and rubber-banding are the
            browser's own. scroll-padding aligns the snap under the fixed nav. */
-        html { scroll-snap-type: y proximity; scroll-padding-top: 0px; }
+        html { scroll-snap-type: y proximity; }  /* scroll-padding-top intentionally NOT reset here — it lives at :51 and every in-page anchor depends on it (2026-08-11) */
         .pinned-frame { scroll-snap-align: start; }
         .pinned-frame-native-snap-marker {}
         .pinned-frame {

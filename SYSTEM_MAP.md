@@ -1026,6 +1026,49 @@ Also in index.html and NOT to be moved back:
 home.css together; editing any of the three requires `--update` after
 visually verifying the opening.
 
+### 7.9 Tier A polish pass (2026-08-11) — the "AI slop" deletions
+
+An evidenced audit (16 agents, 82 verified findings) established that the
+site's "unpolished / AI slop" quality came mostly from surfaces that
+announced the site's own construction. Tier A was almost entirely
+DELETION. What was removed, and why it must not come back:
+
+* **12 `.ai-badge` "AI Snapshot" spans** above the owner's own peer-reviewed
+  summaries, plus the badge CSS and the section-sub sentence "Tap any
+  publication for an AI snapshot". NEVER label content by the tool that
+  produced it — this is the single most damaging class of string on a
+  physician's site.
+* **2 `§0.8 KB-anchor manifest` HTML comments** (15KB) that shipped inside
+  index.html and were readable in View Source, including
+  `not_in_kb_claims`. Moved to `cite_audit/homepage-kb-anchors.md`.
+  Citation-audit artefacts NEVER ship in a public document.
+* **56 `.tile-more` "Details"/"Open details" chips** on cbg-migs (two
+  wordings for one control; the hosts are already `<button
+  aria-haspopup="dialog">`).
+* **13 numbered `.cv-section-eyebrow` spans** on /cv/ that restated the `<h2>`
+  beneath them. The one unique fact (2020–2025) was folded into that
+  section's sub.
+* **8 `.tag year` spans** that duplicated the year already in the citation
+  line beneath (verified per-card, not bulk-removed — 4 that add
+  information were kept).
+* **7 `.hub-badge` chips** whose every word already appeared in their own
+  card's prose (verified per-card; 8 that add a fact were kept).
+
+Also fixed: `#excellence` → `#surgical` (the "Surgery" nav item pointed at
+an ID that does not exist), and the `scroll-padding-top: 0px` override at
+home.css that beat the correct 80px and made all 13 in-page anchors land
+behind the nav. Counters on cbg-migs now ship their real values in markup
+(they shipped literal `0`) and `animateCounter` has its reduce-motion guard
+restored (it had been deleted, leaving an orphaned brace). Fonts are
+self-hosted on all 8 public pages (Google's 18-variant link was still
+render-blocking on 7 of them; /cv/ was loading Inter and rendering in a
+different typeface from the rest of the site). Inter-only
+`font-feature-settings: "ss01","cv11"` stripped from 46 public files — it
+renders nothing on an Avenir/Nunito stack and was the clearest fingerprint
+of pasted CSS. Canva export `Black White Elegant Personal Monogram Logo.png`
+renamed to `mount-zara-monogram.png` (6 files). `/assets/*` now cached
+immutable; `color-scheme`/`theme-color` meta added to 9 pages.
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages

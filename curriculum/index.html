@@ -3,12 +3,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#120f1b">
     <title>Curriculum Design Consulting · Mount Zara</title>
     <meta name="description" content="Curriculum design and instructional design consulting for fellowships, residencies, and clinical training programs. Adult Learning Theory (Knowles, Kolb, Gagné, Dick & Carey) applied to ACGME-aligned, competency-based, equity-anchored medical education. By the Inaugural CBG/MIGS Fellow.">
     <meta name="robots" content="index, follow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="canonical" href="https://mountzara.com/curriculum/">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <!-- self-hosted variable font (2026-08-11): replaces a render-blocking
+         Google load. Same family as every other page, so the site no longer
+         changes typeface between documents. -->
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin fetchpriority="high">
+    <style>
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: italic; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var-italic.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    </style>
     <style>
 /* ============================================================
    /curriculum/ — Consulting overview page
@@ -41,7 +58,6 @@ html, body {
         var(--bg-base);
     color: var(--fg-mid);
     font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     line-height: 1.55;
     min-height: 100vh;

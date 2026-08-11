@@ -3,12 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#120f1b">
     <meta name="description" content="Trend Briefs — public-facing evaluations of trending gynecologic claims circulating on social media.">
     <title>Trend Briefs — Mount Zara</title>
-    <link rel="icon" type="image/png" href="/assets/images/Black White Elegant Personal Monogram Logo.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/assets/images/mount-zara-monogram.png">
+    <!-- self-hosted variable font (2026-08-11): replaces a render-blocking
+         Google load. Same family as every other page, so the site no longer
+         changes typeface between documents. -->
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin fetchpriority="high">
+    <style>
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: italic; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var-italic.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    </style>
     <style>
         :root {
             --bg: #120f1b;
@@ -40,7 +55,6 @@
                 linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
             color: var(--text-on-dark);
             min-height: 100vh;
-            font-feature-settings: "ss01", "cv11";
             line-height: 1.5;
         }
         /* Keyboard accessibility (2026-07-22): match the homepage pattern —
@@ -651,7 +665,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     </div>
     <nav class="nav">
         <a href="/" class="nav-brand">
-            <img src="/assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara">
+            <img src="/assets/images/mount-zara-monogram.png" alt="Mount Zara">
             MOUNT ZARA
         </a>
         <div class="nav-links">
@@ -775,7 +789,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     setTimeout(() => card.classList.add('in'), 80 * i);
                 });
             } catch (e) {
-                document.getElementById('postList').innerHTML = `<div class="empty">Failed to load posts: ${esc(e.message || String(e))}</div>`;
+                document.getElementById('postList').innerHTML = '<div class="empty">These posts couldn\u2019t be loaded just now. Please refresh, or try again shortly.</div>';
             }
         }
 
@@ -846,7 +860,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     apply();
                 });
             } catch (e) {
-                document.getElementById('detailContent').innerHTML = `<div class="empty">Post not found: ${esc(e.message || String(e))}</div>`;
+                document.getElementById('detailContent').innerHTML = '<div class="empty">That post isn\u2019t available. It may have moved \u2014 browse the full list above.</div>';
             }
         }
 

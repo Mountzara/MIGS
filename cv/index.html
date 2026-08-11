@@ -3,14 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#120f1b">
     <title>Curriculum Vitae — Mount Zara</title>
     <meta name="description" content="The full record: awards, publications, presentations, research, curriculum, hospital affiliations, training, and board credentials.">
     <link rel="canonical" href="https://mountzara.com/cv/">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <!-- self-hosted variable font (2026-08-11): replaces a render-blocking
+         Google load. Same family as every other page, so the site no longer
+         changes typeface between documents. -->
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin fetchpriority="high">
+    <style>
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: italic; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var-italic.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    </style>
     <style>
         :root {
             --black: #000;
@@ -32,7 +46,7 @@
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Avenir Next', 'Helvetica Neue', sans-serif;
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Avenir Next', 'Helvetica Neue', sans-serif;
             background: var(--bg);
             color: var(--white);
             line-height: 1.55;
@@ -320,22 +334,6 @@
             margin: 0 auto;
             padding: clamp(60px, 9vw, 110px) 0 clamp(40px, 6vw, 70px);
             scroll-margin-top: 124px;
-        }
-        .cv-section-eyebrow {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.28em;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 14px;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 700ms ease, transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .cv-section.in .cv-section-eyebrow {
-            opacity: 1;
-            transform: translateY(0);
         }
         .cv-section h2 {
             font-size: clamp(32px, 4.4vw, 52px);
@@ -723,7 +721,7 @@
                 transition-duration: 0.01ms !important;
                 scroll-behavior: auto !important;
             }
-            .cv-item, .cv-section-eyebrow, .cv-section h2, .cv-section-sub, .cv-cta { opacity: 1; transform: none; }
+            .cv-item, .cv-section h2, .cv-section-sub, .cv-cta { opacity: 1; transform: none; }
         }
 
         @media (max-width: 720px) {
@@ -912,7 +910,6 @@ body > footer, .cv-main ~ footer, footer {
     <main class="cv-main">
 
         <section class="cv-section" id="education">
-            <span class="cv-section-eyebrow">01 · Foundation</span>
             <h2>Education &amp; Training</h2>
             <p class="cv-section-sub">From a bachelor's degree in 2002 to fellowship completion in 2026.</p>
             <div class="cv-items">
@@ -927,7 +924,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="boards">
-            <span class="cv-section-eyebrow">02 · Certification</span>
             <h2>Board Eligibility &amp; Licensure</h2>
             <p class="cv-section-sub">Active board pathway with all written and skills examinations passed.</p>
             <div class="cv-items">
@@ -938,7 +934,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="awards">
-            <span class="cv-section-eyebrow">03 · Recognition</span>
             <h2>Awards &amp; Honors</h2>
             <div class="cv-items">
                 <div class="cv-item featured"><strong>AAGL Golden Hysteroscope Award<span class="award">Best Video</span></strong><span class="meta">Best Video Abstract in Hysteroscopy · AAGL Global Congress, New Orleans · 2024</span></div>
@@ -951,7 +946,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="publications">
-            <span class="cv-section-eyebrow">04 · Peer-reviewed</span>
             <h2>Journal Publications</h2>
             <p class="cv-section-sub">Original research in <em>JMIG</em>, <em>Archives of Gynecology and Obstetrics</em>, and <em>GMIT</em>.</p>
             <div class="cv-items">
@@ -963,9 +957,8 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="aagl">
-            <span class="cv-section-eyebrow">05 · AAGL Global Congress · <span style="white-space: nowrap;">2020–2025</span></span>
             <h2>AAGL Abstracts &amp; Video Presentations</h2>
-            <p class="cv-section-sub">Seven peer-reviewed contributions to the AAGL Global Congress — including the 2024 Golden Hysteroscope Award.</p>
+            <p class="cv-section-sub">Seven peer-reviewed contributions to the AAGL Global Congress, 2020–2025 — including the 2024 Golden Hysteroscope Award.</p>
             <div class="cv-items">
                 <div class="cv-item"><strong>NBI in Adenomyosis</strong><span class="meta">JMIG 32(11):S105 · 2025</span></div>
                 <div class="cv-item featured"><strong>To See or Not to See? RPOC in Arcuate Uterus<span class="award">Golden Hysteroscope</span></strong><span class="meta">JMIG 31(11):S14 · 2024</span></div>
@@ -978,7 +971,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="acog">
-            <span class="cv-section-eyebrow">06 · National Conferences</span>
             <h2>ACOG &amp; CAOG Presentations</h2>
             <p class="cv-section-sub">Three additional national presentations on ICG-guided endometriosis detection.</p>
             <div class="cv-items">
@@ -989,7 +981,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="research">
-            <span class="cv-section-eyebrow">07 · Investigation</span>
             <h2>Active IRB Research</h2>
             <p class="cv-section-sub">Four active institutional review board studies, each tracking a specific CBG/MIGS frontier.</p>
             <div class="cv-items">
@@ -1001,7 +992,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="curriculum">
-            <span class="cv-section-eyebrow">08 · Education design</span>
             <h2>Curriculum Design &amp; Development</h2>
             <div class="cv-items">
                 <div class="cv-item"><strong>CBG/MIGS Fellowship AI &amp; Advanced Technologies Curriculum</strong><span class="meta">PRIME Saint Francis Hospital, Evanston · 2024</span></div>
@@ -1012,7 +1002,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="rounds">
-            <span class="cv-section-eyebrow">09 · Teaching</span>
             <h2>Grand Rounds Presentations</h2>
             <div class="cv-items">
                 <div class="cv-item"><strong>Basics of Total Laparoscopic Hysterectomy</strong><span class="meta"><span data-migs-exempt="external-program">Ascension &amp; Saint Joseph MIGS Didactics</span> · 2023, 2024</span></div>
@@ -1025,7 +1014,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="qi">
-            <span class="cv-section-eyebrow">10 · Systems</span>
             <h2>Health Systems Quality Improvement</h2>
             <p class="cv-section-sub">Protocol implementation toward COEMIG accreditation.</p>
             <div class="cv-items">
@@ -1034,7 +1022,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="hospitals">
-            <span class="cv-section-eyebrow">11 · Affiliations · Chicagoland</span>
             <h2>Hospital Affiliations</h2>
             <p class="cv-section-sub">Four hospitals, in Evanston and Chicago.</p>
             <div class="cv-items two-col">
@@ -1046,7 +1033,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="memberships">
-            <span class="cv-section-eyebrow">12 · Service</span>
             <h2>Memberships &amp; Committees</h2>
             <div class="cv-items two-col">
                 <div class="cv-item"><strong>American Association of Gynecologic Laparoscopists (AAGL)</strong><span class="meta">Member · 2019–Present</span></div>
@@ -1060,7 +1046,6 @@ body > footer, .cv-main ~ footer, footer {
         </section>
 
         <section class="cv-section" id="cme">
-            <span class="cv-section-eyebrow">13 · Continuing Education</span>
             <h2>Specialized Training &amp; CME</h2>
             <p class="cv-section-sub">Hands-on cadaver, simulator, and society-led training courses.</p>
             <div class="cv-items">

@@ -3,11 +3,28 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#120f1b">
     <title>FMIGS Fellowship Curriculum — Case Study · Mount Zara</title>
     <meta name="description" content="A complete fellowship curriculum in Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery. Designed end-to-end against adult learning theory, ACGME competencies, and a four-hospital multi-site rotation. A fellowship curriculum case study.">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="canonical" href="https://mountzara.com/curriculum/cbg-migs/">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <!-- self-hosted variable font (2026-08-11): replaces a render-blocking
+         Google load. Same family as every other page, so the site no longer
+         changes typeface between documents. -->
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin fetchpriority="high">
+    <style>
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: italic; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var-italic.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    </style>
     <style>
 :root {
     --bg-base: #120f1b;
@@ -31,7 +48,6 @@ html, body {
         var(--bg-base);
     color: var(--fg-mid);
     font-family: 'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-    font-feature-settings: "ss01","cv11";
     -webkit-font-smoothing: antialiased; line-height: 1.6;
 }
 a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
@@ -183,7 +199,6 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
     padding: 4px 10px; border-radius: 999px; margin: 0;
 }
 .month-tile .topic { font-size: 15px; color: var(--fg-strong); line-height: 1.42; font-weight: 400; flex: 1; }
-.month-tile .tile-more { margin-top: auto; }
 
 /* Modules Dr. Mabini authored himself — these must read as HIS work, not
    as anonymous line items in someone else's syllabus. */
@@ -312,7 +327,6 @@ button.month-tile:focus-visible { border-color: rgba(var(--glow-purple), 0.6); }
     background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.045) 55%, rgba(255,255,255,0.07) 100%) !important;
 }
 .kd-pill { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-.tile-more { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-soft); margin-top: 8px; }
 .modal-body h4 { margin: 18px 0 8px 0; color: var(--accent-soft); font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
 .modal-body .mfac { font-size: 13.5px; color: var(--fg-mid); }
 .tbl-scroll { overflow-x: auto; margin: 14px 0; }
@@ -332,7 +346,6 @@ button.detail-card:hover, button.detail-card:focus-visible { transform: translat
 .detail-card .dk { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
 .detail-card h4 { margin: 0 0 8px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.3; }
 .detail-card p { margin: 0; font-size: 13px; color: var(--fg-mid); line-height: 1.55; }
-.detail-card .tile-more { margin-top: 12px; }
 /* Simulation series: 9 cards — 3×3 at desktop so no orphan strands on a 4-col row. */
 .sim-grid { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 900px) { .sim-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); } }
@@ -384,7 +397,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
 /* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
    (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
-.eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
+.eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo,
 .footer-brand a, .site-footer a { color: #c4b5fd !important; }
 
 /* Card counts differ per section (4 responsibility, 6 week-days, 9 sim
@@ -451,12 +464,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <p class="byline"><strong>Christopher Z. Mabini, DO, MSAEd</strong> — Inaugural Fellow &amp; Curriculum Architect · v3, July 2025 · 400+ pages</p>
 
             <div class="counter-row" id="counter-row">
-                <div class="counter"><div class="num" data-target="16">0</div><div class="lbl">Chapters</div></div>
-                <div class="counter"><div class="num" data-target="333">0</div><div class="lbl">Sub-sections</div></div>
-                <div class="counter"><div class="num" data-target="36"><span class="num-val">0</span><span class="unit">mo</span></div><div class="lbl">Didactic plan</div></div>
-                <div class="counter"><div class="num" data-target="4">0</div><div class="lbl">Hospital sites</div></div>
-                <div class="counter"><div class="num" data-target="6">0</div><div class="lbl">ACGME competencies</div></div>
-                <div class="counter"><div class="num" data-target="8">0</div><div class="lbl">Stakeholder groups</div></div>
+                <div class="counter"><div class="num" data-target="16">16</div><div class="lbl">Chapters</div></div>
+                <div class="counter"><div class="num" data-target="333">333</div><div class="lbl">Sub-sections</div></div>
+                <div class="counter"><div class="num" data-target="36"><span class="num-val">36</span><span class="unit">mo</span></div><div class="lbl">Didactic plan</div></div>
+                <div class="counter"><div class="num" data-target="4">4</div><div class="lbl">Hospital sites</div></div>
+                <div class="counter"><div class="num" data-target="6">6</div><div class="lbl">ACGME competencies</div></div>
+                <div class="counter"><div class="num" data-target="8">8</div><div class="lbl">Stakeholder groups</div></div>
             </div>
         </header>
 
@@ -558,52 +571,52 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="timeline-year">
                     <div class="yr-label">Year 1 · Foundations<span class="yr-sub">Anatomy, physiology, energy, core operative technique, and the complication trilogy</span></div>
                     <div class="timeline-grid">
-                        <button class="month-tile" data-mkey="y1-aug" aria-haspopup="dialog"><div class="mo">AUG · Y1</div><div class="topic">Pelvic anatomy + retroperitoneal dissection + research</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-sep" aria-haspopup="dialog"><div class="mo">SEP · Y1</div><div class="topic">Menstrual cycle physiology &amp; AUB</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-oct" aria-haspopup="dialog"><div class="mo">OCT · Y1</div><div class="topic">Perioperative management</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-nov" aria-haspopup="dialog"><div class="mo">NOV · Y1</div><div class="topic">Principles of energy sources</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-dec" aria-haspopup="dialog"><div class="mo">DEC · Y1</div><div class="topic">Hysteroscopy essentials &amp; complications</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-jan" aria-haspopup="dialog"><div class="mo">JAN · Y1</div><div class="topic">Laparoscopy &amp; robotic surgery essentials</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-feb" aria-haspopup="dialog"><div class="mo">FEB · Y1</div><div class="topic">Vaginal surgery essentials</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-mar" aria-haspopup="dialog"><div class="mo">MAR · Y1</div><div class="topic">Fundamentals of hysterectomy</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-apr" aria-haspopup="dialog"><div class="mo">APR · Y1</div><div class="topic">Surgical complications I &mdash; general, infectious, neuropathic</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-may" aria-haspopup="dialog"><div class="mo">MAY · Y1</div><div class="topic">Surgical complications II &mdash; vascular, bleeding, cuff</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-jun" aria-haspopup="dialog"><div class="mo">JUN · Y1</div><div class="topic">Surgical complications III &mdash; urologic, bowel</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y1-jul" aria-haspopup="dialog"><div class="mo">JUL · Y1</div><div class="topic">Uterine leiomyoma &amp; myomectomy</div><span class="tile-more">Details</span></button>
+                        <button class="month-tile" data-mkey="y1-aug" aria-haspopup="dialog"><div class="mo">AUG · Y1</div><div class="topic">Pelvic anatomy + retroperitoneal dissection + research</div></button>
+                        <button class="month-tile" data-mkey="y1-sep" aria-haspopup="dialog"><div class="mo">SEP · Y1</div><div class="topic">Menstrual cycle physiology &amp; AUB</div></button>
+                        <button class="month-tile" data-mkey="y1-oct" aria-haspopup="dialog"><div class="mo">OCT · Y1</div><div class="topic">Perioperative management</div></button>
+                        <button class="month-tile" data-mkey="y1-nov" aria-haspopup="dialog"><div class="mo">NOV · Y1</div><div class="topic">Principles of energy sources</div></button>
+                        <button class="month-tile" data-mkey="y1-dec" aria-haspopup="dialog"><div class="mo">DEC · Y1</div><div class="topic">Hysteroscopy essentials &amp; complications</div></button>
+                        <button class="month-tile" data-mkey="y1-jan" aria-haspopup="dialog"><div class="mo">JAN · Y1</div><div class="topic">Laparoscopy &amp; robotic surgery essentials</div></button>
+                        <button class="month-tile" data-mkey="y1-feb" aria-haspopup="dialog"><div class="mo">FEB · Y1</div><div class="topic">Vaginal surgery essentials</div></button>
+                        <button class="month-tile" data-mkey="y1-mar" aria-haspopup="dialog"><div class="mo">MAR · Y1</div><div class="topic">Fundamentals of hysterectomy</div></button>
+                        <button class="month-tile" data-mkey="y1-apr" aria-haspopup="dialog"><div class="mo">APR · Y1</div><div class="topic">Surgical complications I &mdash; general, infectious, neuropathic</div></button>
+                        <button class="month-tile" data-mkey="y1-may" aria-haspopup="dialog"><div class="mo">MAY · Y1</div><div class="topic">Surgical complications II &mdash; vascular, bleeding, cuff</div></button>
+                        <button class="month-tile" data-mkey="y1-jun" aria-haspopup="dialog"><div class="mo">JUN · Y1</div><div class="topic">Surgical complications III &mdash; urologic, bowel</div></button>
+                        <button class="month-tile" data-mkey="y1-jul" aria-haspopup="dialog"><div class="mo">JUL · Y1</div><div class="topic">Uterine leiomyoma &amp; myomectomy</div></button>
                     </div>
                 </div>
                 <div class="timeline-year">
                     <div class="yr-label">Year 2 · Complex Disease &amp; Advanced Topics<span class="yr-sub">Endometriosis, adenomyosis, pain, congenital anomalies, and special populations</span></div>
                     <div class="timeline-grid">
-                        <button class="month-tile" data-mkey="y2-aug" aria-haspopup="dialog"><div class="mo">AUG · Y2</div><div class="topic">Tissue retrieval &amp; extraction</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-sep" aria-haspopup="dialog"><div class="mo">SEP · Y2</div><div class="topic">Endometriosis I</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-oct" aria-haspopup="dialog"><div class="mo">OCT · Y2</div><div class="topic">Endometriosis II &mdash; deep infiltrating</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-nov" aria-haspopup="dialog"><div class="mo">NOV · Y2</div><div class="topic">Adenomyosis</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-dec" aria-haspopup="dialog"><div class="mo">DEC · Y2</div><div class="topic">Acute pelvic pain</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-jan" aria-haspopup="dialog"><div class="mo">JAN · Y2</div><div class="topic">Chronic pelvic pain</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-feb" aria-haspopup="dialog"><div class="mo">FEB · Y2</div><div class="topic">Adnexal pathology &amp; surgery</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-mar" aria-haspopup="dialog"><div class="mo">MAR · Y2</div><div class="topic">Congenital anomalies of urogenital tract</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-apr" aria-haspopup="dialog"><div class="mo">APR · Y2</div><div class="topic">Cesarean scar / isthmocele</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-may" aria-haspopup="dialog"><div class="mo">MAY · Y2</div><div class="topic">Surgery in special populations</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-jun" aria-haspopup="dialog"><div class="mo">JUN · Y2</div><div class="topic">Pelvic floor disorders</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y2-jul" aria-haspopup="dialog"><div class="mo">JUL · Y2</div><div class="topic">Professionalism &amp; emerging topics</div><span class="tile-more">Details</span></button>
+                        <button class="month-tile" data-mkey="y2-aug" aria-haspopup="dialog"><div class="mo">AUG · Y2</div><div class="topic">Tissue retrieval &amp; extraction</div></button>
+                        <button class="month-tile" data-mkey="y2-sep" aria-haspopup="dialog"><div class="mo">SEP · Y2</div><div class="topic">Endometriosis I</div></button>
+                        <button class="month-tile" data-mkey="y2-oct" aria-haspopup="dialog"><div class="mo">OCT · Y2</div><div class="topic">Endometriosis II &mdash; deep infiltrating</div></button>
+                        <button class="month-tile" data-mkey="y2-nov" aria-haspopup="dialog"><div class="mo">NOV · Y2</div><div class="topic">Adenomyosis</div></button>
+                        <button class="month-tile" data-mkey="y2-dec" aria-haspopup="dialog"><div class="mo">DEC · Y2</div><div class="topic">Acute pelvic pain</div></button>
+                        <button class="month-tile" data-mkey="y2-jan" aria-haspopup="dialog"><div class="mo">JAN · Y2</div><div class="topic">Chronic pelvic pain</div></button>
+                        <button class="month-tile" data-mkey="y2-feb" aria-haspopup="dialog"><div class="mo">FEB · Y2</div><div class="topic">Adnexal pathology &amp; surgery</div></button>
+                        <button class="month-tile" data-mkey="y2-mar" aria-haspopup="dialog"><div class="mo">MAR · Y2</div><div class="topic">Congenital anomalies of urogenital tract</div></button>
+                        <button class="month-tile" data-mkey="y2-apr" aria-haspopup="dialog"><div class="mo">APR · Y2</div><div class="topic">Cesarean scar / isthmocele</div></button>
+                        <button class="month-tile" data-mkey="y2-may" aria-haspopup="dialog"><div class="mo">MAY · Y2</div><div class="topic">Surgery in special populations</div></button>
+                        <button class="month-tile" data-mkey="y2-jun" aria-haspopup="dialog"><div class="mo">JUN · Y2</div><div class="topic">Pelvic floor disorders</div></button>
+                        <button class="month-tile" data-mkey="y2-jul" aria-haspopup="dialog"><div class="mo">JUL · Y2</div><div class="topic">Professionalism &amp; emerging topics</div></button>
                     </div>
                 </div>
                 <div class="timeline-year">
                     <div class="yr-label">Year 3 · Mastery &amp; Teaching Leadership<span class="yr-sub">Subspecialty-level operating, independent practice, and leading the teaching service</span></div>
                     <div class="timeline-grid">
-                        <button class="month-tile" data-mkey="y3-aug" aria-haspopup="dialog"><div class="mo">AUG · Y3</div><div class="topic">Refractory endometriosis management</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-sep" aria-haspopup="dialog"><div class="mo">SEP · Y3</div><div class="topic">Complex DIE resection</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-oct" aria-haspopup="dialog"><div class="mo">OCT · Y3</div><div class="topic">Advanced adenomyosis imaging &amp; surgery</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-nov" aria-haspopup="dialog"><div class="mo">NOV · Y3</div><div class="topic">Acute pelvic pain algorithms</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-dec" aria-haspopup="dialog"><div class="mo">DEC · Y3</div><div class="topic">Chronic pelvic pain integration</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-jan" aria-haspopup="dialog"><div class="mo">JAN · Y3</div><div class="topic">Complex adnexal masses</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-feb" aria-haspopup="dialog"><div class="mo">FEB · Y3</div><div class="topic">Advanced reconstruction</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-mar" aria-haspopup="dialog"><div class="mo">MAR · Y3</div><div class="topic">Isthmocele repair &amp; ICG</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-apr" aria-haspopup="dialog"><div class="mo">APR · Y3</div><div class="topic">Special populations</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-may" aria-haspopup="dialog"><div class="mo">MAY · Y3</div><div class="topic">Advanced pelvic floor</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-jun" aria-haspopup="dialog"><div class="mo">JUN · Y3</div><div class="topic">Transition to practice</div><span class="tile-more">Details</span></button>
-                        <button class="month-tile" data-mkey="y3-jul" aria-haspopup="dialog"><div class="mo">JUL · Y3</div><div class="topic">Advanced tissue extraction</div><span class="tile-more">Details</span></button>
+                        <button class="month-tile" data-mkey="y3-aug" aria-haspopup="dialog"><div class="mo">AUG · Y3</div><div class="topic">Refractory endometriosis management</div></button>
+                        <button class="month-tile" data-mkey="y3-sep" aria-haspopup="dialog"><div class="mo">SEP · Y3</div><div class="topic">Complex DIE resection</div></button>
+                        <button class="month-tile" data-mkey="y3-oct" aria-haspopup="dialog"><div class="mo">OCT · Y3</div><div class="topic">Advanced adenomyosis imaging &amp; surgery</div></button>
+                        <button class="month-tile" data-mkey="y3-nov" aria-haspopup="dialog"><div class="mo">NOV · Y3</div><div class="topic">Acute pelvic pain algorithms</div></button>
+                        <button class="month-tile" data-mkey="y3-dec" aria-haspopup="dialog"><div class="mo">DEC · Y3</div><div class="topic">Chronic pelvic pain integration</div></button>
+                        <button class="month-tile" data-mkey="y3-jan" aria-haspopup="dialog"><div class="mo">JAN · Y3</div><div class="topic">Complex adnexal masses</div></button>
+                        <button class="month-tile" data-mkey="y3-feb" aria-haspopup="dialog"><div class="mo">FEB · Y3</div><div class="topic">Advanced reconstruction</div></button>
+                        <button class="month-tile" data-mkey="y3-mar" aria-haspopup="dialog"><div class="mo">MAR · Y3</div><div class="topic">Isthmocele repair &amp; ICG</div></button>
+                        <button class="month-tile" data-mkey="y3-apr" aria-haspopup="dialog"><div class="mo">APR · Y3</div><div class="topic">Special populations</div></button>
+                        <button class="month-tile" data-mkey="y3-may" aria-haspopup="dialog"><div class="mo">MAY · Y3</div><div class="topic">Advanced pelvic floor</div></button>
+                        <button class="month-tile" data-mkey="y3-jun" aria-haspopup="dialog"><div class="mo">JUN · Y3</div><div class="topic">Transition to practice</div></button>
+                        <button class="month-tile" data-mkey="y3-jul" aria-haspopup="dialog"><div class="mo">JUL · Y3</div><div class="topic">Advanced tissue extraction</div></button>
                     </div>
                 </div>
             </div>
@@ -615,10 +628,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="resp-h">Autonomy is granted on evidence, not tenure.</h2>
             <p class="sub">The three years form a documented supervision gradient &mdash; from hands-on assistance to primary surgeon with the attending at a distance &mdash; each step tied to ACGME milestone levels.</p>
             <div class="detail-grid">
-<button class="detail-card" data-mkey="resp-y1" aria-haspopup="dialog"><div class="dk">Year 1</div><h4>Foundation and skill development</h4><p>Direct supervision, hands-on assistance; core laparoscopic and robotic proficiency built case by case.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="resp-y2" aria-haspopup="dialog"><div class="dk">Year 2</div><h4>Advanced practice and leadership</h4><p>Graduated autonomy on simple-to-complex surgery; resident mentoring begins; multisource assessment.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="resp-y3" aria-haspopup="dialog"><div class="dk">Year 3</div><h4>Mastery and independent practice</h4><p>Primary surgeon across all complexities, supervision at a distance; consultant to attendings and the ED.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="resp-milestones" aria-haspopup="dialog"><div class="dk">Measurement</div><h4>Milestone progression by domain</h4><p>Six ACGME domains with explicit level targets per year &mdash; Year 3 closes at Level 4&ndash;5 across the board.</p><span class="tile-more">Open details</span></button>
+<button class="detail-card" data-mkey="resp-y1" aria-haspopup="dialog"><div class="dk">Year 1</div><h4>Foundation and skill development</h4><p>Direct supervision, hands-on assistance; core laparoscopic and robotic proficiency built case by case.</p></button>
+<button class="detail-card" data-mkey="resp-y2" aria-haspopup="dialog"><div class="dk">Year 2</div><h4>Advanced practice and leadership</h4><p>Graduated autonomy on simple-to-complex surgery; resident mentoring begins; multisource assessment.</p></button>
+<button class="detail-card" data-mkey="resp-y3" aria-haspopup="dialog"><div class="dk">Year 3</div><h4>Mastery and independent practice</h4><p>Primary surgeon across all complexities, supervision at a distance; consultant to attendings and the ED.</p></button>
+<button class="detail-card" data-mkey="resp-milestones" aria-haspopup="dialog"><div class="dk">Measurement</div><h4>Milestone progression by domain</h4><p>Six ACGME domains with explicit level targets per year &mdash; Year 3 closes at Level 4&ndash;5 across the board.</p></button>
             </div>
         </section>
 
@@ -627,12 +640,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="week-h">Every weekday, 0700&ndash;1800, fully scheduled.</h2>
             <p class="sub">Four hospitals, one fellow driving case selection &mdash; plus emergency-department call on top.</p>
             <div class="detail-grid">
-<button class="detail-card" data-mkey="day-mon" aria-haspopup="dialog"><div class="dk">Monday · SFH / SJH / TMH</div><h4>Primary-surgeon OR &rarr; MIGS clinic</h4><p>Morning operating as primary surgeon with Dr. Tam and Dr. Sankey-Thomas; afternoon clinic at Thorek.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="day-tue" aria-haspopup="dialog"><div class="dk">Tuesday · SFH / TMH / SMH</div><h4>Three sites, alternating blocks</h4><p>SFH OR with Dr. Tomezsko, then Thorek hysteroscopy or full-day Saint Mary multidisciplinary MIS.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="day-wed" aria-haspopup="dialog"><div class="dk">Wednesday · SJH / SMH</div><h4>Robotics &rarr; protected research</h4><p>Xi-system robotics and complex-patient MIS in the morning; protected ACGME research time after.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="day-thu" aria-haspopup="dialog"><div class="dk">Thursday · SFH</div><h4>Full-day OR</h4><p>The week&rsquo;s highest-complexity block with Dr. Tam &mdash; TLH, robotics, myomectomy, endometriosis, ICG/NBI.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="day-fri" aria-haspopup="dialog"><div class="dk">Friday · SJH / SMH / TMH</div><h4>Vaginal surgery &rarr; clinic</h4><p>Morning vaginal and laparoscopic operating; afternoon MIGS clinic at Thorek.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="day-call" aria-haspopup="dialog"><div class="dk">On call · SFH ED</div><h4>Three days a month, fellow-primary</h4><p>Independent gynecologic emergency assessment with attending back-up by phone.</p><span class="tile-more">Open details</span></button>
+<button class="detail-card" data-mkey="day-mon" aria-haspopup="dialog"><div class="dk">Monday · SFH / SJH / TMH</div><h4>Primary-surgeon OR &rarr; MIGS clinic</h4><p>Morning operating as primary surgeon with Dr. Tam and Dr. Sankey-Thomas; afternoon clinic at Thorek.</p></button>
+<button class="detail-card" data-mkey="day-tue" aria-haspopup="dialog"><div class="dk">Tuesday · SFH / TMH / SMH</div><h4>Three sites, alternating blocks</h4><p>SFH OR with Dr. Tomezsko, then Thorek hysteroscopy or full-day Saint Mary multidisciplinary MIS.</p></button>
+<button class="detail-card" data-mkey="day-wed" aria-haspopup="dialog"><div class="dk">Wednesday · SJH / SMH</div><h4>Robotics &rarr; protected research</h4><p>Xi-system robotics and complex-patient MIS in the morning; protected ACGME research time after.</p></button>
+<button class="detail-card" data-mkey="day-thu" aria-haspopup="dialog"><div class="dk">Thursday · SFH</div><h4>Full-day OR</h4><p>The week&rsquo;s highest-complexity block with Dr. Tam &mdash; TLH, robotics, myomectomy, endometriosis, ICG/NBI.</p></button>
+<button class="detail-card" data-mkey="day-fri" aria-haspopup="dialog"><div class="dk">Friday · SJH / SMH / TMH</div><h4>Vaginal surgery &rarr; clinic</h4><p>Morning vaginal and laparoscopic operating; afternoon MIGS clinic at Thorek.</p></button>
+<button class="detail-card" data-mkey="day-call" aria-haspopup="dialog"><div class="dk">On call · SFH ED</div><h4>Three days a month, fellow-primary</h4><p>Independent gynecologic emergency assessment with attending back-up by phone.</p></button>
             </div>
         </section>
 
@@ -641,15 +654,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="sim-h">In Year 3, the fellow runs the teaching.</h2>
             <p class="sub">The monthly resident didactics-and-skills series &mdash; last Monday, 7:30&ndash;11:00 AM &mdash; is designed and delivered by the fellow, with faculty consultative: primary lecturer for seven of nine sessions, lab moderator throughout, across box trainers, the Xi robotic system, AI-based models, and 3D-printed simulation. December and May have no session (holiday OR schedule).</p>
             <div class="detail-grid sim-grid">
-<button class="detail-card" data-mkey="sim-jul" aria-haspopup="dialog"><div class="dk">July · Fellow-led</div><h4>Advanced Tissue Extraction & Containment Systems</h4><p>Bakken Conference Center &mdash; contained morcellation stations.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-aug" aria-haspopup="dialog"><div class="dk">August · Dr. Sankey-Thomas</div><h4>Advanced Vaginal Surgery: vNOTES & Complex Vaginal Hysterectomy</h4><p>Bakken Conference Room &mdash; vaginal surgery skills stations.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-sep" aria-haspopup="dialog"><div class="dk">September · Fellow-led</div><h4>Abdominal & Pelvic Anatomy: Advanced Retroperitoneal Dissection</h4><p>Bakken Conference Room &mdash; laparoscopic dissection stations.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-oct" aria-haspopup="dialog"><div class="dk">October · Fellow-led</div><h4>Complex Hysterectomy: High BMI, Prior Surgeries, Large Uteri</h4><p>Bakken Conference Center &mdash; advanced energy devices and vessel sealing.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-nov" aria-haspopup="dialog"><div class="dk">November · Fellow-led</div><h4>Advanced Robotic Surgery: Complex Cases & Troubleshooting</h4><p>SJH OR #3 &mdash; Xi robotic suturing and port-placement drills.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-jan" aria-haspopup="dialog"><div class="dk">January · Fellow-led</div><h4>Robotic MIGS Applications in Complex Endometriosis</h4><p>Saint Joseph Robotic Room #5 &mdash; complex DIE simulator lab.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-feb" aria-haspopup="dialog"><div class="dk">February · Fellow-led</div><h4>Advanced Endometriosis Surgery: ICG & NBI Applications</h4><p>Saint Joseph Robotic Room #5 &mdash; ICG simulation drills.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-mar" aria-haspopup="dialog"><div class="dk">March · Fellow-led</div><h4>Isthmocele & Cesarean Scar Defect: Multi-Modal Repair</h4><p>Bakken Conference Center &mdash; combined hysteroscopic and laparoscopic lab.</p><span class="tile-more">Open details</span></button>
-<button class="detail-card" data-mkey="sim-apr" aria-haspopup="dialog"><div class="dk">April · Teresa Tam, MD</div><h4>Complex Myomectomy: Robotic & Laparoscopic Approaches</h4><p>Saint Joseph Robotic Room #5 &mdash; robotic skills drills.</p><span class="tile-more">Open details</span></button>
+<button class="detail-card" data-mkey="sim-jul" aria-haspopup="dialog"><div class="dk">July · Fellow-led</div><h4>Advanced Tissue Extraction & Containment Systems</h4><p>Bakken Conference Center &mdash; contained morcellation stations.</p></button>
+<button class="detail-card" data-mkey="sim-aug" aria-haspopup="dialog"><div class="dk">August · Dr. Sankey-Thomas</div><h4>Advanced Vaginal Surgery: vNOTES & Complex Vaginal Hysterectomy</h4><p>Bakken Conference Room &mdash; vaginal surgery skills stations.</p></button>
+<button class="detail-card" data-mkey="sim-sep" aria-haspopup="dialog"><div class="dk">September · Fellow-led</div><h4>Abdominal & Pelvic Anatomy: Advanced Retroperitoneal Dissection</h4><p>Bakken Conference Room &mdash; laparoscopic dissection stations.</p></button>
+<button class="detail-card" data-mkey="sim-oct" aria-haspopup="dialog"><div class="dk">October · Fellow-led</div><h4>Complex Hysterectomy: High BMI, Prior Surgeries, Large Uteri</h4><p>Bakken Conference Center &mdash; advanced energy devices and vessel sealing.</p></button>
+<button class="detail-card" data-mkey="sim-nov" aria-haspopup="dialog"><div class="dk">November · Fellow-led</div><h4>Advanced Robotic Surgery: Complex Cases & Troubleshooting</h4><p>SJH OR #3 &mdash; Xi robotic suturing and port-placement drills.</p></button>
+<button class="detail-card" data-mkey="sim-jan" aria-haspopup="dialog"><div class="dk">January · Fellow-led</div><h4>Robotic MIGS Applications in Complex Endometriosis</h4><p>Saint Joseph Robotic Room #5 &mdash; complex DIE simulator lab.</p></button>
+<button class="detail-card" data-mkey="sim-feb" aria-haspopup="dialog"><div class="dk">February · Fellow-led</div><h4>Advanced Endometriosis Surgery: ICG & NBI Applications</h4><p>Saint Joseph Robotic Room #5 &mdash; ICG simulation drills.</p></button>
+<button class="detail-card" data-mkey="sim-mar" aria-haspopup="dialog"><div class="dk">March · Fellow-led</div><h4>Isthmocele & Cesarean Scar Defect: Multi-Modal Repair</h4><p>Bakken Conference Center &mdash; combined hysteroscopic and laparoscopic lab.</p></button>
+<button class="detail-card" data-mkey="sim-apr" aria-haspopup="dialog"><div class="dk">April · Teresa Tam, MD</div><h4>Complex Myomectomy: Robotic & Laparoscopic Approaches</h4><p>Saint Joseph Robotic Room #5 &mdash; robotic skills drills.</p></button>
             </div>
         </section>
 
@@ -658,14 +671,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="vol-h">The numbers behind the training.</h2>
             <p class="sub">Every FMIGS requirement was met by mid-fellowship &mdash; at more than double the required volume, with a 2.1% minor-complication rate.</p>
             <div class="counter-row">
-                <div class="counter"><div class="num" data-target="435">0</div><div class="lbl">Cases through Feb 2026</div></div>
-                <div class="counter"><div class="num" data-target="760">0</div><div class="lbl">Total procedures</div></div>
-                <div class="counter"><div class="num" data-target="243"><span class="num-val">0</span><span class="unit">%</span></div><div class="lbl">Avg. requirement completion</div></div>
-                <div class="counter"><div class="num" data-target="9">0</div><div class="lbl">FMIGS requirements met</div></div>
-                <div class="counter"><div class="num" data-target="80"><span class="num-val">0</span><span class="unit">%+</span></div><div class="lbl">Y3 primary-surgeon target</div></div>
+                <div class="counter"><div class="num" data-target="435">435</div><div class="lbl">Cases through Feb 2026</div></div>
+                <div class="counter"><div class="num" data-target="760">760</div><div class="lbl">Total procedures</div></div>
+                <div class="counter"><div class="num" data-target="243"><span class="num-val">243</span><span class="unit">%</span></div><div class="lbl">Avg. requirement completion</div></div>
+                <div class="counter"><div class="num" data-target="9">9</div><div class="lbl">FMIGS requirements met</div></div>
+                <div class="counter"><div class="num" data-target="80"><span class="num-val">80</span><span class="unit">%+</span></div><div class="lbl">Y3 primary-surgeon target</div></div>
             </div>
             <div class="detail-grid" style="margin-top:14px">
-<button class="detail-card" data-mkey="vol-summary" aria-haspopup="dialog"><div class="dk">Case Log</div><h4>How the numbers were earned</h4><p>Every FMIGS requirement cleared two years in, and what Year 3 adds on top.</p><span class="tile-more">Open details</span></button>
+<button class="detail-card" data-mkey="vol-summary" aria-haspopup="dialog"><div class="dk">Case Log</div><h4>How the numbers were earned</h4><p>Every FMIGS requirement cleared two years in, and what Year 3 adds on top.</p></button>
             </div>
         </section>
 
@@ -801,6 +814,15 @@ function animateCounters() {
     document.querySelectorAll('.counter .num').forEach(el => animateCounter(el));
 }
 function animateCounter(el) {
+    // Reduce Motion: the number is content, not an effect — show it, don't
+    // count to it. (This guard was previously deleted, leaving a bare brace;
+    // eleven counters animated in defiance of the setting.)
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const t = parseInt(el.dataset.target, 10) || 0;
+        const u = el.querySelector('.num-val');
+        if (u) { u.textContent = t; } else { el.textContent = t; }
+        return;
+    }
     {
         const target = parseInt(el.dataset.target, 10) || 0;
         const dur = 1400;
