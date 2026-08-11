@@ -88,38 +88,9 @@ function loaderChain() {
     return html.slice(i, close + 3);
 }
 
-// A const arrow-function body: from `const NAME = ` to the matching `}` of
-// its brace body (the in-body bootstrap and home.js reel logic use these).
-function constFn(name) {
-    const m = html.indexOf(`const ${name} = `);
-    if (m < 0) return `MISSING:const ${name}`;
-    const brace = html.indexOf("{", m);
-    return block(brace, "{", "}") || `UNBALANCED:const ${name}`;
-}
-
 // The animation-critical surface. Adding/removing an item here is itself an
 // intentional lock change (it'll shift the hash), which is correct.
 const PARTS = [
-    // --- the in-body bootstrap: the ONLY owner of the opening choreography
-    //     since 2026-08-09 (startHeroSequence early-returns to it). The lock
-    //     previously hashed none of these, so every choreography edit this
-    //     week passed the gate unhashed. ---
-    fn("runChoreography"),
-    fn("anchorOnDrawing"),
-    fn("toCanvasDrawing"),
-    fn("fallbackFade"),
-    rule(".hero-canvas"),
-    
-    fn("settleLater"),
-    fn("hideLoaderNow"),
-    rule(".hero-video.wipe-in"),
-    rule("@keyframes heroFadeIn"),
-    // --- autoplay-refusal machinery (hero swap + reel previews) ---
-    fn("swapHeroToAnimatedWebp"),
-    constFn("swapToPreview"),
-    constFn("swapAll"),
-    constFn("tryPlay"),
-    constFn("wake"),
     // --- reveal choreography (JS) ---
     fn("startHeroSequence"),
     fn("splitWords"),

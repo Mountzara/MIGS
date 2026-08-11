@@ -97,8 +97,8 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp'; // static frame — the wipe reveals it (2026-08-10d)
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -109,47 +109,24 @@
             try { heroWebpPreload = new Image(); heroWebpPreload.src = HERO_ANIM_WEBP; } catch (e) {}
         }
         function swapHeroToAnimatedWebp() {
-            // 2026-08-10d — universal reveal, mirroring the bootstrap: ONE
-            // static frame (a single small decode) swept in by the CSS
-            // clip-path wipe. The multi-frame animated WebP is dead on this
-            // path — decoding ~95MP froze weak machines' main threads for
-            // seconds (user recording 5); no delivery trick fixes decode.
             const live = document.getElementById('heroVideo');
             if (!live || live.tagName !== 'VIDEO' || live.dataset.heroEnded === '1') return;
-            // the bootstrap owns the real path — its canvas drawing plays
-            // the actual strokes; this body is only the no-bootstrap net
-            if (typeof window.__mzToCanvasDrawing === 'function') {
-                window.__mzToCanvasDrawing();
-                return;
-            }
-            const img = document.getElementById('heroImgSlot') || document.createElement('img');
+            const img = document.createElement('img');
+            img.className = live.className;
+            img.id = live.id;
             img.alt = '';
             img.decoding = 'async';
-            window.__mzHeroBytesPending = true;
-            const attach = () => {
-                window.__mzHeroBytesPending = false;
-                const vid = document.getElementById('heroVideo');
-                if (!vid || vid.tagName !== 'VIDEO') return;
-                try { vid.pause(); } catch (e) {}
-                vid.removeAttribute('id');
-                vid.style.visibility = 'hidden';
-                img.id = 'heroVideo';
-                img.className = vid.className + ' wipe-in';
-                img.style.opacity = '1';
-                if (!img.parentNode && vid.parentNode) vid.parentNode.appendChild(img);
-            };
-            img.onload = attach;
-            img.onerror = () => { window.__mzHeroBytesPending = false; };
-            img.src = HERO_LAST_FRAME;
-            if (img.complete && img.naturalWidth > 0) attach();
+            img.src = HERO_ANIM_WEBP;
+            if (live.parentNode) live.parentNode.replaceChild(img, live);
+            // settle on the final frame and start Ken Burns, mirroring the
+            // video 'ended' path
             setTimeout(() => {
                 const cur = document.getElementById('heroVideo');
                 if (!cur || cur.tagName !== 'IMG') return;
+                cur.src = HERO_LAST_FRAME;
                 cur.classList.add('ken-burns');
                 cur.dataset.heroEnded = '1';
-                const heroSec = document.querySelector('.hero');
-                if (heroSec) heroSec.classList.add('settled');
-            }, 5600);
+            }, 8400);
         }
 
         // The hero text cascade, callable on its own. The early bootstrap
@@ -259,7 +236,7 @@
                     fallback.id = live.id;
                     fallback.alt = '';
                     fallback.decoding = 'async';
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-lite-v2.webp';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
@@ -563,10 +540,6 @@
         // autoplay video once. Passive + { once:true } so it never costs
         // scroll performance and never fights a deliberate user pause.
         function recoverPausedVideos() {
-            // Reduce Motion: paused IS the correct state for the reels —
-            // recovery on first gesture was silently re-playing all four
-            // right after ensureVideoPreviewsAutoplay had rested them.
-            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             document.querySelectorAll('video').forEach(v => {
                 const isHero = v.id === 'heroVideo';
                 const wantsAutoplay = v.autoplay || isHero ||
@@ -2926,17 +2899,6 @@
         // first user interaction as a last-resort fallback for autoplay-blocking
         // policies.
         (function ensureVideoPreviewsAutoplay() {
-            // 2026-08-10 Reduce Motion: never auto-play the surgical loops.
-            // A user who asked the OS for less motion should not get four
-            // autoplaying surgery reels — and WebKit under Reduce Motion
-            // freezes them anyway (play() resolves, currentTime never
-            // advances). Rest on the posters; click still opens the player.
-            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelectorAll('video.video-preview').forEach((v) => {
-                    try { v.removeAttribute('autoplay'); v.pause(); } catch (e) {}
-                });
-                return;
-            }
             // 2026-08-08 PERF — the reels are now preload="none" with NO
             // autoplay attribute: with preload=auto+autoplay all four mp4s
             // (10.0 MB combined) downloaded at page open ~18 viewports above
@@ -2948,79 +2910,11 @@
                 const r = v.getBoundingClientRect();
                 return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
             };
-            // 2026-08-09c — swapToPreview lives at FUNCTION scope. Its first
-            // home was inside the IntersectionObserver block, which made the
-            // fast path below dead code: tryPlay's closure could not see the
-            // inner-block const, so `typeof swapToPreview` was always
-            // 'undefined' and every swap waited out the ~1.2s poll instead.
-            const swapToPreview = (v) => {
-                if (!v || v.tagName !== 'VIDEO' || v.dataset.mzPreviewed === '1') return;
-                const srcEl = v.querySelector('source[src*="reel-v2"]');
-                const src = srcEl ? srcEl.getAttribute('src') : (v.currentSrc || '');
-                const m = src.match(/([a-z0-9-]+reel-v2)/i);
-                if (!m) return;
-                v.dataset.mzPreviewed = '1';
-                const img = document.createElement('img');
-                img.className = v.className;
-                img.alt = '';
-                img.decoding = 'async';
-                img.loading = 'lazy';   // offscreen previews fetch on approach
-                img.src = '/media/' + m[1] + '-preview.webp';
-                img.style.pointerEvents = 'none';
-                if (v.parentNode) v.parentNode.replaceChild(img, v);
-            };
-            // One definitive refusal means the SETTING is site-wide (Safari's
-            // "Never Auto-Play"), so every reel converts at once — nobody
-            // should scroll onto a frozen thumbnail waiting for its own
-            // rejection to come in. Signal arrives from the hero video's
-            // play() (index.html bootstrap) or from any reel below.
-            const swapAll = () => {
-                window.__mzAutoplayRefused = true;
-                document.querySelectorAll('video.video-preview').forEach(swapToPreview);
-            };
-            // STANDING STALL GUARD — a reel can start, pass the wake poll,
-            // and then hang forever on a decoder stall (observed: playing
-            // flag on, currentTime frozen for 8s+). Any in-view reel whose
-            // clock hasn't moved across two 4s ticks becomes its animated
-            // preview. Cheap: four videos, one read each.
-            setInterval(() => {
-                document.querySelectorAll('video.video-preview').forEach((v) => {
-                    if (v.paused || !v.isConnected) { delete v.dataset.mzStallT; return; }
-                    const r = v.getBoundingClientRect();
-                    if (r.bottom < 0 || r.top > window.innerHeight) return;
-                    const t = v.currentTime.toFixed(2);
-                    if (v.dataset.mzStallT === t) {
-                        const n = (+(v.dataset.mzStallN || 0)) + 1;
-                        v.dataset.mzStallN = String(n);
-                        if (n >= 2) swapToPreview(v);
-                    } else {
-                        v.dataset.mzStallT = t;
-                        v.dataset.mzStallN = '0';
-                    }
-                });
-            }, 3000);
-            window.addEventListener('mz:autoplay-refused', swapAll);
-            if (window.__mzAutoplayRefused) {
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', swapAll, { once: true });
-                } else {
-                    swapAll();
-                }
-            }
             const tryPlay = (v) => {
-                if (!v || v.tagName !== 'VIDEO' || !v.paused) return;
+                if (!v || !v.paused) return;
                 const p = v.play();
                 if (p && typeof p.then === 'function') {
-                    p.catch((err) => {
-                        // NotAllowedError = autoplay policy, definitive and
-                        // site-wide: convert everything immediately. Other
-                        // rejections (AbortError from an offscreen pause())
-                        // keep the two-strike per-reel counter.
-                        if (err && err.name === 'NotAllowedError') { swapAll(); return; }
-                        const n = (+(v.dataset.mzRefused || 0)) + 1;
-                        v.dataset.mzRefused = String(n);
-                        if (n >= 2) swapToPreview(v);
-                    });
+                    p.catch(() => { /* autoplay blocked — handled by fallback below */ });
                 }
             };
             const playAll = () => document.querySelectorAll('.video-preview').forEach(v => {
@@ -3043,12 +2937,6 @@
                 // thumbnails is not working"). On approach: switch preload,
                 // load(), then play as soon as it is playable — and keep a
                 // first-touch retry for browsers that refuse until a gesture.
-                // 2026-08-09 — the user's Safari refuses ALL video autoplay
-                // (proven across four screen recordings: the hero video never
-                // played once). No retry can beat that setting, so a reel that
-                // will not advance is replaced by a looping animated preview
-                // built from the same footage — images are exempt from
-                // autoplay policy. Clicking still opens the full video modal.
                 const wake = (v) => {
                     if (v.dataset.mzWoken === '1') { tryPlay(v); return; }
                     v.dataset.mzWoken = '1';
@@ -3059,22 +2947,15 @@
                     ['loadeddata', 'canplay', 'canplaythrough'].forEach((ev) =>
                         v.addEventListener(ev, () => tryPlay(v), { once: true }));
                     tryPlay(v);
-                    // poll briefly: cached media can fire its events before we
-                    // listen. If after ~2.4s of being in view the reel still has
-                    // not advanced, autoplay is refused — switch to the preview.
+                    // poll briefly: cached media can fire its events before we listen
                     let n = 0;
                     const iv = setInterval(() => {
-                        if (!v.isConnected || (!v.paused && v.currentTime > 0.05)) { clearInterval(iv); return; }
-                        if (++n > 3) { clearInterval(iv); swapToPreview(v); return; }
+                        if (++n > 12 || (!v.paused && v.currentTime > 0.05)) { clearInterval(iv); return; }
                         tryPlay(v);
                     }, 300);
                 };
                 const io = new IntersectionObserver((entries) => {
                     entries.forEach((entry) => {
-                        // a swapped-in preview IMG has no pause(): calling it
-                        // threw on every scroll and killed the rest of this
-                        // callback (observed in the WebKit console)
-                        if (entry.target.tagName !== 'VIDEO') { io.unobserve(entry.target); return; }
                         if (entry.isIntersecting) wake(entry.target);
                         else if (!entry.target.paused) entry.target.pause();
                     });
@@ -3142,13 +3023,10 @@
             if (window.__mzPrevFocus && document.contains(window.__mzPrevFocus)) window.__mzPrevFocus.focus();
             window.__mzPrevFocus = null;
 
-            // Resume the muted auto-previews on the cards (not under Reduce
-            // Motion — rest is their correct state there).
-            if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-                document.querySelectorAll('.video-preview').forEach((v) => {
-                    v.play().catch(() => {});
-                });
-            }
+            // Resume the muted auto-previews on the cards.
+            document.querySelectorAll('.video-preview').forEach((v) => {
+                v.play().catch(() => {});
+            });
         }
 
         // Close modal on Escape key
@@ -3162,8 +3040,6 @@
         // Some browsers block autoplay despite muted+playsinline; explicit
         // .play() after DOM ready + intersection-based play/pause is reliable.
         (function initVideoPreviews() {
-            // Reduce Motion: reels rest on posters (see ensureVideoPreviewsAutoplay)
-            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             const previews = document.querySelectorAll('.video-preview');
             if (!previews.length) return;
             // 2026-08-08 PERF — this legacy block was the second, unguarded
@@ -3225,8 +3101,6 @@
         // so no seeking is needed — just trigger playback.
         // ============================================================
         (function () {
-            // Reduce Motion: reels rest on posters (see ensureVideoPreviewsAutoplay)
-            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             const previews = document.querySelectorAll('video.video-preview');
             if (!previews.length || !('IntersectionObserver' in window)) return;
 

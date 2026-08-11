@@ -135,11 +135,11 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # ENGINE cannot decode is unjudgeable — report it as skipped, loudly,
     # instead of failing the audit. A decodable video that genuinely fails
     # to autoplay (paused / frozen / never buffers) still FAILS.
-    if reduce_motion:
-        # Reduce Motion: the site deliberately rests the reels on their
-        # posters (home.js strips autoplay and pauses them) — autoplaying
-        # surgical loops against an OS less-motion request is the defect,
-        # not the pass state. Assert they are actually at rest.
+    canvas_arch = page.evaluate("() => !!document.getElementById('heroCanvas')")
+    if reduce_motion and canvas_arch:
+        # Reduce Motion + the canvas architecture rests reels on posters.
+        # The restored video-first architecture (2026-08-10, owner's call)
+        # plays them natively — judged by the normal per-reel loop below.
         page.evaluate("""() => { const el = document.querySelector('.video-preview');
             if (el) el.scrollIntoView({block: 'center'}); }""")
         page.wait_for_timeout(1500)
@@ -154,7 +154,7 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
     # home.js OWNS the reel wake/swap machinery and loads on settle or first
     # user intent (2026-08-10c) — the scroll below triggers it. Judging reel
     # #0 before the script has evaluated judges the loader, not the page.
-    if n_reels:
+    if n_reels and canvas_arch:
         page.evaluate("() => window.scrollTo(0, Math.min(600, document.body.scrollHeight))")
         try:
             page.wait_for_function("() => !!window.__mzHomeLoaded", timeout=15000)
@@ -374,7 +374,12 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
         return {name:cs.animationName, state:cs.animationPlayState, transform:cs.transform}; }""")
     page.wait_for_timeout(1500)
     kb1 = page.evaluate("""() => { const e=document.querySelector('.ken-burns'); if(!e) return null;
-        return {transform:getComputedStyle(e).transform}; }""")
+        // a one-shot 45s zoom that already FINISHED holds its final frame —
+        // static-because-complete is correct, not stuck (this audit can reach
+        // this point 45s+ into the run on slower architectures)
+        let done = false;
+        try { done = e.getAnimations().some(a => a.playState === 'finished'); } catch (err) {}
+        return {transform:getComputedStyle(e).transform, finished: done}; }""")
     if reduce_motion:
         # Under Reduce Motion, the Ken-Burns zoom is intentionally suppressed —
         # so we DON'T require motion; we require the hero to still PRESENT (the
@@ -395,9 +400,12 @@ def audit(page, label, reduce_motion=False) -> list[dict]:
                    and kb0["state"] == "running")
         res.append(chk(f"[{label}] ken-burns animation applied + running", applied,
                        f"name={kb0['name']} state={kb0['state']}"))
+        kb_ok = kb0["transform"] != kb1["transform"] or bool(kb1.get("finished"))
         res.append(chk(f"[{label}] ken-burns is actually animating (transform changes)",
-                       kb0["transform"] != kb1["transform"],
-                       "transform static (stuck)" if kb0["transform"] == kb1["transform"] else "moving"))
+                       kb_ok,
+                       "moving" if kb0["transform"] != kb1["transform"]
+                       else ("held at final frame (45s zoom completed before sampling)"
+                             if kb1.get("finished") else "transform static (stuck)")))
 
     # 5) opening sequence resolves — monogram + hero content reach opacity 1
     seq = page.evaluate("""() => {

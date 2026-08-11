@@ -400,15 +400,10 @@
             object-fit: contain;        /* show the WHOLE drawing, never distort */
             opacity: 1;
             pointer-events: none;
-            /* 2026-08-10 — NO CSS filter on the image hero: Safari re-runs a
-               filter chain over the full rendered layer (~9MP at desktop
-               size) on EVERY animation frame — a per-frame GPU cost that
-               froze the drawing on weaker Macs and that no Linux test
-               browser models. The exact same saturate(2.0) brightness(1.45)
-               contrast(1.28) math is BAKED into the pixels of
-               hero-animation-lite-v2.webp / hero-last-frame-lite-v2.webp.
-               The <video> keeps the live filter below — its pixels are the
-               unbaked originals. */
+            /* 2026-06-13 — push saturation/brightness/contrast so the mauve
+               line-art is vivid: that vivid drawing IS the contrast that lets the
+               frosted-glass cards read as real Apple glass. */
+            filter: saturate(2.0) brightness(1.45) contrast(1.28); /* +brightness 2026-07-22: offsets the stronger plum overlay so the line-art stays vivid */
             /* 2026-07-22 — screen-blend the video so its black pixels become
                transparent: the mauve line-art now draws ITSELF directly onto
                the purple-gradient stage instead of carrying its own black
@@ -422,10 +417,6 @@
                -48%) so the drawing fills space better while showing the majority
                of the anatomical illustration. */
             transform: translate(-48%, -50%) rotate(-22deg) scale(2.09);
-        }
-        /* live filter for the VIDEO path only — see the baked-pixels note above */
-        video.hero-video {
-            filter: saturate(2.0) brightness(1.45) contrast(1.28);
         }
         /* 2026-05-27 — kill Safari/WebKit's native media-control overlay
            (the giant "tap to play" button) when the hero <video> first
@@ -455,59 +446,14 @@
             display: none !important;
         }
 
-        /* 2026-08-10d — THE UNIVERSAL REVEAL. One static 15KB frame swept in
-           along the drawing's diagonal by a clip-path inset animation. The
-           inset animates in the ELEMENT's pre-rotation space, so left→right
-           here renders as bottom-left→top-right on screen after the -22deg
-           transform — following the line-art's flow. clip-path inset() is a
-           cheap, identically-supported primitive in every modern engine;
-           the 72-frame animated WebP it replaces cost ~95MP of decode that
-           froze weaker machines' main threads for seconds (user recording 5).
-           ken-burns later replaces the animation property — by then the wipe
-           is long finished and clip-path's default (none) equals its end state. */
-        /* 2026-08-10f — the baked drawing canvas: the whole hero visual
-           stack (gradient, glows, blend, filter, vignette, rotation) lives
-           IN its pixels, painted offline. One opaque layer; the only
-           runtime work is tiny drawImage stamps as the strokes land. Its
-           zoom is a plain scale — no blend to re-compute. */
-        /* 2026-08-10h — the canvas now carries .hero-video too, so its
-           position, size, object-fit and diagonal transform come from that
-           one rule: the drawing lands exactly where the original video did.
-           Only two overrides are needed here. */
-        .hero-canvas {
-            /* keep .hero-video's screen blend: the artwork's ink is WHITE
-               chalk — the mauve everyone sees is that white screened over the
-               purple stage. Baking a fixed background into the ink instead
-               produced grey-on-grey and washed the hero out. The canvas is
-               repainted only where the pen moves, so the blend has little to
-               re-do per frame. */
-            mix-blend-mode: screen;
-            pointer-events: none;
-        }
-
-        }
-        .hero-video.wipe-in {
-            /* 2026-08-10e — OPACITY, not clip-path. The clip-path wipe
-               invalidated this rotated, scaled (~9MP rendered),
-               screen-blended layer on every animation frame — a full
-               re-blend at 60fps, WORSE than the animated file it replaced
-               (user: "its even worse"). Opacity is the one reveal primitive
-               that stays composited even on a blended layer: the browser
-               blends once and fades the result. Nothing may animate
-               clip/mask/filter/size on this layer — transform (Ken Burns,
-               45s, starts after the cascade) is the only sanctioned motion. */
-            animation: heroFadeIn 0.9s ease-out both;
-        }
-        @keyframes heroFadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
         .hero-video.ken-burns {
             /* 2026-08-08 PERF — one 45s zoom-in that then HOLDS (forwards),
                not infinite alternate: a forever-animating transform on this
                full-viewport screen-blended layer forced the compositor to
                re-blend every frame for the life of the page. */
-            animation: heroKenBurnsSlow 45s ease-in-out 1 forwards;
+            animation: heroKenBurnsSlow 45s ease-out 1 forwards; /* ease-out: the
+               drift is visible from its first second — ease-in-out sat
+               static for several seconds after the settle */
         }
 
         @keyframes heroKenBurnsSlow {
@@ -588,12 +534,7 @@
             pointer-events: none;
         }
         .page-loader.removed {
-            /* visibility, NOT display:none — flipping display on anything
-               forces a full-document layout, which costs 400-660ms on a
-               slow machine with this DOM (traced: one of the three
-               mid-opening freezes). visibility:hidden skips hit-testing
-               and AT the same way, with zero layout. */
-            visibility: hidden;
+            display: none;
         }
         .page-loader-inner {
             display: flex;
@@ -682,28 +623,16 @@
         .hero-sub {
             position: relative;
             display: inline-block;
-            /* NO live blur while the drawing animates. This panel fades in
-               MID-DRAWING, and backdrop-filter re-filters the animating
-               frames beneath it on every frame — measured: 683ms frozen
-               frames landing exactly at its entrance on a throttled CPU
-               (the user's "freezes midway"). During the opening it is a
-               translucent card; .hero.settled (added when the drawing
-               settles) turns on the real glass over a now-static ground,
-               where it costs a one-time filter. Recipe otherwise per
-               2026-06-25: fill 0.08→0.12 compensates for the missing frost
-               during the opening. */
-            background: rgba(255, 255, 255, 0.12);
+            /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
+               blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
+               made it look opaque/heavy instead of glassy. */
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             padding: 16px 24px;
         }
-        /* NO settled-state glass switch-on. The panels keep ONE look from
-           first paint to rest (user: "it should be consistent all the way
-           through" — the blur materializing at settle read as a contrast
-           jump). The translucent 0.12 card IS the hero panel design now;
-           live backdrop blur over the animating drawing was also the
-           measured freeze driver that started this. Frost remains on the
-           nav and pinned pills, which never overlay the opening. */
         .hero-content-delayed > * {
             opacity: 0;
             transform: translateY(24px);
@@ -756,11 +685,8 @@
         .monogram-halo {
             position: absolute;
             inset: -15%;
-            /* soft falloff IN the gradient — the old filter:blur(40px) on
-               this full-stage layer was live GPU blur composited over the
-               animating drawing (measured freeze driver). A radial gradient
-               is already soft; blurring it bought nothing but cost. */
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 40%, transparent 72%);
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+            filter: blur(40px);
             pointer-events: none;
         }
 
@@ -771,11 +697,7 @@
             width: 100%;
             height: auto;
             display: block;
-            /* no filters: white + shadow are BAKED into monogram-white.png.
-               brightness(0) invert(1) drop-shadow() re-rasterized the whole
-               chain on every frame of this entrance animation, while the
-               drawing was animating underneath — a measured freeze driver
-               on weaker GPUs. */
+            filter: brightness(0) invert(1) drop-shadow(0 8px 32px rgba(0,0,0,0.6));
             opacity: 0.98;
             animation: monogramFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
             margin-bottom: 0;
@@ -1322,11 +1244,11 @@
             /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
                blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
                made it look opaque/heavy instead of glassy. */
-            /* glass gated behind .hero.settled like .hero-sub — this panel
-               fades in at +2600ms, still mid-drawing (see .hero-sub note) */
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 18px;
             overflow: hidden;
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
@@ -5884,38 +5806,11 @@
             .pinned-frames { gap: 0; }
         }
 
-        /* Respect prefers-reduced-motion — WITHOUT deleting the opening.
-           2026-08-10g: this block used to force `.hero-inner { opacity: 1 }`,
-           so for a Reduce-Motion viewer the monogram, headline, sub copy and
-           credentials were ALL on screen the instant the loader lifted —
-           no order, no sequence. Combined with the canvas drawing (which
-           also used to stamp instantly there), the owner's Mac showed a
-           finished, static hero every single time, which is what he kept
-           reporting while every other fix missed it.
-           The distinction that matters: what Reduce Motion is FOR is
-           suppressing large-scale movement — travel, parallax, zoom, spin.
-           A cross-fade in place is not that. So the sequence still runs,
-           as OPACITY ONLY: every transform is stripped, the drawing plays,
-           the zoom does not. Order preserved, motion removed. */
+        /* Respect prefers-reduced-motion */
         @media (prefers-reduced-motion: reduce) {
-            /* below-fold content: just show it, no travel, no waiting */
-            [data-reveal] { opacity: 1; transform: none !important; filter: none !important; transition: none; }
-            /* the hero opening keeps its ORDER — opacity only. These carry
-               !important on BOTH states so the [data-reveal] rule above can
-               never force a hero child visible ahead of its turn. The
-               per-child transition-delay (0/900/1800/2600ms) is deliberately
-               NOT touched: no shorthand here, or the stagger collapses. */
-            .hero-content-delayed > * { opacity: 0 !important; transform: none !important; }
-            .hero-content-delayed.visible > * { opacity: 1 !important; }
-            .hero-content-delayed > * {
-                transition-property: opacity !important;
-                transition-duration: 0.8s !important;
-            }
-            .word-reveal .w { opacity: 0 !important; transform: none !important; }
-            .word-reveal.in .w { opacity: 1 !important; }
-            .hero-inner, .monogram-stage { transform: none !important; animation: none !important; }
-            /* the zoom is the real vestibular motion — it alone is dropped */
-            .hero-video.ken-burns, .hero-canvas.ken-burns { animation: none !important; }
+            [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+            .word-reveal > .w { opacity: 1; transform: none; }
+            .hero-inner, .monogram-stage { transform: none !important; opacity: 1 !important; animation: none !important; }
         }
 
         /* ========== Responsive ========== */
