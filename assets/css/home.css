@@ -685,8 +685,9 @@
         .monogram-halo {
             position: absolute;
             inset: -15%;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
-            filter: blur(40px);
+            /* soft falloff in the gradient itself — live blur(40px) on this
+               full-stage layer was a measured freeze contributor */
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 40%, transparent 72%);
             pointer-events: none;
         }
 
@@ -697,7 +698,7 @@
             width: 100%;
             height: auto;
             display: block;
-            filter: brightness(0) invert(1) drop-shadow(0 8px 32px rgba(0,0,0,0.6));
+            /* filters baked into monogram-white.png (perf; visually identical) */
             opacity: 0.98;
             animation: monogramFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
             margin-bottom: 0;

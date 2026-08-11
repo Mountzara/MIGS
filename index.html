@@ -7,10 +7,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Mount Zara — Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery (CBG/MIGS), Osteopathic Care, and AI Innovation.">
     <title>Mount Zara — Complex Benign Gynecology &amp; MIGS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- SELF-HOSTED VARIABLE FONT (re-applied 2026-08-11; pure performance,
+         identical typeface). The Google link loaded 18 Nunito Sans variants
+         and each file arriving mid-opening forced a full-document relayout
+         (traced: 350-730ms freezes). One 31KB variable woff2 covers every
+         weight; preloaded, its single swap lands under the page loader. -->
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nunito-sans-var.woff2" crossorigin fetchpriority="high">
+    <style>
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+        font-family: 'Nunito Sans'; font-style: italic; font-weight: 200 1000;
+        font-display: swap; src: url('/assets/fonts/nunito-sans-var-italic.woff2') format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    </style>
     <link rel="preload" as="video" href="https://mountzara.com/media/hero-animation-hd-v4.mp4" type="video/mp4" fetchpriority="high">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script>
 /* 2026-08-08h — EARLIEST POSSIBLE HERO KICK. Measured on production in real
    WebKit: the in-body bootstrap could not run until ~5.9s because the browser
@@ -20,14 +35,30 @@
    in the cache by the time the hero can paint. It touches no DOM. */
 (function () {
     try {
-        var img = new Image();
-        img.decoding = 'async';
-        img.src = 'https://mountzara.com/media/hero-animation-hd.webp';
-        window.__mzHeroPre = img;
+        var touch = (window.matchMedia
+            && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+            || (navigator.maxTouchPoints || 0) > 0;
+        if (touch) {
+            // phones: the image IS the hero — decode is needed
+            var img = new Image();
+            img.decoding = 'async';
+            img.src = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
+            window.__mzHeroPre = img;
+        } else {
+            // desktop: the VIDEO is the hero and this image is only the
+            // autoplay-refused fallback. new Image() made the browser
+            // DECODE all 193 frames (~400MP, traced at ~13s of decode work
+            // under throttle) on every visit for an image usually never
+            // shown. fetch() warms the HTTP cache with ZERO decode; if the
+            // fallback is ever attached it loads instantly from cache and
+            // decodes only then.
+            fetch('https://mountzara.com/media/hero-animation-lite-v1.webp',
+                  { cache: 'force-cache', mode: 'no-cors' }).catch(function () {});
+        }
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=e4828432fc">
+<link rel="stylesheet" href="/assets/css/home.css?v=3ba858ff6f">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -89,7 +120,7 @@
          and plays smoothly at the same file size.
          Robust fallback at startHeroSequence(): if heroVideo.play()
          rejects (autoplay genuinely blocked), JS replaces the <video>
-         with an <img src=hero-animation-hd.webp> so the user never
+         with an <img src=hero-animation-lite-v1.webp> so the user never
          sees a play button. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
         <!-- 2026-05-27 — `autoplay` attribute REMOVED. With autoplay, the
@@ -134,7 +165,7 @@
         var v = document.getElementById('heroVideo');
         var loader = document.getElementById('pageLoader');
         if (!v) return;
-        var WEBP = 'https://mountzara.com/media/hero-animation-hd.webp';
+        var WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
         var LAST = 'https://mountzara.com/media/hero-last-frame-v2.webp';
         var touch = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
@@ -273,7 +304,9 @@
         <div class="hero-inner hero-content-delayed">
             <div class="monogram-stage">
                 <div class="monogram-halo"></div>
-                <img src="assets/images/Black White Elegant Personal Monogram Logo.png" alt="Mount Zara" class="logo">
+                <!-- pre-baked white+shadow: the brightness/invert/drop-shadow chain
+                     re-rasterized every frame of the 1.2s entrance (measured) -->
+                <img src="assets/images/monogram-white.png" alt="Mount Zara" class="logo">
             </div>
 
             <h1 class="hero-title">A passion for women's health.</h1>
@@ -1981,7 +2014,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=0382b7fb76" defer></script>
+    <script src="/assets/js/home.js?v=29c4d1d6cd" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

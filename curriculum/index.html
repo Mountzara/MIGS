@@ -249,7 +249,10 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     grid-column: 1 / -1;
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.24em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    /* #b7a4fc not the token: 11px/700 pixel-measured at 3.68:1 against the
+       glass ground (rgb(68,60,69)); #b7a4fc measures 5.1:1 there. Same fix
+       as the cbg-migs .abbrev chip. */
+    color: #b7a4fc;
     margin: 14px 0 -2px 2px;
 }
 .svc-group-label:first-child { margin-top: 2px; }

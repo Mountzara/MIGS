@@ -97,7 +97,7 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-hd.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
         const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
@@ -106,7 +106,14 @@
         // to wait for and the swap paints instantly
         let heroWebpPreload = null;
         if (HERO_TOUCH) {
-            try { heroWebpPreload = new Image(); heroWebpPreload.src = HERO_ANIM_WEBP; } catch (e) {}
+            try {
+                if (HERO_TOUCH) {           // image IS the hero on touch
+                    heroWebpPreload = new Image(); heroWebpPreload.src = HERO_ANIM_WEBP;
+                } else {
+                    // desktop fallback warmer: bytes only, no 400MP decode
+                    fetch(HERO_ANIM_WEBP, { cache: 'force-cache' }).catch(() => {});
+                }
+            } catch (e) {}
         }
         function swapHeroToAnimatedWebp() {
             const live = document.getElementById('heroVideo');
@@ -173,7 +180,7 @@
             // <video> attempt failed because WebM was first and Safari
             // software-decoded VP9 slowly, missing the autoplay window).
             // If play() truly rejects (autoplay blocked on user's browser),
-            // swap to <img src=hero-animation-hd.webp> so they never see a
+            // swap to <img src=hero-animation-lite-v1.webp> so they never see a
             // play button overlay. The WebP at full 1920x1080 is the
             // bulletproof fallback that worked in v3.
             if (heroVideo.tagName === 'VIDEO' && !HERO_TOUCH) {
