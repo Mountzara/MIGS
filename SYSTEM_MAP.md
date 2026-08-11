@@ -1084,10 +1084,25 @@ site describing his record must match this file.** Established figures:
   reoperations, 0 full-thickness injuries, 0 vascular, 0 nerve, 0 VTE,
   0 cuff dehiscence, 0 deaths). NEVER render this as "zero complications" —
   the correct claim is zero MAJOR ADVERSE EVENTS against a stated rate.
-* Scholarship: **4 journal publications + 5 abstract publications = 9
-  peer-reviewed publications**; **11 presentations** (8 national, 3
-  regional); **4 awards**, of which **2 are peer-reviewed research awards**
-  (AAGL Golden Hysteroscope 2024, CAOG George W. Morley 2024).
+* **SCHOLARSHIP — CANONICAL COUNTS. Use these; do not re-derive.**
+  - **4** journal publications (GMIT 2026, Arch Gynecol Obstet 2025,
+    JMIG 2025, J Intellect Disabil Res 2012)
+  - **5** published abstracts — every one of them is ALSO one of the
+    presentations below, so never add 4+5+11
+  - **11** peer-reviewed presentations: **8 national** (7 AAGL Global
+    Congress across 2020/2022×2/2024×3/2025, plus ACOG 2024 Ward et al.)
+    and **3 regional** (CAOG 2025 poster #46, CAOG 2024 Morley, ACOG
+    district 2022)
+  - **15 = the headline number.** Distinct peer-reviewed works =
+    4 journal + 11 presentations. The homepage identity card says
+    "Fifteen peer-reviewed publications & presentations"; /about/ says
+    11 presentations. Both verified against the site's own listings,
+    which now enumerate exactly 15 (4 + 7 AAGL + 4 ACOG/CAOG).
+  - The original site claim of "Ten" UNDERCOUNTED, and an interim
+    correction to "Nine peer-reviewed publications" dropped the
+    presentations entirely. The owner caught both.
+  - **4 awards**, of which **2 are peer-reviewed research awards**
+    (AAGL Golden Hysteroscope 2024, CAOG George W. Morley 2024).
 * Residency ACGME log Jul 2019 – Jun 2023: 395 cases, 523 gynecologic
   procedures; 349 robotic cases combined across training.
 * **Active research: exactly TWO IRB studies — RIL20240017 (NBI /
