@@ -660,11 +660,16 @@
            the sub copy, then the credentials — each clearly AFTER the
            previous, with 1s fades that overlap so the build never stalls.
            The old 140ms gaps made everything land as one clump. */
+        /* 2026-08-11c — compressed per owner's direction: EVERYTHING must be
+           on screen before the drawing finishes, not after. The fallback
+           clip's strokes run ~2.9s from its start; with the anchor at +400ms
+           the last child now completes its 1s fade by ~+2.9s. (On the 8s
+           video path the margin is even larger.) */
         .hero-content-delayed.visible > *:nth-child(1) { transition-delay: 0ms; }    /* monogram */
-        .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 900ms; }  /* headline */
-        .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 1800ms; } /* sub copy */
-        .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 2600ms; } /* credentials */
-        .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 3200ms; }
+        .hero-content-delayed.visible > *:nth-child(2) { transition-delay: 500ms; }  /* headline */
+        .hero-content-delayed.visible > *:nth-child(3) { transition-delay: 1000ms; } /* sub copy */
+        .hero-content-delayed.visible > *:nth-child(4) { transition-delay: 1500ms; } /* credentials */
+        .hero-content-delayed.visible > *:nth-child(5) { transition-delay: 1900ms; }
 
 
         /* Monogram stage */

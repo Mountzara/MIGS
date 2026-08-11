@@ -58,7 +58,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=3ba858ff6f">
+<link rel="stylesheet" href="/assets/css/home.css?v=aec847443a">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js" defer></script>
@@ -219,7 +219,7 @@
             setTimeout(function () {
                 var title = document.querySelector('.hero-title');
                 if (title) title.classList.add('in');
-            }, 900);
+            }, 500);
         }
         function anchorOnDrawing() {
             var iv = setInterval(function () {
@@ -227,7 +227,7 @@
                 if (!el) { clearInterval(iv); runChoreography(); return; }
                 if (el.tagName === 'IMG') {
                     clearInterval(iv);
-                    setTimeout(runChoreography, 700);   // image draws from blank
+                    setTimeout(runChoreography, 400);   // image draws from blank
                     return;
                 }
                 if (el.tagName === 'VIDEO' && !el.paused && el.currentTime > 0.5) {
@@ -288,7 +288,7 @@
                         try { v.pause(); v.currentTime = 0; } catch (e) {}
                         if (v.readyState >= 4) { decide('video'); return; }
                         v.addEventListener('canplaythrough', function () { decide('video'); }, { once: true });
-                        setTimeout(function () { decide('video'); }, 5200);   // buffer cap
+                        setTimeout(function () { decide('video'); }, 7000);   // buffer cap
                     }, function () {
                         var pre = new Image();
                         pre.src = WEBP;
@@ -297,14 +297,14 @@
                             if (pre.decode) { pre.decode().then(done, done); }
                             else { pre.onload = done; pre.onerror = done; }
                         } catch (e) { done(); }
-                        setTimeout(done, 5200);                              // decode cap
+                        setTimeout(done, 7000);                              // decode cap
                     });
                 } else { decide('video'); }
             });
             var fontsP = (document.fonts && document.fonts.ready)
                 ? document.fonts.ready.then(function () {}, function () {})
                 : Promise.resolve();
-            var minP = new Promise(function (res) { setTimeout(res, 1500); }); // loader never blinks
+            var minP = new Promise(function (res) { setTimeout(res, 2600); }); // longer, per owner
             var began = false;
             var begin = function () {
                 if (began) return;
@@ -328,10 +328,10 @@
                         }
                         anchorOnDrawing();
                     }, 350);
-                }, 600);
+                }, 900);
             };
             Promise.all([pathP, fontsP, minP]).then(begin);
-            setTimeout(begin, 7000);                           // never hang the curtain
+            setTimeout(begin, 9500);                           // never hang the curtain
             // Settle stays owned here: video ended -> hold final frame,
             // start the Ken Burns drift.
             v.addEventListener('ended', function () {
