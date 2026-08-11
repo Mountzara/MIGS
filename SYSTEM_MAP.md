@@ -1138,6 +1138,96 @@ across four states), PROGRAM DEVELOPMENT/QUALITY/ACCREDITATION (COEMIG
 committee, Robotic Steering Committee), and CLINICAL INNOVATION &
 INFORMATICS (the six-app suite, FMIGS Reporting Tool).
 
+### 7.11 Voice pass (2026-08-11) — AI-provenance labels and slogan copy
+
+Two separate problems, fixed together.
+
+**(a) AI-provenance labels — the 13 patient-education pages.**
+`education/<topic>/index.html` and their 12 `portal/education/` copies
+(25 files) carried a visible `<aside class="mz-ai-disclaimer">` reading
+"This page was prepared with AI assistance to organize and improve
+readability of a high volume of clinical literature…", plus `§0.8
+KB-anchor manifest` HTML comments. Both described how the page was
+assembled, not anything clinical. Replaced with
+`<aside class="mz-page-note">` carrying only the educational-purposes /
+not-medical-advice / error-report disclosure. **The owner explicitly
+ruled out any authorship attribution: "No do not put my authorship on
+there. remove it. just leave the footer disclosures."** Do not add a
+"Reviewed and published by" line back.
+
+Legitimate AI references were deliberately LEFT ALONE — "Mount Zara
+Clinical AI", "Optional Claude API for elevated reasoning", "AI/LLM
+developer" all describe his own products and his own skill set. The rule
+is: remove labels that mark *this website's content* as AI-produced;
+keep copy that describes *the software he builds*.
+
+**(b) Slogan voice on `/` and `/about/`.** The owner's own voice — per
+the authoritative CV — is precise, quantitative, declarative, no hype.
+Removed the "N things. One thing." formula (it appeared 3× with
+different numbers), the "at the intersection of" / "redefine" /
+"cutting-edge" / "for the future of" register, and flourishes that
+invented narrative ("clinical chameleon", "anatomical awareness
+practiced as a discipline", "The methodological rigor … continues to
+inform his current surgical research approach"). Headlines are now
+quantitative or plainly declarative. Grep guards worth keeping:
+`intersection of`, `redefine`, `something remarkable`, `One mission`,
+`One practice`, `cutting-edge`, `unapologetically`.
+
+**Stale counts corrected in the same pass** (they contradicted §7.10):
+homepage stat `10 → 15` peer-reviewed publications & presentations,
+`4 → 2` Active IRB studies, identity card "4 active IRB studies" →
+"2", "apps in development" → "apps in beta"; `/about/` "five native
+macOS applications" → "six native applications".
+
+### 7.12 Motion easing scale + the disclosure mechanism (2026-08-11)
+
+`assets/css/home.css` previously spelled out a `cubic-bezier()` at every
+call site — 49 of them across **six** near-identical curves
+(`0.16,1,0.3,1` ×45, `0.22,1,0.36,1`, `0.2,1,0.3,1`, `0.2,0.7,0.3,1`,
+`0.25,0.1,0.25,1`, `0.34,1.56,0.64,1`). Consolidated onto a token scale
+in the first `:root`: `--ease-out-quint`, `--ease-out-cubic`,
+`--ease-in-out-quart`, `--ease-spring`.
+
+> ⚠️ **The hero animation rules are deliberately EXCLUDED from the token
+> scale.** `.hero-content-delayed > *` and `.word-reveal .w` keep their
+> literal `cubic-bezier(0.22, 1, 0.36, 1)` and
+> `cubic-bezier(0.2, 1, 0.3, 1)` — they are covered by
+> `scripts/hero_animation.lock`, and the opening sequence should carry no
+> indirection that could fail to resolve. A first attempt at this pass
+> tripped the lock precisely because the token substitution rewrote them,
+> and the naive revert collapsed both onto the dominant curve. If you
+> touch easing, run `node scripts/hero_anim_fingerprint.mjs --check`.
+
+**`.research-detail` disclosure** was `max-height: 0 → 1200px`. Two real
+defects: any detail body taller than 1200px would clip, and because the
+cap is ~6× the real content height, the transition reached full height in
+the first ~10% of its 500ms and then sat still — measurably a snap, not
+an ease. Now `grid-template-rows: 0fr → 1fr`.
+
+> ⚠️ **`.research-detail-clip` is load-bearing — do not remove it.** A
+> `0fr` track floors at the grid item's **padding + border**;
+> `min-height: 0` and `overflow: hidden` zero out the *content*
+> contribution but not padding or border. Putting the padded
+> `.research-detail-inner` directly in the grid left every row stuck
+> **61px** open (28 + 32 padding + 1px border-top). The clip wrapper is
+> the grid item and carries no padding or border; all spacing stays on
+> `.research-detail-inner` inside it. 12 blocks in `index.html`.
+
+Measured in WebKit 26.5 (Chromium is unusable here — the agent proxy
+returns `net::ERR_CONNECTION_RESET`): closed 0px, opens to true content
+height, recloses to 0, 0 clipped items, no page errors, identical under
+`prefers-reduced-motion: reduce`. In an isolated probe
+`grid-template-rows` interpolates over 32 frames while
+`max-height: 0 → 1200px` yields 2 — confirming which one actually eases.
+
+**Known, pre-existing, NOT caused by this change:** on the real homepage
+both the old and the new mechanism stall ~1.2–1.4s on open (HEAD and the
+new build measured side by side, 3 rAF frames each). Layout is 1ms and
+full-document layout is 0ms, so this is **rasterization**: the page
+carries **136 elements with `backdrop-filter`**, every one of which
+re-rasterizes per animated frame. Cutting that count is the single
+highest-value performance fix left on the homepage (Tier B).
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages
