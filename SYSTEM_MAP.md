@@ -1123,6 +1123,22 @@ Clavien–Dindo figures; homepage "Ten peer-reviewed publications &
 presentations" → "Nine peer-reviewed publications"; /about/ "9+
 Peer-Reviewed Presentations" → "11".
 
+> ⚠️ **2026-08-11 follow-up — the owner caught two survivors, angrily.**
+> (1) The curriculum page's "Case Volume" modal lives inside the
+> `DETAIL_DATA` JS blob (`vol-summary` key, one physical line), so
+> markup-oriented grep sweeps missed it: it still said "2.1%
+> minor-complication rate", "grew 63% from Year 1 to Year 2", "243% of
+> the required volume", and "435 cases and 760 procedures by February
+> 2026". None of those numbers exist in the authoritative CV; replaced
+> with 444 / 1,511 / ClassIntra / Clavien–Dindo. **When sweeping for
+> stale figures, ALWAYS grep the JS string blobs (`DETAIL_DATA`,
+> modal-injected HTML), not just markup.**
+> (2) The homepage claimed ">95% same-day discharge" in three places;
+> the CV states **90.4% MIS same-day discharge** — the site was
+> overclaiming against his own record. All three now read 90.4%, and
+> /cv/ gained the missing 90.4% outcomes row. The canonical figure for
+> same-day discharge is **90.4%**, never ">95%".
+
 ADDED to `/cv/` 2026-08-11: **Fellowship Surgical Experience & Outcomes**
 (volume, case mix, ClassIntra/Clavien–Dindo outcomes, zero major adverse
 events), **Fellowship Procedure Breakdown** (hysterectomy, endometriosis,
