@@ -1094,9 +1094,12 @@ site describing his record must match this file.** Established figures:
   adenomyosis) and RIL20220137 (ICG / endometriosis-related fibrosis).**
   The site additionally cites RIL20240009 (TAP block RCT) and RIL20240078
   (ICG appendiceal endometriosis) and claims "4 Active IRB Studies".
-  UNRESOLVED — flagged to the owner, not edited: he may be a
-  co-investigator on those two rather than PI, which would make both the
-  site and the CV correct. Do not change either until he rules.
+  RESOLVED 2026-08-11 by the owner: "2 active IRB's now". The /cv/
+  Active IRB Research section and the /about/ stat now show exactly those
+  two. The other two studies (RIL20240009 TAP block RCT, RIL20240078 ICG
+  appendiceal) remain on the homepage as research cards but are no longer
+  tagged "Active IRB" or "Active" — their true status (completed /
+  published / paused) is still unstated and should be set by him.
 
 Corrected on the site in this pass: fellowship counters 435→444 and
 760→1,511 (and their labels, which claimed "through Feb 2026"); the
@@ -1105,12 +1108,20 @@ Clavien–Dindo figures; homepage "Ten peer-reviewed publications &
 presentations" → "Nine peer-reviewed publications"; /about/ "9+
 Peer-Reviewed Presentations" → "11".
 
-Still missing from `/cv/` versus the PDF (Tier B/C work): the entire
-FELLOWSHIP SURGICAL EXPERIENCE & OUTCOMES operative log, the FELLOWSHIP
-PROCEDURE BREAKDOWN, RESIDENCY SURGICAL EXPERIENCE, CLINICAL EXPERIENCE
-(locums), PROGRAM DEVELOPMENT/QUALITY/ACCREDITATION, and CLINICAL
-INNOVATION & INFORMATICS. The strongest evidence in his record is not on
-his CV page.
+ADDED to `/cv/` 2026-08-11: **Fellowship Surgical Experience & Outcomes**
+(volume, case mix, ClassIntra/Clavien–Dindo outcomes, zero major adverse
+events), **Fellowship Procedure Breakdown** (hysterectomy, endometriosis,
+fibroids & fertility preservation, hysteroscopy, prolapse, adhesiolysis &
+cross-specialty, urinary tract), and **Residency Surgical Experience**
+(ACGME log). 39 log rows, all figures transcribed from the authoritative
+CV. Rendered with a new `.cv-log` pattern — figure-first rows with
+`font-variant-numeric: tabular-nums`, NOT another card class (the site
+already has 45). Section nav updated with the three new anchors.
+
+Still missing from `/cv/` versus the PDF: CLINICAL EXPERIENCE (locums
+across four states), PROGRAM DEVELOPMENT/QUALITY/ACCREDITATION (COEMIG
+committee, Robotic Steering Committee), and CLINICAL INNOVATION &
+INFORMATICS (the six-app suite, FMIGS Reporting Tool).
 
 ## 8. Static surfaces
 

@@ -373,6 +373,50 @@
         @media (max-width: 720px) {
             .cv-items.two-col { grid-template-columns: 1fr; }
         }
+
+        /* Operative log (2026-08-11) — quantitative content, so it gets a
+           figure-first treatment with tabular numerals rather than another
+           card class. The number is the point; the label and the breakdown
+           support it. */
+        .cv-log { display: grid; gap: 2px; margin-top: 4px; }
+        .cv-log-row {
+            display: grid;
+            grid-template-columns: minmax(94px, 118px) 1fr;
+            gap: 4px 22px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .cv-log-row:last-child { border-bottom: 0; }
+        .cv-log-v {
+            font-size: clamp(23px, 3vw, 30px);
+            font-weight: 300;
+            line-height: 1.05;
+            color: var(--accent-soft);
+            font-variant-numeric: tabular-nums lining-nums;
+            letter-spacing: -0.015em;
+        }
+        .cv-log-v .u { font-size: 0.52em; margin-left: 2px; letter-spacing: 0.02em; }
+        .cv-log-k { font-size: 15.5px; color: var(--white); font-weight: 500; align-self: center; }
+        .cv-log-d {
+            grid-column: 2;
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--gray-light);
+            font-variant-numeric: tabular-nums lining-nums;
+        }
+        .cv-log-row.zero .cv-log-v { color: #7fd3a6; }
+        .cv-log-group {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--gray-light);
+            margin: 26px 0 2px; padding-top: 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .cv-log-group:first-child { margin-top: 6px; padding-top: 0; border-top: 0; }
+        @media (max-width: 560px) {
+            .cv-log-row { grid-template-columns: 1fr; gap: 2px; }
+            .cv-log-d { grid-column: 1; }
+        }
+
         .cv-item {
             padding: 18px 22px;
             background: var(--bg-card);
@@ -897,6 +941,9 @@ body > footer, .cv-main ~ footer, footer {
             <a href="#aagl" class="section-nav-link" data-target="aagl">AAGL</a>
             <a href="#acog" class="section-nav-link" data-target="acog">ACOG · CAOG</a>
             <a href="#research" class="section-nav-link" data-target="research">Research</a>
+                <a href="#operative" class="section-nav-link" data-target="operative">Operative log</a>
+                <a href="#breakdown" class="section-nav-link" data-target="breakdown">Breakdown</a>
+                <a href="#residency" class="section-nav-link" data-target="residency">Residency</a>
             <a href="#curriculum" class="section-nav-link" data-target="curriculum">Curriculum</a>
             <a href="#rounds" class="section-nav-link" data-target="rounds">Grand Rounds</a>
             <a href="#qi" class="section-nav-link" data-target="qi">QI</a>
@@ -982,12 +1029,80 @@ body > footer, .cv-main ~ footer, footer {
 
         <section class="cv-section" id="research">
             <h2>Active IRB Research</h2>
-            <p class="cv-section-sub">Four active institutional review board studies, each tracking a specific CBG/MIGS frontier.</p>
+            <p class="cv-section-sub">Two active institutional review board studies, both in intraoperative imaging.</p>
             <div class="cv-items">
-                <div class="cv-item"><strong>ICG &amp; Endometriosis-Related Fibrosis</strong><span class="meta">PRIME Saint Francis Hospital, Evanston · IRB RIL20220137</span></div>
-                <div class="cv-item"><strong>NBI in Adenomyosis Detection during Hysteroscopy</strong><span class="meta">IRB RIL20240017</span></div>
-                <div class="cv-item"><strong>TAP Block Post-Op Pain RCT in ERAS Protocol</strong><span class="meta">IRB RIL20240009 · Lukish, Mabini, Tam, Ward, Siddique</span></div>
-                <div class="cv-item"><strong>ICG for Appendiceal Endometriosis Detection</strong><span class="meta">IRB RIL20240078</span></div>
+                <div class="cv-item"><strong>NBI in Adenomyosis Detection during Hysteroscopy</strong><span class="meta">PRIME Illinois St. Francis Hospital · IRB RIL20240017 · Mabini C, Tam T. · 2024–present</span></div>
+                <div class="cv-item"><strong>ICG &amp; Endometriosis-Related Fibrosis and Inflammatory Changes</strong><span class="meta">PRIME Illinois St. Francis Hospital · IRB RIL20220137 · Mabini C, Tam M. · 2022–present</span></div>
+            </div>
+        </section>
+
+        <section class="cv-section" id="operative">
+            <h2>Fellowship Surgical Experience &amp; Outcomes</h2>
+            <p class="cv-section-sub">Operative log, September 2023 &ndash; May 2026. Four Chicago-area teaching hospitals, nine attending surgeons. Category-level case counts available on request.</p>
+            <div class="cv-log">
+                <div class="cv-log-group">Volume</div>
+                <div class="cv-log-row"><div class="cv-log-v">444</div><div class="cv-log-k">Operative cases</div><div class="cv-log-d">224 robotic · 76 laparoscopic · 79 hysteroscopic · 31 vaginal · 14 planned open · 12 vNOTES · 7 other · 1 LESS single-site</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">1,511</div><div class="cv-log-k">Distinct procedures</div><div class="cv-log-d">1,475 performed minimally invasively — an average of 3.4 procedures per minimally invasive case</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">500<span class="u">+</span></div><div class="cv-log-k">da Vinci robotic procedures attested in writing</div><div class="cv-log-d">Independent robotic surgical privileges recommended, July 2026 &mdash; Teresa Tam, MD, Director of Minimally Invasive Gynecologic Surgery, PRIME Healthcare Saint Francis Hospital</div></div>
+                <div class="cv-log-group">Case mix</div>
+                <div class="cv-log-row"><div class="cv-log-v">113</div><div class="cv-log-k">AUB with documented leiomyomata</div><div class="cv-log-d">AUB-L</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">95</div><div class="cv-log-k">Endometriosis / chronic pelvic pain</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-row"><div class="cv-log-v">49</div><div class="cv-log-k">AUB without a documented fibroid</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-row"><div class="cv-log-v">40</div><div class="cv-log-k">Pelvic organ prolapse</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-row"><div class="cv-log-v">25</div><div class="cv-log-k">Fibroids as the primary indication</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-row"><div class="cv-log-v">23</div><div class="cv-log-k">Postmenopausal bleeding</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-row"><div class="cv-log-v">20</div><div class="cv-log-k">Gynecologic cancer or precancer</div><div class="cv-log-d"></div></div>
+                <div class="cv-log-group">Outcomes</div>
+                <div class="cv-log-row"><div class="cv-log-v">2.9<span class="u">%</span></div><div class="cv-log-k">Intraoperative events</div><div class="cv-log-d">ClassIntra, incision to closure (N&nbsp;=&nbsp;13). Grade I: 2, Grade II: 7 — no intervention or minor intervention only. Grade III: 4, Grade IV: 0 — moderate intervention; no organ resection, conversion or reoperation.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">0.2<span class="u">%</span></div><div class="cv-log-k">Postoperative complications</div><div class="cv-log-d">Clavien&ndash;Dindo, closure to follow-up (N&nbsp;=&nbsp;1). Grade II: 1, managed with antibiotic therapy alone. Grade III&ndash;IV: none.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">3.15<span class="u">%</span></div><div class="cv-log-k">Total reportable complications</div><div class="cv-log-d">14 across the entire series.</div></div>
+                <div class="cv-log-row zero"><div class="cv-log-v">0</div><div class="cv-log-k">Major adverse events across the entire series</div><div class="cv-log-d">0 conversions to laparotomy · 0 reoperations for a complication · 0 full-thickness injuries of bladder, bowel or ureter · 0 vascular injuries · 0 nerve injuries · 0 venous thromboembolism · 0 vaginal cuff dehiscence · 0 deaths</div></div>
+            </div>
+        </section>
+
+        <section class="cv-section" id="breakdown">
+            <h2>Fellowship Procedure Breakdown</h2>
+            <p class="cv-section-sub">By operative category, across the full complexity range.</p>
+            <div class="cv-log">
+                <div class="cv-log-group">Hysterectomy</div>
+                <div class="cv-log-row"><div class="cv-log-v">177</div><div class="cv-log-k">Hysterectomies — 165 via MIS routes (93%)</div><div class="cv-log-d">106 robotic · 24 laparoscopic · 24 vaginal · 11 vNOTES · 12 planned open for large pathology. Uteri to 20-week size, Stage III&ndash;IV endometriosis, dense adhesions, prior abdominal or pelvic surgery; routine same-day discharge.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">20<span class="u">wk</span></div><div class="cv-log-k">Week uterus — largest removed robotically</div><div class="cv-log-d">Via a 2&ndash;3 cm Gelport umbilical incision. 754 g heaviest minimally invasive specimen; 2,060 g heaviest by planned laparotomy.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">41</div><div class="cv-log-k">Specimens at 250 g or more</div><div class="cv-log-d">19 over 500 g · 6 over 1 kg</div></div>
+                <div class="cv-log-group">Endometriosis</div>
+                <div class="cv-log-row"><div class="cv-log-v">109</div><div class="cv-log-k">Staged endometriosis cases, AAGL classification</div><div class="cv-log-d">61 Stage I&ndash;II · 48 Stage III&ndash;IV. 70 superficial peritoneal · 21 deep infiltrating or obliterated cul-de-sac · 18 ovarian endometrioma. Complete excision, not ablation, across all four compartments.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">22</div><div class="cv-log-k">Cases with an obliterated cul-de-sac</div><div class="cv-log-d">Median blood loss 25 mL at Stage III&ndash;IV</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">48</div><div class="cv-log-k">ICG-guided for fibrosis / endometriosis detection</div><div class="cv-log-d">The work awarded the CAOG George W. Morley Memorial Paper Award</div></div>
+                <div class="cv-log-group">Fibroids &amp; fertility preservation</div>
+                <div class="cv-log-row"><div class="cv-log-v">138</div><div class="cv-log-k">Fibroid-related cases</div><div class="cv-log-d">59 managed with the uterus preserved · 74 by planned hysterectomy · 5 other management</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">74</div><div class="cv-log-k">Myomectomies across the series</div><div class="cv-log-d">39 robotic · 2 laparoscopic · 30 hysteroscopic · 2 planned open · 1 LESS single-site. Up to 20 fibroids removed in one myomectomy; 438 g heaviest minimally invasive specimen; gel-based contained extraction.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">130</div><div class="cv-log-k">Fertility-related cases</div><div class="cv-log-d">Routine chromopertubation for tubal patency; cavity restoration and organ preservation as the operative default.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">73</div><div class="cv-log-k">Myomectomies with the uterus preserved</div><div class="cv-log-d">No myomectomy converted to hysterectomy; no conversion to laparotomy</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">48</div><div class="cv-log-k">Ovarian cystectomies with ovarian preservation</div><div class="cv-log-d">Three by partial oophorectomy; no complete ovary lost to a failed cystectomy</div></div>
+                <div class="cv-log-group">Hysteroscopy</div>
+                <div class="cv-log-row"><div class="cv-log-v">101</div><div class="cv-log-k">Cases involving hysteroscopy — 195 procedures</div><div class="cv-log-d">38 myomectomies · 39 polypectomies · 20 endometrial ablations · 7 septum or isthmocele resections · 7 intrauterine adhesiolysis · 3 RPOC resections. 35 by office-based technique · 33 vaginoscopy.</div></div>
+                <div class="cv-log-group">Prolapse</div>
+                <div class="cv-log-row"><div class="cv-log-v">49</div><div class="cv-log-k">Uterosacral ligament suspensions</div><div class="cv-log-d">24 vaginal · 16 robotic · 7 vNOTES · 2 laparoscopic — 48 performed at the time of hysterectomy</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">52</div><div class="cv-log-k">Anterior / posterior colporrhaphy repairs</div><div class="cv-log-d">23 concurrent with a robotic, laparoscopic or vNOTES hysterectomy</div></div>
+                <div class="cv-log-group">Adhesiolysis &amp; cross-specialty</div>
+                <div class="cv-log-row"><div class="cv-log-v">205</div><div class="cv-log-k">Cases requiring adhesiolysis — highest volume of the fellowship</div><div class="cv-log-d">149 robotic · 40 laparoscopic · 7 hysteroscopic · 5 vNOTES · 192 pelvic · 39 with prior abdominal or pelvic surgery</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">90</div><div class="cv-log-k">Retroperitoneal dissections with ureteral visualization</div><div class="cv-log-d">73 robotic · 11 laparoscopic · 6 planned open, including 22 requiring ureterolysis. No ureteral injuries.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">85</div><div class="cv-log-k">Bariatric case mix at BMI 30 or above</div><div class="cv-log-d">55 performed robotically · 18 at BMI 40 or above · highest 56.49</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">29</div><div class="cv-log-k">Concurrent general-surgical procedures</div><div class="cv-log-d">17 appendectomies · 12 ventral or umbilical hernia repairs, 5 with mesh. Robotic sigmoid colectomy with proximal rectal resection alongside colorectal surgery.</div></div>
+                <div class="cv-log-group">Urinary tract</div>
+                <div class="cv-log-row"><div class="cv-log-v">100<span class="u">%</span></div><div class="cv-log-k">Routine cystoscopy after MIS hysterectomy</div><div class="cv-log-d">165 of 165 minimally invasive hysterectomies; 193 cystoscopies in total.</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">2</div><div class="cv-log-k">Robotic ureteral reimplantations</div><div class="cv-log-d">Including ureterovaginal fistula repair as primary surgeon — bladder dissection, planned 1 cm cystotomy, two-layer closure, space of Retzius, double-J stent</div></div>
+            </div>
+        </section>
+
+        <section class="cv-section" id="residency">
+            <h2>Residency Surgical Experience</h2>
+            <p class="cv-section-sub">ACGME case log, July 2019 &ndash; June 2023. Ascension Illinois St. Alexius OBGYN Residency.</p>
+            <div class="cv-log">
+                <div class="cv-log-row"><div class="cv-log-v">395</div><div class="cv-log-k">Cases through OBGYN residency</div><div class="cv-log-d">523 gynecologic procedures logged</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">255</div><div class="cv-log-k">Laparoscopic and robotic procedures</div><div class="cv-log-d">160 robotic · 95 conventional, across 125 robotic cases</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">140</div><div class="cv-log-k">Hysterectomies</div><div class="cv-log-d">79 laparoscopic, of which 67 robotic · 41 abdominal · 20 vaginal</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">116</div><div class="cv-log-k">Hysteroscopic procedures</div><div class="cv-log-d">69 cystoscopies</div></div>
+                <div class="cv-log-row"><div class="cv-log-v">349</div><div class="cv-log-k">Robotic cases across training</div><div class="cv-log-d">Residency and fellowship combined</div></div>
             </div>
         </section>
 
