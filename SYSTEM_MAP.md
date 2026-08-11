@@ -1161,17 +1161,37 @@ developer" all describe his own products and his own skill set. The rule
 is: remove labels that mark *this website's content* as AI-produced;
 keep copy that describes *the software he builds*.
 
-**(b) Slogan voice on `/` and `/about/`.** The owner's own voice — per
-the authoritative CV — is precise, quantitative, declarative, no hype.
-Removed the "N things. One thing." formula (it appeared 3× with
-different numbers), the "at the intersection of" / "redefine" /
-"cutting-edge" / "for the future of" register, and flourishes that
-invented narrative ("clinical chameleon", "anatomical awareness
-practiced as a discipline", "The methodological rigor … continues to
-inform his current surgical research approach"). Headlines are now
-quantitative or plainly declarative. Grep guards worth keeping:
-`intersection of`, `redefine`, `something remarkable`, `One mission`,
-`One practice`, `cutting-edge`, `unapologetically`.
+**(b) Slogan voice on `/` and `/about/` — ATTEMPTED AND REVERTED.**
+
+> 🛑 **Do not re-run a "voice pass" against the CV.** A pass on
+> 2026-08-11 rewrote ~25 headlines and lines on `/` and `/about/` into a
+> quantitative, declarative register on the theory that the authoritative
+> CV shows the owner's real voice. **He rejected the premise:** *"I'm not
+> sure I want you to change the tone of this — because my CV is my CV, my
+> website is more me than a CV."* The CV is a formal instrument written
+> for credentialing bodies; the site is where his personality lives. All
+> of it was restored the same day.
+
+Restored and to be LEFT ALONE — this is his voice, not AI slop:
+"Built by a surgeon, for the future of women's health.", "Whole-person
+care, not just a diagnosis.", "Engineered for the working surgeon.",
+"A surgeon-innovator at the intersection of women's health and
+intelligence.", "Multidisciplinary by design.", "Five identities. One
+practice.", "Hands-on AI. / Clinical-grade craft.", "Six apps. One
+mission.", "Let's build something remarkable.", "six pillars, layered
+with intent", "anatomical awareness practiced as a discipline",
+"Adenomyosis remains a clinical chameleon", "Patients finally SEE their
+own anatomy", "Three roles · One practice", "isn't a footnote — it's a
+discipline", "turn impossible into inevitable", "unapologetically
+modern", "cutting-edge".
+
+The ONE prose deletion that stands is on the 2012 self-injury paper —
+"The methodological rigor and patient-centered framing established here
+continues to inform his current surgical research approach" — removed
+because it asserts a claim about his research lineage that nothing
+supports, and carried a subject-verb disagreement. That is a FACT
+problem, not a tone problem, which is the line to draw: **fix what is
+false, leave what is his.**
 
 **Stale counts corrected in the same pass** (they contradicted §7.10):
 homepage stat `10 → 15` peer-reviewed publications & presentations,
