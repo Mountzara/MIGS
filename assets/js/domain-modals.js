@@ -87,7 +87,7 @@
                             'Endometrioma cystectomy with ovarian-tissue preservation — excision > drainage + ablation per CPG Level A.',
                             'Ureterolysis, partial cystectomy, shave or disc excision of bowel lesions when DIE is present, in the same operation.',
                             'Improves pregnancy rates for endometriosis-related infertility per CPG Level A (magnitude unclear).',
-                            'Same-day discharge in >95% of fellowship cases; zero conversions to open surgery.',
+                            'Same-day discharge in 90.4% of minimally invasive fellowship cases; zero conversions to open surgery.',
                             'Even after definitive surgery (hysterectomy + BSO), recurrence is reported in up to 15% — disease can persist.'
                         ],
                         note: 'Definitive diagnosis still requires histology of the excised tissue — every specimen is sent to pathology.'
@@ -253,7 +253,7 @@
                 title: 'Route matters.',
                 body: `<p>The shift toward minimally invasive hysterectomy is supported by decades of randomized and registry data: fewer transfusions, fewer infections, shorter hospital stays, and faster recovery compared to open abdominal hysterectomy — without compromising the quality of the operation. When a hysterectomy is done at the time of a sacrocolpopexy, leaving the cervix in place (supracervical) reduces the mesh erosion rate by roughly four-fold — 0.36% vs. 3.8% in a pooled analysis of nearly 10,600 patients.</p>`,
                 stats: [
-                    { num: '>95%', label: 'Same-day discharge across the fellowship — major surgery, home the same day', source: 'Fellowship operative log' },
+                    { num: '90.4%', label: 'MIS same-day discharge across the fellowship — major surgery, home the same day', source: 'Fellowship operative log' },
                     { num: '0.26', label: 'Pooled odds ratio for mesh erosion: supracervical vs. total hysterectomy at sacrocolpopexy (74% lower risk)', source: 'Meta-analysis · 19 studies · 10,572 women' },
                     { num: '12.6%', label: 'Lifetime risk of surgery for pelvic organ prolapse in US women', source: 'Population epidemiology' }
                 ]
