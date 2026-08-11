@@ -1069,6 +1069,49 @@ of pasted CSS. Canva export `Black White Elegant Personal Monogram Logo.png`
 renamed to `mount-zara-monogram.png` (6 files). `/assets/*` now cached
 immutable; `color-scheme`/`theme-color` meta added to 9 pages.
 
+### 7.10 The authoritative CV (2026-08-11) — SOURCE OF TRUTH for every figure
+
+The owner supplied his final CV ("most accurate cv") as a PDF. Text extract
+committed at `cite_audit/authoritative-cv-2026-08.txt`. **Any number on the
+site describing his record must match this file.** Established figures:
+
+* Operative log Sept 2023 – May 2026: **444 operative cases**, **1,511
+  distinct procedures** (1,475 minimally invasive, 3.4 per MIS case),
+  **500+ da Vinci robotic procedures attested in writing**.
+* Outcomes: **2.9% intraoperative events** (ClassIntra, N=13), **0.2%
+  postoperative** (Clavien–Dindo, N=1), **3.15% total / 14 reportable**,
+  and **0 major adverse events** (0 conversions to laparotomy, 0
+  reoperations, 0 full-thickness injuries, 0 vascular, 0 nerve, 0 VTE,
+  0 cuff dehiscence, 0 deaths). NEVER render this as "zero complications" —
+  the correct claim is zero MAJOR ADVERSE EVENTS against a stated rate.
+* Scholarship: **4 journal publications + 5 abstract publications = 9
+  peer-reviewed publications**; **11 presentations** (8 national, 3
+  regional); **4 awards**, of which **2 are peer-reviewed research awards**
+  (AAGL Golden Hysteroscope 2024, CAOG George W. Morley 2024).
+* Residency ACGME log Jul 2019 – Jun 2023: 395 cases, 523 gynecologic
+  procedures; 349 robotic cases combined across training.
+* **Active research: exactly TWO IRB studies — RIL20240017 (NBI /
+  adenomyosis) and RIL20220137 (ICG / endometriosis-related fibrosis).**
+  The site additionally cites RIL20240009 (TAP block RCT) and RIL20240078
+  (ICG appendiceal endometriosis) and claims "4 Active IRB Studies".
+  UNRESOLVED — flagged to the owner, not edited: he may be a
+  co-investigator on those two rather than PI, which would make both the
+  site and the CV correct. Do not change either until he rules.
+
+Corrected on the site in this pass: fellowship counters 435→444 and
+760→1,511 (and their labels, which claimed "through Feb 2026"); the
+"2.1% minor-complication rate" line replaced with the real ClassIntra /
+Clavien–Dindo figures; homepage "Ten peer-reviewed publications &
+presentations" → "Nine peer-reviewed publications"; /about/ "9+
+Peer-Reviewed Presentations" → "11".
+
+Still missing from `/cv/` versus the PDF (Tier B/C work): the entire
+FELLOWSHIP SURGICAL EXPERIENCE & OUTCOMES operative log, the FELLOWSHIP
+PROCEDURE BREAKDOWN, RESIDENCY SURGICAL EXPERIENCE, CLINICAL EXPERIENCE
+(locums), PROGRAM DEVELOPMENT/QUALITY/ACCREDITATION, and CLINICAL
+INNOVATION & INFORMATICS. The strongest evidence in his record is not on
+his CV page.
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages
