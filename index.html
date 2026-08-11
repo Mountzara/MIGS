@@ -299,11 +299,26 @@
                     ctx.strokeStyle = pat;
                     ctx.lineWidth = MW; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 }
-                var strokes = [];
-                for (var q = 0; q < data.paths.length; q++) {
-                    strokes.push({ t: data.paths[q].t, p: data.paths[q].p, i: 0 });
-                }
                 var END = 72, DUR = 2900;
+                // CONSTANT PEN SPEED. Each stroke used to advance through
+                // 1/6 of the whole REMAINING animation, so everything raced
+                // to the end and the drawing was over in about a second
+                // (his recording: complete by 4.3s, then dead screen). Now a
+                // stroke's duration is proportional to its own length, so the
+                // pen moves at one steady speed and the drawing genuinely
+                // fills its 2.9 seconds.
+                var strokes = [], totalPts = 0;
+                for (var q = 0; q < data.paths.length; q++) totalPts += data.paths[q].p.length / 2;
+                var PEN = totalPts / (DUR * 0.78);        // points per ms
+                for (var q2 = 0; q2 < data.paths.length; q2++) {
+                    var pp = data.paths[q2].p;
+                    var n = pp.length / 2;
+                    strokes.push({
+                        s: (data.paths[q2].t / END) * DUR * 0.92,   // when it starts
+                        d: Math.max(90, n / PEN),                   // how long it takes
+                        p: pp, i: 0
+                    });
+                }
                 var el = 0, last = 0;
                 var finish = function () {
                     cv.dataset.heroEnded = '1';
@@ -315,14 +330,12 @@
                     if (dt < 0) dt = 0;
                     if (dt > 90) dt = 90;                 // a stall delays, never skips
                     el += dt;
-                    var cur = (el / DUR) * END;
                     ctx.beginPath();
                     var any = false;
                     for (var si = 0; si < strokes.length; si++) {
                         var st = strokes[si];
-                        if (st.t > cur || st.i * 2 >= st.p.length) continue;
-                        var span = END - st.t; if (span < 1) span = 1;
-                        var want = Math.ceil(((cur - st.t) / span) * (st.p.length / 2) * 6);
+                        if (st.s > el || st.i * 2 >= st.p.length) continue;
+                        var want = Math.ceil(((el - st.s) / st.d) * (st.p.length / 2));
                         if (want > st.p.length / 2) want = st.p.length / 2;
                         if (want <= st.i) continue;
                         var from = st.i > 0 ? st.i - 1 : 0;
@@ -343,7 +356,14 @@
                     }
                     cv.dataset.mzArt = '1';
                     mzlog('DRAWING STARTS (' + strokes.length + ' strokes)');
-                    setTimeout(function () { mzlog('text cascade'); runChoreography(); }, 1300);
+                    setTimeout(function () { mzlog('text cascade'); runChoreography(); }, 1600);
+                    // 1600, tuned against measurement, not guesswork: the
+                    // drawing now spans ~3.1s, so the monogram lands with it
+                    // half-drawn and the headline/sub/credentials carry
+                    // through to just past the last stroke — his order, with
+                    // no dead air either side. 700 put the monogram up 420ms
+                    // in (before the drawing read as a drawing); 1300 with the
+                    // old fast pacing left 2.4s of dead screen after it.
                     last = performance.now();
                     requestAnimationFrame(tick);
                     settleLater(cv);
