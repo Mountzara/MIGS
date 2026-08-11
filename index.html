@@ -259,21 +259,81 @@
             if (!pre.src) pre.src = WEBP;
             setTimeout(go, 2200);            // never wait longer than this
         } else {
-            v.classList.add('playing');
+            // ===== 2026-08-11 — THE CURTAIN DOES ITS JOB (owner's spec) ==
+            // "The spinner is there to make sure the page is completely
+            //  loaded before running the sequence — let it run longer than
+            //  it really needs, get the order right, make sure things
+            //  aren't fighting each other."
+            // Behind the opaque loader, in parallel:
+            //   1. probe autoplay ONCE (play -> immediately pause+rewind)
+            //      to learn the path without showing anything;
+            //   2. video path: buffer the ENTIRE clip (canplaythrough), so
+            //      playback cannot stall mid-drawing (his recording: 2.2s
+            //      buffering stall at 6.7s when it started unbuffered);
+            //      refused path: fetch AND decode the fallback image, so
+            //      its playback is instant;
+            //   3. wait for fonts (their swap relayouts happen under the
+            //      curtain, not over the drawing).
+            // Then 600ms of deliberate leeway, lift the curtain, and only
+            // THEN start the drawing; the text anchors on its motion.
             try { v.muted = true; v.playsInline = true; } catch (e) {}
-            var start = function () {
-                var p = v.play();
-                if (p && p.catch) p.catch(function () {});
+            var mode = null;                       // 'video' | 'image'
+            var pathP = new Promise(function (res) {
+                var settled = false;
+                var decide = function (m) { if (!settled) { settled = true; mode = m; res(); } };
+                var p = null;
+                try { p = v.play(); } catch (e) {}
+                if (p && p.then) {
+                    p.then(function () {
+                        try { v.pause(); v.currentTime = 0; } catch (e) {}
+                        if (v.readyState >= 4) { decide('video'); return; }
+                        v.addEventListener('canplaythrough', function () { decide('video'); }, { once: true });
+                        setTimeout(function () { decide('video'); }, 5200);   // buffer cap
+                    }, function () {
+                        var pre = new Image();
+                        pre.src = WEBP;
+                        var done = function () { decide('image'); };
+                        try {
+                            if (pre.decode) { pre.decode().then(done, done); }
+                            else { pre.onload = done; pre.onerror = done; }
+                        } catch (e) { done(); }
+                        setTimeout(done, 5200);                              // decode cap
+                    });
+                } else { decide('video'); }
+            });
+            var fontsP = (document.fonts && document.fonts.ready)
+                ? document.fonts.ready.then(function () {}, function () {})
+                : Promise.resolve();
+            var minP = new Promise(function (res) { setTimeout(res, 1500); }); // loader never blinks
+            var began = false;
+            var begin = function () {
+                if (began) return;
+                began = true;
+                setTimeout(function () {                       // the leeway he asked for
+                    hideLoaderNow();
+                    setTimeout(function () {                   // start as the veil lifts
+                        v.classList.add('playing');
+                        if (mode === 'image') {
+                            toAnimatedImage();
+                        } else {
+                            var pp = v.play();
+                            if (pp && pp.catch) pp.catch(function () { toAnimatedImage(); });
+                            setTimeout(function () {           // last-resort only
+                                var cur = document.getElementById('heroVideo');
+                                if (cur && cur.tagName === 'VIDEO'
+                                    && (cur.paused || cur.currentTime <= 0.15)) {
+                                    toAnimatedImage();
+                                }
+                            }, 1500);
+                        }
+                        anchorOnDrawing();
+                    }, 350);
+                }, 600);
             };
-            start();
-            v.addEventListener('loadeddata', start, { once: true });
-            v.addEventListener('canplay', start, { once: true });
-            // Settle owned here: home.js's startHeroSequence early-returns
-            // when this bootstrap ran, so its 'ended' handler never
-            // registers — without this, a fast desktop load ends the video
-            // with no Ken Burns and a live video layer composited forever.
-            // (The one fix ported into the restored build; the video path
-            // itself is untouched.)
+            Promise.all([pathP, fontsP, minP]).then(begin);
+            setTimeout(begin, 7000);                           // never hang the curtain
+            // Settle stays owned here: video ended -> hold final frame,
+            // start the Ken Burns drift.
             v.addEventListener('ended', function () {
                 try {
                     if (isFinite(v.duration)) v.currentTime = Math.max(0, v.duration - 0.04);
@@ -282,17 +342,6 @@
                 v.dataset.heroEnded = '1';
                 v.classList.add('ken-burns');
             }, { once: true });
-            setTimeout(hideLoaderNow, 900);
-            anchorOnDrawing();
-            // his film showed the video mounted but never visibly advancing
-            // for ~6 seconds; do not wait around — the animated image is
-            // preloaded and starts drawing the moment it is attached
-            setTimeout(function () {
-                var cur = document.getElementById('heroVideo');
-                if (cur && cur.tagName === 'VIDEO' && (cur.paused || cur.currentTime <= 0.15)) {
-                    toAnimatedImage();
-                }
-            }, 1200);
         }
     })();
     </script>
@@ -2014,7 +2063,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=29c4d1d6cd" defer></script>
+    <script src="/assets/js/home.js?v=718f65b087" defer></script>
 
 <!-- §0.8 KB-anchor manifest
 {

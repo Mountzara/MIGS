@@ -534,8 +534,13 @@
             Promise.race([waitForFonts(), delayMs(FONT_WAIT_CAP_MS)]),
             delayMs(LOADER_MIN_MS)
         ]).then(() => {
+            // ONE CURTAIN OWNER (2026-08-11, owner's spec): when the in-body
+            // bootstrap runs it owns the loader and the whole opening — this
+            // chain touching hideLoader() raced it and lifted the curtain
+            // before the video was buffered. Only the no-bootstrap fallback
+            // path may act here.
+            if (window.__mzHeroStarted) return;
             hideLoader();
-            // Small breath between loader fade and hero start, feels more deliberate
             setTimeout(startHeroSequence, 250);
         });
 
