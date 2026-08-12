@@ -88,6 +88,37 @@ def is_abstract_dump(txt):
     return bool(ABSTRACT_LEAD.match(txt or ''))
 
 
+# An AUTHOR LIST is not a finding. Three W20 popovers shipped with
+# "Kizildemir YZ, İncebıyık M." as their synopsis, which the
+# structural-integrity deploy gate correctly rejected
+# (inline-ref:synopsis-not-in-abstract — no content word of the synopsis
+# appears in the paper's PubMed abstract). Author strings look like
+# "Surname AB, Surname CD" / "Surname AB, et al." — short, comma-joined,
+# and studded with 1-3 letter initial tokens.
+def is_author_list(txt):
+    """True for strings like "Kizildemir YZ, İncebıyık M." or
+    "Smith AB, Jones CD, et al." — an author list, not a finding.
+
+    Test: a real synopsis is PROSE and therefore contains lowercase words.
+    An author list is capitalised surnames plus initials, with no lowercase
+    content word once "et al"/"and" are removed. This is language-agnostic
+    (the string that shipped was Turkish) and does not care about comma
+    layout, which a pattern match did.
+    """
+    t = (txt or '').strip()
+    if not t or len(t) > 140:
+        return False
+    core = re.sub(r'\b(?:et\s+al|and|&)\b', ' ', t, flags=re.I)
+    core = re.sub(r'[^\w\s\'-]', ' ', core)
+    return not any(len(w) >= 4 and w[:1].islower() for w in core.split())
+
+
+def bad_finding(txt):
+    """A popover synopsis must be a plain-language finding — not a verbatim
+    abstract dump and not an author list. Either way, emit nothing."""
+    return is_abstract_dump(txt) or is_author_list(txt)
+
+
 def card_index(body):
     """pmid -> {title, meta, finding} taken from the post's own cite cards."""
     out = {}
@@ -113,7 +144,7 @@ def card_index(body):
                 txt = txt.split(':', 1)[-1].strip()
             elif ' lens' in txt and ':' in txt:
                 txt = txt.split(':', 2)[-1].strip()
-            finding = '' if is_abstract_dump(txt) else txt
+            finding = '' if bad_finding(txt) else txt
         out[pmid] = {
             'title': strip_tags(t.group(1)) if t else '',
             'meta': strip_tags(mt.group(1)) if mt else '',
@@ -222,7 +253,7 @@ def apply_post(body, mappings, report):
             title=meta['title'],
             meta=meta['meta'],
             finding=(FINDING.format(meta['finding'])
-                     if meta['finding'] and not is_abstract_dump(meta['finding']) else ''),
+                     if meta['finding'] and not bad_finding(meta['finding']) else ''),
         )
         body = body[:idx] + sup + body[idx:]
         applied += 1
