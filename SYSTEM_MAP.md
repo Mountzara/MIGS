@@ -1295,6 +1295,50 @@ URL lives inside locked `startHeroSequence`).
 Deliverable produced for the owner: `mz-hero-drawing-transparent.png` —
 the completed drawing from hero-ink-v2.webp (transparent, 1920×1080).
 
+### 7.14 Research reel autoplay — ONE observer owns .video-preview (2026-08-12)
+
+The four "Peer-reviewed work" reels were dead. Root-caused by patching
+play/pause/load on the LIVE page and reading the stack traces: **8 PAUSE
+calls against 2 play calls**, issued by TWO IntersectionObservers that
+both owned `.video-preview` with incompatible geometry —
+`threshold 0 + rootMargin 75%` (the intended owner) and the legacy
+`initVideoPreviews` at `threshold 0.25`. In the band between them one
+observer played while the other paused, every scroll frame.
+
+> ⚠️ **Exactly ONE IntersectionObserver, play loop, and pause() path may
+> exist over `.video-preview`.** The legacy block's own comment already
+> said the other observer "owns everything else" while its observer sat
+> five lines below, still running. It is deleted. Do not add another.
+
+Also fixed in the same pass:
+* `wake()` called `load()` unconditionally — `load()` resets currentTime
+  to 0, so it restarted reels from zero. Now only when `readyState < 2`.
+* `openVideoModal()` pauses all four reels to free the decoder and
+  `closeVideoModal()` never restarted them — every reel stayed dead
+  until reload after any modal use. `window.__mzWakePreviews()` is the
+  single resume hook, called on modal close.
+* Owner directive "they should always be looping": a 2s watchdog
+  re-asserts `loop`/`muted` and restarts any near-viewport reel that is
+  paused OR whose clock has not advanced since the previous tick.
+  Off-screen reels stay paused (four decoders for invisible video was
+  measured battery drain).
+
+> 🧪 **Measurement trap — do not repeat.** `paused === false` with
+> `currentTime` frozen at 0.00 is ALSO what WebKit reports for a video
+> that is simply BELOW THE FOLD (offscreen autoplay suspension). Two
+> debugging rounds were spent on a phantom because
+> `#research.scrollIntoView({block:'start'})` leaves the reels ~983px
+> down in a 900px viewport. **Scroll the VIDEO itself into view
+> (`block:'center'`) before judging playback**, and confirm with the
+> control that settles it: a fresh `<video>` appended to the same live
+> page plays normally, so a frozen clock is context, not codec.
+
+Verified on production after deploy: all four reels advance when on
+screen under normal motion, under `prefers-reduced-motion: reduce`, with
+autoplay blocked (recovering after one gesture), and after an
+openVideoModal/closeVideoModal cycle. Exactly one `pause()` caller
+remains in the served bundle.
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages
