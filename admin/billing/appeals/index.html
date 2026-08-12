@@ -8,8 +8,6 @@
         :root{--bg-base:#120b22;--bg-card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.10);--fg-strong:#fff;--fg-mid:#ffffff;--fg-soft:#ffffff;--fg-dim:#ffffff;--accent-soft:#fdba74;--glow-amber:251,146,60;--green:#10b981;}
         *{box-sizing:border-box;} html{background-color:var(--bg-base);}
         html,body{margin:0;background-color:transparent;color:var(--fg-mid);font-family:'Avenir Next','Avenir',-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
-        .page-bg-stage{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */opacity:.75;}
-        .page-bg-art{position:absolute;top:50%;left:50%;width:100vw;height:56.25vw;object-fit:contain;pointer-events:none;filter:saturate(2.0) brightness(1.28) contrast(1.28);mix-blend-mode: screen; transform:translate(-48%,-50%) rotate(-22deg) scale(2.09);}
         a{color:var(--accent-soft);text-decoration:none;}
         .wrap{max-width:880px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,5vw,32px) 100px;}
         header.bar{font-size:13px;color:var(--fg-dim);margin-bottom:4px;}
@@ -88,7 +86,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+<!-- 2026-08-12 — page background art REMOVED from the admin backend at the
+     owner's instruction ("remove the image background requirment - the
+     missing image blue box is behind every page"). It rendered as a broken
+     image on every admin page: /admin/* sends
+     Cross-Origin-Embedder-Policy: require-corp, and the art was loaded from
+     the APEX (https://mountzara.com/media/...) while the site is browsed on
+     www — a cross-origin subresource that ships no
+     Cross-Origin-Resource-Policy header, so COEP blocks it and the browser
+     paints the placeholder box. Do not reintroduce a cross-origin image
+     under /admin/. -->
     <script src="/admin/_nav.js"></script>
     <div class="wrap">
         <header class="bar"><a href="/admin/billing/">Billing</a> › Denials / Appeals</header>
