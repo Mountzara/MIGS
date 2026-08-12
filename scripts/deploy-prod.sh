@@ -112,6 +112,26 @@ fi
 # every deployable file against the canonical fact list. No override flag:
 # a violation means false or private information is about to go public.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Asset ?v= cache keys — /assets/css|js are served immutable for a YEAR,
+# keyed by ?v=<hash> in the HTML. 2026-08-12: home.css changed (Ken Burns
+# easing) but its ?v= did not, so every repeat visitor — including the
+# owner — kept the OLD cached CSS while the server had the fix. He reported
+# "I still see the color changing" and he was right. Rewrite the hashes
+# from content sha256 on EVERY deploy so a changed asset always gets a
+# changed URL. Fails the deploy only if HTML references a missing asset.
+# ---------------------------------------------------------------------------
+if [ -f scripts/bump_asset_versions.py ]; then
+    echo ""
+    echo "🔒 asset-version bump — ?v= cache keys from content hashes..."
+    if "$PY" scripts/bump_asset_versions.py; then
+        :
+    else
+        echo "🛑 DEPLOY BLOCKED — HTML references a versioned asset that does not exist."
+        exit 1
+    fi
+fi
+
 if command -v node >/dev/null 2>&1 && [ -f scripts/audit_fact_sync.mjs ]; then
     echo ""
     echo "🔒 fact-sync gate — canonical facts across all deployable files..."
