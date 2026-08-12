@@ -121,6 +121,61 @@ fi
 # from content sha256 on EVERY deploy so a changed asset always gets a
 # changed URL. Fails the deploy only if HTML references a missing asset.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# STALE-TREE GATE (2026-08-12) — the single most damaging failure this project
+# has had. Two working copies deploy to the same production project with
+# `wrangler pages deploy` (ad_hoc). On 2026-08-12 the OTHER copy deployed a
+# tree that predated the CSS/JS split, and it silently replaced production with
+# a build missing ~684 commits: the owner's corrected same-day-discharge figure,
+# the Preclinical Fellowship line, the fellowship tense fix, the reel-autoplay
+# fix and every clinical-modal rewrite all vanished from the live site. Desktop
+# browsers kept showing the good version from cache, so it surfaced as "the
+# iPhone version is the old website" — the truth was that production itself had
+# been overwritten.
+#
+# A deploy from a tree that is BEHIND the published branch is almost never
+# intentional; it is a clobber. Refuse it. This runs FIRST, before any upload.
+# Override (documented, deliberate) with DEPLOY_ALLOW_STALE_TREE=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_ALLOW_STALE_TREE:-}" ] && command -v git >/dev/null 2>&1 && [ -d .git ]; then
+    echo ""
+    echo "🔒 stale-tree gate — is this working copy up to date with origin?"
+    if git fetch -q origin main 2>/dev/null; then
+        BEHIND=$(git rev-list --count HEAD..origin/main 2>/dev/null || echo 0)
+        # Belt AND braces. Comparing to origin/main alone is not enough: if
+        # main is ITSELF behind (as it was on 2026-08-12, 684 commits stale),
+        # an old tree measures "0 behind" and sails through — proven by a test
+        # deploy from origin/main that clobbered production. So also require
+        # the tree's own index.html to carry the published canonical markers.
+        for MARK in "90.4" "Preclinical Fellowship" "/assets/css/home.css"; do
+            if ! grep -qF "$MARK" index.html 2>/dev/null; then
+                echo ""
+                echo "🛑 DEPLOY BLOCKED — index.html in this working copy is missing"
+                echo "   the published marker: \"$MARK\""
+                echo "   This tree predates work that is already live; deploying it"
+                echo "   would delete published content."
+                echo "   Fix:  git pull --ff-only origin main"
+                exit 1
+            fi
+        done
+        if [ "${BEHIND:-0}" -gt 0 ]; then
+            echo ""
+            echo "🛑 DEPLOY BLOCKED — this working copy is $BEHIND commit(s) BEHIND"
+            echo "   origin/main. Deploying it would overwrite production with an"
+            echo "   older build and silently delete published work."
+            echo ""
+            echo "   Fix:  git pull --ff-only origin main   (then re-run this deploy)"
+            echo ""
+            echo "   Only if you are DELIBERATELY publishing an older tree:"
+            echo "     DEPLOY_ALLOW_STALE_TREE=1 ./scripts/deploy-prod.sh '<reason>'"
+            exit 1
+        fi
+        echo "   ✅ up to date with origin/main (0 commits behind)"
+    else
+        echo "   ⏭  could not reach origin — skipping staleness check"
+    fi
+fi
+
 if [ -f scripts/bump_asset_versions.py ]; then
     echo ""
     echo "🔒 asset-version bump — ?v= cache keys from content hashes..."
@@ -512,6 +567,18 @@ if "$PY" scripts/bump_asset_versions.py --verify-live; then
 else
     echo "🛑 DEPLOY POISONED — a CDN edge serves a stale body under a fresh ?v= key."
     echo "   Rotate the key (touch the asset, rerun deploy) — do NOT ignore this."
+    exit 1
+fi
+
+# Production canary (2026-08-12) — after uploading, confirm the LIVE site is
+# actually serving the current build. This is the check whose absence let a
+# stale-tree clobber sit unnoticed on production.
+echo ""
+echo "🔍 Production canary — is the live site serving this build?"
+if "$PY" scripts/verify_production.py; then
+    echo "   ✅ production canary passed"
+else
+    echo "🛑 PRODUCTION CANARY FAILED — the live site is NOT serving this build."
     exit 1
 fi
 
