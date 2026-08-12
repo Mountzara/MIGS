@@ -1264,6 +1264,37 @@ carries **136 elements with `backdrop-filter`**, every one of which
 re-rasterizes per animated frame. Cutting that count is the single
 highest-value performance fix left on the homepage (Tier B).
 
+### 7.13 Hero settle color/motion (2026-08-11, owner recording)
+
+The owner recorded a "subtle color change at the very end of the
+animation after everything has settled" and asked for the settled purple
+to hold. Root causes found and fixed, measured in WebKit:
+
+1. **Ken Burns easing.** Desktop used `ease-out` (chosen 2026-08-08 so
+   the drift is "visible from its first second") — meaning the zoom moved
+   FASTEST right at settle: 84,381 px displaced within 1.25s of `ended`,
+   which reads as the ink shifting tone. Now `ease-in-out` (matching
+   mobile): 364 px in the same window. The settle frame holds; the drift
+   creeps in later. Lives in `.hero-video.ken-burns` (NOT a locked rule).
+2. **Poster color grade.** `hero-last-frame-v2.webp` rendered measurably
+   brighter than the video (the mp4 is tagged bt2020/smpte2084, so Safari
+   tone-maps it; an sRGB still can't match by math). Replaced with
+   **hero-last-frame-v3.webp** — lossless WebP captured from the VIDEO'S
+   OWN rendered pixels at the settle frame (duration − 0.04s) in WebKit;
+   video-vs-v3 rendered diff = 0 (was max 28/255). All three references
+   updated (home.js ×2, index.html bootstrap `LAST`). Note the current
+   bootstrap video path never swaps to a poster — the poster is used by
+   the image/touch fallback path and the legacy home.js path.
+   v3 uploaded via the R2 API (`PUT accounts/<id>/r2/buckets/
+   mountzara-media/objects/<key>` — upload-token.txt does not exist on
+   this VM; the CF API token works).
+
+Hero lock intentionally updated after end-to-end verification (the v3
+URL lives inside locked `startHeroSequence`).
+
+Deliverable produced for the owner: `mz-hero-drawing-transparent.png` —
+the completed drawing from hero-ink-v2.webp (transparent, 1920×1080).
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages

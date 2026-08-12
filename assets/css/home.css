@@ -460,9 +460,14 @@
                not infinite alternate: a forever-animating transform on this
                full-viewport screen-blended layer forced the compositor to
                re-blend every frame for the life of the page. */
-            animation: heroKenBurnsSlow 45s ease-out 1 forwards; /* ease-out: the
-               drift is visible from its first second — ease-in-out sat
-               static for several seconds after the settle */
+            animation: heroKenBurnsSlow 45s ease-in-out 1 forwards; /* 2026-08-11
+               — was ease-out, deliberately "visible from its first second".
+               The owner saw exactly that: a subtle shift in the ink right
+               after the drawing settles (measured: 84k px displaced within
+               1.25s of 'ended') and asked for the settled purple to hold.
+               ease-in-out starts the drift imperceptibly — the settle frame
+               holds visually still, the zoom creeps in later. Mobile
+               (heroKenBurnsSlowMobile) already used ease-in-out. */
         }
 
         @keyframes heroKenBurnsSlow {

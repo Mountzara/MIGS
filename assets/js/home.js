@@ -98,7 +98,7 @@
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
         const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v3.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -243,7 +243,14 @@
                     fallback.id = live.id;
                     fallback.alt = '';
                     fallback.decoding = 'async';
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v2.webp';
+                    // v3 (2026-08-11): lossless WebP built from the VIDEO'S OWN rendered
+                    // pixels at the settle frame (duration - 0.04s), captured in WebKit.
+                    // v2 was extracted from the source art and rendered measurably
+                    // brighter than the video (the mp4 carries bt2020/smpte2084 tags, so
+                    // Safari tone-maps it; a plain sRGB still can't match by math alone).
+                    // The owner saw the settle shift color and wants the video's purple
+                    // kept — measured video-vs-v3 diff in WebKit: 0 (was max 28/255).
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v3.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
