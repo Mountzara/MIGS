@@ -1049,7 +1049,7 @@
         .curriculum-points li {
             font-size: 14.5px;
             line-height: 1.5;
-            color: rgba(255, 255, 255, 0.92);
+            color: #ffffff;  /* site rule: body text on dark is WHITE — the reader-path gate measures it */
             padding-left: 18px;
             position: relative;
         }
