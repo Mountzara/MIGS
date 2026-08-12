@@ -2993,7 +2993,14 @@
                     v.muted = true; v.playsInline = true; v.loop = true;
                     v.setAttribute('playsinline', '');
                     v.setAttribute('webkit-playsinline', '');
-                    try { v.preload = 'auto'; v.load(); } catch (e) {}
+                    // load() RESETS currentTime to 0 and re-initialises the
+                    // element, so only call it when there is genuinely nothing
+                    // buffered (preload="none"/HAVE_NOTHING). Calling it on an
+                    // element that already has data restarts the reel from 0.
+                    try {
+                        v.preload = 'auto';
+                        if (v.readyState < 2) v.load();
+                    } catch (e) {}
                     ['loadeddata', 'canplay', 'canplaythrough'].forEach((ev) =>
                         v.addEventListener(ev, () => tryPlay(v), { once: true }));
                     tryPlay(v);
@@ -3011,6 +3018,43 @@
                     });
                 }, { threshold: 0, rootMargin: '75% 0% 75% 0%' });
                 document.querySelectorAll('.video-preview').forEach((v) => io.observe(v));
+                // Single resume entry point for anything that pauses the reels
+                // wholesale (the video modal does, to free the decoder). Without
+                // this the reels stayed paused FOREVER after a modal was opened
+                // and closed — closeVideoModal never restarted them.
+                window.__mzWakePreviews = () => {
+                    document.querySelectorAll('.video-preview').forEach((v) => {
+                        if (nearViewport(v)) wake(v);
+                    });
+                };
+                // ALWAYS LOOPING (owner directive 2026-08-12). The reels are
+                // decorative loops: whenever one is near the viewport it must be
+                // running, full stop. Two ways it could stop and never restart —
+                // a play() that resolved but stalled (paused === false with the
+                // clock frozen, which is exactly what the two-observer conflict
+                // produced), and `loop` being cleared. A 2s watchdog re-asserts
+                // loop and restarts anything near the viewport whose clock has
+                // not moved since the last tick. Off-screen reels are still left
+                // paused — four decoders running for content nobody can see was
+                // measured battery drain — but nothing IN view can stay dead.
+                const lastT = new WeakMap();
+                setInterval(() => {
+                    if (document.hidden) return;
+                    document.querySelectorAll('.video-preview').forEach((v) => {
+                        if (!nearViewport(v)) return;
+                        if (!v.loop) v.loop = true;
+                        if (!v.muted) v.muted = true;
+                        const prev = lastT.get(v);
+                        const now = v.currentTime;
+                        lastT.set(v, now);
+                        const stalled = prev !== undefined && now === prev;
+                        if (v.paused || stalled) {
+                            if (v.readyState < 2) { try { v.load(); } catch (e) {} }
+                            const p = v.play();
+                            if (p && typeof p.then === 'function') p.catch(() => {});
+                        }
+                    });
+                }, 2000);
                 // first real interaction unblocks any policy-held reel in view
                 ['touchstart', 'pointerdown', 'scroll'].forEach((ev) =>
                     window.addEventListener(ev, () => {
@@ -3066,6 +3110,8 @@
             video.pause();
             video.src = '';
             modal.classList.remove('active');
+            // Restart the research reels the modal paused (see openVideoModal).
+            try { if (window.__mzWakePreviews) window.__mzWakePreviews(); } catch (e) {}
 
             // Restore body scroll
             document.body.style.overflow = '';
@@ -3086,47 +3132,27 @@
             }
         });
 
-        // Ensure research preview videos auto-play.
-        // Some browsers block autoplay despite muted+playsinline; explicit
-        // .play() after DOM ready + intersection-based play/pause is reliable.
-        (function initVideoPreviews() {
-            const previews = document.querySelectorAll('.video-preview');
-            if (!previews.length) return;
-            // 2026-08-08 PERF — this legacy block was the second, unguarded
-            // play() path: it started ALL four reels at page open, defeating
-            // preload="none" and re-downloading 10 MB ~18 viewports above the
-            // fold. Only wake a reel that is already near the viewport; the
-            // IntersectionObserver below owns everything else.
-            const nearVp = (v) => {
-                const r = v.getBoundingClientRect();
-                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
-            };
-            previews.forEach((video) => {
-                video.muted = true;
-                video.playsInline = true;
-                video.loop = true;
-                if (!nearVp(video)) return;
-                video.play().catch(() => {
-                    const retry = () => {
-                        if (nearVp(video)) video.play().catch(() => {});
-                    };
-                    document.addEventListener('click', retry, { once: true });
-                    document.addEventListener('touchstart', retry, { once: true });
-                });
-            });
-            if ('IntersectionObserver' in window) {
-                const obs = new IntersectionObserver((entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            entry.target.play().catch(() => {});
-                        } else {
-                            entry.target.pause();
-                        }
-                    });
-                }, { threshold: 0.25 });
-                previews.forEach((v) => obs.observe(v));
-            }
-        })();
+        // 2026-08-12 — initVideoPreviews (a SECOND IntersectionObserver over
+        // .video-preview, threshold 0.25) is DELETED. Its own 2026-08-08
+        // comment already said "the IntersectionObserver below owns everything
+        // else", but its observer was never actually removed, so two observers
+        // owned the same four reels with incompatible geometry: the surviving
+        // one uses threshold 0 + rootMargin 75% (wake early, before the reel
+        // scrolls in), this one used threshold 0.25 with no margin. In the band
+        // between those thresholds one observer called play() while the other
+        // called pause() on the same element, every scroll frame.
+        //
+        // Measured on the live page with play/pause/load instrumented:
+        // 8 PAUSE calls against only 2 play calls across the four reels —
+        // 4 pauses from the surviving observer's own leave-branch and 4 from
+        // this one — leaving reels 3 and 4 paused outright and reels 1 and 2
+        // unpaused with currentTime pinned at 0.00. The identical file in an
+        // isolated page played normally (clock 4.02s -> 7.03s), which is what
+        // ruled out the media and pointed here.
+        //
+        // ONE owner now: the wake()/IntersectionObserver block above. Do not
+        // reintroduce a second observer, play loop, or pause() over
+        // .video-preview anywhere in this file.
 
         // Defensive: only re-expose if defined (avoids ReferenceError that
         // would halt every script that runs after this line; the
