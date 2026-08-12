@@ -24,6 +24,12 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {".git", ".github", ".wrangler", "node_modules", "docs", "scripts", "schema"}
 REF = re.compile(r'(/assets/(?:css|js)/[A-Za-z0-9._-]+)\?v=([A-Za-z0-9]+)')
+# 2026-08-12 — an asset referenced WITHOUT ?v= (domain-modals.js) is the same
+# bug in a worse costume: /assets/* is immutable for a year, so a visitor's
+# browser legally keeps the old file until next year and no deploy can reach
+# them. The owner saw modal fixes "not applied" — his browser held the pre-fix
+# copy. Any src/href to /assets/(css|js)/ with NO ?v= now GETS one.
+BARE = re.compile(r'((?:src|href)=")(/assets/(?:css|js)/[A-Za-z0-9._-]+)(")')
 
 check_only = "--check" in sys.argv
 verify_live = "--verify-live" in sys.argv
@@ -62,6 +68,17 @@ for root, dirs, fs in os.walk(REPO):
             return f"{rel}?v={new}"
 
         out = REF.sub(sub, body)
+
+        def sub_bare(m):
+            rel = m.group(2)
+            new = sha10(rel)
+            if new is None:
+                missing.append(f"{os.path.relpath(path, REPO)}: {rel} (file does not exist)")
+                return m.group(0)
+            stale.append(f"{os.path.relpath(path, REPO)}: {rel} UNVERSIONED -> ?v={new}")
+            return f"{m.group(1)}{rel}?v={new}{m.group(3)}"
+
+        out = BARE.sub(sub_bare, out)
         if out != body and not check_only:
             with open(path, "w", encoding="utf-8") as f:
                 f.write(out)
