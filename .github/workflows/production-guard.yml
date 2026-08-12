@@ -1,0 +1,107 @@
+name: Production guard (self-heal)
+
+# =====================================================================
+# WHY THIS EXISTS — 2026-08-12
+# Two working copies deploy to this Cloudflare Pages project with
+# `wrangler pages deploy`. One of them deployed a tree that predated the
+# CSS/JS split and silently replaced production with a build missing ~684
+# commits: the owner's corrected 90.4% same-day-discharge figure, the
+# Preclinical Fellowship line, the fellowship tense fix, the reel-autoplay
+# fix and every clinical-modal rewrite disappeared from the live site.
+# Desktop browsers kept serving the good build from cache, so it went
+# unnoticed for hours and surfaced only when the owner opened the site on
+# a phone ("why is the iPhone version the old website").
+#
+# scripts/deploy-prod.sh now carries a stale-tree gate — but that only
+# protects a working copy which has PULLED it. A copy still running the
+# old deploy script bypasses every local gate. This workflow closes that
+# hole unconditionally: it watches the LIVE site from GitHub's
+# infrastructure and repairs it from main, needing nothing from any
+# developer machine.
+#
+# It cannot fight a legitimate deploy: the canary keys on published facts
+# the owner corrected plus the post-split architecture, all of which any
+# up-to-date build still contains. Only a genuinely stale build trips it.
+# =====================================================================
+
+on:
+  schedule:
+    # Every 20 minutes, on an off-minute (see deploy-prod.sh notes on not
+    # piling onto :00). Worst-case exposure to a stale clobber is ~20 min
+    # instead of "until somebody happens to look at it on their phone".
+    - cron: '7,27,47 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    name: Verify production, restore if it has regressed
+    steps:
+      - name: Checkout main (the single source of truth)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check the live site
+        id: canary
+        run: |
+          set +e
+          python3 scripts/verify_production.py
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Report healthy
+        if: steps.canary.outputs.status == '0'
+        run: echo "✅ production is serving the current build — no action taken."
+
+      # Only reached when the canary reports a regression (exit 2).
+      #
+      # Restore through the repo's OWN deploy script, never
+      # `cloudflare/pages-action` with `directory: .`. Deploying the bare
+      # repo root uploads everything in it — docs/ (internal program
+      # documents, including a risk-management letter and PHI key-rotation
+      # runbook), wrangler.toml (leaks the D1 database id), and any .env
+      # file. deploy-prod.sh stages an explicitly filtered copy and runs the
+      # full gate suite, so the restore cannot publish internal material.
+      - name: Restore production from main
+        if: steps.canary.outputs.status != '0'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler@4 >/dev/null 2>&1 || true
+          ./scripts/deploy-prod.sh "AUTO-RESTORE: production had regressed to a stale build"
+
+      - name: Re-verify after restore
+        if: steps.canary.outputs.status != '0'
+        run: |
+          echo "Waiting for the edge to pick up the restore…"
+          sleep 45
+          if python3 scripts/verify_production.py; then
+            echo "✅ production was regressed and has been restored from main."
+          else
+            echo "🛑 production is STILL regressed after redeploying main."
+            echo "   Someone may be deploying an old tree in a loop, or main"
+            echo "   itself is behind. Investigate before trusting the site."
+            exit 1
+          fi
+
+      # A regression is never silent, even when self-heal succeeded — the
+      # run is marked failed so it surfaces in the Actions tab and in the
+      # repo's notification settings.
+      - name: Fail the run so the regression is visible
+        if: steps.canary.outputs.status != '0'
+        run: |
+          echo "::error::Production had regressed to a stale build and was"
+          echo "::error::automatically restored from main. Find the working copy"
+          echo "::error::that deployed an out-of-date tree and run:"
+          echo "::error::  git pull --ff-only origin main"
+          exit 1

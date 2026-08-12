@@ -165,11 +165,19 @@ jobs:
           echo "✅ §0.4.1 pre-deploy regression-audit: PASS"
           echo "  ${#SURFACES[@]} static surfaces scanned, 0 hard fails"
 
+      # 2026-08-12 — was `cloudflare/pages-action` with `directory: .`,
+      # which uploads the ENTIRE repo root: docs/ (internal program
+      # documents — the SFH risk-management letter, the PHI master-key
+      # rotation runbook, billing go-live notes), wrangler.toml (leaks the
+      # D1 database id and KV namespace ids), and any .env file. The local
+      # deploy path has excluded those since 2026-06-29; CI did not, so a
+      # push to main could publish material that a manual deploy never
+      # would. Both paths now go through the one audited script, which
+      # stages an explicitly filtered copy AND runs the full gate suite.
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: mountzara
-          directory: .
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler@4 >/dev/null 2>&1 || true
+          ./scripts/deploy-prod.sh "CI: push to main" 
