@@ -1339,6 +1339,55 @@ autoplay blocked (recovering after one gesture), and after an
 openVideoModal/closeVideoModal cycle. Exactly one `pause()` caller
 remains in the served bundle.
 
+### 7.15 Inline references restored to the briefs and roundups (2026-08-12)
+
+Owner: *"the Trending and Evidence pages — the writeups and briefs also
+lost the STANDARD INLINE REFERENCES STYLE AND FORMATTING AND
+REQUIREMENTS."* Measured and confirmed: `blog-2026-W21` carries **216**
+inline `<sup class="mz-ref">` citations; all 8 evidence briefs and the 3
+newest roundups carried **ZERO**, with sources pushed to cards at the
+bottom of the page.
+
+`scripts/apply_inline_refs.py` restores them from VERIFIED claim→PMID
+mappings (produced by the `post-inline-refs` workflow: 12 mapping agents
++ 12 adversarial verifiers; 212 approved, 16 rejected). **196 inline refs
+applied across 12 posts; prose proven byte-identical afterwards** (strip
+the sups, compare text — 0 mismatches), and only `body_html` changed in
+the stored R2 objects.
+
+Three citation schemas coexist in the corpus and the indexer handles ALL
+of them — keying off only the first silently indexed zero cards for every
+evidence brief:
+1. roundups — `<article class="mz-cite-card" id="mz-cite-<PMID>">`,
+   `<h3 class="mz-cite-title">`, `<p class="mz-cite-fits">`
+2. briefs — `<article class="mz-cite-card" id="mz-ref-<N>">`,
+   `<p class="mz-cite-title">`, `<p class="mz-cite-finding">`; the PMID
+   lives only in the card's PubMed link
+3. bibliography — `<ol class="mz-references-list"><li>TITLE. JOURNAL.
+   YEAR. [PMID: …]</li>`, with no card at all
+
+> ⚠️ **Popover summaries must never be a raw abstract dump.**
+> `auditPublishable()` rejects a summary that opens with a structured
+> abstract label (`BACKGROUND:`, `AIM:`, `OBJECTIVE:` …) — three W20
+> popovers failed the gate on the first pass. The tool now detects and
+> omits those (the finding span is optional) rather than emitting one.
+
+Never-annotate regions (a mapping landing inside any of them is SKIPPED,
+never force-applied): `<details>`, `<article class="mz-cite-card">`,
+`<dialog>`, `<style>`, `<script>`, and `<ol class="mz-references-list">`.
+Also skipped: anchors that are not unique, insertion points inside a tag,
+PMIDs absent from the post, and a PMID already cited within 400 chars.
+
+Posts are stored as R2 objects `posts/<id>.json` in `mountzara-content`
+and written with the CF API (`PUT .../r2/buckets/mountzara-content/
+objects/posts/<id>.json`). Always fetch the RAW R2 object, patch, and PUT
+back — the `/api/posts/<id>` view is not the stored shape. Backups of all
+12 pre-change objects: scratchpad `r2_backup/`.
+
+Verified live: `/evidence/?id=…` renders 18/18 sups with 18 links, 18
+popovers, 0 malformed hrefs, 0 empty popovers, 0 dangling
+`aria-describedby`, no page errors.
+
 ## 8. Static surfaces
 
 ### 8.1 Root pages
