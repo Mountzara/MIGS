@@ -501,7 +501,21 @@ if [ -z "${DEPLOY_SKIP_RUNTIME_CSS_AUDIT:-}" ]; then
         echo "    environment. (pip install playwright && playwright install chromium to enable.)"
     elif [ -f scripts/audit_runtime_css.py ]; then
         echo ""
-        echo "🔍 Runtime-CSS audit — getComputedStyle assertions on live site..."
+        # Asset live-body verification (2026-08-12) — an edge once cached a stale
+# body under a fresh ?v= key (deploy race) and served it, immutable, while
+# the repo said the fix shipped. Verify every referenced asset URL's live
+# body hash equals its ?v= key; a mismatch is a poisoned edge entry.
+echo ""
+echo "🔍 Asset live-body verification — ?v= keys vs served bytes..."
+if "$PY" scripts/bump_asset_versions.py --verify-live; then
+    echo "   ✅ asset bodies verified"
+else
+    echo "🛑 DEPLOY POISONED — a CDN edge serves a stale body under a fresh ?v= key."
+    echo "   Rotate the key (touch the asset, rerun deploy) — do NOT ignore this."
+    exit 1
+fi
+
+echo "🔍 Runtime-CSS audit — getComputedStyle assertions on live site..."
         if "$PY" scripts/audit_runtime_css.py homepage > /tmp/_runtime_css_audit.log 2>&1; then
             tail -2 /tmp/_runtime_css_audit.log
             echo "   ✅ runtime CSS audit passed"

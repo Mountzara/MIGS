@@ -26,6 +26,7 @@ SKIP_DIRS = {".git", ".github", ".wrangler", "node_modules", "docs", "scripts", 
 REF = re.compile(r'(/assets/(?:css|js)/[A-Za-z0-9._-]+)\?v=([A-Za-z0-9]+)')
 
 check_only = "--check" in sys.argv
+verify_live = "--verify-live" in sys.argv
 hashes = {}
 
 
@@ -77,5 +78,30 @@ if missing:
 if check_only and stale:
     print(f"asset-version: {len(stale)} stale ?v= reference(s) — run scripts/bump_asset_versions.py")
     sys.exit(2)
+if verify_live:
+    # Post-deploy guard (2026-08-12): an edge once cached a STALE asset body
+    # under a fresh ?v= key during a deploy race and served it — immutable —
+    # for what would have been a year (rendered rgba(.92) while the file said
+    # #fff; the reader-path gate failed on a page the repo said was fixed).
+    # Fetch every referenced asset URL from production and require the live
+    # body's sha256[:10] to equal the ?v= key. Mismatch = poisoned edge cache:
+    # rotate the key (touch the file) or purge, then redeploy.
+    import subprocess
+    bad = 0
+    for rel, h in sorted(hashes.items()):
+        if h is None:
+            continue
+        url = f"https://mountzara.com{rel}?v={h}"
+        body = subprocess.run(["curl", "-s", url], capture_output=True).stdout
+        live = hashlib.sha256(body).hexdigest()[:10]
+        mark = "OK " if live == h else "POISONED"
+        if live != h:
+            bad += 1
+        print(f"  live-verify {mark} {rel} want={h} got={live}")
+    if bad:
+        print(f"asset-version --verify-live: {bad} POISONED edge entr(ies) — rotate the key and redeploy")
+        sys.exit(2)
+    print("asset-version --verify-live: all live asset bodies match their ?v= keys")
+    sys.exit(0)
 print(f"asset-version: OK — {len(stale)} bumped, {changed} file(s) rewritten" if not check_only
       else "asset-version: OK — all ?v= references match content hashes")

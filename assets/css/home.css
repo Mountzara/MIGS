@@ -1036,6 +1036,9 @@
             color: #ffffff;
             margin: 0;
         }
+        /* cache-key rotation 2026-08-12: an edge cached a stale body under the previous
+           ?v= key during a deploy race (rendered rgba .92 while the file said #fff);
+           this comment changes the content hash so every edge refetches. */
         /* 2026-08-12 owner: the two curriculum cards were "too text heavy" —
            the detail lives behind the click, so the card face is now four
            succinct points. */
