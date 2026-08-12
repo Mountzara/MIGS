@@ -2173,23 +2173,54 @@
         //   it has already settled. Threshold 0 = "any pixel inside the trimmed root counts".
         const reveals = document.querySelectorAll('[data-reveal], .word-reveal');
         if (reduceMotion) {
-            // 2026-07-22 — CRITICAL: this branch previously revealed ONLY
-            // [data-reveal]/.word-reveal. The .evidence-card/.surgical-card
-            // and .reveal mechanisms are revealed by the observer + safety
-            // net, which live in the else-branch below — so for every
-            // Reduce-Motion user those sections stayed at opacity:0 FOREVER
-            // ("the appear effect doesn't work for all elements"). Reduce
-            // Motion means no animation — it must NEVER mean no content.
-            reveals.forEach(el => el.classList.add('in'));
-            const rmRevealAll = () => {
-                document.querySelectorAll('[data-reveal]:not(.in), .word-reveal:not(.in), .evidence-card:not(.in), .surgical-card:not(.in)')
-                    .forEach(el => el.classList.add('in'));
-                document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+            // 2026-08-12 — Reduce Motion now gets a real scroll reveal, not an
+            // instant dump. The previous branch added .in to EVERYTHING at
+            // load, so an RM user (the owner browses with RM on) saw no appear
+            // effect at all: "not doing the appear/scroll effect when
+            // scrolling down the page anymore". The accessibility contract is
+            // no MOTION, not no transitions: the RM CSS block strips
+            // transform/filter and keeps an opacity-only fade, and this branch
+            // now drives .in from the same IntersectionObserver geometry as
+            // the normal path. The 2026-07-22 guarantee still stands — nothing
+            // may EVER stay invisible under RM — via the MutationObserver
+            // sweep, which now OBSERVES JS-built cards instead of instantly
+            // revealing them, plus the same unobserve-on-reveal behavior.
+            const rmObs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add(e.target.classList.contains('reveal') ? 'visible' : 'in');
+                        rmObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+            const rmWatch = () => {
+                document.querySelectorAll(
+                    '[data-reveal]:not(.in), .word-reveal:not(.in), .evidence-card:not(.in), .surgical-card:not(.in), .reveal:not(.visible)'
+                ).forEach(el => {
+                    if (el.classList.contains('hero-title')) return; // owned by the bootstrap
+                    if (!el.dataset.rmObserved) { el.dataset.rmObserved = '1'; rmObs.observe(el); }
+                });
             };
-            rmRevealAll();
-            // cards are built by JS AFTER data fetches — a one-shot sweep at
-            // init misses them and they'd stay invisible forever under RM.
-            new MutationObserver(rmRevealAll).observe(document.body, { childList: true, subtree: true });
+            rmWatch();
+            new MutationObserver(rmWatch).observe(document.body, { childList: true, subtree: true });
+            // Safety net: anything already scrolled past (or missed during a
+            // fast fling) is revealed by a periodic sweep — the RM promise
+            // that no content stays hidden survives the observer change.
+            setInterval(() => {
+                // r.top < innerHeight covers both "on screen now" AND "flung
+                // past above" — an element the user scrolled beyond must be
+                // visible when they scroll back up. Only content still below
+                // the fold stays hidden, waiting for its observer fade.
+                const pastOrVisible = (el) => el.getBoundingClientRect().top < window.innerHeight;
+                const atBottom = window.scrollY + window.innerHeight >= document.body.scrollHeight - 60;
+                document.querySelectorAll('[data-reveal]:not(.in), .word-reveal:not(.in), .evidence-card:not(.in), .surgical-card:not(.in)').forEach(el => {
+                    if (el.classList.contains('hero-title')) return;
+                    if (atBottom || pastOrVisible(el)) el.classList.add('in');
+                });
+                document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+                    if (atBottom || pastOrVisible(el)) el.classList.add('visible');
+                });
+            }, 900);
         } else {
             const revealObs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {

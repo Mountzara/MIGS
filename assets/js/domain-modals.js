@@ -44,11 +44,11 @@
                 body: `<p>These are the Level A (good and consistent scientific evidence) recommendations from ACOG CPG No. 11 that shape every conversation about diagnosis, medical therapy, and surgery for endometriosis. They are the standard of care, not opinion.</p>`,
                 stats: [
                     { num: 'TVUS', label: 'is the imaging modality of choice for assessing the presence of endometriosis.', source: 'ACOG CPG No. 11 · Level A' },
-                    { num: 'Excision > ablation', label: 'for endometriomas — excision is superior to simple drainage and cyst-wall ablation.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Excision beats ablation', label: 'For endometriomas, cutting the cyst out is superior to simple drainage and burning of the cyst wall.', source: 'ACOG CPG No. 11 · Level A' },
                     { num: 'Surgery helps fertility', label: 'Surgical management of endometriosis-related infertility improves pregnancy rates; magnitude unclear.', source: 'ACOG CPG No. 11 · Level A' },
-                    { num: 'Suppression ≠ fertility tx', label: 'OCs and GnRH agonists are ineffective for endometriosis-associated infertility.', source: 'ACOG CPG No. 11 · Level A' },
-                    { num: 'Medical → pain ↓', label: 'Medical suppressive therapy improves pain — recurrence rates are high after stopping.', source: 'ACOG CPG No. 11 · Level A' },
-                    { num: 'Surgery → pain ↓', label: 'Significant short-term improvement in pain after conservative surgical treatment — recurrence still happens.', source: 'ACOG CPG No. 11 · Level A' }
+                    { num: 'Suppression won’t restore fertility', label: 'Birth-control pills and GnRH agonists quiet pain but are ineffective for endometriosis-associated infertility.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Medication eases pain', label: 'Medical suppressive therapy improves pain — but recurrence rates are high after stopping.', source: 'ACOG CPG No. 11 · Level A' },
+                    { num: 'Surgery eases pain', label: 'Significant short-term improvement in pain after conservative surgical excision — recurrence still happens.', source: 'ACOG CPG No. 11 · Level A' }
                 ]
             },
             {
@@ -851,7 +851,7 @@
                 title: 'Why cross-specialty competence matters.',
                 body: `<p>Ureteral injury is one of the most consequential complications of pelvic surgery — recognized intraoperatively, it is fixed primarily and almost always heals; recognized days later, it becomes a stricture or fistula requiring major reconstructive work. Routine intraoperative cystoscopy after high-risk pelvic dissection (deep endometriosis, prolapse repair, large fibroids, dense adhesions) is the simplest evidence-based intervention for catching ureteric or bladder injury in real time. Across the fellowship: zero ureteral, bladder, or vascular injuries through extensive retroperitoneal dissection.</p>`,
                 stats: [
-                    { num: 'Zero', label: 'Ureteral, bladder, or vascular injuries across the fellowship — through extensive retroperitoneal dissection', source: 'Fellowship operative log' },
+                    { num: 'Zero', label: 'Ureteral, vascular, or nerve injuries across the fellowship — through extensive retroperitoneal dissection', source: 'Fellowship operative log' },
                     { num: 'Routine cystoscopy', label: 'After every high-risk pelvic dissection — single most effective way to detect ureteric or bladder injury intraoperatively', source: 'Surgical safety literature' },
                     { num: 'Multidisciplinary', label: 'Pre-operative coordination with urology, colorectal, general surgery when a case will likely cross specialty lines', source: 'Practice principle' }
                 ]

@@ -5806,9 +5806,23 @@
             .pinned-frames { gap: 0; }
         }
 
-        /* Respect prefers-reduced-motion */
+        /* Respect prefers-reduced-motion.
+           2026-08-12 — was `[data-reveal] { opacity:1; transition:none }`,
+           which (with the JS branch that added .in to everything at load)
+           meant an RM user got NO appear effect anywhere — the owner browses
+           with RM on and reported exactly that. The accessibility contract is
+           to remove MOTION, not all change: transform/filter are stripped so
+           nothing slides, scales, or blurs, but an opacity-only fade remains,
+           driven by the same on-scroll .in the normal path uses. */
         @media (prefers-reduced-motion: reduce) {
-            [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+            [data-reveal],
+            [data-reveal="scale"],
+            [data-reveal="blur"],
+            [data-reveal="fade"] {
+                transform: none;
+                filter: none;
+                transition: opacity 700ms ease;
+            }
             .word-reveal > .w { opacity: 1; transform: none; }
             .hero-inner, .monogram-stage { transform: none !important; opacity: 1 !important; animation: none !important; }
         }

@@ -68,6 +68,7 @@ const STALE_RECORD = [
     [/\b(?:4|four) active IRB/i, "4 active IRB studies (canonical: 2 — owner directive 2026-08-11)"],
     [/five native macOS applications/i, "five apps (canonical: six)"],
     [/zero complications/i, "'zero complications' phrasing (canonical claim: zero MAJOR ADVERSE EVENTS against a stated 3.15% rate)"],
+    [/completing his Complex Benign Gynecology/i, "present-tense fellowship (he FINISHED the fellowship — owner directive 2026-08-12)"],
 ];
 for (const f of files) {
     let s; try { s = readFileSync(f, "utf8"); } catch { continue; }
