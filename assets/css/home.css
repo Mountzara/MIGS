@@ -1036,6 +1036,33 @@
             color: #ffffff;
             margin: 0;
         }
+        /* 2026-08-12 owner: the two curriculum cards were "too text heavy" —
+           the detail lives behind the click, so the card face is now four
+           succinct points. */
+        .curriculum-points {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 9px;
+        }
+        .curriculum-points li {
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.92);
+            padding-left: 18px;
+            position: relative;
+        }
+        .curriculum-points li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.55em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(167, 139, 250, 0.85);
+        }
         .curriculum-consult-link {
             display: inline-flex;
             align-items: center;
@@ -4658,9 +4685,11 @@
                rgba(0,0,0,0.30), which read as a solid dark bar, not glass). A
                luminous white-tinted gradient + heavier blur + a specular top edge
                frost it into real glass consistent with the cards/nav. */
-            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
-            backdrop-filter: saturate(180%) blur(28px);
-            -webkit-backdrop-filter: saturate(180%) blur(28px);
+            /* 2026-08-12 owner: strengthen the frost — the bar read as
+               near-solid. Lighter luminous tint + heavier blur. */
+            background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 42%, rgba(0,0,0,0.10) 100%);
+            backdrop-filter: saturate(190%) blur(32px);
+            -webkit-backdrop-filter: saturate(190%) blur(32px);
             color: #ffffff;
             padding: 48px 22px 32px;
             border-top: 1px solid rgba(255, 255, 255, 0.14);
@@ -7369,12 +7398,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .about-section .stat-num   { color: #4c1d95; }
 
 /* 2026-08-08 — the sticky nav was rgba(0,0,0,0.28): over the light About
-   interlude its white links measured 1.00:1 (invisible). A near-opaque dark
-   ground keeps every nav label legible over ANY section, light or dark. */
+   interlude its white links measured 1.00:1 (invisible), so it was raised to
+   rgba(12,9,22,0.94). 2026-08-12 owner: at 94% the bar reads as SOLID — "the
+   very top header bar ... should have glass properties/effect, not solid".
+   0.72 is the balance point: composited over the lightest section (#f5f5f7)
+   the ground lands near sRGB 77, keeping white labels ~8:1 (the pixel
+   contrast gate verifies this from rendered pixels on every deploy), while
+   28px blur + saturate(190%) makes the frost visibly glass again over
+   scrolling content. */
 .main-nav, nav.main-nav {
-    background: rgba(12, 9, 22, 0.94) !important;
-    backdrop-filter: blur(22px) saturate(150%);
-    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    background: rgba(12, 9, 22, 0.72) !important;
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
 }
 /* Small accent text needs a lighter violet than #a78bfa/#8b5cf6 to clear
    4.5:1 on glass (measured 3.2-4.4:1 before). Large display text keeps the
