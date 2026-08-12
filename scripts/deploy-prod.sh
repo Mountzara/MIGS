@@ -137,7 +137,11 @@ fi
 # intentional; it is a clobber. Refuse it. This runs FIRST, before any upload.
 # Override (documented, deliberate) with DEPLOY_ALLOW_STALE_TREE=1.
 # ---------------------------------------------------------------------------
-if [ -z "${DEPLOY_ALLOW_STALE_TREE:-}" ] && command -v git >/dev/null 2>&1 && [ -d .git ]; then
+# `[ -d .git ]` is FALSE in a git worktree (.git is a FILE there), which
+# skipped this entire gate and let a 685-commit-old tree deploy during
+# testing. rev-parse works for clones, worktrees and submodules alike.
+if [ -z "${DEPLOY_ALLOW_STALE_TREE:-}" ] && command -v git >/dev/null 2>&1 \
+        && git rev-parse --git-dir >/dev/null 2>&1; then
     echo ""
     echo "🔒 stale-tree gate — is this working copy up to date with origin?"
     if git fetch -q origin main 2>/dev/null; then
@@ -320,6 +324,16 @@ fi
 # placeholder here documents the intent; the actual invocation is in
 # the post-deploy block.
 # ---------------------------------------------------------------------------
+
+# DEPLOY_GATES_ONLY=1 — run every pre-upload gate, then stop before staging or
+# uploading anything. Added 2026-08-12 because verifying the stale-tree gate by
+# running a real deploy overwrote production twice. Gate behaviour must be
+# testable without touching the live site.
+if [ -n "${DEPLOY_GATES_ONLY:-}" ]; then
+    echo ""
+    echo "✅ DEPLOY_GATES_ONLY — all pre-upload gates passed; stopping before upload."
+    exit 0
+fi
 
 # ---------------------------------------------------------------------------
 # Staged upload (added 2026-06-29). `wrangler pages deploy .` uploads the
