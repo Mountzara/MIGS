@@ -25,6 +25,7 @@ Usage:
 """
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -52,31 +53,53 @@ def fetch(url):
     return r.stdout.decode("utf-8", "replace")
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--host", default="https://mountzara.com")
-    ap.add_argument("--json", action="store_true")
-    a = ap.parse_args()
-
-    url = f"{a.host.rstrip('/')}/?cb={int(time.time())}"
-    body = fetch(url)
-    if not body:
-        print(f"verify-production: could not fetch {url}")
-        return 1
-
-    failures = []
+def evaluate(body):
+    """Return the list of failures for one fetched body."""
+    out = []
     for label, needle, want in CHECKS:
         present = needle in body
         if present != want:
-            failures.append(
+            out.append(
                 f"{label}: expected {'present' if want else 'ABSENT'}, "
                 f"found {'present' if present else 'absent'}"
             )
     if len(body) > MAX_BYTES:
-        failures.append(
+        out.append(
             f"homepage is {len(body):,} bytes (> {MAX_BYTES:,}) — looks like the "
             f"pre-split monolith, i.e. a stale tree is live"
         )
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--host", default="https://mountzara.com")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--retries", type=int, default=3,
+                    help="confirm a regression this many times before reporting it")
+    ap.add_argument("--retry-delay", type=int, default=20)
+    a = ap.parse_args()
+
+    # RETRY before declaring a regression. A single fetch is not evidence:
+    # a deploy may be mid-propagation, a CDN PoP may answer stale for a beat,
+    # or the request may simply fail. Declaring a regression triggers an
+    # automatic redeploy, so the bar has to be "still broken after N tries",
+    # not "looked broken once". A real stale-tree clobber persists and still
+    # trips this on every attempt.
+    host = a.host.rstrip("/")
+    failures, body = [], ""
+    for attempt in range(1, a.retries + 1):
+        body = fetch(f"{host}/?cb={int(time.time())}")
+        if not body:
+            failures = [f"could not fetch {host}/ (attempt {attempt})"]
+        else:
+            failures = evaluate(body)
+        if not failures:
+            break
+        if attempt < a.retries:
+            print(f"  … attempt {attempt} saw {len(failures)} problem(s); "
+                  f"retrying in {a.retry_delay}s")
+            time.sleep(a.retry_delay)
 
     if a.json:
         print(json.dumps({"host": a.host, "bytes": len(body),
@@ -85,6 +108,9 @@ def main():
         print(f"verify-production: {a.host}  ({len(body):,} bytes)")
         for f in failures:
             print(f"  ✗ {f}")
+        if failures and body:
+            title = re.search(r"<title>(.*?)</title>", body, re.S)
+            print(f"  served <title>: {title.group(1).strip()[:90] if title else '(none)'}")
         if not failures:
             print("  ✅ production is serving the current build")
 

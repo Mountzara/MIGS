@@ -9,32 +9,38 @@ name: Production guard (self-heal)
 # Preclinical Fellowship line, the fellowship tense fix, the reel-autoplay
 # fix and every clinical-modal rewrite disappeared from the live site.
 # Desktop browsers kept serving the good build from cache, so it went
-# unnoticed for hours and surfaced only when the owner opened the site on
-# a phone ("why is the iPhone version the old website").
+# unnoticed and surfaced only when the owner opened the site on a phone.
 #
-# scripts/deploy-prod.sh now carries a stale-tree gate — but that only
-# protects a working copy which has PULLED it. A copy still running the
-# old deploy script bypasses every local gate. This workflow closes that
-# hole unconditionally: it watches the LIVE site from GitHub's
-# infrastructure and repairs it from main, needing nothing from any
-# developer machine.
+# The stale-tree gate in deploy-prod.sh protects only a working copy that
+# has PULLED it. This workflow closes the hole unconditionally: it watches
+# the LIVE site from GitHub's infrastructure and repairs it from main.
 #
-# It cannot fight a legitimate deploy: the canary keys on published facts
-# the owner corrected plus the post-split architecture, all of which any
-# up-to-date build still contains. Only a genuinely stale build trips it.
+# DESIGN RULES (learned the hard way — the first version emailed the owner
+# a failure every 20 minutes while production was perfectly healthy):
+#   * NEVER fail on a healthy site. A red run must mean something real.
+#   * A single bad fetch is NOT a regression. verify_production.py retries
+#     before it will say so, because saying so triggers a redeploy.
+#   * If the Cloudflare secrets are absent, say that plainly instead of
+#     dying with an opaque "exit code 1" — a missing secret is a setup
+#     problem, not a site problem, and must not masquerade as one.
+#   * Every outcome writes a job summary, so the notification explains
+#     itself without anyone opening logs.
 # =====================================================================
 
 on:
   schedule:
-    # Every 20 minutes, on an off-minute (see deploy-prod.sh notes on not
-    # piling onto :00). Worst-case exposure to a stale clobber is ~20 min
-    # instead of "until somebody happens to look at it on their phone".
+    # Every 20 minutes on an off-minute (never :00 — see deploy-prod.sh).
     - cron: '7,27,47 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
   deployments: write
+
+concurrency:
+  # Never let two guards restore at once, and never queue a backlog.
+  group: production-guard
+  cancel-in-progress: false
 
 jobs:
   guard:
@@ -51,57 +57,103 @@ jobs:
         with:
           python-version: '3.11'
 
+      # Retries live inside the script, so a transient blip cannot trigger
+      # a redeploy. `set +e` keeps a non-zero exit from failing the step —
+      # the exit code is the SIGNAL here, not an error.
       - name: Check the live site
         id: canary
         run: |
           set +e
-          python3 scripts/verify_production.py
-          echo "status=$?" >> "$GITHUB_OUTPUT"
+          python3 scripts/verify_production.py --retries 3 --retry-delay 20 | tee canary.log
+          echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          exit 0
 
-      - name: Report healthy
+      - name: Healthy — nothing to do
         if: steps.canary.outputs.status == '0'
-        run: echo "✅ production is serving the current build — no action taken."
+        run: |
+          echo "✅ production is serving the current build."
+          {
+            echo "## ✅ Production healthy"
+            echo ""
+            echo "The live site is serving the current build. No action taken."
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      # Only reached when the canary reports a regression (exit 2).
-      #
-      # Restore through the repo's OWN deploy script, never
-      # `cloudflare/pages-action` with `directory: .`. Deploying the bare
-      # repo root uploads everything in it — docs/ (internal program
-      # documents, including a risk-management letter and PHI key-rotation
-      # runbook), wrangler.toml (leaks the D1 database id), and any .env
-      # file. deploy-prod.sh stages an explicitly filtered copy and runs the
-      # full gate suite, so the restore cannot publish internal material.
-      - name: Restore production from main
+      # A missing secret is a SETUP problem. Report it as itself rather than
+      # letting deploy-prod.sh exit 1 with an opaque message.
+      - name: Confirm deploy credentials are available
+        id: creds
         if: steps.canary.outputs.status != '0'
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+            echo "have=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "have=0" >> "$GITHUB_OUTPUT"
+            echo "::warning::Cloudflare secrets are not configured; cannot auto-restore."
+          fi
+
+      - name: Restore production from main
+        id: restore
+        continue-on-error: true   # never skip the explanation step below
+        if: steps.canary.outputs.status != '0' && steps.creds.outputs.have == '1'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm install -g wrangler@4 >/dev/null 2>&1 || true
+          # deploy-prod.sh stages an explicitly filtered copy (docs/,
+          # wrangler.toml and .env* never ship) and runs the full gate suite.
           ./scripts/deploy-prod.sh "AUTO-RESTORE: production had regressed to a stale build"
 
       - name: Re-verify after restore
-        if: steps.canary.outputs.status != '0'
+        id: reverify
+        continue-on-error: true
+        if: steps.canary.outputs.status != '0' && steps.creds.outputs.have == '1'
         run: |
           echo "Waiting for the edge to pick up the restore…"
           sleep 45
-          if python3 scripts/verify_production.py; then
-            echo "✅ production was regressed and has been restored from main."
-          else
-            echo "🛑 production is STILL regressed after redeploying main."
-            echo "   Someone may be deploying an old tree in a loop, or main"
-            echo "   itself is behind. Investigate before trusting the site."
-            exit 1
-          fi
+          python3 scripts/verify_production.py --retries 3 --retry-delay 20
 
-      # A regression is never silent, even when self-heal succeeded — the
-      # run is marked failed so it surfaces in the Actions tab and in the
-      # repo's notification settings.
-      - name: Fail the run so the regression is visible
+      # One place that explains the outcome, whatever it was.
+      - name: Explain the outcome
         if: steps.canary.outputs.status != '0'
         run: |
-          echo "::error::Production had regressed to a stale build and was"
-          echo "::error::automatically restored from main. Find the working copy"
-          echo "::error::that deployed an out-of-date tree and run:"
-          echo "::error::  git pull --ff-only origin main"
+          {
+            echo "## 🛑 Production had regressed"
+            echo ""
+            echo "The live site was serving a build that is missing published work —"
+            echo "the signature of a working copy deploying an out-of-date tree."
+            echo ""
+            if [ "${{ steps.creds.outputs.have }}" = "1" ] \
+                 && [ "${{ steps.restore.outcome }}" = "success" ] \
+                 && [ "${{ steps.reverify.outcome }}" = "success" ]; then
+              echo "It was **automatically restored from \`main\`** and re-verified."
+            elif [ "${{ steps.creds.outputs.have }}" = "1" ]; then
+              echo "**The automatic restore did NOT succeed**"
+              echo "(restore: \`${{ steps.restore.outcome }}\`,"
+              echo "re-verify: \`${{ steps.reverify.outcome }}\`)."
+              echo "Restore by hand from an up-to-date copy:"
+              echo '```'
+              echo "git pull --ff-only origin main && ./scripts/deploy-prod.sh 'restore'"
+              echo '```'
+            else
+              echo "**It could NOT be restored**: the \`CLOUDFLARE_API_TOKEN\` /"
+              echo "\`CLOUDFLARE_ACCOUNT_ID\` repository secrets are not configured."
+              echo "Add them in Settings → Secrets and variables → Actions."
+            fi
+            echo ""
+            echo "### Fix the cause"
+            echo "On the machine that deployed the old tree:"
+            echo '```'
+            echo "git pull --ff-only origin main"
+            echo '```'
+            echo ""
+            echo "### What the canary saw"
+            echo '```'
+            cat canary.log 2>/dev/null | head -25
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Production had regressed to a stale build — see the job summary."
           exit 1
