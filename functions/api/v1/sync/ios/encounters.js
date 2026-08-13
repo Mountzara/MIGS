@@ -76,8 +76,13 @@ export async function onRequestPost(ctx) {
         const now = Date.now();
         const encounter_id = newId();
         const noteKey = `encounter/${patient_id}/${encounter_id}/note.bin`;
+        const noteAad = `encounter/${encounter_id}/note`;
+        let notePut;
         try {
-            await putPhiObject(env, noteKey, note_body, `encounter/${encounter_id}/note`);
+            // This call had NO assignment at all, so the wrapped DEK was
+            // discarded the instant it was created and the note could never
+            // be decrypted again. See schema/0038.
+            notePut = await putPhiObject(env, noteKey, note_body, noteAad);
         } catch (e) { return syncError("phi_encrypt_note_failed", 500); }
 
         const CLINICIAN_ID = "mabini-christopher-z";
@@ -85,13 +90,15 @@ export async function onRequestPost(ctx) {
             INSERT INTO encounters
                 (id, patient_id, clinician_id, visit_date, visit_type_actual,
                  chief_complaint, note_r2_key, note_source, transcription_session_id,
+                 note_wrapped_dek, note_aad,
                  cpt_codes_json, icd10_codes_json,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'imported', ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'imported', ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             encounter_id, patient_id, CLINICIAN_ID, visit_date,
             visit_type_actual, chief_complaint,
             noteKey, session_id,
+            notePut.wrapped_dek, noteAad,
             safeStringArr(body.cpt_codes),
             safeStringArr(body.icd10_codes),
             now, now

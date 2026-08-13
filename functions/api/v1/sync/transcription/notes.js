@@ -117,13 +117,19 @@ export async function onRequestPost(ctx) {
 
         // Optional signed-PDF.
         let pdfR2Key = null;
+        let pdfWrappedDek = null;
+        const pdfAad = `encounter/${encounter_id}/note_pdf`;
         if (body.note_pdf_base64) {
             const pdfBytes = decodeBase64(body.note_pdf_base64);
             if (!pdfBytes) return syncError("invalid_note_pdf_base64", 400);
             if (pdfBytes.length > MAX_PDF_BYTES) return syncError("note_pdf_too_large", 413, { max: MAX_PDF_BYTES });
             pdfR2Key = `encounter/${patient_id}/${encounter_id}/note.pdf.bin`;
             try {
-                await putPhiObject(env, pdfR2Key, pdfBytes, `encounter/${encounter_id}/note_pdf`);
+                // The return value used to be discarded entirely — no
+                // assignment at all — so the signed PDF was encrypted and
+                // its key immediately lost. See schema/0038.
+                const pdfPut = await putPhiObject(env, pdfR2Key, pdfBytes, pdfAad);
+                pdfWrappedDek = pdfPut.wrapped_dek;
             } catch (e) {
                 return syncError("phi_encrypt_pdf_failed", 500, { detail: String(e && e.message || e) });
             }
@@ -136,13 +142,19 @@ export async function onRequestPost(ctx) {
                 (id, patient_id, clinician_id, appointment_id, visit_date,
                  visit_type_actual, chief_complaint,
                  note_r2_key, note_pdf_r2_key, note_source, transcription_session_id,
+                 note_wrapped_dek, note_pdf_wrapped_dek, note_aad, note_pdf_aad,
                  omt_codes_json, cpt_codes_json, icd10_codes_json,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'transcription_app', ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'transcription_app', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             encounter_id, patient_id, CLINICIAN_ID, appointment_id, visit_date,
             visit_type_actual, chief_complaint,
             noteR2Key, pdfR2Key, session_id,
+            // The wrapped DEK is the ONLY copy of the key to this note —
+            // R2 carries the IVs and AAD but deliberately not key material.
+            // It used to be computed and dropped, which made every synced
+            // note permanently unreadable. See schema/0038.
+            notePut.wrapped_dek, pdfWrappedDek, aad, pdfR2Key ? pdfAad : null,
             safeJsonArr(body.omt_codes),
             safeJsonArr(body.cpt_codes),
             safeJsonArr(body.icd10_codes),

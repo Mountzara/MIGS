@@ -370,6 +370,27 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_portal_headers.mjs ]; th
 fi
 
 # ---------------------------------------------------------------------------
+# Date gate (codified 2026-08-13). Three endpoints validated dates with a
+# shape regex, so 2026-02-31 was accepted, stored, and then matched no
+# calendar query ever again — written, acknowledged and lost — and a
+# ?from=1900-01-01 trends request returned 46,000 points in 1.6 MB.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
+    echo ""
+    echo "🔒 date gate — real calendar dates and bounded windows..."
+    if node scripts/test_iso_date.mjs > /tmp/_iso_date.log 2>&1; then
+        tail -1 /tmp/_iso_date.log
+        echo "   ✅ date gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the date gate:"
+        tail -20 /tmp/_iso_date.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
 # Runs scripts/regression_audit.py against every known clinical surface BEFORE
 # the wrangler deploy. Exit code 0 = pass; 1 = block deploy.
@@ -499,9 +520,9 @@ if [ -z "${RSYNC_MISSING:-}" ]; then
         --exclude='wrangler.toml' \
         --exclude='.env' \
         --exclude='.env.*' \
-        --exclude='scripts/' \
-        --exclude='schema/' \
-        --exclude='docs/' \
+        --exclude='/scripts/' \
+        --exclude='/schema/' \
+        --exclude='/docs/' \
         --exclude='*.doc' \
         --exclude='*.docx' \
         --exclude='*.md' \
@@ -522,12 +543,46 @@ else
         --exclude='node_modules' --exclude='companion-app' --exclude='build' \
         --exclude='DerivedData' --exclude='.build' --exclude='*.xcuserstate' \
         --exclude='.DS_Store' --exclude='wrangler.toml' --exclude='.env' \
-        --exclude='.env.*' --exclude='scripts' --exclude='schema' --exclude='docs' \
+        --exclude='.env.*' --exclude='./scripts' --exclude='./schema' --exclude='./docs' \
         --exclude='*.doc' --exclude='*.docx' \
         --exclude='*.md' --exclude='*.sh' --exclude='*.py' \
         --exclude='.gitignore' --exclude='.gitattributes' \
         -cf - . ) | ( cd "$STAGE_DIR" && tar -xf - )
 fi
+
+# ---------------------------------------------------------------------------
+# Stage-integrity assertion (added 2026-08-13)
+# ---------------------------------------------------------------------------
+# The exclude list above is a set of UNANCHORED patterns, so `docs/` did not
+# mean "the docs directory at the repo root" — it meant "any directory named
+# docs, at any depth". `functions/api/v1/admin/compliance/docs/` matched.
+# Both of its handlers were silently dropped from every deploy since that
+# endpoint shipped, and GET /api/v1/admin/compliance/docs returned 404 in
+# production while existing, complete, in the repo. Nothing reported it: the
+# staging step has no idea which files were supposed to survive.
+#
+# The three directory excludes are anchored now (`/docs/`), but the real fix
+# is to stop trusting the pattern list. Every file under functions/ is
+# deployable by definition — that is what the directory IS — so any
+# discrepancy between the repo and the stage is a bug in the exclude list,
+# and it blocks the deploy rather than shipping a hole in the API.
+REPO_FN_COUNT=$(find "$REPO_ROOT/functions" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | wc -l | tr -d ' ')
+STAGE_FN_COUNT=$(find "$STAGE_DIR/functions" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | wc -l | tr -d ' ')
+if [ "$REPO_FN_COUNT" != "$STAGE_FN_COUNT" ]; then
+    echo ""
+    echo "🛑 DEPLOY BLOCKED — the staging filter dropped Pages Functions."
+    echo "   repo:  $REPO_FN_COUNT handler(s) under functions/"
+    echo "   stage: $STAGE_FN_COUNT"
+    echo "   Missing (these would 404 in production):"
+    diff \
+        <(cd "$REPO_ROOT" && find functions -type f \( -name '*.js' -o -name '*.mjs' \) | sort) \
+        <(cd "$STAGE_DIR"  && find functions -type f \( -name '*.js' -o -name '*.mjs' \) | sort) \
+        | grep '^<' | sed 's/^< /      /'
+    echo "   An exclude pattern in this script is matching a path under functions/."
+    echo "   Anchor it with a leading slash (rsync) or ./ (tar)."
+    exit 1
+fi
+echo "   ✅ stage integrity: all $REPO_FN_COUNT Function handlers staged"
 
 # ---------------------------------------------------------------------------
 # Oversized-file prune (added 2026-07-28)

@@ -83,9 +83,14 @@ export async function onRequestPost(ctx) {
         const now = Date.now();
         const encounter_id = newId();
         const opNoteKey = `encounter/${patient_id}/${encounter_id}/op_note.bin`;
+        // NOTE the AAD: this writer uses `op_note`, while transcription and
+        // iOS use `note`. That is why the AAD is stored on the row rather
+        // than reconstructed by the reader — reconstructing the wrong one
+        // throws an AAD mismatch. See schema/0038.
+        const opNoteAad = `encounter/${encounter_id}/op_note`;
         let put;
         try {
-            put = await putPhiObject(env, opNoteKey, op_note_body, `encounter/${encounter_id}/op_note`);
+            put = await putPhiObject(env, opNoteKey, op_note_body, opNoteAad);
         } catch (e) { return syncError("phi_encrypt_op_note_failed", 500); }
 
         const CLINICIAN_ID = "mabini-christopher-z";
@@ -93,14 +98,18 @@ export async function onRequestPost(ctx) {
             INSERT INTO encounters
                 (id, patient_id, clinician_id, visit_date, visit_type_actual,
                  chief_complaint, note_r2_key, note_source, transcription_session_id,
+                 note_wrapped_dek, note_aad,
                  cpt_codes_json, icd10_codes_json,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'surgical_workflow_app', ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'surgical_workflow_app', ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             encounter_id, patient_id, CLINICIAN_ID, visit_date,
             "surgical_procedure",
             procedure_name,
             opNoteKey, session_id,
+            // `put.wrapped_dek` was computed and never stored, so every
+            // operative note synced from the surgical app was unreadable.
+            put.wrapped_dek, opNoteAad,
             safeStringArr(body.procedure_codes),
             safeStringArr(body.icd10_codes),
             now, now

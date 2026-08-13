@@ -41,7 +41,7 @@ export async function onRequest(ctx) {
 
         const enc = await env.DB.prepare(
             `SELECT id, patient_id, clinician_id, visit_date, visit_type_actual,
-                    chief_complaint, note_r2_key
+                    chief_complaint, note_r2_key, note_wrapped_dek, note_aad, note_key_lost
                FROM encounters WHERE id = ? LIMIT 1`
         ).bind(encounterId).first();
         if (!enc) return jsonError("encounter not found", 404);
@@ -63,7 +63,12 @@ export async function onRequest(ctx) {
             return jsonResponse({
                 ok: true,
                 encounter: { id: enc.id, visit_date: enc.visit_date, visit_type: enc.visit_type_actual,
-                             chief_complaint: enc.chief_complaint, has_note: Boolean(enc.note_r2_key) },
+                             chief_complaint: enc.chief_complaint,
+                             has_note: Boolean(enc.note_r2_key) && !enc.note_key_lost,
+                             // Distinguishing "no note" from "a note we cannot open"
+                             // matters: the second is a data-loss event the clinician
+                             // must be told about, not an empty visit.
+                             note_key_lost: Boolean(enc.note_key_lost) },
                 summary: existing ? {
                     id: existing.id, status: existing.status,
                     patient_text: patientText, clinician_text: clinicianText,
@@ -89,7 +94,17 @@ export async function onRequest(ctx) {
             if (!enc.note_r2_key) {
                 return jsonError("This encounter has no note yet. A summary of nothing would be a fabrication.", 409);
             }
-            const noteText = await readBody(env, enc.note_r2_key, null, null);
+            // These used to be `null, null`. The wrapped DEK was never
+            // stored (schema/0038), so this could only ever fail — and
+            // passing a null AAD made getPhiObject skip its AAD check, so
+            // the failure surfaced as a generic decrypt error that read
+            // like something transient rather than a missing key.
+            if (enc.note_key_lost || !enc.note_wrapped_dek) {
+                return jsonError(
+                    "This note was saved before the encryption key was being stored, so it cannot be decrypted. " +
+                    "Re-sync the encounter from the Transcription app to replace it.", 409);
+            }
+            const noteText = await readBody(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
             if (!noteText.trim()) return jsonError("the encounter note could not be read", 500);
 
             const gen = await generateSummary(env, {

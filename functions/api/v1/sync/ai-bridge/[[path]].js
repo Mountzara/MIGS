@@ -247,13 +247,18 @@ async function rawContextFor(env, kind, refId) {
 
     if (kind === "visit_summary") {
         const enc = await env.DB.prepare(
-            `SELECT id, patient_id, visit_date, visit_type_actual, chief_complaint, note_r2_key
+            `SELECT id, patient_id, visit_date, visit_type_actual, chief_complaint,
+                    note_r2_key, note_wrapped_dek, note_aad, note_key_lost
                FROM encounters WHERE id = ? LIMIT 1`
         ).bind(refId).first();
         if (!enc?.note_r2_key) return null;
+        // No key means no note. Returning null here refuses the bridge job
+        // rather than shipping an empty prompt that would produce a
+        // confidently invented visit summary. See schema/0038.
+        if (enc.note_key_lost || !enc.note_wrapped_dek) return null;
         let note = "";
         try {
-            const got = await getPhiObject(env, enc.note_r2_key, null, null);
+            const got = await getPhiObject(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
             note = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
         } catch { return null; }
         if (!note.trim()) return null;

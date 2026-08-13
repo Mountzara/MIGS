@@ -416,7 +416,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('greeting-sub').textContent = 'Could not load your profile: ' + (e.message || 'unknown error');
                 return;
             }
-            const name = me.first_name || me.preferred_name || (me.email ? me.email.split('@')[0] : 'there');
+            // /api/v1/auth/me returns { authenticated, role, patient_id,
+            // profile: { first_name, last_name, email } }. Reading
+            // me.first_name off the TOP level always came back undefined,
+            // so every member — including ones who had completed a full
+            // 19-section intake — was greeted "Hi, there." The fallback
+            // chain hid it: it never threw, it just quietly gave up.
+            const p = me.profile || me;
+            const name = p.preferred_name || p.first_name
+                || (p.email ? p.email.split('@')[0] : 'there');
             $('greeting').textContent = `Hi, ${name}.`;
             $('greeting-sub').textContent = "Here's a snapshot of your portal. Tap into any card to go deeper.";
 
