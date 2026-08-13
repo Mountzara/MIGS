@@ -122,6 +122,80 @@ export async function getCustomer(env, stripe_customer_id) {
     return stripeRequest(env, "GET", `/customers/${encodeURIComponent(stripe_customer_id)}`);
 }
 
+// ---------- Subscriptions (membership) ----------
+// Membership uses Stripe CHECKOUT rather than raw subscriptions on
+// purpose: the hosted page handles card entry, 3-D Secure and receipts,
+// and keeps this application out of PCI scope entirely. A solo practice
+// should not be building a card form.
+//
+// Prices are created on the fly from the amount in _lib/membership.js so
+// there is ONE source of truth for what a tier costs. A price ID pasted
+// into Stripe's dashboard would drift from the code the first time the
+// price changed, and nothing would notice.
+
+export async function findOrCreateMembershipPrice(env, { tierKey, tierName, amountCents, interval }) {
+    const lookup = `mz_${tierKey}_${interval}_${amountCents}`;
+    // lookup_key makes this idempotent: same tier + interval + amount
+    // returns the same price rather than accumulating duplicates.
+    const found = await stripeRequest(env, "GET", `/prices?lookup_keys[]=${encodeURIComponent(lookup)}&active=true&limit=1`);
+    if (found?.data?.length) return found.data[0];
+
+    return stripeRequest(env, "POST", "/prices", {
+        currency: "usd",
+        unit_amount: amountCents,
+        recurring: { interval },
+        lookup_key: lookup,
+        product_data: { name: `Mount Zara ${tierName} membership` },
+        metadata: { mountzara_tier: tierKey, mountzara_interval: interval },
+    });
+}
+
+export async function createCheckoutSession(env, {
+    priceId, customerId, customerEmail, successUrl, cancelUrl,
+    tierKey, patientId, idempotency_key,
+}) {
+    return stripeRequest(env, "POST", "/checkout/sessions", {
+        mode: "subscription",
+        "line_items[0][price]": priceId,
+        "line_items[0][quantity]": 1,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        ...(customerId ? { customer: customerId } : { customer_email: customerEmail }),
+        allow_promotion_codes: true,
+        // Cancellation at any time is part of the legal posture, not a
+        // nicety — see COMPLIANCE_REVIEW in _lib/membership.js.
+        "subscription_data[metadata][mountzara_tier]": tierKey,
+        "subscription_data[metadata][mountzara_patient_id]": patientId || "",
+        "metadata[mountzara_tier]": tierKey,
+        "metadata[mountzara_patient_id]": patientId || "",
+    }, { idempotency_key });
+}
+
+export async function getSubscription(env, subId) {
+    return stripeRequest(env, "GET", `/subscriptions/${encodeURIComponent(subId)}`);
+}
+
+/**
+ * Cancel at period end, not immediately — the member keeps what they
+ * already paid for, which is both fairer and the thing the refund policy
+ * in COMPLIANCE_REVIEW promises.
+ */
+export async function cancelSubscription(env, subId, { immediately = false } = {}) {
+    if (immediately) {
+        return stripeRequest(env, "DELETE", `/subscriptions/${encodeURIComponent(subId)}`);
+    }
+    return stripeRequest(env, "POST", `/subscriptions/${encodeURIComponent(subId)}`, {
+        cancel_at_period_end: "true",
+    });
+}
+
+export async function createBillingPortalSession(env, { customerId, returnUrl }) {
+    return stripeRequest(env, "POST", "/billing_portal/sessions", {
+        customer: customerId,
+        return_url: returnUrl,
+    });
+}
+
 // ---------- Payment Intents ----------
 // For pay-now flows (patient clicks Pay on /portal/billing/<invoice_id>).
 // Returns { id, client_secret, ... } — client_secret goes to the browser,

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Membership · Mount Zara</title>
+<meta name="description" content="Access to a fellowship-trained complex benign gynecologic surgeon — keep your own doctor, or make him yours. Membership buys access and convenience, never covered medical care.">
+<link rel="icon" type="image/png" href="/assets/images/favicon.png">
+<link rel="apple-touch-icon" href="/assets/images/favicon.png">
+<style>
+/* Tokens lifted from his own email signature (MZ_Signature.html) so the
+   page, the emails and the portal are visibly one practice. */
+:root{
+  --plum:#5A2350; --plum-lift:#7a3a6e;
+  --ink:#16161c; --muted:#6b6b78; --hair:#e4e4ec; --paper:#fafafc; --white:#fff;
+  --good:#1c7a5e;
+  --font:'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;font:16px/1.65 var(--font);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+a{color:var(--plum)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+
+header.top{border-bottom:1px solid var(--hair);background:var(--white)}
+header.top .wrap{display:flex;align-items:center;gap:18px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+header.top img{display:block;height:44px;width:auto}
+header.top nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+header.top nav a{color:var(--muted);text-decoration:none;min-height:24px;display:inline-flex;align-items:center}
+header.top nav a:hover{color:var(--plum)}
+
+.hero{padding:64px 0 40px;background:var(--white);border-bottom:1px solid var(--hair)}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;font-weight:600;letter-spacing:-.02em;margin:0 0 16px;max-width:20ch}
+.hero p.lede{font-size:clamp(17px,2.2vw,19px);color:var(--muted);max-width:62ch;margin:0 0 10px}
+.hero .plain{font-size:15px;color:var(--muted);max-width:62ch;margin:18px 0 0;padding-left:14px;border-left:3px solid var(--plum)}
+
+section{padding:56px 0}
+h2{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--plum);margin:0 0 8px}
+h2 + .sub{font-size:clamp(21px,3vw,27px);font-weight:600;letter-spacing:-.01em;margin:0 0 28px;max-width:34ch;line-height:1.25}
+
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;align-items:start}
+.tier{background:var(--white);border:1px solid var(--hair);border-radius:14px;padding:26px 24px;display:flex;flex-direction:column;height:100%}
+.tier.feature{border-color:var(--plum);box-shadow:0 2px 20px rgba(90,35,80,.09)}
+.tier .badge{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--plum);margin-bottom:10px;min-height:14px}
+.tier h3{font-size:21px;font-weight:600;margin:0 0 4px}
+.tier .tag{font-size:14px;color:var(--muted);margin:0 0 18px}
+.price{display:flex;align-items:baseline;gap:5px;margin-bottom:4px}
+.price .amt{font-size:36px;font-weight:600;letter-spacing:-.02em}
+.price .per{font-size:14px;color:var(--muted)}
+.tier .yr{font-size:13px;color:var(--muted);margin-bottom:18px;min-height:20px}
+.tier .sum{font-size:14.5px;color:var(--muted);margin:0 0 18px;line-height:1.6}
+ul.ben{list-style:none;padding:0;margin:0 0 20px;flex:1}
+ul.ben li{font-size:14.5px;line-height:1.55;padding:0 0 11px 24px;position:relative}
+ul.ben li::before{content:"";position:absolute;left:2px;top:8px;width:7px;height:7px;border-radius:50%;background:var(--plum);opacity:.55}
+.worth{font-size:13px;color:var(--good);background:rgba(28,122,94,.07);border-radius:8px;padding:9px 12px;margin-bottom:16px}
+.scope{font-size:12.5px;color:var(--muted);border-top:1px solid var(--hair);padding-top:12px;margin-bottom:16px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--plum);color:var(--white);border:none;
+  border-radius:9px;padding:12px 20px;font:600 15px var(--font);text-decoration:none;cursor:pointer;min-height:24px;width:100%}
+.btn:hover{background:var(--plum-lift)}
+.btn.ghost{background:var(--white);color:var(--plum);border:1px solid var(--hair)}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:15px;background:var(--white);border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+table.cmp th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:14px 16px;border-bottom:1px solid var(--hair);font-weight:700}
+table.cmp td{padding:15px 16px;border-bottom:1px solid var(--hair);vertical-align:top;line-height:1.55}
+table.cmp tr:last-child td{border-bottom:none}
+table.cmp td.dim{font-weight:600;width:22%}
+table.cmp td.trad{color:var(--muted);width:39%}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.ev{background:var(--white);border:1px solid var(--hair);border-left:3px solid var(--plum);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.ev .c{font-size:16px;font-weight:600;margin:0 0 6px;line-height:1.45}
+.ev .d{font-size:14px;color:var(--muted);margin:0 0 10px;line-height:1.6}
+.ev .s{font-size:12.5px;color:var(--muted)}
+.ev .cav{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:8px}
+
+.prep{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.prep .p{background:var(--white);border:1px solid var(--hair);border-radius:12px;padding:20px}
+.prep .p h4{margin:0 0 6px;font-size:16px;font-weight:600}
+.prep .p .w{font-size:14px;color:var(--muted);line-height:1.55;margin:0 0 10px}
+.prep .p .y{font-size:13px;color:var(--plum);line-height:1.5;margin:0}
+
+.disc{background:var(--white);border:1px solid var(--hair);border-radius:12px;padding:22px 24px}
+.disc li{font-size:14.5px;color:var(--muted);margin-bottom:9px;line-height:1.55}
+.warn{background:rgba(90,35,80,.06);border:1px solid rgba(90,35,80,.2);border-radius:10px;padding:14px 18px;font-size:14px;margin-bottom:18px}
+
+footer.foot{border-top:1px solid var(--hair);background:var(--white);padding:34px 0;font-size:13px;color:var(--muted)}
+footer.foot a{color:var(--muted);text-decoration:none;min-height:24px;display:inline-flex;align-items:center}
+footer.foot a:hover{color:var(--plum)}
+
+.soon{background:var(--plum);color:var(--white);padding:14px 0;font-size:14.5px}
+.soon .wrap{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.soon b{font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:12px}
+.soon span{opacity:.92}
+.wl{background:var(--white);border:1px solid var(--plum);border-radius:14px;padding:26px 24px;margin-top:8px}
+.wl h3{margin:0 0 6px;font-size:20px;font-weight:600}
+.wl p.k{margin:0 0 18px;color:var(--muted);font-size:14.5px;line-height:1.6}
+.wl .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px}
+.wl label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.wl input,.wl select{width:100%;padding:11px 12px;border:1px solid var(--hair);border-radius:9px;font:15px var(--font);
+  color:var(--ink);background:var(--white);min-height:24px}
+.wl .msg{white-space:pre-line;margin-top:14px;font-size:14.5px;line-height:1.6;padding:12px 14px;border-radius:9px;display:none}
+.wl .msg.ok{background:rgba(28,122,94,.09);color:var(--good);display:block}
+.wl .msg.err{background:rgba(90,35,80,.08);color:var(--plum);display:block}
+.tier .btn[disabled]{opacity:.5;cursor:not-allowed}
+.center{text-align:center;padding:60px 20px;color:var(--muted)}
+
+a:focus-visible,button:focus-visible{outline:3px solid var(--plum);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="/"><img src="/assets/brand/mz-signature-mark.png" alt="Mount Zara"></a>
+    <nav>
+      <a href="/about/">About</a>
+      <a href="/education/">Education</a>
+      <a href="/membership/" aria-current="page" style="color:var(--plum)">Membership</a>
+      <a href="/portal/">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<div class="soon">
+  <div class="wrap"><b>Opening soon</b><span>Membership is not open for enrolment yet. Join the list and you will be the first to know — and your interest shapes what opens first.</span></div>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>Access to a subspecialist, without leaving your doctor.</h1>
+    <p class="lede">Christopher Z. Mabini, DO — fellowship-trained complex benign gynecologic surgeon. Membership buys time, access and preparation. It does not buy your medical care, and it never replaces your insurance.</p>
+    <p class="plain"><b>This is not open yet.</b> The prices and benefits below are what membership will be, published now so you can tell us whether it is worth having. Nothing is charged and no card is collected.<br><br>Your visits and procedures are billed to your health plan exactly as they always were. Membership is not insurance, and nothing in it is a covered medical service — that distinction is the whole design, and it is what keeps your coverage untouched.</p>
+  </div>
+</div>
+
+<div id="root">
+  <div class="center">Loading…</div>
+</div>
+
+<footer class="foot">
+  <div class="wrap">
+    <div style="margin-bottom:10px;"><a href="/">mountzara.com</a> &nbsp;·&nbsp; <a href="/about/">About</a> &nbsp;·&nbsp; <a href="/portal/">Patient portal</a></div>
+    <div>Membership is not insurance and does not pay for medical care. Nothing on this page is medical advice.</div>
+  </div>
+</footer>
+
+<script>
+// =====================================================================
+// Renders /api/v1/membership. The page holds no prices, no benefits and
+// no citations of its own — if it did, the marketing copy would drift
+// from the model that validates it, and the legality check in
+// membership.js would be checking something nobody reads.
+// =====================================================================
+(function () {
+  "use strict";
+  var root = document.getElementById("root");
+
+  function esc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  fetch("/api/v1/membership", { headers: { Accept: "application/json" } })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.ok) throw new Error("unavailable");
+      var h = "";
+
+      if (d.licence_notice && d.licence_notice.length) {
+        h += '<section><div class="wrap">';
+        d.licence_notice.forEach(function (m) { h += '<div class="warn">' + esc(m) + "</div>"; });
+        h += "</div></section>";
+      }
+
+      // ---- tiers
+      h += '<section><div class="wrap">';
+      h += "<h2>Membership</h2><div class='sub'>Three ways in, depending on how much of him you need.</div>";
+      h += '<div class="tiers">';
+      d.tiers.forEach(function (t) {
+        var feature = t.key === "navigator";
+        h += '<div class="tier' + (feature ? " feature" : "") + '">';
+        h += '<div class="badge">' + (feature ? "Most people start here" : "&nbsp;") + "</div>";
+        h += "<h3>" + esc(t.name) + "</h3>";
+        h += '<p class="tag">' + esc(t.tagline) + "</p>";
+        h += '<div class="price"><span class="amt">$' + t.price_month + '</span><span class="per">' + (t.price_month ? "/month" : "") + "</span></div>";
+        h += '<div class="yr">' + (t.price_year
+              ? "or $" + t.price_year + "/year" + (t.annual_saving ? " — save $" + t.annual_saving : "")
+              : "No fee, ever.") + "</div>";
+        h += '<p class="sum">' + esc(t.summary) + "</p>";
+        h += '<ul class="ben">';
+        t.benefits.forEach(function (b) { h += "<li>" + esc(b) + "</li>"; });
+        h += "</ul>";
+        if (t.value && t.value.headline) h += '<div class="worth">' + esc(t.value.headline) + "</div>";
+        if (t.scope_note) h += '<div class="scope">' + esc(t.scope_note) + "</div>";
+        h += t.price_month
+             ? '<a class="btn" href="/portal/?join=' + esc(t.key) + '">Join ' + esc(t.name) + "</a>"
+             : '<a class="btn ghost" href="/portal/">Create a free account</a>';
+        h += "</div>";
+      });
+      h += "</div>";
+
+      // ---- waitlist, immediately under the tiers where the intent is
+      h += '<div class="wl" id="wl">';
+      h += "<h3>Tell me when it opens</h3>";
+      h += '<p class="k">One email when membership opens, and nothing else. No card, no commitment — and telling us which tier you would want is what decides which one opens first.</p>';
+      h += '<div class="row">';
+      h += '<div><label for="wl-email">Email</label><input id="wl-email" type="email" autocomplete="email" placeholder="you@example.com"></div>';
+      h += '<div><label for="wl-tier">Interested in</label><select id="wl-tier">'
+         + '<option value="any">Not sure yet</option>'
+         + d.tiers.filter(function (t) { return t.price_month > 0; })
+                  .map(function (t) { return '<option value="' + esc(t.key) + '">' + esc(t.name) + " — $" + t.price_month + "/mo</option>"; }).join("")
+         + "</select></div>";
+      h += "</div>";
+      h += '<div class="row">';
+      h += '<div><label for="wl-state">State</label><input id="wl-state" type="text" maxlength="2" placeholder="IL" autocomplete="address-level1" style="text-transform:uppercase"></div>';
+      h += '<div><label for="wl-ob">Do you already have an OB/GYN?</label><select id="wl-ob">'
+         + '<option value="">Prefer not to say</option><option value="yes">Yes</option><option value="no">No</option>'
+         + "</select></div>";
+      h += "</div>";
+      h += '<button class="btn" id="wl-go" style="width:auto;padding-left:28px;padding-right:28px;">Join the list</button>';
+      h += '<div class="msg" id="wl-msg"></div>';
+      h += '<p class="k" style="margin:16px 0 0;font-size:13px;">Please do not describe symptoms or medical history here — this is a mailing list, not a medical record, and it is not encrypted for that. There will be a secure place for it when the portal opens.</p>';
+      h += "</div>";
+
+      h += "</div></section>";
+
+      // ---- comparison
+      if (d.comparison && d.comparison.length) {
+        h += '<section style="background:var(--white);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);"><div class="wrap">';
+        h += "<h2>The difference</h2><div class='sub'>What the ordinary path costs you, and what changes.</div>";
+        h += '<div class="scroll-x"><table class="cmp"><thead><tr><th></th><th>Usually</th><th>Here</th></tr></thead><tbody>';
+        d.comparison.forEach(function (c) {
+          h += "<tr><td class='dim'>" + esc(c.dimension) + "</td><td class='trad'>" + esc(c.traditional) + "</td><td>" + esc(c.here) + "</td></tr>";
+        });
+        h += "</tbody></table></div></div></section>";
+      }
+
+      // ---- visit prep
+      if (d.visit_prep && d.visit_prep.deliverables) {
+        h += '<section><div class="wrap">';
+        h += "<h2>Preparation</h2><div class='sub'>What arrives before your next appointment — with any clinician.</div>";
+        h += '<div class="prep">';
+        d.visit_prep.deliverables.forEach(function (p) {
+          h += '<div class="p"><h4>' + esc(p.name) + '</h4><p class="w">' + esc(p.what) + '</p><p class="y">' + esc(p.why) + "</p></div>";
+        });
+        h += "</div>";
+        h += '<div class="warn" style="margin-top:22px;">' + esc(d.visit_prep.disclaimer) + "</div>";
+        h += "</div></section>";
+      }
+
+      // ---- evidence
+      if (d.evidence && d.evidence.length) {
+        h += '<section style="background:var(--white);border-top:1px solid var(--hair);"><div class="wrap">';
+        h += "<h2>Why</h2><div class='sub'>The problem this is built against, with the sources.</div>";
+        d.evidence.forEach(function (e) {
+          h += '<div class="ev"><p class="c">' + esc(e.claim) + "</p>";
+          if (e.detail) h += '<p class="d">' + esc(e.detail) + "</p>";
+          h += '<p class="s">' + esc(e.source) + (e.year ? " (" + e.year + ")" : "");
+          if (e.url) h += ' · <a href="' + esc(e.url) + '" target="_blank" rel="noopener">read it</a>';
+          h += "</p>";
+          if (e.caveat) h += '<p class="cav">' + esc(e.caveat) + "</p>";
+          h += "</div>";
+        });
+        h += "</div></section>";
+      }
+
+      // ---- disclosures
+      h += '<section><div class="wrap">';
+      h += "<h2>Plainly</h2><div class='sub'>What membership is, and what it is not.</div>";
+      h += '<div class="disc"><ul style="margin:0;padding-left:20px;">';
+      (d.disclosures || []).forEach(function (x) { h += "<li>" + esc(x) + "</li>"; });
+      if (d.consultation_states && d.consultation_states.length) {
+        h += "<li>Dr. Mabini is licensed in " + esc(d.consultation_states.join(" and "))
+           + ". Preparation tools are available wherever you live; a clinical consultation is only possible in those states.</li>";
+      }
+      h += "</ul></div></div></section>";
+
+      root.innerHTML = h;
+
+      // Tier buttons scroll to the form and preselect the tier, so the
+      // click that expressed intent is the click that records it.
+      Array.prototype.forEach.call(document.querySelectorAll("[data-wl]"), function (b) {
+        b.addEventListener("click", function () {
+          var sel = document.getElementById("wl-tier");
+          if (sel) {
+            var want = b.getAttribute("data-wl");
+            for (var i = 0; i < sel.options.length; i++) {
+              if (sel.options[i].value === want) { sel.selectedIndex = i; break; }
+            }
+          }
+          var wl = document.getElementById("wl");
+          if (wl) wl.scrollIntoView({ behavior: "smooth", block: "center" });
+          var em = document.getElementById("wl-email");
+          if (em) setTimeout(function () { em.focus(); }, 320);
+        });
+      });
+
+      var go = document.getElementById("wl-go");
+      var msg = document.getElementById("wl-msg");
+      function show(text, ok) {
+        msg.className = "msg " + (ok ? "ok" : "err");
+        msg.textContent = text;
+      }
+      if (go) go.addEventListener("click", function () {
+        var email = (document.getElementById("wl-email").value || "").trim();
+        if (!email) { show("Please add your email address.", false); return; }
+        go.disabled = true; go.textContent = "Adding you…";
+        fetch("/api/v1/membership/interest", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            tier: document.getElementById("wl-tier").value,
+            state: (document.getElementById("wl-state").value || "").trim().toUpperCase(),
+            has_obgyn: document.getElementById("wl-ob").value,
+            source: "membership_page",
+          }),
+        }).then(function (r) { return r.json(); }).then(function (j) {
+          go.disabled = false; go.textContent = "Join the list";
+          if (!j.ok) { show(j.error || "Could not add you just now.", false); return; }
+          show(j.message + (j.note ? "\n\n" + j.note : ""), true);
+          document.getElementById("wl-email").value = "";
+        }).catch(function () {
+          go.disabled = false; go.textContent = "Join the list";
+          show("Could not reach the server. Please try again.", false);
+        });
+      });
+    })
+    .catch(function () {
+      root.innerHTML = '<div class="center">Membership details are briefly unavailable. Please try again in a moment, or <a href="/about/">read about the practice</a>.</div>';
+    });
+})();
+</script>
+</body>
+</html>
