@@ -26,6 +26,7 @@
 import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../../../_lib/admin_api.js";
 import { logAudit } from "../../../../../../_lib/audit.js";
 import { scrubClaim } from "../../../../../../_lib/claim_scrub.js";
+import { screenClaim } from "../../../../../../_lib/no_double_dip.js";
 import { generate837P } from "../../../../../../_lib/x12_837.js";
 import { submitClaim, clearinghouseVendor } from "../../../../../../_lib/clearinghouse.js";
 import { assembleClaim } from "../../../../../../_lib/claim_assembler.js";
@@ -47,6 +48,43 @@ export async function onRequestPost(ctx) {
 
         // 2. Assemble the normalized claim (shared with the AI pre-flight path).
         const { norm, payer } = await assembleClaim(env, claimRow, body);
+
+        // 2b. DOUBLE-DIP GATE — runs BEFORE the clean-claim gate, and
+        //     before the 837 exists at all.
+        //
+        //     If this patient holds a paid membership, some of what they
+        //     already pay for monthly has a CPT code — messaging is the
+        //     obvious one. Billing their plan for it as well charges them
+        //     twice for one thing: once directly, once through their
+        //     premium. That is what the payer contract prohibits and what
+        //     an insurance regulator would call the fee a policy for.
+        //
+        //     It fails CLOSED and refuses to submit. A claim that has gone
+        //     out cannot be recalled, and "we spotted it on the remittance"
+        //     is not a control.
+        let memberTier = "standard";
+        try {
+            const m = await env.DB.prepare(
+                `SELECT tier FROM memberships
+                  WHERE patient_id = ? AND status IN ('active','past_due','cancelling')
+                  ORDER BY created_at DESC LIMIT 1`
+            ).bind(claimRow.patient_id).first();
+            if (m?.tier) memberTier = m.tier;
+        } catch {
+            // The memberships table may predate this deploy. A missing
+            // table means nobody is a member, which is the safe reading —
+            // but it must never silently swallow a REAL membership, so the
+            // failure is logged rather than ignored.
+            console.warn("double-dip gate: membership lookup failed; treating patient as non-member");
+        }
+
+        const dd = screenClaim(norm.lines || norm.service_lines || [], memberTier);
+        if (!dd.ok) {
+            return jsonResponse({
+                ok: false, stage: "double_dip", tier: memberTier,
+                blocked: dd.blocked, summary: dd.summary,
+            }, { status: 422 });
+        }
 
         // 3. Clean-claim gate
         const scrub = scrubClaim(norm);

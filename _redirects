@@ -22,3 +22,9 @@
 # previously lived here fell through to the marketing homepage — the
 # same trailing-slash failure documented above for /admin/cases/<id>/.
 # Discovered 2026-06-10 during the Sprint 2 batch-1 visual VERIFY.
+
+# 2026-08-13 — membership detail lives inside /portal/ now (one page, one
+# source of truth). The standalone URL stays alive because it may already
+# be linked or indexed.
+/membership    /portal/    301
+/membership/*  /portal/    301

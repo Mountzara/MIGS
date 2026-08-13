@@ -256,7 +256,7 @@ const COMING_SOON_HTML = `<!doctype html>
             animation-delay: 1.36s;
         }
         .footer-links a { margin: 0 6px; }
-        .visit-matrix-eyebrow {
+        .signup-eyebrow {
             display: inline-flex;
             align-items: center;
             font-size: 10.5px;
@@ -268,7 +268,7 @@ const COMING_SOON_HTML = `<!doctype html>
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 1.2s;
         }
-        .visit-matrix-title {
+        .signup-title {
             font-size: clamp(22px, 3.2vw, 30px);
             font-weight: 300;
             letter-spacing: -0.02em;
@@ -277,7 +277,7 @@ const COMING_SOON_HTML = `<!doctype html>
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 1.26s;
         }
-        .visit-matrix-lede {
+        .signup-lede {
             font-size: 14.5px;
             line-height: 1.6;
             color: var(--fg-mid);
@@ -285,30 +285,121 @@ const COMING_SOON_HTML = `<!doctype html>
             animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 1.32s;
         }
-        .visit-matrix {
-            border-radius: 14px;
-            overflow: hidden;
+
+        
+
+        .signup {
+            max-width: 620px; margin: 0 auto 26px; text-align: left;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
-            backdrop-filter: blur(28px) saturate(165%);
-            -webkit-backdrop-filter: blur(28px) saturate(165%);
-            margin: 0 0 14px 0;
-            animation: mzRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-            animation-delay: 1.38s;
+            border: 1px solid rgba(167, 139, 250, 0.34);
+            border-radius: 16px; padding: 22px 22px 20px;
+            backdrop-filter: blur(24px) saturate(170%);
+            -webkit-backdrop-filter: blur(24px) saturate(170%);
         }
-        .visit-matrix table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-        .visit-matrix th {
-            text-align: left;
-            padding: 13px 16px;
-            font-size: 10.5px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
-            background: rgba(109, 40, 217, 0.12);
+        .signup-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px; }
+        @media (max-width: 520px) { .signup-row { grid-template-columns: 1fr; } }
+        .signup label {
+            display: block; font-size: 10.5px; letter-spacing: 0.12em;
+            text-transform: uppercase; color: #ffffff; opacity: 0.72; margin-bottom: 6px;
         }
-        .visit-matrix td { padding: 10px 16px; color: var(--fg-mid); vertical-align: top; }
-        .visit-matrix tbody tr { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+        .signup input {
+            width: 100%; padding: 11px 13px; font-size: 15px; font-family: inherit;
+            color: #fff; background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 10px; min-height: 24px;
+        }
+        .signup input::placeholder { color: rgba(255, 255, 255, 0.42); }
+        .signup-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; border: none;
+            border-radius: 10px; padding: 12px 26px; font: 600 15px inherit; cursor: pointer; min-height: 24px;
+        }
+        .signup-btn:disabled { opacity: 0.55; cursor: wait; }
+        .signup-msg {
+            display: none; margin-top: 14px; font-size: 14px; line-height: 1.6;
+            padding: 11px 13px; border-radius: 10px; white-space: pre-line;
+        }
+        .signup-msg.ok { display: block; background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+        .signup-msg.err { display: block; background: rgba(167, 139, 250, 0.14); color: #ddd0ff; }
+        .signup-fine { font-size: 12.5px; color: #ffffff; opacity: 0.6; margin: 14px 0 0; line-height: 1.55; }
+        .signup select {
+            width: 100%; padding: 11px 13px; font-size: 15px; font-family: inherit;
+            color: #fff; background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 10px; min-height: 24px;
+        }
+        .signup select option { background: #1d1830; color: #fff; }
+        .tier-strip {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px; max-width: 900px; margin: 0 auto 26px; text-align: left;
+        }
+        .tier-card {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px; padding: 18px 18px 16px;
+            backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+        }
+        .tier-card.lead { border-color: rgba(167, 139, 250, 0.5); background: rgba(167, 139, 250, 0.09); }
+        .tier-card h3 { margin: 0 0 3px; font-size: 17px; font-weight: 600; color: #fff; }
+        .tier-card .tt { font-size: 12.5px; color: #fff; opacity: 0.66; margin: 0 0 12px; line-height: 1.45; }
+        .tier-card .tp { font-size: 26px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+        .tier-card .tp small { font-size: 12.5px; opacity: 0.6; font-weight: 400; }
+        .tier-card .ty { font-size: 12px; color: #fff; opacity: 0.55; margin-bottom: 12px; min-height: 16px; }
+        .tier-card ul { list-style: none; padding: 0; margin: 0; }
+        .tier-card li {
+            font-size: 12.8px; line-height: 1.5; color: #fff; opacity: 0.82;
+            padding: 0 0 7px 15px; position: relative;
+        }
+        .tier-card li::before {
+            content: ""; position: absolute; left: 0; top: 7px; width: 5px; height: 5px;
+            border-radius: 50%; background: #a78bfa;
+        }
+        .tier-card .tw { font-size: 12px; color: #6ee7b7; margin-top: 10px; }
+        .mz-sec { max-width: 900px; margin: 0 auto 34px; text-align: left; }
+        .mz-sec > h3 {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+            color: #c4b5fd; margin: 0 0 6px;
+        }
+        .mz-sec > .mz-sub {
+            font-size: 19px; font-weight: 600; color: #fff; margin: 0 0 18px; line-height: 1.3;
+        }
+        .mz-cmp { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .mz-cmp th {
+            text-align: left; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+            color: #fff; opacity: 0.6; padding: 10px 14px 10px 0; font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .mz-cmp td {
+            padding: 12px 14px 12px 0; color: #fff; opacity: 0.86; vertical-align: top; line-height: 1.55;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .mz-cmp td.d { font-weight: 600; opacity: 1; width: 21%; }
+        .mz-cmp td.t { opacity: 0.62; width: 39%; }
+        .mz-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .mz-ev {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 2px solid #a78bfa; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+        }
+        .mz-ev .c { font-size: 15px; font-weight: 600; color: #fff; margin: 0 0 6px; line-height: 1.45; }
+        .mz-ev .dd { font-size: 13px; color: #fff; opacity: 0.72; margin: 0 0 9px; line-height: 1.6; }
+        .mz-ev .ss { font-size: 12px; color: #fff; opacity: 0.55; }
+        .mz-ev .ss a { color: #c4b5fd; }
+        .mz-ev .cv { font-size: 12px; color: #fff; opacity: 0.5; font-style: italic; margin-top: 7px; }
+        .mz-prep { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 13px; }
+        .mz-prep .pp {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 16px 17px;
+        }
+        .mz-prep .pp h4 { margin: 0 0 5px; font-size: 14.5px; font-weight: 600; color: #fff; }
+        .mz-prep .pp .w { font-size: 12.8px; color: #fff; opacity: 0.72; line-height: 1.55; margin: 0 0 8px; }
+        .mz-prep .pp .y { font-size: 12.5px; color: #c4b5fd; line-height: 1.5; margin: 0; }
+        .mz-disc {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 18px 20px;
+        }
+        .mz-disc ul { margin: 0; padding-left: 19px; }
+        .mz-disc li { font-size: 13.5px; color: #fff; opacity: 0.78; line-height: 1.6; margin-bottom: 8px; }
+        .mz-note-box {
+            background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.28);
+            border-radius: 12px; padding: 14px 17px; font-size: 13px; color: #fff; opacity: 0.9;
+            line-height: 1.6; margin-top: 16px;
+        }
         @keyframes mzRise {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: none; }
@@ -390,36 +481,45 @@ const COMING_SOON_HTML = `<!doctype html>
             </article>
         </section>
 
-        <div class="visit-matrix-eyebrow">In Person &amp; Telehealth</div>
-        <h2 class="visit-matrix-title">How you&rsquo;ll see Dr.&nbsp;Mabini.</h2>
-        <p class="visit-matrix-lede">Mount Zara is built around the patient&rsquo;s convenience, not the clinician&rsquo;s. Some visits need hands-on attention &mdash; surgical consultations, pelvic examinations, office procedures &mdash; and those are always in person. Others are at least as good over a private video call, and often better, because you can be at home, with the people who support you, without taking half a day off work. Where it says &ldquo;either,&rdquo; you choose &mdash; the standard of care doesn&rsquo;t change with the modality.</p>
-        <div class="visit-matrix">
-            <table aria-label="Visit types and their modality">
-                <thead>
-                    <tr>
-                        <th scope="col">Visit type</th>
-                        <th scope="col">How you&rsquo;re seen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>New patient &mdash; complex</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
-                    <tr><td>New patient &mdash; standard</td><td>In person preferred</td></tr>
-                    <tr><td>Complex pelvic pain / endometriosis evaluation</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
-                    <tr><td>Endometriosis follow-up</td><td>Either &mdash; you choose</td></tr>
-                    <tr><td>OMT treatment</td><td>In person (hands-on care)</td></tr>
-                    <tr><td>Heavy bleeding evaluation</td><td>Either &mdash; you choose</td></tr>
-                    <tr><td>Pre-operative visit</td><td>Either &mdash; you choose</td></tr>
-                    <tr><td>Post-op check (1&ndash;2 weeks)</td><td>Either &mdash; you choose</td></tr>
-                    <tr><td>Post-op visit (6 weeks)</td><td>In person preferred &middot; telehealth possible with an adult chaperone present</td></tr>
-                    <tr><td>Routine follow-up</td><td>Either &mdash; you choose</td></tr>
-                    <tr><td>Office procedure (IUD &middot; biopsy &middot; colposcopy)</td><td>In person (procedure room)</td></tr>
-                    <tr><td>Quick concern / sick visit</td><td>Telehealth preferred</td></tr>
-                    <tr><td>Annual exam</td><td>In person (examination visit)</td></tr>
-                    <tr><td>Telehealth consult</td><td>Telehealth</td></tr>
-                </tbody>
-            </table>
+        <!-- 2026-08-13 — the visit-modality matrix was removed at the
+             owner's instruction. It described how appointments will work
+             for people who cannot yet make one, which is detail without a
+             decision attached. What a visitor to a pre-launch portal can
+             actually DO is tell us they want it, so that is what this
+             section is now. The same waitlist as /membership/, same
+             endpoint, same non-clinical guardrails. -->
+        <div class="signup-eyebrow">Be first in</div>
+        <h2 class="signup-title">Tell me when the portal opens.</h2>
+        <p class="signup-lede">One email when it does, and nothing else. No card, no commitment. If you tell us which state you are in, it also tells us where to open first &mdash; Dr.&nbsp;Mabini is licensed in Illinois and California today.</p>
+
+        <!-- Tiers are fetched from /api/v1/membership rather than written
+             here, so a price change lands in one place and this page can
+             never quietly disagree with /membership/. -->
+        <div class="tier-strip" id="tier-strip" aria-label="Membership tiers"></div>
+
+        <div class="signup" id="signup">
+            <div class="signup-row">
+                <div style="grid-column:1/-1;">
+                    <label for="su-tier">Which would you want?</label>
+                    <select id="su-tier"><option value="any">Not sure yet &mdash; tell me more</option></select>
+                </div>
+            </div>
+            <div class="signup-row">
+                <div>
+                    <label for="su-email">Email</label>
+                    <input id="su-email" type="email" autocomplete="email" placeholder="you@example.com">
+                </div>
+                <div>
+                    <label for="su-state">State</label>
+                    <input id="su-state" type="text" maxlength="2" placeholder="IL" autocomplete="address-level1" style="text-transform:uppercase">
+                </div>
+            </div>
+            <button type="button" class="signup-btn" id="su-go">Join the list</button>
+            <div class="signup-msg" id="su-msg" role="status" aria-live="polite"></div>
+            <p class="signup-fine">Please don&rsquo;t include symptoms or medical history here &mdash; this is a mailing list, not a medical record, and it isn&rsquo;t encrypted for that. There will be a secure place for it when the portal opens.</p>
         </div>
-        <p class="note" style="animation-delay: 1.44s;">If you&rsquo;re unsure, the intake form&rsquo;s built-in scheduling assistant will recommend a modality based on what you tell us &mdash; you always have the final say. Visits with an examination component offered over video require an adult chaperone present in the room with you.</p>
+
+        <div id="mz-detail"></div>
 
         <p class="note">If you&rsquo;re an existing patient and need to reach the office in the meantime, please call the practice directly or email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
 
@@ -433,6 +533,131 @@ const COMING_SOON_HTML = `<!doctype html>
             <a href="/trending/">Trending</a>
         </p>
     </main>
+<script>
+// Waitlist. Same endpoint and the same non-clinical guardrails as
+// /membership/ — one list, so a person who signs up in either place is
+// counted once and hears from us once.
+(function () {
+    "use strict";
+    var go = document.getElementById("su-go");
+    var msg = document.getElementById("su-msg");
+    if (!go || !msg) return;
+
+    function esc(v) {
+        return String(v == null ? "" : v)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    // Show what they would be signing up for. Someone cannot tell you
+    // which tier they want if the page never says what the tiers are.
+    fetch("/api/v1/membership", { headers: { Accept: "application/json" } })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (!d || !d.ok || !d.tiers) return;
+            var strip = document.getElementById("tier-strip");
+            var sel = document.getElementById("su-tier");
+            var h = "";
+            d.tiers.forEach(function (t) {
+                h += '<div class="tier-card' + (t.key === "navigator" ? " lead" : "") + '">';
+                h += "<h3>" + esc(t.name) + "</h3>";
+                h += '<p class="tt">' + esc(t.tagline) + "</p>";
+                h += '<div class="tp">$' + t.price_month + (t.price_month ? "<small>/mo</small>" : "") + "</div>";
+                h += '<div class="ty">' + (t.price_year ? "or $" + t.price_year + "/yr" : "Free, always") + "</div>";
+                h += "<ul>" + t.benefits.slice(0, 4).map(function (b) { return "<li>" + esc(b) + "</li>"; }).join("") + "</ul>";
+                if (t.value && t.value.headline) h += '<div class="tw">' + esc(t.value.headline) + "</div>";
+                h += "</div>";
+                if (sel && t.price_month > 0) {
+                    var o = document.createElement("option");
+                    o.value = t.key;
+                    o.textContent = t.name + " — $" + t.price_month + "/mo";
+                    sel.appendChild(o);
+                }
+            });
+            if (strip) strip.innerHTML = h;
+
+            // The rest of what /membership/ used to say, in this page's
+            // theme. One page, one source of truth, no second URL to keep
+            // in sync.
+            var det = document.getElementById("mz-detail");
+            if (!det) return;
+            var m = "";
+
+            if (d.comparison && d.comparison.length) {
+                m += '<div class="mz-sec"><h3>The difference</h3><div class="mz-sub">What the ordinary path costs you, and what changes.</div>';
+                m += '<div class="mz-scroll"><table class="mz-cmp"><thead><tr><th></th><th>Usually</th><th>Here</th></tr></thead><tbody>';
+                d.comparison.forEach(function (c) {
+                    m += '<tr><td class="d">' + esc(c.dimension) + '</td><td class="t">' + esc(c.traditional) + "</td><td>" + esc(c.here) + "</td></tr>";
+                });
+                m += "</tbody></table></div></div>";
+            }
+
+            if (d.visit_prep && d.visit_prep.deliverables) {
+                m += '<div class="mz-sec"><h3>Preparation</h3><div class="mz-sub">What arrives before your next appointment &mdash; with any clinician.</div>';
+                m += '<div class="mz-prep">';
+                d.visit_prep.deliverables.forEach(function (p) {
+                    m += '<div class="pp"><h4>' + esc(p.name) + '</h4><p class="w">' + esc(p.what) + '</p><p class="y">' + esc(p.why) + "</p></div>";
+                });
+                m += "</div>";
+                m += '<div class="mz-note-box">' + esc(d.visit_prep.disclaimer) + "</div></div>";
+            }
+
+            if (d.evidence && d.evidence.length) {
+                m += '<div class="mz-sec"><h3>Why</h3><div class="mz-sub">The problem this is built against, with the sources.</div>';
+                d.evidence.forEach(function (e) {
+                    m += '<div class="mz-ev"><p class="c">' + esc(e.claim) + "</p>";
+                    if (e.detail) m += '<p class="dd">' + esc(e.detail) + "</p>";
+                    m += '<p class="ss">' + esc(e.source) + (e.year ? " (" + e.year + ")" : "");
+                    if (e.url) m += ' &middot; <a href="' + esc(e.url) + '" target="_blank" rel="noopener">read it</a>';
+                    m += "</p>";
+                    if (e.caveat) m += '<p class="cv">' + esc(e.caveat) + "</p>";
+                    m += "</div>";
+                });
+                m += "</div>";
+            }
+
+            m += '<div class="mz-sec"><h3>Plainly</h3><div class="mz-sub">What membership is, and what it is not.</div><div class="mz-disc"><ul>';
+            (d.disclosures || []).forEach(function (x) { m += "<li>" + esc(x) + "</li>"; });
+            if (d.consultation_states && d.consultation_states.length) {
+                m += "<li>Dr. Mabini is licensed in " + esc(d.consultation_states.join(" and "))
+                   + ". Preparation tools are available wherever you live; a clinical consultation is only possible in those states.</li>";
+            }
+            m += "</ul></div></div>";
+
+            det.innerHTML = m;
+        })
+        .catch(function () { /* the signup still works without the cards */ });
+
+    function show(text, ok) {
+        msg.className = "signup-msg " + (ok ? "ok" : "err");
+        msg.textContent = text;
+    }
+
+    go.addEventListener("click", function () {
+        var email = (document.getElementById("su-email").value || "").trim();
+        if (!email) { show("Please add your email address.", false); return; }
+        go.disabled = true; go.textContent = "Adding you\u2026";
+        fetch("/api/v1/membership/interest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email,
+                tier: (document.getElementById("su-tier") || {}).value || "any",
+                state: (document.getElementById("su-state").value || "").trim().toUpperCase(),
+                source: "portal_coming_soon"
+            })
+        }).then(function (r) { return r.json(); }).then(function (j) {
+            go.disabled = false; go.textContent = "Join the list";
+            if (!j.ok) { show(j.error || "Could not add you just now.", false); return; }
+            show(j.message + (j.note ? "\n\n" + j.note : ""), true);
+            document.getElementById("su-email").value = "";
+        }).catch(function () {
+            go.disabled = false; go.textContent = "Join the list";
+            show("Could not reach the server. Please try again.", false);
+        });
+    });
+})();
+</script>
 </body>
 </html>
 `;

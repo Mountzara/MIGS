@@ -110,8 +110,8 @@ export const TIERS = [
         name: "Standard",
         price_month: 0,
         price_year: 0,
-        tagline: "Your insurance, used properly.",
-        summary: "No fee. Care is billed to your plan the ordinary way, and you get the portal, your records, secure messaging about your own visits, and online scheduling.",
+        tagline: "Use your insurance. Pay this practice nothing.",
+        summary: "This is the ordinary arrangement, and for most patients it is the right one. You see Dr. Mabini as a patient of the practice, your visits and procedures are billed to your health plan, and you pay your plan's copay, coinsurance and deductible — nothing else. There is no membership fee and never will be. The paid tiers below add things insurance does not cover; they do not add care, and they do not change what your plan pays.",
         benefits: [
             { label: "Patient portal, records and visit summaries", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
             // Zero physician minutes ON PURPOSE. AI triages; anything that
@@ -120,7 +120,8 @@ export const TIERS = [
             // as a free perk would turn covered work into unpaid work.
             { label: "Secure messaging about your existing care", covered_service: false, physician_minutes: 0, automated_minutes: 10 },
             { label: "Online scheduling", covered_service: false, physician_minutes: 0, automated_minutes: 2 },
-            { label: "Insurance billed directly", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
+            { label: "Your visits, procedures and surgery billed to your health plan", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
+            { label: "No membership fee, and no charge from this practice beyond your plan's cost-sharing", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
         ],
         capacity_weight: 0,
     },
@@ -130,6 +131,7 @@ export const TIERS = [
         price_month: 59,
         price_year: 590,
         tagline: "Keep your doctor. Walk in prepared.",
+        insurance_note: "Nothing here changes your insurance. You keep your own OB/GYN and your health plan is billed by them, exactly as it is now — this practice bills your plan nothing at all for Navigator. The fee buys preparation documents, which have no billing code and are never claimed from anyone.",
         summary: "For the patient who already has an OB/GYN and does not want to change — they want the fifteen minutes they get to actually count. Before every appointment, with any clinician, a preparation pack built from your own history.",
         // The economically important tier: ZERO physician minutes, so the
         // panel has no ceiling. This is the only thing here that scales.
@@ -155,6 +157,7 @@ export const TIERS = [
         price_month: 199,
         price_year: 1990,         // two months free — improves cash and retention
         tagline: "Reach him directly, and get more of his time.",
+        insurance_note: "Your visits, procedures and surgery are still billed to your health plan, unchanged. This fee buys access and time — things insurance does not cover. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging your fee already covers, so it cannot be paid for twice.",
         summary: "For patients managing something ongoing — endometriosis, fibroids, chronic pelvic pain, menopause — where the value is continuity and access rather than more procedures.",
         benefits: [
             { label: "Everything in Navigator — preparation packs for visits with any of your clinicians",
@@ -181,6 +184,7 @@ export const TIERS = [
         price_month: 449,
         price_year: 4490,         // two months free
         tagline: "Someone is actually watching the whole picture.",
+        insurance_note: "Your visits, procedures and surgery are still billed to your health plan, unchanged. This fee buys access, time and coordination. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging, review sessions and care coordination your fee already covers.",
         summary: "For complex or long-running disease — deep endometriosis, recurrent fibroids, pelvic pain that has already been through three clinicians. Quarterly reviews, a written second opinion on your existing records, and symptom tracking he actually reads.",
         benefits: [
             { label: "Everything in Priority", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
