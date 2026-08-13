@@ -41,6 +41,8 @@
 // =====================================================================
 
 import { routeFor, enqueueAiJob } from "./ai_router.js";
+import { groundClinical, groundingInstruction, verifyGrounding, refusalMessage, provenanceLine }
+    from "./clinical_grounding.js";
 
 export const VISIT_SUMMARY_PROMPT_VERSION = "visit-summary-v1-2026-08-13";
 
@@ -84,8 +86,8 @@ export function checkPatientTone(text) {
     return { ok: violations.length === 0, violations };
 }
 
-export function buildPrompt(noteText, { visitDate, visitType, chiefComplaint } = {}) {
-    return `You are writing the after-visit summary for a patient of Dr. Christopher Mabini, DO — a fellowship-trained complex benign gynecologic surgeon. He will read it and decide whether to approve it before the patient ever sees it.
+export function buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb } = {}) {
+    return `${kb ? groundingInstruction(kb) + "\n\n---\n\n" : ""}You are writing the after-visit summary for a patient of Dr. Christopher Mabini, DO — a fellowship-trained complex benign gynecologic surgeon. He will read it and decide whether to approve it before the patient ever sees it.
 
 VISIT: ${visitType || "office visit"}${visitDate ? ` on ${visitDate}` : ""}
 ${chiefComplaint ? `REASON FOR VISIT: ${chiefComplaint}` : ""}
@@ -96,6 +98,7 @@ FIRST, the PATIENT-FACING summary:
   * Second person, plain language. Explain any medical word the first time it appears.
   * Short paragraphs under these headings: What we talked about · The plan · Your medicines · What happens next
   * Include ONLY what is in the note below. Add no clinical fact, no reassurance and no advice that is not there.
+  * Where you explain what a condition or treatment IS — background the note assumes rather than states — that explanation must come from the practice references above, cited as [KB:<doc_id>]. Never explain it from general knowledge.
   * Do not promise an outcome. Do not minimise anything the patient raised. Do not speculate about what a symptom "could be".
   * Where the note records uncertainty, say so honestly — "we do not know yet" is a real and useful sentence.
   * If a follow-up, test or referral is in the note, state it with its timing.
@@ -149,6 +152,22 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
         return { ok: false, error: "the encounter has no note to summarise" };
     }
 
+    // ------------------------------------------------------------------
+    // GROUND IT IN HIS LIBRARY, OR DO NOT WRITE IT.
+    // ------------------------------------------------------------------
+    // The patient reads this as the record of their own visit. Any
+    // background explanation the model adds — what adenomyosis is, why a
+    // medication is used, what recovery looks like — was coming from
+    // training data until now. It comes from the practice library or it
+    // does not appear.
+    const kb = await groundClinical(env, {
+        kind: "visit_summary",
+        query: [chiefComplaint || "", visitType || "", String(noteText).slice(0, 3000)].join(" "),
+    });
+    if (!kb.grounded) {
+        return { ok: false, refused: true, reason: kb.reason, error: refusalMessage(kb) };
+    }
+
     const route = routeFor(env, "visit_summary");
     if (route === "bridge") {
         const job = await enqueueAiJob(env, {
@@ -173,7 +192,7 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
             body: JSON.stringify({
                 model: env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
                 max_tokens: 2500,
-                messages: [{ role: "user", content: buildPrompt(noteText, { visitDate, visitType, chiefComplaint }) }],
+                messages: [{ role: "user", content: buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb }) }],
             }),
         });
         if (!res.ok) return { ok: false, error: `model call failed (HTTP ${res.status})` };
@@ -191,6 +210,29 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
     // regeneration that loses the rest of a good summary.
     const tone = checkPatientTone(split.patient);
 
+    // GROUNDING DOES block. Tone is a judgement call he can overrule by
+    // reading it; a clinical claim sourced from training data is not
+    // something he can spot by reading, because it will look exactly like
+    // a correct one.
+    const verdict = verifyGrounding(split.patient, kb);
+    const grounding = {
+        ok: verdict.ok,
+        summary: verdict.summary,
+        provenance: provenanceLine(kb, verdict),
+        citations: kb.citations,
+        fabricated: verdict.fabricated,
+        uncited: verdict.uncited,
+        unsupported: verdict.unsupported,
+        kb_coverage: Math.round((kb.coverage || 0) * 100) / 100,
+    };
+    if (verdict.blocked) {
+        return {
+            ok: false, refused: true, reason: "grounding_check_failed",
+            error: `The summary was written but did not hold up against the practice library, so it was not saved: ${verdict.summary}.`,
+            grounding, rejected_patient_text: split.patient, rejected_clinician_text: split.clinician,
+        };
+    }
+
     return {
         ok: true,
         route,
@@ -198,6 +240,7 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
         clinician: split.clinician,
         denormalised: extractDenormalised(split.patient),
         tone,
+        grounding,
         prompt_version: VISIT_SUMMARY_PROMPT_VERSION,
         model: env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
     };

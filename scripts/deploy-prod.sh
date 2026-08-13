@@ -370,6 +370,36 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_portal_headers.mjs ]; th
 fi
 
 # ---------------------------------------------------------------------------
+# Clinical grounding gate (codified 2026-08-13). The owner's standing rule:
+# clinical answers come from HIS KB, never from the model's general
+# knowledge. On the day this was written the rule was enforced NOWHERE —
+# the 1,144-document library was wired into a single website-copy editor
+# while triage, after-visit summaries, patient message drafts, visit-prep
+# packs and the PROM recommender all called the model with no reference
+# material at all.
+#
+# Nothing caught it because an ungrounded prompt is not a runtime error. It
+# produces fluent, confident medicine from the wrong source — the failure
+# mode with no symptom. This gate makes forgetting impossible.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_clinical_grounding_wired.mjs ]; then
+    echo ""
+    echo "🔒 clinical grounding gate — every clinical path uses the practice KB..."
+    if node scripts/check_clinical_grounding_wired.mjs > /tmp/_kb_wired.log 2>&1 \
+       && node scripts/test_clinical_grounding.mjs > /tmp/_kb_verify.log 2>&1; then
+        tail -1 /tmp/_kb_wired.log
+        tail -1 /tmp/_kb_verify.log
+        echo "   ✅ clinical grounding gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the clinical grounding gate:"
+        tail -30 /tmp/_kb_wired.log /tmp/_kb_verify.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # Date gate (codified 2026-08-13). Three endpoints validated dates with a
 # shape regex, so 2026-02-31 was accepted, stored, and then matched no
 # calendar query ever again — written, acknowledged and lost — and a
