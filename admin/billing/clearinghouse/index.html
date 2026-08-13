@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Clearinghouse / Go-Live · Mount Zara Admin</title>
+    <title>Clearinghouse Setup · Mount Zara Admin</title>
     <style>
         :root {
             --bg-base:#120b22; --bg-card:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.10);
@@ -96,6 +96,85 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* ===== 2026-08-13 — the setup wizard =====
+   This page used to be a prose checklist with a control panel below it.
+   It is now a six-step wizard that holds its own state, so these styles
+   are for a progress rail, step panels, a scored vendor comparison, and
+   an enrollment tracker. Colours all come from the existing tokens so the
+   theme-consistency and contrast gates stay satisfied. */
+
+.rail{display:flex;gap:6px;margin:0 0 22px;flex-wrap:wrap;}
+.rail .st{flex:1 1 140px;min-width:130px;text-align:left;background:rgba(255,255,255,.03);
+    border:1px solid var(--border);border-radius:14px;padding:12px 13px;cursor:pointer;
+    font-family:inherit;color:var(--fg-mid);min-height:24px;}
+.rail .st:disabled{cursor:not-allowed;opacity:.45;}
+.rail .st .n{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);}
+.rail .st .t{font-size:13.5px;color:var(--fg-strong);margin-top:5px;line-height:1.3;}
+.rail .st.done{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.10);}
+.rail .st.done .n{color:#6ee7b7;}
+.rail .st.active{border-color:rgba(var(--glow-purple),.65);background:rgba(var(--glow-purple),.13);}
+.rail .st.active .n{color:var(--accent-soft);}
+
+.prog{height:5px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:0 0 20px;}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.fgrid .f{min-width:0;}
+input[type=text],input[type=email],input[type=tel],input[type=password]{
+    width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+    color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;min-height:24px;}
+input.bad{border-color:rgba(239,68,68,.7);}
+.hint{font-size:11.5px;color:var(--fg-dim);margin-top:5px;line-height:1.45;}
+.err{font-size:11.5px;color:#fca5a5;margin-top:5px;}
+.req{color:var(--accent-soft);}
+
+.gh{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft);
+    margin:22px 0 4px;} .gh:first-child{margin-top:0;}
+.gs{font-size:12.5px;color:var(--fg-dim);margin:0 0 12px;}
+
+.qa{border-top:1px solid var(--border);padding:16px 0;} .qa:first-child{border-top:none;padding-top:0;}
+.qa .q{font-size:14.5px;color:var(--fg-strong);margin-bottom:10px;}
+.opt{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);
+    border:1px solid var(--border);border-radius:999px;padding:8px 14px;margin:0 8px 8px 0;
+    font-size:13px;cursor:pointer;color:var(--fg-mid);min-height:24px;}
+.opt.sel{background:rgba(var(--glow-purple),.18);border-color:rgba(var(--glow-purple),.6);color:var(--fg-strong);}
+
+.vcard{border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;background:rgba(255,255,255,.03);}
+.vcard.top{border-color:rgba(var(--glow-purple),.55);background:rgba(var(--glow-purple),.09);}
+.vcard.chosen{border-color:rgba(16,185,129,.55);background:rgba(16,185,129,.09);}
+.vcard h3{margin:0;font-size:17px;font-weight:600;color:var(--fg-strong);}
+.vcard .sc{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);}
+.rsn{display:flex;gap:9px;font-size:13px;line-height:1.5;padding:5px 0;color:var(--fg-mid);}
+.rsn .m{flex:0 0 auto;width:16px;text-align:center;}
+.rsn.good .m{color:#6ee7b7;} .rsn.bad .m{color:#fcd34d;}
+
+.kv{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--border);font-size:13.5px;}
+.kv:first-child{border-top:none;}
+.kv .k{flex:0 0 210px;color:var(--fg-dim);font-size:12.5px;}
+.kv .v{flex:1 1 auto;color:var(--fg-strong);font-family:ui-monospace,Menlo,monospace;font-size:13px;word-break:break-word;}
+.kv button.cp{flex:0 0 auto;background:rgba(255,255,255,.06);border:1px solid var(--border);
+    color:var(--fg-mid);border-radius:8px;padding:5px 10px;font-size:11.5px;cursor:pointer;
+    font-family:inherit;min-height:24px;}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--fg-dim);padding:8px 8px 8px 0;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 8px 9px 0;border-bottom:1px solid var(--border);color:var(--fg-mid);vertical-align:top;}
+.tbl td.nm{color:var(--fg-strong);}
+.tbl select{width:auto;min-width:130px;padding:6px 9px;font-size:12.5px;min-height:24px;}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;
+    border-radius:999px;border:1px solid var(--border);color:var(--fg-soft);margin-right:5px;}
+.tag.med{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);color:#fcd34d;}
+.tag.mcd{background:rgba(139,92,246,.16);border-color:rgba(139,92,246,.45);color:#c4b5fd;}
+.tag.ok{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.45);color:#6ee7b7;}
+
+.note{border-left:2px solid rgba(var(--glow-purple),.5);padding:2px 0 2px 13px;margin:12px 0;
+    font-size:13px;line-height:1.55;color:var(--fg-mid);}
+.note.warn{border-left-color:rgba(245,158,11,.6);}
+.foot-nav{display:flex;gap:10px;justify-content:space-between;margin-top:20px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -109,150 +188,636 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
      Cross-Origin-Resource-Policy header, so COEP blocks it and the browser
      paints the placeholder box. Do not reintroduce a cross-origin image
      under /admin/. -->
-    <script src="/admin/_nav.js"></script>
+        <script src="/admin/_nav.js"></script>
     <div class="wrap">
-        <header class="bar"><span class="crumb"><a href="/admin/">Admin</a> › <a href="/admin/billing/">Billing</a> › Clearinghouse / Go-Live</span></header>
-        <h1>Clearinghouse <b>· Go-Live</b></h1>
-        <p class="lede">Claims don't go straight from your office to an insurer. They pass through a <b>clearinghouse</b> — a switchboard that checks each claim's format, forwards it to the right payer, and returns the payer's answer. You need exactly one to start.</p>
+        <header class="bar"><span class="crumb"><a href="/admin/">Admin</a> › <a href="/admin/billing/">Billing</a> › Clearinghouse setup</span></header>
+        <h1>Clearinghouse <b>· Setup</b></h1>
+        <p class="lede">Claims don't go straight from your office to an insurer. They pass through a <b>clearinghouse</b> — a switchboard that checks each claim's format, forwards it to the right payer, and returns the payer's answer. This wizard takes you from nothing to a live connection. It saves as you go, so you can close it and come back; enrollment runs for weeks, and nothing here forgets where you were.</p>
 
-        <!-- START HERE (2026-08-12). This page previously opened with the control
-             panel: "route each payer to the clearinghouse you enrolled it with",
-             "paste a raw 835", "set CLEARINGHOUSE_LIVE=1". Every one of those
-             assumes a clearinghouse has already been chosen and enrolled. Dr.
-             Mabini's note — "this whole section looks confusing on what to do" —
-             was a correct read of a control panel with no on-ramp. This block is
-             the on-ramp; the control panel below is for after enrollment. -->
-        <section class="block" id="start-here" style="border-color:rgba(167,139,250,.45);">
-            <h2 style="color:var(--accent-soft);">Start here — you have not enrolled yet</h2>
+        <div class="prog" aria-hidden="true"><i id="prog-bar" style="width:0%"></i></div>
+        <nav class="rail" id="rail" aria-label="Setup steps"></nav>
 
-            <p style="font-size:14.5px;line-height:1.6;margin:0 0 16px;">
-                Everything below this box is a <b>control panel for after you're enrolled</b>.
-                Ignore it for now. There are four steps, in this order:
-            </p>
-
-            <div class="ck"><div class="box">1</div><div>
-                <div class="t">Pick one clearinghouse</div>
-                <div class="d">Recommendation for your situation — solo practice, custom billing pipeline, Illinois (and possibly California):
-                <b style="color:var(--accent-soft);">Claim.MD</b>. It carries Medicare, Medicaid/Medi-Cal <i>and</i> commercial in one place, is priced for small practices, and doesn't require an enterprise contract.
-                <br><br><b>Availity Essentials</b> is the alternative worth knowing: free real-time eligibility with the Blues (BCBS&nbsp;IL, Anthem/Blue Shield CA) — many practices end up using Availity for eligibility checks <i>and</i> a second clearinghouse for claims. <b>Stedi</b> has the cleanest API if you later want maximum automation, but it is the most engineering-heavy option.
-                <br><br><i>Costs and enrollment terms change — confirm current pricing directly with the vendor before committing.</i></div>
-            </div></div>
-
-            <div class="ck"><div class="box">2</div><div>
-                <div class="t">Enroll with them — this is its own application</div>
-                <div class="d">Like payer credentialing, not like signing up for a website. They will need your NPI, Tax ID / W-9, practice address, and your payer list. Expect back-and-forth, and expect <b>per-payer enrollment</b>: some payers (especially Medicare and Medicaid) require a separate EDI enrollment form before they'll accept electronic claims from your clearinghouse.</div>
-            </div></div>
-
-            <div class="ck"><div class="box">3</div><div>
-                <div class="t">Get your credentials into this page</div>
-                <div class="d">They'll issue an API key or account credentials. Those go in <b>Clearinghouse credentials</b> below. Nothing on this page can talk to a payer until that exists.</div>
-            </div></div>
-
-            <div class="ck"><div class="box">4</div><div>
-                <div class="t">Test, then go live</div>
-                <div class="d">Submit test claims first. The pipeline deliberately stays in <b>test mode</b> until you flip it — that switch is <code>CLEARINGHOUSE_LIVE=1</code>, and it exists so a half-configured pipeline can never send a real claim by accident.</div>
-            </div></div>
-
-            <p style="font-size:13px;color:var(--fg-dim);margin:16px 0 0;">
-                <b>You cannot skip step 2.</b> Routing payers, posting remittances, and everything else below only work once a real clearinghouse account exists behind them.
-            </p>
-        </section>
-
-        <div id="root"><div class="center"><div class="spin"></div>Loading readiness…</div></div>
+        <div id="panel"><div class="center"><div class="spin"></div>Loading your setup…</div></div>
     </div>
 
-    <script>
-        const RECS = ['availity','claim_md','stedi'];
-        async function api(path, opts) { const r = await fetch(path, Object.assign({ credentials:'include' }, opts||{})); return { ok:r.ok, status:r.status, data: await r.json().catch(()=>({})) }; }
-        function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+<script>
+// =====================================================================
+// The clearinghouse setup wizard
+// =====================================================================
+// A thin renderer over /api/v1/admin/billing/clearinghouse-setup. All
+// scoring, validation and step gating live server-side in
+// _lib/clearinghouse_onboarding.js so they are testable; this file draws
+// what the API reports and posts back what the operator does.
+//
+// One deliberate choice: every step is reachable at any time, even ones
+// the API considers blocked. A wizard that refuses to let you look ahead
+// is infuriating, and looking is harmless — the ACTIONS are gated, not
+// the reading.
+// =====================================================================
+(function () {
+    "use strict";
 
-        async function load() {
-            const root = document.getElementById('root');
-            root.innerHTML = '<div class="center"><div class="spin"></div>Loading readiness…</div>';
-            const { ok, status, data } = await api('/api/v1/admin/billing/clearinghouse');
-            if (!ok) { root.innerHTML = '<section class="block"><div class="center">Could not load ('+status+'). '+(status===401?'Sign in to continue.':'')+'</div></section>'; return; }
-            render(data);
+    var API = "/api/v1/admin/billing/clearinghouse-setup";
+    var S = null;              // last full state from the server
+    var view = null;           // which step is on screen
+    var draft = {};            // unsaved profile edits
+    var answers = {};          // unsaved interview answers
+    var creds = {};            // unsaved credential entry
+
+    var panel = document.getElementById("panel");
+    var rail = document.getElementById("rail");
+    var progBar = document.getElementById("prog-bar");
+
+    function esc(v) {
+        return String(v === null || v === undefined ? "" : v)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function el(id) { return document.getElementById(id); }
+    function on(id, ev, fn) { var n = el(id); if (n) n.addEventListener(ev, fn); }
+
+    // ---- transport ---------------------------------------------------
+
+    function load() {
+        return fetch(API, { credentials: "same-origin" })
+            .then(function (r) {
+                if (r.status === 401) throw new Error("SIGNIN");
+                return r.json();
+            })
+            .then(function (j) {
+                if (j && j.schema_missing) throw new Error("SCHEMA:" + (j.command || ""));
+                S = j;
+                if (!view) view = (j.readiness && j.readiness.current_step) || "profile";
+                return j;
+            });
+    }
+
+    function post(action, body) {
+        var payload = Object.assign({ action: action }, body || {});
+        return fetch(API, {
+            method: "POST", credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        }).then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); });
+    }
+
+    function busy(btn, on) {
+        if (!btn) return;
+        btn.disabled = !!on;
+        if (on) { btn.dataset.label = btn.textContent; btn.textContent = "Working…"; }
+        else if (btn.dataset.label) { btn.textContent = btn.dataset.label; }
+    }
+
+    function say(id, msg, ok) {
+        var n = el(id);
+        if (!n) return;
+        n.style.display = "block";
+        n.style.borderColor = ok === false ? "rgba(239,68,68,.55)" : (ok === true ? "rgba(16,185,129,.5)" : "");
+        n.textContent = msg;
+    }
+
+    // ---- chrome ------------------------------------------------------
+
+    function drawRail() {
+        var rd = S.readiness || { steps: [] };
+        var byKey = {};
+        rd.steps.forEach(function (s) { byKey[s.key] = s; });
+        progBar.style.width = (rd.percent || 0) + "%";
+
+        rail.innerHTML = S.steps.map(function (st) {
+            var r = byKey[st.key] || {};
+            var cls = "st" + (r.done ? " done" : "") + (view === st.key ? " active" : "");
+            return '<button type="button" class="' + cls + '" data-step="' + st.key + '">'
+                 + '<span class="n">' + (r.done ? "✓ " : "") + "Step " + st.n + "</span>"
+                 + '<span class="t">' + esc(st.title) + "</span></button>";
+        }).join("");
+
+        Array.prototype.forEach.call(rail.querySelectorAll("[data-step]"), function (b) {
+            b.addEventListener("click", function () { view = b.dataset.step; render(); });
+        });
+    }
+
+    function stepMeta(key) {
+        for (var i = 0; i < S.steps.length; i++) if (S.steps[i].key === key) return S.steps[i];
+        return { title: key, blurb: "", n: 0 };
+    }
+    function stepState(key) {
+        var ss = (S.readiness && S.readiness.steps) || [];
+        for (var i = 0; i < ss.length; i++) if (ss[i].key === key) return ss[i];
+        return {};
+    }
+
+    function head(key) {
+        var m = stepMeta(key), r = stepState(key);
+        return '<section class="block"><h2>Step ' + m.n + " · " + esc(m.title) + "</h2>"
+             + '<p class="lede" style="margin-bottom:0;">' + esc(m.blurb) + "</p>"
+             + (r.detail ? '<p class="gs" style="margin:10px 0 0;">' + esc(r.detail) + "</p>" : "")
+             + "</section>";
+    }
+
+    // ---- step 1 · practice identity ----------------------------------
+
+    function drawProfile() {
+        var p = Object.assign({}, S.profile || {}, draft);
+        var r = stepState("profile");
+        var invalidBy = {};
+        (r.invalid || []).forEach(function (i) { invalidBy[i.key] = i.why; });
+        var missingBy = {};
+        (r.missing || []).forEach(function (i) { missingBy[i.key] = true; });
+
+        var html = head("profile");
+        html += '<section class="block"><h2>Your details</h2>';
+        html += '<div class="note">Every application, every EDI form and every claim is filled from what you enter here. Getting the legal name and ZIP+4 exactly right now saves a rejection cycle later.</div>';
+
+        S.profile_groups.forEach(function (g) {
+            var fields = S.profile_fields.filter(function (f) { return f.group === g.key; });
+            if (!fields.length) return;
+            html += '<div class="gh">' + esc(g.title) + "</div>";
+            html += '<p class="gs">' + esc(g.blurb) + "</p>";
+            html += '<div class="fgrid">';
+            fields.forEach(function (f) {
+                var val = f.key === "tin"
+                    ? (draft.tin !== undefined ? draft.tin : "")
+                    : (p[f.key] || "");
+                var bad = invalidBy[f.key] || missingBy[f.key];
+                html += '<div class="f">';
+                html += '<label class="fld" for="p-' + f.key + '">' + esc(f.label)
+                      + (f.required ? ' <span class="req">*</span>' : "") + "</label>";
+                if (f.options) {
+                    html += '<select id="p-' + f.key + '" data-pk="' + f.key + '"><option value="">—</option>'
+                        + f.options.map(function (o) {
+                            return '<option value="' + esc(o[0]) + '"' + (val === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>";
+                        }).join("") + "</select>";
+                } else {
+                    var type = f.secret ? "password" : (f.key === "contact_email" ? "email" : (f.key === "contact_phone" ? "tel" : "text"));
+                    var ph = f.placeholder || "";
+                    var shown = f.key === "tin" && !draft.tin && p.tin_last4 ? "" : val;
+                    if (f.key === "tin" && p.tin_last4 && !draft.tin) ph = "•••••" + p.tin_last4 + " — stored. Type to replace.";
+                    html += '<input id="p-' + f.key + '" data-pk="' + f.key + '" type="' + type + '"'
+                          + ' value="' + esc(shown) + '" placeholder="' + esc(ph) + '"'
+                          + (bad ? ' class="bad"' : "")
+                          + (f.secret ? ' autocomplete="off"' : "") + ">";
+                }
+                if (invalidBy[f.key]) html += '<div class="err">' + esc(invalidBy[f.key]) + "</div>";
+                if (f.help) html += '<div class="hint">' + esc(f.help) + "</div>";
+                html += "</div>";
+            });
+            html += "</div>";
+        });
+
+        html += '<div class="row" style="margin-top:22px;"><button class="btn" id="save-profile">Save and continue</button>'
+              + '<span class="muted" style="font-size:12.5px;">Saves immediately. You can come back and edit any of it.</span></div>';
+        html += '<div class="result" id="profile-result" style="display:none;"></div>';
+        html += "</section>";
+        panel.innerHTML = html;
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-pk]"), function (n) {
+            n.addEventListener("input", function () { draft[n.dataset.pk] = n.value; });
+            n.addEventListener("change", function () { draft[n.dataset.pk] = n.value; });
+        });
+
+        on("save-profile", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("save_profile", { profile: Object.assign({}, S.profile, draft) }).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                var v = j.validation || {};
+                if (v.ok) {
+                    draft = {};
+                    say("profile-result", "Saved. Everything required is present and valid.", true);
+                    view = "selection";
+                    setTimeout(render, 550);
+                } else {
+                    var bits = [];
+                    if (v.missing && v.missing.length) bits.push("Still needed: " + v.missing.map(function (m) { return m.label; }).join(", "));
+                    if (v.invalid && v.invalid.length) bits.push(v.invalid.map(function (m) { return m.label + " — " + m.why; }).join(" · "));
+                    say("profile-result", "Saved, but not complete yet. " + bits.join(". "), false);
+                    render();
+                }
+            }).catch(function (err) { busy(b, false); say("profile-result", String(err), false); });
+        });
+    }
+
+    // ---- step 2 · choose ---------------------------------------------
+
+    function drawSelection() {
+        var html = head("selection");
+        var prior = (S.onboarding && S.onboarding.answers) || null;
+        if (prior && !Object.keys(answers).length) answers = JSON.parse(JSON.stringify(prior));
+
+        html += '<section class="block"><h2>A few questions</h2>';
+        html += '<div class="note">There is no single best clearinghouse — there is a best one for your payer mix. Five questions, then a scored comparison you can audit rather than a recommendation you have to trust.</div>';
+        S.interview.forEach(function (q) {
+            html += '<div class="qa"><div class="q">' + esc(q.question) + "</div>";
+            q.options.forEach(function (o) {
+                var sel = q.type === "multi"
+                    ? (Array.isArray(answers[q.key]) && answers[q.key].indexOf(o[0]) >= 0)
+                    : answers[q.key] === o[0];
+                html += '<button type="button" class="opt' + (sel ? " sel" : "") + '"'
+                      + ' data-q="' + esc(q.key) + '" data-v="' + esc(o[0]) + '" data-multi="' + (q.type === "multi" ? "1" : "0") + '">'
+                      + esc(o[1]) + "</button>";
+            });
+            html += "</div>";
+        });
+        html += '<div class="row" style="margin-top:16px;"><button class="btn" id="score-btn">Score the options</button></div>';
+        html += "</section>";
+
+        if (S.scores) {
+            html += '<section class="block"><h2>Ranked for your situation</h2>';
+            if (S.pairing && S.pairing.suggest) {
+                html += '<div class="note">Worth knowing: ' + esc(S.pairing.why) + "</div>";
+            }
+            S.scores.forEach(function (v, idx) {
+                var chosen = S.onboarding && S.onboarding.selected_vendor === v.vendor;
+                html += '<div class="vcard' + (idx === 0 ? " top" : "") + (chosen ? " chosen" : "") + '">';
+                html += '<div class="row" style="justify-content:space-between;align-items:baseline;">'
+                      + "<h3>" + esc(v.label) + (idx === 0 ? ' <span class="tag ok">best fit</span>' : "")
+                      + (chosen ? ' <span class="tag ok">selected</span>' : "") + "</h3>"
+                      + '<span class="sc">score ' + v.score + "</span></div>";
+                v.reasons.forEach(function (r) {
+                    html += '<div class="rsn ' + (r.good ? "good" : "bad") + '"><span class="m">' + (r.good ? "+" : "!") + "</span><span>" + esc(r.text) + "</span></div>";
+                });
+                html += '<div class="hint" style="margin-top:10px;"><b>Cost:</b> ' + esc(v.cost_posture || "not published")
+                      + (v.cost_verified ? "" : " — unverified here on purpose; confirm directly with the vendor before committing.") + "</div>";
+                html += '<div class="row" style="margin-top:12px;">';
+                if (v.signup_url) html += '<a class="opt" href="' + esc(v.signup_url) + '" target="_blank" rel="noopener">Vendor site ↗</a>';
+                if (v.docs_url) html += '<a class="opt" href="' + esc(v.docs_url) + '" target="_blank" rel="noopener">API docs ↗</a>';
+                html += '<button class="btn' + (chosen ? " ghost" : "") + '" data-pick="' + esc(v.vendor) + '">'
+                      + (chosen ? "Selected" : "Choose " + esc(v.label)) + "</button>";
+                html += "</div></div>";
+            });
+            html += '<div class="result" id="pick-result" style="display:none;"></div>';
+            html += "</section>";
+        }
+        panel.innerHTML = html;
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-q]"), function (b) {
+            b.addEventListener("click", function () {
+                var k = b.dataset.q, v = b.dataset.v;
+                if (b.dataset.multi === "1") {
+                    var cur = Array.isArray(answers[k]) ? answers[k] : [];
+                    answers[k] = cur.indexOf(v) >= 0 ? cur.filter(function (x) { return x !== v; }) : cur.concat([v]);
+                } else {
+                    answers[k] = v;
+                }
+                drawSelection();
+            });
+        });
+
+        on("score-btn", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("run_selection", { answers: answers }).then(function (j) {
+                busy(b, false);
+                S.scores = j.scores; S.pairing = j.pairing;
+                S.onboarding = Object.assign({}, S.onboarding, { answers: answers });
+                drawSelection();
+            });
+        });
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-pick]"), function (b) {
+            b.addEventListener("click", function () {
+                busy(b, true);
+                post("select_vendor", { vendor: b.dataset.pick }).then(function (j) {
+                    busy(b, false);
+                    if (j.state) S = j.state;
+                    view = "packet"; render();
+                });
+            });
+        });
+    }
+
+    // ---- step 3 · packet + enrollment --------------------------------
+
+    function drawPacket() {
+        var html = head("packet");
+        var pk = S.packet;
+
+        if (!S.onboarding.selected_vendor) {
+            html += '<section class="block"><div class="note warn">Choose a clearinghouse first — step 2.</div></section>';
+            panel.innerHTML = html; return;
         }
 
-        function render(d) {
-            const root = document.getElementById('root');
-            const go = d.ready_to_go_live;
-            let h = '';
-            h += '<div class="banner '+(go?'go':'wait')+'">'+(go?'✓ Ready to go live — flip CLEARINGHOUSE_LIVE=1 to start production submission.':'⏳ Not live yet — work the checklist below. Claims build as test (usage ‘T’).')+'</div>';
+        html += '<section class="block"><h2>Application values</h2>';
+        html += '<div class="note">These are the answers ' + esc(pk ? pk.vendor_label : "your clearinghouse")
+              + " will ask for. Copy each one straight across rather than retyping — a transposed NPI or a five-digit ZIP is the usual reason an enrollment comes back weeks later.</div>";
 
-            // status tiles
-            h += '<section class="block"><h2>Status</h2><div class="grid">';
-            h += tile('Default clearinghouse', esc(d.clearinghouse.label));
-            h += tile('Mode', d.clearinghouse.live_mode ? 'LIVE (P)' : 'Test (T)');
-            h += tile('Provider IDs', d.billing_provider.complete ? 'Set ✓' : 'Missing');
-            h += tile('Payers in DB', d.payers.in_db + ' / ' + d.payers.directory_total);
-            h += tile('Payer IDs to verify', d.payers.missing_payer_id);
-            h += '</div></section>';
-
-            // per-vendor credentials
-            h += '<section class="block"><h2>Clearinghouse credentials</h2>';
-            (d.vendors_configured||[]).forEach(v => {
-                h += '<div class="vendor-row"><span style="color:var(--fg-strong);font-weight:600;">'+esc(v.label)+'</span>'
-                   + (RECS.includes(v.vendor)?'<span class="pill rec">recommended</span>':'')
-                   + '<span class="pill '+(v.configured?'on':'off')+'">'+(v.configured?'configured':'no creds')+'</span></div>';
+        if (pk) {
+            pk.fields.forEach(function (f, i) {
+                html += '<div class="kv"><div class="k">' + esc(f.label) + "</div>"
+                      + '<div class="v" id="kv-' + i + '">' + esc(f.value || "—") + "</div>";
+                if (f.value && f.value !== "—") html += '<button class="cp" data-copy="kv-' + i + '">copy</button>';
+                html += "</div>";
             });
-            h += '<div class="muted" style="font-size:12.5px;margin-top:10px;">Credentials live as Cloudflare env secrets (see docs/BILLING_GO_LIVE.md). Send the keys to your admin to set them.</div></section>';
+            html += '<div class="row" style="margin-top:14px;">'
+                  + '<button class="btn ghost" id="reveal-tin">Reveal tax ID</button>'
+                  + '<span class="muted" style="font-size:12.5px;">Encrypted at rest. Revealing it is recorded in the event log below.</span></div>';
 
-            // checklist
-            h += '<section class="block"><h2>Go-live checklist</h2>';
-            (d.checklist||[]).forEach(c => {
-                h += '<div class="ck '+(c.done?'done':'')+'"><span class="box">'+(c.done?'✓':'')+'</span><div><div class="t">'+esc(c.step)+'</div>'+(c.detail?'<div class="d">'+esc(c.detail)+'</div>':'')+'</div></div>';
+            if (pk.warnings && pk.warnings.length) {
+                pk.warnings.forEach(function (w) { html += '<div class="note warn">' + esc(w) + "</div>"; });
+            }
+            html += '<div class="gh">Confirm with the vendor</div>';
+            html += '<p class="gs">Deliberately not asserted here, because these terms change and a stale answer costs weeks.</p>';
+            pk.confirm_tasks.forEach(function (t) {
+                html += '<div class="rsn bad"><span class="m">?</span><span>' + esc(t) + "</span></div>";
             });
-            h += '</section>';
-
-            // payer routing (one-click by kind)
-            const opts = ['', ...RECS, 'change_healthcare','office_ally','waystar'].map(v=>'<option value="'+v+'">'+(v||'— leave default —')+'</option>').join('');
-            h += '<section class="block"><h2>Route payers → clearinghouse</h2>'
-               + '<p class="muted" style="font-size:13px;margin:0 0 14px;">Assign each payer category to the clearinghouse you enrolled it with. Per-payer overrides can be set on the payer record.</p>'
-               + '<div class="route-grid">'
-               + '<div><label class="fld">Commercial + Blues</label><select id="r-commercial">'+opts+'</select></div>'
-               + '<div><label class="fld">Medicare</label><select id="r-medicare">'+opts+'</select></div>'
-               + '<div><label class="fld">Medicaid / Medi-Cal</label><select id="r-medicaid">'+opts+'</select></div>'
-               + '</div>'
-               + '<div class="row"><button class="btn" id="route-btn">Apply routing</button>'
-               + '<button class="btn ghost" id="seed-btn">Seed payer directory</button></div>'
-               + '<div class="result" id="route-result" style="display:none;"></div></section>';
-
-            // ERA post
-            h += '<section class="block"><h2>Post remittance (835 ERA)</h2>'
-               + '<p class="muted" style="font-size:13px;margin:0 0 12px;">Paste a raw 835 from your clearinghouse to auto-post payments and flip claims to paid / partially-paid / denied. (Automation can POST here with the pipeline token.)</p>'
-               + '<textarea id="era" placeholder="ST*835*0001~BPR*I*...~CLP*...~"></textarea>'
-               + '<div class="row" style="margin-top:12px;"><button class="btn" id="era-btn">Post ERA</button></div>'
-               + '<div class="result" id="era-result" style="display:none;"></div></section>';
-
-            root.innerHTML = h;
-            wire();
+            if (pk.turnaround_note) html += '<div class="note">' + esc(pk.turnaround_note) + "</div>";
+            if (pk.signup_url) {
+                html += '<div class="row" style="margin-top:16px;"><a class="btn" href="' + esc(pk.signup_url) + '" target="_blank" rel="noopener">Open ' + esc(pk.vendor_label) + " ↗</a></div>";
+            }
         }
-        function tile(l,v){ return '<div class="tile"><div class="l">'+esc(l)+'</div><div class="v">'+esc(v)+'</div></div>'; }
+        html += '<div class="result" id="packet-result" style="display:none;"></div>';
+        html += "</section>";
 
-        function wire() {
-            const rb = document.getElementById('route-btn');
-            rb && rb.addEventListener('click', async () => {
-                const map = {};
-                ['commercial','medicare','medicaid'].forEach(k => { const v = document.getElementById('r-'+k).value; if (v) map[k]=v; });
-                if (!Object.keys(map).length) return;
-                rb.disabled = true;
-                const { data } = await api('/api/v1/admin/billing/clearinghouse', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ action:'route_by_kind', map }) });
-                show('route-result', 'Routed '+(data.updated||0)+' payer(s).'); rb.disabled = false; setTimeout(load, 800);
+        // --- per-payer EDI enrollment tracker
+        var enr = S.enrollment || [];
+        var sum = S.enrollment_summary || {};
+        html += '<section class="block"><h2>Payer EDI enrollment</h2>';
+        html += '<div class="note">A clearinghouse account does not mean a payer will accept your claims. Medicare, Medicaid and most Medicaid managed-care plans each require their own EDI agreement first, and this is the step that quietly eats months. Each row is a task to confirm with your clearinghouse — the value is that nothing is forgotten, not that we know every payer\'s current rule.</div>';
+
+        if (!enr.length) {
+            html += '<div class="row"><button class="btn" id="build-packet">Build my checklist</button></div>';
+        } else {
+            html += '<div class="grid">'
+                  + '<div class="tile"><div class="l">Payers</div><div class="v">' + (sum.total || 0) + "</div></div>"
+                  + '<div class="tile"><div class="l">Approved</div><div class="v">' + (sum.approved || 0) + "</div></div>"
+                  + '<div class="tile"><div class="l">Submitted</div><div class="v">' + (sum.submitted || 0) + "</div></div>"
+                  + '<div class="tile"><div class="l">Blocking go-live</div><div class="v">' + (sum.blocking || 0) + "</div></div>"
+                  + "</div>";
+            html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
+                  + "<th>Payer</th><th>Needs</th><th>Status</th><th>Reference</th></tr></thead><tbody>";
+            enr.forEach(function (r) {
+                var kindTag = r.payer_kind === "medicare" ? '<span class="tag med">Medicare</span>'
+                            : r.payer_kind === "medicaid" ? '<span class="tag mcd">Medicaid</span>' : "";
+                var needs = [];
+                if (r.edi_required) needs.push("EDI agreement");
+                if (r.era_required) needs.push("ERA (835)");
+                if (r.eft_required) needs.push("EFT");
+                html += "<tr><td class='nm'>" + kindTag + esc(r.payer_name)
+                      + (r.note ? '<div class="hint">' + esc(r.note) + "</div>" : "") + "</td>";
+                html += "<td>" + (needs.length ? needs.map(function (n) { return '<span class="tag">' + esc(n) + "</span>"; }).join("") : '<span class="muted">—</span>')
+                      + (r.form_name ? '<div class="hint">' + esc(r.form_name) + "</div>" : "") + "</td>";
+                html += '<td><select data-enr="' + esc(r.id) + '">'
+                      + ["not_started", "in_progress", "submitted", "approved", "rejected", "not_required"].map(function (s) {
+                          var label = { not_started: "Not started", in_progress: "In progress", submitted: "Submitted",
+                                        approved: "Approved", rejected: "Rejected", not_required: "Not required" }[s];
+                          return '<option value="' + s + '"' + (r.status === s ? " selected" : "") + ">" + label + "</option>";
+                      }).join("") + "</select></td>";
+                html += '<td><input type="text" data-ref="' + esc(r.id) + '" value="' + esc(r.reference_number || "")
+                      + '" placeholder="ticket #" style="min-width:120px;"></td></tr>';
             });
-            const sb = document.getElementById('seed-btn');
-            sb && sb.addEventListener('click', async () => { sb.disabled=true; const {data}=await api('/api/v1/admin/billing/clearinghouse',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'seed_payers'})}); show('route-result','Seeded: '+(data.inserted||0)+' new, '+(data.skipped||0)+' existing.'); sb.disabled=false; setTimeout(load,800); });
-            const eb = document.getElementById('era-btn');
-            eb && eb.addEventListener('click', async () => {
-                const edi = document.getElementById('era').value.trim(); if (!edi) return;
-                eb.disabled = true;
-                const { ok, data } = await api('/api/v1/admin/billing/era', { method:'POST', headers:{'content-type':'application/edi-x12'}, body: edi });
-                show('era-result', ok ? ('Payer '+(data.payer||'?')+' · $'+((data.payment&&data.payment.amount_cents||0)/100)+' · matched '+data.claims_matched+'/'+data.claims_in_era+' claims, posted $'+((data.posted_cents||0)/100)) : ('Error: '+(data.error||'failed')));
-                eb.disabled = false;
-            });
+            html += "</tbody></table></div>";
+            html += '<div class="row" style="margin-top:14px;"><button class="btn ghost" id="build-packet">Refresh from payer directory</button>'
+                  + '<span class="muted" style="font-size:12.5px;">Never overwrites a row you have already updated.</span></div>';
         }
-        function show(id, msg){ const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
-        load();
-    </script>
+        html += '<div class="result" id="enr-result" style="display:none;"></div>';
+        html += "</section>";
+        panel.innerHTML = html;
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-copy]"), function (b) {
+            b.addEventListener("click", function () {
+                var src = el(b.dataset.copy);
+                if (!src) return;
+                var txt = src.textContent;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(txt).then(function () {
+                        b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1400);
+                    });
+                } else {
+                    var r = document.createRange(); r.selectNode(src);
+                    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+                    try { document.execCommand("copy"); b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1400); } catch (e) {}
+                    sel.removeAllRanges();
+                }
+            });
+        });
+
+        on("reveal-tin", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("build_packet", { reveal_tin: true }).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                if (j.packet) S.packet = j.packet;
+                drawPacket();
+            });
+        });
+
+        on("build-packet", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("build_packet", {}).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                if (j.packet) S.packet = j.packet;
+                drawPacket();
+            });
+        });
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-enr]"), function (sel) {
+            sel.addEventListener("change", function () {
+                post("update_enrollment", { id: sel.dataset.enr, status: sel.value }).then(function (j) {
+                    if (j.state) S = j.state;
+                    say("enr-result", "Saved.", true);
+                    drawRail();
+                    var sum = S.enrollment_summary || {};
+                    say("enr-result", "Saved. " + (sum.approved || 0) + " of " + (sum.total || 0)
+                        + " approved · " + (sum.blocking || 0) + " still blocking go-live.", true);
+                });
+            });
+        });
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-ref]"), function (inp) {
+            inp.addEventListener("change", function () {
+                post("update_enrollment", { id: inp.dataset.ref, reference_number: inp.value }).then(function () {
+                    say("enr-result", "Reference saved.", true);
+                });
+            });
+        });
+    }
+
+    // ---- step 4 · credentials ----------------------------------------
+
+    function drawCredentials() {
+        var html = head("credentials");
+        var vendor = S.onboarding.selected_vendor;
+        if (!vendor) {
+            html += '<section class="block"><div class="note warn">Choose a clearinghouse first — step 2.</div></section>';
+            panel.innerHTML = html; return;
+        }
+        var spec = S.credential_spec || [];
+        var have = (S.credentials && S.credentials.field_names) || [];
+
+        html += '<section class="block"><h2>What ' + esc(S.packet ? S.packet.vendor_label : vendor) + " issued you</h2>";
+        html += '<div class="note">Stored encrypted with the same envelope scheme as patient data — a clearinghouse key can submit claims for real money under your NPI, so it gets the strongest protection here. Values are never sent back to this page after saving.</div>';
+
+        if (S.credentials_source === "env") {
+            html += '<div class="note">These credentials are already set as deployment secrets, which take precedence over anything entered here. You do not need to re-enter them.</div>';
+        }
+
+        spec.forEach(function (f) {
+            html += '<label class="fld" for="c-' + f.key + '">' + esc(f.label)
+                  + (have.indexOf(f.key) >= 0 ? ' <span class="tag ok">stored</span>' : "") + "</label>";
+            html += '<input id="c-' + f.key + '" data-ck="' + esc(f.key) + '" type="' + (f.secret ? "password" : "text") + '"'
+                  + ' autocomplete="off" placeholder="' + (have.indexOf(f.key) >= 0 ? "stored — type to replace" : esc(f.key)) + '">';
+            if (f.help) html += '<div class="hint">' + esc(f.help) + "</div>";
+        });
+
+        html += '<div class="row" style="margin-top:18px;">'
+              + '<button class="btn" id="save-creds">Save credentials</button>'
+              + '<button class="btn ghost" id="test-conn">Test the connection</button></div>';
+        html += '<div class="result" id="cred-result" style="display:none;"></div>';
+
+        if (S.credentials && S.credentials.last_test_at) {
+            html += '<div class="note' + (S.credentials.last_test_ok ? "" : " warn") + '">'
+                  + (S.credentials.last_test_ok ? "Last test passed" : "Last test failed")
+                  + " · " + esc(S.credentials.last_test_at) + "<br>" + esc(S.credentials.last_test_detail || "") + "</div>";
+        }
+        html += '<div class="note">The test makes a real authenticated call to the vendor. "Saved" and "works" are different facts, and only the second one earns a checkmark.</div>';
+        html += "</section>";
+        panel.innerHTML = html;
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-ck]"), function (n) {
+            n.addEventListener("input", function () { creds[n.dataset.ck] = n.value; });
+        });
+
+        on("save-creds", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("save_credentials", { vendor: vendor, fields: creds }).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                if (j.error || j._status >= 400) { say("cred-result", j.error || "Could not save.", false); return; }
+                creds = {};
+                say("cred-result", "Saved and encrypted. Now run the connection test.", true);
+                drawCredentials();
+            });
+        });
+
+        on("test-conn", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            say("cred-result", "Calling " + vendor + "…");
+            post("test_connection", { vendor: vendor }).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                var r = j.result || {};
+                say("cred-result", (r.ok ? "Connection verified. " : "Failed. ") + (r.detail || ""), !!r.ok);
+                drawRail();
+                if (r.ok) setTimeout(function () { view = "testclaim"; render(); }, 900);
+            });
+        });
+    }
+
+    // ---- step 5 · test claim -----------------------------------------
+
+    function drawTestClaim() {
+        var html = head("testclaim");
+        html += '<section class="block"><h2>Send one through</h2>';
+        html += '<div class="note">This runs through exactly the same code path a real claim uses, with the usage indicator set to T. A test that exercises a different path proves nothing about the one that matters.</div>';
+        html += '<label class="fld" for="edi">Raw 837 (optional — leave blank to use a generated sample)</label>';
+        html += '<textarea id="edi" placeholder="ISA*00*..."></textarea>';
+        html += '<div class="row" style="margin-top:14px;"><button class="btn" id="send-test">Submit test claim</button></div>';
+        html += '<div class="result" id="test-result" style="display:none;"></div>';
+
+        if (S.last_test_claim) {
+            html += '<div class="note' + (S.last_test_claim.ok ? "" : " warn") + '">Last attempt · '
+                  + esc(S.last_test_claim.at) + "<br>" + esc(S.last_test_claim.detail || "") + "</div>";
+        }
+        html += "</section>";
+        panel.innerHTML = html;
+
+        on("send-test", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            say("test-result", "Submitting…");
+            post("submit_test_claim", { edi: (el("edi").value || "").trim() || null }).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                say("test-result", j.detail || JSON.stringify(j.result || {}, null, 2), !!(j.result && j.result.ok));
+                drawRail();
+            });
+        });
+    }
+
+    // ---- step 6 · go live --------------------------------------------
+
+    function drawGoLive() {
+        var html = head("golive");
+        var r = stepState("golive");
+        html += '<section class="block"><h2>Production</h2>';
+
+        if (S.live_mode) {
+            html += '<div class="banner go">Live. Claims submit with usage indicator P.</div>';
+        } else if (r.blockers && r.blockers.length) {
+            html += '<div class="banner wait">Not ready yet.</div>';
+            r.blockers.forEach(function (b) {
+                html += '<div class="rsn bad"><span class="m">!</span><span>' + esc(b) + "</span></div>";
+            });
+        } else {
+            html += '<div class="banner go">Everything checks out. Nothing is blocking production.</div>';
+            html += '<div class="row" style="margin-top:14px;"><button class="btn" id="golive-btn">Arm production</button></div>';
+            html += '<div class="result" id="golive-result" style="display:none;"></div>';
+        }
+
+        html += '<div class="note">The production switch is a deployment secret rather than a field on this page, on purpose: no browser session should be able to send a real claim by accident. Arming it here records readiness and tells you the one value to set.</div>';
+        html += "</section>";
+
+        // Event log — the thing that settles "we never received your form".
+        var ev = S.events || [];
+        if (ev.length) {
+            html += '<section class="block"><h2>Setup history</h2><div class="scroll-x"><table class="tbl"><thead><tr>'
+                  + "<th>When</th><th>Step</th><th>Action</th><th>Detail</th></tr></thead><tbody>";
+            ev.forEach(function (e) {
+                html += "<tr><td>" + esc((e.at || "").replace("T", " ").slice(0, 19)) + "</td>"
+                      + "<td>" + esc(e.step || "—") + "</td>"
+                      + "<td class='nm'>" + esc(e.action) + (e.ok === 0 ? ' <span class="tag med">failed</span>' : "") + "</td>"
+                      + "<td>" + esc(e.detail || "") + "</td></tr>";
+            });
+            html += "</tbody></table></div></section>";
+        }
+        panel.innerHTML = html;
+
+        on("golive-btn", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("go_live", {}).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                if (j._status >= 400) {
+                    say("golive-result", (j.blockers || []).join("; ") || "Not ready.", false);
+                    return;
+                }
+                var i = j.instruction || {};
+                say("golive-result",
+                    "Readiness recorded. " + (i.why || "") + "\n\nSet these on the Pages production deployment, then redeploy:\n  "
+                    + i.env_var + "=" + i.value + "\n  " + (i.also || ""), true);
+            });
+        });
+    }
+
+    // ---- router ------------------------------------------------------
+
+    function render() {
+        if (!S) return;
+        drawRail();
+        ({
+            profile: drawProfile, selection: drawSelection, packet: drawPacket,
+            credentials: drawCredentials, testclaim: drawTestClaim, golive: drawGoLive,
+        }[view] || drawProfile)();
+        window.scrollTo({ top: 0, behavior: "auto" });
+    }
+
+    load().then(render).catch(function (err) {
+        var m = String(err);
+        var html;
+        if (m.indexOf("SIGNIN") >= 0) {
+            html = '<div class="center">Sign in to continue. <a href="/admin/">Admin sign-in</a></div>';
+        } else if (m.indexOf("SCHEMA:") >= 0) {
+            // A missing migration is an operator action, not an error page.
+            html = '<h2>One migration to run</h2>'
+                 + '<div class="note">The wizard is deployed, but its tables do not exist in the database yet. '
+                 + 'Run this once from the repository and reload — it creates the tables and touches nothing else.</div>'
+                 + '<div class="result" style="display:block;">'
+                 + esc(m.slice(m.indexOf("SCHEMA:") + 7)) + "</div>";
+        } else {
+            html = '<div class="center">Could not load the setup wizard: ' + esc(m) + "</div>";
+        }
+        panel.innerHTML = '<section class="block">' + html + "</section>";
+    });
+})();
+</script>
 </body>
 </html>
