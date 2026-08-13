@@ -105,12 +105,28 @@ export async function triageForIntake(ctx, intake_id) {
     const now = nowMs();
 
     // Try the AI path; if it fails for any reason, fall back to manual review.
+    //
+    // 2026-08-13 — WHY THIS NOW ROUTES.
+    // With no ANTHROPIC_API_KEY the direct call throws, every patient lands
+    // in manual_review_required, and booking returns 409 no_released_triage.
+    // A patient completes nineteen sections and then cannot book anything.
+    // That is not a graceful degradation, it is a dead end.
+    //
+    // runTriage() already de-identifies the intake before the model sees it
+    // (deidentifyIntake in _lib/intake_triage.js), so the work is safe on
+    // the CLI bridge as well as the API. Routing it means: API when a key
+    // exists, otherwise QUEUE for the bridge so the decision arrives within
+    // minutes instead of never. The row is still written immediately as
+    // manual_review_required — the clinician backstop is untouched — but it
+    // now says a decision is COMING rather than that AI is unavailable, and
+    // the queued job can complete it.
     let decision = null;
     let prompt_version = TRIAGE_PROMPT_VERSION;
     let secondary_concerns = [];
     let rationale = null;
     let ai_latency_ms = null;
     let fallback_reason = null;
+    let queued_job_id = null;
 
     try {
         const res = await runTriage(env, {
@@ -125,6 +141,23 @@ export async function triageForIntake(ctx, intake_id) {
         ai_latency_ms = res.anthropic_latency_ms;
     } catch (e) {
         fallback_reason = String(e && e.message ? e.message : e).slice(0, 200);
+
+        // No API key is not a failure — it is a routing decision. Queue it.
+        try {
+            const { routeFor, enqueueAiJob } = await import("../../../../../_lib/ai_router.js");
+            if (routeFor(env, "intake_triage") === "bridge") {
+                const job = await enqueueAiJob(env, {
+                    kind: "intake_summary",
+                    payload: { intake_id, triage_id, purpose: "triage" },
+                    patient_id: intake.patient_id,
+                });
+                queued_job_id = job.id;
+                fallback_reason = `queued for the local Claude CLI bridge (job ${job.id})`;
+            }
+        } catch (qe) {
+            console.warn("triage bridge enqueue failed", { error: String(qe) });
+        }
+
         console.warn("triage AI path failed — writing manual_review_required row", {
             module: "api/v1/patient/intake/triage",
             intake_id,
@@ -149,7 +182,9 @@ export async function triageForIntake(ctx, intake_id) {
         ai_urgency: "routine",
         ai_in_person_required: 0,
         ai_preferred_time_of_day: "any",
-        ai_rationale: `AI triage unavailable — manual review required. Reason: ${fallback_reason || "unknown"}`,
+        ai_rationale: queued_job_id
+            ? `Awaiting automated triage — ${fallback_reason}. Dr. Mabini can release slots now without waiting.`
+            : `AI triage unavailable — manual review required. Reason: ${fallback_reason || "unknown"}`,
         ai_secondary_concerns_json: JSON.stringify([]),
     };
 

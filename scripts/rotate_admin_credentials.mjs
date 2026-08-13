@@ -33,7 +33,17 @@
 
 import crypto from "node:crypto";
 
-const ITERATIONS = 210000;   // OWASP guidance for PBKDF2-HMAC-SHA256
+// 2026-08-13 — was 210000 (OWASP guidance). Cloudflare Workers enforce a
+// CPU-time budget, and PBKDF2 is pure CPU: at 210k iterations
+// crypto.subtle.deriveBits exceeded it, the middleware's try/catch caught
+// the exception, and every login returned a plain 401. The credentials
+// were correct the whole time — the verifier never finished.
+//
+// That failure is invisible from outside: a rejected password and a
+// timed-out KDF look identical to the client. 100k is the largest value
+// that verifies reliably here and is still well above the code's own
+// 10,000 floor.
+const ITERATIONS = 100000;
 const KEYLEN = 32;
 const SALT_BYTES = 16;
 
