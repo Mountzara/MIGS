@@ -171,6 +171,29 @@ ${prov.name} — Billing`;
  * @param {number} nowMs - Date.now() from the caller (Functions runtime).
  * @returns {Promise<object>} appeal draft (see SYSTEM_PROMPT shape) + ai_used flag.
  */
+/**
+ * Merge the real identifiers back into an AI-drafted letter, locally.
+ * Counterpart to the PHI gate in draftAppeal: the model only ever sees the
+ * placeholder tokens; the actual name/DOB/member-id/claim-number are stitched
+ * in here, inside BAA-covered infrastructure, on the way to D1.
+ */
+export function mergeIdentity(text, { patient, insurance, claim } = {}) {
+    if (!text) return text;
+    const name = `${(patient && patient.first_name) || ""} ${(patient && patient.last_name) || ""}`.trim();
+    const map = {
+        "{{PATIENT_NAME}}": name || "the patient",
+        "{{MEMBER_ID}}": (insurance && insurance.member_id) || "",
+        "{{PATIENT_DOB}}": (patient && patient.dob) || (insurance && insurance.subscriber_dob) || "",
+        "{{CLAIM_NUMBER}}": (claim && (claim.clearinghouse_claim_id || claim.id)) || "",
+        "{{DATE_OF_SERVICE}}": (claim && claim.visit_date) || "",
+    };
+    let out = String(text);
+    for (const [token, value] of Object.entries(map)) {
+        out = out.split(token).join(value);
+    }
+    return out;
+}
+
 export async function draftAppeal(env, ctxData, nowMs) {
     const era = ctxData.era || {};
     const dctx = denialContext(era);
@@ -179,12 +202,25 @@ export async function draftAppeal(env, ctxData, nowMs) {
 
     const prov = providerBlock(env);
     const { claim, payer, patient, insurance, lines, diags } = ctxData;
+    // 🔴 PHI GATE (2026-08-12). This payload previously carried the patient's
+    // NAME, DOB, and MEMBER ID to the Anthropic API. Anthropic has no signed
+    // BAA (agent-platform/docs/BAA_GATING.md; global §12.2), so that was PHI
+    // egress to an uncovered processor — the appeal path had never received
+    // the PHI-free treatment billing_ai_preflight.js was built with.
+    //
+    // The model does not need the patient's identity to argue a denial: it
+    // needs the codes, the CARC, and the payer. So identity fields go out as
+    // PLACEHOLDERS and the real values are merged into the finished letter
+    // LOCALLY (see mergeIdentity below), inside our own BAA-covered
+    // infrastructure. Letter quality is unchanged; the identifiers never
+    // leave Cloudflare.
     const userPayload = {
         provider: prov,
         date: todayParts(nowMs),
         payer: payer ? { name: payer.payer_name, payer_id: payer.payer_id, kind: payer.payer_kind, appeals_address: payer.appeals_address || payer.submission_address || null } : null,
-        patient: { name: `${(patient && patient.first_name) || ""} ${(patient && patient.last_name) || ""}`.trim(), member_id: (insurance && insurance.member_id) || "", dob: (patient && patient.dob) || (insurance && insurance.subscriber_dob) || "" },
-        claim: { claim_number: claim.clearinghouse_claim_id || claim.id, date_of_service: claim.visit_date, charge_usd: Math.round((claim.total_charge_cents || 0)) / 100 },
+        patient: { name: "{{PATIENT_NAME}}", member_id: "{{MEMBER_ID}}", dob: "{{PATIENT_DOB}}" },
+        identity_instruction: "Use the placeholder tokens {{PATIENT_NAME}}, {{MEMBER_ID}}, {{PATIENT_DOB}}, {{CLAIM_NUMBER}}, {{DATE_OF_SERVICE}} verbatim wherever the letter refers to the patient or claim. Do NOT invent names, dates, or identifiers.",
+        claim: { claim_number: "{{CLAIM_NUMBER}}", date_of_service: "{{DATE_OF_SERVICE}}", charge_usd: Math.round((claim.total_charge_cents || 0)) / 100 },
         procedures: (lines || []).map((l) => ({ cpt: l.user_override_code || l.code, modifiers: [l.modifier_1, l.modifier_2, l.modifier_3, l.modifier_4].filter(Boolean), units: l.units || 1 })),
         diagnoses: (diags || []).map((d) => d.user_override_code || d.icd10_code).filter(Boolean),
         denial: {
@@ -225,11 +261,12 @@ export async function draftAppeal(env, ctxData, nowMs) {
         strategy_rationale: String(parsed.strategy_rationale || "").slice(0, 600),
         carc_explanations: dctx.explanations,
         corrected_claim_changes: Array.isArray(parsed.corrected_claim_changes) ? parsed.corrected_claim_changes.slice(0, 12).map((c) => ({ target: String(c.target || ""), change: String(c.change || ""), reason: String(c.reason || "") })) : [],
-        appeal_letter: String(parsed.appeal_letter || ""),
+        // Identity merged back in HERE — the model returned placeholders only.
+        appeal_letter: mergeIdentity(String(parsed.appeal_letter || ""), ctxData),
         supporting_points: Array.isArray(parsed.supporting_points) ? parsed.supporting_points.slice(0, 12).map(String) : [],
         deadline_note: String(parsed.deadline_note || ""),
         usage: result.usage || {},
     };
 }
 
-export default { draftAppeal, APPEAL_PROMPT_VERSION };
+export default { draftAppeal, mergeIdentity, APPEAL_PROMPT_VERSION };

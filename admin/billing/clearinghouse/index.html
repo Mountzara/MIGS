@@ -113,7 +113,51 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar"><span class="crumb"><a href="/admin/">Admin</a> › <a href="/admin/billing/">Billing</a> › Clearinghouse / Go-Live</span></header>
         <h1>Clearinghouse <b>· Go-Live</b></h1>
-        <p class="lede">Your billing pipeline's control panel: readiness at a glance, route each payer to its clearinghouse, and post remittances (835 ERA). The pipeline stays in <b>test</b> until a clearinghouse is credentialed, payer IDs are verified, and <code>CLEARINGHOUSE_LIVE=1</code> is set.</p>
+        <p class="lede">Claims don't go straight from your office to an insurer. They pass through a <b>clearinghouse</b> — a switchboard that checks each claim's format, forwards it to the right payer, and returns the payer's answer. You need exactly one to start.</p>
+
+        <!-- START HERE (2026-08-12). This page previously opened with the control
+             panel: "route each payer to the clearinghouse you enrolled it with",
+             "paste a raw 835", "set CLEARINGHOUSE_LIVE=1". Every one of those
+             assumes a clearinghouse has already been chosen and enrolled. Dr.
+             Mabini's note — "this whole section looks confusing on what to do" —
+             was a correct read of a control panel with no on-ramp. This block is
+             the on-ramp; the control panel below is for after enrollment. -->
+        <section class="block" id="start-here" style="border-color:rgba(167,139,250,.45);">
+            <h2 style="color:var(--accent-soft);">Start here — you have not enrolled yet</h2>
+
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 16px;">
+                Everything below this box is a <b>control panel for after you're enrolled</b>.
+                Ignore it for now. There are four steps, in this order:
+            </p>
+
+            <div class="ck"><div class="box">1</div><div>
+                <div class="t">Pick one clearinghouse</div>
+                <div class="d">Recommendation for your situation — solo practice, custom billing pipeline, Illinois (and possibly California):
+                <b style="color:var(--accent-soft);">Claim.MD</b>. It carries Medicare, Medicaid/Medi-Cal <i>and</i> commercial in one place, is priced for small practices, and doesn't require an enterprise contract.
+                <br><br><b>Availity Essentials</b> is the alternative worth knowing: free real-time eligibility with the Blues (BCBS&nbsp;IL, Anthem/Blue Shield CA) — many practices end up using Availity for eligibility checks <i>and</i> a second clearinghouse for claims. <b>Stedi</b> has the cleanest API if you later want maximum automation, but it is the most engineering-heavy option.
+                <br><br><i>Costs and enrollment terms change — confirm current pricing directly with the vendor before committing.</i></div>
+            </div></div>
+
+            <div class="ck"><div class="box">2</div><div>
+                <div class="t">Enroll with them — this is its own application</div>
+                <div class="d">Like payer credentialing, not like signing up for a website. They will need your NPI, Tax ID / W-9, practice address, and your payer list. Expect back-and-forth, and expect <b>per-payer enrollment</b>: some payers (especially Medicare and Medicaid) require a separate EDI enrollment form before they'll accept electronic claims from your clearinghouse.</div>
+            </div></div>
+
+            <div class="ck"><div class="box">3</div><div>
+                <div class="t">Get your credentials into this page</div>
+                <div class="d">They'll issue an API key or account credentials. Those go in <b>Clearinghouse credentials</b> below. Nothing on this page can talk to a payer until that exists.</div>
+            </div></div>
+
+            <div class="ck"><div class="box">4</div><div>
+                <div class="t">Test, then go live</div>
+                <div class="d">Submit test claims first. The pipeline deliberately stays in <b>test mode</b> until you flip it — that switch is <code>CLEARINGHOUSE_LIVE=1</code>, and it exists so a half-configured pipeline can never send a real claim by accident.</div>
+            </div></div>
+
+            <p style="font-size:13px;color:var(--fg-dim);margin:16px 0 0;">
+                <b>You cannot skip step 2.</b> Routing payers, posting remittances, and everything else below only work once a real clearinghouse account exists behind them.
+            </p>
+        </section>
+
         <div id="root"><div class="center"><div class="spin"></div>Loading readiness…</div></div>
     </div>
 
