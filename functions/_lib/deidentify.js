@@ -39,9 +39,20 @@ const RULES = [
     // 7 SSN
     { key: "ssn", re: /\b\d{3}-\d{2}-\d{4}\b/g, sub: "[SSN]", risk: "high" },
     // 8 MRN / 9 health-plan beneficiary / 10 account numbers
-    { key: "mrn", re: /\b(?:MRN|MR#|MR\s?No\.?|Medical\s?Record\s?(?:#|No\.?|Number))\s*[:#]?\s*[A-Z0-9-]{4,}/gi, sub: "[MRN]", risk: "high" },
-    { key: "member_id", re: /\b(?:Member|Subscriber|Policy|Group|Beneficiary)\s?(?:ID|#|No\.?|Number)\s*[:#]?\s*[A-Z0-9-]{5,}/gi, sub: "[MEMBER_ID]", risk: "high" },
-    { key: "account", re: /\b(?:Account|Acct)\s?(?:#|No\.?|Number)\s*[:#]?\s*[A-Z0-9-]{4,}/gi, sub: "[ACCOUNT]", risk: "high" },
+    // 2026-08-13 — LINKING WORDS. The original patterns required the value
+    // to follow the label immediately or after a colon: "MRN: 88213345".
+    // Patients do not write like that. They write "my MRN is 88213345",
+    // "my member ID is XZQ889201344", "my account number is 5567123" — and
+    // every one of those passed straight through, WITH the verifier
+    // reporting ok=true, because the re-scan uses these same patterns. A
+    // scrubber that misses an identifier is bad; one that then certifies
+    // itself clean is dangerous, because every downstream gate trusts it.
+    // Found by scripts/test_bridge_phi.mjs, which searches the OUTPUT for
+    // the identifier that went in rather than trusting a boolean.
+    // ⚠️ The Mac app's DeidentificationService needs the same fix.
+    { key: "mrn", re: /\b(?:MRN|MR\s?#|MR\s?No\.?|Medical\s*Record(?:\s*(?:#|No\.?|Number))?)[\s:#=.-]*(?:is|was|are)?[\s:#=.-]*(?=[A-Z0-9-]*\d)[A-Z0-9][A-Z0-9-]{3,}\b/gi, sub: "[MRN]", risk: "high" },
+    { key: "member_id", re: /\b(?:Member|Subscriber|Policy|Group|Beneficiary)\s*(?:ID|I\.D\.|#|No\.?|Number)[\s:#=.-]*(?:is|was|are)?[\s:#=.-]*(?=[A-Z0-9-]*\d)[A-Z0-9][A-Z0-9-]{4,}\b/gi, sub: "[MEMBER_ID]", risk: "high" },
+    { key: "account", re: /\b(?:Account|Acct)\s*(?:#|No\.?|Number)[\s:#=.-]*(?:is|was|are)?[\s:#=.-]*(?=[A-Z0-9-]*\d)[A-Z0-9][A-Z0-9-]{3,}\b/gi, sub: "[ACCOUNT]", risk: "high" },
     // 11 Certificate/license
     { key: "license", re: /\b(?:License|Lic\.?)\s?(?:#|No\.?|Number)\s*[:#]?\s*[A-Z0-9-]{4,}/gi, sub: "[LICENSE]", risk: "medium" },
     // 12 Vehicle / 13 device identifiers

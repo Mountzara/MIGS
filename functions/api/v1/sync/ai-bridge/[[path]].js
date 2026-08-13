@@ -16,10 +16,37 @@
 // are written to R2 under the same envelope encryption as message bodies
 // (_lib/phi.js) — D1 stores the key material and non-clinical metadata,
 // exactly as the `messages` table does.
+//
+// ---------------------------------------------------------------------
+// THE RULE THAT GOVERNS THIS FILE
+// ---------------------------------------------------------------------
+// The bridge runs `claude -p` against the owner's PERSONAL Claude
+// subscription. The Anthropic BAA covers the API. It does NOT cover a
+// consumer CLI subscription. Everything this endpoint hands the bridge
+// has therefore left BAA-covered infrastructure, and must contain no PHI.
+//
+// The bridge is an UNTRUSTED CLIENT. It holds a token and runs on a
+// laptop whose script anyone at that keyboard can edit. So this endpoint
+// does not hand over raw text and trust the bridge to scrub it. It
+// scrubs, it VERIFIES the scrub by re-scanning, and it REFUSES to answer
+// when verification fails. There is no parameter, header or flag that
+// returns un-scrubbed content — changing that requires changing this file
+// and _lib/bridge_context.js.
+//
+// Names and dates survive as indexed tokens so the work is still
+// possible; the server rehydrates them on the way back, so the physician
+// reads a normal draft that the model never saw in the clear. Every
+// disclosure — and every refusal — is recorded in bridge_disclosure_log
+// with the rule counts, never the matched values.
 // =====================================================================
 
 import { syncRoute, syncJson, syncError } from "../../../../_lib/sync_auth.js";
-import { putPhiObject } from "../../../../_lib/phi.js";
+import { putPhiObject, getPhiObject, encryptPhi, decryptPhi } from "../../../../_lib/phi.js";
+import {
+    BRIDGE_KINDS, bridgeKindAllowed, deidentifyForBridge,
+    rehydrate, unresolvedTokens,
+} from "../../../../_lib/bridge_context.js";
+import { newId } from "../../../../_lib/db.js";
 
 // A claim older than this is considered abandoned and may be re-claimed,
 // so a bridge that is killed mid-job does not strand work forever.
@@ -31,14 +58,20 @@ async function claimNext(env, bridge_id) {
     const stale = new Date(Date.now() - LEASE_SECONDS * 1000).toISOString();
 
     // Pending, or claimed-but-abandoned. Oldest first so nothing starves.
+    // Only kinds we have decided how to de-identify may be dispatched to
+    // the bridge. A kind outside BRIDGE_KINDS stays queued rather than
+    // going to a non-BAA processor by default.
+    const allowed = Object.keys(BRIDGE_KINDS);
+    const placeholders = allowed.map(() => "?").join(",");
     const row = await env.DB.prepare(
         `SELECT id, kind, payload_json, patient_id, attempts, max_attempts
            FROM ai_jobs
-          WHERE (status = 'pending')
-             OR (status = 'claimed' AND claimed_at < ?)
+          WHERE kind IN (${placeholders})
+            AND ((status = 'pending')
+              OR (status = 'claimed' AND claimed_at < ?))
           ORDER BY created_at ASC
           LIMIT 1`
-    ).bind(stale).first();
+    ).bind(...allowed, stale).first();
     if (!row) return null;
 
     if (row.attempts >= row.max_attempts) {
@@ -64,6 +97,112 @@ async function claimNext(env, bridge_id) {
     return { id: row.id, kind: row.kind, payload, patient_id: row.patient_id, attempt: row.attempts + 1 };
 }
 
+
+const MAP_TTL_MINUTES = 120;
+
+async function logDisclosure(env, row) {
+    try {
+        await env.DB.prepare(
+            `INSERT INTO bridge_disclosure_log
+               (id, at, job_id, kind, bridge_id, verified, findings_json,
+                residual_json, chars_sent, refused, refuse_reason)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+        ).bind(newId(), nowIso(), row.job_id || null, row.kind, row.bridge_id || null,
+               row.verified ? 1 : 0, JSON.stringify(row.findings || []),
+               row.residual?.length ? JSON.stringify(row.residual) : null,
+               row.chars_sent ?? null, row.refused ? 1 : 0,
+               row.refuse_reason ? String(row.refuse_reason).slice(0, 400) : null).run();
+    } catch (e) {
+        // A disclosure record that fails to write is itself a problem, but
+        // it must not become a reason to send anyway.
+        console.error("bridge_disclosure_log write failed", String(e));
+    }
+}
+
+/** Seal the reverse map. It is a literal list of names and dates. */
+async function sealMap(env, jobId, map) {
+    const enc = await encryptPhi(env, JSON.stringify(map), `bridge_map:${jobId}`);
+    let ct = "";
+    const bytes = enc.ciphertext instanceof Uint8Array ? enc.ciphertext : new Uint8Array(enc.ciphertext);
+    for (let i = 0; i < bytes.length; i++) ct += String.fromCharCode(bytes[i]);
+    return {
+        ciphertext: btoa(ct),
+        dek_wrapped: enc.wrapped_dek,
+        iv_data: enc.iv_data,
+        iv_dek: enc.iv_dek,
+    };
+}
+
+async function openMap(env, jobId, row) {
+    if (!row?.deid_map_ciphertext) return {};
+    try {
+        const bin = atob(row.deid_map_ciphertext);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const plain = await decryptPhi(env, bytes, row.deid_map_dek_wrapped,
+                                      row.deid_map_iv_data, row.deid_map_iv_dek,
+                                      `bridge_map:${jobId}`);
+        return JSON.parse(plain);
+    } catch (e) {
+        console.error("bridge map decrypt failed", String(e));
+        return null;
+    }
+}
+
+/**
+ * Assemble the RAW context for a job, plus the names to tokenise.
+ * Nothing here goes over the wire — deidentifyForBridge() runs on the
+ * result and only its output is returned to the caller.
+ */
+async function rawContextFor(env, kind, refId) {
+    if (kind === "message_draft") {
+        const msgs = await env.DB.prepare(
+            `SELECT m.id, m.from_role, m.created_at, m.subject, m.body_r2_key, m.patient_id
+               FROM messages m
+              WHERE m.thread_id = ? AND m.deleted_at IS NULL
+              ORDER BY m.created_at ASC LIMIT 40`
+        ).bind(refId).all();
+        const rows = msgs?.results || [];
+        if (!rows.length) return null;
+
+        const names = new Set();
+        try {
+            const p = await env.DB.prepare(
+                `SELECT first_name, last_name, preferred_name FROM patients WHERE id = ? LIMIT 1`
+            ).bind(rows[0].patient_id).first();
+            for (const n of [p?.first_name, p?.last_name, p?.preferred_name]) if (n) names.add(n);
+        } catch { /* patient row optional — the scrubber still runs */ }
+
+        const parts = [];
+        for (const m of rows) {
+            let body = "";
+            try {
+                const got = await getPhiObject(env, m.body_r2_key, null, null);
+                body = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+            } catch { body = "(message body unavailable)"; }
+            parts.push(`${m.from_role === "patient" ? "PATIENT" : "PRACTICE"}: ${body}`);
+        }
+        return { text: parts.join("\n\n"), knownNames: [...names] };
+    }
+
+    if (kind === "enrollment_extract") {
+        // The practice's own paperwork, already admitted by
+        // enrollment_extract.looksLikePatientDocument() at upload time.
+        const doc = await env.DB.prepare(
+            `SELECT id, doc_type, r2_key, dek_wrapped FROM clearinghouse_documents WHERE id = ? LIMIT 1`
+        ).bind(refId).first();
+        if (!doc?.r2_key) return null;
+        let text = "";
+        try {
+            const got = await getPhiObject(env, doc.r2_key, doc.dek_wrapped, `ch_doc:${doc.id}`);
+            text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+        } catch { return null; }
+        return { text, knownNames: [], nonPhi: true, doc_type: doc.doc_type };
+    }
+
+    return null;
+}
+
 export async function onRequest(ctx) {
     return syncRoute(ctx, "ai_bridge", async ({ env, request }) => {
         const url = new URL(request.url);
@@ -73,6 +212,90 @@ export async function onRequest(ctx) {
         const seg = parts[i + 1] || "";
         const sub = parts[i + 2] || "";
         const method = request.method.toUpperCase();
+
+        // ---- GET /context/<kind>/<id> ---------------------------------
+        // The ONLY way the bridge obtains content, and it never returns
+        // raw text. Scrub -> verify -> refuse-or-send. A kind not in
+        // BRIDGE_KINDS is refused outright, because we have not decided
+        // what de-identified means for it and "allow and hope" is how PHI
+        // escapes.
+        if (method === "GET" && seg === "context") {
+            const kind = sub;
+            const refId = parts[i + 3] || "";
+            const bridge_id = url.searchParams.get("bridge_id") || "unknown";
+            const job_id = url.searchParams.get("job_id") || null;
+
+            if (!bridgeKindAllowed(kind)) {
+                await logDisclosure(env, { job_id, kind, bridge_id, verified: false,
+                    refused: 1, refuse_reason: "kind not permitted on the bridge" });
+                return syncError(`"${kind}" may not run on the bridge. Permitted: ${Object.keys(BRIDGE_KINDS).join(", ")}`, 403);
+            }
+            if (!refId) return syncError("missing reference id", 400);
+
+            let raw;
+            try {
+                raw = await rawContextFor(env, kind, refId);
+            } catch (e) {
+                return syncError(`could not assemble context: ${String(e).slice(0, 160)}`, 500);
+            }
+            if (!raw) return syncError("nothing found for that reference", 404);
+
+            // Practice paperwork is not PHI and was already gated at upload.
+            if (raw.nonPhi) {
+                await logDisclosure(env, { job_id, kind, bridge_id, verified: true,
+                    findings: [], chars_sent: raw.text.length, refused: 0 });
+                return syncJson({ ok: true, kind, phi: false, text: raw.text,
+                                  doc_type: raw.doc_type || null, deid: { applied: false, reason: "practice document, not patient data" } });
+            }
+
+            const deid = deidentifyForBridge(raw.text, { knownNames: raw.knownNames });
+
+            if (!deid.ok) {
+                // FAIL CLOSED. Refuse, record why, send nothing.
+                await logDisclosure(env, { job_id, kind, bridge_id, verified: false,
+                    findings: deid.findings, residual: deid.residual, refused: 1,
+                    refuse_reason: `residual: ${deid.residual.map((r) => r.key).join(", ")}` });
+                if (job_id) {
+                    await env.DB.prepare(
+                        `UPDATE ai_jobs SET status='failed', error=?, deid_verified=0, completed_at=? WHERE id=?`
+                    ).bind(`de-identification could not be verified (residual: ${deid.residual.map((r) => r.key).join(", ")}) — refused to disclose`,
+                           nowIso(), job_id).run();
+                }
+                return syncError(
+                    "De-identification could not be VERIFIED for this content, so nothing was sent. " +
+                    `Residual high-risk patterns: ${deid.residual.map((r) => r.key).join(", ")}.`,
+                    409
+                );
+            }
+
+            // Keep the reverse map server-side, encrypted, so the result can
+            // be rehydrated. The bridge never receives it.
+            if (job_id && Object.keys(deid.map).length) {
+                const sealed = await sealMap(env, job_id, deid.map);
+                await env.DB.prepare(
+                    `UPDATE ai_jobs SET deid_map_ciphertext=?, deid_map_dek_wrapped=?,
+                            deid_map_iv_data=?, deid_map_iv_dek=?, map_expires_at=?,
+                            deid_findings_json=?, deid_verified=1
+                      WHERE id=?`
+                ).bind(sealed.ciphertext, sealed.dek_wrapped, sealed.iv_data, sealed.iv_dek,
+                       new Date(Date.now() + MAP_TTL_MINUTES * 60000).toISOString(),
+                       JSON.stringify(deid.findings), job_id).run();
+            }
+
+            await logDisclosure(env, { job_id, kind, bridge_id, verified: true,
+                findings: deid.findings, chars_sent: deid.text.length, refused: 0 });
+
+            return syncJson({
+                ok: true, kind, phi: false,
+                text: deid.text,
+                deid: {
+                    applied: true, verified: true,
+                    removed: deid.findings,
+                    tokens: Object.keys(deid.map),
+                    note: "Names and dates are indexed tokens. The server puts the real values back before the physician sees the result — do not try to guess them.",
+                },
+            });
+        }
 
         // ---- GET /next ------------------------------------------------
         if (method === "GET" && seg === "next") {
@@ -134,8 +357,37 @@ export async function onRequest(ctx) {
                 return syncJson({ ok: true, status: "failed" });
             }
 
-            const text = String(b?.result || "");
+            let text = String(b?.result || "");
             if (!text) return syncError("result or error required", 400);
+
+            // Put the real names and dates back. The model worked on
+            // tokens; the physician reads a normal draft.
+            const mapRow = await env.DB.prepare(
+                `SELECT deid_map_ciphertext, deid_map_dek_wrapped, deid_map_iv_data, deid_map_iv_dek
+                   FROM ai_jobs WHERE id = ? LIMIT 1`
+            ).bind(job_id).first();
+            let rehydrated = false;
+            if (mapRow?.deid_map_ciphertext) {
+                const map = await openMap(env, job_id, mapRow);
+                if (map === null) {
+                    return syncError("the de-identification map could not be decrypted; the draft cannot be restored and was not stored", 500);
+                }
+                text = rehydrate(text, map);
+                rehydrated = true;
+            }
+
+            // A token that survived rehydration means the model invented a
+            // reference we cannot resolve. Showing that as a finished draft
+            // is worse than showing nothing.
+            const left = unresolvedTokens(text);
+            if (left.length) {
+                await env.DB.prepare(
+                    `UPDATE ai_jobs SET status='failed', error=?, completed_at=? WHERE id=?`
+                ).bind(`the draft referenced ${left.join(", ")}, which do not correspond to anything real — discarded rather than shown`,
+                       nowIso(), job_id).run();
+                return syncJson({ ok: true, status: "failed",
+                    reason: `unresolved tokens: ${left.join(", ")}` });
+            }
 
             // Clinical text -> R2, envelope-encrypted. Same discipline as
             // message bodies; D1 never holds the plaintext.
@@ -151,15 +403,41 @@ export async function onRequest(ctx) {
             await env.DB.prepare(
                 `UPDATE ai_jobs
                     SET status='done', result_r2_key=?, result_dek_wrapped=?,
-                        result_meta_json=?, completed_at=?, error=NULL
+                        result_meta_json=?, completed_at=?, error=NULL,
+                        deid_map_ciphertext=NULL, deid_map_dek_wrapped=NULL,
+                        deid_map_iv_data=NULL, deid_map_iv_dek=NULL, map_expires_at=NULL
                   WHERE id=?`
             ).bind(
                 r2_key, wrapped,
-                JSON.stringify(b?.meta || {}),
+                JSON.stringify({ ...(b?.meta || {}), rehydrated }),
                 nowIso(), job_id
             ).run();
 
-            return syncJson({ ok: true, status: "done" });
+            return syncJson({ ok: true, status: "done", rehydrated });
+        }
+
+        // ---- GET /disclosures -----------------------------------------
+        // The artifact that answers "prove no PHI was disclosed". Counts
+        // and rule names only — never a matched value.
+        if (method === "GET" && seg === "disclosures") {
+            const rows = await env.DB.prepare(
+                `SELECT at, job_id, kind, bridge_id, verified, findings_json,
+                        residual_json, chars_sent, refused, refuse_reason
+                   FROM bridge_disclosure_log ORDER BY at DESC LIMIT 100`
+            ).all();
+            const list = (rows?.results || []).map((r) => ({
+                ...r,
+                verified: r.verified === 1,
+                refused: r.refused === 1,
+                findings: (() => { try { return JSON.parse(r.findings_json || "[]"); } catch { return []; } })(),
+            }));
+            return syncJson({
+                ok: true,
+                total: list.length,
+                refused: list.filter((r) => r.refused).length,
+                unverified_sends: list.filter((r) => !r.refused && !r.verified).length,
+                disclosures: list,
+            });
         }
 
         return syncError("unknown ai-bridge route", 404);
