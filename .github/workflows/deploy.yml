@@ -174,10 +174,60 @@ jobs:
       # push to main could publish material that a manual deploy never
       # would. Both paths now go through the one audited script, which
       # stages an explicitly filtered copy AND runs the full gate suite.
+      # A missing secret is a SETUP problem and must say so. Pointing this
+      # job at deploy-prod.sh made it exit 1 in ~10s with a bare "exit code
+      # 1" whenever the Cloudflare credentials were absent — an opaque red X
+      # on every single push, which trains everyone to ignore CI.
+      - name: Check deploy credentials
+        id: creds
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+            echo "have=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "have=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python (gates are Python)
+        if: steps.creds.outputs.have == '1'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # DEPLOY_CI=1 keeps every hermetic content gate and skips only the
+      # browser-driven live-site audits, which need Playwright browsers the
+      # runner does not have — and which audit what is ALREADY published
+      # rather than the tree being pushed. Staging stays filtered, so CI
+      # still cannot publish docs/, wrangler.toml or .env*.
       - name: Deploy to Cloudflare Pages
+        if: steps.creds.outputs.have == '1'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOY_CI: '1'
         run: |
           npm install -g wrangler@4 >/dev/null 2>&1 || true
-          ./scripts/deploy-prod.sh "CI: push to main" 
+          ./scripts/deploy-prod.sh "CI: push to main"
+
+      # Not a failure. The site is deployed directly from an authenticated
+      # working copy; CI deploying is an ADDITIONAL path, not the only one.
+      # Failing every push for a missing optional credential is noise.
+      - name: Explain that CI deploy is not configured
+        if: steps.creds.outputs.have != '1'
+        run: |
+          {
+            echo "## ⏭️ CI deploy skipped — credentials not configured"
+            echo ""
+            echo "\`CLOUDFLARE_API_TOKEN\` and/or \`CLOUDFLARE_ACCOUNT_ID\` are not set"
+            echo "as repository secrets, so this job cannot publish."
+            echo ""
+            echo "**The gates above still ran** — this push was validated."
+            echo "The live site is unaffected: it is deployed from an"
+            echo "authenticated working copy with \`./scripts/deploy-prod.sh\`."
+            echo ""
+            echo "To enable deploy-on-push, add both under"
+            echo "Settings → Secrets and variables → Actions."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::CI deploy skipped — Cloudflare secrets not configured (see job summary)." 
