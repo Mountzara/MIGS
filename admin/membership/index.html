@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Membership Demand · Mount Zara Admin</title>
+    <style>
+        :root {
+            --bg-base:#120b22; --bg-card:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.10);
+            --fg-strong:#fff; --fg-mid:#ffffff; --fg-soft:#ffffff; --fg-dim:#ffffff;
+            --accent:#6d28d9; --accent-soft:#a78bfa; --glow-purple:167,139,250; --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+        }
+        *{box-sizing:border-box;}
+        html{background-color:var(--bg-base);}
+        html,body{margin:0;padding:0;background-color:transparent;color:var(--fg-mid);font-family:'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        a{color:var(--accent-soft);text-decoration:none;} a:hover{color:var(--fg-strong);}
+        .wrap{max-width:1080px;margin:0 auto;padding:clamp(20px,4vw,40px) clamp(16px,5vw,40px) 100px;}
+        header.bar{font-size:13px;color:var(--fg-soft);margin-bottom:4px;} header.bar .crumb{color:var(--fg-dim);}
+        h1{font-size:clamp(26px,4vw,38px);font-weight:300;letter-spacing:-.02em;color:var(--fg-strong);margin:8px 0 6px;} h1 b{font-weight:600;color:var(--accent-soft);}
+        .lede{font-size:14.5px;line-height:1.55;color:var(--fg-mid);max-width:80ch;margin:0 0 24px;}
+        section.block{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:22px;margin-bottom:18px;backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);}
+        section.block>h2{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-soft);margin:0 0 16px;}
+        .banner{border-radius:14px;padding:14px 18px;margin-bottom:18px;font-size:14.5px;font-weight:600;}
+        .banner.go{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.45);color:#6ee7b7;}
+        .banner.wait{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.40);color:#fcd34d;}
+        .ck{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-top:1px solid var(--border);font-size:14px;} .ck:first-child{border-top:none;}
+        .ck .box{flex:0 0 auto;width:20px;height:20px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;}
+        .ck.done .box{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.5);color:#6ee7b7;}
+        .ck .t{color:var(--fg-strong);} .ck .d{color:var(--fg-dim);font-size:12.5px;margin-top:2px;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px;}
+        .tile{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14px;}
+        .tile .l{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);} .tile .v{font-size:20px;color:var(--fg-strong);margin-top:6px;font-weight:300;}
+        .vendor-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13.5px;} .vendor-row:first-child{border-top:none;}
+        .pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:auto;}
+        .pill.on{background:rgba(16,185,129,.16);color:#6ee7b7;border:1px solid rgba(16,185,129,.4);}
+        .pill.off{background:rgba(255,255,255,.05);color:var(--fg-soft);border:1px solid var(--border);}
+        .pill.rec{background:rgba(var(--glow-purple),.16);color:var(--accent-soft);border:1px solid rgba(var(--glow-purple),.4);margin-left:8px;}
+        label.fld{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);margin:10px 0 6px;}
+        select,textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;}
+        textarea{min-height:150px;font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre;}
+        .route-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+        button.btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;}
+        button.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);}
+        button.btn:disabled{opacity:.55;cursor:wait;}
+        .result{margin-top:12px;font-size:13px;color:var(--fg-mid);background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;white-space:pre-wrap;}
+        .muted{color:var(--fg-dim);} .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+        .center{text-align:center;padding:40px;color:var(--fg-soft);} .spin{width:24px;height:24px;border:2px solid rgba(var(--glow-purple),.25);border-top-color:var(--accent-soft);border-radius:50%;animation:s .9s linear infinite;margin:0 auto 12px;} @keyframes s{to{transform:rotate(360deg);}}
+    
+/* 2026-07-28 — explicit plum canvas (theme-consistency sweep) */
+html { background:
+    radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
+    radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
+    linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%); }
+
+/* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
+   Audit found: contrast failures concentrated on translucent "light" panels,
+   nav/footer links 15-20px tall, carousel pips 7x7px, and a skip link that
+   itself failed contrast. WCAG 2.5.8 wants a 24x24 minimum target; 2.4.7
+   wants a visible focus indicator; 1.4.3 wants 4.5:1 on body text. */
+nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
+.nav-back, .nav-brand, .brand, .crumb a {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+/* Pips keep their small dot but get a real 24px hit area via padding. */
+.mz-grid-pip, .carousel-pip, [class*="-pip"] {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    background-clip: content-box;
+    box-sizing: border-box;
+}
+.mobile-toggle, .nav-toggle, [class*="menu-toggle"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+/* Focus must be visible on every interactive element, on any background. */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+summary:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 3px solid #c4b5fd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+/* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+.skip-link {
+    background: #2e1065 !important;
+    color: #ffffff !important;
+    border: 1px solid #c4b5fd;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===== 2026-08-13 — the setup wizard =====
+   This page used to be a prose checklist with a control panel below it.
+   It is now a six-step wizard that holds its own state, so these styles
+   are for a progress rail, step panels, a scored vendor comparison, and
+   an enrollment tracker. Colours all come from the existing tokens so the
+   theme-consistency and contrast gates stay satisfied. */
+
+.rail{display:flex;gap:6px;margin:0 0 22px;flex-wrap:wrap;}
+.rail .st{flex:1 1 140px;min-width:130px;text-align:left;background:rgba(255,255,255,.03);
+    border:1px solid var(--border);border-radius:14px;padding:12px 13px;cursor:pointer;
+    font-family:inherit;color:var(--fg-mid);min-height:24px;}
+.rail .st:disabled{cursor:not-allowed;opacity:.45;}
+.rail .st .n{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);}
+.rail .st .t{font-size:13.5px;color:var(--fg-strong);margin-top:5px;line-height:1.3;}
+.rail .st.done{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.10);}
+.rail .st.done .n{color:#6ee7b7;}
+.rail .st.active{border-color:rgba(var(--glow-purple),.65);background:rgba(var(--glow-purple),.13);}
+.rail .st.active .n{color:var(--accent-soft);}
+
+.prog{height:5px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:0 0 20px;}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.fgrid .f{min-width:0;}
+input[type=text],input[type=email],input[type=tel],input[type=password]{
+    width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;
+    color:var(--fg-strong);font-size:14px;padding:10px 12px;font-family:inherit;min-height:24px;}
+input.bad{border-color:rgba(239,68,68,.7);}
+.hint{font-size:11.5px;color:var(--fg-dim);margin-top:5px;line-height:1.45;}
+.err{font-size:11.5px;color:#fca5a5;margin-top:5px;}
+.req{color:var(--accent-soft);}
+
+.gh{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft);
+    margin:22px 0 4px;} .gh:first-child{margin-top:0;}
+.gs{font-size:12.5px;color:var(--fg-dim);margin:0 0 12px;}
+
+.qa{border-top:1px solid var(--border);padding:16px 0;} .qa:first-child{border-top:none;padding-top:0;}
+.qa .q{font-size:14.5px;color:var(--fg-strong);margin-bottom:10px;}
+.opt{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);
+    border:1px solid var(--border);border-radius:999px;padding:8px 14px;margin:0 8px 8px 0;
+    font-size:13px;cursor:pointer;color:var(--fg-mid);min-height:24px;}
+.opt.sel{background:rgba(var(--glow-purple),.18);border-color:rgba(var(--glow-purple),.6);color:var(--fg-strong);}
+
+.vcard{border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;background:rgba(255,255,255,.03);}
+.vcard.top{border-color:rgba(var(--glow-purple),.55);background:rgba(var(--glow-purple),.09);}
+.vcard.chosen{border-color:rgba(16,185,129,.55);background:rgba(16,185,129,.09);}
+.vcard h3{margin:0;font-size:17px;font-weight:600;color:var(--fg-strong);}
+.vcard .sc{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);}
+.rsn{display:flex;gap:9px;font-size:13px;line-height:1.5;padding:5px 0;color:var(--fg-mid);}
+.rsn .m{flex:0 0 auto;width:16px;text-align:center;}
+.rsn.good .m{color:#6ee7b7;} .rsn.bad .m{color:#fcd34d;}
+
+.kv{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--border);font-size:13.5px;}
+.kv:first-child{border-top:none;}
+.kv .k{flex:0 0 210px;color:var(--fg-dim);font-size:12.5px;}
+.kv .v{flex:1 1 auto;color:var(--fg-strong);font-family:ui-monospace,Menlo,monospace;font-size:13px;word-break:break-word;}
+.kv button.cp{flex:0 0 auto;background:rgba(255,255,255,.06);border:1px solid var(--border);
+    color:var(--fg-mid);border-radius:8px;padding:5px 10px;font-size:11.5px;cursor:pointer;
+    font-family:inherit;min-height:24px;}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--fg-dim);padding:8px 8px 8px 0;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 8px 9px 0;border-bottom:1px solid var(--border);color:var(--fg-mid);vertical-align:top;}
+.tbl td.nm{color:var(--fg-strong);}
+.tbl select{width:auto;min-width:130px;padding:6px 9px;font-size:12.5px;min-height:24px;}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;
+    border-radius:999px;border:1px solid var(--border);color:var(--fg-soft);margin-right:5px;}
+.tag.med{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);color:#fcd34d;}
+.tag.mcd{background:rgba(139,92,246,.16);border-color:rgba(139,92,246,.45);color:#c4b5fd;}
+.tag.ok{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.45);color:#6ee7b7;}
+
+.note{border-left:2px solid rgba(var(--glow-purple),.5);padding:2px 0 2px 13px;margin:12px 0;
+    font-size:13px;line-height:1.55;color:var(--fg-mid);}
+.note.warn{border-left-color:rgba(245,158,11,.6);}
+
+.vtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;}
+.vtab{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;
+    padding:9px 16px;font-size:13.5px;font-family:inherit;color:var(--fg-mid);cursor:pointer;min-height:24px;}
+.vtab.on{background:rgba(var(--glow-purple),.18);border-color:rgba(var(--glow-purple),.6);color:var(--fg-strong);}
+
+.assist{border:1px solid rgba(var(--glow-purple),.4);background:rgba(var(--glow-purple),.08);
+    border-radius:16px;padding:16px;margin:0 0 20px;}
+.assist h3{margin:0 0 6px;font-size:15px;font-weight:600;color:var(--fg-strong);}
+.drop{border:1px dashed rgba(255,255,255,.28);border-radius:14px;padding:20px;text-align:center;
+    font-size:13.5px;color:var(--fg-mid);cursor:pointer;background:rgba(255,255,255,.02);}
+.drop.over{border-color:rgba(var(--glow-purple),.7);background:rgba(var(--glow-purple),.12);}
+.prop{border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;background:rgba(255,255,255,.03);}
+.prop .pk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);}
+.prop .pv{font-size:15px;color:var(--fg-strong);font-family:ui-monospace,Menlo,monospace;margin:4px 0;}
+.prop .pq{font-size:12px;color:var(--fg-dim);font-style:italic;border-left:2px solid var(--border);
+    padding-left:9px;margin-top:6px;}
+.saved{font-size:12px;color:var(--fg-dim);}
+.foot-nav{display:flex;gap:10px;justify-content:space-between;margin-top:20px;flex-wrap:wrap;}
+
+/* ===== 2026-08-13 — membership demand console =====
+   Reuses the admin tokens so contrast and theme gates keep passing. The
+   only new shapes are a demand bar, a state table that distinguishes
+   licensed from unlicensed, and a sparkline. */
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.kpi .l{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);}
+.kpi .v{font-size:30px;font-weight:300;color:var(--fg-strong);margin-top:6px;letter-spacing:-.02em;}
+.kpi .s{font-size:12px;color:var(--fg-dim);margin-top:4px;line-height:1.45;}
+.kpi.hot{border-color:rgba(var(--glow-purple),.5);background:rgba(var(--glow-purple),.1);}
+
+.bars{margin:4px 0 0;}
+.bar-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--border);}
+.bar-row:first-child{border-top:none;}
+.bar-row .nm{flex:0 0 130px;font-size:13.5px;color:var(--fg-strong);}
+.bar-row .tr{flex:1 1 auto;height:9px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;}
+.bar-row .tr i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+.bar-row .ct{flex:0 0 74px;text-align:right;font-size:13px;color:var(--fg-mid);}
+.bar-row .mg{flex:0 0 92px;text-align:right;font-size:12px;color:#6ee7b7;}
+
+.spark{display:flex;align-items:flex-end;gap:3px;height:56px;padding:8px 0;}
+.spark i{flex:1 1 auto;background:rgba(var(--glow-purple),.55);border-radius:2px 2px 0 0;min-height:2px;}
+.spark-x{display:flex;justify-content:space-between;font-size:11px;color:var(--fg-dim);margin-top:2px;}
+
+.reads{font-size:14px;line-height:1.6;color:var(--fg-mid);background:rgba(255,255,255,.03);
+    border-left:2px solid rgba(var(--glow-purple),.55);border-radius:0 10px 10px 0;padding:13px 16px;margin:12px 0;}
+.ai-out{white-space:pre-wrap;font-size:14.5px;line-height:1.7;color:var(--fg-mid);
+    background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:14px;}
+
+.cmp-item{border-top:1px solid var(--border);padding:12px 0;}
+.cmp-item:first-child{border-top:none;}
+.cmp-item .t{font-size:14px;font-weight:600;color:var(--fg-strong);}
+.cmp-item .n{font-size:13px;color:var(--fg-mid);margin-top:4px;line-height:1.55;}
+.cmp-item .c{font-size:12px;color:var(--fg-dim);margin-top:6px;font-style:italic;}
+
+.lic{border-radius:10px;padding:12px 15px;font-size:13.5px;margin-bottom:10px;line-height:1.55;}
+.lic.critical{background:rgba(239,68,68,.13);border:1px solid rgba(239,68,68,.45);color:#fca5a5;}
+.lic.warning{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;}
+.lic.info{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--fg-mid);}
+.empty{text-align:center;padding:34px 20px;color:var(--fg-dim);font-size:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- 2026-08-12 — page background art REMOVED from the admin backend at the
+     owner's instruction ("remove the image background requirment - the
+     missing image blue box is behind every page"). It rendered as a broken
+     image on every admin page: /admin/* sends
+     Cross-Origin-Embedder-Policy: require-corp, and the art was loaded from
+     the APEX (https://mountzara.com/media/...) while the site is browsed on
+     www — a cross-origin subresource that ships no
+     Cross-Origin-Resource-Policy header, so COEP blocks it and the browser
+     paints the placeholder box. Do not reintroduce a cross-origin image
+     under /admin/. -->
+            <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><span class="crumb"><a href="/admin/">Admin</a> › Membership</span></header>
+        <h1>Membership <b>· Demand</b></h1>
+        <p class="lede">The waitlist, and what it says. Membership is not open for enrolment — this is the evidence that decides what opens first, and whether it is worth opening at all.</p>
+
+        <div id="root"><div class="center"><div class="spin"></div>Loading…</div></div>
+    </div>
+
+<script>
+// =====================================================================
+// Membership demand console
+// =====================================================================
+// Every number here is computed server-side in SQL and JavaScript. The
+// page renders them; it does not derive them, and neither does the model.
+// A business decision made on a hallucinated count is worse than no
+// analysis at all, so the AI button asks for INTERPRETATION of finished
+// arithmetic and never for the arithmetic itself.
+// =====================================================================
+(function () {
+    "use strict";
+    var API = "/api/v1/admin/membership/interest";
+    var root = document.getElementById("root");
+    var S = null;
+
+    function esc(v) {
+        return String(v == null ? "" : v)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function money(n) { return "$" + Math.round(Number(n) || 0).toLocaleString(); }
+    function el(id) { return document.getElementById(id); }
+
+    function load() {
+        return fetch(API, { credentials: "same-origin" }).then(function (r) {
+            if (r.status === 401) throw new Error("SIGNIN");
+            return r.json();
+        });
+    }
+
+    function post(action) {
+        return fetch(API, {
+            method: "POST", credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: action }),
+        });
+    }
+
+    function render(d) {
+        S = d;
+        var h = "";
+
+        // ---- licence warnings first: they change what can be sold
+        (d.licence_warnings || []).forEach(function (w) {
+            h += '<div class="lic ' + esc(w.severity) + '">' + esc(w.message) + "</div>";
+        });
+
+        if (!d.total) {
+            h += '<section class="block"><div class="empty">'
+               + "No signups yet.<br><br>"
+               + "The waitlist is live on the portal page. Nothing here is broken — there is simply nothing to read until people start joining, "
+               + "and a chart drawn from zero rows would be a decoration rather than information."
+               + "</div></section>";
+            root.innerHTML = h;
+            return;
+        }
+
+        // ---- headline
+        var proj = (d.projection && d.projection.at_assumed_conversion) || null;
+        h += '<div class="kpis">';
+        h += '<div class="kpi hot"><div class="l">On the list</div><div class="v">' + d.total + "</div></div>";
+        h += '<div class="kpi"><div class="l">Outside IL / CA</div><div class="v">' + d.geography.out_of_state
+           + '</div><div class="s">' + d.geography.out_of_state_pct + "% of signups</div></div>";
+        h += '<div class="kpi"><div class="l">Already have an OB/GYN</div><div class="v">'
+           + (d.obgyn.has + d.obgyn.none ? d.obgyn.has_pct + "%" : "—")
+           + '</div><div class="s">' + d.obgyn.has + " yes · " + d.obgyn.none + " no · " + d.obgyn.unknown + " unsaid</div></div>";
+        h += '<div class="kpi"><div class="l">At 15% conversion</div><div class="v">'
+           + (proj ? money(proj.annual_margin) : "—")
+           + '</div><div class="s">margin per year</div></div>';
+        h += "</div>";
+
+        // ---- tier demand
+        h += '<section class="block"><h2>Which tier they want</h2>';
+        var tiers = d.economics || [];
+        var maxT = 1;
+        tiers.forEach(function (t) { maxT = Math.max(maxT, d.by_tier[t.tier] || 0); });
+        maxT = Math.max(maxT, d.by_tier.any || 0);
+        h += '<div class="bars">';
+        tiers.forEach(function (t) {
+            var n = d.by_tier[t.tier] || 0;
+            h += '<div class="bar-row"><span class="nm">' + esc(t.name) + " · $" + t.price_month + "</span>"
+               + '<span class="tr"><i style="width:' + Math.round((n / maxT) * 100) + '%"></i></span>'
+               + '<span class="ct">' + n + " (" + (d.total ? Math.round((n / d.total) * 100) : 0) + "%)</span>"
+               + '<span class="mg">' + money(t.margin) + "/mo ea</span></div>";
+        });
+        var anyN = d.by_tier.any || 0;
+        if (anyN) {
+            h += '<div class="bar-row"><span class="nm">Not sure yet</span>'
+               + '<span class="tr"><i style="width:' + Math.round((anyN / maxT) * 100) + '%;opacity:.45"></i></span>'
+               + '<span class="ct">' + anyN + "</span><span class=\"mg\"></span></div>";
+        }
+        h += "</div>";
+        h += '<div class="reads">The margin column is per member per month at the current prices. A tier that is popular AND high-margin is where the effort goes; a tier that is popular and thin is a pricing question, not a demand question.</div>';
+        h += "</section>";
+
+        // ---- geography
+        h += '<section class="block"><h2>Where they are</h2>';
+        h += '<div class="reads">' + esc(d.geography.reads) + "</div>";
+        h += '<div class="scroll-x"><table class="tbl"><thead><tr><th>State</th><th>Signups</th><th>Can he consult there?</th></tr></thead><tbody>';
+        (d.by_state || []).forEach(function (s) {
+            h += "<tr><td class='nm'>" + esc(s.state) + "</td><td>" + s.count + "</td><td>"
+               + (s.licensed ? '<span class="tag ok">Licensed</span>'
+                             : '<span class="tag med">Preparation tools only</span>') + "</td></tr>";
+        });
+        h += "</tbody></table></div></section>";
+
+        // ---- the Navigator thesis
+        h += '<section class="block"><h2>Do they already have a doctor?</h2>';
+        h += '<div class="reads">' + esc(d.obgyn.reads) + "</div>";
+        h += '<p class="muted" style="font-size:13px;line-height:1.6;">This is the question Navigator was built on. If most signups already have an OB/GYN, the $59 tier is the product and the higher tiers are the upsell — and because it consumes none of his time, its panel has no ceiling. If most do not, they are looking for a surgeon, and Priority and Complete matter more than the thesis assumed.</p>';
+        h += "</section>";
+
+        // ---- trend
+        var days = Object.keys(d.daily || {}).sort();
+        if (days.length > 1) {
+            var maxD = 1;
+            days.forEach(function (k) { maxD = Math.max(maxD, d.daily[k]); });
+            h += '<section class="block"><h2>Signups per day · last 30</h2><div class="spark">';
+            days.forEach(function (k) {
+                h += '<i style="height:' + Math.max(4, Math.round((d.daily[k] / maxD) * 100)) + '%" title="'
+                   + esc(k) + ": " + d.daily[k] + '"></i>';
+            });
+            h += "</div><div class=\"spark-x\"><span>" + esc(days[0]) + "</span><span>" + esc(days[days.length - 1]) + "</span></div>";
+            h += "</section>";
+        }
+
+        // ---- projection
+        if (d.projection) {
+            h += '<section class="block"><h2>What it would be worth</h2>';
+            var full = d.projection.if_all_converted;
+            h += '<div class="grid">';
+            h += '<div class="tile"><div class="l">If everyone converted</div><div class="v">'
+               + (full ? money(full.annual_margin) : "—") + '</div></div>';
+            h += '<div class="tile"><div class="l">At 15% conversion</div><div class="v">'
+               + (proj ? money(proj.annual_margin) : "—") + '</div></div>';
+            h += '<div class="tile"><div class="l">Your time used</div><div class="v">'
+               + (proj ? Math.round(proj.utilisation * 100) + "%" : "—") + '</div></div>';
+            h += "</div>";
+            h += '<div class="reads">' + esc(d.projection.note) + "</div>";
+            ((proj && proj.warnings) || []).forEach(function (w) {
+                h += '<div class="lic warning">' + esc(w) + "</div>";
+            });
+            h += "</section>";
+        }
+
+        // ---- AI read
+        h += '<section class="block"><h2>What it means</h2>';
+        h += '<div class="row"><button class="btn" id="ai-btn">Ask for a read</button>'
+           + '<button class="btn ghost" id="csv-btn">Export CSV</button></div>';
+        h += '<div class="result" id="ai-msg" style="display:none;"></div>';
+        h += '<div id="ai-out"></div>';
+        h += '<p class="muted" style="font-size:12.5px;margin-top:14px;line-height:1.6;">Every number above is computed from the database. The AI is handed those finished figures and asked to interpret them — it is never asked to count, because a decision made on a hallucinated count is worse than no analysis.</p>';
+        h += "</section>";
+
+        // ---- the list
+        h += '<section class="block"><h2>The list · ' + d.total + "</h2>";
+        h += '<div class="scroll-x"><table class="tbl"><thead><tr>'
+           + "<th>When</th><th>Email</th><th>Tier</th><th>State</th><th>Has OB/GYN</th><th>Source</th></tr></thead><tbody>";
+        (d.recent || []).forEach(function (r) {
+            h += "<tr><td>" + esc((r.created_at || "").replace("T", " ").slice(0, 16)) + "</td>"
+               + "<td class='nm'>" + esc(r.email) + "</td>"
+               + "<td>" + esc(r.tier || "—") + "</td>"
+               + "<td>" + esc(r.state || "—") + "</td>"
+               + "<td>" + esc(r.has_obgyn || "—") + "</td>"
+               + "<td>" + esc(r.source || "—") + "</td></tr>";
+        });
+        h += "</tbody></table></div>";
+        if (d.total > (d.recent || []).length) {
+            h += '<p class="muted" style="font-size:12.5px;margin-top:10px;">Showing the most recent ' + d.recent.length + " of " + d.total + ". Export the CSV for all of them.</p>";
+        }
+        h += "</section>";
+
+        // ---- compliance, always visible
+        if (d.compliance && d.compliance.length) {
+            h += '<section class="block"><h2>Before this opens</h2>';
+            h += '<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px;">Shown on this page rather than buried in a document, because a compliance checklist nobody sees is not a control. This is not legal advice — it is the list to take to your healthcare attorney.</p>';
+            d.compliance.forEach(function (c) {
+                h += '<div class="cmp-item"><div class="t">' + esc(c.topic) + '</div><div class="n">' + esc(c.note) + "</div>";
+                if (c.cite) h += '<div class="c">' + esc(c.cite) + "</div>";
+                h += "</div>";
+            });
+            h += "</section>";
+        }
+
+        root.innerHTML = h;
+
+        var btn = el("ai-btn");
+        if (btn) btn.addEventListener("click", function () {
+            btn.disabled = true; btn.textContent = "Thinking…";
+            var msg = el("ai-msg");
+            msg.style.display = "block";
+            msg.textContent = "Sending the figures for interpretation…";
+            post("analyze").then(function (r) { return r.json(); }).then(function (j) {
+                btn.disabled = false; btn.textContent = "Ask for a read";
+                if (j.skipped || j.unavailable || j.queued) {
+                    msg.textContent = j.message;
+                    return;
+                }
+                msg.style.display = "none";
+                el("ai-out").innerHTML = '<div class="ai-out">' + esc(j.analysis || "") + "</div>";
+            }).catch(function (e) {
+                btn.disabled = false; btn.textContent = "Ask for a read";
+                msg.textContent = "Could not get a read: " + e;
+            });
+        });
+
+        var csv = el("csv-btn");
+        if (csv) csv.addEventListener("click", function () {
+            csv.disabled = true;
+            post("export").then(function (r) { return r.text(); }).then(function (text) {
+                csv.disabled = false;
+                // Blob + object URL: the list can be long, and a data: URI
+                // of a few thousand rows hits URL length limits in Safari.
+                var blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement("a");
+                a.href = url; a.download = "membership-interest.csv";
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+            }).catch(function () { csv.disabled = false; });
+        });
+    }
+
+    load().then(render).catch(function (err) {
+        root.innerHTML = '<section class="block"><div class="center">'
+            + (String(err).indexOf("SIGNIN") >= 0
+                ? 'Sign in to continue. <a href="/admin/">Admin sign-in</a>'
+                : "Could not load: " + esc(String(err)))
+            + "</div></section>";
+    });
+})();
+</script>
+</body>
+</html>

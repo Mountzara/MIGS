@@ -30,9 +30,9 @@
 // =====================================================================
 
 import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../_lib/admin_api.js";
-import { TIERS, tier, unitEconomics, capacity } from "../../../../_lib/membership.js";
+import { TIERS, tier, unitEconomics, capacity, COMPLIANCE_REVIEW } from "../../../../_lib/membership.js";
 import { routeFor, enqueueAiJob } from "../../../../_lib/ai_router.js";
-import { licensedStates } from "../../../../_lib/visit_prep.js";
+import { licensedStates, licenceWarnings } from "../../../../_lib/visit_prep.js";
 
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 1000) / 10 : 0; }
 
@@ -154,6 +154,12 @@ async function buildAnalytics(env) {
                      physician_minutes: u.physician_minutes };
         }),
         recent: all.slice(0, 100),
+        // Shown on the page rather than buried in a document: a compliance
+        // checklist nobody sees is not a control.
+        compliance: COMPLIANCE_REVIEW,
+        // A lapsed licence changes what can be sold, so it belongs at the
+        // top of the page that decides what to sell.
+        licence_warnings: licenceWarnings(),
     };
 }
 
