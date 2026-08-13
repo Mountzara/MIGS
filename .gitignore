@@ -26,3 +26,32 @@ __pycache__/
 
 # Cached PubMed abstract records (regenerated on demand from NCBI)
 scripts/_authoring/.pubmed_cache/
+
+# ---------------------------------------------------------------------
+# 2026-08-13 — keep `git add -A` safe on a clinical repo.
+# The Mac worktree accumulated ~90 untracked files alongside genuinely
+# valuable work (the billing-denial automation libs). A blanket `git add`
+# would have committed all of it, including things that must never enter
+# git history: anything under data/ on a repo that handles PHI, and
+# multi-megabyte media that is permanent once committed.
+# ---------------------------------------------------------------------
+
+# Local working data. May contain PHI — never commit.
+data/
+
+# Auto-generated backups from the deprecation guard.
+*.pre-guard.*.py
+*.pre-guard.*.html
+
+# Throwaway one-off helpers. Real tooling lives in scripts/ WITHOUT the
+# leading underscore, and is committed deliberately.
+scripts/_commit_*.sh
+scripts/_deploy_*.sh
+scripts/_redeploy_*.sh
+
+# Source media belongs in R2 (served via /media/<key>), never in git —
+# committed binaries are permanent and bloat every future clone.
+docs/**/*.m4v
+docs/**/*.mov
+docs/**/*.mp4
+*.m4v
