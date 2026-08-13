@@ -20,7 +20,8 @@
 
 import {
     DELIVERABLES, checkScope, buildPrompt, PATIENT_DISCLAIMER,
-    canConsult, escalation, LICENSED_STATES, SCOPE_RULES,
+    canConsult, escalation, LICENSED_STATES, licensedStates, SCOPE_RULES,
+    LICENSES, licenceWarnings, daysUntilExpiry,
 } from "../functions/_lib/visit_prep.js";
 
 let pass = 0, fail = 0;
@@ -115,17 +116,61 @@ ok(/no diagnosis/i.test(PATIENT_DISCLAIMER), "it says there is no diagnosis in i
 // ---------------------------------------------------------------------
 section("Licensure gates the clinical offer, not the tools");
 ok(canConsult("IL"), "he can consult in Illinois");
-ok(!canConsult("CA") || LICENSED_STATES.includes("CA"), "he cannot consult where he is not licensed");
-ok(!canConsult("TX"), "…and Texas is not a licensed state");
+ok(canConsult("CA"), "he can consult in California — he holds both licences");
+ok(LICENSED_STATES.includes("IL") && LICENSED_STATES.includes("CA"),
+   "both licences are recorded, and the payer directory is built around both states");
+ok(!canConsult("TX"), "Texas is not a licensed state");
 ok(!canConsult(""), "an unknown state is treated as not licensed");
+ok(canConsult(" ca "), "the check tolerates whitespace and case, so a form entry does not silently fail");
+
+section("Both licences are recorded with their real numbers");
+ok(LICENSES.length === 2, "two licences on file");
+const ca = LICENSES.find((l) => l.state === "CA");
+const il = LICENSES.find((l) => l.state === "IL");
+ok(ca && ca.number === "20A24823", "the California licence number is recorded");
+ok(ca.expires === "2027-11-30", "…with its expiry date from the licence itself");
+ok(/Osteopathic Medical Board of California/.test(ca.board), "…and the issuing board");
+ok(il && il.number === "125075291", "the Illinois licence number is recorded");
+
+section("Expiry is a GATE, not a note — a lapsed licence makes consultation unlawful");
+const afterCA = new Date("2027-12-01T00:00:00Z");
+ok(!canConsult("CA", null, afterCA), "after 30 Nov 2027 California consultation is refused automatically");
+ok(canConsult("IL", null, afterCA), "…while Illinois is unaffected");
+ok(!licensedStates(null, afterCA).includes("CA"), "the expired state drops out of the licensed list");
+ok(escalation({ state: "CA", now: afterCA }).offer === "referral",
+   "escalation stops offering a consultation in an expired state");
+
+const beforeCA = new Date("2027-11-01T00:00:00Z");
+ok(canConsult("CA", null, beforeCA), "a licence in its final month still works");
+ok(licenceWarnings(beforeCA).some((w) => w.severity === "warning" && /expires in \d+ days/.test(w.message)),
+   "…and warns with days remaining, ninety days out");
+ok(licenceWarnings(afterCA).some((w) => w.severity === "critical" && /EXPIRED/.test(w.message)),
+   "an expired licence raises a CRITICAL warning naming the state and number");
+ok(licenceWarnings().some((w) => w.state === "IL" && w.severity === "info"),
+   "a licence with no recorded expiry is flagged so the gap is visible");
+ok(daysUntilExpiry(il) === null, "a missing expiry returns null rather than a bogus date");
+ok(daysUntilExpiry(ca) > 0, "the California licence is current today");
+
+section("…and a new licence is configuration, not a deploy");
+ok(licensedStates({ LICENSED_STATES: "IL,CA,NY" }).includes("NY"),
+   "env.LICENSED_STATES adds a state");
+ok(canConsult("NY", { LICENSED_STATES: "IL, CA, NY" }),
+   "…and canConsult honours it, tolerating spaces");
+ok(!canConsult("NY", null), "without the override, New York is still refused");
+ok(licensedStates({ LICENSED_STATES: "" }).join() === LICENSED_STATES.join(),
+   "an empty override falls back to the real licences rather than locking him out of everywhere");
 
 let e = escalation({ state: "IL" });
 ok(e.offer === "consultation" && e.billable, "in a licensed state, escalation offers a BILLED consultation");
 ok(/never will be/.test(e.body), "…and states plainly that it is not part of the membership fee");
 
+e = escalation({ state: "CA" });
+ok(e.offer === "consultation" && e.billable, "California patients can be escalated to a real consultation");
+
 e = escalation({ state: "TX" });
 ok(e.offer === "referral" && !e.billable, "outside a licensed state, no consultation is offered");
-ok(/licensed in/.test(e.body), "…and it says why, naming the states");
+ok(/licensed in/.test(e.body) && /IL and CA/.test(e.body),
+   "…and it says why, naming BOTH states");
 ok(/continue to work/.test(e.body), "…while making clear the preparation tools still work");
 ok(/covered service/i.test(e.note), "escalation restates that covered services are billed, never bundled");
 

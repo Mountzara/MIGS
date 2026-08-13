@@ -49,14 +49,77 @@ import { routeFor, enqueueAiJob } from "./ai_router.js";
 export const VISIT_PREP_VERSION = "visit-prep-v1-2026-08-13";
 
 /**
- * States he is licensed in. Educational deliverables are available
- * everywhere; anything that would constitute practising medicine is not,
- * and `canConsult()` is the gate.
+ * The licences, with their numbers and expiry dates.
+ *
+ * Educational deliverables are available everywhere — organising a
+ * patient's own history is not the practice of medicine. Anything that
+ * WOULD be the practice of medicine is gated on this list.
+ *
+ * EXPIRY IS CHECKED, NOT ASSUMED. A licence that lapses quietly does not
+ * announce itself; it just makes every consultation in that state
+ * unlawful from a date nobody was watching. `canConsult()` treats an
+ * expired licence as no licence, and `licenceWarnings()` gives ninety
+ * days of notice.
+ *
+ * Numbers are public record via each board's verification lookup.
  */
-export const LICENSED_STATES = ["IL"];
+export const LICENSES = [
+    { state: "IL", number: "125075291", board: "Illinois Department of Financial and Professional Regulation",
+      expires: null },   // renewal date not recorded here — see licenceWarnings()
+    { state: "CA", number: "20A24823", board: "Osteopathic Medical Board of California",
+      expires: "2027-11-30" },
+];
 
-export function canConsult(state) {
-    return LICENSED_STATES.includes(String(state || "").toUpperCase());
+export const LICENSED_STATES = LICENSES.map((l) => l.state);
+
+/** Days until a licence expires; null when no expiry is recorded. */
+export function daysUntilExpiry(license, now = new Date()) {
+    if (!license?.expires) return null;
+    const end = Date.parse(license.expires + "T23:59:59Z");
+    if (Number.isNaN(end)) return null;
+    return Math.floor((end - now.getTime()) / 86400000);
+}
+
+/**
+ * The states he may practise in RIGHT NOW. An expired licence is excluded
+ * even though it is still listed, because the list is a record and this
+ * is a gate.
+ */
+export function licensedStates(env = null, now = new Date()) {
+    const raw = String(env?.LICENSED_STATES || "").trim();
+    if (raw) {
+        const list = raw.split(/[,\s]+/).map((x) => x.trim().toUpperCase()).filter(Boolean);
+        if (list.length) return list;
+    }
+    return LICENSES
+        .filter((l) => { const d = daysUntilExpiry(l, now); return d === null || d > 0; })
+        .map((l) => l.state);
+}
+
+export function canConsult(state, env = null, now = new Date()) {
+    return licensedStates(env, now).includes(String(state || "").trim().toUpperCase());
+}
+
+/**
+ * Anything the operator needs to act on. Surfaced in the admin console
+ * because renewal is the kind of task that is invisible until it is late.
+ */
+export function licenceWarnings(now = new Date()) {
+    const out = [];
+    for (const l of LICENSES) {
+        const d = daysUntilExpiry(l, now);
+        if (d === null) {
+            out.push({ state: l.state, severity: "info",
+                message: `No expiry recorded for the ${l.state} licence (${l.number}). Add it so renewal cannot be missed.` });
+        } else if (d <= 0) {
+            out.push({ state: l.state, severity: "critical",
+                message: `The ${l.state} licence (${l.number}) EXPIRED on ${l.expires}. Consultations in ${l.state} are suspended until it is renewed.` });
+        } else if (d <= 90) {
+            out.push({ state: l.state, severity: "warning",
+                message: `The ${l.state} licence (${l.number}) expires in ${d} days, on ${l.expires}.` });
+        }
+    }
+    return out;
 }
 
 // ---------------------------------------------------------------------
@@ -273,8 +336,9 @@ export async function generateDeliverable(env, { kind, historyText, specialty = 
  * plainly and offer the thing that would actually help — a real
  * consultation, licensure permitting.
  */
-export function escalation({ state = null } = {}) {
-    const licensed = canConsult(state);
+export function escalation({ state = null, env = null, now = new Date() } = {}) {
+    const states = licensedStates(env, now);
+    const licensed = canConsult(state, env, now);
     return {
         offer: licensed ? "consultation" : "referral",
         headline: licensed
@@ -282,7 +346,7 @@ export function escalation({ state = null } = {}) {
             : "This may be worth a proper conversation — but not with him, yet.",
         body: licensed
             ? "A preparation pack organises your history. It cannot tell you what it means, and there is a point where that is the question you actually have. A consultation is a scheduled visit, billed to your insurance the same as any other — it is not part of your membership fee, and never will be."
-            : `Dr. Mabini is licensed in ${LICENSED_STATES.join(", ")}. He cannot give you a clinical opinion in your state, and would be breaking the law to try. Your preparation tools continue to work wherever you are.`,
+            : `Dr. Mabini is licensed in ${states.join(" and ")}. He cannot give you a clinical opinion in your state, and would be breaking the law to try. Your preparation tools continue to work wherever you are.`,
         billable: licensed,
         // Stated explicitly because this is exactly the boundary the
         // membership structure depends on.
@@ -293,5 +357,6 @@ export function escalation({ state = null } = {}) {
 export default {
     VISIT_PREP_VERSION, DELIVERABLES, SCOPE_RULES, checkScope,
     PATIENT_DISCLAIMER, buildPrompt, generateDeliverable,
-    LICENSED_STATES, canConsult, escalation,
+    LICENSES, LICENSED_STATES, licensedStates, canConsult, escalation,
+    daysUntilExpiry, licenceWarnings,
 };
