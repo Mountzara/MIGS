@@ -15,7 +15,8 @@ import {
     npiValid, zip9Valid, tinValid, taxonomyValid, validateProfile,
     scoreVendors, pairingAdvice, buildApplicationPacket,
     buildEnrollmentMatrix, enrollmentSummary, enrollmentDefaultsFor,
-    readiness, VENDOR_FACTS, STEPS,
+    readiness, vendorReadiness, routingPlan, validateVendorSet,
+    VENDOR_FACTS, STEPS,
 } from "../functions/_lib/clearinghouse_onboarding.js";
 
 let pass = 0, fail = 0;
@@ -206,47 +207,135 @@ sum = enrollmentSummary(rebuilt.map((r) => ({ ...r, status: "not_required" })));
 ok(sum.blocking === 0, "a payer marked not_required does not block");
 
 // ---------------------------------------------------------------------
-section("Readiness gating");
+section("Vendor set validation");
+
+const V = (vendor, over = {}) => ({ vendor, role: "both", is_primary: false, ...over });
+
+let vs = validateVendorSet([], {});
+ok(!vs.ok && /No clearinghouse selected/.test(vs.problems[0]), "an empty set is rejected");
+
+vs = validateVendorSet([V("availity")], { government_share: "lots" });
+ok(!vs.ok && vs.problems.some((p) => /Medicare or Medicaid/.test(p)),
+   "Availity ALONE is rejected for a government practice — the expensive mistake this exists to catch");
+
+vs = validateVendorSet([V("availity")], { government_share: "none" });
+ok(vs.ok, "Availity alone is fine for a purely commercial practice");
+
+vs = validateVendorSet([V("claim_md", { is_primary: true }), V("availity", { role: "eligibility" })], { government_share: "lots" });
+ok(vs.ok, "the standard pair — full-service for claims plus Availity for eligibility — validates");
+ok(vs.notes.some((n) => /2 clearinghouses/.test(n)), "a multi-vendor set explains that each needs its own enrollment");
+
+vs = validateVendorSet([V("availity", { role: "eligibility" })], {});
+ok(!vs.ok && vs.problems.some((p) => /eligibility only/.test(p)),
+   "a set that can submit nothing is rejected");
+
+vs = validateVendorSet([V("claim_md")], {});
+ok(vs.ok && vs.notes.some((n) => /No primary/.test(n)), "a missing primary is a note, not a blocker");
+
+section("Routing across multiple clearinghouses");
+
+let plan = routingPlan([V("claim_md", { is_primary: true }), V("availity", { role: "eligibility" })]);
+ok(plan.routing.medicare === "claim_md", "Medicare routes to the full-service clearinghouse");
+ok(plan.routing.medicaid === "claim_md", "Medicaid routes to the full-service clearinghouse");
+ok(plan.routing.commercial === "claim_md", "commercial routes to the primary");
+ok(plan.routing.eligibility === "availity", "eligibility routes to Availity — the reason to hold the account");
+ok(plan.gaps.length === 0, "the standard pair has no routing gaps");
+
+// Availity must never silently become the government route.
+plan = routingPlan([V("availity", { is_primary: true })]);
+ok(plan.routing.medicare === null && plan.gaps.some((g) => /medicare/i.test(g)),
+   "Availity alone leaves a NAMED government gap rather than silently routing Medicare to it");
+
+plan = routingPlan([V("stedi", { is_primary: true }), V("claim_md")]);
+ok(plan.routing.commercial === "stedi", "the primary takes unrouted commercial");
+ok(["stedi", "claim_md"].includes(plan.routing.medicare), "government goes to a capable vendor");
+
+plan = routingPlan([]);
+ok(plan.gaps.length >= 2, "an empty set reports its gaps rather than pretending to be routed");
+
+section("Per-vendor readiness");
+
+const enrApproved = rebuilt.map((r) => ({ ...r, status: "approved" }));
+let vr = vendorReadiness({
+    vendor: "claim_md", role: "both", is_primary: true,
+    credentials: { last_test_ok: true }, enrollment: enrApproved, lastTestClaim: { ok: true },
+});
+ok(vr.ready, "a fully set-up vendor is ready");
+
+vr = vendorReadiness({ vendor: "claim_md", role: "both", credentials: null, enrollment: [], lastTestClaim: null });
+ok(!vr.ready && vr.blockers.length >= 2, "an untouched vendor reports several blockers");
+
+// An eligibility-only vendor is never asked for a test claim.
+vr = vendorReadiness({ vendor: "availity", role: "eligibility",
+                       credentials: { last_test_ok: true }, enrollment: [], lastTestClaim: null });
+ok(vr.ready, "an eligibility-only vendor does not need a test claim");
+ok(!vr.blockers.some((b) => /test claim/.test(b)), "…and is not told it needs one");
+
+section("Readiness gating across the whole set");
 
 function state(over) {
     return Object.assign({
         profile: goodProfile,
-        onboarding: { selected_vendor: "claim_md", packet_done_at: "2026-08-13T00:00:00Z" },
-        credentials: { last_test_ok: true, last_test_at: "2026-08-13T00:00:00Z" },
-        enrollment: rebuilt.map((r) => ({ ...r, status: "approved" })),
-        lastTestClaim: { ok: true },
+        onboarding: {},
+        answers: { government_share: "lots", eligibility: "yes" },
+        vendors: [
+            { vendor: "claim_md", role: "both", is_primary: true,
+              credentials: { last_test_ok: true, last_test_at: "2026-08-13T00:00:00Z" },
+              enrollment: enrApproved, lastTestClaim: { ok: true } },
+            { vendor: "availity", role: "eligibility", is_primary: false,
+              credentials: { last_test_ok: true, last_test_at: "2026-08-13T00:00:00Z" },
+              enrollment: [], lastTestClaim: null },
+        ],
         liveMode: false,
     }, over);
 }
 
 let rd = readiness(state());
-ok(rd.can_go_live === true, "everything satisfied opens go-live");
+ok(rd.can_go_live === true, "a fully configured two-clearinghouse setup opens go-live");
 ok(rd.steps.length === STEPS.length, "readiness reports every step");
-ok(rd.percent >= 80, "percent reflects near-complete setup");
+ok(rd.per_vendor.length === 2, "per-vendor readiness is reported for each clearinghouse");
+ok(rd.routing.eligibility === "availity", "readiness carries the routing plan");
+
+// THE multi-vendor regression: one good vendor must not vouch for the other.
+rd = readiness(state({
+    vendors: [
+        { vendor: "claim_md", role: "both", is_primary: true,
+          credentials: { last_test_ok: true }, enrollment: enrApproved, lastTestClaim: { ok: true } },
+        { vendor: "stedi", role: "both", is_primary: false,
+          credentials: null, enrollment: [], lastTestClaim: null },
+    ],
+}));
+ok(!rd.can_go_live, "one verified clearinghouse does NOT let an unverified second one through");
+ok(rd.steps.find((s) => s.key === "golive").blockers.some((b) => /Stedi/.test(b)),
+   "…and the blocker names which clearinghouse is at fault");
+ok(rd.steps.find((s) => s.key === "credentials").detail.includes("Stedi"),
+   "the credentials step names the unverified vendor");
+
+// A removed vendor stops counting.
+rd = readiness(state({
+    vendors: state().vendors.concat([
+        { vendor: "waystar", role: "both", removed_at: "2026-08-01T00:00:00Z",
+          credentials: null, enrollment: [], lastTestClaim: null },
+    ]),
+}));
+ok(rd.can_go_live === true, "a removed clearinghouse no longer blocks go-live");
+ok(rd.per_vendor.length === 2, "…and is excluded from per-vendor readiness");
+
+// Availity-only must be caught at the readiness level too, not just validation.
+rd = readiness(state({
+    vendors: [{ vendor: "availity", role: "both", is_primary: true,
+                credentials: { last_test_ok: true }, enrollment: [], lastTestClaim: { ok: true } }],
+}));
+ok(!rd.can_go_live, "Availity alone cannot go live for a government practice");
 
 rd = readiness(state({ profile: { ...goodProfile, legal_name: "" } }));
 ok(!rd.can_go_live && rd.steps.find((s) => s.key === "golive").blockers.some((b) => /identity/i.test(b)),
    "an incomplete profile blocks go-live, and says why");
 
-rd = readiness(state({ credentials: { last_test_ok: false, last_test_detail: "401" } }));
-ok(!rd.can_go_live && rd.steps.find((s) => s.key === "golive").blockers.some((b) => /connection test/i.test(b)),
-   "an untested credential blocks go-live");
-
-rd = readiness(state({ lastTestClaim: { ok: false, detail: "rejected" } }));
-ok(!rd.can_go_live, "a failed test claim blocks go-live");
-
-rd = readiness(state({ enrollment: rebuilt }));   // 2 still pending
-ok(!rd.can_go_live && rd.steps.find((s) => s.key === "golive").blockers.some((b) => /EDI enrollment/i.test(b)),
-   "unapproved payer EDI enrollments block go-live — the step that actually stalls practices");
-
-rd = readiness(state({ onboarding: {} }));
-ok(!rd.can_go_live && rd.steps.find((s) => s.key === "selection").done === false,
-   "no vendor selected leaves step 2 open");
-
-rd = readiness({ profile: {}, onboarding: {}, enrollment: [] });
+rd = readiness({ profile: {}, onboarding: {}, vendors: [] });
 ok(rd.current_step === "profile", "an empty setup starts at step 1");
+ok(rd.steps.find((s) => s.key === "selection").done === false, "no vendors leaves step 2 open");
 
-// Every step must explain itself rather than reporting a bare boolean.
 rd = readiness(state({ profile: {} }));
 ok(rd.steps.every((s) => typeof s.detail === "string" && s.detail.length > 0),
    "every step reports a human-readable reason, never a bare false");

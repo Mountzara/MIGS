@@ -93,7 +93,11 @@ CREATE TABLE IF NOT EXISTS clearinghouse_onboarding (
     testclaim_done_at     TEXT,
     golive_done_at        TEXT,
 
-    -- Step 2 output
+    -- Step 2 output. `selected_vendor` is the PRIMARY (default) vendor;
+    -- the full set lives in clearinghouse_vendors below, because running
+    -- two clearinghouses is the normal answer for an IL/CA practice --
+    -- Availity for free Blues eligibility, a full-service clearinghouse
+    -- for government claims -- not an exotic case to bolt on later.
     selected_vendor       TEXT,
     selection_answers_json TEXT,   -- the interview responses
     selection_scores_json  TEXT,   -- why each vendor scored what it did
@@ -107,6 +111,22 @@ CREATE TABLE IF NOT EXISTS clearinghouse_onboarding (
     notes                 TEXT,
     updated_at            TEXT
 );
+
+-- The clearinghouses this practice actually uses. A row per vendor, with
+-- a soft delete so dropping one keeps its enrollment history and its
+-- credential row intact -- a practice that leaves a clearinghouse and
+-- comes back should not start over, and an auditor asking "who were you
+-- submitting through in March" deserves an answer.
+CREATE TABLE IF NOT EXISTS clearinghouse_vendors (
+    vendor       TEXT PRIMARY KEY,
+    role         TEXT NOT NULL DEFAULT 'both'
+                 CHECK (role IN ('claims','eligibility','both')),
+    is_primary   INTEGER NOT NULL DEFAULT 0,   -- handles anything unrouted
+    added_at     TEXT NOT NULL,
+    removed_at   TEXT,                          -- NULL = active
+    note         TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_ch_vendors_active ON clearinghouse_vendors (removed_at);
 
 -- Vendor credentials, encrypted. One row per vendor so switching
 -- clearinghouses -- or running two, which is common (Availity for

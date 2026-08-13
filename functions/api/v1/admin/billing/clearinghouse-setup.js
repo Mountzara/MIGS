@@ -42,6 +42,7 @@ import {
     STEPS, PROFILE_FIELDS, PROFILE_GROUPS, INTERVIEW, VENDOR_FACTS,
     validateProfile, scoreVendors, pairingAdvice, buildApplicationPacket,
     buildEnrollmentMatrix, enrollmentSummary, readiness,
+    routingPlan, validateVendorSet,
 } from "../../../../_lib/clearinghouse_onboarding.js";
 import { PAYERS } from "../../../../_lib/payer_directory.js";
 import { clearinghouseVendor, providerConfig, isConfigured } from "../../../../_lib/clearinghouse.js";
@@ -66,6 +67,45 @@ async function loadOnboarding(env) {
     return row || { id: "default", current_step: "profile" };
 }
 
+/**
+ * The clearinghouses this practice uses. Multiple is the normal case, not
+ * an advanced one — Availity for free Blues eligibility alongside a
+ * full-service clearinghouse for government claims is the standard shape
+ * for an IL/CA practice.
+ */
+async function loadVendors(env, { includeRemoved = false } = {}) {
+    const r = await env.DB.prepare(
+        `SELECT vendor, role, is_primary, added_at, removed_at, note
+           FROM clearinghouse_vendors
+          ${includeRemoved ? "" : "WHERE removed_at IS NULL"}
+          ORDER BY is_primary DESC, added_at ASC`
+    ).all();
+    return (r?.results || []).map((v) => ({ ...v, is_primary: v.is_primary === 1 }));
+}
+
+/**
+ * Exactly one active vendor must be primary — it catches every payer that
+ * has no explicit route. Prefers an explicit choice, then a claims-capable
+ * vendor, and never leaves Availity holding the default when something
+ * else can submit claims, because Availity cannot carry government payers.
+ */
+async function ensurePrimary(env, preferred) {
+    const active = await loadVendors(env);
+    if (!active.length) return null;
+
+    const claimsCapable = active.filter((v) => (v.role || "both") !== "eligibility");
+    const pool = claimsCapable.length ? claimsCapable : active;
+
+    let pick = preferred && pool.find((v) => v.vendor === preferred);
+    if (!pick) pick = pool.find((v) => v.is_primary);
+    if (!pick) pick = pool.find((v) => v.vendor !== "availity") || pool[0];
+
+    await env.DB.prepare(`UPDATE clearinghouse_vendors SET is_primary=0`).run();
+    await env.DB.prepare(`UPDATE clearinghouse_vendors SET is_primary=1 WHERE vendor=?`)
+        .bind(pick.vendor).run();
+    return pick.vendor;
+}
+
 async function loadCredentials(env, vendor) {
     if (!vendor) return null;
     const row = await env.DB.prepare(
@@ -88,11 +128,15 @@ async function loadEnrollment(env, vendor) {
     return r?.results || [];
 }
 
-async function loadLastTestClaim(env) {
+async function loadLastTestClaim(env, vendor) {
+    // Scoped by vendor: an accepted test claim through one clearinghouse
+    // says nothing about another, and treating it as global would let
+    // go-live open on an untested connection.
     const row = await env.DB.prepare(
         `SELECT ok, detail, at FROM clearinghouse_events
-          WHERE action = 'test_claim' ORDER BY at DESC LIMIT 1`
-    ).first();
+          WHERE action = 'test_claim' AND step = ?
+          ORDER BY at DESC LIMIT 1`
+    ).bind(`testclaim:${vendor}`).first();
     if (!row) return null;
     return { ok: row.ok === 1, detail: row.detail, at: row.at };
 }
@@ -201,27 +245,40 @@ async function schemaReady(env) {
 async function getState(env) {
     const profile = await loadProfile(env);
     const onboarding = await loadOnboarding(env);
-    const vendor = onboarding.selected_vendor || null;
-    const credentials = await loadCredentials(env, vendor);
-    const enrollment = await loadEnrollment(env, vendor);
-    const lastTestClaim = await loadLastTestClaim(env);
     const liveMode = env.CLEARINGHOUSE_LIVE === "1";
 
-    let scores = null, pairing = null, answers = null;
+    let answers = null;
     try { answers = JSON.parse(onboarding.selection_answers_json || "null"); } catch { /* null */ }
-    if (answers) { scores = scoreVendors(answers); pairing = pairingAdvice(answers, scores); }
+    const scores = answers ? scoreVendors(answers) : null;
+    const pairing = answers && scores ? pairingAdvice(answers, scores) : null;
 
-    const packet = vendor
-        ? buildApplicationPacket(profile, vendor, { tin: null })
-        : null;
+    // Every selected clearinghouse gets its own bundle: its own packet,
+    // its own credentials, its own payer enrollment, its own test claim.
+    // Sharing any of those between vendors would be wrong — an approved
+    // Medicare EDI agreement with one clearinghouse means nothing to another.
+    const vendorRows = await loadVendors(env);
+    const vendors = [];
+    for (const v of vendorRows) {
+        const credentials = await loadCredentials(env, v.vendor);
+        const enrollment = await loadEnrollment(env, v.vendor);
+        const lastTestClaim = await loadLastTestClaim(env, v.vendor);
+        const callEnv = await withStoredCredentials(env, v.vendor);
+        vendors.push({
+            ...v,
+            label: VENDOR_FACTS[v.vendor]?.label || v.vendor,
+            facts: VENDOR_FACTS[v.vendor] || null,
+            credential_spec: VENDOR_FACTS[v.vendor]?.auth_fields || [],
+            credentials, enrollment, lastTestClaim,
+            enrollment_summary: enrollmentSummary(enrollment),
+            packet: buildApplicationPacket(profile, v.vendor, { tin: null }),
+            credentials_present: isConfigured(callEnv, v.vendor),
+            credentials_source: (VENDOR_FACTS[v.vendor]?.auth_fields || []).some((f) => env[f.key])
+                ? "env"
+                : (credentials ? "wizard" : "none"),
+        });
+    }
 
-    // "Configured" must account for wizard-stored credentials, not only
-    // env secrets — otherwise the console would tell an operator who just
-    // finished the wizard that he has configured nothing.
-    const callEnv = vendor ? await withStoredCredentials(env, vendor) : env;
-    const configured = vendor ? isConfigured(callEnv, vendor) : false;
-
-    const rd = readiness({ profile, onboarding, credentials, enrollment, lastTestClaim, liveMode });
+    const rd = readiness({ profile, onboarding, vendors, liveMode, answers: answers || {} });
 
     // Never ship the encrypted columns to the browser.
     const safeProfile = { ...profile };
@@ -229,7 +286,7 @@ async function getState(env) {
 
     const recent = await env.DB.prepare(
         `SELECT at, actor, step, action, detail, ok FROM clearinghouse_events
-          ORDER BY at DESC LIMIT 20`
+          ORDER BY at DESC LIMIT 25`
     ).all();
 
     return {
@@ -241,25 +298,15 @@ async function getState(env) {
         profile: safeProfile,
         onboarding: {
             current_step: onboarding.current_step,
-            selected_vendor: vendor,
             notes: onboarding.notes || "",
             packet_done_at: onboarding.packet_done_at,
             answers,
         },
-        scores, pairing, packet,
-        credentials: credentials
-            ? { vendor: credentials.vendor, field_names: credentials.field_names,
-                last_test_at: credentials.last_test_at, last_test_ok: credentials.last_test_ok,
-                last_test_detail: credentials.last_test_detail }
-            : null,
-        credential_spec: vendor ? (VENDOR_FACTS[vendor]?.auth_fields || []) : [],
-        credentials_present: configured,
-        credentials_source: vendor
-            ? ((VENDOR_FACTS[vendor]?.auth_fields || []).some((f) => env[f.key]) ? "env" : (configured ? "wizard" : "none"))
-            : "none",
-        enrollment,
-        enrollment_summary: enrollmentSummary(enrollment),
-        last_test_claim: lastTestClaim,
+        scores, pairing,
+        vendors,
+        all_vendors: Object.entries(VENDOR_FACTS).map(([k, f]) => ({
+            vendor: k, label: f.label, verified: f.verified, signup_url: f.signup_url,
+        })),
         live_mode: liveMode,
         active_vendor_env: clearinghouseVendor(env),
         readiness: rd,
@@ -354,10 +401,59 @@ export async function onRequest(ctx) {
             return jsonResponse({ ok: true, scores, pairing });
         }
 
-        // ---- select_vendor -------------------------------------------
-        if (action === "select_vendor") {
-            const vendor = String(body.vendor || "");
-            if (!VENDOR_FACTS[vendor]) return jsonError(`unknown vendor: ${vendor}`, 400);
+        // ---- select_vendors (multi) ----------------------------------
+        // The operator picks a SET. Adding one later, or dropping one, uses
+        // the same code path — there is no "initial choice" that is harder
+        // to change than a later one.
+        if (action === "select_vendors" || action === "select_vendor") {
+            const list = action === "select_vendor"
+                ? [String(body.vendor || "")]
+                : (Array.isArray(body.vendors) ? body.vendors : []);
+            const want = list.map((v) => (typeof v === "string" ? { vendor: v } : v))
+                             .filter((v) => VENDOR_FACTS[v.vendor]);
+            if (!want.length) return jsonError("select at least one clearinghouse", 400);
+
+            const existing = await loadVendors(env, { includeRemoved: true });
+            const byVendor = new Map(existing.map((v) => [v.vendor, v]));
+            const wantKeys = new Set(want.map((v) => v.vendor));
+
+            // Soft-delete anything deselected. History and credentials stay.
+            for (const e of existing) {
+                if (!wantKeys.has(e.vendor) && !e.removed_at) {
+                    await env.DB.prepare(
+                        `UPDATE clearinghouse_vendors SET removed_at=? WHERE vendor=?`
+                    ).bind(nowIso(), e.vendor).run();
+                    await event(env, admin, { step: "selection", action: "remove_vendor", detail: e.vendor, ok: true });
+                }
+            }
+
+            // Add or reactivate.
+            for (const w of want) {
+                const prior = byVendor.get(w.vendor);
+                const role = ["claims", "eligibility", "both"].includes(w.role) ? w.role
+                    : (prior?.role || (w.vendor === "availity" ? "eligibility" : "both"));
+                if (prior) {
+                    await env.DB.prepare(
+                        `UPDATE clearinghouse_vendors SET removed_at=NULL, role=? WHERE vendor=?`
+                    ).bind(role, w.vendor).run();
+                } else {
+                    await env.DB.prepare(
+                        `INSERT INTO clearinghouse_vendors (vendor, role, is_primary, added_at)
+                         VALUES (?,?,0,?)`
+                    ).bind(w.vendor, role, nowIso()).run();
+                    await event(env, admin, { step: "selection", action: "add_vendor", detail: `${w.vendor} (${role})`, ok: true });
+                }
+            }
+
+            await ensurePrimary(env, body.primary || null);
+
+            const active = await loadVendors(env);
+            const onb = await loadOnboarding(env);
+            let onbAnswers = {};
+            try { onbAnswers = JSON.parse(onb.selection_answers_json || "{}"); } catch { /* keep {} */ }
+            const vset = validateVendorSet(active, onbAnswers);
+
+            const primary = active.find((v) => v.is_primary);
             await env.DB.prepare(
                 `INSERT INTO clearinghouse_onboarding (id, selected_vendor, selection_done_at, current_step, updated_at)
                  VALUES ('default', ?, ?, 'packet', ?)
@@ -365,19 +461,81 @@ export async function onRequest(ctx) {
                     selected_vendor=excluded.selected_vendor,
                     selection_done_at=excluded.selection_done_at,
                     current_step='packet', updated_at=excluded.updated_at`
-            ).bind(vendor, nowIso(), nowIso()).run();
-            await event(env, admin, { step: "selection", action: "select_vendor", detail: vendor, ok: true });
+            ).bind(primary?.vendor || active[0]?.vendor || null, nowIso(), nowIso()).run();
+
+            return jsonResponse({ ok: true, vendor_set: vset, state: await getState(env) });
+        }
+
+        // ---- set_role / set_primary ----------------------------------
+        if (action === "set_role") {
+            const vendor = String(body.vendor || "");
+            const role = String(body.role || "");
+            if (!VENDOR_FACTS[vendor]) return jsonError(`unknown vendor: ${vendor}`, 400);
+            if (!["claims", "eligibility", "both"].includes(role)) return jsonError(`bad role: ${role}`, 400);
+            await env.DB.prepare(`UPDATE clearinghouse_vendors SET role=? WHERE vendor=?`).bind(role, vendor).run();
+            await ensurePrimary(env, null);
+            await event(env, admin, { step: "selection", action: "set_role", detail: `${vendor} → ${role}`, ok: true });
             return jsonResponse({ ok: true, state: await getState(env) });
         }
 
-        // ---- build_packet --------------------------------------------
-        if (action === "build_packet") {
-            const onb = await loadOnboarding(env);
-            const vendor = onb.selected_vendor;
-            if (!vendor) return jsonError("choose a clearinghouse first", 400);
-            const profile = await loadProfile(env);
+        if (action === "set_primary") {
+            const vendor = String(body.vendor || "");
+            if (!VENDOR_FACTS[vendor]) return jsonError(`unknown vendor: ${vendor}`, 400);
+            await ensurePrimary(env, vendor);
+            await event(env, admin, { step: "selection", action: "set_primary", detail: vendor, ok: true });
+            return jsonResponse({ ok: true, state: await getState(env) });
+        }
 
-            // Reveal the TIN only when explicitly asked, and audit it.
+        // ---- remove_vendor -------------------------------------------
+        // Soft delete. Enrollment history and credentials survive, so
+        // coming back to a clearinghouse does not mean starting over.
+        if (action === "remove_vendor") {
+            const vendor = String(body.vendor || "");
+            await env.DB.prepare(
+                `UPDATE clearinghouse_vendors SET removed_at=?, is_primary=0 WHERE vendor=?`
+            ).bind(nowIso(), vendor).run();
+            await ensurePrimary(env, null);
+            await event(env, admin, { step: "selection", action: "remove_vendor", detail: vendor, ok: true });
+            return jsonResponse({ ok: true, state: await getState(env) });
+        }
+
+        // ---- apply_routing -------------------------------------------
+        // Push the recommended payer-kind → vendor mapping onto
+        // billing_payers, which is what submitClaim already reads. Without
+        // this the wizard would recommend a routing it never applied.
+        if (action === "apply_routing") {
+            const active = await loadVendors(env);
+            const plan = routingPlan(active);
+            const map = body.routing && typeof body.routing === "object" ? body.routing : plan.routing;
+            let updated = 0;
+            for (const kind of ["commercial", "medicare", "medicaid"]) {
+                const vendor = map[kind];
+                if (!vendor) continue;
+                const res = await env.DB.prepare(
+                    `UPDATE billing_payers SET clearinghouse_vendor=? WHERE payer_kind=?`
+                ).bind(vendor, kind).run().catch(() => null);
+                updated += res?.meta?.changes || 0;
+            }
+            await event(env, admin, { step: "packet", action: "apply_routing",
+                detail: JSON.stringify(map), ok: true });
+            return jsonResponse({ ok: true, applied: map, payers_updated: updated, state: await getState(env) });
+        }
+
+        // ---- build_packet (per vendor) --------------------------------
+        if (action === "build_packet") {
+            const active = await loadVendors(env);
+            if (!active.length) return jsonError("choose at least one clearinghouse first", 400);
+            // Build for one vendor, or for all of them at once — each keeps
+            // its own checklist, because an approved EDI agreement with one
+            // clearinghouse means nothing to another.
+            const targets = body.vendor
+                ? active.filter((v) => v.vendor === body.vendor)
+                : active;
+            if (!targets.length) return jsonError(`${body.vendor} is not one of your clearinghouses`, 400);
+
+            const profile = await loadProfile(env);
+            const onb = await loadOnboarding(env);
+
             let tin = null;
             if (body.reveal_tin && profile.tin_ciphertext) {
                 const opened = await openJson(env, {
@@ -388,35 +546,40 @@ export async function onRequest(ctx) {
                 await event(env, admin, { step: "packet", action: "reveal_tin", detail: "tax ID displayed", ok: true });
             }
 
-            const packet = buildApplicationPacket(profile, vendor, { tin });
-
-            // Build (or refresh, without destroying progress) the payer matrix.
-            const existing = await loadEnrollment(env, vendor);
             const states = (() => { try { return JSON.parse(onb.states_json || "[]"); } catch { return []; } })();
             const relevant = PAYERS.filter((p) =>
-                !states.length || p.states.some((s) => states.includes(s) || s === "US"));
-            const rows = buildEnrollmentMatrix(vendor, relevant, existing);
+                !states.length || p.states.some((st) => states.includes(st) || st === "US"));
 
-            for (const r of rows) {
-                if (r.id) continue;      // already persisted — leave it alone
-                await env.DB.prepare(
-                    `INSERT INTO clearinghouse_payer_enrollment
-                       (id, vendor, payer_id, payer_name, payer_kind, edi_required, era_required,
-                        eft_required, form_name, form_url, status, expected_days, note, updated_at)
-                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                     ON CONFLICT(vendor, payer_name) DO NOTHING`
-                ).bind(newId(), vendor, r.payer_id, r.payer_name, r.payer_kind,
-                       r.edi_required, r.era_required, r.eft_required, r.form_name,
-                       r.form_url, r.status, r.expected_days, r.note, nowIso()).run();
+            const packets = {};
+            for (const v of targets) {
+                packets[v.vendor] = buildApplicationPacket(profile, v.vendor, { tin });
+
+                // An eligibility-only vendor gets no claim-enrollment checklist.
+                if ((v.role || "both") === "eligibility") continue;
+
+                const existing = await loadEnrollment(env, v.vendor);
+                const rows = buildEnrollmentMatrix(v.vendor, relevant, existing);
+                for (const r of rows) {
+                    if (r.id) continue;                   // already persisted
+                    await env.DB.prepare(
+                        `INSERT INTO clearinghouse_payer_enrollment
+                           (id, vendor, payer_id, payer_name, payer_kind, edi_required, era_required,
+                            eft_required, form_name, form_url, status, expected_days, note, updated_at)
+                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                         ON CONFLICT(vendor, payer_name) DO NOTHING`
+                    ).bind(newId(), v.vendor, r.payer_id, r.payer_name, r.payer_kind,
+                           r.edi_required, r.era_required, r.eft_required, r.form_name,
+                           r.form_url, r.status, r.expected_days, r.note, nowIso()).run();
+                }
             }
 
             await env.DB.prepare(
-                `UPDATE clearinghouse_onboarding SET packet_done_at=?, current_step='credentials', updated_at=? WHERE id='default'`
+                `UPDATE clearinghouse_onboarding SET packet_done_at=?, updated_at=? WHERE id='default'`
             ).bind(nowIso(), nowIso()).run();
             await event(env, admin, { step: "packet", action: "build_packet",
-                detail: `${rows.length} payer rows`, ok: true });
+                detail: targets.map((v) => v.vendor).join(", "), ok: true });
 
-            return jsonResponse({ ok: true, packet, state: await getState(env) });
+            return jsonResponse({ ok: true, packets, state: await getState(env) });
         }
 
         // ---- update_enrollment ---------------------------------------
@@ -453,9 +616,8 @@ export async function onRequest(ctx) {
 
         // ---- save_credentials ----------------------------------------
         if (action === "save_credentials") {
-            const onb = await loadOnboarding(env);
-            const vendor = String(body.vendor || onb.selected_vendor || "");
-            if (!VENDOR_FACTS[vendor]) return jsonError("choose a clearinghouse first", 400);
+            const vendor = String(body.vendor || "");
+            if (!VENDOR_FACTS[vendor]) return jsonError("which clearinghouse? pass a vendor", 400);
 
             let kept;
             try {
@@ -474,9 +636,8 @@ export async function onRequest(ctx) {
 
         // ---- test_connection -----------------------------------------
         if (action === "test_connection") {
-            const onb = await loadOnboarding(env);
-            const vendor = String(body.vendor || onb.selected_vendor || "");
-            if (!VENDOR_FACTS[vendor]) return jsonError("choose a clearinghouse first", 400);
+            const vendor = String(body.vendor || "");
+            if (!VENDOR_FACTS[vendor]) return jsonError("which clearinghouse? pass a vendor", 400);
 
             const creds = await resolveVendorCredentials(env, vendor);
             const result = await testConnection(env, vendor, creds);
@@ -490,9 +651,17 @@ export async function onRequest(ctx) {
             ).bind(vendor, nowIso(), result.ok ? 1 : 0, result.detail.slice(0, 500), nowIso()).run();
 
             if (result.ok) {
-                await env.DB.prepare(
-                    `UPDATE clearinghouse_onboarding SET credentials_done_at=?, current_step='testclaim', updated_at=? WHERE id='default'`
-                ).bind(nowIso(), nowIso()).run();
+                // Only stamp the step complete when EVERY selected
+                // clearinghouse has passed — one working key out of two is
+                // not a finished step.
+                const active = await loadVendors(env);
+                const all = [];
+                for (const v of active) all.push(await loadCredentials(env, v.vendor));
+                if (active.length && all.every((c) => c && c.last_test_ok)) {
+                    await env.DB.prepare(
+                        `UPDATE clearinghouse_onboarding SET credentials_done_at=?, current_step='testclaim', updated_at=? WHERE id='default'`
+                    ).bind(nowIso(), nowIso()).run();
+                }
             }
             await event(env, admin, { step: "credentials", action: "test_connection",
                 detail: result.detail, ok: result.ok });
@@ -501,9 +670,8 @@ export async function onRequest(ctx) {
 
         // ---- submit_test_claim ---------------------------------------
         if (action === "submit_test_claim") {
-            const onb = await loadOnboarding(env);
-            const vendor = String(onb.selected_vendor || "");
-            if (!vendor) return jsonError("choose a clearinghouse first", 400);
+            const vendor = String(body.vendor || "");
+            if (!VENDOR_FACTS[vendor]) return jsonError("which clearinghouse? pass a vendor", 400);
 
             // Deliberately routed through the same submitClaim path a real
             // claim uses, in test mode. A test that exercises a different
@@ -530,10 +698,12 @@ export async function onRequest(ctx) {
 
             if (ok) {
                 await env.DB.prepare(
-                    `UPDATE clearinghouse_onboarding SET testclaim_done_at=?, current_step='golive', updated_at=? WHERE id='default'`
+                    `UPDATE clearinghouse_onboarding SET testclaim_done_at=?, updated_at=? WHERE id='default'`
                 ).bind(nowIso(), nowIso()).run();
             }
-            await event(env, admin, { step: "testclaim", action: "test_claim", detail, ok });
+            // Scoped by vendor: loadLastTestClaim reads this back per
+            // clearinghouse, so a pass on one cannot vouch for another.
+            await event(env, admin, { step: `testclaim:${vendor}`, action: "test_claim", detail, ok });
             return jsonResponse({ ok: true, result, detail, state: await getState(env) });
         }
 
@@ -555,6 +725,8 @@ export async function onRequest(ctx) {
             ).bind(nowIso(), nowIso()).run();
             await event(env, admin, { step: "golive", action: "golive_ready",
                 detail: "all prerequisites met", ok: true });
+            const active = await loadVendors(env);
+            const primary = active.find((v) => v.is_primary) || active[0];
             return jsonResponse({
                 ok: true,
                 armed: env.CLEARINGHOUSE_LIVE === "1",
@@ -562,7 +734,10 @@ export async function onRequest(ctx) {
                     why: "The production switch is a deployment secret, not an API field, so no browser session can send a real claim by accident.",
                     env_var: "CLEARINGHOUSE_LIVE",
                     value: "1",
-                    also: `CLEARINGHOUSE_VENDOR=${state.onboarding.selected_vendor}`,
+                    also: `CLEARINGHOUSE_VENDOR=${primary?.vendor || ""}`,
+                    note: active.length > 1
+                        ? `CLEARINGHOUSE_VENDOR is only the fallback for payers with no explicit route. Your other clearinghouse${active.length > 2 ? "s" : ""} (${active.filter((v) => !v.is_primary).map((v) => v.vendor).join(", ")}) are reached through per-payer routing on billing_payers, which step 3 already applied.`
+                        : null,
                 },
                 state: await getState(env),
             });
@@ -594,8 +769,9 @@ export async function onRequest(ctx) {
         }
 
         return jsonError(
-            "unknown_action — expected save_profile | run_selection | select_vendor | build_packet | " +
-            "update_enrollment | save_credentials | test_connection | submit_test_claim | go_live | reset_step | save_notes",
+            "unknown_action — expected save_profile | run_selection | select_vendors | set_role | " +
+            "set_primary | remove_vendor | apply_routing | build_packet | update_enrollment | " +
+            "save_credentials | test_connection | submit_test_claim | go_live | reset_step | save_notes",
             400
         );
     });

@@ -624,22 +624,169 @@ export function enrollmentSummary(rows = []) {
 }
 
 // ---------------------------------------------------------------------
-// Readiness across all six steps
+// Multi-clearinghouse routing
 // ---------------------------------------------------------------------
+// Running two clearinghouses is the NORMAL answer for an IL/CA practice,
+// not an advanced configuration: Availity gives free real-time
+// eligibility with the Blues, and a full-service clearinghouse carries
+// Medicare and Medicaid. The wizard therefore treats the vendor list as a
+// set from the beginning rather than bolting "add a second one" on later.
+//
+// Routing is per payer KIND here (the coarse decision). Per-payer
+// overrides live on billing_payers.clearinghouse_vendor, which the
+// existing submitClaim already honours — this only proposes the defaults.
+
+export const PAYER_KINDS = ["commercial", "medicare", "medicaid"];
+
+/** Can this vendor carry claims / eligibility at all, given its role? */
+function serves(v, what) {
+    const role = v.role || "both";
+    return role === "both" || role === what;
+}
+
+/**
+ * Propose which vendor should handle each payer kind.
+ *
+ * @param vendors [{vendor, role, is_primary}]
+ * @returns {{routing:{[kind]:vendor|null}, reasons:[], gaps:[]}}
+ */
+export function routingPlan(vendors = []) {
+    const active = vendors.filter((v) => !v.removed_at);
+    const claims = active.filter((v) => serves(v, "claims"));
+    const primary = claims.find((v) => v.is_primary) || claims[0] || null;
+
+    const routing = {};
+    const reasons = [];
+    const gaps = [];
+
+    // Government payers want a full-service clearinghouse. Availity is
+    // explicitly NOT proposed for these — that is the whole reason the
+    // pairing exists.
+    const govCapable = claims.filter((v) => v.vendor !== "availity");
+    for (const kind of ["medicare", "medicaid"]) {
+        const pick = govCapable.find((v) => v.is_primary) || govCapable[0] || null;
+        routing[kind] = pick ? pick.vendor : null;
+        if (pick) {
+            reasons.push({ kind, vendor: pick.vendor,
+                text: `${VENDOR_FACTS[pick.vendor]?.label || pick.vendor} carries government payers.` });
+        } else {
+            gaps.push(`No selected clearinghouse carries ${kind}. Availity alone cannot submit these — add a full-service clearinghouse.`);
+        }
+    }
+
+    routing.commercial = primary ? primary.vendor : null;
+    if (primary) {
+        reasons.push({ kind: "commercial", vendor: primary.vendor,
+            text: `${VENDOR_FACTS[primary.vendor]?.label || primary.vendor} is your primary, so unrouted commercial claims go there.` });
+    } else {
+        gaps.push("No clearinghouse is set to submit claims. Mark one as primary.");
+    }
+
+    const eligibility = active.filter((v) => serves(v, "eligibility"));
+    const eligPick = eligibility.find((v) => v.vendor === "availity") || eligibility.find((v) => v.is_primary) || eligibility[0] || null;
+    routing.eligibility = eligPick ? eligPick.vendor : null;
+    if (eligPick) {
+        reasons.push({ kind: "eligibility", vendor: eligPick.vendor,
+            text: eligPick.vendor === "availity"
+                ? "Availity handles eligibility — its free real-time Blues checks are the reason to hold the account."
+                : `${VENDOR_FACTS[eligPick.vendor]?.label || eligPick.vendor} handles eligibility checks.` });
+    } else {
+        gaps.push("No clearinghouse is set to run eligibility checks.");
+    }
+
+    return { routing, reasons, gaps };
+}
+
+/**
+ * Sanity-check a proposed vendor set BEFORE the operator spends weeks
+ * enrolling. The expensive mistake is picking Availity alone and finding
+ * out at the first Medicare claim.
+ */
+export function validateVendorSet(vendors = [], answers = {}) {
+    const active = vendors.filter((v) => !v.removed_at);
+    const problems = [];
+    const notes = [];
+
+    if (!active.length) {
+        problems.push("No clearinghouse selected. You need at least one.");
+        return { ok: false, problems, notes };
+    }
+
+    const claims = active.filter((v) => serves(v, "claims"));
+    if (!claims.length) problems.push("Every selected clearinghouse is set to eligibility only. Nothing can submit a claim.");
+    if (claims.length && !claims.some((v) => v.is_primary)) {
+        notes.push("No primary set — the first claims-capable clearinghouse will be used for anything unrouted.");
+    }
+
+    const gov = answers.government_share;
+    const onlyAvaility = active.length === 1 && active[0].vendor === "availity";
+    if (onlyAvaility && gov !== "none") {
+        problems.push("Availity alone will not carry Medicare or Medicaid. Add a full-service clearinghouse, or this stalls at your first government claim.");
+    }
+
+    if (active.length > 1) {
+        notes.push(`${active.length} clearinghouses selected. Each needs its own enrollment, its own credentials and its own test claim — the wizard tracks them separately.`);
+    }
+    if (answers.eligibility === "yes" && !active.some((v) => v.vendor === "availity")) {
+        notes.push("You said you want eligibility at booking but did not select Availity. That is fine — just confirm your chosen vendor's eligibility coverage for the Blues.");
+    }
+
+    return { ok: problems.length === 0, problems, notes };
+}
+
+// ---------------------------------------------------------------------
+// Readiness across all six steps, across every selected clearinghouse
+// ---------------------------------------------------------------------
+
+/**
+ * Readiness for ONE vendor: credentials tested, enrollment approved,
+ * test claim accepted.
+ */
+export function vendorReadiness(v) {
+    const enr = enrollmentSummary(v.enrollment || []);
+    const credsOk = Boolean(v.credentials?.last_test_ok);
+    const testOk = Boolean(v.lastTestClaim?.ok);
+    const packetDone = (v.enrollment || []).length > 0;
+
+    const blockers = [];
+    if (!credsOk) blockers.push("credentials not verified");
+    if (!testOk && (v.role || "both") !== "eligibility") blockers.push("no accepted test claim");
+    if (enr.blocking > 0) blockers.push(`${enr.blocking} payer EDI enrollment${enr.blocking === 1 ? "" : "s"} pending`);
+
+    return {
+        vendor: v.vendor,
+        label: VENDOR_FACTS[v.vendor]?.label || v.vendor,
+        role: v.role || "both",
+        is_primary: Boolean(v.is_primary),
+        packet_done: packetDone,
+        credentials_ok: credsOk,
+        testclaim_ok: testOk,
+        enrollment: enr,
+        blockers,
+        ready: blockers.length === 0,
+        credentials_detail: v.credentials
+            ? (v.credentials.last_test_ok
+                ? `Verified ${v.credentials.last_test_at || ""}.`
+                : `Last test failed: ${v.credentials.last_test_detail || "no detail"}`)
+            : "No credentials stored.",
+    };
+}
 
 /**
  * The wizard's single source of truth for "where am I and what is next".
  * Each step reports done/blocked with a human reason — never a bare false.
+ *
+ * @param state.vendors [{vendor, role, is_primary, removed_at,
+ *                        credentials, enrollment, lastTestClaim}]
  */
 export function readiness(state = {}) {
-    const {
-        profile = {}, onboarding = {}, credentials = null,
-        enrollment = [], lastTestClaim = null, liveMode = false,
-    } = state;
+    const { profile = {}, onboarding = {}, vendors = [], liveMode = false, answers = {} } = state;
 
+    const active = vendors.filter((v) => !v.removed_at);
+    const per = active.map(vendorReadiness);
     const pv = validateProfile(profile);
-    const enr = enrollmentSummary(enrollment);
-    const vendor = onboarding.selected_vendor || null;
+    const vset = validateVendorSet(active, answers);
+    const plan = routingPlan(active);
 
     const steps = [];
 
@@ -653,51 +800,58 @@ export function readiness(state = {}) {
     });
 
     steps.push({
-        key: "selection", done: Boolean(vendor),
+        key: "selection", done: active.length > 0 && vset.ok,
         blocked_by: pv.ok ? null : "profile",
-        detail: vendor ? `${VENDOR_FACTS[vendor]?.label || vendor} selected.` : "No clearinghouse chosen yet.",
+        detail: !active.length ? "No clearinghouse chosen yet."
+            : vset.ok
+                ? active.map((v) => VENDOR_FACTS[v.vendor]?.label || v.vendor).join(" + ")
+                : vset.problems[0],
+        problems: vset.problems, notes: vset.notes,
     });
 
-    const packetDone = Boolean(onboarding.packet_done_at);
+    const packetAll = per.length > 0 && per.every((p) => p.packet_done);
     steps.push({
-        key: "packet", done: packetDone,
-        blocked_by: vendor ? null : "selection",
-        detail: !vendor ? "Choose a clearinghouse first."
-            : enr.total === 0 ? "Payer checklist not built yet."
-            : `${enr.approved}/${enr.total} payers approved · ${enr.blocking} still blocking.`,
-        summary: enr,
+        key: "packet", done: packetAll,
+        blocked_by: active.length ? null : "selection",
+        detail: !active.length ? "Choose a clearinghouse first."
+            : packetAll
+                ? per.map((p) => `${p.label}: ${p.enrollment.approved}/${p.enrollment.total} approved`).join(" · ")
+                : `Payer checklist not built for ${per.filter((p) => !p.packet_done).map((p) => p.label).join(", ") || "any vendor"}.`,
+        per_vendor: per,
     });
 
-    const credsOk = Boolean(credentials?.last_test_ok);
+    const credsAll = per.length > 0 && per.every((p) => p.credentials_ok);
     steps.push({
-        key: "credentials", done: credsOk,
-        blocked_by: vendor ? null : "selection",
-        detail: !credentials ? "No credentials stored."
-            : credentials.last_test_ok ? `Connection verified ${credentials.last_test_at || ""}.`
-            : `Last test failed: ${credentials.last_test_detail || "no detail returned"}`,
+        key: "credentials", done: credsAll,
+        blocked_by: active.length ? null : "selection",
+        detail: !active.length ? "Choose a clearinghouse first."
+            : credsAll ? "Every clearinghouse has passed a live connection test."
+            : `Not verified: ${per.filter((p) => !p.credentials_ok).map((p) => p.label).join(", ")}.`,
     });
 
-    const testOk = Boolean(lastTestClaim?.ok);
+    // An eligibility-only vendor is never asked for a test claim.
+    const needTest = per.filter((p) => p.role !== "eligibility");
+    const testAll = needTest.length > 0 && needTest.every((p) => p.testclaim_ok);
     steps.push({
-        key: "testclaim", done: testOk,
-        blocked_by: credsOk ? null : "credentials",
-        detail: !lastTestClaim ? "No test claim submitted."
-            : lastTestClaim.ok ? "Test claim accepted."
-            : `Test claim rejected: ${lastTestClaim.detail || "see the 277CA"}`,
+        key: "testclaim", done: testAll,
+        blocked_by: credsAll ? null : "credentials",
+        detail: !needTest.length ? "No claim-submitting clearinghouse selected."
+            : testAll ? "Every claim-submitting clearinghouse has an accepted test claim."
+            : `Still to test: ${needTest.filter((p) => !p.testclaim_ok).map((p) => p.label).join(", ")}.`,
     });
 
     const goliveBlockers = [];
     if (!pv.ok) goliveBlockers.push("practice identity is incomplete");
-    if (!vendor) goliveBlockers.push("no clearinghouse selected");
-    if (!credsOk) goliveBlockers.push("credentials have not passed a connection test");
-    if (!testOk) goliveBlockers.push("no accepted test claim");
-    if (enr.blocking > 0) goliveBlockers.push(`${enr.blocking} payer EDI enrollment${enr.blocking === 1 ? "" : "s"} not approved`);
+    if (!active.length) goliveBlockers.push("no clearinghouse selected");
+    vset.problems.forEach((p) => goliveBlockers.push(p));
+    plan.gaps.forEach((g) => goliveBlockers.push(g));
+    per.forEach((p) => p.blockers.forEach((b) => goliveBlockers.push(`${p.label}: ${b}`)));
 
     steps.push({
         key: "golive", done: liveMode,
         blocked_by: goliveBlockers.length ? "prerequisites" : null,
         detail: liveMode ? "Live. Claims submit with usage indicator P."
-            : goliveBlockers.length ? `Blocked: ${goliveBlockers.join("; ")}.`
+            : goliveBlockers.length ? `${goliveBlockers.length} thing${goliveBlockers.length === 1 ? "" : "s"} still blocking.`
             : "Ready. Nothing is blocking production submission.",
         blockers: goliveBlockers,
     });
@@ -705,6 +859,11 @@ export function readiness(state = {}) {
     const firstOpen = steps.find((s) => !s.done);
     return {
         steps,
+        per_vendor: per,
+        routing: plan.routing,
+        routing_reasons: plan.reasons,
+        routing_gaps: plan.gaps,
+        vendor_set: vset,
         current_step: firstOpen ? firstOpen.key : "golive",
         can_go_live: goliveBlockers.length === 0,
         percent: Math.round((steps.filter((s) => s.done).length / steps.length) * 100),
@@ -716,5 +875,6 @@ export default {
     npiValid, zip9Valid, tinValid, taxonomyValid, emailValid, validateProfile,
     VENDOR_FACTS, INTERVIEW, scoreVendors, pairingAdvice,
     buildApplicationPacket, enrollmentDefaultsFor, buildEnrollmentMatrix,
-    enrollmentSummary, readiness,
+    enrollmentSummary, readiness, vendorReadiness,
+    PAYER_KINDS, routingPlan, validateVendorSet,
 };

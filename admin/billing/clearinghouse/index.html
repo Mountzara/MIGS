@@ -174,6 +174,11 @@ input.bad{border-color:rgba(239,68,68,.7);}
 .note{border-left:2px solid rgba(var(--glow-purple),.5);padding:2px 0 2px 13px;margin:12px 0;
     font-size:13px;line-height:1.55;color:var(--fg-mid);}
 .note.warn{border-left-color:rgba(245,158,11,.6);}
+
+.vtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;}
+.vtab{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;
+    padding:9px 16px;font-size:13.5px;font-family:inherit;color:var(--fg-mid);cursor:pointer;min-height:24px;}
+.vtab.on{background:rgba(var(--glow-purple),.18);border-color:rgba(var(--glow-purple),.6);color:var(--fg-strong);}
 .foot-nav{display:flex;gap:10px;justify-content:space-between;margin-top:20px;flex-wrap:wrap;}
 </style>
 </head>
@@ -205,14 +210,21 @@ input.bad{border-color:rgba(239,68,68,.7);}
 // The clearinghouse setup wizard
 // =====================================================================
 // A thin renderer over /api/v1/admin/billing/clearinghouse-setup. All
-// scoring, validation and step gating live server-side in
+// scoring, validation, routing and step gating live server-side in
 // _lib/clearinghouse_onboarding.js so they are testable; this file draws
 // what the API reports and posts back what the operator does.
 //
+// MULTIPLE CLEARINGHOUSES ARE THE NORMAL CASE. An IL/CA practice usually
+// wants Availity for free real-time Blues eligibility AND a full-service
+// clearinghouse for Medicare/Medicaid claims. So the vendor list is a SET
+// throughout — steps 3, 4 and 5 render a tab per clearinghouse, each with
+// its own packet, credentials, payer enrollment and test claim. Adding or
+// dropping one later uses the same code path as the first choice; there
+// is no decision here that is harder to change later than it is to make.
+//
 // One deliberate choice: every step is reachable at any time, even ones
 // the API considers blocked. A wizard that refuses to let you look ahead
-// is infuriating, and looking is harmless — the ACTIONS are gated, not
-// the reading.
+// is infuriating, and looking is harmless — the ACTIONS are gated.
 // =====================================================================
 (function () {
     "use strict";
@@ -220,9 +232,11 @@ input.bad{border-color:rgba(239,68,68,.7);}
     var API = "/api/v1/admin/billing/clearinghouse-setup";
     var S = null;              // last full state from the server
     var view = null;           // which step is on screen
+    var tab = null;            // which vendor tab is on screen (steps 3-5)
     var draft = {};            // unsaved profile edits
     var answers = {};          // unsaved interview answers
-    var creds = {};            // unsaved credential entry
+    var picks = null;          // unsaved vendor multi-select
+    var creds = {};            // unsaved credential entry, keyed by vendor
 
     var panel = document.getElementById("panel");
     var rail = document.getElementById("rail");
@@ -235,6 +249,14 @@ input.bad{border-color:rgba(239,68,68,.7);}
     }
     function el(id) { return document.getElementById(id); }
     function on(id, ev, fn) { var n = el(id); if (n) n.addEventListener(ev, fn); }
+    function vendors() { return (S && S.vendors) || []; }
+    function activeTab() {
+        var vs = vendors();
+        if (!vs.length) return null;
+        for (var i = 0; i < vs.length; i++) if (vs[i].vendor === tab) return vs[i];
+        tab = vs[0].vendor;
+        return vs[0];
+    }
 
     // ---- transport ---------------------------------------------------
 
@@ -261,10 +283,10 @@ input.bad{border-color:rgba(239,68,68,.7);}
         }).then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); });
     }
 
-    function busy(btn, on) {
+    function busy(btn, isOn) {
         if (!btn) return;
-        btn.disabled = !!on;
-        if (on) { btn.dataset.label = btn.textContent; btn.textContent = "Working…"; }
+        btn.disabled = !!isOn;
+        if (isOn) { btn.dataset.label = btn.textContent; btn.textContent = "Working…"; }
         else if (btn.dataset.label) { btn.textContent = btn.dataset.label; }
     }
 
@@ -315,19 +337,47 @@ input.bad{border-color:rgba(239,68,68,.7);}
              + "</section>";
     }
 
+    /** The per-clearinghouse tab strip used by steps 3, 4 and 5. */
+    function tabStrip() {
+        var vs = vendors();
+        if (vs.length < 2) return "";
+        var cur = activeTab();
+        return '<div class="vtabs">' + vs.map(function (v) {
+            var pv = ((S.readiness && S.readiness.per_vendor) || []).filter(function (p) { return p.vendor === v.vendor; })[0] || {};
+            return '<button type="button" class="vtab' + (cur && cur.vendor === v.vendor ? " on" : "") + '" data-tab="' + esc(v.vendor) + '">'
+                 + (pv.ready ? "✓ " : "") + esc(v.label)
+                 + (v.is_primary ? ' <span class="tag ok">primary</span>' : "")
+                 + "</button>";
+        }).join("") + "</div>";
+    }
+    function wireTabs() {
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-tab]"), function (b) {
+            b.addEventListener("click", function () { tab = b.dataset.tab; render(); });
+        });
+    }
+
+    function noVendorsYet() {
+        return '<section class="block"><div class="note warn">You have not chosen a clearinghouse yet — '
+             + '<a href="#" data-goto="selection">go to step 2</a>.</div></section>';
+    }
+    function wireGoto() {
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-goto]"), function (a) {
+            a.addEventListener("click", function (e) { e.preventDefault(); view = a.dataset.goto; render(); });
+        });
+    }
+
     // ---- step 1 · practice identity ----------------------------------
 
     function drawProfile() {
         var p = Object.assign({}, S.profile || {}, draft);
         var r = stepState("profile");
-        var invalidBy = {};
+        var invalidBy = {}, missingBy = {};
         (r.invalid || []).forEach(function (i) { invalidBy[i.key] = i.why; });
-        var missingBy = {};
         (r.missing || []).forEach(function (i) { missingBy[i.key] = true; });
 
         var html = head("profile");
         html += '<section class="block"><h2>Your details</h2>';
-        html += '<div class="note">Every application, every EDI form and every claim is filled from what you enter here. Getting the legal name and ZIP+4 exactly right now saves a rejection cycle later.</div>';
+        html += '<div class="note">Every application, every EDI form and every claim is filled from what you enter here — once, no matter how many clearinghouses you end up using. Getting the legal name and ZIP+4 exactly right now saves a rejection cycle later.</div>';
 
         S.profile_groups.forEach(function (g) {
             var fields = S.profile_fields.filter(function (f) { return f.group === g.key; });
@@ -336,9 +386,7 @@ input.bad{border-color:rgba(239,68,68,.7);}
             html += '<p class="gs">' + esc(g.blurb) + "</p>";
             html += '<div class="fgrid">';
             fields.forEach(function (f) {
-                var val = f.key === "tin"
-                    ? (draft.tin !== undefined ? draft.tin : "")
-                    : (p[f.key] || "");
+                var val = f.key === "tin" ? (draft.tin !== undefined ? draft.tin : "") : (p[f.key] || "");
                 var bad = invalidBy[f.key] || missingBy[f.key];
                 html += '<div class="f">';
                 html += '<label class="fld" for="p-' + f.key + '">' + esc(f.label)
@@ -351,8 +399,8 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 } else {
                     var type = f.secret ? "password" : (f.key === "contact_email" ? "email" : (f.key === "contact_phone" ? "tel" : "text"));
                     var ph = f.placeholder || "";
-                    var shown = f.key === "tin" && !draft.tin && p.tin_last4 ? "" : val;
-                    if (f.key === "tin" && p.tin_last4 && !draft.tin) ph = "•••••" + p.tin_last4 + " — stored. Type to replace.";
+                    var shown = val;
+                    if (f.key === "tin" && p.tin_last4 && !draft.tin) { shown = ""; ph = "•••••" + p.tin_last4 + " — stored. Type to replace."; }
                     html += '<input id="p-' + f.key + '" data-pk="' + f.key + '" type="' + type + '"'
                           + ' value="' + esc(shown) + '" placeholder="' + esc(ph) + '"'
                           + (bad ? ' class="bad"' : "")
@@ -398,15 +446,22 @@ input.bad{border-color:rgba(239,68,68,.7);}
         });
     }
 
-    // ---- step 2 · choose ---------------------------------------------
+    // ---- step 2 · choose (multi-select) ------------------------------
+
+    function currentPicks() {
+        if (picks) return picks;
+        picks = vendors().map(function (v) { return v.vendor; });
+        return picks;
+    }
 
     function drawSelection() {
         var html = head("selection");
         var prior = (S.onboarding && S.onboarding.answers) || null;
         if (prior && !Object.keys(answers).length) answers = JSON.parse(JSON.stringify(prior));
+        var chosen = currentPicks();
 
         html += '<section class="block"><h2>A few questions</h2>';
-        html += '<div class="note">There is no single best clearinghouse — there is a best one for your payer mix. Five questions, then a scored comparison you can audit rather than a recommendation you have to trust.</div>';
+        html += '<div class="note">There is no single best clearinghouse — there is a best <em>set</em> for your payer mix. Five questions, then a scored comparison you can audit rather than a recommendation you have to trust.</div>';
         S.interview.forEach(function (q) {
             html += '<div class="qa"><div class="q">' + esc(q.question) + "</div>";
             q.options.forEach(function (o) {
@@ -424,15 +479,16 @@ input.bad{border-color:rgba(239,68,68,.7);}
 
         if (S.scores) {
             html += '<section class="block"><h2>Ranked for your situation</h2>';
+            html += '<div class="note"><b>Pick as many as you want.</b> Running two is the normal answer for an Illinois/California practice: one full-service clearinghouse for Medicare and Medicaid claims, plus Availity for its free real-time Blues eligibility. Each one you select gets its own enrollment, credentials and test claim, tracked separately — and you can add or drop one at any time without losing its history.</div>';
             if (S.pairing && S.pairing.suggest) {
-                html += '<div class="note">Worth knowing: ' + esc(S.pairing.why) + "</div>";
+                html += '<div class="note">' + esc(S.pairing.why) + "</div>";
             }
             S.scores.forEach(function (v, idx) {
-                var chosen = S.onboarding && S.onboarding.selected_vendor === v.vendor;
-                html += '<div class="vcard' + (idx === 0 ? " top" : "") + (chosen ? " chosen" : "") + '">';
+                var isPicked = chosen.indexOf(v.vendor) >= 0;
+                html += '<div class="vcard' + (idx === 0 ? " top" : "") + (isPicked ? " chosen" : "") + '">';
                 html += '<div class="row" style="justify-content:space-between;align-items:baseline;">'
                       + "<h3>" + esc(v.label) + (idx === 0 ? ' <span class="tag ok">best fit</span>' : "")
-                      + (chosen ? ' <span class="tag ok">selected</span>' : "") + "</h3>"
+                      + (isPicked ? ' <span class="tag ok">selected</span>' : "") + "</h3>"
                       + '<span class="sc">score ' + v.score + "</span></div>";
                 v.reasons.forEach(function (r) {
                     html += '<div class="rsn ' + (r.good ? "good" : "bad") + '"><span class="m">' + (r.good ? "+" : "!") + "</span><span>" + esc(r.text) + "</span></div>";
@@ -442,14 +498,76 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 html += '<div class="row" style="margin-top:12px;">';
                 if (v.signup_url) html += '<a class="opt" href="' + esc(v.signup_url) + '" target="_blank" rel="noopener">Vendor site ↗</a>';
                 if (v.docs_url) html += '<a class="opt" href="' + esc(v.docs_url) + '" target="_blank" rel="noopener">API docs ↗</a>';
-                html += '<button class="btn' + (chosen ? " ghost" : "") + '" data-pick="' + esc(v.vendor) + '">'
-                      + (chosen ? "Selected" : "Choose " + esc(v.label)) + "</button>";
+                html += '<button class="btn' + (isPicked ? " ghost" : "") + '" data-pick="' + esc(v.vendor) + '">'
+                      + (isPicked ? "Remove from my set" : "Add to my set") + "</button>";
                 html += "</div></div>";
             });
+
+            html += '<div class="gh">Your set</div>';
+            if (!chosen.length) {
+                html += '<p class="gs">Nothing selected yet.</p>';
+            } else {
+                html += '<p class="gs">' + chosen.length + " selected. Save to apply.</p>";
+                html += '<div class="row">' + chosen.map(function (k) {
+                    var f = (S.all_vendors || []).filter(function (a) { return a.vendor === k; })[0];
+                    return '<span class="opt sel">' + esc(f ? f.label : k) + "</span>";
+                }).join("") + "</div>";
+            }
+            var vset = (S.readiness && S.readiness.vendor_set) || {};
+            (vset.problems || []).forEach(function (pr) {
+                html += '<div class="note warn">' + esc(pr) + "</div>";
+            });
+            (vset.notes || []).forEach(function (nt) {
+                html += '<div class="note">' + esc(nt) + "</div>";
+            });
+            html += '<div class="row" style="margin-top:14px;"><button class="btn" id="save-picks">Save my clearinghouses</button></div>';
             html += '<div class="result" id="pick-result" style="display:none;"></div>';
             html += "</section>";
         }
+
+        // --- management panel: roles, primary, remove
+        if (vendors().length) {
+            html += '<section class="block"><h2>Your clearinghouses</h2>';
+            html += '<div class="note">Change any of this whenever you like. Removing one keeps its enrollment history and credentials, so coming back to it later does not mean starting over.</div>';
+            html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
+                  + "<th>Clearinghouse</th><th>Handles</th><th>Default</th><th></th></tr></thead><tbody>";
+            vendors().forEach(function (v) {
+                html += "<tr><td class='nm'>" + esc(v.label)
+                      + '<div class="hint">added ' + esc((v.added_at || "").slice(0, 10)) + "</div></td>";
+                html += '<td><select data-role="' + esc(v.vendor) + '">'
+                      + [["both", "Claims + eligibility"], ["claims", "Claims only"], ["eligibility", "Eligibility only"]]
+                        .map(function (o) {
+                            return '<option value="' + o[0] + '"' + (v.role === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
+                        }).join("") + "</select></td>";
+                html += "<td>" + (v.is_primary
+                    ? '<span class="tag ok">primary</span>'
+                    : '<button class="cp" data-primary="' + esc(v.vendor) + '">make primary</button>') + "</td>";
+                html += '<td><button class="cp" data-remove="' + esc(v.vendor) + '">remove</button></td></tr>';
+            });
+            html += "</tbody></table></div>";
+
+            var rt = (S.readiness && S.readiness.routing) || {};
+            var rr = (S.readiness && S.readiness.routing_reasons) || [];
+            var rg = (S.readiness && S.readiness.routing_gaps) || [];
+            html += '<div class="gh">Which one handles what</div>';
+            html += '<p class="gs">Proposed defaults. Individual payers can still be routed one by one.</p>';
+            ["medicare", "medicaid", "commercial", "eligibility"].forEach(function (k) {
+                var lbl = { medicare: "Medicare", medicaid: "Medicaid / Medi-Cal", commercial: "Commercial + Blues", eligibility: "Eligibility checks" }[k];
+                var v = rt[k];
+                var f = v ? (S.all_vendors || []).filter(function (a) { return a.vendor === v; })[0] : null;
+                html += '<div class="kv"><div class="k">' + esc(lbl) + "</div>"
+                      + '<div class="v">' + (f ? esc(f.label) : '<span class="muted">— nothing assigned —</span>') + "</div></div>";
+            });
+            rr.forEach(function (r) { html += '<div class="rsn good"><span class="m">+</span><span>' + esc(r.text) + "</span></div>"; });
+            rg.forEach(function (g) { html += '<div class="note warn">' + esc(g) + "</div>"; });
+            html += '<div class="row" style="margin-top:14px;"><button class="btn" id="apply-routing">Apply this routing to my payers</button>'
+                  + '<span class="muted" style="font-size:12.5px;">Writes the vendor onto each payer, which is what the claim submitter reads.</span></div>';
+            html += '<div class="result" id="route-result" style="display:none;"></div>';
+            html += "</section>";
+        }
+
         panel.innerHTML = html;
+        wireGoto();
 
         Array.prototype.forEach.call(panel.querySelectorAll("[data-q]"), function (b) {
             b.addEventListener("click", function () {
@@ -470,36 +588,93 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 busy(b, false);
                 S.scores = j.scores; S.pairing = j.pairing;
                 S.onboarding = Object.assign({}, S.onboarding, { answers: answers });
+                // Nothing chosen yet? Pre-select the recommended pairing so
+                // the common answer is one click, not five.
+                if (!currentPicks().length && j.scores && j.scores.length) {
+                    picks = [j.scores[0].vendor];
+                    if (j.pairing && j.pairing.suggest && picks.indexOf(j.pairing.secondary) < 0) {
+                        picks.push(j.pairing.secondary);
+                    }
+                }
                 drawSelection();
             });
         });
 
         Array.prototype.forEach.call(panel.querySelectorAll("[data-pick]"), function (b) {
             b.addEventListener("click", function () {
-                busy(b, true);
-                post("select_vendor", { vendor: b.dataset.pick }).then(function (j) {
-                    busy(b, false);
+                var v = b.dataset.pick;
+                var cur = currentPicks();
+                picks = cur.indexOf(v) >= 0 ? cur.filter(function (x) { return x !== v; }) : cur.concat([v]);
+                drawSelection();
+            });
+        });
+
+        on("save-picks", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("select_vendors", { vendors: currentPicks() }).then(function (j) {
+                busy(b, false);
+                if (j._status >= 400) { say("pick-result", j.error || "Could not save.", false); return; }
+                if (j.state) S = j.state;
+                picks = null; tab = null;
+                var vs = j.vendor_set || {};
+                if (vs.problems && vs.problems.length) {
+                    say("pick-result", vs.problems.join(" "), false);
+                    drawSelection();
+                } else {
+                    say("pick-result", "Saved.", true);
+                    view = "packet"; setTimeout(render, 500);
+                }
+            });
+        });
+
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-role]"), function (sel) {
+            sel.addEventListener("change", function () {
+                post("set_role", { vendor: sel.dataset.role, role: sel.value }).then(function (j) {
                     if (j.state) S = j.state;
-                    view = "packet"; render();
+                    picks = null; drawSelection(); drawRail();
                 });
+            });
+        });
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-primary]"), function (b) {
+            b.addEventListener("click", function () {
+                post("set_primary", { vendor: b.dataset.primary }).then(function (j) {
+                    if (j.state) S = j.state;
+                    picks = null; drawSelection(); drawRail();
+                });
+            });
+        });
+        Array.prototype.forEach.call(panel.querySelectorAll("[data-remove]"), function (b) {
+            b.addEventListener("click", function () {
+                post("remove_vendor", { vendor: b.dataset.remove }).then(function (j) {
+                    if (j.state) S = j.state;
+                    picks = null; tab = null; drawSelection(); drawRail();
+                });
+            });
+        });
+
+        on("apply-routing", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            post("apply_routing", {}).then(function (j) {
+                busy(b, false);
+                if (j.state) S = j.state;
+                say("route-result", "Routing applied to " + (j.payers_updated || 0) + " payer record(s).", true);
             });
         });
     }
 
-    // ---- step 3 · packet + enrollment --------------------------------
+    // ---- step 3 · packet + enrollment (per vendor) --------------------
 
     function drawPacket() {
         var html = head("packet");
-        var pk = S.packet;
+        var v = activeTab();
+        if (!v) { panel.innerHTML = html + noVendorsYet(); wireGoto(); return; }
 
-        if (!S.onboarding.selected_vendor) {
-            html += '<section class="block"><div class="note warn">Choose a clearinghouse first — step 2.</div></section>';
-            panel.innerHTML = html; return;
-        }
+        html += tabStrip();
+        var pk = v.packet;
 
-        html += '<section class="block"><h2>Application values</h2>';
-        html += '<div class="note">These are the answers ' + esc(pk ? pk.vendor_label : "your clearinghouse")
-              + " will ask for. Copy each one straight across rather than retyping — a transposed NPI or a five-digit ZIP is the usual reason an enrollment comes back weeks later.</div>";
+        html += '<section class="block"><h2>' + esc(v.label) + " · application values</h2>";
+        html += '<div class="note">These are the answers ' + esc(v.label)
+              + " will ask for, filled from step 1. Copy each one straight across rather than retyping — a transposed NPI or a five-digit ZIP is the usual reason an enrollment comes back weeks later.</div>";
 
         if (pk) {
             pk.fields.forEach(function (f, i) {
@@ -510,14 +685,13 @@ input.bad{border-color:rgba(239,68,68,.7);}
             });
             html += '<div class="row" style="margin-top:14px;">'
                   + '<button class="btn ghost" id="reveal-tin">Reveal tax ID</button>'
-                  + '<span class="muted" style="font-size:12.5px;">Encrypted at rest. Revealing it is recorded in the event log below.</span></div>';
+                  + '<span class="muted" style="font-size:12.5px;">Encrypted at rest. Revealing it is recorded in the event log.</span></div>';
 
-            if (pk.warnings && pk.warnings.length) {
-                pk.warnings.forEach(function (w) { html += '<div class="note warn">' + esc(w) + "</div>"; });
-            }
+            (pk.warnings || []).forEach(function (w) { html += '<div class="note warn">' + esc(w) + "</div>"; });
+
             html += '<div class="gh">Confirm with the vendor</div>';
             html += '<p class="gs">Deliberately not asserted here, because these terms change and a stale answer costs weeks.</p>';
-            pk.confirm_tasks.forEach(function (t) {
+            (pk.confirm_tasks || []).forEach(function (t) {
                 html += '<div class="rsn bad"><span class="m">?</span><span>' + esc(t) + "</span></div>";
             });
             if (pk.turnaround_note) html += '<div class="note">' + esc(pk.turnaround_note) + "</div>";
@@ -525,53 +699,58 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 html += '<div class="row" style="margin-top:16px;"><a class="btn" href="' + esc(pk.signup_url) + '" target="_blank" rel="noopener">Open ' + esc(pk.vendor_label) + " ↗</a></div>";
             }
         }
-        html += '<div class="result" id="packet-result" style="display:none;"></div>';
         html += "</section>";
 
-        // --- per-payer EDI enrollment tracker
-        var enr = S.enrollment || [];
-        var sum = S.enrollment_summary || {};
-        html += '<section class="block"><h2>Payer EDI enrollment</h2>';
-        html += '<div class="note">A clearinghouse account does not mean a payer will accept your claims. Medicare, Medicaid and most Medicaid managed-care plans each require their own EDI agreement first, and this is the step that quietly eats months. Each row is a task to confirm with your clearinghouse — the value is that nothing is forgotten, not that we know every payer\'s current rule.</div>';
-
-        if (!enr.length) {
-            html += '<div class="row"><button class="btn" id="build-packet">Build my checklist</button></div>';
+        // --- per-payer EDI enrollment tracker, scoped to this vendor
+        if (v.role === "eligibility") {
+            html += '<section class="block"><h2>Payer EDI enrollment</h2>'
+                  + '<div class="note">' + esc(v.label) + ' is set to eligibility only, so it needs no claim-submission enrollment. Change its role in step 2 if that is wrong.</div></section>';
         } else {
-            html += '<div class="grid">'
-                  + '<div class="tile"><div class="l">Payers</div><div class="v">' + (sum.total || 0) + "</div></div>"
-                  + '<div class="tile"><div class="l">Approved</div><div class="v">' + (sum.approved || 0) + "</div></div>"
-                  + '<div class="tile"><div class="l">Submitted</div><div class="v">' + (sum.submitted || 0) + "</div></div>"
-                  + '<div class="tile"><div class="l">Blocking go-live</div><div class="v">' + (sum.blocking || 0) + "</div></div>"
-                  + "</div>";
-            html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
-                  + "<th>Payer</th><th>Needs</th><th>Status</th><th>Reference</th></tr></thead><tbody>";
-            enr.forEach(function (r) {
-                var kindTag = r.payer_kind === "medicare" ? '<span class="tag med">Medicare</span>'
-                            : r.payer_kind === "medicaid" ? '<span class="tag mcd">Medicaid</span>' : "";
-                var needs = [];
-                if (r.edi_required) needs.push("EDI agreement");
-                if (r.era_required) needs.push("ERA (835)");
-                if (r.eft_required) needs.push("EFT");
-                html += "<tr><td class='nm'>" + kindTag + esc(r.payer_name)
-                      + (r.note ? '<div class="hint">' + esc(r.note) + "</div>" : "") + "</td>";
-                html += "<td>" + (needs.length ? needs.map(function (n) { return '<span class="tag">' + esc(n) + "</span>"; }).join("") : '<span class="muted">—</span>')
-                      + (r.form_name ? '<div class="hint">' + esc(r.form_name) + "</div>" : "") + "</td>";
-                html += '<td><select data-enr="' + esc(r.id) + '">'
-                      + ["not_started", "in_progress", "submitted", "approved", "rejected", "not_required"].map(function (s) {
-                          var label = { not_started: "Not started", in_progress: "In progress", submitted: "Submitted",
-                                        approved: "Approved", rejected: "Rejected", not_required: "Not required" }[s];
-                          return '<option value="' + s + '"' + (r.status === s ? " selected" : "") + ">" + label + "</option>";
-                      }).join("") + "</select></td>";
-                html += '<td><input type="text" data-ref="' + esc(r.id) + '" value="' + esc(r.reference_number || "")
-                      + '" placeholder="ticket #" style="min-width:120px;"></td></tr>';
-            });
-            html += "</tbody></table></div>";
-            html += '<div class="row" style="margin-top:14px;"><button class="btn ghost" id="build-packet">Refresh from payer directory</button>'
-                  + '<span class="muted" style="font-size:12.5px;">Never overwrites a row you have already updated.</span></div>';
+            var enr = v.enrollment || [];
+            var sum = v.enrollment_summary || {};
+            html += '<section class="block"><h2>' + esc(v.label) + " · payer EDI enrollment</h2>";
+            html += '<div class="note">A clearinghouse account does not mean a payer will accept your claims. Medicare, Medicaid and most Medicaid managed-care plans each require their own EDI agreement first, and this is the step that quietly eats months. These are tracked separately per clearinghouse, because an approved agreement with one means nothing to another.</div>';
+
+            if (!enr.length) {
+                html += '<div class="row"><button class="btn" id="build-packet">Build the checklist for ' + esc(v.label) + "</button></div>";
+            } else {
+                html += '<div class="grid">'
+                      + '<div class="tile"><div class="l">Payers</div><div class="v">' + (sum.total || 0) + "</div></div>"
+                      + '<div class="tile"><div class="l">Approved</div><div class="v">' + (sum.approved || 0) + "</div></div>"
+                      + '<div class="tile"><div class="l">Submitted</div><div class="v">' + (sum.submitted || 0) + "</div></div>"
+                      + '<div class="tile"><div class="l">Blocking go-live</div><div class="v">' + (sum.blocking || 0) + "</div></div>"
+                      + "</div>";
+                html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
+                      + "<th>Payer</th><th>Needs</th><th>Status</th><th>Reference</th></tr></thead><tbody>";
+                enr.forEach(function (r) {
+                    var kindTag = r.payer_kind === "medicare" ? '<span class="tag med">Medicare</span>'
+                                : r.payer_kind === "medicaid" ? '<span class="tag mcd">Medicaid</span>' : "";
+                    var needs = [];
+                    if (r.edi_required) needs.push("EDI agreement");
+                    if (r.era_required) needs.push("ERA (835)");
+                    if (r.eft_required) needs.push("EFT");
+                    html += "<tr><td class='nm'>" + kindTag + esc(r.payer_name)
+                          + (r.note ? '<div class="hint">' + esc(r.note) + "</div>" : "") + "</td>";
+                    html += "<td>" + (needs.length ? needs.map(function (n) { return '<span class="tag">' + esc(n) + "</span>"; }).join("") : '<span class="muted">—</span>')
+                          + (r.form_name ? '<div class="hint">' + esc(r.form_name) + "</div>" : "") + "</td>";
+                    html += '<td><select data-enr="' + esc(r.id) + '">'
+                          + ["not_started", "in_progress", "submitted", "approved", "rejected", "not_required"].map(function (st) {
+                              var label = { not_started: "Not started", in_progress: "In progress", submitted: "Submitted",
+                                            approved: "Approved", rejected: "Rejected", not_required: "Not required" }[st];
+                              return '<option value="' + st + '"' + (r.status === st ? " selected" : "") + ">" + label + "</option>";
+                          }).join("") + "</select></td>";
+                    html += '<td><input type="text" data-ref="' + esc(r.id) + '" value="' + esc(r.reference_number || "")
+                          + '" placeholder="ticket #" style="min-width:120px;"></td></tr>';
+                });
+                html += "</tbody></table></div>";
+                html += '<div class="row" style="margin-top:14px;"><button class="btn ghost" id="build-packet">Refresh from payer directory</button>'
+                      + '<span class="muted" style="font-size:12.5px;">Never overwrites a row you have already updated.</span></div>';
+            }
+            html += '<div class="result" id="enr-result" style="display:none;"></div>';
+            html += "</section>";
         }
-        html += '<div class="result" id="enr-result" style="display:none;"></div>';
-        html += "</section>";
         panel.innerHTML = html;
+        wireTabs(); wireGoto();
 
         Array.prototype.forEach.call(panel.querySelectorAll("[data-copy]"), function (b) {
             b.addEventListener("click", function () {
@@ -583,9 +762,9 @@ input.bad{border-color:rgba(239,68,68,.7);}
                         b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1400);
                     });
                 } else {
-                    var r = document.createRange(); r.selectNode(src);
-                    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
-                    try { document.execCommand("copy"); b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1400); } catch (e) {}
+                    var rng = document.createRange(); rng.selectNode(src);
+                    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+                    try { document.execCommand("copy"); b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1400); } catch (er) {}
                     sel.removeAllRanges();
                 }
             });
@@ -593,21 +772,22 @@ input.bad{border-color:rgba(239,68,68,.7);}
 
         on("reveal-tin", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
-            post("build_packet", { reveal_tin: true }).then(function (j) {
+            post("build_packet", { vendor: v.vendor, reveal_tin: true }).then(function (j) {
                 busy(b, false);
                 if (j.state) S = j.state;
-                if (j.packet) S.packet = j.packet;
+                if (j.packets && j.packets[v.vendor]) {
+                    vendors().forEach(function (x) { if (x.vendor === v.vendor) x.packet = j.packets[v.vendor]; });
+                }
                 drawPacket();
             });
         });
 
         on("build-packet", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
-            post("build_packet", {}).then(function (j) {
+            post("build_packet", { vendor: v.vendor }).then(function (j) {
                 busy(b, false);
                 if (j.state) S = j.state;
-                if (j.packet) S.packet = j.packet;
-                drawPacket();
+                drawPacket(); drawRail();
             });
         });
 
@@ -615,11 +795,11 @@ input.bad{border-color:rgba(239,68,68,.7);}
             sel.addEventListener("change", function () {
                 post("update_enrollment", { id: sel.dataset.enr, status: sel.value }).then(function (j) {
                     if (j.state) S = j.state;
-                    say("enr-result", "Saved.", true);
+                    var cur = activeTab() || {};
+                    var sm = cur.enrollment_summary || {};
+                    say("enr-result", "Saved. " + (sm.approved || 0) + " of " + (sm.total || 0)
+                        + " approved · " + (sm.blocking || 0) + " still blocking go-live.", true);
                     drawRail();
-                    var sum = S.enrollment_summary || {};
-                    say("enr-result", "Saved. " + (sum.approved || 0) + " of " + (sum.total || 0)
-                        + " approved · " + (sum.blocking || 0) + " still blocking go-live.", true);
                 });
             });
         });
@@ -632,22 +812,22 @@ input.bad{border-color:rgba(239,68,68,.7);}
         });
     }
 
-    // ---- step 4 · credentials ----------------------------------------
+    // ---- step 4 · credentials (per vendor) ---------------------------
 
     function drawCredentials() {
         var html = head("credentials");
-        var vendor = S.onboarding.selected_vendor;
-        if (!vendor) {
-            html += '<section class="block"><div class="note warn">Choose a clearinghouse first — step 2.</div></section>';
-            panel.innerHTML = html; return;
-        }
-        var spec = S.credential_spec || [];
-        var have = (S.credentials && S.credentials.field_names) || [];
+        var v = activeTab();
+        if (!v) { panel.innerHTML = html + noVendorsYet(); wireGoto(); return; }
+        html += tabStrip();
 
-        html += '<section class="block"><h2>What ' + esc(S.packet ? S.packet.vendor_label : vendor) + " issued you</h2>";
+        var spec = v.credential_spec || [];
+        var have = (v.credentials && v.credentials.field_names) || [];
+        if (!creds[v.vendor]) creds[v.vendor] = {};
+
+        html += '<section class="block"><h2>' + esc(v.label) + " · what they issued you</h2>";
         html += '<div class="note">Stored encrypted with the same envelope scheme as patient data — a clearinghouse key can submit claims for real money under your NPI, so it gets the strongest protection here. Values are never sent back to this page after saving.</div>';
 
-        if (S.credentials_source === "env") {
+        if (v.credentials_source === "env") {
             html += '<div class="note">These credentials are already set as deployment secrets, which take precedence over anything entered here. You do not need to re-enter them.</div>';
         }
 
@@ -664,26 +844,27 @@ input.bad{border-color:rgba(239,68,68,.7);}
               + '<button class="btn ghost" id="test-conn">Test the connection</button></div>';
         html += '<div class="result" id="cred-result" style="display:none;"></div>';
 
-        if (S.credentials && S.credentials.last_test_at) {
-            html += '<div class="note' + (S.credentials.last_test_ok ? "" : " warn") + '">'
-                  + (S.credentials.last_test_ok ? "Last test passed" : "Last test failed")
-                  + " · " + esc(S.credentials.last_test_at) + "<br>" + esc(S.credentials.last_test_detail || "") + "</div>";
+        if (v.credentials && v.credentials.last_test_at) {
+            html += '<div class="note' + (v.credentials.last_test_ok ? "" : " warn") + '">'
+                  + (v.credentials.last_test_ok ? "Last test passed" : "Last test failed")
+                  + " · " + esc(v.credentials.last_test_at) + "<br>" + esc(v.credentials.last_test_detail || "") + "</div>";
         }
         html += '<div class="note">The test makes a real authenticated call to the vendor. "Saved" and "works" are different facts, and only the second one earns a checkmark.</div>';
         html += "</section>";
         panel.innerHTML = html;
+        wireTabs(); wireGoto();
 
         Array.prototype.forEach.call(panel.querySelectorAll("[data-ck]"), function (n) {
-            n.addEventListener("input", function () { creds[n.dataset.ck] = n.value; });
+            n.addEventListener("input", function () { creds[v.vendor][n.dataset.ck] = n.value; });
         });
 
         on("save-creds", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
-            post("save_credentials", { vendor: vendor, fields: creds }).then(function (j) {
+            post("save_credentials", { vendor: v.vendor, fields: creds[v.vendor] }).then(function (j) {
                 busy(b, false);
+                if (j._status >= 400) { say("cred-result", j.error || "Could not save.", false); return; }
                 if (j.state) S = j.state;
-                if (j.error || j._status >= 400) { say("cred-result", j.error || "Could not save.", false); return; }
-                creds = {};
+                creds[v.vendor] = {};
                 say("cred-result", "Saved and encrypted. Now run the connection test.", true);
                 drawCredentials();
             });
@@ -691,40 +872,50 @@ input.bad{border-color:rgba(239,68,68,.7);}
 
         on("test-conn", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
-            say("cred-result", "Calling " + vendor + "…");
-            post("test_connection", { vendor: vendor }).then(function (j) {
+            say("cred-result", "Calling " + v.label + "…");
+            post("test_connection", { vendor: v.vendor }).then(function (j) {
                 busy(b, false);
                 if (j.state) S = j.state;
                 var r = j.result || {};
                 say("cred-result", (r.ok ? "Connection verified. " : "Failed. ") + (r.detail || ""), !!r.ok);
                 drawRail();
-                if (r.ok) setTimeout(function () { view = "testclaim"; render(); }, 900);
             });
         });
     }
 
-    // ---- step 5 · test claim -----------------------------------------
+    // ---- step 5 · test claim (per vendor) ----------------------------
 
     function drawTestClaim() {
         var html = head("testclaim");
-        html += '<section class="block"><h2>Send one through</h2>';
-        html += '<div class="note">This runs through exactly the same code path a real claim uses, with the usage indicator set to T. A test that exercises a different path proves nothing about the one that matters.</div>';
+        var v = activeTab();
+        if (!v) { panel.innerHTML = html + noVendorsYet(); wireGoto(); return; }
+        html += tabStrip();
+
+        if (v.role === "eligibility") {
+            html += '<section class="block"><div class="note">' + esc(v.label)
+                  + ' is set to eligibility only, so it does not need a test claim. Change its role in step 2 if that is wrong.</div></section>';
+            panel.innerHTML = html; wireTabs(); wireGoto(); return;
+        }
+
+        html += '<section class="block"><h2>' + esc(v.label) + " · send one through</h2>";
+        html += '<div class="note">This runs through exactly the same code path a real claim uses, with the usage indicator set to T. A test that exercises a different path proves nothing about the one that matters. Each clearinghouse needs its own accepted test claim.</div>';
         html += '<label class="fld" for="edi">Raw 837 (optional — leave blank to use a generated sample)</label>';
         html += '<textarea id="edi" placeholder="ISA*00*..."></textarea>';
-        html += '<div class="row" style="margin-top:14px;"><button class="btn" id="send-test">Submit test claim</button></div>';
+        html += '<div class="row" style="margin-top:14px;"><button class="btn" id="send-test">Submit test claim to ' + esc(v.label) + "</button></div>";
         html += '<div class="result" id="test-result" style="display:none;"></div>';
 
-        if (S.last_test_claim) {
-            html += '<div class="note' + (S.last_test_claim.ok ? "" : " warn") + '">Last attempt · '
-                  + esc(S.last_test_claim.at) + "<br>" + esc(S.last_test_claim.detail || "") + "</div>";
+        if (v.lastTestClaim) {
+            html += '<div class="note' + (v.lastTestClaim.ok ? "" : " warn") + '">Last attempt · '
+                  + esc(v.lastTestClaim.at) + "<br>" + esc(v.lastTestClaim.detail || "") + "</div>";
         }
         html += "</section>";
         panel.innerHTML = html;
+        wireTabs(); wireGoto();
 
         on("send-test", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
             say("test-result", "Submitting…");
-            post("submit_test_claim", { edi: (el("edi").value || "").trim() || null }).then(function (j) {
+            post("submit_test_claim", { vendor: v.vendor, edi: (el("edi").value || "").trim() || null }).then(function (j) {
                 busy(b, false);
                 if (j.state) S = j.state;
                 say("test-result", j.detail || JSON.stringify(j.result || {}, null, 2), !!(j.result && j.result.ok));
@@ -743,7 +934,7 @@ input.bad{border-color:rgba(239,68,68,.7);}
         if (S.live_mode) {
             html += '<div class="banner go">Live. Claims submit with usage indicator P.</div>';
         } else if (r.blockers && r.blockers.length) {
-            html += '<div class="banner wait">Not ready yet.</div>';
+            html += '<div class="banner wait">Not ready yet — ' + r.blockers.length + " thing" + (r.blockers.length === 1 ? "" : "s") + " outstanding.</div>";
             r.blockers.forEach(function (b) {
                 html += '<div class="rsn bad"><span class="m">!</span><span>' + esc(b) + "</span></div>";
             });
@@ -753,13 +944,33 @@ input.bad{border-color:rgba(239,68,68,.7);}
             html += '<div class="result" id="golive-result" style="display:none;"></div>';
         }
 
+        // Per-clearinghouse readiness, so a two-vendor setup shows which
+        // one is holding things up rather than a single opaque "not ready".
+        var per = (S.readiness && S.readiness.per_vendor) || [];
+        if (per.length) {
+            html += '<div class="gh">By clearinghouse</div>';
+            html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
+                  + "<th>Clearinghouse</th><th>Credentials</th><th>Test claim</th><th>Payer enrollment</th></tr></thead><tbody>";
+            per.forEach(function (p) {
+                html += "<tr><td class='nm'>" + esc(p.label)
+                      + (p.is_primary ? ' <span class="tag ok">primary</span>' : "")
+                      + '<div class="hint">' + esc(p.role) + "</div></td>";
+                html += "<td>" + (p.credentials_ok ? '<span class="tag ok">verified</span>' : '<span class="tag med">not verified</span>') + "</td>";
+                html += "<td>" + (p.role === "eligibility" ? '<span class="muted">n/a</span>'
+                        : p.testclaim_ok ? '<span class="tag ok">accepted</span>' : '<span class="tag med">pending</span>') + "</td>";
+                html += "<td>" + (p.enrollment.approved || 0) + "/" + (p.enrollment.total || 0)
+                      + (p.enrollment.blocking ? ' <span class="tag med">' + p.enrollment.blocking + " blocking</span>" : "") + "</td></tr>";
+            });
+            html += "</tbody></table></div>";
+        }
         html += '<div class="note">The production switch is a deployment secret rather than a field on this page, on purpose: no browser session should be able to send a real claim by accident. Arming it here records readiness and tells you the one value to set.</div>';
         html += "</section>";
 
-        // Event log — the thing that settles "we never received your form".
         var ev = S.events || [];
         if (ev.length) {
-            html += '<section class="block"><h2>Setup history</h2><div class="scroll-x"><table class="tbl"><thead><tr>'
+            html += '<section class="block"><h2>Setup history</h2>';
+            html += '<div class="note">Enrollment disputes are common — "we never received your form" — and a dated local record is usually the only thing that settles them.</div>';
+            html += '<div class="scroll-x"><table class="tbl"><thead><tr>'
                   + "<th>When</th><th>Step</th><th>Action</th><th>Detail</th></tr></thead><tbody>";
             ev.forEach(function (e) {
                 html += "<tr><td>" + esc((e.at || "").replace("T", " ").slice(0, 19)) + "</td>"
@@ -767,9 +978,10 @@ input.bad{border-color:rgba(239,68,68,.7);}
                       + "<td class='nm'>" + esc(e.action) + (e.ok === 0 ? ' <span class="tag med">failed</span>' : "") + "</td>"
                       + "<td>" + esc(e.detail || "") + "</td></tr>";
             });
-            html += "</tbody></table></div></section>";
+            html += "</tbody></table></section>";
         }
         panel.innerHTML = html;
+        wireGoto();
 
         on("golive-btn", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
@@ -782,8 +994,10 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 }
                 var i = j.instruction || {};
                 say("golive-result",
-                    "Readiness recorded. " + (i.why || "") + "\n\nSet these on the Pages production deployment, then redeploy:\n  "
-                    + i.env_var + "=" + i.value + "\n  " + (i.also || ""), true);
+                    "Readiness recorded. " + (i.why || "")
+                    + "\n\nSet these on the Pages production deployment, then redeploy:\n  "
+                    + i.env_var + "=" + i.value + "\n  " + (i.also || "")
+                    + (i.note ? "\n\n" + i.note : ""), true);
             });
         });
     }
@@ -807,9 +1021,9 @@ input.bad{border-color:rgba(239,68,68,.7);}
             html = '<div class="center">Sign in to continue. <a href="/admin/">Admin sign-in</a></div>';
         } else if (m.indexOf("SCHEMA:") >= 0) {
             // A missing migration is an operator action, not an error page.
-            html = '<h2>One migration to run</h2>'
+            html = "<h2>One migration to run</h2>"
                  + '<div class="note">The wizard is deployed, but its tables do not exist in the database yet. '
-                 + 'Run this once from the repository and reload — it creates the tables and touches nothing else.</div>'
+                 + "Run this once from the repository and reload — it creates the tables and touches nothing else.</div>"
                  + '<div class="result" style="display:block;">'
                  + esc(m.slice(m.indexOf("SCHEMA:") + 7)) + "</div>";
         } else {
