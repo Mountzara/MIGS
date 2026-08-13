@@ -504,14 +504,34 @@ input.bad{border-color:rgba(239,68,68,.7);}
                 if (!j.ok) { say("npi-result", j.error || "Lookup failed.", false); return; }
                 var L = j.lookup;
                 var applied = applyFields(L.fields);
-                var msg = "Found " + L.raw_name + " (" + L.type + "). Filled " + applied.length + " field"
-                        + (applied.length === 1 ? "" : "s") + ": " + applied.join(", ") + ".";
-                if (L.warnings && L.warnings.length) msg += "\n\n" + L.warnings.join("\n");
-                if (L.source) msg += "\n\nSource: " + L.source.registry
-                                  + (L.source.last_updated ? ", record last updated " + L.source.last_updated : "");
-                say("npi-result", msg, true);
+
+                // Report using the labels on the form, not the database
+                // column names — "Individual NPI (Type 1)", not npi_individual.
+                var labelOf = {};
+                (S.profile_fields || []).forEach(function (pf) { labelOf[pf.key] = pf.label; });
+                var named = applied.map(function (k) { return labelOf[k] || k.replace(/_/g, " "); });
+
+                var lines = [];
+                lines.push("Found " + L.raw_name + (L.type === "organization" ? " (organization)" : ""));
+                lines.push("");
+                lines.push("Filled " + applied.length + " field" + (applied.length === 1 ? "" : "s") + ":");
+                named.forEach(function (n) { lines.push("  · " + n); });
+                if (L.warnings && L.warnings.length) {
+                    lines.push("");
+                    lines.push("Check these:");
+                    L.warnings.forEach(function (w) { lines.push("  ! " + w); });
+                }
+                if (L.source) {
+                    lines.push("");
+                    lines.push("Source: " + L.source.registry
+                        + (L.source.last_updated ? " · record last updated " + L.source.last_updated : ""));
+                }
+                var msg = lines.join("\n");
+
+                // Redraw first (the inputs now carry the filled values), then
+                // restore the message, which the redraw would otherwise clear.
                 drawProfile();
-                setTimeout(function () { say("npi-result", msg, true); }, 10);
+                say("npi-result", msg, true);
             }).catch(function (err) { busy(b, false); say("npi-result", String(err), false); });
         });
 
