@@ -224,7 +224,25 @@ async function rawContextFor(env, kind, refId) {
             for (const n of [pt?.first_name, pt?.last_name, pt?.preferred_name]) if (n) names.add(n);
         } catch { /* the scrubber still runs */ }
 
-        return { text: parts.join("\n\n"), knownNames: [...names] };
+        // Ship the REAL visit-type catalog with the context. The first
+        // version of the bridge prompt hard-coded a list of visit types
+        // from memory; several did not exist. The model returned
+        // "complex_pelvic_pain", the applier wrote it to the triage row,
+        // and the booking endpoint then crashed on an unknown key —
+        // Cloudflare error 1102, no slots, no explanation.
+        //
+        // Deriving it here means the prompt cannot drift from the catalog,
+        // because there is only one copy.
+        const { VISIT_TYPES } = await import("../../../../_lib/visit_types.js");
+        const catalog = VISIT_TYPES.map((v) =>
+            `  ${v.key} — ${v.label || v.key}${v.default_duration_min ? ` (usually ${v.default_duration_min} min)` : ""}`
+        ).join("\n");
+
+        return {
+            text: parts.join("\n\n"),
+            knownNames: [...names],
+            catalog,
+        };
     }
 
     if (kind === "visit_summary") {
@@ -290,6 +308,18 @@ async function applyJobResult(env, job, text) {
             if (start >= 0 && end > start) d = JSON.parse(text.slice(start, end + 1));
         } catch { /* fall through to not-applied */ }
         if (!d || !d.visit_type) return { applied: false, reason: "no usable triage decision in the result" };
+
+        // Validate against the catalog BEFORE writing. An unknown visit
+        // type is not a cosmetic problem: booking looks it up, gets
+        // undefined, and the whole endpoint dies with a resource-limit
+        // error the patient sees as "no slots".
+        const { VISIT_TYPES: CATALOG } = await import("../../../../_lib/visit_types.js");
+        const known = CATALOG.find((v) => v.key === String(d.visit_type));
+        if (!known) {
+            return { applied: false,
+                     reason: `"${d.visit_type}" is not a visit type in the catalog — refused rather than written, because booking would crash on it`,
+                     valid_types: CATALOG.map((v) => v.key) };
+        }
 
         let payload = {};
         try { payload = JSON.parse(job.payload_json || "{}"); } catch { /* {} */ }
@@ -422,6 +452,7 @@ export async function onRequest(ctx) {
             return syncJson({
                 ok: true, kind, phi: false,
                 text: deid.text,
+                catalog: raw.catalog || null,
                 deid: {
                     applied: true, verified: true,
                     removed: deid.findings,

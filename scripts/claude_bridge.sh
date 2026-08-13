@@ -88,7 +88,7 @@ heartbeat() {
 # site so the queue never has to carry clinical text.
 build_prompt() {
     local kind="$1" payload="$2"
-    local ref resp text removed
+    local ref resp text removed catalog
 
     # Every kind fetches its context from the SAME de-identified endpoint.
     # There is no path here that obtains raw patient text — the server
@@ -104,6 +104,10 @@ build_prompt() {
 
     resp=$(curl -s "${SITE}/api/v1/sync/ai-bridge/context/${kind}/${ref}?bridge_id=${BRIDGE_ID}&job_id=${JOB_ID}" "${AUTH[@]}")
     text=$(jq -r '.text // empty' <<<"$resp")
+    # The server ships the authoritative visit-type catalog with the
+    # context. Never hard-code it here — a list typed from memory is how
+    # an invented visit type reached a triage row and broke booking.
+    catalog=$(jq -r '.catalog // empty' <<<"$resp")
     if [ -z "$text" ]; then
         echo "  ! server released nothing: $(jq -r '.error // "no text"' <<<"$resp")" >&2
         echo ""; return 1
@@ -148,10 +152,8 @@ what KIND of appointment this person needs and how long it should be.
 
 Return ONLY a JSON object, no prose, no code fence:
 {
-  "visit_type": one of: new_patient_complex | new_patient_standard |
-                complex_pelvic_pain | endometriosis_followup | heavy_bleeding |
-                preop | postop_early | postop_late | routine_followup |
-                office_procedure | quick_concern | annual | telehealth_consult,
+  "visit_type": EXACTLY one of the keys listed under VISIT TYPES below —
+                copy the key verbatim, invent nothing,
   "duration_min": 15 | 20 | 30 | 45 | 60,
   "urgency": "routine" | "soon" | "urgent",
   "in_person_required": true | false,
@@ -170,6 +172,9 @@ RULES:
   * Longer for complex pain and multi-system histories; shorter for a single
     focused question.
   * Dates and names are tokens like [DATE_1]. Do not try to resolve them.
+
+VISIT TYPES (use one of these keys exactly):
+${catalog}
 
 INTAKE:
 ${text}

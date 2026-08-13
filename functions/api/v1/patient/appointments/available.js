@@ -157,6 +157,17 @@ export async function onRequestGet(ctx) {
           AND starts_at >= ? AND starts_at <= ?
     `).bind(CLINICIAN_ID, fromMs, toMsExclusive).all();
 
+    // Defence in depth. The applier now refuses to write a visit type that
+    // is not in the catalog, but this endpoint must not DIE if one ever
+    // gets in another way — an unknown key made getVisitType() return
+    // undefined and the request failed with Cloudflare 1102, which the
+    // patient saw as "no slots" with no explanation and no way forward.
+    if (!vt) {
+        return err(409, "unknown_visit_type",
+            "Your triage recorded a visit type this scheduler does not recognise, so slots cannot be offered yet. " +
+            "Dr. Mabini has been notified and will set the visit type by hand.");
+    }
+
     const slots = computeAvailableSlots({
         availabilityBlocks: blocksRes?.results || [],
         appointments: apptsRes?.results || [],
