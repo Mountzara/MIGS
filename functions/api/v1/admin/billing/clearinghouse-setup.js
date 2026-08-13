@@ -44,6 +44,11 @@ import {
     buildEnrollmentMatrix, enrollmentSummary, readiness,
     routingPlan, validateVendorSet,
 } from "../../../../_lib/clearinghouse_onboarding.js";
+import { lookupNpi } from "../../../../_lib/nppes.js";
+import {
+    DOC_TYPES, extractEnrollmentDocument, looksLikePatientDocument,
+} from "../../../../_lib/enrollment_extract.js";
+import { putPhiObject } from "../../../../_lib/phi.js";
 import { PAYERS } from "../../../../_lib/payer_directory.js";
 import { clearinghouseVendor, providerConfig, isConfigured } from "../../../../_lib/clearinghouse.js";
 
@@ -289,6 +294,33 @@ async function getState(env) {
           ORDER BY at DESC LIMIT 25`
     ).all();
 
+    // Autosave draft — separate from the saved profile on purpose: a draft
+    // may be half-finished or fail validation, and promoting it silently
+    // would let an invalid NPI reach an application.
+    let draft = null;
+    try {
+        const d = await env.DB.prepare(
+            `SELECT draft_json, updated_at FROM clearinghouse_profile_draft WHERE id='default'`
+        ).first();
+        if (d) draft = { fields: JSON.parse(d.draft_json || "{}"), updated_at: d.updated_at };
+    } catch { /* table may predate 0033 — the wizard still works without it */ }
+
+    let documents = [];
+    try {
+        const docs = await env.DB.prepare(
+            `SELECT id, doc_type, filename, byte_size, status, route, extracted_json,
+                    rejected_json, notes_json, accepted_json, error, uploaded_at, extracted_at
+               FROM clearinghouse_documents ORDER BY uploaded_at DESC LIMIT 20`
+        ).all();
+        documents = (docs?.results || []).map((d) => ({
+            ...d,
+            extracted: safeParse(d.extracted_json, {}),
+            rejected: safeParse(d.rejected_json, []),
+            notes: safeParse(d.notes_json, []),
+            accepted: safeParse(d.accepted_json, null),
+        }));
+    } catch { /* same */ }
+
     return {
         ok: true,
         steps: STEPS,
@@ -311,7 +343,14 @@ async function getState(env) {
         active_vendor_env: clearinghouseVendor(env),
         readiness: rd,
         events: recent?.results || [],
+        draft,
+        documents,
+        doc_types: DOC_TYPES,
     };
+}
+
+function safeParse(s, fallback) {
+    try { return JSON.parse(s || ""); } catch { return fallback; }
 }
 
 // ---------------------------------------------------------------------
@@ -379,6 +418,158 @@ export async function onRequest(ctx) {
                 record_type: "clearinghouse_profile", success: true,
                 details: { step: "profile", complete: v.ok } });
             return jsonResponse({ ok: true, validation: v, state: await getState(env) });
+        }
+
+        // ---- save_draft (autosave) -----------------------------------
+        // Fires on every field blur. Cheap, never validates, never
+        // promotes. Its only job is that closing the tab costs nothing.
+        if (action === "save_draft") {
+            try {
+                await env.DB.prepare(
+                    `INSERT INTO clearinghouse_profile_draft (id, draft_json, updated_at, updated_by)
+                     VALUES ('default', ?, ?, ?)
+                     ON CONFLICT(id) DO UPDATE SET
+                        draft_json=excluded.draft_json, updated_at=excluded.updated_at,
+                        updated_by=excluded.updated_by`
+                ).bind(JSON.stringify(body.profile || {}), nowIso(), admin.user || null).run();
+            } catch (e) {
+                return jsonError(`draft not saved: ${String(e).slice(0, 160)}`, 500);
+            }
+            return jsonResponse({ ok: true, saved_at: nowIso() });
+        }
+
+        if (action === "discard_draft") {
+            await env.DB.prepare(`DELETE FROM clearinghouse_profile_draft WHERE id='default'`).run();
+            return jsonResponse({ ok: true, state: await getState(env) });
+        }
+
+        // ---- nppes_lookup --------------------------------------------
+        // Autofill from the official CMS registry. Not a model guessing:
+        // this is the same record the payers check against, which is why
+        // filling from it makes the commonest enrollment rejection --
+        // a name or address that does not match NPPES -- impossible.
+        if (action === "nppes_lookup") {
+            const result = await lookupNpi(body.npi);
+            await event(env, admin, { step: "profile", action: "nppes_lookup",
+                detail: result.ok ? `${result.npi} → ${result.raw_name}` : result.error,
+                ok: result.ok });
+            if (!result.ok) return jsonResponse({ ok: false, error: result.error });
+            return jsonResponse({ ok: true, lookup: result });
+        }
+
+        // ---- upload_document -----------------------------------------
+        // Store the file encrypted, then read it. The gate in
+        // enrollment_extract.js refuses patient documents BEFORE any model
+        // call, so a misrouted chart cannot reach an AI processor here.
+        if (action === "upload_document") {
+            const docType = String(body.doc_type || "other");
+            const filename = String(body.filename || "document").slice(0, 200);
+            const text = String(body.text || "");
+            if (!text.trim()) {
+                return jsonError("No readable text came out of that file. If it is a scan, the browser could not read it — paste the text instead.", 400);
+            }
+
+            // Refuse before storing, not just before sending.
+            const gate = looksLikePatientDocument(text);
+            if (gate.patient) {
+                await event(env, admin, { step: "profile", action: "document_refused",
+                    detail: gate.reasons.join(", "), ok: false });
+                return jsonResponse({
+                    ok: false, not_practice_document: true, reasons: gate.reasons,
+                    error: `That looks like a patient document — it contains ${gate.reasons.join(" and ")}. `
+                         + "This uploader is for your practice's own paperwork and deliberately does not de-identify. "
+                         + "Nothing was stored and nothing was sent to any AI processor.",
+                }, { status: 400 });
+            }
+
+            const id = newId();
+            let r2_key = null, wrapped = null;
+            try {
+                r2_key = `clearinghouse-docs/${id}`;
+                const put = await putPhiObject(env, r2_key, new TextEncoder().encode(text), `ch_doc:${id}`);
+                wrapped = put?.wrapped_dek || put?.envelope_dek_wrapped || null;
+            } catch (e) {
+                // Storage failing must not silently drop the upload, and it
+                // must not block the extraction the physician asked for --
+                // the value is the proposed fields, not the archived file.
+                // The row records the miss so it is visible, not guessed at.
+                r2_key = null;
+                console.error("clearinghouse doc store failed", String(e));
+            }
+
+            await env.DB.prepare(
+                `INSERT INTO clearinghouse_documents
+                   (id, doc_type, filename, content_type, byte_size, r2_key, dek_wrapped,
+                    status, uploaded_at, uploaded_by)
+                 VALUES (?,?,?,?,?,?,?,'uploaded',?,?)`
+            ).bind(id, docType, filename, String(body.content_type || ""), text.length,
+                   r2_key, wrapped, nowIso(), admin.user || null).run();
+
+            const result = await extractEnrollmentDocument(env, { text, docType, documentId: id });
+
+            if (!result.ok) {
+                await env.DB.prepare(
+                    `UPDATE clearinghouse_documents SET status=?, error=? WHERE id=?`
+                ).bind(result.not_practice_document ? "rejected" : "failed",
+                       String(result.error).slice(0, 500), id).run();
+                await event(env, admin, { step: "profile", action: "document_extract",
+                    detail: result.error, ok: false });
+                return jsonResponse({ ok: false, document_id: id, error: result.error });
+            }
+
+            if (result.queued) {
+                await env.DB.prepare(
+                    `UPDATE clearinghouse_documents SET status='queued', route=?, ai_job_id=? WHERE id=?`
+                ).bind(result.route, result.job_id, id).run();
+                await event(env, admin, { step: "profile", action: "document_extract",
+                    detail: `queued for the CLI bridge (${result.job_id})`, ok: true });
+                return jsonResponse({ ok: true, queued: true, document_id: id,
+                    message: result.message, state: await getState(env) });
+            }
+
+            await env.DB.prepare(
+                `UPDATE clearinghouse_documents
+                    SET status='extracted', route=?, prompt_version=?,
+                        extracted_json=?, rejected_json=?, notes_json=?, extracted_at=?
+                  WHERE id=?`
+            ).bind(result.route, result.prompt_version,
+                   JSON.stringify(result.fields || {}),
+                   JSON.stringify(result.rejected || []),
+                   JSON.stringify(result.notes || []),
+                   nowIso(), id).run();
+            await event(env, admin, { step: "profile", action: "document_extract",
+                detail: `${Object.keys(result.fields || {}).length} field(s) proposed from ${filename}`, ok: true });
+
+            return jsonResponse({ ok: true, document_id: id, extraction: result, state: await getState(env) });
+        }
+
+        // ---- accept_extraction ---------------------------------------
+        // The physician takes specific proposals. Recorded, so "where did
+        // this number come from" is answerable a year from now.
+        if (action === "accept_extraction") {
+            const id = String(body.document_id || "");
+            const take = Array.isArray(body.fields) ? body.fields : [];
+            if (!id || !take.length) return jsonError("document_id and fields required", 400);
+            await env.DB.prepare(
+                `UPDATE clearinghouse_documents SET accepted_json=?, accepted_at=? WHERE id=?`
+            ).bind(JSON.stringify(take), nowIso(), id).run();
+            await event(env, admin, { step: "profile", action: "accept_extraction",
+                detail: `${take.join(", ")} from ${id}`, ok: true });
+            return jsonResponse({ ok: true });
+        }
+
+        // ---- delete_document -----------------------------------------
+        if (action === "delete_document") {
+            const id = String(body.document_id || "");
+            const row = await env.DB.prepare(
+                `SELECT r2_key FROM clearinghouse_documents WHERE id=?`).bind(id).first();
+            // env.PHI is the mountzara-phi bucket — same binding putPhiObject uses.
+            if (row?.r2_key && env.PHI) {
+                try { await env.PHI.delete(row.r2_key); } catch { /* the row still goes */ }
+            }
+            await env.DB.prepare(`DELETE FROM clearinghouse_documents WHERE id=?`).bind(id).run();
+            await event(env, admin, { step: "profile", action: "delete_document", detail: id, ok: true });
+            return jsonResponse({ ok: true, state: await getState(env) });
         }
 
         // ---- run_selection -------------------------------------------
@@ -769,7 +960,8 @@ export async function onRequest(ctx) {
         }
 
         return jsonError(
-            "unknown_action — expected save_profile | run_selection | select_vendors | set_role | " +
+            "unknown_action — expected save_profile | save_draft | discard_draft | nppes_lookup | " +
+            "upload_document | accept_extraction | delete_document | run_selection | select_vendors | set_role | " +
             "set_primary | remove_vendor | apply_routing | build_packet | update_enrollment | " +
             "save_credentials | test_connection | submit_test_claim | go_live | reset_step | save_notes",
             400

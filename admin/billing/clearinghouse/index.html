@@ -179,6 +179,19 @@ input.bad{border-color:rgba(239,68,68,.7);}
 .vtab{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;
     padding:9px 16px;font-size:13.5px;font-family:inherit;color:var(--fg-mid);cursor:pointer;min-height:24px;}
 .vtab.on{background:rgba(var(--glow-purple),.18);border-color:rgba(var(--glow-purple),.6);color:var(--fg-strong);}
+
+.assist{border:1px solid rgba(var(--glow-purple),.4);background:rgba(var(--glow-purple),.08);
+    border-radius:16px;padding:16px;margin:0 0 20px;}
+.assist h3{margin:0 0 6px;font-size:15px;font-weight:600;color:var(--fg-strong);}
+.drop{border:1px dashed rgba(255,255,255,.28);border-radius:14px;padding:20px;text-align:center;
+    font-size:13.5px;color:var(--fg-mid);cursor:pointer;background:rgba(255,255,255,.02);}
+.drop.over{border-color:rgba(var(--glow-purple),.7);background:rgba(var(--glow-purple),.12);}
+.prop{border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;background:rgba(255,255,255,.03);}
+.prop .pk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-dim);}
+.prop .pv{font-size:15px;color:var(--fg-strong);font-family:ui-monospace,Menlo,monospace;margin:4px 0;}
+.prop .pq{font-size:12px;color:var(--fg-dim);font-style:italic;border-left:2px solid var(--border);
+    padding-left:9px;margin-top:6px;}
+.saved{font-size:12px;color:var(--fg-dim);}
 .foot-nav{display:flex;gap:10px;justify-content:space-between;margin-top:20px;flex-wrap:wrap;}
 </style>
 </head>
@@ -368,7 +381,37 @@ input.bad{border-color:rgba(239,68,68,.7);}
 
     // ---- step 1 · practice identity ----------------------------------
 
+    var autosaveTimer = null;
+    function queueAutosave() {
+        if (autosaveTimer) clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(function () {
+            var n = el("draft-state");
+            if (n) n.textContent = "saving…";
+            post("save_draft", { profile: Object.assign({}, S.profile, draft) }).then(function (j) {
+                if (n) n.textContent = j.ok ? "progress saved" : "could not save progress";
+            }).catch(function () { if (n) n.textContent = "could not save progress"; });
+        }, 900);
+    }
+
+    /** Merge proposed values into the draft and redraw, never overwriting
+     *  silently — the caller has already shown them for acceptance. */
+    function applyFields(fields) {
+        var applied = [];
+        Object.keys(fields || {}).forEach(function (k) {
+            var v = typeof fields[k] === "object" ? fields[k].value : fields[k];
+            if (v === undefined || v === null || v === "") return;
+            draft[k] = String(v);
+            applied.push(k);
+        });
+        queueAutosave();
+        return applied;
+    }
+
     function drawProfile() {
+        // A saved draft is offered, never auto-applied — see save_draft.
+        if (S.draft && S.draft.fields && !Object.keys(draft).length) {
+            draft = Object.assign({}, S.draft.fields);
+        }
         var p = Object.assign({}, S.profile || {}, draft);
         var r = stepState("profile");
         var invalidBy = {}, missingBy = {};
@@ -378,6 +421,34 @@ input.bad{border-color:rgba(239,68,68,.7);}
         var html = head("profile");
         html += '<section class="block"><h2>Your details</h2>';
         html += '<div class="note">Every application, every EDI form and every claim is filled from what you enter here — once, no matter how many clearinghouses you end up using. Getting the legal name and ZIP+4 exactly right now saves a rejection cycle later.</div>';
+
+        // ---- fill it in for me -------------------------------------
+        html += '<div class="assist">';
+        html += "<h3>Fill this in for me</h3>";
+        html += '<p class="gs" style="margin:0 0 14px;">Two ways, so you type as little as possible. Nothing is applied without you seeing it first.</p>';
+
+        html += '<label class="fld" for="npi-lookup">Look up my NPI</label>';
+        html += '<div class="row"><input id="npi-lookup" type="text" placeholder="10-digit NPI" style="max-width:220px;" value="'
+              + esc(p.npi_individual || "") + '">'
+              + '<button class="btn" id="npi-btn">Fetch from the NPI registry</button></div>';
+        html += '<div class="hint">Pulls your legal name, taxonomy, licence, practice address and ZIP+4 straight from NPPES — the same record payers check against. Filling from it is what makes the commonest EDI rejection, a name or address that does not match NPPES, impossible.</div>';
+        html += '<div class="result" id="npi-result" style="display:none;"></div>';
+
+        html += '<label class="fld" style="margin-top:20px;">Or read it off a document</label>';
+        html += '<div class="row" style="margin-bottom:10px;"><select id="doc-type" style="max-width:320px;">'
+              + (S.doc_types || []).map(function (d) {
+                    return '<option value="' + esc(d.key) + '">' + esc(d.label) + "</option>";
+                }).join("") + "</select></div>";
+        html += '<div class="drop" id="drop">Drop a W-9, PTAN letter, CMS-855 approval or Medicaid welcome packet here — or click to choose a file.<br><span class="muted" style="font-size:12px;">Plain text and PDF-exported text work best. Scans need OCR first.</span></div>';
+        html += '<input type="file" id="file-input" style="display:none;" accept=".txt,.text,.md,.csv,.json,text/plain">';
+        html += '<div class="hint">Your practice paperwork only. If it carries a medical record number, a member ID or clinical language, the upload is refused before anything is stored or sent — this path deliberately does not de-identify, because on a W-9 the identifiers are the point.</div>';
+        html += '<div class="result" id="doc-result" style="display:none;"></div>';
+        html += '<div id="proposals"></div>';
+        html += "</div>";
+
+        html += '<div class="row" style="margin-bottom:4px;"><span class="saved" id="draft-state">'
+              + (S.draft ? "progress restored from " + esc((S.draft.updated_at || "").replace("T", " ").slice(0, 16)) : "")
+              + "</span></div>";
 
         S.profile_groups.forEach(function (g) {
             var fields = S.profile_fields.filter(function (f) { return f.group === g.key; });
@@ -420,9 +491,66 @@ input.bad{border-color:rgba(239,68,68,.7);}
         panel.innerHTML = html;
 
         Array.prototype.forEach.call(panel.querySelectorAll("[data-pk]"), function (n) {
-            n.addEventListener("input", function () { draft[n.dataset.pk] = n.value; });
-            n.addEventListener("change", function () { draft[n.dataset.pk] = n.value; });
+            n.addEventListener("input", function () { draft[n.dataset.pk] = n.value; queueAutosave(); });
+            n.addEventListener("change", function () { draft[n.dataset.pk] = n.value; queueAutosave(); });
         });
+
+        // ---- NPI registry lookup
+        on("npi-btn", "click", function (e) {
+            var b = e.currentTarget; busy(b, true);
+            say("npi-result", "Asking the NPI registry…");
+            post("nppes_lookup", { npi: (el("npi-lookup").value || "").trim() }).then(function (j) {
+                busy(b, false);
+                if (!j.ok) { say("npi-result", j.error || "Lookup failed.", false); return; }
+                var L = j.lookup;
+                var applied = applyFields(L.fields);
+                var msg = "Found " + L.raw_name + " (" + L.type + "). Filled " + applied.length + " field"
+                        + (applied.length === 1 ? "" : "s") + ": " + applied.join(", ") + ".";
+                if (L.warnings && L.warnings.length) msg += "\n\n" + L.warnings.join("\n");
+                if (L.source) msg += "\n\nSource: " + L.source.registry
+                                  + (L.source.last_updated ? ", record last updated " + L.source.last_updated : "");
+                say("npi-result", msg, true);
+                drawProfile();
+                setTimeout(function () { say("npi-result", msg, true); }, 10);
+            }).catch(function (err) { busy(b, false); say("npi-result", String(err), false); });
+        });
+
+        // ---- document upload
+        var drop = el("drop"), fileInput = el("file-input");
+        function readFile(file) {
+            if (!file) return;
+            say("doc-result", "Reading " + file.name + "…");
+            var fr = new FileReader();
+            fr.onload = function () {
+                post("upload_document", {
+                    doc_type: (el("doc-type") || {}).value || "other",
+                    filename: file.name,
+                    content_type: file.type || "",
+                    text: String(fr.result || ""),
+                }).then(function (j) {
+                    if (!j.ok) { say("doc-result", j.error || "Could not read that document.", false); return; }
+                    if (j.queued) { say("doc-result", j.message, true); return; }
+                    if (j.state) S = j.state;
+                    renderProposals(j.document_id, j.extraction);
+                    var n = Object.keys((j.extraction || {}).fields || {}).length;
+                    say("doc-result", n
+                        ? n + " value" + (n === 1 ? "" : "s") + " found. Review each one below before applying."
+                        : "Nothing usable came out of that document — every candidate was dropped for having no traceable quote.", n > 0);
+                });
+            };
+            fr.onerror = function () { say("doc-result", "Could not read that file.", false); };
+            fr.readAsText(file);
+        }
+        if (drop) {
+            drop.addEventListener("click", function () { fileInput.click(); });
+            drop.addEventListener("dragover", function (ev) { ev.preventDefault(); drop.classList.add("over"); });
+            drop.addEventListener("dragleave", function () { drop.classList.remove("over"); });
+            drop.addEventListener("drop", function (ev) {
+                ev.preventDefault(); drop.classList.remove("over");
+                readFile(ev.dataTransfer.files && ev.dataTransfer.files[0]);
+            });
+        }
+        if (fileInput) fileInput.addEventListener("change", function () { readFile(fileInput.files[0]); });
 
         on("save-profile", "click", function (e) {
             var b = e.currentTarget; busy(b, true);
@@ -443,6 +571,67 @@ input.bad{border-color:rgba(239,68,68,.7);}
                     render();
                 }
             }).catch(function (err) { busy(b, false); say("profile-result", String(err), false); });
+        });
+    }
+
+    /**
+     * Show what the document extractor proposed, one field at a time.
+     * Nothing is applied until the physician clicks — the whole point is
+     * that a number he cannot trace never silently becomes his tax ID.
+     */
+    function renderProposals(docId, ex) {
+        var box = el("proposals");
+        if (!box) return;
+        var fields = (ex && ex.fields) || {};
+        var keys = Object.keys(fields);
+        var h = "";
+
+        if (keys.length) {
+            h += '<div class="gh" style="margin-top:18px;">Proposed from your document</div>';
+            h += '<p class="gs">Each value shows the exact words it came from. Apply the ones that are right.</p>';
+            keys.forEach(function (k) {
+                var f = fields[k];
+                h += '<div class="prop">';
+                h += '<div class="pk">' + esc(k.replace(/_/g, " ")) + " · " + esc(f.confidence) + " confidence</div>";
+                h += '<div class="pv">' + esc(f.value) + "</div>";
+                h += '<div class="pq">“' + esc(f.quote) + "”</div>";
+                if (f.warn) h += '<div class="err">' + esc(f.warn) + "</div>";
+                h += '<div class="row" style="margin-top:9px;"><button class="cp" data-apply="' + esc(k) + '">apply this</button></div>';
+                h += "</div>";
+            });
+            h += '<div class="row" style="margin-top:10px;"><button class="btn" data-apply-all="1">Apply all ' + keys.length + "</button></div>";
+        }
+
+        if (ex && ex.rejected && ex.rejected.length) {
+            h += '<div class="gh" style="margin-top:18px;">Dropped</div>';
+            h += '<p class="gs">Shown so you know what the document contained but the system would not vouch for.</p>';
+            ex.rejected.forEach(function (r) {
+                h += '<div class="rsn bad"><span class="m">!</span><span><b>' + esc(r.key) + "</b>"
+                   + (r.value ? " = " + esc(r.value) : "") + " — " + esc(r.why) + "</span></div>";
+            });
+        }
+        if (ex && ex.notes && ex.notes.length) {
+            ex.notes.forEach(function (n) { h += '<div class="note">' + esc(n) + "</div>"; });
+        }
+
+        box.innerHTML = h;
+
+        Array.prototype.forEach.call(box.querySelectorAll("[data-apply]"), function (b) {
+            b.addEventListener("click", function () {
+                var k = b.dataset.apply;
+                var one = {}; one[k] = fields[k];
+                applyFields(one);
+                post("accept_extraction", { document_id: docId, fields: [k] });
+                b.textContent = "applied";
+                var input = el("p-" + k);
+                if (input) input.value = fields[k].value;
+            });
+        });
+        var all = box.querySelector("[data-apply-all]");
+        if (all) all.addEventListener("click", function () {
+            var applied = applyFields(fields);
+            post("accept_extraction", { document_id: docId, fields: applied });
+            drawProfile();
         });
     }
 
