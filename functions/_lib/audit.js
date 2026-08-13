@@ -43,7 +43,13 @@ const ALLOWED_ACTIONS = new Set([
     // billing
     "invoice_create", "invoice_send", "invoice_paid", "invoice_void",
     "claim_submit", "claim_era_post", "insurance_update",
-    "claim_ai_preflight", "claim_appeal_draft",
+    "claim_ai_preflight",
+    // 2026-08-12 — solo-operator automation + the new notification transport.
+    // logAudit() SILENTLY DROPS any action not in this set, so an action added
+    // at a call site without being added here produces no trace at all — the
+    // same class of invisible failure as the missing email transport.
+    "message_draft_generated",   // AI drafted a reply for clinician review
+    "notification_sent",         // outbound email actually handed to a provider "claim_appeal_draft",
     // app sync
     "app_sync_push", "app_sync_token_issue", "app_sync_token_revoke",
     // content pipeline (cron-worker dead-man check writes this directly)

@@ -24,6 +24,7 @@
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { issueMagicLink, normalizeEmail } from "../../../../_lib/auth.js";
 import { checkLockout, recordFailure, tooManyRequests } from "../../../../_lib/rate_limit.js";
+import { notify } from "../../../../_lib/notify.js";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Same soft-lockout policy as password login: 10 requests per (email|ip)
@@ -89,8 +90,25 @@ export async function onRequestPost(ctx) {
     const url = new URL(request.url);
     const redeemUrl = `${url.protocol}//${url.host}/portal/magic-link/redeem/?token=${encodeURIComponent(issued.token)}`;
 
-    // The wrangler tail will surface this so the admin can read the link
-    // until real email delivery is wired in Phase 2.
+    // 2026-08-12 — ACTUALLY DELIVER IT. Until now this endpoint minted a
+    // token, logged the URL to `wrangler tail`, and returned a cheerful "a
+    // link has been sent" to a patient who would never receive one. That
+    // made magic-link sign-in unusable for every real user. notify()
+    // resolves rather than throwing and queues to notification_outbox if
+    // no provider is configured, so sign-in never 500s on email trouble —
+    // but the failure is now RECORDED instead of invisible.
+    try {
+        await notify(env, {
+            to: email,
+            template: "magic_link",
+            patient_id: row.id,
+            data: { url: redeemUrl, minutes: 15 },
+        });
+    } catch (e) {
+        console.error("magic-link: notify threw", String(e).slice(0, 200));
+    }
+
+    // Kept for pre-launch debugging via `wrangler tail`.
     console.log("magic-link issued (DEV / pre-launch):", {
         patient_id: row.id,
         email_prefix: email.slice(0, 4) + "***",
