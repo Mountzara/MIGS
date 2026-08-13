@@ -15,11 +15,22 @@
 // notices — every "why isn't this connected" symptom shares this root.
 //
 // DESIGN
-//   * Provider-agnostic. Resend and Postmark are supported over plain
-//     HTTPS (no SDK — Workers have fetch). Cloudflare removed free
-//     MailChannels for Workers in 2024, so a provider key is required to
-//     actually deliver; see "NOT CONFIGURED" below for what happens until
-//     then.
+//   * Provider-agnostic over plain HTTPS (no SDK — Workers have fetch).
+//     Cloudflare removed free MailChannels for Workers in 2024, so a
+//     provider is required to actually deliver.
+//
+//     PROVIDER CHOICE IS A COMPLIANCE DECISION, NOT A PRICE ONE.
+//     Even the content-free notices below reveal that an identifiable
+//     person is a patient of a gynecology practice — that is
+//     individually identifiable health information, so the sender needs a
+//     signed BAA. Verified 2026-08-12:
+//       * Resend   — does NOT sign a BAA. Unusable here.
+//       * Postmark — does NOT sign a BAA. Unusable here.
+//       * AWS SES  — HIPAA-eligible, AWS signs a BAA. ~$0.10 per 1,000
+//                    emails, no monthly minimum. THIS IS THE DEFAULT.
+//     Resend/Postmark remain implemented for non-PHI use (e.g. a pure
+//     marketing list that never touches a patient), and are rejected for
+//     patient traffic unless NOTIFY_ALLOW_NON_BAA=yes is explicitly set.
 //   * NEVER SILENTLY DROPS. If no provider is configured, or the provider
 //     call fails, the notification is written to the `notification_outbox`
 //     table with its error. Nothing is lost, the queue is inspectable, and
@@ -33,11 +44,17 @@
 //   * Every send writes an audit row, so delivery is traceable.
 //
 // REQUIRED ENV (set on the Pages production deployment_config):
-//   NOTIFY_PROVIDER   "resend" | "postmark"   (absent => queue only)
-//   NOTIFY_API_KEY    provider API key
+//   NOTIFY_PROVIDER   "ses" (recommended) | "resend" | "postmark"
 //   NOTIFY_FROM       e.g. "Mount Zara <no-reply@mountzara.com>"
 //   NOTIFY_REPLY_TO   optional, e.g. "info@mountzara.com"
 //   SITE_ORIGIN       optional, defaults to https://mountzara.com
+//   -- for provider "ses" --
+//   SES_REGION            e.g. "us-east-2"
+//   SES_ACCESS_KEY_ID     IAM key with ses:SendEmail only
+//   SES_SECRET_ACCESS_KEY
+//   -- for provider "resend" / "postmark" (non-PHI only) --
+//   NOTIFY_API_KEY        provider API key
+//   NOTIFY_ALLOW_NON_BAA  must be "yes" to permit a non-BAA provider
 // =====================================================================
 
 import { logAudit } from "./audit.js";
@@ -197,6 +214,98 @@ async function queue(env, row) {
     }
 }
 
+// ---------------------------------------------------------------------
+// AWS SES v2 over the REST API, signed with SigV4 using Web Crypto.
+// Workers cannot open SMTP connections, and the AWS SDK is far too heavy
+// for an edge function, so the request is signed by hand. SES is the
+// default provider because AWS signs a BAA (see the header note).
+// ---------------------------------------------------------------------
+const enc = new TextEncoder();
+
+async function sha256Hex(data) {
+    const buf = await crypto.subtle.digest("SHA-256", typeof data === "string" ? enc.encode(data) : data);
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function hmac(key, data) {
+    const k = await crypto.subtle.importKey(
+        "raw", typeof key === "string" ? enc.encode(key) : key,
+        { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+    );
+    return new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(data)));
+}
+
+/** AWS SigV4 signing key: HMAC chain over date/region/service/aws4_request. */
+async function signingKey(secret, dateStamp, region, service) {
+    let k = await hmac(`AWS4${secret}`, dateStamp);
+    k = await hmac(k, region);
+    k = await hmac(k, service);
+    return await hmac(k, "aws4_request");
+}
+
+async function sendViaSES(env, { to, subject, text, html }) {
+    const region = env.SES_REGION;
+    const akid = env.SES_ACCESS_KEY_ID;
+    const secret = env.SES_SECRET_ACCESS_KEY;
+    if (!region || !akid || !secret) {
+        throw new Error("SES requires SES_REGION, SES_ACCESS_KEY_ID and SES_SECRET_ACCESS_KEY");
+    }
+
+    const host = `email.${region}.amazonaws.com`;
+    const path = "/v2/email/outbound-emails";
+    const payload = JSON.stringify({
+        FromEmailAddress: env.NOTIFY_FROM,
+        Destination: { ToAddresses: [to] },
+        ...(env.NOTIFY_REPLY_TO ? { ReplyToAddresses: [env.NOTIFY_REPLY_TO] } : {}),
+        Content: {
+            Simple: {
+                Subject: { Data: subject, Charset: "UTF-8" },
+                Body: {
+                    Text: { Data: text, Charset: "UTF-8" },
+                    Html: { Data: html, Charset: "UTF-8" },
+                },
+            },
+        },
+    });
+
+    // 20260812T153045Z / 20260812
+    const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
+    const dateStamp = amzDate.slice(0, 8);
+    const payloadHash = await sha256Hex(payload);
+
+    const canonicalHeaders =
+        `content-type:application/json\n` +
+        `host:${host}\n` +
+        `x-amz-content-sha256:${payloadHash}\n` +
+        `x-amz-date:${amzDate}\n`;
+    const signedHeaders = "content-type;host;x-amz-content-sha256;x-amz-date";
+    const canonicalRequest =
+        `POST\n${path}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+    const scope = `${dateStamp}/${region}/ses/aws4_request`;
+    const stringToSign =
+        `AWS4-HMAC-SHA256\n${amzDate}\n${scope}\n${await sha256Hex(canonicalRequest)}`;
+
+    const sigKey = await signingKey(secret, dateStamp, region, "ses");
+    const sigBytes = await hmac(sigKey, stringToSign);
+    const signature = [...sigBytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+    const res = await fetch(`https://${host}${path}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Amz-Date": amzDate,
+            "X-Amz-Content-Sha256": payloadHash,
+            Authorization:
+                `AWS4-HMAC-SHA256 Credential=${akid}/${scope}, ` +
+                `SignedHeaders=${signedHeaders}, Signature=${signature}`,
+        },
+        body: payload,
+    });
+    if (!res.ok) throw new Error(`ses ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    return await res.json().catch(() => ({}));
+}
+
 async function sendViaResend(env, { to, subject, text, html }) {
     const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -240,7 +349,26 @@ async function sendViaPostmark(env, { to, subject, text, html }) {
 }
 
 export function notifyConfigured(env) {
-    return Boolean(env?.NOTIFY_PROVIDER && env?.NOTIFY_API_KEY && env?.NOTIFY_FROM);
+    if (!env?.NOTIFY_PROVIDER || !env?.NOTIFY_FROM) return false;
+    const p = String(env.NOTIFY_PROVIDER).toLowerCase();
+    if (p === "ses") {
+        return Boolean(env.SES_REGION && env.SES_ACCESS_KEY_ID && env.SES_SECRET_ACCESS_KEY);
+    }
+    return Boolean(env.NOTIFY_API_KEY);
+}
+
+/**
+ * Providers that will NOT sign a BAA must not carry patient traffic.
+ * Verified 2026-08-12: Resend and Postmark both decline; AWS SES is
+ * HIPAA-eligible and AWS signs one. Refusing here is deliberate — the
+ * cheap-and-easy provider is the one that quietly creates the exposure.
+ */
+const BAA_PROVIDERS = new Set(["ses"]);
+
+function providerPermitted(env) {
+    const p = String(env?.NOTIFY_PROVIDER || "").toLowerCase();
+    if (BAA_PROVIDERS.has(p)) return true;
+    return String(env?.NOTIFY_ALLOW_NON_BAA || "").toLowerCase() === "yes";
 }
 
 /**
@@ -275,7 +403,15 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
 
     try {
         const provider = String(env.NOTIFY_PROVIDER).toLowerCase();
-        if (provider === "resend") await sendViaResend(env, base);
+        if (!providerPermitted(env)) {
+            throw new Error(
+                `provider "${provider}" does not sign a BAA; patient notifications ` +
+                `require one. Use NOTIFY_PROVIDER=ses, or set ` +
+                `NOTIFY_ALLOW_NON_BAA=yes only for traffic that is provably not PHI.`
+            );
+        }
+        if (provider === "ses") await sendViaSES(env, base);
+        else if (provider === "resend") await sendViaResend(env, base);
         else if (provider === "postmark") await sendViaPostmark(env, base);
         else throw new Error(`unsupported NOTIFY_PROVIDER "${provider}"`);
 
