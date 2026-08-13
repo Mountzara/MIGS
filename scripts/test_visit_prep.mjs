@@ -21,7 +21,7 @@
 import {
     DELIVERABLES, checkScope, buildPrompt, PATIENT_DISCLAIMER,
     canConsult, escalation, LICENSED_STATES, licensedStates, SCOPE_RULES,
-    LICENSES, licenceWarnings, daysUntilExpiry,
+    LICENSES, licenceWarnings, daysUntilExpiry, nppesMismatch,
 } from "../functions/_lib/visit_prep.js";
 
 let pass = 0, fail = 0;
@@ -130,7 +130,19 @@ const il = LICENSES.find((l) => l.state === "IL");
 ok(ca && ca.number === "20A24823", "the California licence number is recorded");
 ok(ca.expires === "2027-11-30", "…with its expiry date from the licence itself");
 ok(/Osteopathic Medical Board of California/.test(ca.board), "…and the issuing board");
-ok(il && il.number === "125075291", "the Illinois licence number is recorded");
+ok(il && il.number === "036.166236", "the Illinois licence number is the one on the LICENCE");
+ok(il.expires === "2029-07-31", "…with its expiry, so no licence is now unwatched");
+ok(licenceWarnings().length === 0, "with both expiries recorded and current, there is nothing outstanding");
+
+section("NPPES disagrees with the Illinois licence — and that must not pass silently");
+const mm = nppesMismatch();
+ok(mm.length === 1 && mm[0].state === "IL", "the discrepancy is detected");
+ok(mm[0].on_licence === "036.166236" && mm[0].nppes_says === "125075291",
+   "both numbers are reported, so the operator can see which is which");
+ok(/verify against the state board/.test(mm[0].message),
+   "…and it says which one payers actually check");
+ok(/enrollment rejection/.test(mm[0].message),
+   "…and why it matters: this is a common cause of a rejected EDI enrollment");
 
 section("Expiry is a GATE, not a note — a lapsed licence makes consultation unlawful");
 const afterCA = new Date("2027-12-01T00:00:00Z");
@@ -146,9 +158,10 @@ ok(licenceWarnings(beforeCA).some((w) => w.severity === "warning" && /expires in
    "…and warns with days remaining, ninety days out");
 ok(licenceWarnings(afterCA).some((w) => w.severity === "critical" && /EXPIRED/.test(w.message)),
    "an expired licence raises a CRITICAL warning naming the state and number");
-ok(licenceWarnings().some((w) => w.state === "IL" && w.severity === "info"),
-   "a licence with no recorded expiry is flagged so the gap is visible");
-ok(daysUntilExpiry(il) === null, "a missing expiry returns null rather than a bogus date");
+ok(licenceWarnings(new Date("2029-06-01T00:00:00Z")).some((w) => w.state === "IL" && w.severity === "warning"),
+   "the Illinois licence warns ninety days before its own expiry too");
+ok(daysUntilExpiry(il) > 0, "the Illinois licence is current");
+ok(daysUntilExpiry({ expires: null }) === null, "a missing expiry returns null rather than a bogus date");
 ok(daysUntilExpiry(ca) > 0, "the California licence is current today");
 
 section("…and a new licence is configuration, not a deploy");

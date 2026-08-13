@@ -64,11 +64,39 @@ export const VISIT_PREP_VERSION = "visit-prep-v1-2026-08-13";
  * Numbers are public record via each board's verification lookup.
  */
 export const LICENSES = [
-    { state: "IL", number: "125075291", board: "Illinois Department of Financial and Professional Regulation",
-      expires: null },   // renewal date not recorded here — see licenceWarnings()
-    { state: "CA", number: "20A24823", board: "Osteopathic Medical Board of California",
+    { state: "IL", number: "036.166236",
+      board: "Illinois Department of Financial and Professional Regulation",
+      expires: "2029-07-31",
+      // NPPES publishes "125075291" against the Illinois taxonomy record.
+      // That is NOT the licence number on the licence itself. Payers and
+      // clearinghouses verify against the STATE BOARD, so the licence is
+      // authoritative and NPPES is stale — see nppesMismatch() below,
+      // which is why the clearinghouse wizard must not silently autofill
+      // the NPPES value.
+      nppes_says: "125075291" },
+    { state: "CA", number: "20A24823",
+      board: "Osteopathic Medical Board of California",
       expires: "2027-11-30" },
 ];
+
+/**
+ * Licences where the NPPES record disagrees with the licence itself.
+ *
+ * This matters more than it looks: the clearinghouse wizard fills
+ * `license_number` from NPPES, and an EDI enrollment submitted with a
+ * licence number the state board does not recognise comes back rejected
+ * weeks later with no useful explanation.
+ */
+export function nppesMismatch() {
+    return LICENSES
+        .filter((l) => l.nppes_says && l.nppes_says !== l.number)
+        .map((l) => ({
+            state: l.state,
+            on_licence: l.number,
+            nppes_says: l.nppes_says,
+            message: `NPPES lists your ${l.state} licence as ${l.nppes_says}, but the licence itself says ${l.number}. Payers verify against the state board, so use ${l.number} — and update NPPES, because a mismatch is a common cause of enrollment rejection.`,
+        }));
+}
 
 export const LICENSED_STATES = LICENSES.map((l) => l.state);
 
@@ -358,5 +386,5 @@ export default {
     VISIT_PREP_VERSION, DELIVERABLES, SCOPE_RULES, checkScope,
     PATIENT_DISCLAIMER, buildPrompt, generateDeliverable,
     LICENSES, LICENSED_STATES, licensedStates, canConsult, escalation,
-    daysUntilExpiry, licenceWarnings,
+    daysUntilExpiry, licenceWarnings, nppesMismatch,
 };
