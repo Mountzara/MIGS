@@ -27,7 +27,7 @@ export async function onRequestGet(ctx) {
                 p.first_name AS patient_first_name,
                 p.last_name  AS patient_last_name,
                 p.email      AS patient_email,
-                p.dob        AS patient_dob,   -- the column is `dob`; `date_of_birth` does not exist and threw here
+                p.dob        AS patient_dob,   -- the column is dob; date_of_birth does not exist and threw here
                 bp.payer_name,
                 bp.payer_kind,
                 bp.contract_status AS payer_contract_status,

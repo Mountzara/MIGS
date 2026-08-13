@@ -288,6 +288,36 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_post_format_gate.mjs ]; 
 fi
 
 # ---------------------------------------------------------------------------
+# Syntax gate (codified 2026-08-13). `node --check` on every Function file,
+# in milliseconds, before anything expensive runs.
+#
+# Written after a backtick inside a SQL comment inside a template literal
+# closed the literal early and failed the wrangler build — after the whole
+# gate chain, the staging copy and the upload had already run. esbuild
+# catches it, but only at the very end of a two-minute deploy. This catches
+# the same class of error first, and names the file and column.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1; then
+    echo ""
+    echo "🔒 syntax gate — parsing every Function file..."
+    SYNTAX_ERRS=0
+    while IFS= read -r f; do
+        if ! node --check "$f" 2>>/tmp/_syntax_gate.log; then
+            SYNTAX_ERRS=$((SYNTAX_ERRS + 1))
+        fi
+    done < <(find functions -name '*.js' -o -name '*.mjs')
+    if [ "$SYNTAX_ERRS" -gt 0 ]; then
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — $SYNTAX_ERRS file(s) failed to parse:"
+        tail -40 /tmp/_syntax_gate.log
+        exit 1
+    fi
+    rm -f /tmp/_syntax_gate.log
+    echo "   ✅ syntax gate passed"
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # SQL column gate (codified 2026-08-13). D1 throws on an unknown column at
 # RUNTIME, so a handler that names one returns 500 forever with no build
 # error and no test failure. Seven endpoints were in that state when this
