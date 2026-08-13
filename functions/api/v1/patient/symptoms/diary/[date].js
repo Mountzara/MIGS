@@ -222,29 +222,16 @@ export async function onRequestPut(ctx) {
     //   - routine entries                       -> info (single per-day event)
     // Best-effort: never blocks the diary upsert.
     try {
-        const triggers = [];
-        let topSeverity = "info";
-        for (const [k, v] of Object.entries(cleanValues)) {
-            const def = catalog.get(k);
-            if (!def) continue;
-            if ((def.kind === "numeric_0_10") && typeof v === "number") {
-                if (v >= 9) { triggers.push({ key: k, value: v, threshold: 9 }); topSeverity = "urgent"; }
-                else if (v >= 8) {
-                    triggers.push({ key: k, value: v, threshold: 8 });
-                    if (topSeverity === "info") topSeverity = "warning";
-                }
-            }
-            // Bleeding-specific high-flow indicators
-            if ((k === "bleeding_pad_hour" || k === "bleeding_flooding" || k === "bleeding_clots_quarter") && (v === true || (typeof v === "number" && v > 0))) {
-                triggers.push({ key: k, value: v, kind: "bleeding_high_flow" });
-                if (topSeverity === "info") topSeverity = "warning";
-            }
-            // PHQ-2 / depression items at threshold
-            if ((k === "mood_phq_q1" || k === "mood_phq_q2") && typeof v === "number" && v >= 3) {
-                triggers.push({ key: k, value: v, kind: "phq2_threshold" });
-                if (topSeverity === "info") topSeverity = "warning";
-            }
-        }
+        // Escalation lives in _lib/symptom_escalation.js so it can be
+        // tested against the real catalogue. The inline version this
+        // replaces named three bleeding keys and two PHQ keys that do not
+        // exist — so hemorrhage filed as routine — and escalated any
+        // 0-10 value >= 9, which fired on mood/sleep/desire where HIGH IS
+        // GOOD. Backwards in both directions, and silent.
+        const { evaluateDiary } = await import("../../../../../_lib/symptom_escalation.js");
+        const evaluated = evaluateDiary(cleanValues, catalog);
+        const triggers = evaluated.triggers;
+        const topSeverity = evaluated.severity;
 
         // Only emit an event if either (a) a clinically meaningful threshold
         // was crossed, or (b) this is the first diary entry of the day
