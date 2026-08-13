@@ -117,12 +117,13 @@ export async function onRequestPost(ctx) {
                 INSERT INTO documents
                     (id, patient_id, kind, r2_key, r2_bucket, filename, mime_type, size_bytes,
                      sha256, encrypted, envelope_dek_wrapped,
-                     uploaded_by_role, uploaded_by_id, source_app, description, uploaded_at)
-                VALUES (?, ?, 'imaging', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'mountzara_ios', 'ios', ?, ?)
+                     uploaded_by_role, uploaded_by_id, source_app, description, phi_aad, uploaded_at)
+                VALUES (?, ?, 'imaging', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'mountzara_ios', 'ios', ?, ?, ?)
             `).bind(
                 docId, patient_id, key, `ios-photo-${photoIdx}.jpg`,
                 "image/jpeg", photo.length, sha, pput.wrapped_dek,
-                `Captured from iOS app session ${session_id}`, now
+                `Captured from iOS app session ${session_id}`,
+                `encounter/${encounter_id}/ios_photo_${photoIdx}`, now
             ).run();
             document_ids.push(docId);
         }

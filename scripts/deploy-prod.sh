@@ -288,6 +288,58 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_post_format_gate.mjs ]; 
 fi
 
 # ---------------------------------------------------------------------------
+# SQL column gate (codified 2026-08-13). D1 throws on an unknown column at
+# RUNTIME, so a handler that names one returns 500 forever with no build
+# error and no test failure. Seven endpoints were in that state when this
+# gate was written — the admin snapshot dashboard, the whole Transcription
+# sync, the patient briefing's document list, the onboarding wizard's
+# education step — several of them silently, because a bare catch turned
+# "the query is broken" into "there is no data".
+#
+# Hermetic (parses schema/*.sql, no network, <1s). No override flag: a
+# failure here means an endpoint is guaranteed to 500.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_sql_columns.mjs ]; then
+    echo ""
+    echo "🔒 SQL column gate — every SELECT names a column that exists..."
+    if node scripts/check_sql_columns.mjs --self-test > /tmp/_sql_cols_self.log 2>&1 \
+       && node scripts/check_sql_columns.mjs > /tmp/_sql_cols.log 2>&1; then
+        tail -1 /tmp/_sql_cols.log
+        echo "   ✅ SQL column gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the SQL column gate:"
+        tail -30 /tmp/_sql_cols.log /tmp/_sql_cols_self.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Portal header gate (codified 2026-08-13). The camera policy on
+# /portal/tech-check/ and the Stripe CSP on /portal/billing/ cannot be
+# expressed in _headers — that file APPENDS, and the browser resolves
+# duplicate Permissions-Policy features first-wins and duplicate CSPs by
+# intersection, so both overrides were inert while looking correct in curl.
+# They live in functions/_lib/portal_headers.js now; this asserts they stay
+# single-valued and correct.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_portal_headers.mjs ]; then
+    echo ""
+    echo "🔒 portal header gate — camera on tech-check, Stripe on billing..."
+    if node scripts/test_portal_headers.mjs > /tmp/_portal_headers.log 2>&1; then
+        tail -1 /tmp/_portal_headers.log
+        echo "   ✅ portal header gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the portal header gate:"
+        tail -20 /tmp/_portal_headers.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
 # Runs scripts/regression_audit.py against every known clinical surface BEFORE
 # the wrangler deploy. Exit code 0 = pass; 1 = block deploy.

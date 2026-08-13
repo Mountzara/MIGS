@@ -71,12 +71,15 @@ export async function onRequestPost(ctx) {
             INSERT INTO documents
                 (id, patient_id, kind, r2_key, r2_bucket, filename, mime_type, size_bytes,
                  sha256, encrypted, envelope_dek_wrapped,
-                 uploaded_by_role, uploaded_by_id, source_app, description, uploaded_at)
-            VALUES (?, ?, 'message_attachment', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'clinician', ?, 'web', ?, ?)
+                 uploaded_by_role, uploaded_by_id, source_app, description, phi_aad, uploaded_at)
+            VALUES (?, ?, 'message_attachment', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'clinician', ?, 'web', ?, ?, ?)
         `).bind(
             document_id, msg.patient_id, r2_key, filename, mime,
             bytes.length, sha, put.wrapped_dek, admin.user,
-            `Clinician message attachment for message ${message_id}`, t
+            // phi_aad — sealed under the ATTACHMENT id (schema/0037), so the
+            // patient's document endpoint can decrypt what he sent them.
+            `Clinician message attachment for message ${message_id}`,
+            `message_attachment/${attachment_id}`, t
         ).run();
         await env.DB.prepare(`
             INSERT INTO message_attachments

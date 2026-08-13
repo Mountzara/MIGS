@@ -25,9 +25,69 @@ function err(status, code, message) {
 async function loadOwnedDoc(env, patient_id, doc_id) {
     return env.DB.prepare(`
         SELECT id, kind, r2_key, filename, mime_type, size_bytes,
-               envelope_dek_wrapped, encrypted, sha256, description, uploaded_at
+               envelope_dek_wrapped, encrypted, sha256, description,
+               uploaded_by_role, phi_aad, uploaded_at
         FROM documents WHERE id = ? AND patient_id = ?
     `).bind(doc_id, patient_id).first();
+}
+
+/**
+ * The AAD this object was actually sealed with.
+ *
+ * AES-GCM AAD is not advisory: a mismatch fails decryption outright. This
+ * endpoint used to hard-code `documents:<patient>:<doc>` for every row,
+ * but message attachments are sealed as `message_attachment/<attachment_id>`
+ * — and the document list returns them, so a member tapping a file they
+ * had sent in a message got 500 "could not retrieve file" every time.
+ *
+ * Preference order:
+ *   1. documents.phi_aad — what the writer recorded (schema 0037). Any
+ *      future convention lands here automatically.
+ *   2. the message_attachments join — covers rows written before 0037 in
+ *      an environment where the backfill has not run.
+ *   3. the historical default, correct for patient uploads.
+ */
+async function aadForDocument(env, doc, patient_id) {
+    if (doc.phi_aad) return doc.phi_aad;
+    if (doc.kind === "message_attachment") {
+        const att = await env.DB.prepare(
+            "SELECT id FROM message_attachments WHERE document_id = ? LIMIT 1"
+        ).bind(doc.id).first().catch(() => null);
+        if (att?.id) return `message_attachment/${att.id}`;
+    }
+    return `documents:${patient_id}:${doc.id}`;
+}
+
+// ---------------------------------------------------------------------
+// WHAT A PATIENT MAY DELETE
+// ---------------------------------------------------------------------
+// `documents` is not a patient upload folder. It is the single store for
+// every file in the record: the patient's own uploads, yes, but also
+// clinician-sent attachments, encounter notes, operative notes, imaging
+// the practice added, AAGL reports and AI analyses.
+//
+// DELETE took none of that into account. Its only check was ownership —
+// `patient_id = ?` — which is true of every one of those rows, because
+// they are all ABOUT this patient. So a patient could delete the operative
+// note from their own surgery. The R2 object was erased and the D1 row
+// dropped: not a soft delete, not recoverable, and for a record subject to
+// six-year retention.
+//
+// The rule is authorship, not subject. A patient may delete what a patient
+// uploaded. Everything else is the practice's record of care.
+const PATIENT_DELETABLE_KINDS = new Set(["patient_upload", "intake_attachment"]);
+
+function patientMayDelete(doc) {
+    if (!doc) return { ok: false, code: "not_found" };
+    if (String(doc.uploaded_by_role || "") !== "patient") {
+        return { ok: false, code: "not_your_upload",
+                 message: "This file is part of your medical record and was added by the practice, so it cannot be deleted here. Message us if you think it is wrong." };
+    }
+    if (!PATIENT_DELETABLE_KINDS.has(String(doc.kind || ""))) {
+        return { ok: false, code: "not_deletable_kind",
+                 message: "This file is part of your medical record and cannot be deleted here. Message us if you think it is wrong." };
+    }
+    return { ok: true };
 }
 
 // ---------------------------------------------------------------------
@@ -58,7 +118,7 @@ export async function onRequestGet(ctx) {
     try {
         plaintext = await getPhiObject(
             env, doc.r2_key, doc.envelope_dek_wrapped,
-            `documents:${session.patient_id}:${doc_id}`
+            await aadForDocument(env, doc, session.patient_id)
         );
     } catch (e) {
         console.error("documents GET decrypt threw", { error: String(e), doc_id });
@@ -113,6 +173,39 @@ export async function onRequestDelete(ctx) {
     const doc = await loadOwnedDoc(env, session.patient_id, doc_id);
     if (!doc) return err(404, "not_found", "no such document");
 
+    const allowed = patientMayDelete(doc);
+    if (!allowed.ok) {
+        // A refused deletion is worth recording: it is a patient trying to
+        // remove something from their own record, which is exactly the
+        // event an audit trail exists to show.
+        await logAudit(env, {
+            user_id: session.patient_id, user_role: "patient",
+            action: "document_delete", record_type: "document", record_id: doc_id,
+            ip: request.headers.get("CF-Connecting-IP") || "",
+            user_agent: request.headers.get("User-Agent") || "",
+            success: false,
+            details: { kind: doc.kind, uploaded_by_role: doc.uploaded_by_role, refused: allowed.code },
+        });
+        return err(403, allowed.code, allowed.message);
+    }
+
+    // A file the patient uploaded can still have been ATTACHED to a
+    // message. Deleting the document row would leave the attachment row
+    // pointing at nothing — the thread keeps showing the filename, and the
+    // download 404s with no explanation. There is no FK cascade on
+    // message_attachments (D1 has no ON DELETE CASCADE here), so the
+    // attachment rows are cleared explicitly, in the same request, before
+    // the object goes.
+    let attachments_cleared = 0;
+    try {
+        const att = await env.DB.prepare(
+            "SELECT COUNT(*) AS n FROM message_attachments WHERE document_id = ? AND patient_id = ?"
+        ).bind(doc_id, session.patient_id).first();
+        attachments_cleared = att?.n || 0;
+    } catch (e) {
+        console.error("documents DELETE attachment count failed", String(e).slice(0, 200));
+    }
+
     // Audit FIRST so we have a record even if the delete partially fails.
     await logAudit(env, {
         user_id: session.patient_id,
@@ -123,7 +216,7 @@ export async function onRequestDelete(ctx) {
         ip: request.headers.get("CF-Connecting-IP") || "",
         user_agent: request.headers.get("User-Agent") || "",
         success: true,
-        details: { kind: doc.kind, size_bytes: doc.size_bytes },
+        details: { kind: doc.kind, size_bytes: doc.size_bytes, attachments_cleared },
     });
 
     let r2_ok = true;
@@ -132,15 +225,20 @@ export async function onRequestDelete(ctx) {
         r2_ok = false;
     }
     try {
-        await env.DB.prepare(
-            "DELETE FROM documents WHERE id = ? AND patient_id = ?"
-        ).bind(doc_id, session.patient_id).run();
+        await env.DB.batch([
+            env.DB.prepare(
+                "DELETE FROM message_attachments WHERE document_id = ? AND patient_id = ?"
+            ).bind(doc_id, session.patient_id),
+            env.DB.prepare(
+                "DELETE FROM documents WHERE id = ? AND patient_id = ?"
+            ).bind(doc_id, session.patient_id),
+        ]);
     } catch (e) {
         console.error("documents DELETE DB.delete threw", { error: String(e), doc_id });
         return err(500, "db_delete_failed", "could not delete record");
     }
 
-    return new Response(JSON.stringify({ ok: true, id: doc_id, r2_ok }), {
+    return new Response(JSON.stringify({ ok: true, id: doc_id, r2_ok, attachments_cleared }), {
         status: 200,
         headers: { "content-type": "application/json", "cache-control": "no-store" },
     });

@@ -135,12 +135,21 @@ export async function computeStepStatus(env, patient_id) {
         "SELECT id FROM appointments WHERE patient_id = ? AND status NOT IN ('cancelled','no_show') LIMIT 1"
     ).bind(patient_id).first().catch(() => null);
 
-    // Education ack — any assignment marked acknowledged or completed.
+    // Education ack — any assignment the patient has opened or finished.
+    //
+    // This used to test `status IN (...)` and `acknowledged_at`. Neither
+    // column exists on this table; the real ones are `first_opened_at` and
+    // `completed_at`. D1 threw, `.catch(() => null)` swallowed it, and the
+    // education step of the onboarding wizard could therefore never be
+    // marked done — for anyone, ever, no matter how much they read.
     const eduRow = await env.DB.prepare(`
         SELECT id FROM patient_education_assignments
-        WHERE patient_id = ? AND (status IN ('acknowledged','completed') OR acknowledged_at IS NOT NULL)
+        WHERE patient_id = ? AND (first_opened_at IS NOT NULL OR completed_at IS NOT NULL)
         LIMIT 1
-    `).bind(patient_id).first().catch(() => null);
+    `).bind(patient_id).first().catch((e) => {
+        console.error("wizard: education assignment check failed", String(e).slice(0, 200));
+        return null;
+    });
 
     // Symptom diary — any entry.
     const diaryRow = await env.DB.prepare(

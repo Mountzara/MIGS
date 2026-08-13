@@ -18,6 +18,7 @@
 // =====================================================================
 
 import { previewAccess } from "../_lib/preview_gate.js";
+import { applyPortalHeaders } from "../_lib/portal_headers.js";
 
 // HTMLRewriter that appends the Phase QB feedback widget AND the Phase
 // QC onboarding wizard scripts before </body>. Single point of control:
@@ -35,37 +36,45 @@ class PortalScriptInjector {
     }
 }
 
+// ---------------------------------------------------------------------
+// EVERY response leaves through here.
+// ---------------------------------------------------------------------
+// This middleware sits in front of the whole /portal/* surface, which
+// makes it the one place where the security headers can be guaranteed.
+// They are NOT guaranteed by `_headers`, for two independent reasons —
+// `_headers` appends rather than replaces (so the path-specific
+// Permissions-Policy and CSP were being ignored by the browser), and it is
+// not applied at all to responses a Function constructs (the Coming Soon
+// page below, the visit-launch interstitial, the NPS survey). Both are
+// written up in full in _lib/portal_headers.js.
 export async function onRequest(ctx) {
     const { request, env, next } = ctx;
+    const path = new URL(request.url).pathname;
+    const seal = (resp) => applyPortalHeaders(resp, path);
+
     const { allow } = await previewAccess(request, env);
     if (allow) {
         // Admin (or launched) — pass through to the real /portal/* asset,
         // and rewrite the HTML response to inject the feedback widget.
         const resp = await next();
         const ct = (resp.headers.get("content-type") || "").toLowerCase();
-        if (!ct.startsWith("text/html")) return resp;
+        if (!ct.startsWith("text/html")) return seal(resp);
         // Don't inject into the preview-grant landing page or coming-soon
         // (those are already self-contained and we want a clean handoff).
-        const path = new URL(request.url).pathname;
-        if (path.startsWith("/portal/preview-grant")) return resp;
-        return new HTMLRewriter()
+        if (path.startsWith("/portal/preview-grant")) return seal(resp);
+        return seal(new HTMLRewriter()
             .on("body", new PortalScriptInjector())
-            .transform(resp);
+            .transform(resp));
     }
     // Public, pre-launch — serve the Coming Soon HTML.
-    return new Response(COMING_SOON_HTML, {
+    // Note the cache header: this used to be `public, max-age=60`, which
+    // applyPortalHeaders now replaces with the portal's no-store posture.
+    // A 60-second public cache was fine for THIS page but wrong for the
+    // surface, and the distinction was one deploy away from mattering.
+    return seal(new Response(COMING_SOON_HTML, {
         status: 200,
-        headers: {
-            "content-type": "text/html; charset=utf-8",
-            // Don't cache aggressively — when we flip launch flag, the
-            // public should pick up the real site quickly. Cache only at
-            // the browser, short TTL.
-            "cache-control": "public, max-age=60, s-maxage=60",
-            // Belt-and-suspenders security headers (mirrors site defaults).
-            "x-content-type-options": "nosniff",
-            "referrer-policy": "strict-origin-when-cross-origin",
-        },
-    });
+        headers: { "content-type": "text/html; charset=utf-8" },
+    }));
 }
 
 // ---------------------------------------------------------------------

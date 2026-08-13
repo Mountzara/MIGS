@@ -177,16 +177,34 @@ the target element is in a section ABOVE the script tag.
    scaffolding dirs); calls `scripts/verify_kb_anchoring.py` per file;
    exits 1 on any FAIL. Skip with `DEPLOY_SKIP_KB_GATE=1` (use only
    for non-clinical changes).
-2. **§0.4.1 comprehensive regression audit** — calls
+2. **SQL column gate** (2026-08-13) — `scripts/check_sql_columns.mjs`
+   parses `schema/*.sql` into table→columns, extracts every SQL literal
+   from `functions/**`, and fails on any reference to a column that does
+   not exist. Hermetic, <1s, **no override flag** — a hit here means the
+   handler is guaranteed to throw at runtime. Judges only what is
+   decidable without a real parser: `alias.column` where the alias is
+   unambiguously bound, and bare identifiers in the SELECT list or
+   compared in the WHERE of a single-table statement. Run
+   `--self-test` (13 cases) to prove the checker itself still works.
+   **It found seven broken endpoints on the day it was written** — the
+   admin snapshot dashboard, the whole Transcription-app sync, the
+   patient briefing's document list, and the onboarding wizard's
+   education step — several of them SILENT, because a bare `catch`
+   turned "the query is broken" into "there is no data".
+3. **Portal header gate** (2026-08-13) — `scripts/test_portal_headers.mjs`
+   (97 assertions). Asserts exactly ONE Permissions-Policy and ONE CSP
+   per portal path after `applyPortalHeaders`. See §5 `portal_headers.js`
+   for why this cannot live in `_headers`.
+4. **§0.4.1 comprehensive regression audit** — calls
    `/Users/beans/Developer/MountZara/agent-platform/scripts/regression_audit.py
    --all` (NOTE: lives outside this repo); audits 25+ surfaces against
    every hard rule in CLAUDE.md; logs to `/tmp/_deploy_audit.log`;
    exits 1 on any HARD FAIL. Skip with `DEPLOY_SKIP_REGRESSION_AUDIT=1`
    — DANGEROUS, only when manually documented.
-3. **`wrangler pages deploy .`** — Direct Upload via API token.
-4. **HEAD check on mountzara.com** — confirms HTTP 200 with cache-bust
+5. **`wrangler pages deploy .`** — Direct Upload via API token.
+6. **HEAD check on mountzara.com** — confirms HTTP 200 with cache-bust
    query.
-5. **§0.8.1 R2-post gate** — `scripts/verify_kb_anchoring.py --r2-posts`
+7. **§0.8.1 R2-post gate** — `scripts/verify_kb_anchoring.py --r2-posts`
    verifies every R2-served clinical post still carries its KB-anchor
    manifest in the structured fields.
 6. **All-fields audit gate** — `scripts/audit_live_post.py --list` runs
@@ -909,12 +927,13 @@ For each helper: who calls it, what depends on its signature.
 | `auth.js` | `getSession`, `requireRole`, `requireRoleOptional`, `signSession`, `verifyPassword`, `hashPassword`, `nowMs`, `PBKDF2_ITERATIONS` | Every `functions/api/v1/patient/*` + every `functions/api/v1/admin/*` (~80 files); `_middleware.js` | **§9.8.3:** `PBKDF2_ITERATIONS` MUST equal 100000 — if you change, you also change `scripts/_reset_admin_password_node.sh::iters`. **§10.10:** `getSession` accepts optional `ctx` and uses `ctx.waitUntil()` for `last_seen_at` UPDATE; if you change signature, touch `requireRole` + `requireRoleOptional` + every endpoint that passes `ctx`. |
 | `audit.js` | `logAudit(env, entry, ctx?)` | Every auth-sensitive route (~60 files) | **§10.10:** `ctx` param hands D1 INSERT to `ctx.waitUntil()`. If you remove `ctx` support, every endpoint regresses to synchronous audit and CPU-budget 503s reappear. |
 | `db.js` | `requireDb`, `getById`, `newId`, table/column whitelist | Most of `functions/api/v1/*` | If you add a table, add it to the whitelist here AND add migration to `schema/*.sql`. |
-| `phi.js` | `wrapDek`, `unwrapDek`, `encryptPhi`, `decryptPhi` | Documents, messages with attachments, snapshots | **PHI key rotation:** `scripts/phi_master_key_rotate.sh` calls `functions/api/v1/admin/phi/rotate.js` which uses BOTH `PHI_MASTER_KEY_OLD` + `PHI_MASTER_KEY`. Lock-step. |
+| `phi.js` | `wrapDek`, `unwrapDek`, `encryptPhi`, `decryptPhi`, `decryptPhiText`, `decryptPhiJson`, `putPhiObject`, `getPhiObject` | Documents, messages with attachments, snapshots | **PHI key rotation:** `scripts/phi_master_key_rotate.sh` calls `functions/api/v1/admin/phi/rotate.js` which uses BOTH `PHI_MASTER_KEY_OLD` + `PHI_MASTER_KEY`. Lock-step. **`decryptPhi` returns a `Uint8Array`, not a string** — passing it to `JSON.parse` coerces to `"123,45,67,…"` and throws at position 3; use `decryptPhiText`/`decryptPhiJson`. **AAD is not a hint:** AES-GCM decryption FAILS on a mismatch, and five different AAD conventions exist across writers (`documents:<patient>:<doc>`, `message_attachment/<attachment_id>`, `encounter/<enc>/photo_<n>`, `encounter/<enc>/ios_photo_<n>`, `clinical_ai/<session>/<part>`). Since **schema 0037** every writer records what it sealed with in `documents.phi_aad` and readers use that instead of guessing — the guess is what made a member's own message attachment 500 on download from `/portal/documents/`. A new writer MUST set `phi_aad`. |
 | `anthropic.js` | `callClaude(env, prompt, opts)` | `intake/triage.js`, `briefings/*`, AI snapshots, drug-AE, PROM recommender | **§12.2 BAA gating:** until Anthropic BAA signed, NEVER call with PHI. Every caller must de-identify per §11.7.2 prompt template. |
 | `totp.js` | `verifyTotp` | `functions/admin/_mfa.js` | RFC 6238 — don't change skew/period without re-enrolling. |
 | `mfa_cookie.js` | `signMfaCookie`, `verifyMfaCookie` | `functions/admin/_middleware.js`, `_mfa.js` | If you rotate `ADMIN_MFA_COOKIE_KEY`, every active admin session invalidates. |
 | `preview_invite.js` | `mintInvite`, `redeemInvite`, `signCookie`, `verifyCookie` | `/api/v1/admin/preview-invite.js`, `/portal/preview-grant/` | Rotating `PREVIEW_INVITE_KEY` invalidates all outstanding preview-grant URLs. |
 | `preview_gate.js` | `previewAccess(request, env)` | `functions/portal/_middleware.js` | Honors `PORTAL_PUBLIC_LAUNCH` env + admin auth + signed preview cookie. |
+| `portal_headers.js` | `PORTAL_BASE`, `BASE_CSP`, `BILLING_CSP`, `PERMISSIONS_DEFAULT`/`_TECH_CHECK`/`_BILLING`, `portalHeaders(path)`, `applyPortalHeaders(resp, path)` | `functions/portal/_middleware.js` (every `/portal/*` response passes through `seal()`) | **DO NOT move these back into `_headers`.** That file APPENDS — a path rule does not replace the site-wide `/*` rule, and the browser then resolves duplicate **Permissions-Policy** features **first-wins** and duplicate **CSPs** by **intersection**. Both overrides were therefore inert while looking correct in `curl`: `/portal/tech-check/` still had `camera=()` in force (an EMPTY allowlist disables the feature for the page's OWN origin, so `getUserMedia` rejected with `NotAllowedError` before any prompt and the device check told every patient their camera was broken), and `/portal/billing/` still enforced the strict CSP alongside the Stripe one (`window.Stripe` undefined → "Stripe is not defined" in the payment modal). Only `!` genuinely unsets. Separately, `_headers` never applies to a response a **Function constructs** — the pre-launch Coming Soon page, `/portal/visit/<id>/launch`, `/portal/nps/<token>` shipped with three headers, no CSP and a `public, max-age=60` cache. `applyPortalHeaders` uses `Headers.set()` so exactly one policy per header reaches the browser. Adding a portal page that needs a different policy = add a branch in `portalHeaders()` + a case in `scripts/test_portal_headers.mjs` (97 assertions, deploy gate). |
 | `session_trace.js` | `recordTrace`, `traceWrap`, `listRecentTraces` | Optional wrapping in any endpoint for debugging | PHI-conservative SHA256+salt-hashed IPs. |
 | `wizard.js` | `WIZARD_STEPS`, `computeStepStatus` | `/api/v1/patient/wizard/state.js`, `portal/_wizard.js` injection | Adding step: update `WIZARD_STEPS` + `computeStepStatus` + UI in `_wizard.js`. |
 | `stripe.js` | `createCustomer`, `createPaymentIntent`, `verifyWebhook` | `functions/api/billing/stripe/*` | If signature changes, touch `_stripe_e2e_*.sh` test scripts. |

@@ -126,12 +126,13 @@ export async function onRequestPost(ctx) {
                 INSERT INTO documents
                     (id, patient_id, kind, r2_key, r2_bucket, filename, mime_type, size_bytes,
                      sha256, encrypted, envelope_dek_wrapped,
-                     uploaded_by_role, uploaded_by_id, source_app, description, uploaded_at)
-                VALUES (?, ?, 'surgical_workflow_doc', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'surgical_workflow_pipeline', 'surgical_workflow', ?, ?)
+                     uploaded_by_role, uploaded_by_id, source_app, description, phi_aad, uploaded_at)
+                VALUES (?, ?, 'surgical_workflow_doc', ?, 'mountzara-phi', ?, ?, ?, ?, 1, ?, 'app', 'surgical_workflow_pipeline', 'surgical_workflow', ?, ?, ?)
             `).bind(
                 docId, patient_id, key, `surgical-photo-${photoIdx}.jpg`,
                 "image/jpeg", photo.length, sha, pput.wrapped_dek,
-                `Intraop photo ${photoIdx} from session ${session_id}`, now
+                `Intraop photo ${photoIdx} from session ${session_id}`,
+                `encounter/${encounter_id}/photo_${photoIdx}`, now
             ).run();
             document_ids.push(docId);
         }

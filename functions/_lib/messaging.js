@@ -181,38 +181,47 @@ export async function startThread(env, args) {
         return { ok: false, error: "db_insert_failed", detail: String(e && e.message || e) };
     }
 
-    // 2026-08-12 — NOTIFY THE OTHER SIDE. Until now a reply was written to
-    // the database and nobody was told: the owner tested it and reported
-    // "it doesn't notify members via their email of the message to login -
-    // they would never know". A secure message the recipient never learns
-    // about is not a message.
-    //
-    // Only the PATIENT is emailed here — the clinician works the queue in
-    // the admin console. The email carries NO clinical content (see the
-    // templates in notify.js); it says a message is waiting and links to
-    // the portal, because email is not a secure channel.
-    //
-    // Delivery must never fail the reply itself: notify() resolves rather
-    // than throwing, and queues to notification_outbox on any failure.
-    if (from_role !== "patient") {
-        try {
-            const p = await env.DB.prepare(
-                "SELECT email FROM patients WHERE id = ? LIMIT 1"
-            ).bind(patient_id).first();
-            if (p && p.email) {
-                await notify(env, {
-                    to: p.email,
-                    template: "new_message",
-                    patient_id,
-                    data: {},
-                });
-            }
-        } catch (e) {
-            console.error("replyInThread: notification failed", String(e).slice(0, 200));
-        }
-    }
+    await notifyPatientOfNewMessage(env, patient_id, from_role, "startThread");
 
     return { ok: true, thread_id, message_id, created_at: t };
+}
+
+/**
+ * Tell the patient a message is waiting.
+ *
+ * 2026-08-12 — the owner tested messaging and reported "it doesn't notify
+ * members via their email of the message to login - they would never
+ * know". A secure message the recipient never learns about is not a
+ * message.
+ *
+ * 2026-08-13 — the fix for that was written INSIDE startThread, at the
+ * bottom, with a comment and a catch label that both said `replyInThread`.
+ * So only the first message of a brand-new thread ever notified anyone.
+ * Every subsequent clinician reply — which is nearly all of them, because
+ * a conversation continues in the thread it started in — went out silently
+ * for a day. Extracted here so the two call sites cannot drift again.
+ *
+ * Only the PATIENT is emailed: the clinician works the queue in the admin
+ * console. The email carries NO clinical content (see the templates in
+ * notify.js) — it says a message is waiting and links to the portal,
+ * because email is not a secure channel.
+ *
+ * Never throws. Delivery failure must not fail the message that was
+ * already written: notify() resolves rather than rejecting, and queues to
+ * notification_outbox on any failure.
+ */
+async function notifyPatientOfNewMessage(env, patient_id, from_role, where) {
+    if (from_role === "patient") return;          // nothing to tell them; they sent it
+    try {
+        const p = await env.DB.prepare(
+            "SELECT email FROM patients WHERE id = ? LIMIT 1"
+        ).bind(patient_id).first();
+        if (p && p.email) {
+            await notify(env, { to: p.email, template: "new_message", patient_id, data: {} });
+        }
+    } catch (e) {
+        console.error(`${where}: notification failed`, String(e).slice(0, 200));
+    }
 }
 
 /**
@@ -289,6 +298,11 @@ export async function replyInThread(env, args) {
     } catch (e) {
         return { ok: false, error: "db_insert_failed", detail: String(e && e.message || e) };
     }
+
+    // The call this function was always supposed to have. See
+    // notifyPatientOfNewMessage — the original fix landed in startThread by
+    // mistake, so replies never reached anyone.
+    await notifyPatientOfNewMessage(env, patient_id, from_role, "replyInThread");
 
     return { ok: true, thread_id, message_id, created_at: t };
 }
