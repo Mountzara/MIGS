@@ -125,6 +125,31 @@ export const TIERS = [
         capacity_weight: 0,
     },
     {
+        key: "navigator",
+        name: "Navigator",
+        price_month: 59,
+        price_year: 590,
+        tagline: "Keep your doctor. Walk in prepared.",
+        summary: "For the patient who already has an OB/GYN and does not want to change — they want the fifteen minutes they get to actually count. Before every appointment, with any clinician, a preparation pack built from your own history.",
+        // The economically important tier: ZERO physician minutes, so the
+        // panel has no ceiling. This is the only thing here that scales.
+        benefits: [
+            { label: "A symptom timeline, in date order, on one page you can hand over",
+              covered_service: false, physician_minutes: 0, automated_minutes: 25 },
+            { label: "Questions worth asking, drawn from your own history",
+              covered_service: false, physician_minutes: 0, automated_minutes: 15 },
+            { label: "An index of your records — what exists, when, and what your doctor may not have seen",
+              covered_service: false, physician_minutes: 0, automated_minutes: 12 },
+            { label: "Plain-language explanations of the words on your own reports",
+              covered_service: false, physician_minutes: 0, automated_minutes: 8 },
+            { label: "After-visit capture, folded back in so the next visit starts where the last one ended",
+              covered_service: false, physician_minutes: 0, automated_minutes: 10 },
+        ],
+        capacity_weight: 0,
+        // Stated on the tier itself so it survives into every rendering.
+        scope_note: "Preparation tools only. No diagnosis, no interpretation of results, no treatment advice — those are your own doctor's to give.",
+    },
+    {
         key: "priority",
         name: "Priority",
         price_month: 199,
@@ -132,6 +157,8 @@ export const TIERS = [
         tagline: "Reach him directly, and get more of his time.",
         summary: "For patients managing something ongoing — endometriosis, fibroids, chronic pelvic pain, menopause — where the value is continuity and access rather than more procedures.",
         benefits: [
+            { label: "Everything in Navigator — preparation packs for visits with any of your clinicians",
+              covered_service: false, physician_minutes: 0, automated_minutes: 0 },
             // AI drafts in his voice; he reviews and sends. That is the
             // difference between 20 minutes and 4.
             { label: "Direct asynchronous messaging with Dr. Mabini, answered within one business day",
@@ -313,7 +340,13 @@ export function unitEconomics(tierKey, assumptions = {}) {
 
     const own = tierMinutes(t);
     // "Everything in Priority" is a real cost, not a free line.
-    const inherited = t.key === "complete" ? tierMinutes(tier("priority")) : { physician: 0, automated: 0 };
+    // Inheritance chain: Complete <- Priority <- Navigator. "Everything in
+    // X" is a real cost, not a free line on a marketing page.
+    const INHERITS = { priority: ["navigator"], complete: ["navigator", "priority"] };
+    const inherited = (INHERITS[t.key] || []).reduce((acc, k) => {
+        const m = tierMinutes(tier(k));
+        return { physician: acc.physician + m.physician, automated: acc.automated + m.automated };
+    }, { physician: 0, automated: 0 });
     const physician = own.physician + inherited.physician;
     const automated = own.automated + inherited.automated;
 
@@ -513,6 +546,10 @@ export const MODEL_COMPARISON = [
       traditional: "In the building, during business hours.",
       here: "Virtual-first. Access does not depend on your geography or your ability to take a day off work.",
       evidence: "disparities" },
+    { dimension: "Keeping your own doctor",
+      traditional: "A second opinion means starting over somewhere else, or nothing.",
+      here: "You keep your OB/GYN. Navigator prepares you for the visits you already have — a subspecialist organising your history so the fifteen minutes count.",
+      evidence: "diagnostic_delay" },
     { dimension: "What it costs",
       traditional: "Your insurance is billed. Access is not something you can buy at any price.",
       here: "Your insurance is still billed exactly the same. The membership buys access, never care.",
@@ -529,6 +566,7 @@ export const MODEL_COMPARISON = [
 // before the numbers are published.
 
 export const REFERENCE_PRICES = {
+    visit_prep_pack: 85,             // what a patient advocate charges to prepare one visit
     extended_consult_45min: 375,     // self-pay subspecialist, extended visit
     video_review_40min: 325,
     written_second_opinion: 450,
@@ -564,8 +602,17 @@ export function valueComparison(tierKey, prices = {}) {
             { label: "Symptom tracking reviewed before every contact", qty: 0.5, unit: P.care_coordination_hour },
             { label: "Coordination with your other clinicians", qty: 0.3, unit: P.care_coordination_hour },
         ],
+        navigator: [
+            { label: "Visit preparation packs", qty: 1.2, unit: P.visit_prep_pack,
+              note: "typically one appointment a month across all your clinicians" },
+            { label: "Symptom timeline, kept current", qty: 0.2, unit: P.care_coordination_hour },
+            { label: "Records index — what exists and who has seen it", qty: 0.15, unit: P.care_coordination_hour },
+            { label: "Plain-language explanation of your own reports", qty: 0.15, unit: P.care_coordination_hour },
+            { label: "After-visit capture, folded back into your history", qty: 0.1, unit: P.care_coordination_hour },
+        ],
         standard: [],
     };
+    LINES.priority = [{ label: "Everything in Navigator", qty: 1, unit: null, inherit: "navigator" }, ...LINES.priority];
 
     const rows = [];
     let total = 0;

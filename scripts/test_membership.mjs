@@ -90,7 +90,7 @@ ok(eligibility({ payerKind: "medicare", tierKey: "standard" }).eligible,
 
 // ---------------------------------------------------------------------
 section("Unit economics — every paid tier makes money");
-for (const key of ["priority", "complete"]) {
+for (const key of ["navigator", "priority", "complete"]) {
     const u = unitEconomics(key);
     ok(u.gross_margin > 0, `${u.name}: margin is positive ($${u.gross_margin}/member/month)`);
     ok(u.margin_pct >= 0.35, `${u.name}: margin is ${(u.margin_pct * 100).toFixed(0)}%, not thin`);
@@ -104,7 +104,7 @@ ok(unitEconomics("complete").physician_minutes > unitEconomics("priority").physi
    "Surgical inherits Priority's minutes — 'Everything in Priority' is costed, not free");
 
 section("Automation is what makes the pricing work — and the model proves it");
-for (const key of ["priority", "complete"]) {
+for (const key of ["navigator", "priority", "complete"]) {
     const u = unitEconomics(key);
     ok(u.automated_minutes > u.physician_minutes,
        `${u.name}: most of the work is automated (${u.automated_minutes} auto vs ${u.physician_minutes} his)`);
@@ -153,7 +153,7 @@ ok(SELF_PAY_PRINCIPLES.some((p) => /independent of the membership/i.test(p)),
 // ---------------------------------------------------------------------
 section("No surgical tier — he has no office space, so it must not exist");
 ok(!tier("surgical"), "the Surgical Concierge tier is gone");
-ok(TIERS.length === 3, "three tiers: Standard, Priority, Complete");
+ok(TIERS.length === 4, "four tiers: Standard, Navigator, Priority, Complete");
 ok(!TIERS.some((t) => /surgical|perioperative|operat/i.test(JSON.stringify(t))),
    "nothing anywhere still promises perioperative or surgical concierge service");
 ok(!TIERS.some((t) => (t.benefits || []).some((b) => /in.person|in the office|clinic visit/i.test(b.label))),
@@ -186,7 +186,7 @@ ok(MODEL_COMPARISON.some((c) => /insurance is still billed/i.test(c.here)),
 
 // ---------------------------------------------------------------------
 section("Value — the member gets more than they pay for, and it is shown");
-for (const key of ["priority", "complete"]) {
+for (const key of ["navigator", "priority", "complete"]) {
     const v = valueComparison(key);
     ok(v.alacarte_total > v.price_month,
        `${v.name}: $${Math.round(v.alacarte_total)} of access a la carte for $${v.price_month}`);
@@ -211,6 +211,24 @@ const priorityYear = tier("priority").price_year;
 ok(priorityYear < MARKET_ANCHOR.concierge_median_year,
    `Priority ($${priorityYear}/yr) sits BELOW the concierge median ($${MARKET_ANCHOR.concierge_median_year}/yr) — deliberately, to fill the panel first`);
 ok(/primary care/i.test(MARKET_ANCHOR.note), "the anchor notes that the benchmark is primary care, not a subspecialist");
+
+section("Navigator — the tier that scales, because he is not in it");
+const nav = unitEconomics("navigator");
+ok(nav.physician_minutes === 0,
+   "Navigator consumes ZERO physician minutes — so unlike every other tier, its panel has no ceiling");
+ok(nav.margin_pct > 0.6, `and it carries the best margin of any tier (${(nav.margin_pct * 100).toFixed(0)}%)`);
+const huge = capacity({ navigator: 500 });
+ok(huge.utilisation === 0, "500 Navigator members consume none of his week");
+ok(huge.warnings.length === 0, "…so no capacity warning fires, correctly");
+ok(huge.monthly_margin > 0, `and 500 members would earn $${Math.round(huge.annual_margin).toLocaleString()}/yr`);
+
+ok(tier("navigator").scope_note && /No diagnosis/i.test(tier("navigator").scope_note),
+   "Navigator states its own scope limit on the tier, so it survives into every rendering");
+ok(validateTierLegality(tier("navigator")).ok, "Navigator sells no covered service");
+ok(eligibility({ payerKind: "commercial", tierKey: "navigator" }).eligible,
+   "a commercial patient may buy Navigator");
+ok(!eligibility({ payerKind: "medicare", tierKey: "navigator" }).eligible,
+   "…and a federal beneficiary still may not, without an override");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
