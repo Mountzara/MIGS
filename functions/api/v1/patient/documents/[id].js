@@ -73,8 +73,16 @@ async function aadForDocument(env, doc, patient_id) {
 // dropped: not a soft delete, not recoverable, and for a record subject to
 // six-year retention.
 //
-// The rule is authorship, not subject. A patient may delete what a patient
-// uploaded. Everything else is the practice's record of care.
+// The rule is BOTH: the patient must have authored it, AND it must be a
+// kind that is still theirs to withdraw.
+//
+// Authorship alone is not enough, and `message_attachment` is why. The
+// patient did upload it — but they uploaded it INTO a message thread, and
+// it was received. A clinician has read it and may have acted on it. That
+// makes it correspondence, not a file sitting in a folder, and letting the
+// sender delete it retroactively would edit a conversation that has
+// already happened. Same reasoning a sent email cannot be unsent from the
+// recipient's mailbox.
 const PATIENT_DELETABLE_KINDS = new Set(["patient_upload", "intake_attachment"]);
 
 function patientMayDelete(doc) {
@@ -82,6 +90,10 @@ function patientMayDelete(doc) {
     if (String(doc.uploaded_by_role || "") !== "patient") {
         return { ok: false, code: "not_your_upload",
                  message: "This file is part of your medical record and was added by the practice, so it cannot be deleted here. Message us if you think it is wrong." };
+    }
+    if (String(doc.kind || "") === "message_attachment") {
+        return { ok: false, code: "sent_in_a_message",
+                 message: "You sent this in a message, so it is part of that conversation and cannot be removed here. Message us if you sent it by mistake." };
     }
     if (!PATIENT_DELETABLE_KINDS.has(String(doc.kind || ""))) {
         return { ok: false, code: "not_deletable_kind",
