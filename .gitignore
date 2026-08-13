@@ -37,7 +37,17 @@ scripts/_authoring/.pubmed_cache/
 # ---------------------------------------------------------------------
 
 # Local working data. May contain PHI — never commit.
-data/
+data/**
+# A negation cannot rescue a file whose parent DIRECTORY is excluded — git
+# never descends into an ignored directory, so `data/` + `!data/x.json` leaves
+# x.json ignored. Excluding the CONTENTS (`data/**`) keeps the directory
+# walkable so the exception below actually applies.
+# ...EXCEPT vetted, patient-free REFERENCE data that code and tests depend on.
+# Ignoring all of data/ broke scripts/test_credentialing_wizard.mjs, which
+# reads the payer credentialing database (insurance-company enrollment
+# requirements and published URLs — no patient information of any kind).
+# Add further exceptions ONLY for files verified to contain no PHI.
+!data/payer_credentialing.json
 
 # Auto-generated backups from the deprecation guard.
 *.pre-guard.*.py
