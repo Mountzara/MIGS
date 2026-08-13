@@ -182,7 +182,11 @@ export async function loadInvoice(env, invoice_id, { include_phi_line_items = fa
                 const ct = await obj.arrayBuffer();
                 const md = obj.customMetadata || {};
                 const aad = md.aad || `${PHI_AAD_LINE_ITEMS}/${invoice_id}`;
-                const plaintext = await decryptPhi(env, new Uint8Array(ct), inv.line_items_wrapped_dek, md["mz-iv-data"], md["mz-iv-dek"], aad);
+                // decryptPhi returns BYTES. This parsed them directly, threw,
+                // and the catch below logged a warning — so invoice line items
+                // silently came back empty on every invoice that had them.
+                const plaintext = new TextDecoder().decode(
+                    await decryptPhi(env, new Uint8Array(ct), inv.line_items_wrapped_dek, md["mz-iv-data"], md["mz-iv-dek"], aad));
                 line_items = JSON.parse(plaintext);
             }
         } catch (e) {

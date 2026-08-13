@@ -159,6 +159,28 @@ export async function decryptPhi(env, ciphertext, wrapped_dek, iv_data, iv_dek, 
 }
 
 /**
+ * decryptPhi returns BYTES. Every caller that wants a string or JSON must
+ * decode first, and three of them did not — they passed the Uint8Array
+ * straight to JSON.parse, which coerces it to "123,45,67,..." and throws
+ * "Unexpected non-whitespace character after JSON at position 3".
+ *
+ * Two of those swallowed the error in a catch and logged a warning, so the
+ * symptom was silent: clearinghouse credentials that never decrypted, and
+ * invoice line items that always came back empty. Nothing looked broken.
+ *
+ * These two helpers exist so the decode is not something a caller has to
+ * remember. Prefer them over decryptPhi wherever the payload is text.
+ */
+export async function decryptPhiText(env, ciphertext, wrapped_dek, iv_data, iv_dek, aad) {
+    const bytes = await decryptPhi(env, ciphertext, wrapped_dek, iv_data, iv_dek, aad);
+    return new TextDecoder().decode(bytes);
+}
+
+export async function decryptPhiJson(env, ciphertext, wrapped_dek, iv_data, iv_dek, aad) {
+    return JSON.parse(await decryptPhiText(env, ciphertext, wrapped_dek, iv_data, iv_dek, aad));
+}
+
+/**
  * High-level helper: store an encrypted PHI body in mountzara-phi R2 bucket
  * and return the metadata to persist on the D1 row.
  *

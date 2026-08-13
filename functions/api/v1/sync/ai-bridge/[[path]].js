@@ -139,13 +139,17 @@ async function openMap(env, jobId, row) {
         const bin = atob(row.deid_map_ciphertext);
         const bytes = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        const plain = await decryptPhi(env, bytes, row.deid_map_dek_wrapped,
-                                      row.deid_map_iv_data, row.deid_map_iv_dek,
-                                      `bridge_map:${jobId}`);
+        // decryptPhi returns BYTES — decode before parsing.
+        const plain = new TextDecoder().decode(
+            await decryptPhi(env, bytes, row.deid_map_dek_wrapped,
+                             row.deid_map_iv_data, row.deid_map_iv_dek,
+                             `bridge_map:${jobId}`));
         return JSON.parse(plain);
     } catch (e) {
+        // Surface the real reason. "could not be decrypted" with no cause
+        // is the kind of message that costs an hour.
         console.error("bridge map decrypt failed", String(e));
-        return null;
+        return { __error: String(e && e.message ? e.message : e).slice(0, 200) };
     }
 }
 
@@ -185,6 +189,72 @@ async function rawContextFor(env, kind, refId) {
         return { text: parts.join("\n\n"), knownNames: [...names] };
     }
 
+    if (kind === "intake_summary") {
+        // The triage decision. runTriage() de-identifies the intake before
+        // the model ever sees it, so what leaves here is already
+        // structurally safe — this path re-verifies it anyway, because the
+        // guarantee is meant to hold regardless of who calls it.
+        const row = await env.DB.prepare(
+            `SELECT i.id, i.patient_id, p.dob
+               FROM intake_responses i LEFT JOIN patients p ON p.id = i.patient_id
+              WHERE i.id = ? LIMIT 1`
+        ).bind(refId).first();
+        if (!row) return null;
+        const secs = await env.DB.prepare(
+            `SELECT section_number, data_json FROM intake_section_data
+              WHERE intake_id = ? ORDER BY section_number ASC`
+        ).bind(refId).all();
+        const parts = [];
+        for (const sec of (secs?.results || [])) {
+            let d = {};
+            try { d = JSON.parse(sec.data_json || "{}"); } catch { /* skip */ }
+            const body = Object.entries(d)
+                .filter(([, v]) => v !== null && v !== "" && v !== undefined)
+                .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
+                .join("\n");
+            if (body) parts.push(`--- SECTION ${sec.section_number} ---\n${body}`);
+        }
+        if (!parts.length) return null;
+
+        const names = new Set();
+        try {
+            const pt = await env.DB.prepare(
+                `SELECT first_name, last_name, preferred_name FROM patients WHERE id = ? LIMIT 1`
+            ).bind(row.patient_id).first();
+            for (const n of [pt?.first_name, pt?.last_name, pt?.preferred_name]) if (n) names.add(n);
+        } catch { /* the scrubber still runs */ }
+
+        return { text: parts.join("\n\n"), knownNames: [...names] };
+    }
+
+    if (kind === "visit_summary") {
+        const enc = await env.DB.prepare(
+            `SELECT id, patient_id, visit_date, visit_type_actual, chief_complaint, note_r2_key
+               FROM encounters WHERE id = ? LIMIT 1`
+        ).bind(refId).first();
+        if (!enc?.note_r2_key) return null;
+        let note = "";
+        try {
+            const got = await getPhiObject(env, enc.note_r2_key, null, null);
+            note = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+        } catch { return null; }
+        if (!note.trim()) return null;
+
+        const names = new Set();
+        try {
+            const pt = await env.DB.prepare(
+                `SELECT first_name, last_name, preferred_name FROM patients WHERE id = ? LIMIT 1`
+            ).bind(enc.patient_id).first();
+            for (const n of [pt?.first_name, pt?.last_name, pt?.preferred_name]) if (n) names.add(n);
+        } catch { /* scrubber still runs */ }
+
+        return {
+            text: `VISIT: ${enc.visit_type_actual || "office visit"} on ${enc.visit_date}\n`
+                + `REASON: ${enc.chief_complaint || "not recorded"}\n\nNOTE:\n${note}`,
+            knownNames: [...names],
+        };
+    }
+
     if (kind === "enrollment_extract") {
         // The practice's own paperwork, already admitted by
         // enrollment_extract.looksLikePatientDocument() at upload time.
@@ -201,6 +271,70 @@ async function rawContextFor(env, kind, refId) {
     }
 
     return null;
+}
+
+/**
+ * Turn a finished bridge result into the state change it was computed for.
+ *
+ * Returns { applied, ... } and NEVER throws past its caller — a job whose
+ * result cannot be applied must still be recorded as returned, so the
+ * failure is visible rather than looking like the bridge never ran.
+ */
+async function applyJobResult(env, job, text) {
+    if (job.kind === "intake_summary") {
+        // Triage. Parse the decision, write it onto the row that is
+        // currently blocking this patient's booking, and let slots open.
+        let d = null;
+        try {
+            const start = text.indexOf("{"), end = text.lastIndexOf("}");
+            if (start >= 0 && end > start) d = JSON.parse(text.slice(start, end + 1));
+        } catch { /* fall through to not-applied */ }
+        if (!d || !d.visit_type) return { applied: false, reason: "no usable triage decision in the result" };
+
+        let payload = {};
+        try { payload = JSON.parse(job.payload_json || "{}"); } catch { /* {} */ }
+        const intakeId = payload.intake_id;
+        if (!intakeId) return { applied: false, reason: "job carried no intake_id" };
+
+        const res = await env.DB.prepare(
+            `UPDATE appointment_triage
+                SET ai_visit_type = ?, ai_duration_min = ?, ai_urgency = ?,
+                    ai_in_person_required = ?, ai_preferred_time_of_day = ?,
+                    ai_rationale = ?, ai_secondary_concerns_json = ?, updated_at = ?
+              WHERE intake_id = ? AND ai_visit_type = 'manual_review_required'`
+        ).bind(
+            String(d.visit_type),
+            Number(d.duration_min) || 45,
+            ["routine", "soon", "urgent"].includes(d.urgency) ? d.urgency : "routine",
+            d.in_person_required ? 1 : 0,
+            ["any", "morning", "afternoon"].includes(d.preferred_time_of_day) ? d.preferred_time_of_day : "any",
+            String(d.rationale || "").slice(0, 500),
+            JSON.stringify(Array.isArray(d.secondary_concerns) ? d.secondary_concerns.slice(0, 20) : []),
+            Date.now(), intakeId
+        ).run();
+
+        return {
+            applied: Boolean(res?.meta?.changes),
+            kind: "triage",
+            visit_type: d.visit_type,
+            urgency: d.urgency,
+            // Said plainly: an urgent triage is not something to discover
+            // in a log, and the clinician release step still stands.
+            note: res?.meta?.changes
+                ? "Triage decided. It still awaits your release before slots open."
+                : "The triage row was already decided or released — left untouched.",
+        };
+    }
+
+    if (job.kind === "visit_summary") {
+        // Deliberately NOT applied automatically. A visit summary must be
+        // read and approved by him; writing it straight into the patient's
+        // portal would defeat the sign-off gate that feature exists for.
+        return { applied: false, kind: "visit_summary",
+                 reason: "held for clinician review — by design, not a failure" };
+    }
+
+    return { applied: false, reason: `no applier for kind ${job.kind}` };
 }
 
 export async function onRequest(ctx) {
@@ -346,7 +480,7 @@ export async function onRequest(ctx) {
             try { b = await request.json(); } catch { return syncError("invalid json", 400); }
 
             const job = await env.DB.prepare(
-                `SELECT id, kind, patient_id, status FROM ai_jobs WHERE id = ? LIMIT 1`
+                `SELECT id, kind, patient_id, status, payload_json FROM ai_jobs WHERE id = ? LIMIT 1`
             ).bind(job_id).first();
             if (!job) return syncError("job not found", 404);
 
@@ -369,8 +503,8 @@ export async function onRequest(ctx) {
             let rehydrated = false;
             if (mapRow?.deid_map_ciphertext) {
                 const map = await openMap(env, job_id, mapRow);
-                if (map === null) {
-                    return syncError("the de-identification map could not be decrypted; the draft cannot be restored and was not stored", 500);
+                if (!map || map.__error) {
+                    return syncError(`the de-identification map could not be decrypted (${map?.__error || "unknown"}); the draft cannot be restored and was not stored`, 500);
                 }
                 text = rehydrate(text, map);
                 rehydrated = true;
@@ -400,6 +534,20 @@ export async function onRequest(ctx) {
                 return syncError(`could not store result: ${String(e).slice(0, 160)}`, 500);
             }
 
+            // APPLY THE RESULT, do not merely store it.
+            //
+            // A triage decision sitting in an R2 blob is still a dead end:
+            // the patient's slots stay closed and someone has to notice.
+            // The whole point of routing the work to the bridge is that it
+            // COMPLETES. So the result is applied to the row it was
+            // computed for, and only then is the job marked done.
+            let applied = null;
+            try { applied = await applyJobResult(env, job, text); }
+            catch (e) {
+                console.error("bridge result apply failed", String(e).slice(0, 200));
+                applied = { applied: false, error: String(e).slice(0, 160) };
+            }
+
             await env.DB.prepare(
                 `UPDATE ai_jobs
                     SET status='done', result_r2_key=?, result_dek_wrapped=?,
@@ -409,11 +557,11 @@ export async function onRequest(ctx) {
                   WHERE id=?`
             ).bind(
                 r2_key, wrapped,
-                JSON.stringify({ ...(b?.meta || {}), rehydrated }),
+                JSON.stringify({ ...(b?.meta || {}), rehydrated, applied }),
                 nowIso(), job_id
             ).run();
 
-            return syncJson({ ok: true, status: "done", rehydrated });
+            return syncJson({ ok: true, status: "done", rehydrated, applied });
         }
 
         // ---- GET /disclosures -----------------------------------------

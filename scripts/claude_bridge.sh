@@ -88,24 +88,32 @@ heartbeat() {
 # site so the queue never has to carry clinical text.
 build_prompt() {
     local kind="$1" payload="$2"
+    local ref resp text removed
+
+    # Every kind fetches its context from the SAME de-identified endpoint.
+    # There is no path here that obtains raw patient text — the server
+    # refuses, and that is deliberate (see the header).
     case "$kind" in
-        message_draft)
-            local thread_id
-            thread_id=$(jq -r '.thread_id // empty' <<<"$payload")
-            [ -z "$thread_id" ] && { echo ""; return 1; }
-            local resp thread
-            # De-identified by the SERVER. A 409 here means verification
-            # failed and nothing was released — that is the system working.
-            resp=$(curl -s "${SITE}/api/v1/sync/ai-bridge/context/message_draft/${thread_id}?bridge_id=${BRIDGE_ID}&job_id=${JOB_ID}" "${AUTH[@]}")
-            thread=$(jq -r '.text // empty' <<<"$resp")
-            if [ -z "$thread" ]; then
-                echo "  ! server released nothing: $(jq -r '.error // "no text"' <<<"$resp")" >&2
-                echo ""; return 1
-            fi
-            local removed
-            removed=$(jq -r '[.deid.removed[]? | "\(.count) \(.key)"] | join(", ")' <<<"$resp" 2>/dev/null)
-            [ -n "$removed" ] && echo "  · de-identified: ${removed}" >&2
-            cat <<EOF
+        message_draft)      ref=$(jq -r '.thread_id // empty' <<<"$payload") ;;
+        intake_summary)     ref=$(jq -r '.intake_id // empty' <<<"$payload") ;;
+        visit_summary)      ref=$(jq -r '.encounter_id // empty' <<<"$payload") ;;
+        enrollment_extract) ref=$(jq -r '.document_id // empty' <<<"$payload") ;;
+        *) echo ""; return 1 ;;
+    esac
+    [ -z "$ref" ] && { echo ""; return 1; }
+
+    resp=$(curl -s "${SITE}/api/v1/sync/ai-bridge/context/${kind}/${ref}?bridge_id=${BRIDGE_ID}&job_id=${JOB_ID}" "${AUTH[@]}")
+    text=$(jq -r '.text // empty' <<<"$resp")
+    if [ -z "$text" ]; then
+        echo "  ! server released nothing: $(jq -r '.error // "no text"' <<<"$resp")" >&2
+        echo ""; return 1
+    fi
+    removed=$(jq -r '[.deid.removed[]? | "\(.count) \(.key)"] | join(", ")' <<<"$resp" 2>/dev/null)
+    [ -n "$removed" ] && echo "  · de-identified: ${removed}" >&2
+
+    case "$kind" in
+    message_draft)
+        cat <<EOF
 You are drafting a patient-portal reply for Dr. Christopher Mabini, DO, MSAEd —
 a fellowship-trained complex benign gynecology / MIGS surgeon.
 
@@ -124,16 +132,97 @@ TOKENS: this thread has been de-identified. Names and dates appear as
 [NAME_1], [DATE_2] and so on. Use those tokens verbatim wherever you would
 have written the name or the date — the real values are restored on the
 server before Dr. Mabini sees the draft. NEVER invent a token that does not
-appear below, and never guess what one stands for.
+appear below.
 
 THREAD:
-${thread}
+${text}
 
 Return ONLY the reply text.
 EOF
-            ;;
-        *)
-            echo ""; return 1 ;;
+        ;;
+    intake_summary)
+        cat <<EOF
+You are triaging a new-patient intake for Dr. Christopher Mabini, DO — a
+fellowship-trained complex benign gynecologic surgeon. Your job is to decide
+what KIND of appointment this person needs and how long it should be.
+
+Return ONLY a JSON object, no prose, no code fence:
+{
+  "visit_type": one of: new_patient_complex | new_patient_standard |
+                complex_pelvic_pain | endometriosis_followup | heavy_bleeding |
+                preop | postop_early | postop_late | routine_followup |
+                office_procedure | quick_concern | annual | telehealth_consult,
+  "duration_min": 15 | 20 | 30 | 45 | 60,
+  "urgency": "routine" | "soon" | "urgent",
+  "in_person_required": true | false,
+  "preferred_time_of_day": "any" | "morning" | "afternoon",
+  "chaperone_required": true | false,
+  "rationale": "<=400 chars, why this visit type and length",
+  "secondary_concerns": ["short phrases worth raising at the visit"]
+}
+
+RULES:
+  * Base it ONLY on what the intake says. Invent nothing.
+  * Anything suggesting an emergency — heavy active bleeding, severe acute
+    pain, syncope, fever with pelvic pain, pregnancy with bleeding — set
+    urgency "urgent" and say so in the rationale.
+  * Anything needing an examination or a procedure is in_person_required.
+  * Longer for complex pain and multi-system histories; shorter for a single
+    focused question.
+  * Dates and names are tokens like [DATE_1]. Do not try to resolve them.
+
+INTAKE:
+${text}
+EOF
+        ;;
+    visit_summary)
+        cat <<EOF
+You are writing the after-visit summary for a patient of Dr. Christopher
+Mabini, DO. He reads it and decides whether to approve it before the patient
+ever sees it.
+
+Produce TWO summaries separated by a line containing only ---CLINICIAN---
+
+FIRST the PATIENT-FACING summary:
+  * Second person, plain language, explain any medical word on first use.
+  * Headings: What we talked about / The plan / Your medicines / What happens next
+  * ONLY what is in the note. No added fact, no reassurance, no new advice.
+  * Do not promise an outcome. Do not minimise anything the patient raised.
+    Do not speculate about what a symptom "could be".
+  * Where the note records uncertainty, say so — "we do not know yet" is a
+    real and useful sentence.
+
+THEN ---CLINICIAN--- and the clinician summary: dense, keeps terminology,
+assessment and plan, ending with a line starting "UNCERTAIN:" listing anything
+ambiguous or contradictory in the note. If nothing, "UNCERTAIN: none".
+
+Dates and names are tokens like [DATE_1]. Use them verbatim; the server
+restores the real values.
+
+NOTE:
+${text}
+EOF
+        ;;
+    enrollment_extract)
+        cat <<EOF
+Read this administrative document belonging to the practice and extract the
+identifiers a clearinghouse enrolment form asks for.
+
+Return ONLY JSON:
+{"fields": {"<field>": {"value": "...", "quote": "<verbatim span from the document>", "confidence": "high|medium|low"}}, "notes": []}
+
+RULES:
+  * EVERY field must carry a verbatim quote. No quote, omit the field.
+  * Never infer, complete or correct a value.
+  * Fields allowed: legal_name, dba_name, entity_type, tin, npi_individual,
+    npi_group, taxonomy_code, license_state, license_number, medicare_ptan,
+    medicaid_id, caqh_id, practice_street, practice_city, practice_state,
+    practice_zip, contact_name, contact_phone, contact_fax, contact_email.
+
+DOCUMENT:
+${text}
+EOF
+        ;;
     esac
 }
 

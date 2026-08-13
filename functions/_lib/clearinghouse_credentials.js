@@ -55,10 +55,14 @@ export async function sealJson(env, obj, aad) {
 export async function openJson(env, sealed, aad) {
     if (!sealed?.ciphertext || !sealed?.dek_wrapped) return null;
     try {
-        const plain = await decryptPhi(
+        // decryptPhi returns BYTES. Passing them to JSON.parse coerces the
+        // array to "123,45,67,..." and throws — which the catch below then
+        // swallowed, so a stored clearinghouse key silently never decrypted
+        // and every claim fell back to "credentials not configured".
+        const plain = new TextDecoder().decode(await decryptPhi(
             env, base64ToBytes(sealed.ciphertext), sealed.dek_wrapped,
             sealed.iv_data, sealed.iv_dek, aad
-        );
+        ));
         return JSON.parse(plain);
     } catch (e) {
         // A credential that will not decrypt is a real incident — most
