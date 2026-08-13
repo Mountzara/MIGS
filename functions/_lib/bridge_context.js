@@ -57,6 +57,11 @@ export const BRIDGE_KINDS = {
         needs: "the answers, de-identified",
         phi: true,
     },
+    visit_summary: {
+        label: "Draft an after-visit summary",
+        needs: "the encounter note, de-identified",
+        phi: true,
+    },
     enrollment_extract: {
         label: "Read a practice document",
         // NOT patient data. This is the practice's own W-9 / PTAN letter.
