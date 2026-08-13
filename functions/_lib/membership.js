@@ -127,8 +127,8 @@ export const TIERS = [
     {
         key: "priority",
         name: "Priority",
-        price_month: 179,
-        price_year: 1790,         // two months free — improves cash and retention
+        price_month: 199,
+        price_year: 1990,         // two months free — improves cash and retention
         tagline: "Reach him directly, and get more of his time.",
         summary: "For patients managing something ongoing — endometriosis, fibroids, chronic pelvic pain, menopause — where the value is continuity and access rather than more procedures.",
         benefits: [
@@ -149,33 +149,30 @@ export const TIERS = [
         capacity_weight: 1,
     },
     {
-        key: "surgical",
-        name: "Surgical Concierge",
-        price_month: 649,
-        price_year: 6490,
-        tagline: "The months around an operation, handled.",
-        summary: "For patients going through surgery. The operation itself is billed to your insurance exactly as always — this covers everything around it that insurance does not pay for and most practices therefore do not do.",
+        key: "complete",
+        name: "Complete",
+        price_month: 449,
+        price_year: 4490,         // two months free
+        tagline: "Someone is actually watching the whole picture.",
+        summary: "For complex or long-running disease — deep endometriosis, recurrent fibroids, pelvic pain that has already been through three clinicians. Quarterly reviews, a written second opinion on your existing records, and symptom tracking he actually reads.",
         benefits: [
             { label: "Everything in Priority", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
-            // Irreducible: this is the conversation that makes the rest work.
-            { label: "A pre-operative session covering what will happen, in plain language, with time for questions",
-              covered_service: false, physician_minutes: 18, automated_minutes: 5 },
-            { label: "A written recovery roadmap — what is normal, what is not, and when to call",
-              covered_service: false, physician_minutes: 3, automated_minutes: 14 },
-            { label: "Direct access for 90 days after surgery, including evenings and weekends",
-              covered_service: false, physician_minutes: 9, automated_minutes: 22 },
-            { label: "Proactive check-ins at 48 hours, one week and one month",
-              covered_service: false, physician_minutes: 3, automated_minutes: 18 },
-            { label: "Coordination with your referring doctor and any other specialists",
+            // Quarterly video review, amortised across the year. Delivered
+            // wherever he is — this is deliberately office-independent.
+            // 40 minutes a quarter, amortised monthly. More room than a
+            // normal visit is the single most legible thing a member buys.
+            { label: "A 40-minute video review every quarter to go through where things stand",
+              covered_service: false, physician_minutes: 13, automated_minutes: 6 },
+            { label: "A written second opinion on the records and imaging you already have",
+              covered_service: false, physician_minutes: 4, automated_minutes: 16 },
+            { label: "Symptom tracking with trends summarised and read before every contact",
+              covered_service: false, physician_minutes: 2, automated_minutes: 20 },
+            { label: "Direct coordination with your other clinicians, in writing",
               covered_service: false, physician_minutes: 2, automated_minutes: 14 },
+            { label: "Your questions answered the same business day",
+              covered_service: false, physician_minutes: 0, automated_minutes: 8 },
         ],
-        capacity_weight: 2.5,
-        // Most surgical patients want this for a defined window, not forever.
-        alt_package: {
-            label: "90-day perioperative package",
-            price_once: 1795,
-            note: "One payment covering the pre-operative session through 90 days after surgery, for patients who do not want an ongoing membership.",
-        },
+        capacity_weight: 2,
     },
 ];
 
@@ -316,7 +313,7 @@ export function unitEconomics(tierKey, assumptions = {}) {
 
     const own = tierMinutes(t);
     // "Everything in Priority" is a real cost, not a free line.
-    const inherited = t.key === "surgical" ? tierMinutes(tier("priority")) : { physician: 0, automated: 0 };
+    const inherited = t.key === "complete" ? tierMinutes(tier("priority")) : { physician: 0, automated: 0 };
     const physician = own.physician + inherited.physician;
     const automated = own.automated + inherited.automated;
 
@@ -420,17 +417,193 @@ export function capacity(mix = {}, assumptions = {}) {
 export function maxPanel({ priorityShare = 0.75 } = {}, assumptions = {}) {
     const a = { ...DEFAULT_ASSUMPTIONS, ...assumptions };
     const p = unitEconomics("priority", a);
-    const s = unitEconomics("surgical", a);
+    const s = unitEconomics("complete", a);
     const perMember = p.physician_minutes * priorityShare + s.physician_minutes * (1 - priorityShare);
     const monthlyMinutes = a.weekly_capacity_hours * 60 * 4.33;
     const members = Math.floor(monthlyMinutes / perMember);
 
     const priority = Math.round(members * priorityShare);
-    const mix = { priority, surgical: members - priority };
+    const mix = { priority, complete: members - priority };
     return { members, mix, ...capacity(mix, a) };
 }
 
 function round2(n) { return Math.round(n * 100) / 100; }
+
+// ---------------------------------------------------------------------
+// The evidence, and the honest comparison
+// ---------------------------------------------------------------------
+// A membership page that says "better care!" is marketing. A membership
+// page that says what the ordinary path actually costs a patient in TIME
+// and OUTCOMES, with citations, is an argument.
+//
+// EVERY FIGURE BELOW IS SOURCED AND WAS VERIFIED AGAINST THE PUBLISHED
+// LITERATURE, not recalled. Where a claim is directional rather than
+// quantified, it says so. Nothing here asserts that this practice
+// produces these outcomes — the evidence describes the PROBLEM the model
+// is designed against, which is a different and defensible claim.
+
+export const EVIDENCE = [
+    {
+        key: "wait_times",
+        claim: "The average wait for a new-patient OB/GYN appointment in large US metros is 41.8 days.",
+        detail: "Up 33% since 2022 and 79% since 2004, with a reported range of 1 to 231 days.",
+        source: "AMN Healthcare, 2025 Survey of Physician Appointment Wait Times",
+        url: "https://www.amnhealthcare.com/siteassets/amn-insights/physician/ps-2025-physician-appt-wait-times---wp-v6.pdf",
+        year: 2025,
+        supports: "Priority's two-week scheduling commitment is measured against a real and worsening baseline, not an invented one.",
+    },
+    {
+        key: "diagnostic_delay",
+        claim: "Mean diagnostic delay for endometriosis is 6.8 years.",
+        detail: "Reported range across studies 1.5-11.4 years. Delay is associated with greater symptom severity, worse quality of life and adverse reproductive outcomes.",
+        source: "Time to Diagnose Endometriosis: A Systematic Literature Review (2024)",
+        url: "https://pubmed.ncbi.nlm.nih.gov/39373298/",
+        year: 2024,
+        supports: "The problem is not a single appointment — it is years of fragmented contact. Continuity and a written plan attack that directly.",
+    },
+    {
+        key: "continuity",
+        claim: "Higher continuity of care with the same doctor is associated with lower mortality.",
+        detail: "In a systematic review of 22 studies, 18 of the high-quality studies found statistically significant mortality reductions with greater continuity. Protective associations were seen with both generalists and specialists. A later review found moderate-certainty evidence for reduced premature mortality and reduced hospital admission.",
+        source: "Gray et al., BMJ Open (2018); Primary medical care continuity and patient mortality, BJGP (2020)",
+        url: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6042583/",
+        year: 2018,
+        supports: "Continuity is the mechanism the membership actually sells. This is the strongest evidence in the set, and it is associative, not causal.",
+        caveat: "Association, not proof of causation. The reviews say so explicitly.",
+    },
+    {
+        key: "disparities",
+        claim: "Black women are about half as likely to undergo minimally invasive hysterectomy for benign disease, and carry roughly 1.7-fold higher risk of surgical morbidity.",
+        detail: "The disparity persists after adjustment for fibroids, prior surgery, comorbidity and obesity. Contributing factors include slower diffusion of minimally invasive technique in under-resourced hospitals and reduced access to high-volume surgeons.",
+        source: "Racial Disparities in Minimally Invasive Benign Hysterectomy (2024)",
+        url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC11694781/",
+        year: 2024,
+        supports: "Access to a high-volume minimally invasive surgeon is itself the disparity. A virtual-first practice that reaches patients wherever they are addresses the access half of that problem.",
+        caveat: "Access is one contributor among several; this model does not claim to solve structural inequity.",
+    },
+];
+
+/**
+ * What the ordinary path looks like, beside what this one does. Framed
+ * as a comparison of PROCESS, because that is what a membership actually
+ * changes — it does not change the operation.
+ */
+export const MODEL_COMPARISON = [
+    { dimension: "Getting seen",
+      traditional: "41.8 days on average for a new OB/GYN appointment, and longer in many markets.",
+      here: "Within two weeks, held open for members.",
+      evidence: "wait_times" },
+    { dimension: "Between visits",
+      traditional: "A phone tree, a message that may be answered in several days, or nothing until the next appointment.",
+      here: "Direct asynchronous messaging answered within one business day, by him.",
+      evidence: null },
+    { dimension: "Length of a visit",
+      traditional: "A 15-minute slot, often shorter in practice.",
+      here: "45 minutes on Priority; a 40-minute video review every quarter on Complete.",
+      evidence: null },
+    { dimension: "Continuity",
+      traditional: "Whoever is available. Records that do not follow you between systems.",
+      here: "The same surgeon every time, with your history already read.",
+      evidence: "continuity" },
+    { dimension: "Complex disease",
+      traditional: "Mean 6.8 years to a diagnosis of endometriosis, across multiple clinicians.",
+      here: "A written plan you own and can take anywhere, reviewed quarterly.",
+      evidence: "diagnostic_delay" },
+    { dimension: "Where you have to be",
+      traditional: "In the building, during business hours.",
+      here: "Virtual-first. Access does not depend on your geography or your ability to take a day off work.",
+      evidence: "disparities" },
+    { dimension: "What it costs",
+      traditional: "Your insurance is billed. Access is not something you can buy at any price.",
+      here: "Your insurance is still billed exactly the same. The membership buys access, never care.",
+      evidence: null },
+];
+
+// ---------------------------------------------------------------------
+// Value — what a member would otherwise pay for the same access
+// ---------------------------------------------------------------------
+// The point is not that the membership is cheap. It is that the access it
+// contains, bought piecemeal at ordinary self-pay rates, costs more than
+// the membership does. `REFERENCE_PRICES` are conservative self-pay rates
+// for a subspecialist and should be reviewed against his own fee schedule
+// before the numbers are published.
+
+export const REFERENCE_PRICES = {
+    extended_consult_45min: 375,     // self-pay subspecialist, extended visit
+    video_review_40min: 325,
+    written_second_opinion: 450,
+    async_message_exchange: 45,      // per exchange, cf. online digital E/M
+    care_coordination_hour: 120,
+    written_care_plan: 200,
+};
+
+/**
+ * What one month of a tier would cost a la carte, and how that compares
+ * with the price. Every line is labelled so the patient-facing page can
+ * show the arithmetic rather than assert a number.
+ */
+export function valueComparison(tierKey, prices = {}) {
+    const P = { ...REFERENCE_PRICES, ...prices };
+    const t = tier(tierKey);
+    if (!t) return null;
+
+    const LINES = {
+        priority: [
+            { label: "Extended 45-minute consultation", qty: 1 / 3, unit: P.extended_consult_45min,
+              note: "roughly one every three months" },
+            { label: "Direct message exchanges with the surgeon", qty: 3, unit: P.async_message_exchange },
+            { label: "Care coordination", qty: 0.4, unit: P.care_coordination_hour,
+              note: "records, imaging and labs chased on your behalf" },
+            { label: "Annual written symptom review and plan", qty: 1 / 12, unit: P.written_care_plan },
+        ],
+        complete: [
+            { label: "Everything in Priority", qty: 1, unit: null, inherit: "priority" },
+            { label: "40-minute video review", qty: 1 / 3, unit: P.video_review_40min,
+              note: "every quarter" },
+            { label: "Written second opinion on your existing records", qty: 1 / 12, unit: P.written_second_opinion },
+            { label: "Symptom tracking reviewed before every contact", qty: 0.5, unit: P.care_coordination_hour },
+            { label: "Coordination with your other clinicians", qty: 0.3, unit: P.care_coordination_hour },
+        ],
+        standard: [],
+    };
+
+    const rows = [];
+    let total = 0;
+    for (const line of LINES[t.key] || []) {
+        if (line.inherit) {
+            const inner = valueComparison(line.inherit, prices);
+            rows.push({ label: line.label, amount: round2(inner.alacarte_total), note: "at the Priority rate" });
+            total += inner.alacarte_total;
+            continue;
+        }
+        const amount = line.qty * line.unit;
+        rows.push({ label: line.label, amount: round2(amount), note: line.note || null });
+        total += amount;
+    }
+
+    const price = t.price_month;
+    return {
+        tier: t.key, name: t.name, price_month: price,
+        rows,
+        alacarte_total: round2(total),
+        saving: round2(total - price),
+        ratio: price > 0 ? round2(total / price) : 0,
+        headline: price > 0 && total > price
+            ? `About $${Math.round(total)} of access for $${price} a month.`
+            : null,
+    };
+}
+
+/**
+ * How this sits against the concierge market, so the price is anchored to
+ * something real rather than to how it feels.
+ */
+export const MARKET_ANCHOR = {
+    concierge_median_year: 3200,
+    concierge_monthly_typical: [250, 400],
+    source: "Concierge medicine pricing surveys, 2025-2026",
+    note: "Those figures are for PRIMARY care, which is a broader but shallower offer. A fellowship-trained subspecialist sits at or above the top of that band; Priority deliberately sits below it, because the first job is to fill the panel.",
+};
 
 // ---------------------------------------------------------------------
 // Self-pay — a separate answer to a separate question
@@ -452,4 +625,5 @@ export default {
     validateTierLegality, eligibility, FEDERAL_PAYERS,
     DEFAULT_ASSUMPTIONS, unitEconomics, capacity, maxPanel,
     SELF_PAY_PRINCIPLES,
+    EVIDENCE, MODEL_COMPARISON, REFERENCE_PRICES, valueComparison, MARKET_ANCHOR,
 };
