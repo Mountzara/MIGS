@@ -44,7 +44,7 @@
     "/admin/billing/", "/admin/briefings/", "/admin/carousels/",
     "/admin/cases/", "/admin/compliance/", "/admin/content/",
     "/admin/debug/", "/admin/education/", "/admin/feedback/",
-    "/admin/login/", "/admin/patients/", "/admin/trend-briefs/",
+    "/admin/login/", "/admin/membership/", "/admin/patients/", "/admin/trend-briefs/",
     "/admin/triage/",
     "/cv/", "/curriculum/", "/curriculum/cbg-migs/",
     "/curriculum/hospice-clerkship/", "/curriculum/hospice-training/",
