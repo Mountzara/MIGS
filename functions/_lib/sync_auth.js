@@ -27,6 +27,11 @@ export const APP_TO_TOKEN_ENV = {
     "transcription":     "TRANSCRIPTION_SYNC_TOKEN",
     "clinical_ai":       "CLINICAL_AI_SYNC_TOKEN",
     "surgical_workflow": "SURGICAL_WORKFLOW_SYNC_TOKEN",
+    // 2026-08-12 — the local Claude CLI bridge. Runs on the owner's own
+    // machine and executes non-billing AI work on his CLI subscription
+    // rather than per-token API credit ("I only will use the API key for
+    // actual billing sent to clearinghouses").
+    "ai_bridge":         "AI_BRIDGE_TOKEN",
     "ios":               "IOS_SYNC_TOKEN",
 };
 
