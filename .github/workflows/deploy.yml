@@ -1,10 +1,27 @@
 name: Deploy to Cloudflare Pages
 
+# =====================================================================
+# MANUAL ONLY — 2026-08-13
+#
+# This job used to run on every push to main. It failed in ~10 seconds on
+# each one and emailed the owner about it, which is how a CI signal stops
+# meaning anything.
+#
+# It is also REDUNDANT. CLAUDE.md is explicit that deploys go through
+# ./scripts/deploy-prod.sh from an authenticated working copy, and calls
+# deploy-on-push an anti-pattern for this repo. That script runs the same
+# hermetic gates this job runs, plus the live-site audits CI cannot do
+# (no browser, no credentials), plus a production canary afterwards. So
+# the push trigger added no protection the real deploy path lacks — only
+# noise.
+#
+# Kept as workflow_dispatch so it can still be run deliberately from the
+# Actions tab if a deploy is ever needed without a working copy. To put
+# the push trigger back, restore the `push:` block below — but fix the
+# underlying failure first, because an always-red job is worse than none.
+# =====================================================================
+
 on:
-  push:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
 jobs:

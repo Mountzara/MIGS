@@ -29,8 +29,19 @@ name: Production guard (self-heal)
 
 on:
   schedule:
-    # Every 20 minutes on an off-minute (never :00 — see deploy-prod.sh).
-    - cron: '7,27,47 * * * *'
+    # 2026-08-13 — was '7,27,47 * * * *': SEVENTY-TWO runs a day. The
+    # header below already records that an earlier version emailed the
+    # owner every 20 minutes while production was healthy; running it 72
+    # times a day meant any flake at all reproduced that experience.
+    #
+    # Twice daily is the right cadence for what this actually guards
+    # against: a second working copy deploying a stale tree. That is a
+    # rare, human-triggered event, not a continuous risk — and
+    # deploy-prod.sh now carries its own stale-tree gate, so this is the
+    # backstop rather than the primary defence. Two checks a day bound
+    # the exposure to hours, which is the same order as the original
+    # incident's detection time, at 1/36th the noise.
+    - cron: '17 13,1 * * *'
   workflow_dispatch:
 
 permissions:
