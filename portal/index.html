@@ -382,9 +382,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const dayMs = 24 * 3600 * 1000;
             const diffDays = Math.round((d.setHours(0,0,0,0) - today.getTime()) / dayMs);
             const dd = new Date(ms);
-            if (diffDays === 0) return 'Today · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-            if (diffDays === 1) return 'Tomorrow · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-            if (diffDays > 0 && diffDays < 7) return dd.toLocaleDateString(undefined, { weekday: 'long' }) + ' · ' + dd.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            // Practice time, with the zone shown — see the booking page for why.
+            const PT = { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago', timeZoneName: 'short' };
+            if (diffDays === 0) return 'Today · ' + dd.toLocaleTimeString('en-US', PT);
+            if (diffDays === 1) return 'Tomorrow · ' + dd.toLocaleTimeString('en-US', PT);
+            if (diffDays > 0 && diffDays < 7) return dd.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Chicago' }) + ' · ' + dd.toLocaleTimeString('en-US', PT);
             if (diffDays < 0) {
                 if (diffDays === -1) return 'Yesterday';
                 if (diffDays > -7) return `${-diffDays} days ago`;

@@ -471,6 +471,31 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_notification_flush.mjs ]
 fi
 
 # ---------------------------------------------------------------------------
+# Scheduling timezone gate (codified 2026-08-14). Every slot ever offered
+# was five hours early: dateStringToMs defaulted its offset to zero and
+# neither caller passed one, so a 9:00 a.m. block was stored as 09:00 UTC —
+# 4:00 a.m. in Chicago. It survived because the admin page formats
+# minute-of-day arithmetically ("09:00") while the patient page formats the
+# epoch ("4:45 AM"), so neither surface could see the other's number.
+# Covers both DST transitions, which a fixed -300 constant gets wrong twice
+# a year.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_scheduling_tz.mjs ]; then
+    echo ""
+    echo "🔒 scheduling timezone gate — slots land in practice hours..."
+    if node scripts/test_scheduling_tz.mjs > /tmp/_tz.log 2>&1; then
+        tail -1 /tmp/_tz.log
+        echo "   ✅ scheduling timezone gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the scheduling timezone gate:"
+        tail -20 /tmp/_tz.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # Triage auto-release gate (codified 2026-08-14). The admin panel promises
 # rows auto-release to the patient after four hours; the rule that makes
 # that safe is that URGENT rows never do. Pin both.

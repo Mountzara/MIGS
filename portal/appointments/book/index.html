@@ -555,11 +555,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const opts = fmt === 'long' ? {
                 weekday: 'long', month: 'long', day: 'numeric',
             } : { weekday: 'short', month: 'short', day: 'numeric' };
-            return date.toLocaleDateString(undefined, opts);
+            return date.toLocaleDateString('en-US', { ...opts, timeZone: PRACTICE_TZ });
         }
+        // ---------------------------------------------------------------
+        // Appointment times are PRACTICE time, always. 2026-08-14.
+        // ---------------------------------------------------------------
+        // These formatters had no `timeZone`, so they rendered in the
+        // BROWSER's zone. Dr. Mabini is licensed in Illinois and
+        // California, so a California patient booking a Chicago 9:00 slot
+        // would have been shown the correct instant labelled "7:00 AM" and
+        // would have arrived two hours late — or not booked at all.
+        // The zone abbreviation is always shown so the number cannot be
+        // read as local time by accident.
+        const PRACTICE_TZ = 'America/Chicago';
         function fmtTime(ms) {
-            return new Date(ms).toLocaleTimeString(undefined, {
+            return new Date(ms).toLocaleTimeString('en-US', {
                 hour: 'numeric', minute: '2-digit',
+                timeZone: PRACTICE_TZ, timeZoneName: 'short',
             });
         }
         function fmtDuration(min) {

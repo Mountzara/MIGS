@@ -545,7 +545,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function fmtTime(ms) {
             if (!ms) return "";
             const d = new Date(ms);
-            return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+            // Practice time. He may open this from anywhere; the schedule is
+            // always the clinic's clock.
+            return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit",
+                timeZone: "America/Chicago", timeZoneName: "short" });
         }
         function fmtDate(ms) {
             if (!ms) return "";
