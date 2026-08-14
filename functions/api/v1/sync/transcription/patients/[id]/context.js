@@ -104,13 +104,18 @@ export async function onRequestGet(ctx) {
             // catch below reported this as "no diary entries", so the
             // Transcription app opened every encounter believing the
             // patient had logged nothing in 90 days.
+            // Bounded at both ends: the block above calls this "last 90
+            // days" and the LIMIT 200 is ordered DESC, so a future-dated
+            // row would not merely be included — it would sort to the top
+            // and could push genuine recent entries out of the 200.
+            const todayIso = new Date().toISOString().slice(0, 10);
             const entriesR = await env.DB.prepare(`
                 SELECT entry_date, values_json, note, created_at
                 FROM symptom_diary_entries
-                WHERE patient_id = ? AND entry_date >= ?
+                WHERE patient_id = ? AND entry_date >= ? AND entry_date <= ?
                 ORDER BY entry_date DESC
                 LIMIT 200
-            `).bind(patient_id, ninetyAgo).all();
+            `).bind(patient_id, ninetyAgo, todayIso).all();
             symptomEntries = (entriesR.results || []).map((row) => ({
                 entry_date: row.entry_date,
                 symptoms: safeJson(row.values_json),

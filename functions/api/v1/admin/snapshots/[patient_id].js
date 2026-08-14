@@ -117,12 +117,18 @@ export async function onRequestGet(ctx) {
             // bare `catch {}` below turned the throw into an empty array.
             // The sparklines were not "flat because the patient logged
             // nothing"; they were flat because the query never ran.
+            // Bounded at BOTH ends. The field is called `symptom_diary_30d`
+            // and feeds a 30-day sparkline, but the query had only a lower
+            // bound — so a future-dated row was returned inside a window
+            // whose own name says it is not there, and the sparkline's
+            // x-axis and its data disagreed.
+            const today = new Date().toISOString().slice(0, 10);
             const sdR = await env.DB.prepare(`
                 SELECT entry_date, values_json, note
                 FROM symptom_diary_entries
-                WHERE patient_id = ? AND entry_date >= ?
+                WHERE patient_id = ? AND entry_date >= ? AND entry_date <= ?
                 ORDER BY entry_date ASC
-            `).bind(patient_id, thirtyAgo).all();
+            `).bind(patient_id, thirtyAgo, today).all();
             symptom_diary_30d = (sdR.results || []).map((row) => ({
                 entry_date: row.entry_date,
                 symptoms: safeJson(row.values_json),
