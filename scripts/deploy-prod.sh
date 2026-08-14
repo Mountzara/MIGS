@@ -421,6 +421,33 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Inline-script gate (codified 2026-08-14). The public /portal/ page is
+# generated from a JS TEMPLATE LITERAL, so an escape written for the
+# BROWSER gets evaluated at generation time instead. One "\\n" that should
+# have been "\\\\n" put a real newline inside a string literal, which is a
+# hard syntax error — and a script that does not parse runs NONE of its
+# lines. The membership tiers, the comparison table, the evidence and the
+# disclosures all silently vanished from the page while the source looked
+# correct, the API was healthy, and every deploy passed. The owner reported
+# the model details were "left out"; nothing in the repo could have told
+# him otherwise, because the failure existed only in the GENERATED output.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_inline_scripts.mjs ]; then
+    echo ""
+    echo "🔒 inline-script gate — every inline <script> parses in a browser..."
+    if node scripts/check_inline_scripts.mjs > /tmp/_inline.log 2>&1; then
+        tail -1 /tmp/_inline.log
+        echo "   ✅ inline-script gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the inline-script gate:"
+        tail -25 /tmp/_inline.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # Notification gate (codified 2026-08-14). The outbox was write-only: six
 # real notifications, three of them magic-link SIGN-IN emails, sat at
 # attempts=1 and were never retried. The judgement that makes a retry loop

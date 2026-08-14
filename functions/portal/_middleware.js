@@ -658,7 +658,16 @@ const COMING_SOON_HTML = `<!doctype html>
         }).then(function (r) { return r.json(); }).then(function (j) {
             go.disabled = false; go.textContent = "Join the list";
             if (!j.ok) { show(j.error || "Could not add you just now.", false); return; }
-            show(j.message + (j.note ? "\n\n" + j.note : ""), true);
+            // NOTE the doubled backslashes below. This whole page is a JS
+            // TEMPLATE LITERAL, so a single-backslash escape is evaluated
+            // HERE and emitted as a real newline inside a "..." string in
+            // the browser's copy — a hard syntax error. That killed the
+            // entire inline script: the tier cards, the comparison table,
+            // the evidence and the disclosures all silently failed to
+            // render, because a script that does not parse runs none of
+            // its lines, not just the bad one. Caught now by
+            // scripts/check_inline_scripts.mjs.
+            show(j.message + (j.note ? "\\n\\n" + j.note : ""), true);
             document.getElementById("su-email").value = "";
         }).catch(function () {
             go.disabled = false; go.textContent = "Join the list";
