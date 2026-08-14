@@ -25,7 +25,7 @@
 
 import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../../_lib/admin_api.js";
 import { logAudit } from "../../../../../_lib/audit.js";
-import { isValidVisitTypeKey, getVisitType } from "../../../../../_lib/visit_types.js";
+import { isValidVisitTypeKey, getVisitType, MANUAL_REVIEW_PLACEHOLDER } from "../../../../../_lib/visit_types.js";
 
 const ALLOWED_URGENCY = new Set(["urgent", "routine"]);
 const ALLOWED_TIME_OF_DAY = new Set(["morning", "afternoon", "any"]);
@@ -41,14 +41,37 @@ export async function onRequestPost(ctx) {
                    ai_visit_type, ai_duration_min, ai_urgency,
                    ai_in_person_required, ai_preferred_time_of_day,
                    clinician_override_visit_type, clinician_override_duration_min,
-                   clinician_override_reason, clinician_reviewed_at
+                   clinician_override_reason, clinician_reviewed_at,
+                   final_visit_type, final_duration_min
             FROM appointment_triage WHERE id = ?
         `).bind(id).first();
         if (!row) return jsonError("triage_not_found", 404);
         if (row.clinician_reviewed_at) {
-            return jsonError("already_released", 409, {
-                reviewed_at: row.clinician_reviewed_at,
-            });
+            // ONE EXCEPTION, and it is the only way out of a real trap.
+            //
+            // A row released while carrying the manual-review PLACEHOLDER
+            // leaves the patient permanently stuck: her portal says "ready
+            // to book", booking 409s on the invalid visit type, and both
+            // PATCH and this endpoint answered 409 `already_released`. There
+            // was no reopen path, so the row could never be fixed — one live
+            // row was in exactly that state.
+            //
+            // Re-releasing is allowed when the stored final_visit_type is
+            // the placeholder AND this request supplies a real one. That is
+            // narrow on purpose: it cannot be used to silently rewrite a
+            // legitimately reviewed decision.
+            const stuck = row.final_visit_type === MANUAL_REVIEW_PLACEHOLDER;
+            const fixing = body.final_visit_type !== undefined
+                && isValidVisitTypeKey(body.final_visit_type);
+            if (!stuck || !fixing) {
+                return jsonError("already_released", 409, {
+                    reviewed_at: row.clinician_reviewed_at,
+                    ...(stuck ? {
+                        recoverable: true,
+                        message: "This row was released while AI triage had fallen back to manual review, so the patient cannot actually book. Re-send with a real final_visit_type to fix it.",
+                    } : {}),
+                });
+            }
         }
 
         // Resolve final visit_type: explicit body > clinician_override > AI.
@@ -58,6 +81,18 @@ export async function onRequestPost(ctx) {
                 return jsonError("invalid_final_visit_type", 400);
             }
             final_visit_type = body.final_visit_type;
+        }
+        // Validate what actually gets WRITTEN, not only what was supplied.
+        // Only the body was checked before, so a release with no body at all
+        // wrote `manual_review_required` straight into final_visit_type — a
+        // value the booking endpoint rejects — and marked the row reviewed.
+        if (!isValidVisitTypeKey(final_visit_type)) {
+            return jsonError("visit_type_not_chosen", 400, {
+                resolved: final_visit_type,
+                message: final_visit_type === MANUAL_REVIEW_PLACEHOLDER
+                    ? "AI triage fell back to manual review, so there is no visit type to release. Choose one and send it as final_visit_type — releasing as-is would show the patient a booking page that cannot accept a booking."
+                    : "The resolved visit type is not in the catalogue.",
+            });
         }
 
         // Resolve final duration: explicit > override > AI > catalog default.

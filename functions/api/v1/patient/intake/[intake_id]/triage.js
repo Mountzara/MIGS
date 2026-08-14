@@ -28,7 +28,8 @@ import {
     recordLicensureBlock,
 } from "../../../../../_lib/licensure.js";
 
-const MANUAL_REVIEW_PLACEHOLDER = "manual_review_required";
+// Shared with the auto-release hold and the release validator — see _lib/visit_types.js.
+import { MANUAL_REVIEW_PLACEHOLDER } from "../../../../../_lib/visit_types.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {

@@ -15,6 +15,7 @@
 
 import { shouldAutoRelease, AUTO_RELEASE_THRESHOLD_HOURS, NEVER_AUTO_RELEASE_URGENCY }
     from "../functions/api/v1/internal/triage/auto-release.js";
+import { MANUAL_REVIEW_PLACEHOLDER, isValidVisitTypeKey } from "../functions/_lib/visit_types.js";
 
 let pass = 0, fail = 0;
 const failures = [];
@@ -112,6 +113,42 @@ eq(shouldAutoRelease(null, NOW).release, false, "a missing row is handled");
     const r = row();
     eq(r.clinician_override_visit_type || r.ai_visit_type, "new_patient_complex", "with no override the AI type is promoted");
     eq(r.clinician_override_duration_min || r.ai_duration_min, 45, "with no override the AI duration is promoted");
+}
+
+// ---------------------------------------------------------------------
+// THE MANUAL-REVIEW PLACEHOLDER — the trap auto-release would have set
+// ---------------------------------------------------------------------
+// When AI triage falls back it writes `manual_review_required` into
+// ai_visit_type. That value is TRUTHY, so the "no categorisation" guard
+// misses it, and the fallback row is written with a hardcoded
+// ai_urgency:"routine", so the urgency guard misses it too. It therefore
+// cleared both existing guards, would auto-release at the four-hour mark,
+// and would email the patient that her slots were open.
+//
+// What she would then find: the portal says "ready to book", booking 409s
+// on the invalid visit type, and because clinician_reviewed_at is now set,
+// both PATCH and release answered 409 already_released. Permanently stuck.
+// One live row was in exactly that state.
+{
+    const stuck = row({ ai_visit_type: MANUAL_REVIEW_PLACEHOLDER, ai_urgency: "routine",
+                        created_at: hoursAgo(48) });
+    const d = shouldAutoRelease(stuck, NOW);
+    ok(!d.release, "a manual-review row is NEVER auto-released, however old");
+    eq(d.reason, "manual_review_required", "and says why, so it lands in the visible backlog");
+}
+{
+    // He picked a real visit type but never released it — that IS releasable.
+    const fixed = row({ ai_visit_type: MANUAL_REVIEW_PLACEHOLDER,
+                        clinician_override_visit_type: "new_patient_complex" });
+    ok(shouldAutoRelease(fixed, NOW).release,
+       "once he has chosen a real visit type, the row auto-releases normally");
+}
+{
+    // The placeholder must not be a valid visit type — every guard leans on it.
+    ok(!isValidVisitTypeKey(MANUAL_REVIEW_PLACEHOLDER),
+       "the placeholder is deliberately NOT in the visit-type catalogue");
+    eq(MANUAL_REVIEW_PLACEHOLDER, "manual_review_required",
+       "the placeholder string matches what triage actually writes");
 }
 
 console.log(`\ntriage auto-release: ${pass} passed, ${fail} failed`);

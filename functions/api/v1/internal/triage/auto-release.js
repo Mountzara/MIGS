@@ -45,6 +45,25 @@ export const AUTO_RELEASE_THRESHOLD_HOURS = 4;
 /** Urgency levels that must never be released without a human. */
 export const NEVER_AUTO_RELEASE_URGENCY = new Set(["urgent"]);
 
+/**
+ * The value AI triage writes when it could not decide. It is a PLACEHOLDER,
+ * not a visit type — `isValidVisitTypeKey()` rejects it and the booking
+ * endpoint 409s on it.
+ *
+ * Auto-releasing a row carrying this is how a patient becomes permanently
+ * stuck: the portal tells her "ready to book — pick a time", booking
+ * returns 409, and because `clinician_reviewed_at` is now set, both PATCH
+ * and release answer 409 `already_released`. There is no way back without
+ * the reopen path added below.
+ *
+ * The urgency guard does not catch it, because the fallback row is written
+ * with a hardcoded `ai_urgency: "routine"` — so it clears both existing
+ * guards, releases at the four-hour mark, and emails the patient that her
+ * slots are open.
+ */
+export { MANUAL_REVIEW_PLACEHOLDER } from "../../../../_lib/visit_types.js";
+import { MANUAL_REVIEW_PLACEHOLDER } from "../../../../_lib/visit_types.js";
+
 function json(body, status = 200) {
     return new Response(JSON.stringify(body), {
         status, headers: { "content-type": "application/json", "cache-control": "no-store" },
@@ -63,6 +82,14 @@ export function shouldAutoRelease(row, now = Date.now(), thresholdHours = AUTO_R
         // Nothing to release. A row with no AI categorisation is a failed
         // triage, and inventing one here would be worse than waiting.
         return { release: false, reason: "no_ai_categorisation" };
+    }
+    // The AI fell back. The placeholder is truthy, so the check above does
+    // NOT catch it — releasing would hand the patient a booking page that
+    // 409s and can never be reopened. Hold it in the backlog next to the
+    // urgent ones, where he will see it.
+    const resolved = row.clinician_override_visit_type || row.ai_visit_type;
+    if (resolved === MANUAL_REVIEW_PLACEHOLDER) {
+        return { release: false, reason: "manual_review_required" };
     }
     const urgency = String(row.clinician_override_urgency || row.ai_urgency || "").toLowerCase();
     if (NEVER_AUTO_RELEASE_URGENCY.has(urgency)) {
@@ -182,6 +209,7 @@ export async function onRequestPost(ctx) {
     }
 
     const urgentHeld = holds.filter((h) => h.reason === "urgent_needs_a_human").length;
+    const manualHeld = holds.filter((h) => h.reason === "manual_review_required").length;
 
     return json({
         ok: true,
@@ -192,6 +220,9 @@ export async function onRequestPost(ctx) {
         // Surfaced deliberately: urgent rows past four hours are a backlog
         // he needs to see, not a quiet exception the job absorbs.
         urgent_awaiting_review: urgentHeld,
+        // AI could not categorise these. They need a visit type chosen by
+        // hand before they can be released at all.
+        manual_review_awaiting_triage: manualHeld,
         holds: holds.slice(0, 50),
         threshold_hours: AUTO_RELEASE_THRESHOLD_HOURS,
         ran_at: new Date(now).toISOString(),
