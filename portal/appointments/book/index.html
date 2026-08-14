@@ -629,7 +629,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 }
             } catch (e) {
                 if (e.code === 'no_triage') {
-                    $('lede').innerHTML = 'You need to complete an intake first. <a href="/portal/intake/new">Start your intake →</a>';
+                    // /portal/intake/new does not exist. With no 404 page the site
+                    // returned 200 and served the MARKETING HOMEPAGE, so the
+                    // brand-new member — told correctly to do her intake first —
+                    // clicked the only link offered and left the portal.
+                    $('lede').innerHTML = 'You need to complete an intake first. <a href="/portal/intake/">Start your intake →</a>';
                 } else if (e.code === 'unauthorized') {
                     window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
                 } else {

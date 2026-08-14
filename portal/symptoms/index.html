@@ -429,6 +429,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* -------------------------------------------------------------------
+   THE EMERGENCY BANNER. Added 2026-08-14.
+   -------------------------------------------------------------------
+   This page collects bleeding_pads_per_hour, flooding_episodes,
+   clots_quarter_size_plus and pelvic_pain_0_10 — the exact criteria the
+   portal home page names when it says call 911. The server GRADES the
+   entry and writes an urgent encounter event
+   (api/v1/patient/symptoms/diary/[date].js), and the page's only feedback
+   to the patient was the word "Saved."
+
+   Every other portal surface that touches acute symptoms carries this
+   wording. This was the one page built to CAPTURE them and the only one
+   without it.
+
+   It sits at the TOP, because a patient logging twelve pads an hour
+   should not have to scroll to find it — and it is static markup rather
+   than a response-driven interstitial because the page saves via
+   sendBeacon on beforeunload, where no response can be rendered.
+   ------------------------------------------------------------------- */
+.panic {
+    margin: 0 0 26px;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: rgba(252, 165, 165, 0.92);
+    line-height: 1.55;
+}
+.panic strong { color: rgba(252, 211, 77, 0.96); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -442,6 +473,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <p class="eyebrow">Member portal · Daily diary</p>
         <h1>Symptom diary</h1>
         <p class="lede">Tap or drag for each symptom you want to track today. Anything you leave blank stays blank — log only what matters today. Your clinician reviews these trends before every visit, so the data shapes the conversation.</p>
+
+        <div class="panic">
+            <strong>If you have an emergency</strong> &mdash; soaking through a pad an hour for more
+            than two hours, passing clots larger than a quarter with dizziness or fainting, severe
+            abdominal pain, chest pain, or signs of stroke &mdash; call <strong>911</strong> or go to
+            the nearest emergency department. Logging it here does not alert anyone urgently: this
+            diary is reviewed before your visits, not in real time.
+        </div>
 
         <div class="date-nav">
             <button class="icon" id="btn-prev">◀</button>

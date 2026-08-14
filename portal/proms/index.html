@@ -455,14 +455,41 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const band = scores.interpretation?.patient_label || '';
             $('confirm-score-line').innerHTML = scoreLine;
             $('confirm-interpretation-line').textContent = band || 'Your responses are now on Dr. Mabini’s case dashboard. They will be reviewed at your next visit — or sooner if anything needs attention.';
-            const flags = result?.threshold_flags || [];
-            if (flags.length) {
-                $('confirm-flags').innerHTML = flags.map(f =>
-                    `<div class="flag-alert">${escapeHtml(f.message || f.flag_type)}</div>`
-                ).join('');
-            } else {
-                $('confirm-flags').innerHTML = '';
-            }
+            // ---------------------------------------------------------------
+            // THE PATIENT NEVER SEES threshold_flags. 2026-08-14.
+            // ---------------------------------------------------------------
+            // These strings are written FOR THE CLINICIAN and were being
+            // rendered verbatim into an amber alert box directly under
+            // "thanks, your responses are saved":
+            //
+            //   PHQ-2  "Positive depression screen (PHQ-2 ≥3). Recommend
+            //           escalation to PHQ-9 and clinician follow-up."
+            //   CSI    "CSI ≥60 — extreme burden… sole peripheral surgery is
+            //           unlikely to fully resolve symptoms."
+            //   PCS    "Recommend pain psychology referral and adding pelvic
+            //           floor PT + neuromodulator to the plan."
+            //
+            // Fifteen instruments carry about thirty of these. PHQ-2 and
+            // GAD-2 are force-assigned to EVERY patient at intake submit
+            // (_lib/prom_recommender.js:290), so a patient scoring 3 was told
+            // by a web page, with no clinician in the loop and no review
+            // step, that she had a positive depression screen — and a
+            // pre-operative patient could be told her planned surgery
+            // probably would not work. That is an unreviewed clinical result
+            // plus a treatment directive, delivered by software.
+            //
+            // Removing the render loses NO clinical signal: _lib/proms.js
+            // 187-210 writes prom_triage_flags and the encounter event from
+            // the server, independently of anything the browser does.
+            //
+            // If a patient-facing acknowledgement is ever wanted, add an
+            // explicit `patient_message` to thresholds_json and render only
+            // that — never falling back to `f.message` or `f.flag_type`. The
+            // two-register pattern already exists for score bands
+            // (prom_scorer.js returns `label` AND `patient_label`, and the
+            // line above correctly uses the patient one); the flags simply
+            // never got it.
+            $('confirm-flags').innerHTML = '';
             // Reload list silently so this assignment shows as completed
             loadList();
         }
