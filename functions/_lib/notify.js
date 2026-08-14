@@ -400,11 +400,52 @@ function providerPermitted(env) {
  * the request that triggered it (a patient's message must still post even
  * if the notice cannot go out). It is queued instead, and audited.
  */
+
+/**
+ * Is this address suppressed?
+ *
+ * A hard bounce or a spam complaint means we must stop mailing that
+ * address — continuing damages the sending reputation that every OTHER
+ * patient's sign-in link depends on. Populated by
+ * /api/v1/internal/ses/feedback from SES event notifications.
+ *
+ * Fails OPEN on purpose: if the table does not exist yet, or the query
+ * throws, mail still goes out. A suppression list that is unreachable
+ * must not become a silent outage for every patient at once — that is a
+ * worse failure than the one it prevents.
+ */
+export async function isSuppressed(env, email) {
+    if (!env?.DB || !email) return { suppressed: false };
+    try {
+        const r = await env.DB.prepare(
+            `SELECT reason, detail, suppressed FROM email_suppression
+              WHERE email = ? AND suppressed = 1 LIMIT 1`
+        ).bind(String(email).trim().toLowerCase()).first();
+        return r ? { suppressed: true, reason: r.reason, detail: r.detail } : { suppressed: false };
+    } catch {
+        return { suppressed: false };
+    }
+}
+
 export async function notify(env, { to, template, data = {}, patient_id = null, request = null }) {
     const build = TEMPLATES[template];
     if (!build) throw new Error(`notify: unknown template "${template}"`);
     if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(to))) {
         return { sent: false, reason: "invalid recipient" };
+    }
+
+    // Never mail an address that hard-bounced or filed a spam complaint.
+    // This is checked BEFORE the body is built, so a suppressed send costs
+    // nothing and never reaches the provider.
+    const sup = await isSuppressed(env, to);
+    if (sup.suppressed) {
+        console.warn(`notify: "${template}" suppressed (${sup.reason})`);
+        await queue(env, {
+            to, template, subject: "(suppressed)", text: "", html: "", patient_id,
+            status: "abandoned",
+            error: `recipient suppressed: ${sup.reason}${sup.detail ? ` (${sup.detail})` : ""}`,
+        });
+        return { sent: false, suppressed: true, reason: sup.reason };
     }
 
     const built = build({ ...data, portalUrl: data.portalUrl || `${origin(env)}/portal/` });
