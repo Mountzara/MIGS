@@ -228,6 +228,64 @@ for (const kind of ["visit_summary", "message_draft", "visit_prep"]) {
     eq(provenanceLine({ grounded: false }), "Not grounded in the practice library.", "ungrounded provenance is explicit");
 }
 
+// ---------------------------------------------------------------------
+// FIELD-AWARE RETRIEVAL — the app's own structure, carried through
+// ---------------------------------------------------------------------
+// The KB chunks are structured records. Flattening them lost the
+// distinction that makes retrieval correct: the first live run grounded a
+// draft reply to a PATIENT in a JMIG paper about robotic device
+// malfunctions, because in a concatenated blob "what to say to a patient"
+// and "device failure modes" are the same field.
+{
+    const { KB_FIELDS, TASK_FIELDS, fieldsForTask, fieldLabel } =
+        await import("../functions/_lib/kb_fields.js");
+
+    // Every field the loader extracts must be described here, or the
+    // mapping is working from a stale idea of the KB's shape.
+    for (const f of ["abstract", "clinicalSummary", "backgroundSummary",
+                     "summaryOfRecommendations", "complications", "keyPoints",
+                     "clinicalPearls", "teachingPoints", "patientCounselingPoints",
+                     "oralBoardPearls", "criticalThresholds", "decisionPoints",
+                     "clinicalTopics", "safetyConsiderations", "managementAlgorithm"]) {
+        ok(KB_FIELDS[f], `KB field '${f}' is described`);
+    }
+
+    // The mappings that matter, stated as assertions rather than intentions.
+    eq(fieldsForTask("message_draft")[0], "patientCounselingPoints",
+       "a reply TO a patient retrieves counseling points first");
+    eq(fieldsForTask("visit_summary")[0], "patientCounselingPoints",
+       "the summary a patient reads retrieves counseling points first");
+    eq(fieldsForTask("intake_triage")[0], "criticalThresholds",
+       "triage retrieves the numbers that change management first");
+    eq(fieldsForTask("visit_prep")[0], "summaryOfRecommendations",
+       "a pack for another clinician leads with recommendations");
+
+    ok(fieldsForTask("intake_triage").includes("safetyConsiderations"),
+       "triage also searches safety considerations");
+    ok(!fieldsForTask("message_draft").includes("oralBoardPearls"),
+       "board-exam framing is not what you say to a patient");
+    ok(!fieldsForTask("visit_summary").includes("complications"),
+       "an after-visit summary is not a complications list");
+    ok(fieldsForTask("intake_triage").includes("complications"),
+       "…but triage does look at complications");
+
+    // An unknown task must still retrieve something sensible.
+    const fallback = fieldsForTask("some_task_added_later");
+    ok(fallback.length > 0, "an unmapped task still has fields to search");
+    ok(fallback.includes("clinicalSummary"), "and they are general-purpose ones");
+
+    // Every mapped field must be a real field, or the IN(...) clause
+    // silently matches nothing and retrieval quietly returns empty.
+    for (const [task, fields] of Object.entries(TASK_FIELDS)) {
+        for (const f of fields) {
+            ok(KB_FIELDS[f], `${task} maps to a real KB field: ${f}`);
+        }
+    }
+    ok(fieldLabel("patientCounselingPoints").includes("PATIENT"),
+       "the label says plainly what the field is for");
+    eq(fieldLabel("somethingUnknown"), "somethingUnknown", "an unknown field labels as itself");
+}
+
 console.log(`\nclinical grounding: ${pass} passed, ${fail} failed`);
 if (fail) {
     console.log("\nFAILED:");

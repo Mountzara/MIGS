@@ -84,6 +84,7 @@
 // =====================================================================
 
 import { toFtsQuery } from "./kb.js";
+import { fieldsForTask, fieldLabel, hasSectionIndex } from "./kb_fields.js";
 
 /** Terms too generic to say anything about topical fit. */
 const GENERIC = new Set([
@@ -182,13 +183,56 @@ export async function groundClinical(env, { kind, query, topK = 8, maxChars = 60
     const match = toFtsQuery(query);
     if (!match) return { ...base, reason: "question_had_no_searchable_terms" };
 
+    // ------------------------------------------------------------------
+    // FIELD-AWARE RETRIEVAL — the app's own structure, used properly.
+    // ------------------------------------------------------------------
+    // The KB chunks are structured records: counseling points written FOR
+    // PATIENTS, critical thresholds, decision points, a management
+    // algorithm. Different fields answer different questions. When
+    // kb_sections is loaded we retrieve from the fields that answer THIS
+    // task, in priority order (see _lib/kb_fields.js).
+    //
+    // Without it we fall back to the flattened kb_docs index, which works
+    // but cannot tell counseling language apart from a device-safety
+    // paper — the first live run of this grounded a draft reply to a
+    // patient in a JMIG article about robotic device malfunctions.
     let hits = [];
+    let retrieval = "flat";
+    const wantFields = fieldsForTask(kind);
     try {
-        const res = await env.DB.prepare(
-            `SELECT doc_id, source, title, text
-               FROM kb_docs WHERE kb_docs MATCH ? ORDER BY rank LIMIT ?`
-        ).bind(match, topK).all();
-        hits = res?.results || [];
+        if (await hasSectionIndex(env)) {
+            retrieval = "field_aware";
+            const placeholders = wantFields.map(() => "?").join(",");
+            const res = await env.DB.prepare(
+                `SELECT doc_id, field, source, title, text
+                   FROM kb_sections
+                  WHERE kb_sections MATCH ?
+                    AND field IN (${placeholders})
+                  ORDER BY rank
+                  LIMIT ?`
+            ).bind(match, ...wantFields, topK * 3).all();
+
+            // Rank by the task's field priority first, FTS rank second, so
+            // counseling points beat an abstract that merely shares
+            // vocabulary. One section per document — the best-matching
+            // field — so eight results are eight sources, not one document
+            // quoted eight ways.
+            const order = new Map(wantFields.map((f, i) => [f, i]));
+            const seen = new Set();
+            hits = (res?.results || [])
+                .map((r, i) => ({ ...r, _prio: order.get(r.field) ?? 99, _rank: i }))
+                .sort((a, b) => a._prio - b._prio || a._rank - b._rank)
+                .filter((r) => !seen.has(r.doc_id) && seen.add(r.doc_id))
+                .slice(0, topK);
+        }
+        if (!hits.length) {
+            retrieval = retrieval === "field_aware" ? "field_aware_empty_fell_back" : "flat";
+            const res = await env.DB.prepare(
+                `SELECT doc_id, source, title, text
+                   FROM kb_docs WHERE kb_docs MATCH ? ORDER BY rank LIMIT ?`
+            ).bind(match, topK).all();
+            hits = res?.results || [];
+        }
     } catch (e) {
         // A retrieval failure must never silently become an ungrounded answer.
         console.error("clinical_grounding: KB search failed", String(e?.message || e));
@@ -207,11 +251,18 @@ export async function groundClinical(env, { kind, query, topK = 8, maxChars = 60
     const perDoc = Math.max(400, Math.floor(maxChars / Math.max(1, hits.length)));
     for (const h of hits) {
         const body = String(h.text || "").slice(0, perDoc);
-        const block = `[KB:${h.doc_id}] ${h.source || "KB"} — ${h.title || "(untitled)"}\n${body}\n`;
+        // Naming the FIELD tells the model what kind of material this is.
+        // "what to say to a patient" and "the numbers that change
+        // management" are written differently and should be used
+        // differently, and that is invisible if every excerpt looks alike.
+        const which = h.field ? ` · ${fieldLabel(h.field)}` : "";
+        const block = `[KB:${h.doc_id}] ${h.source || "KB"}${which} — ${h.title || "(untitled)"}\n${body}\n`;
         if (block.length > budget) break;
         budget -= block.length;
         used.push({
             doc_id: String(h.doc_id), source: h.source || "KB", title: h.title || "(untitled)",
+            field: h.field || null,
+            field_label: h.field ? fieldLabel(h.field) : null,
             text: String(h.text || ""),   // full text, for citation support checking
             block,
         });
@@ -233,6 +284,12 @@ export async function groundClinical(env, { kind, query, topK = 8, maxChars = 60
         coverage: cov.coverage,
         covered_terms: cov.covered,
         missing_terms: cov.missing,
+        // "field_aware" means kb_sections is loaded and the retrieval used
+        // the parts of each document that answer THIS task. "flat" means it
+        // fell back to the concatenated index and cannot tell counseling
+        // language from a device-safety paper — run scripts/kb_load_d1.py.
+        retrieval,
+        fields_searched: retrieval.startsWith("field_aware") ? wantFields : null,
         // Surfaced to him, never used as a gate. See the header for the
         // calibration showing coverage cannot separate in- from out-of-scope.
         coverage_is_advisory: true,
