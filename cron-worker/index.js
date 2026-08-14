@@ -265,6 +265,41 @@ async function runTriageAutoRelease(env) {
     }
 }
 
+
+// =====================================================================
+// Notification outbox flush (every 15 minutes, with the SLA sweep)
+// =====================================================================
+// notify.js queues every failed send and its own comment said "a later run
+// can retry". No later run existed — the outbox was write-only. Six real
+// notifications sat in it, three of them magic-link SIGN-IN emails, every
+// one at attempts=1, none ever tried again.
+//
+// The recorded failure is the SES sandbox refusing unverified recipients,
+// which is transient at the account level: the moment production access is
+// granted these all succeed unchanged. Without a retry they stay dead and
+// the patients they were for are simply never told.
+async function runNotificationFlush(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("notification flush: PIPELINE_TOKEN not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/notifications/flush", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`notification flush: pending=${j.pending ?? "?"} sent=${j.sent ?? "?"} ` +
+                    `still_failing=${j.still_failing ?? "?"} abandoned=${j.abandoned ?? "?"}`);
+        if (j.still_failing > 0) {
+            console.error(`notification flush: ${j.still_failing} notification(s) STILL undelivered — ` +
+                          `check /api/v1/admin/notifications/health for the cause`);
+        }
+    } catch (e) {
+        console.error("notification flush failed", String(e?.message || e));
+    }
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
@@ -273,6 +308,7 @@ export default {
     async scheduled(event, env, ctx) {
         if (event.cron === "*/15 * * * *") {
             ctx.waitUntil(runSlaSweep(env, { source: "cron", scheduledTime: event.scheduledTime }));
+            ctx.waitUntil(runNotificationFlush(env));
             return;
         }
         if (event.cron === "0 11 * * *") {

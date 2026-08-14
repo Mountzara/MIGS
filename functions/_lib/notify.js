@@ -452,6 +452,44 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
     }
 }
 
+/**
+ * Send an ALREADY-BUILT body through the configured provider, without
+ * touching a template and without writing to the outbox.
+ *
+ * This is what the outbox retry needs (see
+ * api/v1/internal/notifications/flush.js). Rebuilding from the template
+ * would be wrong for the exact case that matters most: a queued
+ * magic_link row contains the token that was ISSUED, and regenerating the
+ * body would either mint a different token or embed an expired one — the
+ * patient would receive a link that does not work, which is worse than
+ * the email they never got.
+ *
+ * Returns { ok } / { ok: false, error } rather than throwing, so the
+ * caller can record the outcome per row instead of aborting the batch.
+ */
+export async function sendDirect(env, { to, subject, text, html }) {
+    if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(to))) {
+        return { ok: false, error: "invalid recipient" };
+    }
+    if (!notifyConfigured(env)) {
+        return { ok: false, error: "NOTIFY_PROVIDER/API_KEY/FROM not set" };
+    }
+    const provider = String(env.NOTIFY_PROVIDER).toLowerCase();
+    if (!providerPermitted(env)) {
+        return { ok: false, error: `provider "${provider}" does not sign a BAA` };
+    }
+    try {
+        const payload = { to, subject, text, html };
+        if (provider === "ses") await sendViaSES(env, payload);
+        else if (provider === "resend") await sendViaResend(env, payload);
+        else if (provider === "postmark") await sendViaPostmark(env, payload);
+        else return { ok: false, error: `unsupported NOTIFY_PROVIDER "${provider}"` };
+        return { ok: true };
+    } catch (e) {
+        return { ok: false, error: String(e).slice(0, 500) };
+    }
+}
+
 /** Fire-and-forget helper for request handlers that must not block on email. */
 export function notifyInBackground(ctx, env, args) {
     const p = notify(env, args).catch((e) =>

@@ -421,6 +421,29 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Notification gate (codified 2026-08-14). The outbox was write-only: six
+# real notifications, three of them magic-link SIGN-IN emails, sat at
+# attempts=1 and were never retried. The judgement that makes a retry loop
+# safe is what counts as permanent — and the SES sandbox refusal reads like
+# a rejection while being transient at the account level, so classifying it
+# wrongly abandons exactly the mail that is about to start working.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_notification_flush.mjs ]; then
+    echo ""
+    echo "🔒 notification gate — retry backoff and failure classification..."
+    if node scripts/test_notification_flush.mjs > /tmp/_notif.log 2>&1; then
+        tail -1 /tmp/_notif.log
+        echo "   ✅ notification gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the notification gate:"
+        tail -20 /tmp/_notif.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # Triage auto-release gate (codified 2026-08-14). The admin panel promises
 # rows auto-release to the patient after four hours; the rule that makes
 # that safe is that URGENT rows never do. Pin both.
