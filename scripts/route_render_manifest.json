@@ -1,10 +1,10 @@
 {
   "_doc": [
-    "Route-render audit manifest (SYSTEM_MAP.md §13.5 enforcement layer).",
+    "Route-render audit manifest (SYSTEM_MAP.md \u00a713.5 enforcement layer).",
     "scripts/audit_route_render.py loads every route in `routes` on LIVE",
     "production post-deploy and asserts the rendered DOM: the title must",
     "contain `title_contains`, must NOT be the marketing-homepage title",
-    "(unless allow_homepage_title — that catches the _redirects/Functions",
+    "(unless allow_homepage_title \u2014 that catches the _redirects/Functions",
     "fallthrough class that hid the launch interstitial for 13 days), and",
     "`selector` (when set) must appear in the DOM within 15s.",
     "",
@@ -12,53 +12,137 @@
     "routes (portal/*, admin/*, education/*, root pages). Every discovered",
     "route MUST appear either in `routes` (with real assertions) or in",
     "`unaudited` (a conscious, diff-visible exemption). A new page route",
-    "that ships without touching this file FAILS THE DEPLOY — that is the",
-    "point: §0.2.1 visual verification is a machine gate, not discipline.",
+    "that ships without touching this file FAILS THE DEPLOY \u2014 that is the",
+    "point: \u00a70.2.1 visual verification is a machine gate, not discipline.",
     "Parameterized Function-served routes (launch, NPS, admin cases) are",
     "audited via tokenized paths below; their static dirs sit in unaudited."
   ],
-  "homepage_title": "Mount Zara — Complex Benign Gynecology & MIGS",
+  "homepage_title": "Mount Zara \u2014 Complex Benign Gynecology & MIGS",
   "routes": [
-    { "path": "/", "title_contains": "Complex Benign Gynecology", "selector": "#identity-map", "allow_homepage_title": true },
-    { "path": "/about/", "title_contains": "The Story" },
-    { "path": "/evidence/", "title_contains": "Physician Blog" },
-    { "path": "/trending/", "title_contains": "Trend Briefs" },
-    { "path": "/portal/", "title_contains": "Member Portal",
-      "_note": "Client-redirects to /portal/login/ when no patient session — both titles contain 'Member Portal', so the assertion holds on either side of the redirect." },
-    { "path": "/portal/messages/", "title_contains": "Messages · Member Portal", "selector": "#urgency-row" },
-    { "path": "/portal/tech-check/", "title_contains": "Test your device" },
-    { "path": "/portal/visit/route-render-audit/launch/", "title_contains": "Get ready for your visit", "selector": "#launchForm" },
-    { "path": "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/", "title_contains": "One quick question", "selector": "#scale button" },
-    { "path": "/admin/", "title_contains": "Admin Mission Control" },
-    { "path": "/admin/scheduling/", "title_contains": "Scheduling", "selector": "#appt-list" },
-    { "path": "/admin/messages/", "title_contains": "Messages · Mount Zara Admin", "selector": "#thread-list" },
-    { "path": "/admin/analytics/", "title_contains": "Analytics", "selector": "#nps-scores" },
-    { "path": "/admin/cases/8cc1aa63-5931-4c54-babb-e06bc196d743/", "title_contains": "Case", "selector": "#id-verify-banner",
-      "_note": "Jane Doe, the seeded test patient (scripts/_seed_jane_doe.sh) — a real id so the SPA renders its normal path; bogus ids tear down the DOM on the 404 error screen." }
+    {
+      "path": "/",
+      "title_contains": "Complex Benign Gynecology",
+      "selector": "#identity-map",
+      "allow_homepage_title": true
+    },
+    {
+      "path": "/about/",
+      "title_contains": "The Story"
+    },
+    {
+      "path": "/evidence/",
+      "title_contains": "Physician Blog"
+    },
+    {
+      "path": "/trending/",
+      "title_contains": "Trend Briefs"
+    },
+    {
+      "path": "/portal/",
+      "title_contains": "Member Portal",
+      "_note": "Client-redirects to /portal/login/ when no patient session \u2014 both titles contain 'Member Portal', so the assertion holds on either side of the redirect."
+    },
+    {
+      "path": "/portal/messages/",
+      "title_contains": "Messages \u00b7 Member Portal",
+      "selector": "#urgency-row"
+    },
+    {
+      "path": "/portal/tech-check/",
+      "title_contains": "Test your device"
+    },
+    {
+      "path": "/portal/visit/route-render-audit/launch/",
+      "title_contains": "Get ready for your visit",
+      "selector": "#launchForm"
+    },
+    {
+      "path": "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/",
+      "title_contains": "One quick question",
+      "selector": "#scale button"
+    },
+    {
+      "path": "/admin/",
+      "title_contains": "Admin Mission Control"
+    },
+    {
+      "path": "/admin/scheduling/",
+      "title_contains": "Scheduling",
+      "selector": "#appt-list"
+    },
+    {
+      "path": "/admin/messages/",
+      "title_contains": "Messages \u00b7 Mount Zara Admin",
+      "selector": "#thread-list"
+    },
+    {
+      "path": "/admin/analytics/",
+      "title_contains": "Analytics",
+      "selector": "#nps-scores"
+    },
+    {
+      "path": "/admin/cases/8cc1aa63-5931-4c54-babb-e06bc196d743/",
+      "title_contains": "Case",
+      "selector": "#id-verify-banner",
+      "_note": "Jane Doe, the seeded test patient (scripts/_seed_jane_doe.sh) \u2014 a real id so the SPA renders its normal path; bogus ids tear down the DOM on the 404 error screen."
+    }
   ],
   "unaudited": [
-    "/portal/appointments/", "/portal/billing/", "/portal/documents/",
-    "/portal/education/", "/portal/intake/", "/portal/login/",
-    "/portal/magic-link/", "/portal/nps/", "/portal/profile/",
-    "/portal/proms/", "/portal/signup/", "/portal/symptoms/",
-    "/admin/billing/", "/admin/briefings/", "/admin/carousels/",
-    "/admin/cases/", "/admin/compliance/", "/admin/content/",
-    "/admin/debug/", "/admin/education/", "/admin/feedback/",
-    "/admin/login/", "/admin/membership/", "/admin/patients/", "/admin/trend-briefs/",
+    "/admin/billing/",
+    "/admin/briefings/",
+    "/admin/carousels/",
+    "/admin/cases/",
+    "/admin/compliance/",
+    "/admin/content/",
+    "/admin/debug/",
+    "/admin/education/",
+    "/admin/feedback/",
+    "/admin/login/",
+    "/admin/membership/",
+    "/admin/patients/",
+    "/admin/trend-briefs/",
     "/admin/triage/",
-    "/cv/", "/curriculum/", "/curriculum/cbg-migs/",
-    "/curriculum/hospice-clerkship/", "/curriculum/hospice-training/",
-    "/education/abnormal-uterine-bleeding/", "/education/adenomyosis/",
-    "/education/chronic-pelvic-pain/", "/education/contraception/",
-    "/education/dysmenorrhea/", "/education/endometriosis/",
-    "/education/fibroids/", "/education/menopause/",
-    "/education/ovarian-masses/", "/education/pcos/",
-    "/education/postoperative-recovery/", "/education/pregnancy-loss/",
-    "/portal/education/abnormal-uterine-bleeding/", "/portal/education/adenomyosis/",
-    "/portal/education/chronic-pelvic-pain/", "/portal/education/contraception/",
-    "/portal/education/dysmenorrhea/", "/portal/education/endometriosis/",
-    "/portal/education/fibroids/", "/portal/education/menopause/",
-    "/portal/education/ovarian-masses/", "/portal/education/pcos/",
-    "/portal/education/postoperative-recovery/", "/portal/education/pregnancy-loss/"
+    "/admin/visits/",
+    "/curriculum/",
+    "/curriculum/cbg-migs/",
+    "/curriculum/hospice-clerkship/",
+    "/curriculum/hospice-training/",
+    "/cv/",
+    "/education/abnormal-uterine-bleeding/",
+    "/education/adenomyosis/",
+    "/education/chronic-pelvic-pain/",
+    "/education/contraception/",
+    "/education/dysmenorrhea/",
+    "/education/endometriosis/",
+    "/education/fibroids/",
+    "/education/menopause/",
+    "/education/ovarian-masses/",
+    "/education/pcos/",
+    "/education/postoperative-recovery/",
+    "/education/pregnancy-loss/",
+    "/portal/appointments/",
+    "/portal/billing/",
+    "/portal/documents/",
+    "/portal/education/",
+    "/portal/education/abnormal-uterine-bleeding/",
+    "/portal/education/adenomyosis/",
+    "/portal/education/chronic-pelvic-pain/",
+    "/portal/education/contraception/",
+    "/portal/education/dysmenorrhea/",
+    "/portal/education/endometriosis/",
+    "/portal/education/fibroids/",
+    "/portal/education/menopause/",
+    "/portal/education/ovarian-masses/",
+    "/portal/education/pcos/",
+    "/portal/education/postoperative-recovery/",
+    "/portal/education/pregnancy-loss/",
+    "/portal/intake/",
+    "/portal/login/",
+    "/portal/magic-link/",
+    "/portal/nps/",
+    "/portal/profile/",
+    "/portal/proms/",
+    "/portal/signup/",
+    "/portal/symptoms/"
   ]
 }

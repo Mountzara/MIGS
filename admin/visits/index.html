@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Visit Summaries · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.10);
+            --fg-strong: #fff; --fg-mid: #ffffff;
+            --fg-soft: #ffffff; --fg-dim: #ffffff;
+            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --glow-purple: 167, 139, 250;
+            --green: #10b981; --amber: #f59e0b; --red: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple), 0.12), transparent 60%),
+                var(--bg-base);
+            color: var(--fg-mid);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-feature-settings: "ss01", "cv11";
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--fg-strong); }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+        h1.page-title {
+            font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
+            letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 14px 0;
+        }
+        .lede { font-size: 14.5px; line-height: 1.55; max-width: 78ch; margin: 0 0 20px 0; opacity: 0.85; }
+        .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .count {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 11px; padding: 11px 15px; cursor: pointer;
+            transition: border-color 0.18s, background 0.18s;
+        }
+        .count:hover, .count.on { border-color: rgba(var(--glow-purple), 0.6); background: rgba(var(--glow-purple), 0.09); }
+        .count b { display: block; font-size: 22px; font-weight: 600; color: var(--fg-strong); }
+        .count span { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+        .row {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 13px; padding: 16px 18px; margin-bottom: 11px;
+        }
+        .row.pending_review { border-color: rgba(245, 158, 11, 0.45); }
+        .row.note_unreadable { border-color: rgba(239, 68, 68, 0.42); }
+        .row-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+        .who { font-size: 16px; font-weight: 600; color: var(--fg-strong); }
+        .meta { font-size: 12.5px; opacity: 0.62; margin-top: 3px; }
+        .badge {
+            font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+            padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+            background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+        }
+        .badge.approved { background: rgba(16,185,129,0.16); color: #6ee7b7; border-color: rgba(16,185,129,0.4); }
+        .badge.pending_review { background: rgba(245,158,11,0.16); color: #fcd34d; border-color: rgba(245,158,11,0.4); }
+        .badge.rejected { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.35); }
+        .badge.note_unreadable { background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.5); }
+        .hint { font-size: 12.8px; opacity: 0.62; margin-top: 9px; line-height: 1.5; }
+        .actions { margin-top: 13px; display: flex; gap: 9px; flex-wrap: wrap; }
+        button {
+            font: inherit; font-size: 13.5px; cursor: pointer;
+            background: rgba(255,255,255,0.07); color: var(--fg-strong);
+            border: 1px solid var(--border); border-radius: 9px; padding: 8px 15px;
+            transition: border-color 0.18s, background 0.18s;
+        }
+        button:hover:not(:disabled) { border-color: rgba(var(--glow-purple), 0.6); background: rgba(var(--glow-purple), 0.12); }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+        button.primary { background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-color: transparent; }
+        button.good { border-color: rgba(16,185,129,0.5); }
+        button.bad { border-color: rgba(239,68,68,0.45); }
+        .panel {
+            margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+            display: none;
+        }
+        .panel.open { display: block; }
+        .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+        .col h4 {
+            margin: 0 0 8px; font-size: 11px; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--accent-soft);
+        }
+        textarea {
+            width: 100%; min-height: 260px; font: inherit; font-size: 13.5px; line-height: 1.6;
+            background: rgba(0,0,0,0.28); color: var(--fg-strong);
+            border: 1px solid var(--border); border-radius: 10px; padding: 12px; resize: vertical;
+        }
+        textarea:focus { outline: none; border-color: rgba(var(--glow-purple), 0.6); }
+        .ro { background: rgba(0,0,0,0.16); opacity: 0.9; }
+        .flag {
+            background: rgba(245,158,11,0.11); border: 1px solid rgba(245,158,11,0.32);
+            border-radius: 9px; padding: 10px 13px; margin: 10px 0; font-size: 12.8px; line-height: 1.55;
+        }
+        .flag.bad { background: rgba(239,68,68,0.11); border-color: rgba(239,68,68,0.34); }
+        .flag.good { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.3); }
+        .flag b { color: var(--fg-strong); }
+        .cite { font-size: 12px; opacity: 0.7; margin: 3px 0; }
+        .msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
+        .msg.err { color: #fca5a5; }
+        .msg.ok { color: #6ee7b7; }
+        .empty { opacity: 0.6; font-size: 14px; padding: 30px 0; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1 class="page-title">Visit summaries</h1>
+    <p class="lede">
+        The portal tells every member: &ldquo;an AI-generated summary of what was discussed, the plan,
+        the medications, and the next steps &mdash; reviewed and signed off by Dr.&nbsp;Mabini.&rdquo;
+        That sign-off is a gate, not a description: a patient can only ever read a summary whose status
+        is <em>approved</em>, enforced in the query rather than in the page. Nothing here reaches anyone
+        until you approve it.
+    </p>
+
+    <div class="counts" id="counts"></div>
+    <div id="list"><div class="empty">Loading&hellip;</div></div>
+</div>
+
+<script src="/admin/_nav.js"></script>
+<script>
+(function () {
+    "use strict";
+    var STATE = { rows: [], filter: "all", open: {} };
+
+    function esc(v) {
+        return String(v == null ? "" : v)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function $(id) { return document.getElementById(id); }
+
+    async function api(url, opts) {
+        var r = await fetch(url, Object.assign({ headers: { "Content-Type": "application/json" } }, opts || {}));
+        var t = await r.text();
+        var j; try { j = JSON.parse(t); } catch (e) { throw new Error(t.slice(0, 200)); }
+        if (!r.ok && !j.refused) throw new Error(j.error || j.message || ("HTTP " + r.status));
+        return j;
+    }
+
+    var LABELS = {
+        pending_review: "Waiting for you",
+        not_drafted: "Ready to draft",
+        approved: "Approved",
+        rejected: "Rejected",
+        no_note: "No note",
+        note_unreadable: "Note unreadable",
+    };
+
+    function renderCounts(d) {
+        var order = ["pending_review", "not_drafted", "approved", "rejected", "note_unreadable", "no_note"];
+        var h = '<div class="count' + (STATE.filter === "all" ? " on" : "") + '" data-f="all">' +
+                '<b>' + d.total + '</b><span>All</span></div>';
+        order.forEach(function (k) {
+            var n = (d.counts || {})[k] || 0;
+            if (!n) return;
+            h += '<div class="count' + (STATE.filter === k ? " on" : "") + '" data-f="' + k + '">' +
+                 '<b>' + n + '</b><span>' + esc(LABELS[k] || k) + '</span></div>';
+        });
+        $("counts").innerHTML = h;
+        Array.prototype.forEach.call($("counts").querySelectorAll(".count"), function (el) {
+            el.addEventListener("click", function () { STATE.filter = el.dataset.f; load(); });
+        });
+    }
+
+    function rowHtml(r) {
+        var id = esc(r.encounter_id);
+        var h = '<div class="row ' + esc(r.state) + '" id="row-' + id + '">';
+        h += '<div class="row-head"><div>';
+        h += '<div class="who">' + esc(r.patient_name) + '</div>';
+        h += '<div class="meta">' + esc(r.visit_date || "no date") +
+             (r.visit_type ? " &middot; " + esc(r.visit_type) : "") +
+             (r.note_source ? " &middot; " + esc(r.note_source) : "") + "</div>";
+        if (r.chief_complaint) h += '<div class="meta">' + esc(r.chief_complaint) + "</div>";
+        h += "</div>";
+        h += '<span class="badge ' + esc(r.state) + '">' + esc(r.label) + "</span>";
+        h += "</div>";
+        h += '<div class="hint">' + esc(r.hint) + "</div>";
+
+        h += '<div class="actions">';
+        if (r.state === "not_drafted" || r.state === "rejected" || r.state === "approved" || r.state === "pending_review") {
+            h += '<button data-act="open" data-id="' + id + '">' +
+                 (r.summary_id ? "Open" : "Draft a summary") + "</button>";
+        }
+        h += "</div>";
+        h += '<div class="panel" id="panel-' + id + '"></div>';
+        h += "</div>";
+        return h;
+    }
+
+    function render() {
+        var rows = STATE.rows;
+        if (!rows.length) {
+            $("list").innerHTML = '<div class="empty">Nothing here. When an encounter is synced from the ' +
+                'Transcription app it appears in this queue.</div>';
+            return;
+        }
+        $("list").innerHTML = rows.map(rowHtml).join("");
+        Array.prototype.forEach.call($("list").querySelectorAll("button[data-act=open]"), function (b) {
+            b.addEventListener("click", function () { openOne(b.dataset.id, b); });
+        });
+    }
+
+    function groundingHtml(g) {
+        if (!g) return "";
+        var cls = g.ok ? "good" : "bad";
+        var h = '<div class="flag ' + cls + '"><b>Practice library:</b> ' + esc(g.summary || "");
+        if (g.provenance) h += "<br>" + esc(g.provenance);
+        if (g.citations && g.citations.length) {
+            h += "<br>";
+            g.citations.slice(0, 6).forEach(function (c) {
+                h += '<div class="cite">[' + esc(c.doc_id) + "] " + esc(c.source) +
+                     (c.field_label ? " &middot; " + esc(c.field_label) : "") +
+                     " &mdash; " + esc(c.title) + "</div>";
+            });
+        }
+        if (g.uncited && g.uncited.length) {
+            h += "<br><b>Not sourced:</b>";
+            g.uncited.slice(0, 4).forEach(function (u) { h += '<div class="cite">&ldquo;' + esc(u) + "&rdquo;</div>"; });
+        }
+        h += "</div>";
+        return h;
+    }
+
+    function panelHtml(id, d) {
+        var s = d.summary;
+        var h = "";
+        if (d.tone && d.tone.violations && d.tone.violations.length) {
+            h += '<div class="flag"><b>Tone flags</b> &mdash; not blocking, but worth reading: ' +
+                 d.tone.violations.map(function (v) { return esc(v.why) + ' ("' + esc(v.sample) + '")'; }).join("; ") +
+                 "</div>";
+        }
+        h += groundingHtml(d.grounding);
+        h += '<div class="cols">';
+        h += '<div class="col"><h4>What the patient will read</h4>' +
+             '<textarea id="pt-' + id + '">' + esc(s ? s.patient_text : "") + "</textarea></div>";
+        h += '<div class="col"><h4>Your version (not shown to the patient)</h4>' +
+             '<textarea class="ro" id="cl-' + id + '" readonly>' + esc(s ? s.clinician_text : "") + "</textarea></div>";
+        h += "</div>";
+        h += '<div class="actions">';
+        h += '<button class="good" data-a="approved_as_is" data-id="' + id + '">Approve as written</button>';
+        h += '<button class="primary" data-a="edited_and_approved" data-id="' + id + '">Approve with my edits</button>';
+        h += '<button class="bad" data-a="rejected" data-id="' + id + '">Reject &mdash; do not show</button>';
+        h += '<button data-a="regenerate" data-id="' + id + '">Re-draft</button>';
+        h += "</div>";
+        h += '<div class="msg" id="msg-' + id + '"></div>';
+        return h;
+    }
+
+    function wirePanel(id) {
+        var p = $("panel-" + id);
+        Array.prototype.forEach.call(p.querySelectorAll("button[data-a]"), function (b) {
+            b.addEventListener("click", function () { act(id, b.dataset.a, b); });
+        });
+    }
+
+    async function openOne(id, btn) {
+        var p = $("panel-" + id);
+        if (p.classList.contains("open")) { p.classList.remove("open"); return; }
+        btn.disabled = true; var was = btn.textContent; btn.textContent = "Loading…";
+        try {
+            var d = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary?cb=" + Date.now());
+            if (!d.summary) {
+                // Nothing drafted yet — draft it now.
+                btn.textContent = "Drafting…";
+                var g = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary",
+                    { method: "POST", body: JSON.stringify({ action: "generate" }) });
+                if (g.refused || g.ok === false) {
+                    p.innerHTML = '<div class="flag bad"><b>No draft was written.</b> ' +
+                        esc(g.message || g.error || "") + "</div>" + groundingHtml(g.grounding);
+                    p.classList.add("open");
+                    return;
+                }
+                if (g.queued) {
+                    p.innerHTML = '<div class="flag"><b>Queued for your Claude CLI bridge.</b> ' +
+                        esc(g.message || "") + " Re-open this row once the bridge has run.</div>";
+                    p.classList.add("open");
+                    return;
+                }
+                d = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary?cb=" + Date.now());
+            }
+            p.innerHTML = panelHtml(id, d);
+            p.classList.add("open");
+            wirePanel(id);
+        } catch (e) {
+            p.innerHTML = '<div class="flag bad">' + esc(e.message) + "</div>";
+            p.classList.add("open");
+        } finally {
+            btn.disabled = false; btn.textContent = was;
+        }
+    }
+
+    async function act(id, action, btn) {
+        var msg = $("msg-" + id);
+        msg.className = "msg"; msg.textContent = "";
+        btn.disabled = true;
+        try {
+            var body;
+            if (action === "regenerate") {
+                body = { action: "generate" };
+            } else {
+                body = { action: "review", review_action: action };
+                if (action === "edited_and_approved") {
+                    body.patient_text = $("pt-" + id).value;
+                }
+            }
+            var r = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary",
+                { method: "POST", body: JSON.stringify(body) });
+            if (r.refused || r.ok === false) {
+                msg.className = "msg err";
+                msg.textContent = r.message || r.error || "Refused.";
+                return;
+            }
+            msg.className = "msg ok";
+            msg.textContent = action === "regenerate"
+                ? "Re-drafted. Approval was reset — a summary you approved is not the one you are now looking at."
+                : (r.message || "Saved.");
+            setTimeout(load, 700);
+        } catch (e) {
+            msg.className = "msg err"; msg.textContent = e.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function load() {
+        try {
+            var d = await api("/api/v1/admin/encounters?status=" + encodeURIComponent(STATE.filter) + "&cb=" + Date.now());
+            STATE.rows = d.rows || [];
+            renderCounts(d);
+            render();
+        } catch (e) {
+            $("list").innerHTML = '<div class="flag bad">Could not load the queue: ' + esc(e.message) + "</div>";
+        }
+    }
+
+    load();
+})();
+</script>
+</body>
+</html>

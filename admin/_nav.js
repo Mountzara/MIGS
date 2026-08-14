@@ -26,6 +26,7 @@
         { key: 'scheduling', label: 'Scheduling',   href: '/admin/scheduling/', match: /^\/admin\/scheduling\b/ },
         { key: 'triage',     label: 'Triage',       href: '/admin/triage/',     match: /^\/admin\/triage\b/     },
         { key: 'messages',   label: 'Messages',     href: '/admin/messages/',   match: /^\/admin\/messages\b/   },
+        { key: 'visits',     label: 'Visit Summaries', href: '/admin/visits/',  match: /^\/admin\/visits\b/     },
         { key: 'billing',    label: 'Billing',      href: '/admin/billing/',    match: /^\/admin\/billing\b/    },
         { key: 'analytics',  label: 'Analytics',    href: '/admin/analytics/',  match: /^\/admin\/analytics\b/  },
     { key: 'membership', label: 'Membership',   href: '/admin/membership/', match: /^\/admin\/membership\b/ },
