@@ -182,6 +182,27 @@ export const TEMPLATES = {
             `your appointment is spent on you rather than paperwork.</p>` +
             `<p><a href="${esc(portalUrl)}">Pick up where you left off</a></p>`,
     }),
+
+    // Sent when a triage row is released and booking opens — by Dr. Mabini,
+    // or by the four-hour auto-release. The patient does not need to know
+    // which, and telling them would be worse: "a computer decided" is not
+    // reassuring and is not the point. What they need is that they can now
+    // book. Carries NO clinical content — not the visit type, not the
+    // urgency, nothing from the intake — because email is not a secure
+    // channel and this is the same posture as new_message.
+    triage_released: ({ portalUrl }) => ({
+        subject: "You can now book your appointment with Mount Zara",
+        text:
+            `Your intake has been reviewed and your appointment times are ready.\n\n` +
+            `The times you will see are the ones that fit the kind of visit you need, ` +
+            `so there is enough time set aside for it.\n\n` +
+            `Choose a time:\n${portalUrl}`,
+        html:
+            `<p>Your intake has been reviewed and your appointment times are ready.</p>` +
+            `<p>The times you will see are the ones that fit the kind of visit you need, ` +
+            `so there is enough time set aside for it.</p>` +
+            `<p><a href="${esc(portalUrl)}">Choose a time</a></p>`,
+    }),
 };
 
 // ---------------------------------------------------------------------

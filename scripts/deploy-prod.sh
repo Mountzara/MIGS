@@ -421,6 +421,26 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Triage auto-release gate (codified 2026-08-14). The admin panel promises
+# rows auto-release to the patient after four hours; the rule that makes
+# that safe is that URGENT rows never do. Pin both.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_triage_auto_release.mjs ]; then
+    echo ""
+    echo "🔒 triage auto-release gate — 4-hour clock, urgent always held..."
+    if node scripts/test_triage_auto_release.mjs > /tmp/_triage_ar.log 2>&1; then
+        tail -1 /tmp/_triage_ar.log
+        echo "   ✅ triage auto-release gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the triage auto-release gate:"
+        tail -20 /tmp/_triage_ar.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
 # Runs scripts/regression_audit.py against every known clinical surface BEFORE
 # the wrangler deploy. Exit code 0 = pass; 1 = block deploy.

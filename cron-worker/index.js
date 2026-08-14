@@ -223,6 +223,48 @@ async function runContentFreshnessCheck(env) {
     }
 }
 
+
+// =====================================================================
+// Triage auto-release (hourly)
+// =====================================================================
+// admin/triage/index.html promises, in the panel he works from: "Rows
+// auto-release to the patient four hours after AI categorization if not
+// reviewed." Nothing did that. AUTO_RELEASE_THRESHOLD_HOURS existed only
+// to paint a row `is_overdue` — a badge, not a behaviour — so a patient
+// who submitted an intake on a Friday evening waited until he next opened
+// the panel, with no slots offered and nothing on screen explaining why.
+//
+// Delegates to the Pages endpoint because the release path needs the
+// audit and notification libs that only exist in the Pages runtime. This
+// Worker fires the trigger and logs the outcome. Requires PIPELINE_TOKEN:
+//   cd cron-worker && npx wrangler secret put PIPELINE_TOKEN
+//
+// Hourly, not every 15 minutes: the promise is "four hours", and a row
+// released at 4h00 versus 4h59 is indistinguishable to the patient, while
+// four times the requests buys nothing.
+async function runTriageAutoRelease(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("triage auto-release: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/triage/auto-release", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`triage auto-release: scanned=${j.scanned ?? "?"} released=${j.released ?? "?"} ` +
+                    `held=${j.held ?? "?"} urgent_awaiting_review=${j.urgent_awaiting_review ?? "?"}`);
+        // Urgent rows past four hours are a real backlog, not an exception
+        // the job absorbs. Say so loudly enough to find in the logs.
+        if (j.urgent_awaiting_review > 0) {
+            console.error(`triage auto-release: ${j.urgent_awaiting_review} URGENT triage row(s) past ${j.threshold_hours}h and still unreviewed — these are never auto-released`);
+        }
+    } catch (e) {
+        console.error("triage auto-release failed", String(e?.message || e));
+    }
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
@@ -235,6 +277,10 @@ export default {
         }
         if (event.cron === "0 11 * * *") {
             ctx.waitUntil(runNpsDispatch(env));
+            return;
+        }
+        if (event.cron === "0 * * * *") {
+            ctx.waitUntil(runTriageAutoRelease(env));
             return;
         }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));
