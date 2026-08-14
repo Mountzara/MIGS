@@ -182,7 +182,7 @@ const COMING_SOON_HTML = `<!doctype html>
 
         /* ---- masthead --------------------------------------------- */
         header.mast { padding-top: clamp(28px, 5vw, 52px); }
-        .back { display: inline-block; font-size: 13px; opacity: .7; margin-bottom: 26px; }
+        .back { display: block; font-size: 13px; opacity: .7; margin-bottom: 26px; width: fit-content; }
         .back::before { content: "\\2190"; margin-right: 7px; }
         .status {
             display: inline-flex; align-items: center; gap: 9px;
@@ -211,15 +211,18 @@ const COMING_SOON_HTML = `<!doctype html>
            point of four prices side by side is comparison. auto-fit with a
            220px floor collapses cleanly to 2-up then 1-up without ever
            forcing the page wider than the viewport. */
-        .tiers {
-            display: grid; gap: var(--gap);
-            grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
-            align-items: stretch;
-        }
+        .tiers { display: grid; gap: var(--gap); align-items: stretch; grid-template-columns: 1fr; }
+        /* Explicit steps, not auto-fit. Four prices exist to be compared, so
+           the breakpoints are chosen deliberately — 4 across, then 2, then 1
+           — rather than left to whatever a min-width happens to produce.
+           auto-fit needed 1026px inside a 1016px container and wrapped to
+           3 + 1, stranding Complete on a row of its own. */
+        @media (min-width: 620px)  { .tiers { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1000px) { .tiers { grid-template-columns: repeat(4, 1fr); } }
         .tier {
             display: flex; flex-direction: column;
             background: var(--card); border: 1px solid var(--line);
-            border-radius: 15px; padding: 22px 20px 20px;
+            border-radius: 15px; padding: 20px 17px 18px;
         }
         .tier.lead { border-color: rgba(var(--glow), .5); background: var(--card-hi); }
         .tier .badge {
