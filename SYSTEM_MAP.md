@@ -191,7 +191,31 @@ the target element is in a section ABOVE the script tag.
    patient briefing's document list, and the onboarding wizard's
    education step — several of them SILENT, because a bare `catch`
    turned "the query is broken" into "there is no data".
-3. **Portal header gate** (2026-08-13) — `scripts/test_portal_headers.mjs`
+3. **Inline-script gate** (2026-08-14) — `scripts/check_inline_scripts.mjs`
+   parses every inline `<script>`, in static HTML AND in the pages a
+   Function GENERATES (it evaluates the template literal first, because
+   that is where the bug lived). The public `/portal/` page is built from
+   a template literal, so an escape written for the BROWSER is evaluated
+   at generation time instead: one `\n` that needed to be `\\n` put a real
+   newline inside a string literal, and **a script that does not parse runs
+   NONE of its lines** — the membership tiers, comparison table, evidence
+   and disclosures all silently vanished while the source looked correct,
+   the API was healthy and every deploy passed.
+4. **Clinical grounding gate** (2026-08-14) — see §5
+   `clinical_grounding.js`.
+5. **Scheduling timezone gate** (2026-08-14) — `scripts/test_scheduling_tz.mjs`
+   (25). Every slot ever offered was five hours early; covers both DST
+   transitions.
+6. **Triage auto-release gate** / **notification gate** / **date gate** —
+   `test_triage_auto_release.mjs` (33), `test_notification_flush.mjs` (37),
+   `test_iso_date.mjs` (50).
+7. **Working-directory assertion** — the deploy fails if `cite_audit/`,
+   `.claude/`, `docs/`, `scripts/` or `schema/` reach the STAGE. Asserted
+   rather than trusted, because the exclude list is the thing that was
+   wrong: `cite_audit/authoritative-cv-2026-08.txt` was publishing the
+   owner's mobile number, which he had deliberately kept off the published
+   CV page.
+8. **Portal header gate** (2026-08-13) — `scripts/test_portal_headers.mjs`
    (97 assertions). Asserts exactly ONE Permissions-Policy and ONE CSP
    per portal path after `applyPortalHeaders`. See §5 `portal_headers.js`
    for why this cannot live in `_headers`.
@@ -933,6 +957,8 @@ For each helper: who calls it, what depends on its signature.
 | `mfa_cookie.js` | `signMfaCookie`, `verifyMfaCookie` | `functions/admin/_middleware.js`, `_mfa.js` | If you rotate `ADMIN_MFA_COOKIE_KEY`, every active admin session invalidates. |
 | `preview_invite.js` | `mintInvite`, `redeemInvite`, `signCookie`, `verifyCookie` | `/api/v1/admin/preview-invite.js`, `/portal/preview-grant/` | Rotating `PREVIEW_INVITE_KEY` invalidates all outstanding preview-grant URLs. |
 | `preview_gate.js` | `previewAccess(request, env)` | `functions/portal/_middleware.js` | Honors `PORTAL_PUBLIC_LAUNCH` env + admin auth + signed preview cookie. |
+| `clinical_grounding.js` · `kb_fields.js` | **The KB rule, enforced.** The owner's standing instruction: clinical answers come from HIS curated library, never from model training data. On 2026-08-13 that was enforced NOWHERE — the 1,144-document `kb_docs` index was wired into ONE endpoint (`admin/ai/suggest-edit.js`, a website-copy editor) while triage, after-visit summaries, patient message drafts, visit-prep packs and the PROM recommender all called the model with no reference material at all. A PRE-FLIGHT topical gate was built first and **abandoned on the evidence**: `scripts/calibrate_kb_grounding.mjs` showed in-scope CBG/MIGS questions score 98% mean coverage and out-of-scope questions score 98% too ("diabetic ketoacidosis insulin infusion protocol" scored 100%), because this is a general OB/GYN corpus that legitimately discusses asthma, insulin and corticosteroids. Coverage is kept as an ADVISORY signal and is explicitly not a gate. Enforcement is POST-GENERATION: `verifyGrounding()` rejects output with a fabricated citation, a citation whose document does not support the claim (checked by term overlap against the real text), or any uncited clinical assertion. `kb_fields.js` maps each task to the KB fields that answer it — a patient reply leads with `patientCounselingPoints`, triage with `criticalThresholds` — because `kb_load_d1.py` used to flatten all fifteen structured fields into one blob, which is why the first live run grounded a patient reply in a JMIG paper about robotic device malfunctions. | `_lib/intake_triage.js` · `_lib/visit_summary.js` · `_lib/visit_prep.js` · `_lib/prom_recommender.js` · `api/v1/admin/messages/[thread_id]/draft.js` · `api/v1/sync/ai-bridge/[[path]].js` · `scripts/claude_bridge.sh` | **`scripts/check_clinical_grounding_wired.mjs` is a deploy gate**: it enumerates every model call site and requires each CLINICAL one to ground, instruct AND verify. A new model call site must be classified deliberately or the deploy fails. Field-aware retrieval needs `kb_sections`, loaded by `scripts/kb_load_d1.py` from the machine holding the KB chunks; it degrades to the flat `kb_docs` index when absent, so deploying is safe either way. |
+| `iso_date.js` | Real-calendar date validation and bounded query windows. Three endpoints validated dates with a SHAPE regex, so `2026-02-31` was accepted, stored, and then matched no calendar query again — written, acknowledged and lost. `isLoggableDate()` also refuses the future (one day of grace for patients west of UTC). `checkWindow()` caps a request at 400 days: `?from=1900-01-01` on trends returned 46,246 points in 1.6 MB. | `api/v1/patient/symptoms/diary/[date].js` · `.../diary.js` · `.../trends.js` | Gate: `scripts/test_iso_date.mjs` (50). |
 | `portal_headers.js` | `PORTAL_BASE`, `BASE_CSP`, `BILLING_CSP`, `PERMISSIONS_DEFAULT`/`_TECH_CHECK`/`_BILLING`, `portalHeaders(path)`, `applyPortalHeaders(resp, path)` | `functions/portal/_middleware.js` (every `/portal/*` response passes through `seal()`) | **DO NOT move these back into `_headers`.** That file APPENDS — a path rule does not replace the site-wide `/*` rule, and the browser then resolves duplicate **Permissions-Policy** features **first-wins** and duplicate **CSPs** by **intersection**. Both overrides were therefore inert while looking correct in `curl`: `/portal/tech-check/` still had `camera=()` in force (an EMPTY allowlist disables the feature for the page's OWN origin, so `getUserMedia` rejected with `NotAllowedError` before any prompt and the device check told every patient their camera was broken), and `/portal/billing/` still enforced the strict CSP alongside the Stripe one (`window.Stripe` undefined → "Stripe is not defined" in the payment modal). Only `!` genuinely unsets. Separately, `_headers` never applies to a response a **Function constructs** — the pre-launch Coming Soon page, `/portal/visit/<id>/launch`, `/portal/nps/<token>` shipped with three headers, no CSP and a `public, max-age=60` cache. `applyPortalHeaders` uses `Headers.set()` so exactly one policy per header reaches the browser. Adding a portal page that needs a different policy = add a branch in `portalHeaders()` + a case in `scripts/test_portal_headers.mjs` (97 assertions, deploy gate). |
 | `session_trace.js` | `recordTrace`, `traceWrap`, `listRecentTraces` | Optional wrapping in any endpoint for debugging | PHI-conservative SHA256+salt-hashed IPs. |
 | `wizard.js` | `WIZARD_STEPS`, `computeStepStatus` | `/api/v1/patient/wizard/state.js`, `portal/_wizard.js` injection | Adding step: update `WIZARD_STEPS` + `computeStepStatus` + UI in `_wizard.js`. |
