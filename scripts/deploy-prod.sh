@@ -648,6 +648,8 @@ if [ -z "${RSYNC_MISSING:-}" ]; then
         --exclude='/scripts/' \
         --exclude='/schema/' \
         --exclude='/docs/' \
+        --exclude='/cite_audit/' \
+        --exclude='/.claude/' \
         --exclude='*.doc' \
         --exclude='*.docx' \
         --exclude='*.md' \
@@ -669,6 +671,7 @@ else
         --exclude='DerivedData' --exclude='.build' --exclude='*.xcuserstate' \
         --exclude='.DS_Store' --exclude='wrangler.toml' --exclude='.env' \
         --exclude='.env.*' --exclude='./scripts' --exclude='./schema' --exclude='./docs' \
+        --exclude='./cite_audit' --exclude='./.claude' \
         --exclude='*.doc' --exclude='*.docx' \
         --exclude='*.md' --exclude='*.sh' --exclude='*.py' \
         --exclude='.gitignore' --exclude='.gitattributes' \
@@ -708,6 +711,27 @@ if [ "$REPO_FN_COUNT" != "$STAGE_FN_COUNT" ]; then
     exit 1
 fi
 echo "   ✅ stage integrity: all $REPO_FN_COUNT Function handlers staged"
+
+# ---------------------------------------------------------------------------
+# Working directories must never ship (added 2026-08-14)
+# ---------------------------------------------------------------------------
+# `cite_audit/` and `.claude/` were being published. Among them,
+# https://mountzara.com/cite_audit/authoritative-cv-2026-08.txt served the
+# owner's full CV including a mobile number he had deliberately kept off
+# the published CV page, and /.claude/settings.json returned 200.
+#
+# Asserted rather than trusted: the exclude list is the thing that was
+# wrong, so checking the exclude list proves nothing. This checks the STAGE.
+for LEAK in cite_audit .claude docs scripts schema; do
+    if [ -e "$STAGE_DIR/$LEAK" ]; then
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — '$LEAK/' is in the staged upload and must never be public."
+        echo "   Found: $(find "$STAGE_DIR/$LEAK" -type f | head -5 | sed "s|$STAGE_DIR/||" | tr '\n' ' ')"
+        echo "   Anchor its exclude in BOTH staging paths in this script."
+        exit 1
+    fi
+done
+echo "   ✅ no working directories staged (cite_audit, .claude, docs, scripts, schema)"
 
 # ---------------------------------------------------------------------------
 # Oversized-file prune (added 2026-07-28)

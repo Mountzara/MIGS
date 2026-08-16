@@ -342,6 +342,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <span class="card-action">Subscribing soon…</span>
             </div>
 
+            <a class="card" href="/portal/visits/" id="card-visits">
+                <div class="badge-row"><span class="badge badge-empty" id="visits-badge">—</span></div>
+                <div class="card-eyebrow">After your visits</div>
+                <h2 id="visits-title">Visit summaries</h2>
+                <div class="card-body" id="visits-body">A plain-language recap of each appointment — what was discussed, the plan, your medicines and what happens next. Reviewed and approved by Dr. Mabini before you see it.</div>
+                <span class="card-action">Open summaries →</span>
+            </a>
+
             <a class="card" href="/portal/education/" id="card-education">
                 <div class="badge-row"><span class="badge badge-empty" id="edu-badge">—</span></div>
                 <div class="card-eyebrow">Education</div>
@@ -436,6 +444,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             loadSymptomCard();
             loadIntakeCard();
             loadEducationCard();
+            loadVisitsCard();
             loadPROMsCard();
             loadBillingCard();
 
@@ -625,6 +634,41 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             } catch (e) {
                 $('proms-title').textContent = 'Health check-ins';
                 $('proms-body').textContent = 'Validated questionnaires Dr. Mabini reviews between visits.';
+            }
+        }
+
+        // The portal PROMISES visit summaries on its public page. Until
+        // 2026-08-14 there was no patient surface at all: the endpoint
+        // worked, the admin console approved them, and nothing under
+        // portal/ ever called it — /portal/visits/ fell through to the
+        // marketing homepage. The badge counts what he has approved and
+        // the patient has not yet opened, which is the only number that
+        // means anything here.
+        async function loadVisitsCard() {
+            try {
+                const r = await fetchJson('/api/v1/patient/visits');
+                const visits = (r && r.visits) || [];
+                const unread = visits.filter(v => v.new_for_you).length;
+                if (!visits.length) {
+                    $('visits-badge').textContent = 'None yet';
+                    $('visits-badge').className = 'badge badge-empty';
+                    $('visits-body').textContent = 'After your next appointment, a summary appears here once Dr. Mabini has reviewed it.';
+                    return;
+                }
+                $('visits-badge').textContent = unread ? `${unread} new` : `${visits.length}`;
+                $('visits-badge').className = unread ? 'badge badge-pending' : 'badge badge-released';
+                const latest = visits[0];
+                $('visits-body').textContent = unread
+                    ? `${unread} summary${unread === 1 ? '' : 's'} you have not read yet. Most recent: ${latest.visit_date || ''}.`
+                    : `${visits.length} summar${visits.length === 1 ? 'y' : 'ies'} on file. Most recent: ${latest.visit_date || ''}.`;
+            } catch (e) {
+                // A failed fetch must not render as "none yet" — that reads
+                // as a fact about the patient's record rather than about the
+                // request. Same class of bug as the admin dashboard's green
+                // all-clear on a D1 hiccup.
+                $('visits-badge').textContent = '—';
+                $('visits-badge').className = 'badge badge-empty';
+                $('visits-body').textContent = 'Could not load your summaries just now. Tap to try again.';
             }
         }
 

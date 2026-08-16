@@ -144,6 +144,7 @@
     "/portal/profile/",
     "/portal/proms/",
     "/portal/signup/",
-    "/portal/symptoms/"
+    "/portal/symptoms/",
+    "/portal/visits/"
   ]
 }

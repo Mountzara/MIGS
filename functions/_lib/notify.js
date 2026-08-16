@@ -183,6 +183,26 @@ export const TEMPLATES = {
             `<p><a href="${esc(portalUrl)}">Pick up where you left off</a></p>`,
     }),
 
+    // Sent when Dr. Mabini approves an after-visit summary. Carries no
+    // clinical content — not the plan, not the medicines, nothing from the
+    // visit — because email is not a secure channel and the summary is the
+    // most clinically detailed thing the portal holds.
+    visit_summary_ready: ({ portalUrl }) => ({
+        subject: "Your visit summary is ready",
+        text:
+            `A summary of your recent visit is ready in your Mount Zara portal.\n\n` +
+            `It covers what you and Dr. Mabini talked about, the plan, your medicines ` +
+            `and what happens next. He has reviewed and approved it.\n\n` +
+            `Read it here:\n${portalUrl}\n\n` +
+            `For your privacy, the summary itself is not included in this email.`,
+        html:
+            `<p>A summary of your recent visit is ready in your Mount Zara portal.</p>` +
+            `<p>It covers what you and Dr.&nbsp;Mabini talked about, the plan, your medicines ` +
+            `and what happens next. He has reviewed and approved it.</p>` +
+            `<p><a href="${esc(portalUrl)}">Read your visit summary</a></p>` +
+            `<p style="color:#666">For your privacy, the summary itself is not included in this email.</p>`,
+    }),
+
     // Sent when a triage row is released and booking opens — by Dr. Mabini,
     // or by the four-hour auto-release. The patient does not need to know
     // which, and telling them would be worse: "a computer decided" is not

@@ -203,10 +203,39 @@ export async function onRequest(ctx) {
                 record_type: "encounter_ai_summary", record_id: existing.id, success: true,
                 details: { encounter_id: enc.id, review_action: body.review_action, status: r.status } });
 
+            // TELL HER. Approving used to say "the patient can now see it in
+            // their portal" and enqueue nothing — and until 2026-08-14 there
+            // was no portal page either, so the sentence was false twice
+            // over. The email carries no clinical content, same posture as
+            // every other template: something is ready, sign in to read it.
+            let notified = false;
+            if (r.patient_sees) {
+                try {
+                    const pt = await env.DB.prepare(
+                        "SELECT email FROM patients WHERE id = ? LIMIT 1"
+                    ).bind(enc.patient_id).first();
+                    if (pt?.email) {
+                        const { notify } = await import("../../../../../_lib/notify.js");
+                        const out = await notify(env, {
+                            to: pt.email, template: "visit_summary_ready",
+                            patient_id: enc.patient_id,
+                            data: { portalUrl: `${new URL(request.url).origin}/portal/visits/` },
+                        });
+                        notified = Boolean(out?.sent);
+                    }
+                } catch (e) {
+                    // Never fail an approval because an email did not go out.
+                    console.error("summary approve: notify failed", String(e).slice(0, 200));
+                }
+            }
+
             return jsonResponse({
                 ok: true, status: r.status, visible_to_patient: r.patient_sees,
+                patient_notified: notified,
                 message: r.patient_sees
-                    ? "Approved. The patient can now see it in their portal."
+                    ? (notified
+                        ? "Approved. It is in her portal now and she has been emailed."
+                        : "Approved and visible in her portal. The email did not send — check /api/v1/admin/notifications/health.")
                     : "Rejected. The patient will never see this draft.",
             });
         }
