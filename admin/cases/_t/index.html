@@ -960,7 +960,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="row" style="display:block;">
                     <div style="display:flex; justify-content: space-between; align-items: baseline; gap: 10px;">
                         <div>
-                            <h3>${escapeHtml(doc.filename)}</h3>
+                            <h3><a href="/api/v1/admin/documents/${encodeURIComponent(doc.id)}"
+                                   title="Download and open">${escapeHtml(doc.filename)}</a></h3>
                             <div class="row-meta">
                                 <span><span class="k">Kind</span> ${escapeHtml(doc.kind)}</span>
                                 <span><span class="k">MIME</span> ${escapeHtml(doc.mime_type || '—')}</span>

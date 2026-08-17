@@ -96,6 +96,7 @@ export async function onRequestPost(ctx) {
         SELECT id, intake_id, patient_id,
                ai_visit_type, ai_duration_min, ai_in_person_required,
                clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_in_person_required,
                final_visit_type, final_duration_min, clinician_reviewed_at,
                appointment_id
         FROM appointment_triage WHERE id = ? AND patient_id = ?
@@ -177,8 +178,14 @@ export async function onRequestPost(ctx) {
         ? body.duration_min
         : (triage.final_duration_min || triage.clinician_override_duration_min || triage.ai_duration_min || vt.duration_min);
 
-    // Modality validation against triage.
-    if (triage.ai_in_person_required && modality !== "in_person") {
+    // Modality validation against triage. The override wins when he made
+    // one (?? not ||: an override TO telehealth is stored as 0, which || 
+    // would discard). Book and available MUST resolve this identically, or
+    // the slots offered and the bookings accepted disagree — that split is
+    // exactly how the in-person checkbox managed to do nothing for months.
+    const inPersonRequired = !!(triage.clinician_override_in_person_required
+        ?? triage.ai_in_person_required);
+    if (inPersonRequired && modality !== "in_person") {
         return err(409, "in_person_required",
             "This visit type requires in-person attendance.");
     }

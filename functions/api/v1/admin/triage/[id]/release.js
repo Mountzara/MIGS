@@ -109,11 +109,22 @@ export async function onRequestPost(ctx) {
             if (vt) final_duration_min = vt.duration_min;
         }
 
-        // urgency / in_person / time_of_day are not stored in final_*
-        // columns (schema doesn't have them) but DO matter for the
-        // patient booking flow. They're written to audit_log so analytics
-        // can pull them, and surfaced from the row JSON via the override
-        // columns + ai_* fallbacks.
+        // The comment that used to sit here said these three fields are
+        // "not stored in final_* columns (schema doesn't have them)" and
+        // are "surfaced via the override columns + ai_* fallbacks". Both
+        // halves were wrong. Schema 0024 added
+        // clinician_override_{urgency,in_person_required,preferred_time_of_day}
+        // — and nothing wrote them on release, while available.js read ONLY
+        // ai_in_person_required (its own comment admitted "overrides not
+        // persisted").
+        //
+        // The consequence: the in-person checkbox in the admin panel DID
+        // NOTHING. Every live triage row has ai_in_person_required = 1, so
+        // a visit could never be opened to telehealth — the checkbox
+        // flipped, the toast said released, and the patient stayed
+        // hard-blocked to in-person. The only working path was changing
+        // the visit TYPE to telehealth_consult, which is a different
+        // decision from "this complex visit may be done by video".
         if (body.final_urgency !== undefined && !ALLOWED_URGENCY.has(body.final_urgency)) {
             return jsonError("invalid_final_urgency", 400);
         }
@@ -129,6 +140,19 @@ export async function onRequestPost(ctx) {
             ? body.override_reason.slice(0, 500)
             : row.clinician_override_reason;
 
+        // Same "NULL when same as AI" convention as PATCH: the override
+        // column only carries a value when a human actually changed
+        // something, so "AI accepted as-is" stays distinguishable from
+        // "clinician set the same value deliberately".
+        const aiInPerson = row.ai_in_person_required ? 1 : 0;
+        const ovrUrgency = body.final_urgency !== undefined && body.final_urgency !== row.ai_urgency
+            ? body.final_urgency : null;
+        const ovrInPerson = body.final_in_person !== undefined && (body.final_in_person ? 1 : 0) !== aiInPerson
+            ? (body.final_in_person ? 1 : 0) : null;
+        const ovrTimeOfDay = body.final_preferred_time_of_day !== undefined
+                && body.final_preferred_time_of_day !== row.ai_preferred_time_of_day
+            ? body.final_preferred_time_of_day : null;
+
         const t = Date.now();
         await env.DB.prepare(`
             UPDATE appointment_triage
@@ -143,6 +167,9 @@ export async function onRequestPost(ctx) {
                     WHEN ? = ai_duration_min THEN clinician_override_duration_min
                     ELSE ?
                 END,
+                clinician_override_urgency = COALESCE(?, clinician_override_urgency),
+                clinician_override_in_person_required = COALESCE(?, clinician_override_in_person_required),
+                clinician_override_preferred_time_of_day = COALESCE(?, clinician_override_preferred_time_of_day),
                 final_visit_type = ?,
                 final_duration_min = ?,
                 updated_at = ?
@@ -153,6 +180,7 @@ export async function onRequestPost(ctx) {
             override_reason,
             final_visit_type, final_visit_type,
             final_duration_min, final_duration_min,
+            ovrUrgency, ovrInPerson, ovrTimeOfDay,
             final_visit_type, final_duration_min,
             t, id
         ).run();

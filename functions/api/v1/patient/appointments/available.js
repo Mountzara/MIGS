@@ -101,6 +101,8 @@ export async function onRequestGet(ctx) {
         SELECT id, ai_visit_type, ai_duration_min, ai_urgency,
                ai_in_person_required, ai_preferred_time_of_day,
                clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_urgency, clinician_override_in_person_required,
+               clinician_override_preferred_time_of_day,
                final_visit_type, final_duration_min, clinician_reviewed_at
         FROM appointment_triage
         WHERE patient_id = ? AND clinician_reviewed_at IS NOT NULL
@@ -114,8 +116,20 @@ export async function onRequestGet(ctx) {
 
     const visit_type = triage.final_visit_type || triage.clinician_override_visit_type || triage.ai_visit_type;
     const duration_min = triage.final_duration_min || triage.clinician_override_duration_min || triage.ai_duration_min;
-    const in_person_required = !!triage.ai_in_person_required; // overrides not persisted; clinician release implies acceptance
-    const preferred_time_of_day = triage.ai_preferred_time_of_day || "any";
+    // His override wins over the AI, when he made one. The line this
+    // replaces read only ai_in_person_required with the comment "overrides
+    // not persisted" — and it was accurate: release.js validated the
+    // in-person checkbox, wrote it to the audit log, and dropped it. Every
+    // live triage row has ai_in_person_required = 1, so the checkbox could
+    // never open a visit to telehealth; it flipped, the toast said
+    // released, and the patient stayed hard-blocked. Both halves are fixed
+    // together: release.js now persists the override columns, and this
+    // reads them. NULL means "he did not touch it", so ?? not ||, or an
+    // override TO false would be indistinguishable from no override.
+    const in_person_required = !!(triage.clinician_override_in_person_required
+        ?? triage.ai_in_person_required);
+    const preferred_time_of_day = triage.clinician_override_preferred_time_of_day
+        || triage.ai_preferred_time_of_day || "any";
 
     if (visit_type === "manual_review_required") {
         return err(409, "manual_review_required",

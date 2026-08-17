@@ -759,8 +759,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                       <div>
                         <label class="field-label">Urgency</label>
                         <select data-field="urgency" ${formDisabled}>
-                          <option value="routine" ${row.ai_urgency === 'routine' ? 'selected' : ''}>routine</option>
-                          <option value="urgent"  ${row.ai_urgency === 'urgent' ? 'selected' : ''}>urgent</option>
+                          <option value="routine" ${(row.clinician_override_urgency ?? row.ai_urgency) === 'routine' ? 'selected' : ''}>routine</option>
+                          <option value="urgent"  ${(row.clinician_override_urgency ?? row.ai_urgency) === 'urgent' ? 'selected' : ''}>urgent</option>
                         </select>
                       </div>
                     </div>
@@ -769,13 +769,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                       <div>
                         <label class="field-label">Preferred time</label>
                         <select data-field="preferred_time_of_day" ${formDisabled}>
-                          <option value="any"       ${row.ai_preferred_time_of_day === 'any' ? 'selected' : ''}>any</option>
-                          <option value="morning"   ${row.ai_preferred_time_of_day === 'morning' ? 'selected' : ''}>morning</option>
-                          <option value="afternoon" ${row.ai_preferred_time_of_day === 'afternoon' ? 'selected' : ''}>afternoon</option>
+                          <option value="any"       ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'any' ? 'selected' : ''}>any</option>
+                          <option value="morning"   ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'morning' ? 'selected' : ''}>morning</option>
+                          <option value="afternoon" ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'afternoon' ? 'selected' : ''}>afternoon</option>
                         </select>
                       </div>
                       <div class="toggle-row" style="margin-top: 26px;">
-                        <input type="checkbox" data-field="in_person_required" ${row.ai_in_person_required ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
+                        <input type="checkbox" data-field="in_person_required" ${(row.clinician_override_in_person_required ?? row.ai_in_person_required) ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
                         <label for="ipr-${row.id}">In-person required</label>
                       </div>
                     </div>
