@@ -457,7 +457,15 @@ function renderTopServices(payload) {
 // =========================================================
 // 2. Today's schedule + Attention items + counters
 // =========================================================
+// Sources whose fetch FAILED this load, as opposed to returning zero.
+// The distinction is the whole point: a failed fetch used to leave its
+// counter at 0, and downstream that rendered as "Nothing urgent" /
+// "Inbox zero" / "No appointments today" — the most reassuring dashboard
+// the page can show, produced by an outage.
+window.__mzFailedSources = new Set();
+
 async function loadAuxiliaryData() {
+    window.__mzFailedSources = new Set();
     const today = new Date().toISOString().slice(0, 10);
     const todayEnd = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
@@ -483,17 +491,20 @@ async function loadAuxiliaryData() {
                     </div>
                 `);
             }
-        }
-    } catch {}
+        } else { window.__mzFailedSources.add("appointments"); }
+    } catch { window.__mzFailedSources.add("appointments"); }
     window.__mzTodayAppts = { count: apptCount, next: nextAppt };
-    $("today-schedule").innerHTML = todayHtml.length ? todayHtml.join("") : '<div style="font-size:13px;color:var(--fg-soft);padding:8px 0">No appointments today.</div>';
+    $("today-schedule").innerHTML = window.__mzFailedSources.has("appointments")
+        ? '<div style="font-size:13px;color:var(--amber,#f59e0b);padding:8px 0">Could not load today\'s schedule — showing nothing is not the same as having nothing. Reload to retry.</div>'
+        : (todayHtml.length ? todayHtml.join("") : '<div style="font-size:13px;color:var(--fg-soft);padding:8px 0">No appointments today.</div>');
 
     // Open triage
     let triageOpen = 0;
     try {
         const r = await fetch("/api/v1/admin/triage", { credentials: "include" });
         if (r.ok) { const d = await r.json(); triageOpen = (d.rows || []).filter(t => !t.clinician_reviewed_at).length; }
-    } catch {}
+        else { window.__mzFailedSources.add("triage"); }
+    } catch { window.__mzFailedSources.add("triage"); }
     window.__mzTriage = { open: triageOpen };
 
     // Unread messages (count threads with clinician_unread_count > 0)
@@ -501,7 +512,8 @@ async function loadAuxiliaryData() {
     try {
         const r = await fetch("/api/v1/admin/messages", { credentials: "include" });
         if (r.ok) { const d = await r.json(); unread = (d.threads || []).filter(t => (t.unread_count || 0) > 0).length; }
-    } catch {}
+        else { window.__mzFailedSources.add("messages"); }
+    } catch { window.__mzFailedSources.add("messages"); }
     window.__mzMessages = { unread };
 }
 
@@ -523,6 +535,19 @@ function renderAttention(payload) {
             html: a.message,
             meta: a.kind.replace(/_/g, " ").toUpperCase().slice(0, 14),
             go: a.kind.includes("aged_ar") ? "/admin/billing/" : a.kind.includes("uninvoiced") ? "/admin/billing/" : a.kind.includes("payment") ? "/admin/billing/" : "/admin/billing/",
+        });
+    }
+
+    // A green all-clear is a CLAIM, and it is only true if every source
+    // actually answered. When one failed, say which, in the amber style —
+    // "we don't know" is an attention item, not an absence of them.
+    const failed = [...(window.__mzFailedSources || [])];
+    for (const src of failed) {
+        items.push({
+            sev: "warning",
+            html: `Could not load <strong>${src}</strong> — its counters on this page are unknown, not zero. Reload to retry.`,
+            meta: "LOAD FAILED",
+            go: src === "triage" ? "/admin/triage/" : src === "messages" ? "/admin/messages/" : "/admin/scheduling/",
         });
     }
 

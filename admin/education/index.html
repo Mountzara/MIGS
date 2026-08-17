@@ -568,6 +568,26 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('f-summary').value = data.material.summary || '';
                 $('f-tags').value = (data.material.topic_tags || []).join(', ');
                 $('f-body').value = data.material.body_md || '';
+                // -----------------------------------------------------------
+                // STATIC GUIDES ARE NOT EDITABLE HERE. 2026-08-14.
+                // -----------------------------------------------------------
+                // 12 of the 14 guides are full static HTML pages (r2_key ends
+                // .html); their body_md is empty BY DESIGN, and the patient
+                // reader redirects to the static page precisely because
+                // body_md is empty. This editor used to open them as a blank
+                // textarea — and typing anything into it saved a non-empty
+                // body_md, which SUPPRESSED the redirect and replaced the
+                // real, KB-anchored guide with whatever was typed. One
+                // keystroke and a save could quietly take a clinical page
+                // out of the patient reader.
+                const isStatic = /\.html$/i.test(data.material.r2_key || '')
+                    && !(data.material.body_md || '').trim();
+                state.editingIsStatic = isStatic;
+                $('f-body').readOnly = isStatic;
+                $('f-body').placeholder = isStatic
+                    ? 'This guide is a full static page, KB-anchored and deployed with the site. Its body is not editable here — edit the page in the repo, where the KB gate can verify it. Title, summary, tags and audience above ARE editable.'
+                    : '';
+                $('f-body').style.opacity = isStatic ? '0.55' : '';
                 $('preview').classList.remove('open');
                 $('btn-archive').style.display = data.material.status === 'archived' ? 'none' : 'inline-block';
                 $('modal').classList.add('open');
@@ -608,13 +628,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             data.status = status;
             try {
                 if (state.editing) {
+                    // body_md is omitted for a static guide, and for any
+                    // edit that did not change it. Sending it back
+                    // unconditionally is the second half of the blanking
+                    // bug: even an untouched save round-tripped the body,
+                    // and for a static guide the body it round-tripped was
+                    // the empty string it opened with.
+                    const patch = {
+                        title: data.title, summary: data.summary,
+                        topic_tags: data.topic_tags, target_audience: data.target_audience,
+                        status,
+                    };
+                    if (!state.editingIsStatic
+                            && data.body_md !== (state.editing.body_md || '')) {
+                        patch.body_md = data.body_md;
+                    }
                     await fetchJson(`/api/v1/admin/education/${encodeURIComponent(state.editing.slug)}`, {
                         method: 'PATCH',
-                        body: JSON.stringify({
-                            title: data.title, summary: data.summary,
-                            topic_tags: data.topic_tags, target_audience: data.target_audience,
-                            body_md: data.body_md, status,
-                        }),
+                        body: JSON.stringify(patch),
                     });
                     showToast(status === 'published' ? 'Published.' : 'Saved.');
                 } else {

@@ -308,7 +308,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="badge-row"><span class="badge badge-empty" id="intake-badge">—</span></div>
                 <div class="card-eyebrow">Intake</div>
                 <h2 id="intake-title">Loading…</h2>
-                <div class="card-body" id="intake-body">Your 19-section comprehensive history. Submit once, edit later if anything changes.</div>
+                <div class="card-body" id="intake-body">Your 19-section comprehensive history. Submitted intakes stay on file; start a fresh one before your next visit.</div>
                 <span class="card-action">Open your intake →</span>
             </a>
 
@@ -717,7 +717,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     return;
                 }
                 const status = i.intake.status;
-                const stepDone = i.completed_section_count != null ? i.completed_section_count : '—';
+                // The endpoint sends completion_pct on i.intake; it has never
+                // sent completed_section_count, so a mid-intake member read
+                // "— sections saved so far" — a placeholder shown as a fact.
+                const pct = i.intake.completion_pct != null ? Math.round(i.intake.completion_pct) : null;
                 if (status === 'submitted' || status === 'reviewed') {
                     $('intake-title').textContent = status === 'reviewed' ? 'Reviewed by your clinician' : 'Submitted';
                     $('intake-body').textContent = "Your intake is on file. We'll surface it in clinic and tie it into your triage.";
@@ -725,7 +728,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     $('intake-badge').className = 'badge badge-released';
                 } else {
                     $('intake-title').textContent = 'Intake in progress';
-                    $('intake-body').textContent = `${stepDone} section${stepDone === 1 ? '' : 's'} saved so far. Pick up where you left off.`;
+                    $('intake-body').textContent = pct != null
+                        ? `${pct}% complete. Pick up where you left off.`
+                        : 'In progress. Pick up where you left off.';
                     $('intake-badge').textContent = 'in progress';
                     $('intake-badge').className = 'badge badge-pending';
                 }

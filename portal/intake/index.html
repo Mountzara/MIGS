@@ -1063,7 +1063,43 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 setProgress(data.intake.completion_pct || 0);
                 if (data.intake.status !== 'in_progress') {
                     banner.innerHTML = '';
-                    banner.appendChild(h('div', { class: 'banner ok' }, 'Your intake has been submitted. Open your profile to update editable fields.'));
+                    const ok = h('div', { class: 'banner ok' },
+                        'Your intake has been submitted and is with the practice. ');
+                    // ---------------------------------------------------
+                    // THE WAY TO A SECOND VISIT. Before 2026-08-14 this
+                    // banner was a dead end: the form locked after submit
+                    // with no control anywhere to start another intake —
+                    // and a new intake is the only path to a new triage
+                    // row, which is the only path to booking another
+                    // appointment. One intake per patient, forever, by
+                    // omission. POST /api/v1/patient/intake/new already
+                    // existed and already did the right thing (it resumes
+                    // an in_progress intake rather than duplicating);
+                    // nothing called it.
+                    // ---------------------------------------------------
+                    const again = h('button', { class: 'btn', type: 'button',
+                        style: 'margin-left:12px; font-size:13px; padding:7px 14px;' },
+                        'Start a new intake for another visit');
+                    again.addEventListener('click', async () => {
+                        if (!confirm('Start a fresh intake? Your submitted one stays on file with the practice — this begins a new one for your next visit.')) return;
+                        again.disabled = true; again.textContent = 'Starting…';
+                        try {
+                            const r = await fetch('/api/v1/patient/intake/new', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                            });
+                            const j = await r.json();
+                            if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+                            window.location.reload();
+                        } catch (e) {
+                            again.disabled = false;
+                            again.textContent = 'Start a new intake for another visit';
+                            showStatus('Could not start a new intake: ' + (e.message || e), 'err');
+                        }
+                    });
+                    ok.appendChild(again);
+                    banner.appendChild(ok);
                     form.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
                     submitBtn.style.display = 'none';
                     nextBtn.style.display = 'none';
