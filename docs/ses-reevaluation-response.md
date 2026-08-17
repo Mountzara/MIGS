@@ -66,6 +66,16 @@ Implemented in the application and deployed:
   successful delivery clears the soft-bounce count.
 - **The suppression list is checked before every send**, so a suppressed
   address is never handed to SES at all.
+- We monitor against the thresholds your best-practices guidance
+  publishes — **bounce rate below 5% and complaint rate below 0.1%** — and
+  at our volume (tens of sends per month, each to an address its owner
+  just typed to receive their own sign-in link) a single bounce is
+  visible and acted on individually rather than statistically.
+- Per the guidance in your best-practices documentation on standard
+  aliases: the application **refuses to send to role addresses**
+  (postmaster@, abuse@, noc@, and similar) at the transport layer, so a
+  watchdog address maliciously entered at signup can never receive our
+  mail.
 - **Unsubscribe:** every message is a service notification triggered by
   the recipient's own account activity, so there is no subscription to
   manage — but the controls exist regardless: a patient who closes their
@@ -154,6 +164,21 @@ outbound subject or body containing clinical language.
   (`v=spf1 include:amazonses.com ~all`).
 - DMARC published at `_dmarc.mountzara.com`.
 - The application's IAM user holds `ses:SendEmail` only.
+- **From address: `Mount Zara <notifications@mountzara.com>` with a
+  monitored Reply-To of `info@mountzara.com`.** Our previous response
+  described a no-reply From address; after reviewing the best-practices
+  documentation you referred us to, we changed it — recipients can reply
+  and reach the practice.
+
+## Consent model (double opt-in in substance)
+
+The first and only email a newly entered address ever receives is a
+single-use sign-in/confirmation link that the owner of that address just
+requested. No other message type can be sent to an address until it has
+been used to sign in — that is, until the address is proven working and
+proven controlled by the account holder. This is the double-opt-in
+pattern your best-practices guidance recommends, enforced structurally:
+the software has no path that mails an unconfirmed address anything else.
 
 We would welcome any specific guidance on what fell short in the previous
 review, and we are happy to provide anything further — including read
@@ -193,7 +218,27 @@ Mount Zara — mountzara.com
    asking the specific question "what criterion was not met?" — a second
    human review usually engages.
 
-4. **Plan B if a second decline lands:** we don't have to keep the whole
+4. **I changed NOTIFY_FROM.** It was `Dr. Mabini <no-reply@mountzara.com>`
+   — your setting — and the best-practices doc AWS linked in the decline
+   says explicitly: "Avoid using a no-reply address … as your 'From' or
+   'Reply-to' address." Our first response to AWS disclosed the no-reply
+   address, which may have contributed. It is now
+   `Mount Zara <notifications@mountzara.com>` with Reply-To
+   `info@mountzara.com` (which the send code already supported). Replies
+   from patients will land in the info@ inbox — make sure someone reads
+   it. If you want your name back in the display name
+   ("Dr. Mabini — Mount Zara <notifications@…>"), say so and I'll set it.
+
+5. **The site has NO privacy policy or terms page** (all four common
+   paths 404). The best-practices doc recommends linking a Privacy Policy
+   and Terms of Use from every email, and for a medical practice the gap
+   is bigger than an email-deliverability nicety. I have NOT written one —
+   it is a legal document your healthcare attorney should own — but I can
+   draft one for their review the moment you say so, and once it exists
+   I'll add the footer link to every template. The reply above
+   deliberately does not claim we have one.
+
+6. **Plan B if a second decline lands:** we don't have to keep the whole
    stack on SES. The BAA constraint rules out Resend/Postmark for patient
    mail, but **Cloudflare's Email Sending** (native Workers binding) is
    worth evaluating for HIPAA posture, or SES in a different AWS account

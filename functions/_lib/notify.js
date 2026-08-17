@@ -434,6 +434,29 @@ function providerPermitted(env) {
  * must not become a silent outage for every patient at once — that is a
  * worse failure than the one it prevents.
  */
+/**
+ * Standard role aliases that never belong to a patient.
+ *
+ * From the SES best-practices doc AWS linked in their decline: "It is
+ * highly unlikely that a standard alias (such as postmaster@, abuse@, or
+ * noc@) will ever sign up for your email intentionally… These aliases can
+ * be maliciously added to your list as a form of sabotage, in order to
+ * damage your reputation."
+ *
+ * Our signup is open — anyone can create an account with any address and
+ * trigger a sign-in email to it. Without this check, signing up as
+ * abuse@<some-isp>.com would aim our mail directly at an email watchdog.
+ */
+const ROLE_ALIASES = new Set([
+    "postmaster", "abuse", "noc", "hostmaster", "mailer-daemon",
+    "spam", "security", "root", "usenet", "uucp",
+]);
+
+export function isRoleAddress(email) {
+    const local = String(email || "").split("@")[0].trim().toLowerCase();
+    return ROLE_ALIASES.has(local);
+}
+
 export async function isSuppressed(env, email) {
     if (!env?.DB || !email) return { suppressed: false };
     try {
@@ -457,6 +480,13 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
     // Never mail an address that hard-bounced or filed a spam complaint.
     // This is checked BEFORE the body is built, so a suppressed send costs
     // nothing and never reaches the provider.
+    // Never mail a role alias — see ROLE_ALIASES above. Refused before the
+    // suppression lookup because it needs no database.
+    if (isRoleAddress(to)) {
+        console.warn(`notify: "${template}" refused — role alias recipient`);
+        return { sent: false, refused: true, reason: "role_alias_recipient" };
+    }
+
     const sup = await isSuppressed(env, to);
     if (sup.suppressed) {
         console.warn(`notify: "${template}" suppressed (${sup.reason})`);
