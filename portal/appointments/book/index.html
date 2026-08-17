@@ -470,6 +470,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <button class="modality-chip" data-modality="in_person">In person</button>
                 <button class="modality-chip" data-modality="telehealth">Telehealth</button>
             </div>
+            <!-- Telehealth consent: IL 225 ILCS 150 / CA B&P 2290.5 provide for
+                 consent documented in the record. The server refuses a
+                 telehealth booking (HTTP 428) until this is acknowledged once;
+                 the acknowledgment row in patient_acknowledgments IS the
+                 documentation. Shown only when telehealth is selected. -->
+            <label id="th-consent-row" style="display:none; margin-top:14px; font-size:13px; line-height:1.55; gap:10px; align-items:flex-start;">
+                <input type="checkbox" id="th-consent" style="margin-top:3px;">
+                <span>I have reviewed the
+                <a href="/telehealth-consent/" target="_blank" rel="noopener">telehealth consent</a> —
+                how video visits work, their limits, and that I must be in Illinois or California
+                during the visit. I can withdraw this consent at any time without affecting my care.</span>
+            </label>
         </section>
 
         <section id="picker-card" class="card" style="display:none;">
@@ -699,6 +711,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     b.classList.toggle('active', b.getAttribute('data-modality') === 'in_person');
                     b.addEventListener('click', () => {
                         state.modalityChoice = b.getAttribute('data-modality');
+                        const cr = $('th-consent-row');
+                        if (cr) cr.style.display = state.modalityChoice === 'telehealth' ? 'flex' : 'none';
                         tog.querySelectorAll('.modality-chip').forEach(x =>
                             x.classList.toggle('active', x === b)
                         );
@@ -877,6 +891,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         start_minute_of_day: s.start_minute_of_day,
                         duration_min: t.duration_min,
                         modality: s.modality,
+                        telehealth_consent_ack: !!(document.getElementById('th-consent') || {}).checked,
                     }, extra || {})),
                 });
                 $('confirm-card').classList.remove('show');

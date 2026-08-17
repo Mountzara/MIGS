@@ -207,6 +207,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <label class="full">Password <span class="hint">&mdash; at least 12 characters</span>
                 <input type="password" id="password" name="password" required minlength="12" autocomplete="new-password">
             </label>
+            <label class="full" style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.55; font-weight:400;">
+                <input type="checkbox" id="ack-legal" required style="margin-top:3px; width:auto; min-height:0;">
+                <span>I have had the opportunity to review the
+                <a href="/privacy-practices/" target="_blank" rel="noopener">Notice of Privacy Practices</a>,
+                the <a href="/terms/" target="_blank" rel="noopener">Terms of Use</a> and the
+                <a href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>.
+                <span style="opacity:.65">You can also receive care without a portal account by
+                contacting the practice at info@mountzara.com.</span></span>
+            </label>
             <div class="actions">
                 <div id="msg" class="msg" role="alert" aria-live="polite"></div>
                 <button type="submit" id="submitBtn">Create account</button>
@@ -231,6 +240,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     method: 'POST',
                     headers: { 'content-type': 'application/json' },
                     body: JSON.stringify({
+                        acknowledge_legal: document.getElementById('ack-legal').checked,
                         email: document.getElementById('email').value.trim(),
                         password: document.getElementById('password').value,
                         first_name: document.getElementById('first_name').value.trim(),

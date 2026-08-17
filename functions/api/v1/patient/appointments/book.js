@@ -33,6 +33,7 @@ import { requireRole, nowMs } from "../../../../_lib/auth.js";
 import { logAudit } from "../../../../_lib/audit.js";
 import { newId } from "../../../../_lib/db.js";
 import { getVisitType, isValidVisitTypeKey } from "../../../../_lib/visit_types.js";
+import { recordAcknowledgment, hasAcknowledged } from "../../../../_lib/acknowledgments.js";
 import { dateStringToMs } from "../../../../_lib/scheduling.js";
 import {
     getLicensedStates,
@@ -188,6 +189,29 @@ export async function onRequestPost(ctx) {
     if (inPersonRequired && modality !== "in_person") {
         return err(409, "in_person_required",
             "This visit type requires in-person attendance.");
+    }
+
+    // ------------------------------------------------------------------
+    // TELEHEALTH CONSENT, DOCUMENTED. Illinois (225 ILCS 150) and
+    // California (Bus. & Prof. Code §2290.5) both provide for telehealth
+    // consent documented in the record. The consent PAGE has said "the
+    // portal asks you to acknowledge" since it was written; this is the
+    // code that actually asks. Version-sensitive: a materially revised
+    // consent (a bumped DOC_VERSIONS entry) requires re-acknowledgment.
+    // 428 Precondition Required, so the client can distinguish "show the
+    // consent" from every other booking failure.
+    // ------------------------------------------------------------------
+    if (modality === "telehealth") {
+        const already = await hasAcknowledged(env, session.patient_id, "telehealth_consent");
+        if (!already && body.telehealth_consent_ack !== true) {
+            return err(428, "telehealth_consent_required",
+                "Before your first telehealth visit, please review the telehealth consent at /telehealth-consent/ and confirm it when booking.");
+        }
+        if (!already) {
+            await recordAcknowledgment(env, {
+                patient_id: session.patient_id, doc_key: "telehealth_consent", request,
+            });
+        }
     }
     const procedureOrOmt = vt && (vt.category === "procedure" || visit_type === "omt_treatment");
     if (procedureOrOmt && modality === "telehealth") {
