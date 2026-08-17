@@ -165,6 +165,7 @@
     "/portal/proms/",
     "/portal/signup/",
     "/portal/symptoms/",
-    "/portal/visits/"
+    "/portal/visits/",
+    "/privacy-practices/acknowledgment-form/"
   ]
 }

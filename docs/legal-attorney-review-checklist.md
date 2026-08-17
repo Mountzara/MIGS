@@ -54,58 +54,61 @@ MHDDCA / AIDS Confidentiality Act / GIPA; CMIA; Civil Code §1798.82;
    patient, document, **document version**, timestamp — is the
    documentation contemplated by 225 ILCS 150 and B&P §2290.5.
 
-## B. For counsel — could not be verified or is judgment
+## B. Resolved since first draft — verify rather than research
 
-1. **OMBC notice-to-consumers exact text.** California regulations
-   prescribe specific wording (and telephone number) for the
-   notice-to-consumers requirement applicable to osteopathic physicians.
-   The page currently names the board and links ombc.ca.gov but omits a
-   phone number rather than risk printing a wrong one. → Confirm the
-   currently prescribed text under the OMBC's regulation and paste it
-   verbatim.
-2. **Entity details.** Pages say "Mount Zara, LLC, Chicago, Illinois"
-   (entity name taken from the site's own footer). No street address is
-   published anywhere on the site, and none was invented. → Confirm
-   registered entity name and whether a service address should appear on
-   the NPP and Terms.
-3. **NPP delivery at first in-person service.** The portal flow documents
-   acknowledgment for portal users; HIPAA's duty runs to *every* patient
-   at first service. → Confirm the paper workflow (copy available on
-   request is stated; a clinic-side acknowledgment form may be wanted).
-4. **Minors and portal access.** The NPP states parental portal access
-   "where granted, is limited accordingly." The software does not yet have
-   a proxy-access feature, so today this is vacuously true. → When proxy
-   access is built, counsel should review its minor-confidentiality
-   filtering before launch.
-5. **Reproductive-health privacy framing.** Drafted as *practice policy*
-   plus IL/CA shield laws, deliberately not citing the 2024 federal
-   reproductive-health privacy rule, which was vacated by a federal
-   district court in 2025. → Confirm current litigation posture and
-   whether counsel prefers statutory citations (e.g., specific IL/CA
-   shield provisions) named in the text.
-6. **Telehealth consent scope.** Drafted as information + recorded
-   acknowledgment. Some practices prefer a signature-style standalone
-   consent with enumerated initials. → Judgment call on form.
-7. **Terms: liability and venue.** Website-scoped limitation with an
-   explicit carve-out preserving all care-related rights; IL law, Cook
-   County venue, CA anti-waiver acknowledgment. **No arbitration clause
-   was added on purpose** — medical arbitration agreements trigger
-   separate statutory formalities (e.g., CCP §1295 in California) and
-   should never ride inside website terms. → Confirm.
-8. **CCPA/CPRA applicability.** The privacy policy states the practice is
-   generally below the statutory thresholds while honouring access and
-   deletion requests regardless. → Confirm threshold analysis annually.
-9. **Accessibility statement.** States WCAG 2.1 AA as the working standard
-   and describes real, mechanical enforcement (pixel-measured contrast
-   gating, reduced-motion). It deliberately does not claim conformance. →
-   Confirm comfort with the phrasing.
-10. **Retention specifics.** The privacy policy says record retention is
-    "measured in years" without quoting statutes, since physician
-    retention rules differ from the hospital ten-year rule in IL and CA
-    has its own scheme. → Counsel may wish to state exact periods in the
-    practice's records policy (internal), not necessarily on the page.
+1. **OMBC notice — RESOLVED with the prescribed text.** The regulation is
+   **16 CCR §1606** (not 1653.5 as first guessed). The verbatim notice —
+   including (916) 928-8390, https://search.dca.ca.gov/ and
+   osteopathic@dca.ca.gov — was extracted from the OMBC's own rulemaking
+   document (ombc.ca.gov/laws_regulations/ntc_proplang.pdf) and
+   corroborated by a county agency form in active use. It now appears
+   verbatim on /telehealth-consent/ and, with a signature line, on the
+   printable acknowledgment form — the latter satisfying §1606(b)(2)'s
+   "written statement for all new patients, signed and dated" method.
+   → Counsel: confirm the adopted text matches the proposal (Justia
+   indexes §1606 as an adopted CCR section).
+2. **Entity/service address — RESOLVED from the public record.** The NPP
+   contact now lists 355 Ridge Ave., Evanston, IL 60202, taken from the
+   practice's federal NPI registration (NPI 1992265797, practice
+   location). → Counsel/owner: confirm this is the address the LLC wants
+   for legal notices, vs. its registered-agent address.
+3. **Paper-side NPP workflow — RESOLVED.**
+   /privacy-practices/acknowledgment-form/ is a print-optimized combined
+   form: NPP receipt acknowledgment + the §1606 notice with signature +
+   a staff good-faith-effort section for a patient who declines to sign
+   (which is what 164.520(c) actually requires be documented).
+4. **2024 reproductive-privacy rule posture — RESOLVED and verified
+   against HHS.** Per HHS OCR's current page: the June 18, 2025 order in
+   the Texas litigation vacated most of the 2024 rule INCLUDING the
+   reproductive-health NPP provisions (§164.520(b)(1)(ii)(F)–(H)) — so
+   the practice-policy framing was correct and is retained — while the
+   Part 2 (substance-use-disorder) NPP modifications SURVIVED with a
+   compliance date of February 16, 2026, which has passed. The NPP's
+   Part 2 statement was strengthened accordingly (no use/disclosure in
+   proceedings against the individual absent written consent or a
+   Part 2 court order). The shield citations are now specific and were
+   verified against ilga.gov: **735 ILCS 40** (Lawful Health Care
+   Activity Act) and **775 ILCS 55** (Reproductive Health Act) — note
+   these were initially conflated and are now correct.
+5. **Arbitration — RESOLVED BY DESIGN, nothing pending.** No arbitration
+   clause, deliberately: medical arbitration triggers separate statutory
+   formalities (e.g., CCP §1295 in California) and must never ride
+   inside website terms. Counsel should simply confirm agreement.
 
-## C. Mechanics counsel should know
+## C. Still genuinely for counsel
+
+1. **Proxy/parental portal access** — the software has no proxy-access
+   feature yet; when built, its minor-confidentiality filtering needs
+   review before launch (the NPP's minors language anticipates it).
+2. **Consent form style** — information page + recorded electronic
+   acknowledgment vs. a signature-style enumerated consent: judgment.
+3. **CCPA/CPRA thresholds** — reconfirm annually.
+4. **Internal records-retention policy** — exact IL/CA retention periods
+   belong in an internal policy; the public page deliberately says
+   "as required by law."
+5. **California adopted-text check** for §1606 as noted in B.1.
+
+## D. Mechanics counsel should know
 
 - Every acknowledgment is stored in `patient_acknowledgments` with the
   **document version string** (its effective date). Revising a document
