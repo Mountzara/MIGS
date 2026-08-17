@@ -502,6 +502,19 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
     sanitizeForEmail(built.subject, "subject");
     sanitizeForEmail(built.text, "body");
 
+    // Footer on every message: who we are and where the privacy terms
+    // live. The SES best-practices guidance recommends linking a Privacy
+    // Policy and Terms of Use from each email, and for a medical practice
+    // "who is emailing me and under what rules" is a fair question every
+    // time. Appended AFTER sanitisation — it is a constant with no
+    // clinical content by construction.
+    const o = origin(env);
+    built.text += `\n\n—\nMount Zara, LLC · Chicago, Illinois\nPrivacy: ${o}/privacy/ · Terms: ${o}/terms/`;
+    built.html += `<hr style="border:none;border-top:1px solid #ddd;margin:18px 0 10px">` +
+        `<p style="font-size:12px;color:#888">Mount Zara, LLC · Chicago, Illinois · ` +
+        `<a href="${o}/privacy/" style="color:#888">Privacy</a> · ` +
+        `<a href="${o}/terms/" style="color:#888">Terms</a></p>`;
+
     const base = {
         to, template, subject: built.subject, text: built.text,
         html: built.html, patient_id,

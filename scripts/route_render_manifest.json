@@ -85,6 +85,26 @@
       "title_contains": "Case",
       "selector": "#id-verify-banner",
       "_note": "Jane Doe, the seeded test patient (scripts/_seed_jane_doe.sh) \u2014 a real id so the SPA renders its normal path; bogus ids tear down the DOM on the 404 error screen."
+    },
+    {
+      "path": "/privacy/",
+      "title_contains": "Privacy Policy"
+    },
+    {
+      "path": "/privacy-practices/",
+      "title_contains": "Notice of Privacy Practices"
+    },
+    {
+      "path": "/terms/",
+      "title_contains": "Terms of Use"
+    },
+    {
+      "path": "/telehealth-consent/",
+      "title_contains": "Telehealth Consent"
+    },
+    {
+      "path": "/accessibility/",
+      "title_contains": "Accessibility"
     }
   ],
   "unaudited": [

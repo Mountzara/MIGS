@@ -445,7 +445,7 @@ const COMING_SOON_HTML = `<!doctype html>
     </section>
 
     <footer>
-        <a href="/">Home</a><a href="/about/">About Dr. Mabini</a><a href="/evidence/">Evidence</a><a href="/trending/">Trending</a>
+        <a href="/">Home</a><a href="/about/">About Dr. Mabini</a><a href="/evidence/">Evidence</a><a href="/trending/">Trending</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>
     </footer>
 </div>
 

@@ -91,7 +91,11 @@ verbatim from the deployed code. Note what they share: **no clinical or
 personal content of any kind** — as a healthcare practice we deliberately
 keep all detail behind the authenticated portal, which also makes every
 email short, expected, and consistent. A code-level filter rejects any
-outbound subject or body containing clinical language.
+outbound subject or body containing clinical language. **Every email
+carries a footer identifying the sender and linking our Privacy Policy
+(https://mountzara.com/privacy/) and Terms of Use
+(https://mountzara.com/terms/)**, as your best-practices guidance
+recommends.
 
 **1. Sign-in link** (the most common message)
 > Subject: Your Mount Zara sign-in link
@@ -229,14 +233,11 @@ Mount Zara — mountzara.com
    it. If you want your name back in the display name
    ("Dr. Mabini — Mount Zara <notifications@…>"), say so and I'll set it.
 
-5. **The site has NO privacy policy or terms page** (all four common
-   paths 404). The best-practices doc recommends linking a Privacy Policy
-   and Terms of Use from every email, and for a medical practice the gap
-   is bigger than an email-deliverability nicety. I have NOT written one —
-   it is a legal document your healthcare attorney should own — but I can
-   draft one for their review the moment you say so, and once it exists
-   I'll add the footer link to every template. The reply above
-   deliberately does not claim we have one.
+5. **The legal pages now exist and are linked from every email footer**:
+   /privacy/, /privacy-practices/ (the HIPAA NPP), /terms/,
+   /telehealth-consent/, /accessibility/. Have your healthcare attorney
+   review them — they are grounded drafts, not attorney-reviewed
+   documents.
 
 6. **Plan B if a second decline lands:** we don't have to keep the whole
    stack on SES. The BAA constraint rules out Resend/Postmark for patient
