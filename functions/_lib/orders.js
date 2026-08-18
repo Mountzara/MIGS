@@ -116,6 +116,72 @@ export function escalationLevel(order, results, nowMs) {
     return { level: 0, label: "" };
 }
 
+// What a sweep should do about the current state, as a pure decision so
+// the cron job and the board can never disagree about what is wrong.
+//
+// The digest is deliberately CONTENT-FREE — counts and a link, no patient
+// names, no test names, no results. It goes to the practice inbox, which
+// is ordinary email; the detail lives behind admin authentication. An
+// alert that leaks the finding it is alerting about is a breach with a
+// good excuse.
+export function sweepPlan(orders, resultsByOrder, nowMs) {
+    const list = Array.isArray(orders) ? orders : [];
+    const get = (id) => (resultsByOrder && resultsByOrder.get ? (resultsByOrder.get(id) || []) : []);
+
+    const newlyOverdue = [];      // overdue and never yet flagged
+    const stillOverdue = [];      // overdue, already flagged once
+    const criticalUnacked = [];
+    const awaitingCommunication = [];
+
+    for (const o of list) {
+        if (!isOpen(o)) continue;
+        const rs = get(o.id);
+        if (isOverdue(o, nowMs)) {
+            (o.overdue_notified_at ? stillOverdue : newlyOverdue).push(o);
+        }
+        for (const r of rs) {
+            if (criticalUnacknowledged(r, nowMs)) criticalUnacked.push({ order: o, result: r });
+            else if (needsPatientCommunication(r)) awaitingCommunication.push({ order: o, result: r });
+        }
+    }
+    // Escalate only when something is NEW or dangerous. A daily email that
+    // repeats yesterday's numbers gets filtered, and then the one that
+    // matters gets filtered with it.
+    const notify = criticalUnacked.length > 0 || newlyOverdue.length > 0;
+    return {
+        notify,
+        newly_overdue: newlyOverdue,
+        still_overdue: stillOverdue,
+        critical_unacknowledged: criticalUnacked,
+        awaiting_patient_communication: awaitingCommunication,
+        counts: {
+            newly_overdue: newlyOverdue.length,
+            still_overdue: stillOverdue.length,
+            critical_unacknowledged: criticalUnacked.length,
+            awaiting_patient_communication: awaitingCommunication.length,
+        },
+    };
+}
+
+// The digest wording. Separated from the sweep so the copy is testable and
+// so nothing patient-identifying can drift into it later.
+export function digestText(counts) {
+    const lines = [];
+    if (counts.critical_unacknowledged > 0) {
+        lines.push(`${counts.critical_unacknowledged} critical result(s) have not been acknowledged.`);
+    }
+    if (counts.newly_overdue > 0) {
+        lines.push(`${counts.newly_overdue} order(s) have passed their expected result date with nothing back.`);
+    }
+    if (counts.still_overdue > 0) {
+        lines.push(`${counts.still_overdue} previously flagged order(s) are still waiting.`);
+    }
+    if (counts.awaiting_patient_communication > 0) {
+        lines.push(`${counts.awaiting_patient_communication} reviewed result(s) have not yet been discussed with the patient.`);
+    }
+    return lines;
+}
+
 // An order that cannot be acted on. The performing facility rejects an
 // order missing any of these, and an order without an indication is not
 // defensible in the record even when the facility accepts it.
@@ -139,5 +205,5 @@ export function validateOrder(o) {
 export default {
     ORDER_TYPES, PRIORITIES, ORDER_STATUSES, canTransition, resultDueAt,
     isOpen, isOverdue, daysOverdue, criticalUnacknowledged, criticalOverdue,
-    needsPatientCommunication, escalationLevel, validateOrder,
+    needsPatientCommunication, escalationLevel, validateOrder, sweepPlan, digestText,
 };

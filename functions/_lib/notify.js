@@ -203,6 +203,25 @@ export const TEMPLATES = {
             `<p style="color:#666">For your privacy, the summary itself is not included in this email.</p>`,
     }),
 
+    // Sent to the PRACTICE, not a patient: the order board has something
+    // that needs attention. Counts and a link only — no patient, no test,
+    // no result. This lands in an ordinary inbox, and an alert that
+    // discloses the finding it is alerting about is a breach with a good
+    // excuse. The detail lives behind admin authentication.
+    order_attention: ({ lines, boardUrl }) => ({
+        subject: "Mount Zara — orders needing attention",
+        text:
+            `The order board has items that need attention:\n\n` +
+            (lines || []).map((l) => `  • ${l}`).join("\n") +
+            `\n\nOpen the board:\n${boardUrl}\n\n` +
+            `No patient or clinical detail is included in this email by design.`,
+        html:
+            `<p>The order board has items that need attention:</p><ul>` +
+            (lines || []).map((l) => `<li>${esc(l)}</li>`).join("") +
+            `</ul><p><a href="${esc(boardUrl)}">Open the order board</a></p>` +
+            `<p style="color:#666">No patient or clinical detail is included in this email by design.</p>`,
+    }),
+
     // Sent when a triage row is released and booking opens — by Dr. Mabini,
     // or by the four-hour auto-release. The patient does not need to know
     // which, and telling them would be worse: "a computer decided" is not

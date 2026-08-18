@@ -74,5 +74,39 @@ t("referral without consult question caught", o.validateOrder({ ...ref, consult_
 t("referral without specialty caught", o.validateOrder({ ...ref, specialty: "" }).missing.includes("specialty"));
 t("empty order rejected", o.validateOrder(null).ok === false);
 
+// --- the sweep: what the cron job should act on ----------------------
+const mk = (id, over, notified) => ({ id, status: "placed", result_due_at: over ? NOW - 2 * DAY : NOW + DAY,
+                                      overdue_notified_at: notified ? NOW - DAY : null });
+const rmap = new Map();
+const plan1 = o.sweepPlan([mk("a", true, false), mk("b", true, true), mk("c", false, false)], rmap, NOW);
+t("newly overdue separated from already-flagged", plan1.counts.newly_overdue === 1 && plan1.counts.still_overdue === 1);
+t("not-yet-due order is not swept", plan1.counts.newly_overdue + plan1.counts.still_overdue === 2);
+t("a newly overdue order triggers notification", plan1.notify === true);
+
+const plan2 = o.sweepPlan([mk("b", true, true)], new Map(), NOW);
+t("only already-flagged overdue does NOT re-notify", plan2.notify === false);
+t("but it is still reported", plan2.counts.still_overdue === 1);
+
+const critMap = new Map([["a", [{ id: "r1", result_status: "critical", received_at: NOW - 3600000 }]]]);
+const plan3 = o.sweepPlan([mk("a", false, false)], critMap, NOW);
+t("unacknowledged critical always notifies", plan3.notify === true);
+t("critical counted even when the order is not overdue", plan3.counts.critical_unacknowledged === 1);
+
+const toldMap = new Map([["a", [{ id: "r1", result_status: "abnormal", acknowledged_at: NOW }]]]);
+const plan4 = o.sweepPlan([mk("a", false, false)], toldMap, NOW);
+t("un-communicated result is reported", plan4.counts.awaiting_patient_communication === 1);
+t("but does not alone trigger an alert email", plan4.notify === false);
+t("closed orders are excluded from the sweep",
+  o.sweepPlan([{ id: "z", status: "reviewed", result_due_at: NOW - 5 * DAY }], new Map(), NOW).counts.newly_overdue === 0);
+t("empty input is safe", o.sweepPlan(null, null, NOW).notify === false);
+
+// --- digest copy: counts only, never content -------------------------
+const dig = o.digestText({ critical_unacknowledged: 1, newly_overdue: 2, still_overdue: 3, awaiting_patient_communication: 4 });
+t("digest names each category", dig.length === 4);
+t("digest leads with the critical line", /critical/.test(dig[0]));
+t("digest carries no patient identifiers", dig.every(l => !/@|patient_|[A-Z][a-z]+ [A-Z][a-z]+/.test(l)));
+t("digest omits empty categories", o.digestText({ critical_unacknowledged: 0, newly_overdue: 1, still_overdue: 0, awaiting_patient_communication: 0 }).length === 1);
+t("nothing to say is an empty digest", o.digestText({ critical_unacknowledged: 0, newly_overdue: 0, still_overdue: 0, awaiting_patient_communication: 0 }).length === 0);
+
 console.log(`orders: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -267,6 +267,36 @@ async function runTriageAutoRelease(env) {
 
 
 // =====================================================================
+// Order / result sweep (hourly, with triage auto-release)
+// =====================================================================
+// The missed-result safety net. Delegates to the Pages endpoint, which
+// holds the logic and the DB binding; this just wakes it up and makes
+// the outcome findable in the logs. An unacknowledged critical result is
+// the most dangerous state the system can be in, so it is logged as an
+// error rather than an info line.
+async function runOrderSweep(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("order sweep: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/orders/sweep", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`order sweep: scanned=${j.scanned ?? "?"} newly_overdue=${j.newly_overdue ?? "?"} ` +
+                    `still_overdue=${j.still_overdue ?? "?"} critical_unacked=${j.critical_unacknowledged ?? "?"} ` +
+                    `awaiting_patient_comm=${j.awaiting_patient_communication ?? "?"} emailed=${j.emailed ?? "?"}`);
+        if (j.critical_unacknowledged > 0) {
+            console.error(`order sweep: ${j.critical_unacknowledged} CRITICAL result(s) unacknowledged`);
+        }
+    } catch (e) {
+        console.error("order sweep failed", String(e?.message || e));
+    }
+}
+
+// =====================================================================
 // Notification outbox flush (every 15 minutes, with the SLA sweep)
 // =====================================================================
 // notify.js queues every failed send and its own comment said "a later run
@@ -317,6 +347,7 @@ export default {
         }
         if (event.cron === "0 * * * *") {
             ctx.waitUntil(runTriageAutoRelease(env));
+            ctx.waitUntil(runOrderSweep(env));
             return;
         }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));

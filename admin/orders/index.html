@@ -90,7 +90,8 @@
             <button class="tab" data-view="overdue">Overdue</button>
             <button class="tab" data-view="critical">Critical</button>
             <button class="tab" data-view="all">All</button>
-            <button class="tab" id="btn-new" style="margin-left:auto;">+ New order</button>
+            <button class="tab" id="btn-sweep" style="margin-left:auto;" title="Check for overdue orders and unacknowledged critical results now">Run check now</button>
+            <button class="tab" id="btn-new">+ New order</button>
         </div>
 
         <div id="list"><div class="empty">Loading…</div></div>
@@ -254,6 +255,22 @@
         });
 
         // ---- new order ----
+        $('btn-sweep').addEventListener('click', async (e) => {
+            const b = e.target; b.disabled = true;
+            try {
+                const r = await api('/api/v1/internal/orders/sweep', 'POST', {});
+                if (!r.ok) { toast('Check failed (' + r.status + ')'); return; }
+                const d = r.data;
+                const bits = [];
+                if (d.critical_unacknowledged) bits.push(d.critical_unacknowledged + ' critical unacknowledged');
+                if (d.newly_overdue) bits.push(d.newly_overdue + ' newly overdue');
+                if (d.still_overdue) bits.push(d.still_overdue + ' still waiting');
+                if (d.awaiting_patient_communication) bits.push(d.awaiting_patient_communication + ' patient not told');
+                toast(bits.length ? bits.join(' · ') + (d.emailed ? ' — alert sent' : '') : 'Checked ' + d.scanned + ' open order(s) — nothing needs attention');
+                load();
+            } finally { b.disabled = false; }
+        });
+
         $('btn-new').addEventListener('click', async () => {
             if (state.patients.length === 0) {
                 const r = await api('/api/v1/admin/patients?limit=200');
