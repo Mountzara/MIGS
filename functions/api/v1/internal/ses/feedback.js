@@ -115,18 +115,57 @@ export async function onRequestPost(ctx) {
     try { envelope = await request.json(); }
     catch { return json({ error: "invalid_json" }, 400); }
 
+    // Log EVERY inbound POST before any decision. Diagnosing "SNS says
+    // delivered, subscription still pending" without this is guesswork:
+    // there is no way, from outside, to tell a request that never arrived
+    // from one that arrived and was rejected. Metadata only — no message
+    // bodies, so no recipient addresses land here.
+    try {
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS sns_confirmations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                at TEXT NOT NULL, topic TEXT, status INTEGER, body TEXT
+            )`).run();
+        await env.DB.prepare(
+            `INSERT INTO sns_confirmations (at, topic, status, body) VALUES (?, ?, ?, ?)`
+        ).bind(new Date().toISOString(), String(envelope?.TopicArn || "(none)"), -1,
+               `INBOUND type=${String(envelope?.Type || "?")} ua=${String(request.headers.get("user-agent") || "").slice(0, 60)}`).run();
+    } catch {}
+
     if (String(envelope?.TopicArn || "") !== expectedArn) {
         return json({ error: "wrong_topic" }, 403);
     }
 
     // SNS confirms a subscription by POSTing a URL to visit once.
+    //
+    // 2026-08-18: the original version fetched SubscribeURL and reported
+    // success on ANY outcome — a 4xx from SNS looked identical to a
+    // confirmation. SNS then kept the subscription in PendingConfirmation
+    // while its own delivery metrics said "delivered, 0 failed", which is
+    // the worst possible failure shape: every dashboard green, no
+    // notifications flowing. The callback result is now inspected and
+    // recorded so the next diagnosis takes seconds, not an afternoon.
     if (envelope.Type === "SubscriptionConfirmation") {
+        let status = 0, bodyText = "";
         try {
-            await fetch(String(envelope.SubscribeURL), { method: "GET" });
-            return json({ ok: true, confirmed: true });
+            const r = await fetch(String(envelope.SubscribeURL), { method: "GET" });
+            status = r.status;
+            bodyText = (await r.text().catch(() => "")).slice(0, 400);
         } catch (e) {
-            return json({ ok: false, error: `confirmation fetch failed: ${String(e).slice(0, 160)}` }, 502);
+            bodyText = `fetch threw: ${String(e).slice(0, 200)}`;
         }
+        try {
+            await env.DB.prepare(`
+                CREATE TABLE IF NOT EXISTS sns_confirmations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    at TEXT NOT NULL, topic TEXT, status INTEGER, body TEXT
+                )`).run();
+            await env.DB.prepare(
+                `INSERT INTO sns_confirmations (at, topic, status, body) VALUES (?, ?, ?, ?)`
+            ).bind(new Date().toISOString(), expectedArn, status, bodyText).run();
+        } catch {}
+        const ok = status >= 200 && status < 300;
+        return json({ ok, confirmed: ok, status, detail: bodyText }, ok ? 200 : 502);
     }
     if (envelope.Type !== "Notification") {
         return json({ ok: true, ignored: envelope.Type || "unknown" });
