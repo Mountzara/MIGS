@@ -138,7 +138,8 @@ export async function startThread(env, args) {
     try {
         putRes = await putPhiObject(env, r2_key, cleanBody, aad);
     } catch (e) {
-        return { ok: false, error: "phi_encrypt_failed", detail: String(e && e.message || e) };
+        console.error("messaging: encrypt failed", String(e && e.message || e).slice(0, 200));
+        return { ok: false, error: "phi_encrypt_failed", detail: "Your message could not be saved securely. Please try again." };
     }
 
     const preview = clipPreview(cleanBody);
@@ -178,7 +179,8 @@ export async function startThread(env, args) {
             r2_key, cleanSubject, putRes.wrapped_dek, t
         ).run();
     } catch (e) {
-        return { ok: false, error: "db_insert_failed", detail: String(e && e.message || e) };
+        console.error("messaging: db insert failed", String(e && e.message || e).slice(0, 200));
+        return { ok: false, error: "db_insert_failed", detail: "Your message could not be saved. Please try again." };
     }
 
     await notifyPatientOfNewMessage(env, patient_id, from_role, "startThread");
@@ -254,7 +256,8 @@ export async function replyInThread(env, args) {
     try {
         putRes = await putPhiObject(env, r2_key, cleanBody, aad);
     } catch (e) {
-        return { ok: false, error: "phi_encrypt_failed", detail: String(e && e.message || e) };
+        console.error("messaging: encrypt failed", String(e && e.message || e).slice(0, 200));
+        return { ok: false, error: "phi_encrypt_failed", detail: "Your message could not be saved securely. Please try again." };
     }
 
     const preview = clipPreview(cleanBody);
@@ -296,7 +299,8 @@ export async function replyInThread(env, args) {
             `).bind(t, from_role, preview, t, thread_id).run();
         }
     } catch (e) {
-        return { ok: false, error: "db_insert_failed", detail: String(e && e.message || e) };
+        console.error("messaging: db insert failed", String(e && e.message || e).slice(0, 200));
+        return { ok: false, error: "db_insert_failed", detail: "Your message could not be saved. Please try again." };
     }
 
     // The call this function was always supposed to have. See

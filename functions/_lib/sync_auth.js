@@ -111,7 +111,13 @@ export async function syncRoute(ctx, app, handler) {
         });
     } catch (e) {
         const msg = e && e.message ? e.message : String(e);
-        console.error("sync_auth.syncRoute threw", { app, url: request.url, error: msg });
+        // PATHNAME ONLY. The sync lookup endpoints carry patient email and
+        // DOB in the query string (server-to-server over TLS, acceptable in
+        // transit) — but audit_log is a six-year retention table, and the
+        // practice's own audit policy forbids identifiers in details_json.
+        // Logging request.url wrote them there on every exception.
+        const safePath = (() => { try { return new URL(request.url).pathname; } catch { return "?"; } })();
+        console.error("sync_auth.syncRoute threw", { app, path: safePath, error: msg });
         try {
             await logAudit(env, {
                 user_id: null, user_role: "app",
@@ -120,7 +126,7 @@ export async function syncRoute(ctx, app, handler) {
                 ip: request.headers.get("CF-Connecting-IP") || "",
                 user_agent: request.headers.get("User-Agent") || "",
                 success: false,
-                details: { app, url: request.url, error: msg.slice(0, 240) },
+                details: { app, path: safePath, error: msg.slice(0, 240) },
             });
         } catch {}
         return new Response(JSON.stringify({ error: "internal_error", detail: msg }), {
