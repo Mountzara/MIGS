@@ -405,6 +405,36 @@ fi
 # calendar query ever again — written, acknowledged and lost — and a
 # ?from=1900-01-01 trends request returned 46,000 points in 1.6 MB.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Orders / results / estimates / referral gates.
+#
+# These three suites guard the parts of the system where a silent bug is a
+# CLINICAL or REGULATORY failure rather than a broken page:
+#   * orders     — a missed result is the classic outpatient negligence claim,
+#                  so the overdue clock and the critical-result escalation are
+#                  asserted rather than trusted.
+#   * gfe        — the No Surprises Act deadline ladder and the required
+#                  content elements (45 CFR 149.610). An estimate missing a
+#                  required element is worse than none: it looks compliant.
+#   * referrals  — an HMO/EPO member routed out of network is a denied claim
+#                  the patient pays. A false "ok" here has a dollar value.
+# ---------------------------------------------------------------------------
+for _suite in orders gfe referrals; do
+    if command -v node >/dev/null 2>&1 && [ -f "scripts/test_${_suite}.mjs" ]; then
+        echo ""
+        echo "🔒 ${_suite} gate..."
+        if node "scripts/test_${_suite}.mjs" > "/tmp/_${_suite}.log" 2>&1; then
+            tail -1 "/tmp/_${_suite}.log"
+            echo "   ✅ ${_suite} gate passed"
+        else
+            echo ""
+            echo "🛑 DEPLOY BLOCKED by the ${_suite} gate:"
+            tail -20 "/tmp/_${_suite}.log"
+            exit 1
+        fi
+    fi
+done
+
 if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
     echo ""
     echo "🔒 date gate — real calendar dates and bounded windows..."

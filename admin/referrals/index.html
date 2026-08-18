@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Referral directory · Mount Zara Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base:#120f1b; --bg-card:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.10);
+            --fg-strong:#fff; --fg-mid:#fff; --fg-soft:#fff; --fg-dim:#fff;
+            --accent:#6d28d9; --accent-soft:#a78bfa; --glow-purple:167,139,250;
+            --amber:#f59e0b; --green:#10b981; --red:#ef4444;
+        }
+        * { box-sizing:border-box; }
+        html, body { margin:0; padding:0;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow-purple),0.12), transparent 60%), var(--bg-base);
+            color:var(--fg-mid);
+            font-family:'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+            min-height:100vh; -webkit-font-smoothing:antialiased; }
+        a { color:var(--accent-soft); text-decoration:none; }
+        .wrap { max-width:1180px; margin:0 auto; padding:32px 24px 80px; }
+        header.bar { display:flex; align-items:center; gap:12px; font-size:12.5px; margin-bottom:20px; flex-wrap:wrap; }
+        h1 { font-weight:200; font-size:clamp(26px,3.4vw,36px); letter-spacing:-.02em; margin:0 0 6px; }
+        .lede { font-size:14.5px; line-height:1.55; max-width:76ch; margin:0 0 20px; opacity:.85; }
+        .kpis { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); margin-bottom:22px; }
+        .kpi { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+        .kpi .l { font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; opacity:.6; }
+        .kpi .v { font-size:28px; font-weight:200; margin-top:6px; }
+        .kpi.danger { border-color:rgba(239,68,68,.5); } .kpi.danger .v { color:#fca5a5; }
+        .kpi.warn { border-color:rgba(245,158,11,.45); } .kpi.warn .v { color:#fcd34d; }
+        .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
+        .tab { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px;
+               padding:6px 14px; font:inherit; font-size:12px; color:var(--fg-soft); cursor:pointer; }
+        .tab.active { background:rgba(var(--glow-purple),.16); border-color:rgba(var(--glow-purple),.55); color:var(--accent-soft); }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
+                padding:14px 16px; margin-bottom:10px; }
+        .card.lvl5 { border-color:rgba(239,68,68,.75); box-shadow:0 0 0 1px rgba(239,68,68,.25) inset; }
+        .card.lvl4 { border-color:rgba(239,68,68,.5); }
+        .card.lvl3, .card.lvl2 { border-color:rgba(245,158,11,.45); }
+        .row1 { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+        .who { font-size:15px; font-weight:600; }
+        .pill { font-size:10.5px; padding:2px 9px; border-radius:999px; border:1px solid var(--border); opacity:.9; }
+        .pill.red { border-color:rgba(239,68,68,.6); color:#fca5a5; }
+        .pill.amber { border-color:rgba(245,158,11,.6); color:#fcd34d; }
+        .pill.green { border-color:rgba(16,185,129,.6); color:#6ee7b7; }
+        .meta { font-size:12.5px; opacity:.75; margin-top:6px; line-height:1.6; }
+        .acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+        button.act { font:inherit; font-size:12px; cursor:pointer; padding:6px 13px; border-radius:999px;
+                     background:rgba(var(--glow-purple),.16); border:1px solid rgba(var(--glow-purple),.5); color:var(--accent-soft); }
+        button.act.ghost { background:rgba(255,255,255,.04); border-color:var(--border); color:var(--fg-soft); }
+        button.act:disabled { opacity:.5; cursor:default; }
+        .empty { opacity:.6; font-size:13.5px; padding:24px 0; }
+        dialog { background:#1a1626; color:#fff; border:1px solid var(--border); border-radius:14px;
+                 padding:20px; max-width:560px; width:92vw; }
+        dialog::backdrop { background:rgba(0,0,0,.6); }
+        label { display:block; font-size:12px; opacity:.75; margin:10px 0 4px; }
+        input, select, textarea { width:100%; background:rgba(0,0,0,.3); border:1px solid var(--border);
+                 border-radius:8px; padding:8px 10px; color:#fff; font:inherit; font-size:13px; }
+        textarea { min-height:70px; resize:vertical; }
+        .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#241d36;
+                 border:1px solid var(--border); border-radius:10px; padding:10px 18px; font-size:13px;
+                 opacity:0; transition:opacity .3s; pointer-events:none; }
+        .toast.show { opacity:1; }
+    </style>
+</head>
+<body>
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><span><a href="/admin/">Admin</a> &rsaquo; Orders &amp; results</span></header>
+        <h1>Orders &amp; results</h1>
+        <p class="lede">
+    <script src="/admin/_nav.js"></script>
+    <div class="wrap">
+        <header class="bar"><span><a href="/admin/">Admin</a> &rsaquo; Referral directory</span></header>
+        <h1>Referral directory</h1>
+        <p class="lede">
+            Who we send patients to, and which insurance networks each destination actually takes. Pick the patient's
+            payer and plan type below and every destination is ranked and checked before you refer — an HMO or EPO
+            member sent out of network is a denied claim the patient pays, and they will blame the practice that sent
+            them. Network lists are recorded per destination and dated, never assumed.
+        </p>
+
+        <div class="card" style="margin-bottom:18px;">
+            <div class="grid2">
+                <div><label for="f-payer">Patient's payer</label><input id="f-payer" placeholder="Aetna, BCBS IL…"></div>
+                <div><label for="f-plan">Plan type</label>
+                    <select id="f-plan">
+                        <option value="unknown">Unknown</option><option value="HMO">HMO</option>
+                        <option value="PPO">PPO</option><option value="EPO">EPO</option><option value="POS">POS</option>
+                        <option value="Medicare">Medicare</option><option value="Medicaid">Medicaid</option>
+                        <option value="self_pay">Self-pay</option>
+                    </select></div>
+            </div>
+            <div class="acts"><button class="act" id="btn-check">Check coverage</button>
+                <button class="act ghost" id="btn-add">+ Add destination</button></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+            <button class="tab active" data-kind="">All</button>
+            <button class="tab" data-kind="specialist">Specialists</button>
+            <button class="tab" data-kind="lab">Labs</button>
+            <button class="tab" data-kind="imaging">Imaging</button>
+        </div>
+        <div id="list"><div class="empty">Loading…</div></div>
+    </div>
+
+    <dialog id="dlg">
+        <h3 style="margin:0 0 10px;font-weight:300;">Add a destination</h3>
+        <label for="d-name">Name</label><input id="d-name" placeholder="Dr. Jane Roe / Quest Diagnostics">
+        <div class="grid2">
+            <div><label for="d-kind">Kind</label><select id="d-kind">
+                <option value="specialist">Specialist</option><option value="lab">Lab</option><option value="imaging">Imaging</option></select></div>
+            <div><label for="d-specialty">Specialty</label><input id="d-specialty" placeholder="Interventional radiology"></div>
+        </div>
+        <div class="grid2">
+            <div><label for="d-phone">Phone</label><input id="d-phone"></div>
+            <div><label for="d-fax">Fax</label><input id="d-fax"></div>
+        </div>
+        <label for="d-networks">Networks accepted (comma separated — only what you have confirmed)</label>
+        <input id="d-networks" placeholder="Aetna, BCBS IL PPO">
+        <label><input type="checkbox" id="d-cash" style="width:auto;margin-right:8px;">Publishes a cash price</label>
+        <label for="d-cashnote">Cash price note</label><input id="d-cashnote" placeholder="$250 pelvic US, quoted 2026-08">
+        <div class="acts" style="margin-top:16px;">
+            <button class="act" id="d-save">Save</button><button class="act ghost" id="d-cancel">Cancel</button>
+        </div>
+    </dialog>
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function () {
+        'use strict';
+        const $ = (id) => document.getElementById(id);
+        const state = { kind: '', rows: [] };
+        function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+        async function api(url, method, body) {
+            const r = await fetch(url, { method: method || 'GET', credentials: 'include',
+                headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+            if (r.status === 401) { location.reload(); return new Promise(() => {}); }
+            return { ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) };
+        }
+        async function load() {
+            const p = new URLSearchParams();
+            if (state.kind) p.set('kind', state.kind);
+            const payer = $('f-payer').value.trim();
+            if (payer) { p.set('payer_name', payer); p.set('plan_type', $('f-plan').value); }
+            const r = await api('/api/v1/admin/referral-directory?' + p.toString());
+            if (!r.ok) { $('list').innerHTML = '<div class="empty">Could not load (' + r.status + ').</div>'; return; }
+            state.rows = r.data.destinations || [];
+            render(r.data.ranked);
+        }
+        function render(ranked) {
+            if (state.rows.length === 0) {
+                $('list').innerHTML = '<div class="empty">No destinations yet. Add the labs, imaging centres and specialists you actually use — the directory is only useful once it reflects your real referral patterns.</div>';
+                return;
+            }
+            $('list').innerHTML = state.rows.map(d => {
+                const v = d.risk && d.risk.verdict;
+                const pill = v === 'ok' ? '<span class="pill green">in network</span>'
+                    : v === 'block' ? '<span class="pill red">not covered — do not send</span>'
+                    : v === 'warn' ? '<span class="pill amber">out of network</span>'
+                    : v === 'verify' ? '<span class="pill amber">verify first</span>' : '';
+                const reasons = (d.risk && d.risk.reasons || []).map(x => `<div class="meta">• ${esc(x)}</div>`).join('');
+                return `<div class="card ${v === 'block' ? 'lvl4' : v === 'warn' || v === 'verify' ? 'lvl2' : ''}">
+                    <div class="row1"><span class="who">${esc(d.name)}</span>
+                        <span class="pill">${esc(d.kind)}</span>
+                        ${d.specialty ? `<span class="pill">${esc(d.specialty)}</span>` : ''}
+                        ${d.accepts_cash ? '<span class="pill green">cash price</span>' : ''}
+                        ${pill}</div>
+                    <div class="meta">${(d.networks || []).length ? 'Networks: ' + esc((d.networks || []).join(', ')) : '<em>No networks recorded — call to confirm before sending.</em>'}
+                        ${d.networks_verified_at ? ' · verified ' + esc(d.networks_verified_at) : ''}</div>
+                    ${d.phone || d.fax ? `<div class="meta">${d.phone ? 'Tel ' + esc(d.phone) : ''}${d.fax ? ' · Fax ' + esc(d.fax) : ''}</div>` : ''}
+                    ${d.cash_price_note ? `<div class="meta">Cash: ${esc(d.cash_price_note)}</div>` : ''}
+                    ${ranked ? reasons : ''}
+                </div>`;
+            }).join('');
+        }
+        $('tabs').addEventListener('click', (e) => {
+            const b = e.target.closest('.tab'); if (!b) return;
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === b));
+            state.kind = b.dataset.kind || ''; load();
+        });
+        $('btn-check').addEventListener('click', load);
+        $('btn-add').addEventListener('click', () => $('dlg').showModal());
+        $('d-cancel').addEventListener('click', () => $('dlg').close());
+        $('d-save').addEventListener('click', async () => {
+            const r = await api('/api/v1/admin/referral-directory', 'POST', {
+                name: $('d-name').value.trim(), kind: $('d-kind').value, specialty: $('d-specialty').value.trim(),
+                phone: $('d-phone').value.trim(), fax: $('d-fax').value.trim(),
+                networks: $('d-networks').value.split(',').map(s => s.trim()).filter(Boolean),
+                networks_verified_at: $('d-networks').value.trim() ? new Date().toISOString().slice(0, 10) : null,
+                accepts_cash: $('d-cash').checked, cash_price_note: $('d-cashnote').value.trim(),
+            });
+            if (!r.ok) { toast(r.data.error || 'Failed'); return; }
+            $('dlg').close(); toast('Destination added'); load();
+        });
+        load();
+    })();
+    </script>
+</body>
+</html>
