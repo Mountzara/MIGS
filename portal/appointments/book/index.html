@@ -680,7 +680,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 : t.status === 'pending_review'
                     ? `<span class="pill pending">in review</span>`
                     : `<span class="pill pending">manual review</span>`;
-            const urgPill = t.urgency === 'urgent' ? `<span class="pill urgent">urgent</span>` : `<span class="pill routine">routine</span>`;
+            // 'soon' used to render as "routine" — the middle urgency the AI
+            // actually assigns was invisible to the patient it applied to.
+            const urgPill = t.urgency === 'urgent' ? `<span class="pill urgent">urgent</span>`
+                : t.urgency === 'soon' ? `<span class="pill urgent" style="opacity:.75">soon</span>`
+                : `<span class="pill routine">routine</span>`;
 
             const visitLine = t.was_overridden_by_clinician
                 ? `${escapeHtml(visitTypeLabel(t.visit_type))} <span style="color:var(--fg-dim); font-size:12px;">(adjusted from ${escapeHtml(visitTypeLabel(t.ai_visit_type))} by your clinician)</span>`

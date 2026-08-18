@@ -27,7 +27,10 @@ import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../.
 import { logAudit } from "../../../../../_lib/audit.js";
 import { isValidVisitTypeKey, getVisitType, MANUAL_REVIEW_PLACEHOLDER } from "../../../../../_lib/visit_types.js";
 
-const ALLOWED_URGENCY = new Set(["urgent", "routine"]);
+// "soon" is a real value: the AI triage prompt offers routine|soon|urgent
+// and the CLI bridge writes it. Excluding it here meant a clinician could
+// not SET the middle urgency on release even though the AI could.
+const ALLOWED_URGENCY = new Set(["urgent", "soon", "routine"]);
 const ALLOWED_TIME_OF_DAY = new Set(["morning", "afternoon", "any"]);
 
 export async function onRequestPost(ctx) {

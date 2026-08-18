@@ -374,7 +374,9 @@ export async function onRequestPost(ctx) {
     // the patient is marked dirty for snapshot regeneration. Best-effort.
     try {
         const startsDate = new Date(starts_at);
-        const summary = `Appointment booked: ${vt?.display_name || visit_type}`
+        // The catalogue field is `label`; display_name has never existed, so
+        // every encounter event read "Appointment booked: new_patient_standard".
+        const summary = `Appointment booked: ${vt?.label || visit_type}`
             + ` on ${startsDate.toISOString().slice(0, 10)} (${modality})`;
         const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
         await recordEncounterEvent(env, {

@@ -760,6 +760,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         <label class="field-label">Urgency</label>
                         <select data-field="urgency" ${formDisabled}>
                           <option value="routine" ${(row.clinician_override_urgency ?? row.ai_urgency) === 'routine' ? 'selected' : ''}>routine</option>
+                          <option value="soon"    ${(row.clinician_override_urgency ?? row.ai_urgency) === 'soon' ? 'selected' : ''}>soon</option>
                           <option value="urgent"  ${(row.clinician_override_urgency ?? row.ai_urgency) === 'urgent' ? 'selected' : ''}>urgent</option>
                         </select>
                       </div>

@@ -478,19 +478,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // on every API fetch explicitly. No persistent storage — sessionStorage
         // dies with the tab, so a password manager paste each session is still
         // the workflow. If the credentials are bad we 401 and re-prompt once.
-        async function ensureAdminCreds(force) {
-            if (!force) {
-                const cached = sessionStorage.getItem('mz_admin_basic');
-                if (cached) return cached;
-            }
-            const u = prompt('Admin email:', 'chris.mabini@gmail.com');
-            if (!u) return null;
-            const p = prompt('Admin password:');
-            if (!p) return null;
-            const b = btoa(`${u}:${p}`);
-            sessionStorage.setItem('mz_admin_basic', b);
-            return b;
-        }
+        // Removed: ensureAdminCreds() and its two prompt() dialogs. The
+        // browser's Basic-Auth session that admitted the user to
+        // /admin/content/ answers the API's 401 challenge automatically —
+        // the same pattern every other admin page uses. One legacy cleanup:
+        sessionStorage.removeItem('mz_admin_basic');
 
         // `noPrompt` (used by the silent 30s auto-refresh) means: never pop a
         // credential prompt. Without it, a user who hit Cancel on the login
@@ -498,24 +490,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // 401'd → reprompted on a loop). Now the background refresh fails quietly
         // and only a user-initiated action re-prompts.
         async function api(method, path, body, { noPrompt = false } = {}) {
-            const opts = { method, headers: {} };
+            const opts = { method, headers: {}, credentials: 'include' };
             if (body !== undefined) {
                 opts.headers['content-type'] = 'application/json';
                 opts.body = JSON.stringify(body);
             }
-            let creds = sessionStorage.getItem('mz_admin_basic')
-                || (noPrompt ? null : await ensureAdminCreds(false));
-            if (creds) opts.headers['Authorization'] = 'Basic ' + creds;
-            let res = await fetch(`${API}${path}`, opts);
-            // On a 401 the cached creds are stale/absent. Reprompt ONCE and retry
-            // — but NEVER during a silent background refresh (noPrompt).
+            const res = await fetch(`${API}${path}`, opts);
             if (res.status === 401 && !noPrompt) {
-                sessionStorage.removeItem('mz_admin_basic');
-                creds = await ensureAdminCreds(true);
-                if (creds) {
-                    opts.headers['Authorization'] = 'Basic ' + creds;
-                    res = await fetch(`${API}${path}`, opts);
-                }
+                // The browser's Basic-Auth session lapsed. A reload
+                // re-triggers the native dialog on the page itself, which is
+                // the one place credentials should ever be typed.
+                location.reload();
+                return new Promise(() => {});   // reload takes it from here
             }
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
