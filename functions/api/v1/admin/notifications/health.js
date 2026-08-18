@@ -103,6 +103,28 @@ export async function onRequestGet(ctx) {
         const counts = rows.reduce((a, r) => { a[r.status] = (a[r.status] || 0) + 1; return a; }, {});
         const d = diagnose(rows);
 
+        // Is the bounce/complaint pipeline actually receiving anything?
+        //
+        // On 2026-08-18 the SNS subscription sat in PendingConfirmation for
+        // hours while AWS's own metrics reported "delivered, 0 failed" —
+        // every dashboard green, nothing arriving. The only honest signal is
+        // whether a REAL SNS event has ever reached our endpoint, so it is
+        // reported here rather than inferred from configuration.
+        let sns = { configured: !!env.SES_SNS_TOPIC_ARN, last_inbound_at: null, real_events: 0 };
+        try {
+            const row = await env.DB.prepare(`
+                SELECT MAX(at) AS last_at,
+                       SUM(CASE WHEN topic LIKE 'arn:aws:sns:%' THEN 1 ELSE 0 END) AS real_events
+                  FROM sns_confirmations`).first();
+            if (row) { sns.last_inbound_at = row.last_at || null; sns.real_events = Number(row.real_events) || 0; }
+        } catch { /* table appears on first inbound event */ }
+        sns.healthy = sns.configured && sns.real_events > 0;
+        sns.note = !sns.configured
+            ? "SES_SNS_TOPIC_ARN is not set — the feedback endpoint refuses all input."
+            : sns.real_events > 0
+                ? "Bounce/complaint events are reaching the application."
+                : "Configured, but no SNS event has EVER arrived. Bounces are not being auto-suppressed yet — the subscription is probably still unconfirmed.";
+
         // The most recent SUCCESSFUL send is the honest liveness signal:
         // "0 failures" means nothing if nothing has been attempted.
         const lastSent = rows.find((r) => r.status === "sent");
@@ -117,6 +139,7 @@ export async function onRequestGet(ctx) {
                 ? { at: lastSent.sent_at || lastSent.created_at, template: lastSent.template }
                 : null,
             never_delivered_anything: !lastSent,
+            sns_feedback_pipeline: sns,
             recent: rows.slice(0, 20).map((r) => ({
                 id: r.id, template: r.template, to: maskEmail(r.to_email),
                 status: r.status, attempts: r.attempts, created_at: r.created_at,

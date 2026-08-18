@@ -33,6 +33,19 @@
 //   1. the SNS TopicArn must match SES_SNS_TOPIC_ARN, so another topic
 //      cannot inject suppressions;
 //   2. subscription confirmation is only auto-confirmed for that same ARN.
+// SUBSCRIBE SNS TO THE PAGES HOSTNAME, NOT THE APEX:
+//
+//   https://mountzara.pages.dev/api/v1/internal/ses/feedback
+//
+// 2026-08-18: an HTTPS subscription pointed at mountzara.com sat in
+// PendingConfirmation indefinitely. Instrumenting this endpoint to log
+// EVERY inbound POST proved the confirmation request never arrived at the
+// Function at all, while SNS's own metrics reported it delivered — so
+// something in front of the custom domain answered on our behalf. The
+// pages.dev hostname serves this identical Function with the same D1
+// binding and does not sit behind the zone's edge security, so it is the
+// supported target. Do not "tidy" a subscription back onto the apex.
+//
 // Without SES_SNS_TOPIC_ARN set, the endpoint refuses everything rather
 // than accepting anonymous input — an unauthenticated write path that
 // silences a patient's email is not something to leave open by default.
