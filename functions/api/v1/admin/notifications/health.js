@@ -110,11 +110,17 @@ export async function onRequestGet(ctx) {
         // every dashboard green, nothing arriving. The only honest signal is
         // whether a REAL SNS event has ever reached our endpoint, so it is
         // reported here rather than inferred from configuration.
+        // Count only requests AWS actually made: the first version of this
+        // check counted any row whose topic looked like an ARN, which our own
+        // curl probe satisfied — and it cheerfully reported the pipeline
+        // healthy while the subscription was still unconfirmed. A liveness
+        // check that a test can satisfy is worse than none. SNS identifies
+        // itself by user agent; nothing else here does.
         let sns = { configured: !!env.SES_SNS_TOPIC_ARN, last_inbound_at: null, real_events: 0 };
         try {
             const row = await env.DB.prepare(`
                 SELECT MAX(at) AS last_at,
-                       SUM(CASE WHEN topic LIKE 'arn:aws:sns:%' THEN 1 ELSE 0 END) AS real_events
+                       SUM(CASE WHEN body LIKE '%Amazon Simple Notification Service%' THEN 1 ELSE 0 END) AS real_events
                   FROM sns_confirmations`).first();
             if (row) { sns.last_inbound_at = row.last_at || null; sns.real_events = Number(row.real_events) || 0; }
         } catch { /* table appears on first inbound event */ }
