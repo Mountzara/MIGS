@@ -219,7 +219,34 @@ export async function onRequestPost(ctx) {
         const totals = body.totals || {};
         const total_wrvu               = num(totals.total_wrvu, 0);
         const total_charge_cents       = int(totals.total_charge_cents, 0);
-        const expected_collection_cents = int(totals.expected_collection_cents, 0);
+        // The app sends the code and the wRVU but not always a dollar
+        // figure, which left real claims sitting at $0 and every billing
+        // KPI understating the practice. If it did not send one, price the
+        // E/M code from the practice's OWN service catalog. Never invented:
+        // absent a catalog entry it stays 0, which is visibly missing
+        // rather than quietly wrong.
+        let expected_collection_cents = int(totals.expected_collection_cents, 0);
+        let expected_from_catalog = false;
+        if (!expected_collection_cents) {
+            // The catalog is keyed by the practice's own visit types
+            // (`visit_type_key` — 'aub_evaluation', 'postop_early', …), NOT
+            // by CPT, so the E/M code alone cannot price a visit. Match the
+            // visit type the app sent. Absent a match the figure stays 0,
+            // which reads as missing rather than as a wrong number — a
+            // silently invented price on a real claim is worse than none.
+            const vt = s(body.visit_type || body.visit_type_actual, 64);
+            if (vt) {
+                try {
+                    const row = await env.DB.prepare(
+                        `SELECT default_unit_price_cents FROM billing_service_catalog
+                          WHERE visit_type_key = ? AND is_active = 1 LIMIT 1`).bind(vt).first();
+                    if (row && row.default_unit_price_cents > 0) {
+                        expected_collection_cents = Number(row.default_unit_price_cents);
+                        expected_from_catalog = true;
+                    }
+                } catch { /* leave it at 0 */ }
+            }
+        }
 
         // ---- Compliance ----
         const compliance = body.compliance || {};
@@ -459,6 +486,10 @@ export async function onRequestPost(ctx) {
             replaced_prior_pending,
             lines_inserted: lineInserts.length,
             diagnoses_inserted: dxInserts.length,
+            expected_collection_cents,
+            expected_priced_from_catalog: expected_from_catalog,
+            pricing_note: expected_collection_cents ? undefined
+                : "No expected collection: send totals.expected_collection_cents, or a visit_type matching the practice service catalog.",
             // Never let a drop be silent: a claim whose diagnoses were all
             // discarded still returned ok:true and looked synced. The app
             // must be able to SEE that its payload lost something.

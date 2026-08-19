@@ -101,6 +101,25 @@ export async function onRequestGet(ctx) {
         return json({ ok: false, error: "that summary could not be opened" }, 500);
     }
 
+    // The reading Dr. Mabini attached to THIS visit, with the reason in
+    // her words. Assignments are written at approval time; this only
+    // reads them, so a patient can never see material for a summary that
+    // was never approved.
+    let reading = [];
+    try {
+        const rs = await env.DB.prepare(`
+            SELECT m.slug, m.title, m.summary, a.reason
+              FROM patient_education_assignments a
+              JOIN education_materials m ON m.id = a.material_id
+             WHERE a.patient_id = ? AND m.status = 'published'
+             ORDER BY a.assigned_at DESC LIMIT 3
+        `).bind(patientId).all();
+        reading = (rs?.results || []).map((r) => ({
+            slug: r.slug, title: r.title, summary: r.summary, reason: r.reason,
+            href: `/portal/education/${r.slug}/`,
+        }));
+    } catch { reading = []; }
+
     // First view is recorded once, so the portal can mark what is new and
     // the practice can see whether summaries are actually being read.
     if (!one.patient_first_viewed_at) {
@@ -117,6 +136,7 @@ export async function onRequestGet(ctx) {
             id: one.id, visit_date: one.visit_date, visit_type: one.visit_type_actual,
             text,
             medications: (() => { try { return JSON.parse(one.medications_list_json || "[]"); } catch { return []; } })(),
+            reading,
         },
         note: "This summary was written by Dr. Mabini's system and reviewed and approved by him before you saw it. If anything here does not match what you remember, message the practice — that is worth knowing about.",
     });

@@ -86,14 +86,40 @@ export function checkPatientTone(text) {
     return { ok: violations.length === 0, violations };
 }
 
-export function buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb } = {}) {
+// Language handling, and its limit stated plainly.
+//
+// A patient whose portal language is Spanish should read her summary in
+// Spanish — an after-visit summary she cannot read is not a summary. But
+// the approval gate is what makes any of this safe, and Dr. Mabini reads
+// English: approving an English text while the patient silently receives
+// an unreviewed translation would hollow out the gate entirely.
+//
+// So the model writes the patient half in her language AND an English
+// rendering of that same text is kept alongside it. He reviews the
+// English, the patient reads her language, and the two are generated
+// together from one note rather than one being a later translation of
+// the other. Anything but English is labelled for what it is.
+export const SUPPORTED_AVS_LANGUAGES = {
+    en: "English", es: "Spanish", pl: "Polish", uk: "Ukrainian",
+    zh: "Chinese (Simplified)", ar: "Arabic", hi: "Hindi", tl: "Tagalog", fr: "French",
+};
+
+export function languageName(code) {
+    return SUPPORTED_AVS_LANGUAGES[String(code || "en").toLowerCase().slice(0, 2)] || null;
+}
+
+export function buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb, language } = {}) {
+    const langName = languageName(language);
+    const nonEnglish = langName && langName !== "English";
     return `${kb ? groundingInstruction(kb) + "\n\n---\n\n" : ""}You are writing the after-visit summary for a patient of Dr. Christopher Mabini, DO — a fellowship-trained complex benign gynecologic surgeon. He will read it and decide whether to approve it before the patient ever sees it.
 
 VISIT: ${visitType || "office visit"}${visitDate ? ` on ${visitDate}` : ""}
 ${chiefComplaint ? `REASON FOR VISIT: ${chiefComplaint}` : ""}
 
 Produce TWO summaries, separated exactly by a line containing only ---CLINICIAN---
-
+${nonEnglish ? `
+THE PATIENT READS ${langName.toUpperCase()}. Write the patient-facing summary in ${langName}, then immediately after it, on a line of its own, write ---ENGLISH--- followed by a faithful English rendering of that same ${langName} text — same meaning, same headings, nothing added or removed. Dr. Mabini reads the English to check what she was told. Do not translate the clinician summary; it stays in English.
+` : ""}
 FIRST, the PATIENT-FACING summary:
   * Second person, plain language. Explain any medical word the first time it appears.
   * Short paragraphs under these headings: What we talked about · The plan · Your medicines · What happens next
@@ -112,15 +138,28 @@ ENCOUNTER NOTE:
 ${noteText}`;
 }
 
-/** Split the model's output into its two halves. */
+/**
+ * Split the model's output into its halves.
+ *
+ * For a non-English patient the first half carries her text, then
+ * ---ENGLISH--- and the English rendering Dr. Mabini reviews. Both are
+ * returned; the patient is never shown the English copy and he is never
+ * asked to approve words he cannot read.
+ */
 export function splitSummaries(raw) {
     const s = String(raw || "");
     const i = s.indexOf("---CLINICIAN---");
     if (i < 0) return { ok: false, error: "the model did not produce both summaries in the expected format" };
-    const patient = s.slice(0, i).trim();
+    let patient = s.slice(0, i).trim();
+    let patientEnglish = null;
+    const e = patient.indexOf("---ENGLISH---");
+    if (e >= 0) {
+        patientEnglish = patient.slice(e + "---ENGLISH---".length).trim();
+        patient = patient.slice(0, e).trim();
+    }
     const clinician = s.slice(i + "---CLINICIAN---".length).trim();
     if (!patient || !clinician) return { ok: false, error: "one of the two summaries came back empty" };
-    return { ok: true, patient, clinician };
+    return { ok: true, patient, clinician, patient_english: patientEnglish };
 }
 
 /** Pull the short denormalised fields the portal list view needs. */
@@ -147,7 +186,7 @@ export function extractDenormalised(patientText) {
  * NEVER writes anything. Persisting is the caller's job, so that the
  * status this lands in ('pending_clinician_review') is set in one place.
  */
-export async function generateSummary(env, { noteText, visitDate, visitType, chiefComplaint, encounterId, patientId }) {
+export async function generateSummary(env, { noteText, visitDate, visitType, chiefComplaint, encounterId, patientId, language }) {
     if (!String(noteText || "").trim()) {
         return { ok: false, error: "the encounter has no note to summarise" };
     }
@@ -192,7 +231,7 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
             body: JSON.stringify({
                 model: env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
                 max_tokens: 2500,
-                messages: [{ role: "user", content: buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb }) }],
+                messages: [{ role: "user", content: buildPrompt(noteText, { visitDate, visitType, chiefComplaint, kb, language }) }],
             }),
         });
         if (!res.ok) return { ok: false, error: `model call failed (HTTP ${res.status})` };
@@ -265,5 +304,6 @@ export function applyReview(action) {
 export default {
     VISIT_SUMMARY_PROMPT_VERSION, STATUS, patientMayRead,
     PATIENT_TONE_RULES, checkPatientTone, buildPrompt, splitSummaries,
+    SUPPORTED_AVS_LANGUAGES, languageName,
     extractDenormalised, generateSummary, REVIEW_ACTIONS, applyReview,
 };

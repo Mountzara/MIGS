@@ -51,7 +51,8 @@ export async function onRequest(ctx) {
 
         const enc = await env.DB.prepare(
             `SELECT id, patient_id, clinician_id, visit_date, visit_type_actual,
-                    chief_complaint, note_r2_key, note_wrapped_dek, note_aad, note_key_lost
+                    chief_complaint, note_r2_key, note_wrapped_dek, note_aad, note_key_lost,
+                    icd10_codes_json, created_at
                FROM encounters WHERE id = ? LIMIT 1`
         ).bind(encounterId).first();
         if (!enc) return jsonError("encounter not found", 404);
@@ -117,7 +118,19 @@ export async function onRequest(ctx) {
             const noteText = await readBody(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
             if (!noteText.trim()) return jsonError("the encounter note could not be read", 500);
 
+            // Her language, not ours. A summary she cannot read is not a
+            // summary; see SUPPORTED_AVS_LANGUAGES in _lib/visit_summary.js
+            // for how the review copy stays English so the approval gate
+            // still means something.
+            let patientLang = "en";
+            try {
+                const pl = await env.DB.prepare(
+                    `SELECT preferred_language FROM patients WHERE id = ? LIMIT 1`).bind(enc.patient_id).first();
+                if (pl && pl.preferred_language) patientLang = String(pl.preferred_language);
+            } catch { /* default English */ }
+
             const gen = await generateSummary(env, {
+                language: patientLang,
                 noteText, visitDate: enc.visit_date, visitType: enc.visit_type_actual,
                 chiefComplaint: enc.chief_complaint,
                 encounterId: enc.id, patientId: enc.patient_id,
@@ -213,6 +226,50 @@ export async function onRequest(ctx) {
                 record_type: "encounter_ai_summary", record_id: existing.id, success: true,
                 details: { encounter_id: enc.id, review_action: body.review_action, status: r.status } });
 
+            // ATTACH THE READING FOR THIS VISIT. Selection is by the visit's
+            // ICD-10 codes against the practice's own published primers —
+            // never authored here, never chosen by asking a model what the
+            // note seems to be about. An unmatched visit attaches nothing,
+            // because a generic pamphlet stapled to a specific visit teaches
+            // her the attachments are noise.
+            let attached = [];
+            if (r.patient_sees) {
+                try {
+                    const edu = await import("../../../../../_lib/avs_education.js");
+                    let icd10 = [];
+                    try { icd10 = JSON.parse(enc.icd10_codes_json || "[]"); } catch { icd10 = []; }
+                    // Codes the visit's ORDERS carry count too — an order
+                    // placed at this visit is part of what was discussed.
+                    try {
+                        const ords = await env.DB.prepare(
+                            `SELECT icd10_json, modality FROM clinical_orders
+                              WHERE patient_id = ? AND created_at >= ?`
+                        ).bind(enc.patient_id, (enc.created_at || 0) - 86400000).all();
+                        for (const o of (ords?.results || [])) {
+                            try { icd10 = icd10.concat(JSON.parse(o.icd10_json || "[]")); } catch {}
+                        }
+                    } catch {}
+                    const lib = await env.DB.prepare(
+                        `SELECT id, slug, title, summary, topic_tags_json FROM education_materials
+                          WHERE status = 'published'`).all();
+                    const pick = edu.selectForVisit(lib?.results || [], {
+                        icd10, visit_type: enc.visit_type_actual || "",
+                    });
+                    for (const m of pick.materials) {
+                        await env.DB.prepare(`
+                            INSERT INTO patient_education_assignments
+                                (id, patient_id, material_id, assigned_by_role, assigned_by_id, reason, assigned_at)
+                            VALUES (?, ?, ?, 'clinician', ?, ?, ?)
+                        `).bind(newId(), enc.patient_id, m.id, admin.user,
+                                edu.reasonLine(m.matched_on, enc.visit_date), now()).run();
+                    }
+                    attached = pick.materials.map((m) => ({ slug: m.slug, title: m.title }));
+                } catch (e) {
+                    // Reading is an enhancement; never fail an approval for it.
+                    console.error("summary approve: education attach failed", String(e).slice(0, 200));
+                }
+            }
+
             // TELL HER. Approving used to say "the patient can now see it in
             // their portal" and enqueue nothing — and until 2026-08-14 there
             // was no portal page either, so the sentence was false twice
@@ -241,7 +298,7 @@ export async function onRequest(ctx) {
 
             return jsonResponse({
                 ok: true, status: r.status, visible_to_patient: r.patient_sees,
-                patient_notified: notified,
+                patient_notified: notified, education_attached: attached,
                 message: r.patient_sees
                     ? (notified
                         ? "Approved. It is in her portal now and she has been emailed."
