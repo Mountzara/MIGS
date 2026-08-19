@@ -311,6 +311,34 @@ export async function computeSetup(env) {
             : "No knowledge base loaded.",
     });
 
+    // ---- 11b. The transcription app ---------------------------------------
+    // Proven by data it alone can produce: an encounter or claim whose
+    // session id is not one of the known test fixtures. The seam was
+    // "wired" for three months while three separate defects meant it had
+    // never actually worked once — connected is a claim about evidence.
+    let appEnc = UNRESOLVED;
+    try {
+        const r = await env.DB.prepare(`
+            SELECT COUNT(*) n FROM encounters
+             WHERE transcription_session_id IS NOT NULL
+               AND transcription_session_id NOT LIKE 'test-%'
+               AND transcription_session_id NOT LIKE 'ios-test%'
+               AND transcription_session_id NOT LIKE 'sw-test%'
+               AND transcription_session_id NOT LIKE 'e2e-%'`).first();
+        appEnc = r ? Number(r.n) || 0 : 0;
+    } catch { appEnc = UNRESOLVED; }
+    add({
+        id: "transcription_app",
+        title: "Connect the Medical Transcription app",
+        why: "Dictate a visit and the note, coding, orders and the patient's summary all flow here on their own — no re-typing. Until it connects, every note is manual.",
+        href: "/admin/visits/",
+        blocking: false,
+        status: appEnc === UNRESOLVED ? UNKNOWN : (appEnc > 0 ? DONE : TODO),
+        detail: appEnc === UNRESOLVED ? "Could not check for synced encounters."
+            : appEnc > 0 ? `${appEnc} real encounter(s) synced from the app`
+            : "The app has never synced a real visit. Its token and setup steps are in docs/transcription-app-integration.md.",
+    });
+
     // ---- 12. Open the doors ------------------------------------------------
     const launched = String(env.PORTAL_PUBLIC_LAUNCH || "false").trim().toLowerCase() === "true";
     const patients = await count(env, `SELECT COUNT(*) n FROM patients`);

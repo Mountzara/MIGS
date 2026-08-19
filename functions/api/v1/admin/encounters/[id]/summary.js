@@ -25,12 +25,22 @@ import {
 
 const now = () => Date.now();
 
-async function readBody(env, key, wrapped, aad) {
+// Accepts one AAD or a list. Two sealing conventions exist for these
+// columns — the admin generate path (visit_summary_*:<id>) and the
+// transcription-app sync path (encounter/<encounter_id>/summary_*) — and
+// a reader that knows only one silently shows an empty summary for the
+// other. Trying both is safe: AAD is authenticated data, so the wrong
+// string fails decryption rather than opening anything.
+async function readBody(env, key, wrapped, aads) {
     if (!key) return "";
-    try {
-        const got = await getPhiObject(env, key, wrapped, aad);
-        return typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
-    } catch { return ""; }
+    for (const aad of Array.isArray(aads) ? aads : [aads]) {
+        try {
+            const got = await getPhiObject(env, key, wrapped, aad);
+            const text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+            if (text) return text;
+        } catch { /* next convention */ }
+    }
+    return "";
 }
 
 export async function onRequest(ctx) {
@@ -56,9 +66,9 @@ export async function onRequest(ctx) {
             let patientText = "", clinicianText = "";
             if (existing) {
                 patientText = await readBody(env, existing.patient_visible_r2_key,
-                    existing.patient_visible_wrapped_dek, `visit_summary_patient:${existing.id}`);
+                    existing.patient_visible_wrapped_dek, [`visit_summary_patient:${existing.id}`, `encounter/${encounterId}/summary_patient`]);
                 clinicianText = await readBody(env, existing.clinician_full_r2_key,
-                    existing.clinician_full_wrapped_dek, `visit_summary_clinician:${existing.id}`);
+                    existing.clinician_full_wrapped_dek, [`visit_summary_clinician:${existing.id}`, `encounter/${encounterId}/summary_clinician`]);
             }
             return jsonResponse({
                 ok: true,

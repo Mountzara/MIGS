@@ -103,7 +103,12 @@ export async function syncRoute(ctx, app, handler) {
     }
 
     try {
-        const resp = await handler({ env, request, app, ctx });
+        // params was omitted here, which made every parameterized sync
+        // route — notably /transcription/patients/:id/context, the endpoint
+        // that seeds a visit — return 400 missing_patient_id on every call
+        // it ever received. The wrapper hid the bug: each handler looked
+        // correct in isolation and only the integration was broken.
+        const resp = await handler({ env, request, app, ctx, params: ctx.params || {} });
         if (resp instanceof Response) return resp;
         return new Response(JSON.stringify(resp), {
             status: 200,

@@ -322,9 +322,13 @@ export async function onRequestPost(ctx) {
         // ---- Diagnoses ----
         const diagnoses = Array.isArray(body.diagnoses) ? body.diagnoses.slice(0, MAX_DIAGNOSES) : [];
         const dxInserts = [];
+        let droppedDx = 0;
         diagnoses.forEach((dx, idx) => {
-            const icd10 = s(dx.icd10_code || dx.code, 12);
-            if (!icd10) return;
+            // Three field spellings the app has plausibly used across
+            // versions. A diagnosis dropped over a field name is a claim
+            // every payer rejects.
+            const icd10 = s(dx.icd10_code || dx.code || dx.icd10, 12);
+            if (!icd10) { droppedDx++; return; }
             dxInserts.push(env.DB.prepare(`
                 INSERT INTO billing_claim_diagnoses
                     (id, claim_id, diagnosis_index, icd10_code, icd10_description,
@@ -455,6 +459,13 @@ export async function onRequestPost(ctx) {
             replaced_prior_pending,
             lines_inserted: lineInserts.length,
             diagnoses_inserted: dxInserts.length,
+            // Never let a drop be silent: a claim whose diagnoses were all
+            // discarded still returned ok:true and looked synced. The app
+            // must be able to SEE that its payload lost something.
+            diagnoses_dropped: droppedDx,
+            warning: droppedDx > 0
+                ? `${droppedDx} diagnosis row(s) carried no recognizable code field (icd10_code/code/icd10) and were NOT stored`
+                : undefined,
             flags_inserted: flagInserts.length,
             upcoding_inserted: upInserts.length,
             doc_suggestions_inserted: docInserts.length,

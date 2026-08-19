@@ -77,12 +77,27 @@ export async function onRequestGet(ctx) {
     const one = list.find((r) => r.id === wantId);
     if (!one) return json({ ok: false, error: "not found" }, 404);
 
+    // TWO sealing conventions exist for the same column, because two
+    // writers were built a phase apart:
+    //   * the admin generate/edit path seals with visit_summary_patient:<id>
+    //   * the transcription-app sync path seals with
+    //     encounter/<encounter_id>/summary_patient
+    // The reader knew only the first, so every summary the app pushed was
+    // approved, marked visible — and permanently unopenable, with a 500
+    // presented to the patient. AAD is authenticated data: the wrong string
+    // simply fails decryption, so trying the second convention on failure
+    // is safe and cannot open anything that was not legitimately written.
     let text = "";
-    try {
-        const got = await getPhiObject(env, one.patient_visible_r2_key,
-            one.patient_visible_wrapped_dek, `visit_summary_patient:${one.id}`);
-        text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
-    } catch {
+    const aads = [`visit_summary_patient:${one.id}`, `encounter/${one.encounter_id}/summary_patient`];
+    for (const aad of aads) {
+        try {
+            const got = await getPhiObject(env, one.patient_visible_r2_key,
+                one.patient_visible_wrapped_dek, aad);
+            text = typeof got === "string" ? got : new TextDecoder().decode(got?.plaintext || got || new Uint8Array());
+            if (text) break;
+        } catch { /* try the next convention */ }
+    }
+    if (!text) {
         return json({ ok: false, error: "that summary could not be opened" }, 500);
     }
 
