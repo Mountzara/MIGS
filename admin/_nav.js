@@ -19,27 +19,53 @@
     if (window.__mzAdminNavInstalled) return;
     window.__mzAdminNavInstalled = true;
 
-    const SECTIONS = [
-        { key: 'dashboard',  label: 'Dashboard',    href: '/admin/',            match: /^\/admin\/?$/           },
-        { key: 'patients',   label: 'Patients',     href: '/admin/patients/',   match: /^\/admin\/(patients|cases)\b/ },
-        { key: 'briefings',  label: 'Briefings',    href: '/admin/briefings/',  match: /^\/admin\/briefings\b/  },
-        { key: 'scheduling', label: 'Scheduling',   href: '/admin/scheduling/', match: /^\/admin\/scheduling\b/ },
-        { key: 'triage',     label: 'Triage',       href: '/admin/triage/',     match: /^\/admin\/triage\b/     },
-        { key: 'messages',   label: 'Messages',     href: '/admin/messages/',   match: /^\/admin\/messages\b/   },
-        { key: 'visits',     label: 'Visit Summaries', href: '/admin/visits/',  match: /^\/admin\/visits\b/     },
-        { key: 'orders',     label: 'Orders & Results', href: '/admin/orders/', match: /^\/admin\/orders\b/     },
-        { key: 'referrals',  label: 'Referrals',    href: '/admin/referrals/', match: /^\/admin\/referrals\b/ },
-        { key: 'gfe',        label: 'Estimates',    href: '/admin/gfe/',       match: /^\/admin\/gfe\b/       },
-        { key: 'billing',    label: 'Billing',      href: '/admin/billing/',    match: /^\/admin\/billing\b/    },
-        { key: 'analytics',  label: 'Analytics',    href: '/admin/analytics/',  match: /^\/admin\/analytics\b/  },
-    { key: 'membership', label: 'Membership',   href: '/admin/membership/', match: /^\/admin\/membership\b/ },
-        { key: 'education',  label: 'Education',    href: '/admin/education/',  match: /^\/admin\/education\b/  },
-        { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
-        { key: 'carousels',  label: 'Carousels',    href: '/admin/carousels/',  match: /^\/admin\/carousels\b/  },
-        { key: 'trendbriefs',label: 'Trend Briefs', href: '/admin/trend-briefs/', match: /^\/admin\/trend-briefs\b/ },
-        { key: 'compliance', label: 'Compliance',   href: '/admin/compliance/', match: /^\/admin\/compliance\b/ },
-        { key: 'feedback',   label: 'Feedback',     href: '/admin/feedback/',   match: /^\/admin\/feedback\b/   },
-        { key: 'debug',      label: 'Debug',        href: '/admin/debug/sessions/', match: /^\/admin\/debug\b/  },
+    // -----------------------------------------------------------------
+    // GROUPED NAVIGATION (2026-08-19)
+    // -----------------------------------------------------------------
+    // Twenty equal-weight tabs in one row is not navigation, it is a
+    // wall — the operator has to read all twenty to find one, and a
+    // half-empty install then reads as "nothing works" because nothing
+    // says what any tab is FOR. Seven groups, each opening to its pages
+    // with a one-line description. Nothing was removed or renamed; the
+    // hierarchy that always existed is now visible.
+    //
+    // Adding a page: put it in the group it belongs to. If it fits none
+    // of them, that is a signal about the page, not about this list.
+    const GROUPS = [
+        { key: 'home', label: 'Dashboard', href: '/admin/', match: /^\/admin\/?$/, items: [] },
+        { key: 'patients', label: 'Patients', match: /^\/admin\/(patients|cases|briefings)\b/, items: [
+            { label: 'Patient roster',  href: '/admin/patients/',  desc: 'Everyone in the practice' },
+            { label: 'Pre-visit briefings', href: '/admin/briefings/', desc: 'What to know before you walk in' },
+        ]},
+        { key: 'clinical', label: 'Clinical', match: /^\/admin\/(triage|orders|referrals|visits)\b/, items: [
+            { label: 'Triage review',   href: '/admin/triage/',    desc: 'New intakes waiting on you' },
+            { label: 'Orders & results',href: '/admin/orders/',    desc: 'Labs, imaging, and what came back' },
+            { label: 'Referrals',       href: '/admin/referrals/', desc: 'Who you refer to, and who covers them' },
+            { label: 'Visit summaries', href: '/admin/visits/',    desc: 'After-visit notes to approve' },
+        ]},
+        { key: 'schedule', label: 'Schedule', match: /^\/admin\/scheduling\b/, items: [
+            { label: 'Scheduling',      href: '/admin/scheduling/', desc: 'Availability and booked visits' },
+        ]},
+        { key: 'messages', label: 'Messages', match: /^\/admin\/messages\b/, items: [
+            { label: 'Patient messages', href: '/admin/messages/', desc: 'Secure inbox' },
+        ]},
+        { key: 'money', label: 'Money', match: /^\/admin\/(billing|gfe|membership)\b/, items: [
+            { label: 'Insurance billing', href: '/admin/billing/', desc: 'Claims, coding, ERAs' },
+            { label: 'Good faith estimates', href: '/admin/gfe/',  desc: 'Required for self-pay patients' },
+            { label: 'Membership',        href: '/admin/membership/', desc: 'Interest and tiers' },
+        ]},
+        { key: 'content', label: 'Content', match: /^\/admin\/(content|education|carousels|trend-briefs)\b/, items: [
+            { label: 'Posts & pages',   href: '/admin/content/',    desc: 'Site writing' },
+            { label: 'Patient education', href: '/admin/education/', desc: 'Condition libraries' },
+            { label: 'Carousels',       href: '/admin/carousels/',  desc: 'Homepage imagery' },
+            { label: 'Trend briefs',    href: '/admin/trend-briefs/', desc: 'Evidence review queue' },
+        ]},
+        { key: 'system', label: 'System', match: /^\/admin\/(analytics|compliance|feedback|debug)\b/, items: [
+            { label: 'Analytics',       href: '/admin/analytics/',  desc: 'Volume, NPS, outcomes' },
+            { label: 'Compliance',      href: '/admin/compliance/', desc: 'Signatures and attestations' },
+            { label: 'Feedback',        href: '/admin/feedback/',   desc: 'What patients said' },
+            { label: 'Sessions & debug',href: '/admin/debug/sessions/', desc: 'Technical traces' },
+        ]},
     ];
 
     const STYLE = `
@@ -131,6 +157,32 @@
             color: rgba(252, 165, 165, 0.95);
             border-color: rgba(239, 68, 68, 0.40);
         }
+        .mz-admin-section-nav .mz-asn-group { position: relative; display: inline-flex; }
+        .mz-admin-section-nav .mz-asn-trigger {
+            font: inherit; cursor: pointer; background: none; border: none;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .mz-admin-section-nav .mz-asn-caret { font-size: 9px; opacity: .6; }
+        .mz-admin-section-nav .mz-asn-menu {
+            display: none; position: absolute; top: calc(100% + 8px); left: 0;
+            min-width: 268px; z-index: 1000; padding: 7px;
+            background: rgba(24, 20, 36, 0.97);
+            backdrop-filter: blur(26px) saturate(170%);
+            -webkit-backdrop-filter: blur(26px) saturate(170%);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+            box-shadow: 0 26px 70px rgba(0,0,0,0.6);
+        }
+        .mz-admin-section-nav .mz-asn-group.open .mz-asn-menu { display: block; }
+        .mz-admin-section-nav .mz-asn-item {
+            display: block; padding: 9px 12px; border-radius: 9px;
+            text-decoration: none; color: rgba(245,245,247,0.92);
+        }
+        .mz-admin-section-nav .mz-asn-item:hover { background: rgba(167,139,250,0.16); }
+        .mz-admin-section-nav .mz-asn-item.current { background: rgba(167,139,250,0.22); }
+        .mz-admin-section-nav .mz-asn-item-label { display: block; font-size: 13px; }
+        .mz-admin-section-nav .mz-asn-item-desc {
+            display: block; font-size: 11px; margin-top: 2px; color: rgba(245,245,247,0.52);
+        }
         @media (max-width: 640px) {
             .mz-admin-section-nav .mz-asn-brand {
                 font-size: 10px;
@@ -153,9 +205,21 @@
         nav.className = 'mz-admin-section-nav';
         nav.setAttribute('aria-label', 'Admin section navigation');
 
-        const linksHtml = SECTIONS.map((s) => {
-            const active = s.match.test(path);
-            return `<a class="mz-asn-link${active ? ' active' : ''}" href="${s.href}">${s.label}</a>`;
+        const linksHtml = GROUPS.map((g) => {
+            const active = g.match.test(path);
+            if (!g.items.length) {
+                return `<a class="mz-asn-link${active ? ' active' : ''}" href="${g.href}">${g.label}</a>`;
+            }
+            const menu = g.items.map((it) => {
+                const cur = path.indexOf(it.href) === 0;
+                return `<a class="mz-asn-item${cur ? ' current' : ''}" href="${it.href}">
+                    <span class="mz-asn-item-label">${it.label}</span>
+                    <span class="mz-asn-item-desc">${it.desc}</span></a>`;
+            }).join('');
+            return `<span class="mz-asn-group${active ? ' active' : ''}">
+                <button type="button" class="mz-asn-link mz-asn-trigger${active ? ' active' : ''}"
+                        aria-expanded="false">${g.label}<span class="mz-asn-caret">▾</span></button>
+                <span class="mz-asn-menu">${menu}</span></span>`;
         }).join('');
 
         nav.innerHTML = `
@@ -164,7 +228,7 @@
                 ${linksHtml}
                 <span class="mz-asn-spacer"></span>
                 <span class="mz-asn-right">
-                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener">View member portal →</a>
+                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener" title="Opens the patient-facing portal. While the public launch flag is off, your admin session is what lets you through the pre-launch gate.">Preview patient portal →</a>
                     <a class="mz-asn-signout" href="/admin/_signout" title="Drop the cached admin credentials. Use when leaving an unattended Mac.">Sign out</a>
                 </span>
             </div>
@@ -173,6 +237,33 @@
         // Inject as the first element of <body> so it sits above any
         // page-specific layout.
         document.body.insertBefore(nav, document.body.firstChild);
+
+        // Click to open, click anywhere to close, Escape to dismiss. Hover
+        // menus are a trap on a trackpad and unusable on an iPad, and this
+        // console gets used on both.
+        nav.addEventListener('click', (e) => {
+            const trigger = e.target.closest('.mz-asn-trigger');
+            const group = trigger && trigger.closest('.mz-asn-group');
+            const wasOpen = group && group.classList.contains('open');
+            nav.querySelectorAll('.mz-asn-group.open').forEach((g) => {
+                g.classList.remove('open');
+                const t = g.querySelector('.mz-asn-trigger');
+                if (t) t.setAttribute('aria-expanded', 'false');
+            });
+            if (group && !wasOpen) {
+                group.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                e.stopPropagation();
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mz-asn-group')) {
+                nav.querySelectorAll('.mz-asn-group.open').forEach((g) => g.classList.remove('open'));
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') nav.querySelectorAll('.mz-asn-group.open').forEach((g) => g.classList.remove('open'));
+        });
     }
 
     if (document.readyState === 'loading') {
