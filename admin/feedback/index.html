@@ -195,6 +195,12 @@ html, body {
 }
 .empty-state h2 { color: var(--fg-strong); font-weight: 300; font-size: 22px; margin: 0 0 10px; }
 
+.filter-hint {
+    margin: -10px 0 18px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+}
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
         /* Fixed finalized hero line-art backdrop (static — does NOT play) so the
@@ -305,6 +311,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <span id="lastUpdate" style="font-size:11.5px; color:var(--fg-soft); font-family:'JetBrains Mono', monospace;"></span>
     </div>
 
+    <p class="filter-hint">Showing Actionable only. Switch the filter to see Closed items.</p>
+
     <section id="cards" class="cards"></section>
 </main>
 
@@ -348,7 +356,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     }
 
     function renderRec(rec) {
-        if (!rec) return '<p class="rec-empty">Not analyzed yet. I&rsquo;ll process this the next time you open a Cowork session and ask me to "run the feedback queue".</p>';
+        if (!rec) return '<p class="rec-empty">Not analysed yet. This gets processed the next time you open a Cowork session and ask to run the feedback queue.</p>';
         return `
             <dl class="rec">
                 ${rec.summary       ? `<dt>Summary</dt><dd>${esc(rec.summary)}</dd>` : ''}
@@ -421,7 +429,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 cardsEl.innerHTML = `
                     <div class="empty-state">
                         <h2>Nothing in this bucket yet</h2>
-                        <p>Once a beta tester (Ally or anyone with a preview-grant cookie) clicks the Feedback button on a portal page, it lands here within seconds.</p>
+                        <p>Bug reports and suggestions from beta testers land here paired with an AI-drafted fix. Nothing submitted yet — issue a portal preview invite and have someone click the Feedback button on any portal page.</p>
                     </div>
                 `;
             } else {

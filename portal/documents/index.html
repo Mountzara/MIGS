@@ -272,7 +272,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const data = await r.json();
                 const docs = data.documents || [];
                 if (docs.length === 0) {
-                    docList.innerHTML = '<div class="empty">No documents yet — upload one above.</div>';
+                    docList.innerHTML = '<div class="empty">Nothing uploaded yet. If you have prior imaging reports, operative notes or outside labs, drop them here &mdash; it\'s the most useful thing you can do before a first visit.</div>';
                     return;
                 }
                 docList.innerHTML = '';

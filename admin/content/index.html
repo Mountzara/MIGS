@@ -526,6 +526,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     : null;
                 state.posts = data.posts || [];
                 renderSidebar();
+                if (!state.selectedId) renderMain();
                 const stillExists = state.selectedId && state.posts.find(p => p.id === state.selectedId);
                 if (state.selectedId && !stillExists) {
                     state.selectedId = null;
@@ -556,9 +557,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             document.getElementById('publishedCount').textContent = published.length;
             document.getElementById('rejectedCount').textContent = rejected.length;
 
-            function renderList(arr, container) {
+            function renderList(arr, container, emptyMsg) {
                 if (!arr.length) {
-                    container.innerHTML = '<div class="empty-list">No items.</div>';
+                    container.innerHTML = `<div class="empty-list">${esc(emptyMsg)}</div>`;
                     return;
                 }
                 container.innerHTML = arr.map(p => `
@@ -579,9 +580,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     });
                 });
             }
-            renderList(drafts, document.getElementById('draftList'));
-            renderList(published, document.getElementById('publishedList'));
-            renderList(rejected, document.getElementById('rejectedList'));
+            renderList(drafts, document.getElementById('draftList'), 'Nothing pending.');
+            renderList(published, document.getElementById('publishedList'), 'Nothing published.');
+            renderList(rejected, document.getElementById('rejectedList'), 'Nothing rejected.');
         }
 
         async function loadDetail(id) {
@@ -598,7 +599,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function renderMain(post) {
             const main = document.getElementById('main');
             if (!post) {
-                main.innerHTML = `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
+                // Zero posts anywhere is a different state from "nothing
+                // selected yet" — the second sentence would be a lie in the
+                // first case, so they get different copy.
+                main.innerHTML = state.posts.length === 0
+                    ? `<div class="empty-main"><p style="max-width: 54ch; line-height: 1.6;">Drafts from the writing pipeline land here to approve, edit or reject before they go public. Nothing is waiting — the pipeline posts new drafts on its Monday and Tuesday runs.</p></div>`
+                    : `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
                 return;
             }
             const publicPath = post.kind === 'blog' ? `/trending/?id=${encodeURIComponent(post.id)}` : `/evidence/?id=${encodeURIComponent(post.id)}`;

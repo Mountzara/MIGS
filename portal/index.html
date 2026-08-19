@@ -103,12 +103,6 @@
             background: rgba(var(--glow-purple), 0.04);
             color: inherit;
         }
-        .card-eyebrow {
-            font-size: 10px; font-weight: 700;
-            letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.85);
-            margin-bottom: 6px;
-        }
         .card h2 {
             font-size: 17px; font-weight: 500;
             letter-spacing: -0.005em;
@@ -156,9 +150,14 @@
             color: var(--fg-soft);
             border: 1px solid var(--border);
         }
+        /* .badge and .pinned both set display, which outranks the UA
+           [hidden] rule — without these two lines every "hidden" badge and
+           the pinned card render anyway. */
+        .badge[hidden] { display: none; }
         .badge-row {
             position: absolute; top: 14px; right: 18px;
         }
+        .badge-row + h2 { padding-right: 96px; }
 
         .stat-row {
             display: flex; align-items: baseline; gap: 8px;
@@ -171,6 +170,38 @@
             line-height: 1;
         }
         .stat-unit { font-size: 12px; color: var(--fg-dim); }
+
+        /* Titles are static markup; only the body waits on the network,
+           so only the body gets a skeleton. A tile that flashes
+           "Loading…" where its name belongs reads as broken software. */
+        .skeleton {
+            display: block; height: 10px; border-radius: 5px;
+            background: rgba(255, 255, 255, 0.09);
+            margin: 7px 0;
+            animation: mzPulse 1.5s ease-in-out infinite;
+        }
+        .skeleton.short { width: 58%; }
+        @keyframes mzPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.95; } }
+
+        /* The health history is the one thing that gates booking, triage,
+           check-ins and assigned reading, so it is the one thing the
+           portal is allowed to pin. Computed from intake progress on every
+           load — never dismissed into localStorage. */
+        .pinned {
+            display: block;
+            background: rgba(var(--glow-purple), 0.10);
+            border: 1px solid rgba(var(--glow-purple), 0.38);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin: 12px 0 20px;
+            text-decoration: none; color: inherit;
+            transition: border-color 0.22s, background 0.22s;
+        }
+        .pinned[hidden] { display: none; }
+        a.pinned:hover { border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); color: inherit; }
+        .pinned-title { font-size: 17px; font-weight: 500; color: var(--fg-strong); margin-bottom: 6px; }
+        .pinned p { font-size: 13.5px; line-height: 1.5; color: var(--fg-soft); margin: 0; }
+        .pinned .card-action { margin-top: 12px; }
 
         .panic {
             margin-top: 36px;
@@ -271,98 +302,91 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h1 id="greeting">Welcome.</h1>
         <p class="greeting-sub" id="greeting-sub">Loading your dashboard…</p>
 
+        <a class="pinned" id="pinned-history" href="/portal/intake/" hidden>
+            <div class="pinned-title">Your health history &mdash; <span id="pinned-pct">0</span>% done</div>
+            <p>This is the one thing that has to happen before you can book. Everything else in here can wait.</p>
+            <span class="card-action">Continue &rarr;</span>
+        </a>
+
         <section class="grid">
             <a class="card" href="/portal/appointments/book/" id="card-appointment">
-                <div class="badge-row"><span class="badge badge-empty" id="appt-badge">—</span></div>
-                <div class="card-eyebrow">Appointments</div>
-                <h2 id="appt-title">Loading…</h2>
-                <div class="card-body" id="appt-body">Pulling your latest triage and any upcoming slot.</div>
-                <span class="card-action" id="appt-action">Open scheduling →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="appt-badge">&mdash;</span></div>
+                <h2>Book a visit</h2>
+                <div class="card-body" id="appt-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action" id="appt-action">Open scheduling &rarr;</span>
             </a>
 
             <a class="card" href="/portal/messages/" id="card-messages">
-                <div class="badge-row"><span class="badge badge-empty" id="msg-badge">—</span></div>
-                <div class="card-eyebrow">Messages</div>
-                <h2 id="msg-title">Loading…</h2>
-                <div class="card-body" id="msg-body">Conversations with your clinician.</div>
-                <span class="card-action">Open messages →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="msg-badge">&mdash;</span></div>
+                <h2>Messages</h2>
+                <div class="card-body" id="msg-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Open messages &rarr;</span>
             </a>
 
             <a class="card" href="/portal/symptoms/" id="card-symptoms">
-                <div class="badge-row"><span class="badge badge-empty" id="sym-badge">—</span></div>
-                <div class="card-eyebrow">Symptom diary</div>
-                <h2 id="sym-title">Loading…</h2>
-                <div class="card-body" id="sym-body">Track pain, bleeding, sleep, cycle, mood — your clinician reviews your trends before every visit.</div>
-                <span class="card-action">Log today's symptoms →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="sym-badge">&mdash;</span></div>
+                <h2>Symptom diary</h2>
+                <div class="card-body" id="sym-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Log today&rsquo;s symptoms &rarr;</span>
             </a>
 
             <a class="card" href="/portal/proms/" id="card-proms">
-                <div class="badge-row"><span class="badge badge-empty" id="proms-badge">—</span></div>
-                <div class="card-eyebrow">Health check-ins</div>
-                <h2 id="proms-title">Loading…</h2>
-                <div class="card-body" id="proms-body">Short, validated questionnaires (PHQ-2, GAD-2, BPI, EHP-5, …) that Dr. Mabini reviews to track how you're doing between visits. AI-assigned from your intake; each takes 1–4 minutes.</div>
-                <span class="card-action">Open check-ins →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="proms-badge">&mdash;</span></div>
+                <h2>Check-ins</h2>
+                <div class="card-body" id="proms-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Open check-ins &rarr;</span>
             </a>
 
             <a class="card" href="/portal/intake/" id="card-intake">
-                <div class="badge-row"><span class="badge badge-empty" id="intake-badge">—</span></div>
-                <div class="card-eyebrow">Intake</div>
-                <h2 id="intake-title">Loading…</h2>
-                <div class="card-body" id="intake-body">Your 19-section comprehensive history. Submitted intakes stay on file; start a fresh one before your next visit.</div>
-                <span class="card-action">Open your intake →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="intake-badge">&mdash;</span></div>
+                <h2>Your health history</h2>
+                <div class="card-body" id="intake-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action" id="intake-action">Open your history &rarr;</span>
             </a>
 
-            <a class="card" href="/portal/orders/">
-                <div class="card-eyebrow">Tests &amp; referrals</div>
-                <h2>Labs, imaging &amp; referrals</h2>
-                <div class="card-body">Where each test, scan or referral stands — and whether your result is back and has been reviewed.</div>
-                <span class="card-action">See your tests →</span>
+            <a class="card" href="/portal/visits/" id="card-visits">
+                <div class="badge-row"><span class="badge badge-empty" id="visits-badge">&mdash;</span></div>
+                <h2>Visit summaries</h2>
+                <div class="card-body" id="visits-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Open summaries &rarr;</span>
             </a>
 
-            <a class="card" href="/portal/documents/">
-                <div class="card-eyebrow">Documents</div>
-                <h2>Records & uploads</h2>
-                <div class="card-body">Imaging discs, outside records, AAGL reports, and anything the clinician sends back to you.</div>
-                <span class="card-action">Open documents →</span>
+            <!-- Reading is static on purpose. Twelve complete guides live at
+                 /portal/education/, so counting D1 rows here produced
+                 "Library opening soon" on a front door one click away from a
+                 full library. The API can only ever ADD to this tile now. -->
+            <a class="card" href="/portal/education/" id="card-education">
+                <div class="badge-row"><span class="badge badge-released" id="edu-badge" hidden>assigned</span></div>
+                <h2>Reading</h2>
+                <div class="card-body" id="edu-body">Twelve guides ready to read now &mdash; endometriosis, fibroids, heavy bleeding, menopause and more.</div>
+                <span class="card-action">Open the guides &rarr;</span>
+            </a>
+
+            <a class="card" href="/portal/orders/" id="card-orders">
+                <div class="badge-row"><span class="badge badge-empty" id="orders-badge" hidden>&mdash;</span></div>
+                <h2>Tests &amp; results</h2>
+                <div class="card-body" id="orders-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">See your tests &rarr;</span>
+            </a>
+
+            <a class="card" href="/portal/documents/" id="card-documents">
+                <div class="badge-row"><span class="badge badge-empty" id="docs-badge" hidden>&mdash;</span></div>
+                <h2>Your records</h2>
+                <div class="card-body" id="docs-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Open your records &rarr;</span>
             </a>
 
             <a class="card" href="/portal/billing/" id="card-billing">
-                <div class="badge-row"><span class="badge badge-empty" id="bill-badge">—</span></div>
-                <div class="card-eyebrow">Billing</div>
-                <h2 id="bill-title">Invoices & payments</h2>
-                <div class="card-body" id="bill-body">Your invoices, balances, and secure card payments — itemized statements on request.</div>
-                <span class="card-action">Open billing →</span>
+                <div class="badge-row"><span class="badge badge-empty" id="bill-badge">&mdash;</span></div>
+                <h2>Billing</h2>
+                <div class="card-body" id="bill-body"><span class="skeleton"></span><span class="skeleton short"></span></div>
+                <span class="card-action">Open billing &rarr;</span>
             </a>
 
             <a class="card" href="/portal/profile/">
-                <div class="card-eyebrow">Profile</div>
-                <h2>Your information</h2>
-                <div class="card-body">Phone, pronouns, preferred name, contact preferences. Sensitive identity fields (DOB, legal name) sit behind clinician review.</div>
-                <span class="card-action">Open profile →</span>
-            </a>
-
-            <div class="card" id="card-content-placeholder" style="opacity:0.65;">
-                <div class="badge-row"><span class="badge badge-empty">coming soon</span></div>
-                <div class="card-eyebrow">Latest evidence</div>
-                <h2>What's new for you</h2>
-                <div class="card-body">When you subscribe to topics (endometriosis, fibroids, perimenopause, etc.), the most recent peer-reviewed updates will surface here in plain language with the bottom line on top.</div>
-                <span class="card-action">Subscribing soon…</span>
-            </div>
-
-            <a class="card" href="/portal/visits/" id="card-visits">
-                <div class="badge-row"><span class="badge badge-empty" id="visits-badge">—</span></div>
-                <div class="card-eyebrow">After your visits</div>
-                <h2 id="visits-title">Visit summaries</h2>
-                <div class="card-body" id="visits-body">A plain-language recap of each appointment — what was discussed, the plan, your medicines and what happens next. Reviewed and approved by Dr. Mabini before you see it.</div>
-                <span class="card-action">Open summaries →</span>
-            </a>
-
-            <a class="card" href="/portal/education/" id="card-education">
-                <div class="badge-row"><span class="badge badge-empty" id="edu-badge">—</span></div>
-                <div class="card-eyebrow">Education</div>
-                <h2 id="edu-title">Patient primers</h2>
-                <div class="card-body" id="edu-body">Patient-facing primers on endometriosis, adenomyosis, fibroids, OMT, perioperative prep, surgical recovery.</div>
-                <span class="card-action">Open library →</span>
+                <h2>Your profile</h2>
+                <div class="card-body">Your name, photo, phone and what matters to you about your care.</div>
+                <span class="card-action">Open profile &rarr;</span>
             </a>
         </section>
 
@@ -419,6 +443,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
 
         // ---- bootstrap ----
+        // Health-history state decides the greeting, the pinned card and
+        // what the Book-a-visit tile says, so it is fetched once and passed
+        // around rather than re-derived in three places.
         (async function init() {
             // 1. who am I?
             let me;
@@ -430,7 +457,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     return;
                 }
                 $('greeting').textContent = 'Welcome.';
-                $('greeting-sub').textContent = 'Could not load your profile: ' + (e.message || 'unknown error');
+                $('greeting-sub').textContent = "We couldn't load your details just now. Reload the page, or message us if it keeps happening.";
+                // Do NOT return: the tile loaders are independent of the
+                // profile call, and returning here left every tile showing
+                // its skeleton forever — a page permanently mid-load, which
+                // reads as broken rather than as one failed request.
+                const h = await loadHistoryCard().catch(() => null);
+                renderPinnedHistory(h);
+                loadAppointmentCard(h);
+                loadMessagesCard();
+                loadSymptomCard();
+                loadEducationCard();
+                loadVisitsCard();
+                loadPROMsCard();
+                loadBillingCard();
+                loadOrdersCard();
+                loadDocumentsCard();
                 return;
             }
             // /api/v1/auth/me returns { authenticated, role, patient_id,
@@ -442,20 +484,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const p = me.profile || me;
             const name = p.preferred_name || p.first_name
                 || (p.email ? p.email.split('@')[0] : 'there');
-            $('greeting').textContent = `Hi, ${name}.`;
-            $('greeting-sub').textContent = "Here's a snapshot of your portal. Tap into any card to go deeper.";
 
-            // 2. fan-out to each module
-            loadAppointmentCard();
+            // 2. the one thing that gates everything else
+            const history = await loadHistoryCard();
+            renderGreeting(name, history);
+            renderPinnedHistory(history);
+
+            // 3. fan-out to each module
+            loadAppointmentCard(history);
             loadMessagesCard();
             loadSymptomCard();
-            loadIntakeCard();
             loadEducationCard();
             loadVisitsCard();
             loadPROMsCard();
             loadBillingCard();
+            loadOrdersCard();
+            loadDocumentsCard();
 
-            // 3. logout
+            // 4. logout
             $('link-logout').addEventListener('click', async (e) => {
                 e.preventDefault();
                 try {
@@ -465,51 +511,110 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             });
         })();
 
-        async function loadAppointmentCard() {
+        function renderGreeting(name, history) {
+            const sub = $('greeting-sub');
+            if (history.status === 'none') {
+                $('greeting').textContent = `Welcome, ${name}. One thing to do: your health history.`;
+                sub.style.display = 'none';
+            } else if (history.status === 'in_progress') {
+                $('greeting').textContent = `Welcome back, ${name}. Your health history is ${history.pct}% done.`;
+                sub.style.display = 'none';
+            } else {
+                $('greeting').textContent = `Welcome back, ${name}.`;
+                sub.textContent = "Here's a snapshot of your portal. Tap into any card to go deeper.";
+            }
+        }
+
+        // Recomputed from the health history on every load — never dismissed
+        // into localStorage. A member who hides it and forgets is a member
+        // who never books.
+        function renderPinnedHistory(history) {
+            const card = $('pinned-history');
+            if (!card) return;
+            if (history.status !== 'none' && history.status !== 'in_progress') return;
+            $('pinned-pct').textContent = String(history.pct || 0);
+            card.hidden = false;
+        }
+
+        async function loadHistoryCard() {
+            try {
+                const i = await fetchJson('/api/v1/patient/intake/current');
+                if (!i || !i.intake) {
+                    $('intake-body').textContent = 'Not started. Eighteen short sections, saved as you type — stop whenever you like and come back.';
+                    $('intake-badge').textContent = 'not started';
+                    $('intake-badge').className = 'badge badge-pending';
+                    $('intake-action').textContent = 'Start now →';
+                    return { status: 'none', pct: 0 };
+                }
+                const status = i.intake.status;
+                // The endpoint sends completion_pct on i.intake; it has never
+                // sent completed_section_count, so a mid-history member read
+                // "— sections saved so far" — a placeholder shown as a fact.
+                const pct = i.intake.completion_pct != null ? Math.round(i.intake.completion_pct) : 0;
+                if (status === 'submitted' || status === 'reviewed') {
+                    $('intake-body').textContent = status === 'reviewed'
+                        ? 'Read by Dr. Mabini and on file. Start a fresh one before your next visit.'
+                        : 'Done and with the practice. Dr. Mabini reads it before your visit.';
+                    $('intake-badge').textContent = 'done';
+                    $('intake-badge').className = 'badge badge-released';
+                    return { status: 'submitted', pct: 100 };
+                }
+                $('intake-body').textContent = `${pct}% done, saved as you type. Pick up where you left off.`;
+                $('intake-badge').textContent = 'in progress';
+                $('intake-badge').className = 'badge badge-pending';
+                $('intake-action').textContent = 'Continue →';
+                return { status: 'in_progress', pct };
+            } catch (e) {
+                $('intake-body').textContent = "We couldn't load your health history just now. Tap to open it.";
+                $('intake-badge').textContent = '—';
+                return { status: 'unknown', pct: 0 };
+            }
+        }
+
+        async function loadAppointmentCard(history) {
+            function needsHistory() {
+                $('appt-badge').textContent = 'not started';
+                $('appt-badge').className = 'badge badge-pending';
+                $('appt-body').textContent = "Your health history comes first — it's how we know what kind of visit you need. It takes about twenty minutes.";
+                $('appt-action').textContent = 'Start now →';
+                $('card-appointment').setAttribute('href', '/portal/intake/');
+            }
+            function underReview() {
+                $('appt-badge').textContent = 'in review';
+                $('appt-badge').className = 'badge badge-pending';
+                $('appt-body').textContent = 'Your history is in and Dr. Mabini is reviewing it. Your times will appear here, usually within a few hours.';
+                $('appt-action').style.display = 'none';
+            }
+            function noTriageYet() {
+                if (history && history.status === 'submitted') underReview(); else needsHistory();
+            }
             try {
                 const t = await fetchJson('/api/v1/patient/triage/current');
                 const triage = t.triage;
-                if (!triage) {
-                    $('appt-title').textContent = 'No appointment scheduled';
-                    $('appt-body').textContent = 'Submit your intake to start scheduling.';
-                    $('appt-badge').textContent = '—';
-                    return;
-                }
-                const statusToBadge = {
-                    released: { cls: 'badge-released', label: 'ready to book' },
-                    pending_review: { cls: 'badge-pending', label: 'in review' },
-                    manual_review_required: { cls: 'badge-urgent', label: 'manual review' },
-                };
-                const b = statusToBadge[triage.status] || statusToBadge.pending_review;
-                $('appt-badge').textContent = b.label;
-                $('appt-badge').className = `badge ${b.cls}`;
+                if (!triage) { noTriageYet(); return; }
 
                 if (triage.status === 'released' && triage.appointment_id) {
                     // Already booked — surface the visit itself, not the booking flow.
                     await renderBookedAppointment(triage);
                 } else if (triage.status === 'released') {
-                    $('appt-title').textContent = labelVisit(triage.visit_type);
-                    $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${triage.duration_min} min</strong> · ${triage.in_person_required ? 'In person' : 'In person or telehealth'} · Tap to choose a time that works for you.`;
+                    $('appt-badge').textContent = 'ready to book';
+                    $('appt-badge').className = 'badge badge-released';
+                    $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${escapeHtml(labelVisit(triage.visit_type))}</strong> · ${triage.duration_min} min · ${triage.in_person_required ? 'In person' : 'In person or by video'}. Pick a time that works for you.`;
                     $('appt-action').textContent = 'Pick a time →';
                 } else if (triage.status === 'pending_review') {
-                    $('appt-title').textContent = 'Awaiting clinician review';
-                    $('appt-body').innerHTML = `Your intake categorization is in for clinician review. Auto-releases within 4 hours if not yet reviewed.`;
-                    $('appt-action').textContent = 'View status →';
+                    underReview();
                 } else {
-                    $('appt-title').textContent = 'Manual review needed';
-                    $('appt-body').textContent = "The clinician will reach out directly to confirm what visit type fits best.";
-                    $('appt-action').textContent = 'See details →';
+                    $('appt-badge').textContent = 'in review';
+                    $('appt-badge').className = 'badge badge-urgent';
+                    $('appt-body').textContent = 'Dr. Mabini will reach out directly to confirm what kind of visit fits you best.';
+                    $('appt-action').style.display = 'none';
                 }
             } catch (e) {
                 if (e.code === 'no_triage') {
-                    $('appt-title').textContent = 'Start with your intake';
-                    $('appt-body').textContent = 'Once your intake is submitted, we triage it and release the right slots.';
-                    $('appt-badge').textContent = 'awaiting intake';
-                    $('appt-action').textContent = 'Begin intake →';
-                    $('card-appointment').setAttribute('href', '/portal/intake/');
+                    noTriageYet();
                 } else {
-                    $('appt-title').textContent = 'Scheduling';
-                    $('appt-body').textContent = 'Could not load triage status (' + (e.message || 'unknown') + ').';
+                    $('appt-badge').textContent = '—';
+                    $('appt-body').textContent = "We couldn't load your visit status just now. Tap to try again.";
                 }
             }
         }
@@ -526,17 +631,21 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             } catch {}
             $('appt-badge').textContent = 'booked';
             $('appt-badge').className = 'badge badge-released';
-            $('appt-title').textContent = labelVisit(triage.visit_type);
             if (!appt || !appt.starts_at) {
-                $('appt-body').textContent = 'Your visit is booked. Details are in the scheduling page.';
+                $('appt-body').textContent = `Your ${labelVisit(triage.visit_type)} is booked. The details are on the scheduling page.`;
                 $('appt-action').textContent = 'View appointment →';
+                // The label changed but the href did not, so "View
+                // appointment" still sent the patient to the booking page to
+                // book a second one. Point it at their appointments.
+                const apptCard = document.getElementById('card-appointment');
+                if (apptCard) apptCard.setAttribute('href', '/portal/appointments/');
                 return;
             }
             const when = fmtRelativeDate(appt.starts_at);
             const isTele = appt.modality === 'telehealth';
             if (isTele) {
                 $('appt-body').innerHTML =
-                    `<strong style="color:var(--fg-strong);">${escapeHtml(when)}</strong> · Telehealth · ` +
+                    `<strong style="color:var(--fg-strong);">${escapeHtml(when)}</strong> · By video · ` +
                     `The Join button goes live 15 minutes before your visit. ` +
                     `<a href="/portal/tech-check/" style="color:var(--accent-soft);" onclick="event.stopPropagation();">Run a quick device check</a> beforehand so the visit starts smoothly.`;
                 $('appt-action').textContent = 'Join your visit →';
@@ -546,6 +655,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     `<strong style="color:var(--fg-strong);">${escapeHtml(when)}</strong> · In person · ` +
                     `Please arrive 15 minutes early with your insurance card and photo ID.`;
                 $('appt-action').textContent = 'View appointment →';
+                // Same fix as the fallback path: an in-person booked visit
+                // linked to the BOOKING page, inviting a duplicate booking.
+                $('card-appointment').setAttribute('href', '/portal/appointments/');
             }
         }
 
@@ -557,15 +669,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (due > 0) {
                     $('bill-badge').textContent = `${due} due`;
                     $('bill-badge').className = 'badge badge-pending';
-                    $('bill-title').textContent = `$${(cents / 100).toFixed(2)} outstanding`;
                     $('bill-body').textContent = due === 1
-                        ? 'You have an invoice awaiting payment — pay securely by card in a couple of taps.'
-                        : `You have ${due} invoices awaiting payment — pay securely by card in a couple of taps.`;
+                        ? `$${(cents / 100).toFixed(2)} outstanding. Pay it securely by card in a couple of taps.`
+                        : `$${(cents / 100).toFixed(2)} outstanding across ${due} bills. Pay securely by card in a couple of taps.`;
                 } else {
                     $('bill-badge').textContent = 'all settled';
                     $('bill-badge').className = 'badge badge-empty';
+                    $('bill-body').textContent = 'Nothing owed. Any bill after a visit appears here and you can pay it by card.';
                 }
-            } catch { /* leave the static copy */ }
+            } catch {
+                $('bill-body').textContent = "We couldn't load your bills just now. Tap to try again.";
+            }
         }
 
         async function loadMessagesCard() {
@@ -574,23 +688,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const threads = r.threads || [];
                 const unread = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
                 if (threads.length === 0) {
-                    $('msg-title').textContent = 'No messages yet';
-                    $('msg-body').textContent = 'Send a non-urgent question or pre-visit update anytime.';
+                    $('msg-body').textContent = "No messages yet. Write to us anytime about anything that isn't urgent — you'll usually hear back within one business day.";
                     $('msg-badge').textContent = '—';
                 } else if (unread > 0) {
-                    $('msg-title').innerHTML = `<span class="stat">${unread}</span> <span class="stat-unit">new message${unread === 1 ? '' : 's'}</span>`;
-                    $('msg-body').innerHTML = `Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
+                    $('msg-body').innerHTML = `${unread} new message${unread === 1 ? '' : 's'}. Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
                     $('msg-badge').textContent = `${unread} new`;
                     $('msg-badge').className = 'badge badge-released';
                 } else {
-                    $('msg-title').textContent = `${threads.length} thread${threads.length === 1 ? '' : 's'}`;
-                    $('msg-body').innerHTML = `Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
+                    $('msg-body').innerHTML = `${threads.length} conversation${threads.length === 1 ? '' : 's'}. Latest: <strong style="color:var(--fg-strong);">${escapeHtml(threads[0].subject)}</strong>`;
                     $('msg-badge').textContent = 'all read';
                     $('msg-badge').className = 'badge badge-empty';
                 }
             } catch (e) {
-                $('msg-title').textContent = 'Messages';
-                $('msg-body').textContent = 'Could not load thread count.';
+                $('msg-body').textContent = "We couldn't load your messages just now. Tap to try again.";
             }
         }
 
@@ -600,19 +710,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const e = await fetchJson(`/api/v1/patient/symptoms/diary/${today}`);
                 if (e.entry) {
                     const keys = Object.keys(e.entry.values || {});
-                    $('sym-title').innerHTML = `<span class="stat">${keys.length}</span> <span class="stat-unit">tracked today</span>`;
-                    $('sym-body').textContent = "Updated " + new Date(e.entry.updated_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) + '. Tap to add more or review trends.';
+                    $('sym-body').textContent = `${keys.length} logged today, last updated ` + new Date(e.entry.updated_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) + '. Tap to add more or see your trend.';
                     $('sym-badge').textContent = 'logged';
                     $('sym-badge').className = 'badge badge-released';
                 } else {
-                    $('sym-title').textContent = "Today's diary is empty";
-                    $('sym-body').textContent = "Even one symptom is helpful — your clinician reviews your trend before every visit.";
+                    $('sym-body').textContent = 'Nothing logged today. A minute a day here is what makes a visit about the details instead of a summary.';
                     $('sym-badge').textContent = 'not logged';
                     $('sym-badge').className = 'badge badge-pending';
                 }
             } catch (e) {
-                $('sym-title').textContent = 'Symptom diary';
-                $('sym-body').textContent = "Could not load today's entry.";
+                $('sym-body').textContent = "We couldn't load today's diary just now. Tap to try again.";
             }
         }
 
@@ -623,24 +730,20 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const pending = a.filter(x => x.status === 'pending' || x.status === 'in_progress');
                 const completed = a.filter(x => x.status === 'completed');
                 if (pending.length > 0) {
-                    $('proms-title').innerHTML = `<span class="stat">${pending.length}</span> <span class="stat-unit">${pending.length === 1 ? 'check-in pending' : 'check-ins pending'}</span>`;
-                    $('proms-body').textContent = `${pending.map(p => (p.short_name || p.prom_slug || '').toUpperCase()).slice(0, 4).join(' · ')}${pending.length > 4 ? ' …' : ''}. Each is 1–4 minutes.`;
-                    $('proms-badge').textContent = 'new';
+                    $('proms-body').textContent = `${pending.length} short questionnaire${pending.length === 1 ? '' : 's'} waiting for you. Each takes one to four minutes.`;
+                    $('proms-badge').textContent = `${pending.length} to do`;
                     $('proms-badge').className = 'badge badge-pending';
                 } else if (completed.length > 0) {
-                    $('proms-title').textContent = 'All caught up';
-                    $('proms-body').textContent = `${completed.length} completed. New check-ins are assigned automatically as your care evolves.`;
+                    $('proms-body').textContent = `All caught up — ${completed.length} done. New ones arrive here as your care goes on.`;
                     $('proms-badge').textContent = 'up to date';
                     $('proms-badge').className = 'badge badge-released';
                 } else {
-                    $('proms-title').textContent = 'No check-ins yet';
-                    $('proms-body').textContent = 'Once your intake is submitted, your care team and our AI will assign the right validated questionnaires for your situation.';
-                    $('proms-badge').textContent = 'awaiting intake';
+                    $('proms-body').textContent = "Nothing to fill in yet. Once your history is in, we'll send short questionnaires here between visits.";
+                    $('proms-badge').textContent = '—';
                     $('proms-badge').className = 'badge badge-empty';
                 }
             } catch (e) {
-                $('proms-title').textContent = 'Health check-ins';
-                $('proms-body').textContent = 'Validated questionnaires Dr. Mabini reviews between visits.';
+                $('proms-body').textContent = "We couldn't load your check-ins just now. Tap to try again.";
             }
         }
 
@@ -657,9 +760,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const visits = (r && r.visits) || [];
                 const unread = visits.filter(v => v.new_for_you).length;
                 if (!visits.length) {
-                    $('visits-badge').textContent = 'None yet';
+                    $('visits-badge').textContent = '—';
                     $('visits-badge').className = 'badge badge-empty';
-                    $('visits-body').textContent = 'After your next appointment, a summary appears here once Dr. Mabini has reviewed it.';
+                    $('visits-body').textContent = 'Nothing here yet. After each appointment Dr. Mabini writes up what you talked about and the plan, and it appears here.';
                     return;
                 }
                 $('visits-badge').textContent = unread ? `${unread} new` : `${visits.length}`;
@@ -675,75 +778,64 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 // all-clear on a D1 hiccup.
                 $('visits-badge').textContent = '—';
                 $('visits-badge').className = 'badge badge-empty';
-                $('visits-body').textContent = 'Could not load your summaries just now. Tap to try again.';
+                $('visits-body').textContent = "We couldn't load your summaries just now. Tap to try again.";
             }
         }
 
+        // The twelve guides at /portal/education/ are hardcoded pages that
+        // exist whatever D1 says, so this tile's body is static markup and
+        // this function can only ever ADD to it. Counting rows here is what
+        // produced "Library opening soon" on a front door one click away
+        // from a finished library.
         async function loadEducationCard() {
             try {
                 const data = await fetchJson('/api/v1/patient/education');
-                const materials = data.materials || [];
-                if (materials.length === 0) {
-                    $('edu-title').textContent = 'Library opening soon';
-                    $('edu-body').textContent = 'Primers are being published — they will appear here.';
-                    $('edu-badge').textContent = 'empty';
-                    return;
-                }
-                const assigned = materials.filter(m => m.assignment).length;
-                const unread = materials.filter(m => !m.view).length;
+                const assigned = (data.materials || []).filter(m => m.assignment).length;
                 if (assigned > 0) {
-                    $('edu-title').innerHTML = `<span class="stat">${assigned}</span> <span class="stat-unit">assigned for you</span>`;
-                    $('edu-body').textContent = `Reading has been lined up for you. Click in to start.`;
-                    $('edu-badge').textContent = 'assigned';
-                    $('edu-badge').className = 'badge badge-urgent';
-                } else if (unread > 0) {
-                    $('edu-title').textContent = `${materials.length} primer${materials.length === 1 ? '' : 's'} available`;
-                    $('edu-body').textContent = `${unread} unread. Topics include ${materials.slice(0,3).map(m => (m.topic_tags||[])[0]).filter(Boolean).join(', ') || 'general health'}.`;
-                    $('edu-badge').textContent = `${unread} new`;
-                    $('edu-badge').className = 'badge badge-released';
-                } else {
-                    $('edu-title').textContent = `${materials.length} primer${materials.length === 1 ? '' : 's'} available`;
-                    $('edu-body').textContent = 'Caught up — re-read anytime.';
-                    $('edu-badge').textContent = 'caught up';
-                    $('edu-badge').className = 'badge badge-empty';
+                    $('edu-body').textContent = assigned === 1
+                        ? 'One guide picked out for you by Dr. Mabini, plus the twelve below ready to read.'
+                        : `${assigned} guides picked out for you by Dr. Mabini, plus the twelve below ready to read.`;
+                    $('edu-badge').hidden = false;
                 }
             } catch (e) {
-                $('edu-title').textContent = 'Patient primers';
-                $('edu-body').textContent = 'Could not load library count.';
+                // The guides are there either way. Leave the tile alone.
             }
         }
 
-        async function loadIntakeCard() {
+        async function loadOrdersCard() {
             try {
-                const i = await fetchJson('/api/v1/patient/intake/current');
-                if (!i || !i.intake) {
-                    $('intake-title').textContent = 'No intake started';
-                    $('intake-body').textContent = 'A 19-section comprehensive history. Autosaves as you go.';
-                    $('intake-badge').textContent = 'not started';
-                    $('intake-badge').className = 'badge badge-pending';
+                const d = await fetchJson('/api/v1/patient/orders');
+                const orders = d.orders || [];
+                if (!orders.length) {
+                    $('orders-body').textContent = 'Nothing ordered yet. Any blood work, scan or referral shows up here with its result.';
                     return;
                 }
-                const status = i.intake.status;
-                // The endpoint sends completion_pct on i.intake; it has never
-                // sent completed_section_count, so a mid-intake member read
-                // "— sections saved so far" — a placeholder shown as a fact.
-                const pct = i.intake.completion_pct != null ? Math.round(i.intake.completion_pct) : null;
-                if (status === 'submitted' || status === 'reviewed') {
-                    $('intake-title').textContent = status === 'reviewed' ? 'Reviewed by your clinician' : 'Submitted';
-                    $('intake-body').textContent = "Your intake is on file. We'll surface it in clinic and tie it into your triage.";
-                    $('intake-badge').textContent = status;
-                    $('intake-badge').className = 'badge badge-released';
-                } else {
-                    $('intake-title').textContent = 'Intake in progress';
-                    $('intake-body').textContent = pct != null
-                        ? `${pct}% complete. Pick up where you left off.`
-                        : 'In progress. Pick up where you left off.';
-                    $('intake-badge').textContent = 'in progress';
-                    $('intake-badge').className = 'badge badge-pending';
-                }
+                const back = orders.filter(o => o.result_available).length;
+                $('orders-body').textContent = back
+                    ? `${orders.length} ordered, ${back} with a result back.`
+                    : `${orders.length} ordered. Results appear here as soon as they are back.`;
+                $('orders-badge').textContent = back ? `${back} back` : `${orders.length} open`;
+                $('orders-badge').className = back ? 'badge badge-released' : 'badge badge-pending';
+                $('orders-badge').hidden = false;
             } catch (e) {
-                $('intake-title').textContent = 'Intake';
-                $('intake-body').textContent = 'Could not load intake status.';
+                $('orders-body').textContent = "We couldn't load your tests just now. Tap to try again.";
+            }
+        }
+
+        async function loadDocumentsCard() {
+            try {
+                const d = await fetchJson('/api/v1/patient/documents');
+                const docs = d.documents || [];
+                if (!docs.length) {
+                    $('docs-body').textContent = 'Nothing uploaded. Old imaging reports and operative notes are the most useful thing you can send us before a first visit.';
+                    return;
+                }
+                $('docs-body').textContent = `${docs.length} file${docs.length === 1 ? '' : 's'} on file. Add anything else you have from before.`;
+                $('docs-badge').textContent = `${docs.length}`;
+                $('docs-badge').className = 'badge badge-released';
+                $('docs-badge').hidden = false;
+            } catch (e) {
+                $('docs-body').textContent = "We couldn't load your records just now. Tap to try again.";
             }
         }
 

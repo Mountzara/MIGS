@@ -291,7 +291,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function renderList() {
             const a = state.assignments;
             if (!a.length) {
-                $('list-container').innerHTML = `<div class="empty-state">No check-ins assigned yet. Once you finish your intake, your care team will send the relevant questionnaires here.</div>`;
+                $('list-container').innerHTML = `<div class="empty-state">No check-ins yet. Once your health history is in, we&rsquo;ll send short questionnaires here about pain, mood and sleep.<div style="margin-top:14px;"><a href="/portal/intake/">Continue your history &rarr;</a></div></div>`;
                 return;
             }
             const pending = a.filter(x => x.status === 'pending' || x.status === 'in_progress');

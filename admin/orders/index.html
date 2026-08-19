@@ -35,6 +35,7 @@
         .tab { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:999px;
                padding:6px 14px; font:inherit; font-size:12px; color:var(--fg-soft); cursor:pointer; }
         .tab.active { background:rgba(var(--glow-purple),.16); border-color:rgba(var(--glow-purple),.55); color:var(--accent-soft); }
+        .tab:disabled { opacity:.45; cursor:default; }
         .card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
                 padding:14px 16px; margin-bottom:10px; }
         .card.lvl5 { border-color:rgba(239,68,68,.75); box-shadow:0 0 0 1px rgba(239,68,68,.25) inset; }
@@ -91,7 +92,7 @@
             <button class="tab" data-view="critical">Critical</button>
             <button class="tab" data-view="all">All</button>
             <button class="tab" id="btn-sweep" style="margin-left:auto;" title="Check for overdue orders and unacknowledged critical results now">Run check now</button>
-            <button class="tab" id="btn-new">+ New order</button>
+            <button class="tab" id="btn-new" disabled title="Checking the roster…">+ New order</button>
         </div>
 
         <div id="list"><div class="empty">Loading…</div></div>
@@ -147,7 +148,7 @@
     (function () {
         'use strict';
         const $ = (id) => document.getElementById(id);
-        const state = { view: 'open', orders: [], patients: [], resultOrderId: null };
+        const state = { view: 'open', orders: [], patients: [], hasPatients: null, resultOrderId: null };
 
         function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
@@ -181,7 +182,13 @@
         }
 
         function render() {
-            if (state.orders.length === 0) { $('list').innerHTML = '<div class="empty">Nothing here — that is the good outcome for this board.</div>'; return; }
+            if (state.orders.length === 0) {
+                const tail = state.hasPatients === false
+                    ? 'You can place orders once at least one patient is on the roster.'
+                    : 'Place a lab, imaging study or referral with + New order.';
+                $('list').innerHTML = '<div class="empty">Nothing here — that is the good outcome for this board. ' + tail + '</div>';
+                return;
+            }
             $('list').innerHTML = state.orders.map(o => {
                 const name = ((o.patient_first_name || '') + ' ' + (o.patient_last_name || '')).trim() || o.patient_email || 'Patient';
                 const lvl = (o.escalation && o.escalation.level) || 0;
@@ -271,10 +278,51 @@
             } finally { b.disabled = false; }
         });
 
+        // An order with patient_id="" is a corrupt row, and that is exactly what
+        // the dialog POSTed when the roster was empty: a blank <select> submits
+        // an empty string. Keep + New order disabled until a patient exists.
+        async function checkRoster() {
+            // The api() helper only handles a non-OK RESPONSE. A fetch that
+            // THROWS (offline, DNS, aborted) skipped everything below and
+            // left "+ New order" disabled forever, with its "Checking the
+            // roster…" tooltip still showing. Fail open: the click handler
+            // still refuses to open an empty dialog, so nothing corrupt can
+            // be written either way.
+            let r;
+            try { r = await api('/api/v1/admin/patients?limit=1'); }
+            catch (e) {
+                state.hasPatients = null;
+                const btn = $('btn-new');
+                btn.disabled = false; btn.title = '';
+                return;
+            }
+            const b = $('btn-new');
+            if (!r.ok) {
+                // Could not tell — leave the button usable; the click handler
+                // below still refuses to open an empty dialog.
+                state.hasPatients = null;
+                b.disabled = false; b.title = '';
+                return;
+            }
+            state.hasPatients = ((r.data && r.data.patients) || []).length > 0;
+            b.disabled = !state.hasPatients;
+            b.title = state.hasPatients ? '' : 'Add a patient on the roster first';
+            render();
+        }
+
         $('btn-new').addEventListener('click', async () => {
             if (state.patients.length === 0) {
                 const r = await api('/api/v1/admin/patients?limit=200');
                 state.patients = (r.data && r.data.patients) || [];
+                if (state.patients.length === 0) {
+                    state.hasPatients = false;
+                    $('btn-new').disabled = true;
+                    $('btn-new').title = 'Add a patient on the roster first';
+                    toast('No patients on the roster yet — add one before placing an order.');
+                    render();
+                    return;
+                }
+                state.hasPatients = true;
                 $('n-patient').innerHTML = state.patients.map(p =>
                     `<option value="${esc(p.id)}">${esc(((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.email)}</option>`).join('');
             }
@@ -313,6 +361,7 @@
         });
 
         load();
+        checkRoster();
         setInterval(() => { if (!document.hidden) load(); }, 120000);
     })();
     </script>

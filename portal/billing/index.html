@@ -267,7 +267,7 @@ function renderSummary(d) {
 function renderInvoices(invoices) {
     const container = $("invoice-list-container");
     if (!invoices.length) {
-        container.innerHTML = '<div class="empty-state"><strong style="color:var(--fg-mid)">No invoices yet.</strong><br><br>Once you have a visit with charges, invoices will appear here.</div>';
+        container.innerHTML = '<div class="empty-state"><strong style="color:var(--fg-mid)">No bills yet.</strong><br><br>Anything you owe after a visit appears here, and you can pay it by card.</div>';
         return;
     }
     const items = invoices.map((inv) => {

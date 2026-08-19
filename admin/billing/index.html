@@ -745,12 +745,39 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 : 'awaiting review';
         }
 
+        // There are two zero states here and they need different sentences:
+        // no claim has ever arrived, versus this filter matched nothing. Only
+        // a probe across every status over the widest window can tell them
+        // apart, so it runs once, and only when the list came back empty.
+        const ALL_CLAIM_STATUSES = 'pending_review,edited,rejected,ready_to_submit,submitting,' +
+            'submitted,accepted_by_clearinghouse,paid,partially_paid,denied,appealed,rebilled,written_off';
+        let anyClaimsEver = null;
+        async function anyClaimsExist() {
+            if (anyClaimsEver !== null) return anyClaimsEver;
+            try {
+                const resp = await fetch(
+                    '/api/v1/admin/billing/claims?status=' + ALL_CLAIM_STATUSES + '&days=365&limit=1',
+                    { credentials: 'include' });
+                if (!resp.ok) return null;
+                const d = await resp.json();
+                anyClaimsEver = ((d.claims || []).length > 0) || ((d.total || 0) > 0);
+                return anyClaimsEver;
+            } catch (e) {
+                return null;
+            }
+        }
+
         function renderList() {
             if (state.claims.length === 0) {
                 $empty.textContent = state.days < 365
                     ? `No claims match the current filter in the last ${state.days} days — try a wider date window.`
                     : 'No claims match the current filter.';
                 $empty.style.display = 'block';
+                anyClaimsExist().then((exists) => {
+                    if (exists === false && state.claims.length === 0) {
+                        $empty.textContent = "Claims arrive here from the Transcription app's coding pass for you to correct and approve. None yet — and nothing you approve can be submitted until the clearinghouse setup is finished.";
+                    }
+                });
                 $pagi.style.display = 'none';
                 // Clear any rendered rows.
                 Array.from($list.querySelectorAll('.row')).forEach(r => r.remove());

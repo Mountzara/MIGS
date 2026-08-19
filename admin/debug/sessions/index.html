@@ -289,6 +289,85 @@ table.trace .detail {
 .invite-card .invite .stat.redeemed { background: rgba(74, 222, 128, 0.10); color: var(--ok); }
 .invite-card .invite .stat.expired  { background: rgba(245, 245, 247, 0.05); color: var(--fg-faint); }
 .invite-card .invite .stat.revoked  { background: rgba(248, 113, 113, 0.10); color: var(--err); }
+.invite-card p.note {
+    margin: 0 0 12px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--fg-soft);
+    max-width: 80ch;
+}
+.invite-card h2.later { margin-top: 20px; }
+
+.mint-form {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 14px;
+}
+.mint-form label {
+    font-size: 11.5px;
+    color: var(--fg-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+.mint-form input {
+    font: inherit;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--fg-mid);
+    padding: 7px 12px;
+    font-size: 13px;
+    transition: border-color 0.18s, background 0.18s;
+}
+.mint-form input:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+.mint-form button {
+    font: inherit;
+    cursor: pointer;
+    background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 8px 16px;
+    box-shadow: 0 8px 22px -10px rgba(var(--glow-purple), 0.5);
+    transition: transform 0.18s, opacity 0.18s;
+}
+.mint-form button:hover:not(:disabled) { transform: translateY(-1px); }
+.mint-form button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.mint-form .status { font-size: 12px; color: var(--fg-soft); }
+.mint-form .status.err { color: var(--err); }
+
+.mint-result {
+    background: rgba(167, 139, 250, 0.06);
+    border: 1px solid rgba(var(--glow-purple), 0.28);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+}
+.mint-result[hidden] { display: none; }
+.mint-result .grant-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.mint-result input.grant {
+    flex: 1 1 320px; min-width: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--fg-strong);
+    padding: 8px 10px;
+}
+.mint-result button.copy {
+    font: inherit; font-size: 12px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--fg-mid);
+    padding: 8px 14px;
+}
+.mint-result button.copy:hover { border-color: rgba(var(--glow-purple), 0.45); color: #fff; }
+.mint-result .meta { margin-top: 8px; font-size: 11.5px; color: var(--fg-faint); }
 
 @keyframes mzPulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55); }
@@ -409,9 +488,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     </div>
 
     <section class="invite-card">
-        <h2>Active invitations</h2>
+        <h2>Mint preview invite</h2>
+        <p class="note">Creates one single-use grant URL that lets an external tester through the pre-launch gate and into the signup &rarr; history &rarr; booking path. Nothing is emailed from here &mdash; copy the URL below and send it to the recipient yourself.</p>
+        <div class="mint-form">
+            <label for="inv-email">Email</label>
+            <input id="inv-email" type="email" placeholder="tester@example.com" autocomplete="off" style="width:230px;">
+            <label for="inv-name">Full name</label>
+            <input id="inv-name" type="text" placeholder="Ally O&#39;Flinn" autocomplete="off" style="width:180px;">
+            <label for="inv-label">Label</label>
+            <input id="inv-label" type="text" placeholder="ally" autocomplete="off" style="width:110px;">
+            <button id="mintBtn" type="button">Mint preview invite</button>
+            <span id="mintStatus" class="status" role="status" aria-live="polite"></span>
+        </div>
+        <div id="mintResult" class="mint-result" hidden></div>
+
+        <h2 class="later">Active invitations</h2>
         <div class="invites" id="invites">
-            <div style="color:var(--fg-soft); font-size:13px;">Loading…</div>
+            <div style="color:var(--fg-soft); font-size:13px;">Loading&hellip;</div>
         </div>
     </section>
 
@@ -436,7 +529,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </table>
         <div id="empty" class="empty" style="display:none;">
             <h2>No events yet</h2>
-            <p>Once a member starts a session (or the operator hits the portal), events will stream in here. Toggle off auto-refresh if you want to freeze the view.</p>
+            <p>A PHI-free live trace of portal requests, for watching a signup or intake happen step by step. Nothing yet — open /portal/ in another tab and rows appear within five seconds.</p>
         </div>
     </section>
 </main>
@@ -459,6 +552,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     const fOutcome = document.getElementById('f-outcome');
     const fLimit = document.getElementById('f-limit');
     const refreshBtn = document.getElementById('refreshBtn');
+    const invEmail = document.getElementById('inv-email');
+    const invName = document.getElementById('inv-name');
+    const invLabel = document.getElementById('inv-label');
+    const mintBtn = document.getElementById('mintBtn');
+    const mintStatus = document.getElementById('mintStatus');
+    const mintResult = document.getElementById('mintResult');
 
     let timer = null;
 
@@ -549,7 +648,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
             const data = await r.json();
             if (!data.invites || data.invites.length === 0) {
-                invitesEl.innerHTML = `<div style="color:var(--fg-soft); font-size:13px;">No invitations issued yet. Run <code style="font-family:'JetBrains Mono',monospace;">scripts/_invite_ally.sh</code> from terminal to mint one.</div>`;
+                invitesEl.innerHTML = `<div style="color:var(--fg-soft); font-size:13px;">No invitations issued yet. Use Mint preview invite above to create one.</div>`;
                 return;
             }
             invitesEl.innerHTML = data.invites.slice(0, 8).map((inv) => `
@@ -563,6 +662,90 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             `).join('');
         } catch (e) {
             invitesEl.innerHTML = `<div style="color:var(--err); font-size:13px;">Error: ${escHtml(String(e))}</div>`;
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Mint preview invite — POST /api/v1/admin/preview-invite.
+    // The endpoint returns 201 with { grant_url, expires_at_iso, label,
+    // email_prefix, ... } and sends nothing itself, so the operator has to
+    // be able to READ and COPY grant_url. Before this button the only path
+    // to the single most important action in the console was a shell script
+    // on somebody's Mac.
+    // -----------------------------------------------------------------
+    function setMintStatus(msg, isError) {
+        mintStatus.textContent = msg || '';
+        mintStatus.classList.toggle('err', !!isError);
+    }
+
+    function showGrant(data) {
+        const url = data.grant_url || '';
+        const expires = data.expires_at_iso
+            ? new Date(data.expires_at_iso).toLocaleString()
+            : 'unknown';
+        mintResult.innerHTML = `
+            <div>Invitation minted for <strong style="color:var(--fg-strong);">${escHtml(data.email_prefix || '')}</strong>
+                 (label <span class="label">${escHtml(data.label || '—')}</span>).
+                 Single-use, expires ${escHtml(expires)}. Send it to the recipient out-of-band.</div>
+            <div class="grant-row">
+                <input class="grant" type="text" readonly value="${escHtml(url)}" aria-label="Grant URL">
+                <button class="copy" type="button">Copy URL</button>
+            </div>
+            <div class="meta">Nothing was emailed. This URL is the invitation.</div>
+        `;
+        mintResult.hidden = false;
+        const field = mintResult.querySelector('input.grant');
+        const copyBtn = mintResult.querySelector('button.copy');
+        copyBtn.addEventListener('click', async () => {
+            field.select();
+            field.setSelectionRange(0, 99999);
+            try {
+                await navigator.clipboard.writeText(url);
+                copyBtn.textContent = 'Copied';
+            } catch {
+                // Clipboard API can be refused; the field is selected, so
+                // the operator can still press Cmd-C.
+                copyBtn.textContent = 'Press Cmd-C';
+            }
+            setTimeout(() => { copyBtn.textContent = 'Copy URL'; }, 2500);
+        });
+    }
+
+    async function mintInvite() {
+        const email = invEmail.value.trim();
+        if (!email) {
+            setMintStatus('Enter the recipient email address first.', true);
+            invEmail.focus();
+            return;
+        }
+        mintBtn.disabled = true;
+        setMintStatus('Minting…', false);
+        try {
+            const body = { email: email };
+            if (invName.value.trim()) body.full_name = invName.value.trim();
+            if (invLabel.value.trim()) body.label = invLabel.value.trim();
+            const r = await fetch('/api/v1/admin/preview-invite', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            let data = {};
+            try { data = await r.json(); } catch { data = {}; }
+            if (!r.ok) {
+                setMintStatus('Could not mint: ' + (data.error || ('HTTP ' + r.status)), true);
+                return;
+            }
+            showGrant(data);
+            setMintStatus('', false);
+            invEmail.value = '';
+            invName.value = '';
+            invLabel.value = '';
+            loadInvites();
+        } catch (e) {
+            setMintStatus('Could not mint: ' + String(e), true);
+        } finally {
+            mintBtn.disabled = false;
         }
     }
 
@@ -609,6 +792,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     }
 
     refreshBtn.addEventListener('click', refreshAll);
+    mintBtn.addEventListener('click', mintInvite);
+    [invEmail, invName, invLabel].forEach((el) => {
+        el.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') { ev.preventDefault(); mintInvite(); }
+        });
+    });
     autoChk.addEventListener('change', setupTimer);
     [fLabel, fOutcome, fLimit].forEach((el) => el.addEventListener('change', loadTraces));
     fLabel.addEventListener('input', debounce(loadTraces, 350));

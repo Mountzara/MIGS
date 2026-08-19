@@ -553,7 +553,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         function renderThreadList() {
             if (state.threads.length === 0) {
-                $('thread-list').innerHTML = '<div class="empty-state">No messages yet. Click "+ New message" to start.</div>';
+                $('thread-list').innerHTML = '<div class="empty-state">No messages yet. Use + New message for anything that isn\'t urgent &mdash; you\'ll usually hear back within one business day.</div>';
                 return;
             }
             $('thread-list').innerHTML = state.threads.map(t => {

@@ -296,6 +296,22 @@ input.bad{border-color:rgba(239,68,68,.7);}
         });
     }
 
+    // "Before this opens" — pulled out of render() so the zero-signup branch
+    // can show it too. It used to sit below an early return, which made the
+    // one section worth reading on day one unreachable on day one.
+    function complianceHtml(d) {
+        if (!d.compliance || !d.compliance.length) return "";
+        var h = '<section class="block"><h2>Before this opens</h2>';
+        h += '<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px;">Shown on this page rather than buried in a document, because a compliance checklist nobody sees is not a control. This is not legal advice — it is the list to take to your healthcare attorney.</p>';
+        d.compliance.forEach(function (c) {
+            h += '<div class="cmp-item"><div class="t">' + esc(c.topic) + '</div><div class="n">' + esc(c.note) + "</div>";
+            if (c.cite) h += '<div class="c">' + esc(c.cite) + "</div>";
+            h += "</div>";
+        });
+        h += "</section>";
+        return h;
+    }
+
     function render(d) {
         S = d;
         var h = "";
@@ -307,10 +323,10 @@ input.bad{border-color:rgba(239,68,68,.7);}
 
         if (!d.total) {
             h += '<section class="block"><div class="empty">'
-               + "No signups yet.<br><br>"
-               + "The waitlist is live on the portal page. Nothing here is broken — there is simply nothing to read until people start joining, "
-               + "and a chart drawn from zero rows would be a decoration rather than information."
+               + "No signups yet — nothing here is broken. The waitlist is live on the public portal page; "
+               + "the compliance checklist below is worth reading before you open a tier."
                + "</div></section>";
+            h += complianceHtml(d);
             root.innerHTML = h;
             return;
         }
@@ -431,16 +447,7 @@ input.bad{border-color:rgba(239,68,68,.7);}
         h += "</section>";
 
         // ---- compliance, always visible
-        if (d.compliance && d.compliance.length) {
-            h += '<section class="block"><h2>Before this opens</h2>';
-            h += '<p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px;">Shown on this page rather than buried in a document, because a compliance checklist nobody sees is not a control. This is not legal advice — it is the list to take to your healthcare attorney.</p>';
-            d.compliance.forEach(function (c) {
-                h += '<div class="cmp-item"><div class="t">' + esc(c.topic) + '</div><div class="n">' + esc(c.note) + "</div>";
-                if (c.cite) h += '<div class="c">' + esc(c.cite) + "</div>";
-                h += "</div>";
-            });
-            h += "</section>";
-        }
+        h += complianceHtml(d);
 
         root.innerHTML = h;
 

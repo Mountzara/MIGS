@@ -208,6 +208,20 @@
             color: var(--fg-soft); font-size: 13px;
         }
 
+        /* Page-level zero-patient notice — sits above the whole board so a
+           grid of honest zeroes is not read as broken software. */
+        .zero-board {
+            margin: 0 0 18px;
+            padding: 16px 18px;
+            border: 1px dashed rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--fg-soft);
+            font-size: 13.5px; line-height: 1.6;
+            max-width: 80ch;
+        }
+        .zero-board[hidden] { display: none; }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
@@ -299,6 +313,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <button class="filter-chip" data-window="90">Last 90 d</button>
             <span style="margin-left:auto; font-size: 12px; color: var(--fg-dim);" id="window-label">—</span>
         </div>
+
+        <div id="zero-board" class="zero-board" hidden>Nothing to measure yet. These numbers start moving after your first patient books a visit — add a patient and publish open hours, then come back.</div>
 
         <div id="kpis" class="kpi-grid">
             <div class="kpi"><div class="label">loading…</div></div>
@@ -465,6 +481,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
             // KPIs
             const t = d.totals;
+
+            // Recomputed on every load. Shown ONLY on a provable zero — a
+            // missing/undefined count is a different problem and must not
+            // render as "nothing to measure yet".
+            $('zero-board').hidden = !(Number(t.patients) === 0);
             const kpis = [
                 { label: 'Patients', value: t.patients, sub: 'on file' },
                 { label: 'Upcoming visits', value: t.appointments_upcoming, sub: `${t.appointments_total} all time`, cls: 'good' },
@@ -565,7 +586,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
 
         function renderBarChart(rows) {
-            if (!rows || rows.length === 0) return '<div class="empty-state" style="padding: 16px;">No data.</div>';
+            if (!rows || rows.length === 0) return '<div class="empty-state" style="padding: 16px;">No data in this window.</div>';
             const max = Math.max(...rows.map(r => r.count), 1);
             return rows.map(r => `
                 <div class="bar-row">

@@ -504,7 +504,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
         function render() {
             if (state.materials.length === 0) {
-                $('list').innerHTML = `<div class="empty-state">No materials in this view. Click "+ New material" to author one.</div>`;
+                $('list').innerHTML = `<div class="empty-state">The condition primers you write here are exactly what patients read in their portal. Click + New material to write your first — this page works on a brand-new install with no patients and no schedule.</div>`;
                 return;
             }
             $('list').innerHTML = state.materials.map(m => `

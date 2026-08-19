@@ -52,6 +52,7 @@
                      background:rgba(var(--glow-purple),.16); border:1px solid rgba(var(--glow-purple),.5); color:var(--accent-soft); }
         button.act.ghost { background:rgba(255,255,255,.04); border-color:var(--border); color:var(--fg-soft); }
         button.act:disabled { opacity:.5; cursor:default; }
+        .tab:disabled { opacity:.45; cursor:not-allowed; }
         .empty { opacity:.6; font-size:13.5px; padding:24px 0; }
         dialog { background:#1a1626; color:#fff; border:1px solid var(--border); border-radius:14px;
                  padding:20px; max-width:560px; width:92vw; }
@@ -85,7 +86,7 @@
             <div class="kpi"><div class="l">Total</div><div class="v" id="k-total">—</div></div>
         </div>
 
-        <div class="tabs"><button class="tab" id="btn-new">+ New estimate</button></div>
+        <div class="tabs"><button class="tab" id="btn-new" disabled>+ New estimate</button></div>
         <div id="list"><div class="empty">Loading…</div></div>
     </div>
 
@@ -112,7 +113,7 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
     (function () {
         'use strict';
         const $ = (id) => document.getElementById(id);
-        const state = { rows: [], patients: [] };
+        const state = { rows: [], patients: [], rosterLoaded: false };
         function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200); }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
         function money(c) { return '$' + ((Number(c) || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -122,8 +123,37 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
             if (r.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
             return { ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) };
         }
+        // The dialog's patient <select> is the only source of patient_id on the
+        // POST, so an empty roster means the button submits patient_id="" and
+        // writes a corrupt estimate. Load the roster up front and keep the
+        // button disabled until there is somebody to write an estimate for.
+        async function loadPatients() {
+            const r = await api('/api/v1/admin/patients?limit=200');
+            state.patients = (r.ok && r.data && r.data.patients) || [];
+            state.rosterLoaded = !!r.ok;
+            $('g-patient').innerHTML = state.patients.map(p =>
+                `<option value="${esc(p.id)}">${esc(((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.email)}</option>`).join('');
+            const btn = $('btn-new');
+            btn.disabled = state.patients.length === 0;
+            btn.title = state.patients.length === 0
+                ? (state.rosterLoaded
+                    ? 'No patients on the roster yet — add one before writing an estimate.'
+                    : 'Could not load the patient roster, so an estimate cannot be written safely.')
+                : '';
+        }
+
         async function load() {
-            const r = await api('/api/v1/admin/gfe');
+            // A thrown fetch inside loadPatients() (offline, DNS) rejected
+            // load() before the estimates were ever requested, leaving the
+            // page on "Loading…" with no error — the failure mode this
+            // whole pass exists to remove.
+            try { await loadPatients(); } catch (e) { state.patients = []; }
+            let r;
+            try { r = await api('/api/v1/admin/gfe'); }
+            catch (e) {
+                $('list').innerHTML = '<div class="empty">Could not reach the server. Check your connection and reload.</div>';
+                return;
+            }
             if (!r.ok) { $('list').innerHTML = '<div class="empty">Could not load (' + r.status + ').</div>'; return; }
             state.rows = r.data.estimates || [];
             const c = r.data.counts || {};
@@ -131,7 +161,12 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
             render();
         }
         function render() {
-            if (state.rows.length === 0) { $('list').innerHTML = '<div class="empty">No estimates yet. Create one whenever a self-pay patient schedules.</div>'; return; }
+            if (state.rows.length === 0) {
+                $('list').innerHTML = state.patients.length === 0
+                    ? '<div class="empty">No estimates yet, and no patients to write one for. Add a patient on the roster first.</div>'
+                    : '<div class="empty">No estimates yet. Create one the moment a self-pay patient schedules — the deadline counts backwards from the service date, so a late start cannot be recovered.</div>';
+                return;
+            }
             $('list').innerHTML = state.rows.map(g => {
                 const name = ((g.patient_first_name || '') + ' ' + (g.patient_last_name || '')).trim() || g.patient_email || 'Patient';
                 return `<div class="card ${g.overdue ? 'lvl3' : ''}">
@@ -172,13 +207,8 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
                 }
             } finally { b.disabled = false; }
         });
-        $('btn-new').addEventListener('click', async () => {
-            if (state.patients.length === 0) {
-                const r = await api('/api/v1/admin/patients?limit=200');
-                state.patients = (r.data && r.data.patients) || [];
-                $('g-patient').innerHTML = state.patients.map(p =>
-                    `<option value="${esc(p.id)}">${esc(((p.first_name||'') + ' ' + (p.last_name||'')).trim() || p.email)}</option>`).join('');
-            }
+        $('btn-new').addEventListener('click', () => {
+            if (state.patients.length === 0) return;   // belt and braces: the button is already disabled
             $('g-scheduled').value = new Date().toISOString().slice(0, 10);
             $('dlg').showModal();
         });
@@ -192,6 +222,7 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
                          provider_name: p[4] || '', provider_npi: p[0] === 'outside' ? '' : '1992265797',
                          provider_tin: p[0] === 'outside' ? '' : 'on file', provider_state: p[0] === 'outside' ? '' : 'IL' };
             });
+            if (!$('g-patient').value) { toast('Pick a patient first'); return; }
             const r = await api('/api/v1/admin/gfe', 'POST', {
                 patient_id: $('g-patient').value, scheduled_on: $('g-scheduled').value, service_date: $('g-service').value,
                 primary_service: $('g-primary').value.trim(),

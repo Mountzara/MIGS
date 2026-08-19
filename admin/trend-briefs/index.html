@@ -600,7 +600,7 @@ async function renderQueue() {
     const cards = el("div", { class: "cards" });
     if (!data.briefs || data.briefs.length === 0) {
         app.appendChild(el("div", { class: "empty" },
-            "Nothing in the queue. The orchestrator submits briefs here when §3.8 fails only on the verdict gate."
+            "When a trending claim fails only the clinical-verdict gate, the brief comes here for your ruling. Nothing queued — and note that approving a brief writes an override rather than publishing, so the Mac puller still has to run."
         ));
         return;
     }

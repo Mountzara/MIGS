@@ -65,7 +65,8 @@
                 const list = document.getElementById('list');
                 const orders = d.orders || [];
                 if (orders.length === 0) {
-                    list.innerHTML = '<div class="empty">Nothing has been ordered for you yet. Anything Dr. Mabini orders will appear here automatically.</div>';
+                    list.innerHTML = '<div class="empty">Nothing has been ordered for you yet. If Dr. Mabini orders blood work, a scan or a referral, it appears here along with the result as soon as it\'s back.'
+                        + '<div style="margin-top:14px;"><a href="/portal/messages/">Message the practice &rarr;</a></div></div>';
                     return;
                 }
                 list.innerHTML = orders.map(o => `

@@ -449,7 +449,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </section>
 
             <section id="reader-panel" class="panel">
-                <div id="reader-empty" class="empty-state">Select a thread to read.</div>
+                <div id="reader-empty" class="empty-state">Select a thread to read it.</div>
                 <div id="reader" class="reader">
                     <div class="reader-header">
                         <h3 id="reader-subject">—</h3>
@@ -621,7 +621,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 ? state.threads.filter(t => t.unread_count > 0)
                 : state.threads;
             if (filtered.length === 0) {
-                $('thread-list').innerHTML = '<div class="empty-state">No threads.</div>';
+                $('thread-list').innerHTML = state.threads.length === 0
+                    ? '<div class="empty-state">Patients&rsquo; secure messages arrive here. Nothing yet — the inbox fills the first time someone writes to you.</div>'
+                    : '<div class="empty-state">Nothing unread. Switch the filter to All to see every thread.</div>';
                 return;
             }
             $('thread-list').innerHTML = filtered.map(t => {
@@ -827,7 +829,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     const d = await fetchJson(`/api/v1/admin/patients?q=${encodeURIComponent(q)}&limit=8`);
                     const list = d.patients || [];
                     if (list.length === 0) {
-                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No matches.</div>';
+                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No patient matches that. Type at least two letters of a first or last name.</div>';
                         return;
                     }
                     $('patient-results').innerHTML = list.map(p => {

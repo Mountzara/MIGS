@@ -226,6 +226,17 @@
             border-radius: 10px;
             margin-top: 14px;
         }
+        .warn-banner {
+            font-size: 13.5px;
+            line-height: 1.55;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin: 0 0 18px;
+            background: rgba(245, 158, 11, 0.10);
+            color: rgba(252, 211, 77, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.40);
+        }
+        .warn-banner[hidden] { display: none; }
         .flash {
             font-size: 13px;
             padding: 10px 12px;
@@ -345,6 +356,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h1 class="page-title">Scheduling &amp; Doxy.me</h1>
         <p class="lede">Set availability, manage appointments, and configure the Doxy.me launch URL. Patient-facing booking lands in Phase 1; for now this admin panel is the source of truth.</p>
 
+        <!-- Only block_kind = 'open' is bookable (functions/_lib/scheduling.js:77)
+             and admin booking never consults clinician_availability at all, so a
+             calendar holding appointments but no open blocks reads as working
+             here and as empty to every patient. Say so, in that case only. -->
+        <div id="sched-warning" class="warn-banner" role="status" hidden></div>
+
         <div class="grid two">
             <!-- PRACTICE SETTINGS -->
             <section class="panel">
@@ -369,6 +386,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
                 <label style="margin-top:16px">Licensed states — telehealth eligibility</label>
                 <p class="panel-sub" style="margin-top:2px">A patient whose Section 1 state of residence is not checked here is blocked at intake submission, triage, and booking (Phase 17 R3). If never configured, the gate defaults to Illinois only.</p>
+                <div id="ps-states-empty" class="empty" hidden>No states set yet. Until you set them, every booking is restricted to Illinois.</div>
                 <div id="ps-states-grid" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px"><span class="empty">Loading…</span></div>
                 <button type="button" class="compact" style="margin-top:10px" onclick="saveLicensedStates()">Save licensed states</button>
 
@@ -544,6 +562,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (r.ok) { const j = await r.json(); licensed = Array.isArray(j.licensed_states) ? j.licensed_states : []; }
         } catch {}
         const set = new Set(licensed);
+        const note = $('ps-states-empty');
+        if (note) note.hidden = licensed.length > 0;
         grid.innerHTML = ADMIN_US_STATES.map(code =>
             `<label style="display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:400;cursor:pointer">`
             + `<input type="checkbox" value="${code}"${set.has(code) ? ' checked' : ''}> ${code}</label>`
@@ -577,7 +597,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('patients-count').textContent = list.length;
         $('patients-count').style.display = 'inline-flex';
         const el = $('patient-list');
-        if (!list.length) { el.innerHTML = '<div class="empty">No patients yet — create one above.</div>'; return; }
+        if (!list.length) { el.innerHTML = '<div class="empty">No patients yet — add one with the form above, or send a portal invite.</div>'; return; }
         el.innerHTML = list.map(p => `
             <div class="appt-row">
                 <div class="appt-when">${escapeHtml(p.last_name)}, ${escapeHtml(p.first_name)}</div>
@@ -675,7 +695,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('avail-count').textContent = `${blocks.length} blocks`;
         $('avail-count').style.display = 'inline-flex';
         const el = $('avail-list');
-        if (!blocks.length) { el.innerHTML = '<div class="empty">No availability blocks for this week.</div>'; return; }
+        if (!blocks.length) { el.innerHTML = '<div class="empty">No bookable hours yet — with none, no patient can ever book. Add at least one block of kind "open" for each day you will see patients.</div>'; return; }
         el.innerHTML = blocks.map(b => `
             <div class="avail-row">
                 <div class="avail-when">${escapeHtml(b.date)} · ${fmtTime(b.start_minute_of_day)}&ndash;${fmtTime(b.end_minute_of_day)}</div>
@@ -714,6 +734,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('av-notes').value = '';
             flash('avail-flash', `Added ${date} ${fmtTime(start)}–${fmtTime(end)}.`, 'ok');
             await loadAvailability();
+            checkOpenBlockGap();
         } catch (e) {
             flash('avail-flash', `Add failed: ${e.message}`, 'err');
         }
@@ -726,9 +747,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
             flash('avail-flash', 'Deleted.', 'ok');
             await loadAvailability();
+            checkOpenBlockGap();
         } catch (e) {
             flash('avail-flash', `Delete failed: ${e.message}`, 'err');
         }
+    }
+
+    // -------- Open-block gap check --------
+    // Counts open blocks and live appointments over the coming year and warns
+    // when there are bookings but nothing bookable. See the banner comment above.
+    async function checkOpenBlockGap() {
+        const el = $('sched-warning');
+        if (!el) return;
+        const from = todayIso();
+        const to = isoOffset(365);
+        try {
+            const [ra, rp] = await Promise.all([
+                fetch(`/api/v1/admin/availability?from=${from}&to=${to}`),
+                fetch(`/api/v1/admin/appointments?from=${from}&to=${to}`),
+            ]);
+            if (!ra.ok || !rp.ok) return;
+            const da = await ra.json();
+            const dp = await rp.json();
+            const openBlocks = (da.blocks || []).filter(b => b.block_kind === 'open').length;
+            const appts = (dp.appointments || []).filter(a => a.status !== 'cancelled' && a.status !== 'no_show').length;
+            if (appts > 0 && openBlocks === 0) {
+                el.textContent = `You have ${appts} appointment(s) but no open blocks. Admin bookings bypass the calendar; patient self-booking does not, so patients currently see no times at all.`;
+                el.hidden = false;
+            } else {
+                el.hidden = true;
+            }
+        } catch (_) { /* a failed probe must never blank the page */ }
     }
 
     // -------- Appointments --------
@@ -768,7 +817,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('appt-count').textContent = `${list.length} appts`;
         $('appt-count').style.display = 'inline-flex';
         const el = $('appt-list');
-        if (!list.length) { el.innerHTML = '<div class="empty">No appointments in this window.</div>'; return; }
+        if (!list.length) { el.innerHTML = '<div class="empty">No appointments in this window. Patients can book as soon as an open block exists and their triage has been released.</div>'; return; }
         el.innerHTML = list.map(a => {
             const isTelehealth = a.modality === 'telehealth';
             const doxyUrl = a.doxy_room_url;
@@ -828,6 +877,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('ap-cc').value = '';
             flash('appt-flash', `Booked ${body.visit_type} at ${new Date(starts_at).toLocaleString()}.`, 'ok');
             await loadAppointments();
+            checkOpenBlockGap();
         } catch (e) {
             flash('appt-flash', `Book failed: ${e.message}`, 'err');
         }
@@ -843,6 +893,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
             flash('appt-flash', `Updated ${id.slice(0, 8)}…`, 'ok');
             await loadAppointments();
+            checkOpenBlockGap();
         } catch (e) {
             flash('appt-flash', `Update failed: ${e.message}`, 'err');
         }
@@ -874,6 +925,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('ap-date').value = isoOffset(1);
         await Promise.all([loadSettings(), loadVisitTypes(), loadPatients()]);
         await Promise.all([loadAvailability(), loadAppointments()]);
+        checkOpenBlockGap();
     })();
     </script>
 </body>

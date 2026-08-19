@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Intake · Member Portal · Mount Zara</title>
+    <title>Your health history · Member Portal · Mount Zara</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -260,6 +260,11 @@
         .banner.info { background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.30); color: rgba(196, 181, 253, 0.95); }
         .banner.warn { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.35); color: rgba(252, 211, 77, 0.95); }
         .banner.ok   { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.30); color: rgba(110, 231, 183, 0.95); }
+        .banner.err  { background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.35); color: rgba(252, 165, 165, 0.95); }
+        .banner strong { display: block; color: var(--fg-strong); font-weight: 600; margin-bottom: 8px; }
+        .banner p { margin: 0 0 8px 0; }
+        .banner .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+        .aside-note { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.10); font-size: 12.5px; line-height: 1.55; color: var(--fg-soft); }
 
         @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -468,7 +473,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         1: () => h('div', { class: 'card' },
             h('h2', null, 'Section 1 of 18'),
             h('h3', null, 'Patient Information'),
-            h('p', { class: 'desc' }, 'A few essentials for the record. Most you can update later in your profile too.'),
+            h('p', { class: 'desc' }, "Answer as much as you can. Anything you skip, we'll ask about at your visit."),
             h('div', { class: 'grid-2' },
                 field('Full legal name', textIn('full_name', { full: 1, autocomplete: 'name' })),
                 field('Date of birth', dateIn('dob', { full: 1, autocomplete: 'bday' })),
@@ -996,7 +1001,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             sectionData[n] = snap;
             setProgress(body.completion_pct);
             markFilled(n);
-            showStatus('Saved', 'ok');
+            showStatus('Saved.', 'ok');
         } catch (err) {
             showStatus('Network error', 'err');
         }
@@ -1047,16 +1052,69 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         location.href = '/portal/';
     });
 
+    // -------------------------------------------------------------
+    // A boot failure used to be a 2.4-second toast that then vanished,
+    // leaving a patient typing into a form with no intake id behind it.
+    // Twenty minutes of work, saved nowhere, with nothing on screen to
+    // say so. Say it once, permanently, and take the inputs away.
+    // -------------------------------------------------------------
+    function bootFailed() {
+        banner.innerHTML = '';
+        banner.appendChild(h('div', { class: 'banner err' },
+            "We couldn't start your history just now, so nothing you type will be saved. "
+            + "Please reload this page — if it happens again, message us and we'll sort it out."));
+        form.querySelectorAll('input, select, textarea').forEach((el) => { el.disabled = true; });
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        submitBtn.disabled = true;
+        clearTimeout(showStatus._t);
+        saveStatus.className = 'save-status';
+    }
+
+    // One-time welcome, shown only on the post-signup landing
+    // (/portal/intake/?welcome=1) and dismissed the moment they type.
+    function renderWelcome() {
+        if (new URLSearchParams(location.search).get('welcome') !== '1') return;
+        const panel = h('div', { class: 'banner info' },
+            h('strong', null, "Let's start with your history."),
+            h('p', null, "Eighteen short sections about your symptoms, your history and what you've already tried. It saves as you type, so stop whenever you like and pick up on any device."),
+            h('p', null, 'Most people take about twenty minutes. Nothing you write here is shared outside the practice.'));
+        const dismiss = () => { if (panel.parentElement) panel.remove(); };
+        const start = h('button', { class: 'primary', type: 'button', style: 'font-size:13px; padding:8px 16px;' }, 'Start section 1 →');
+        start.addEventListener('click', () => { dismiss(); goTo(0); });
+        const later = h('button', { class: 'text-btn', type: 'button' }, "I'll do this later");
+        later.addEventListener('click', () => { location.href = '/portal/'; });
+        panel.appendChild(h('div', { class: 'actions' }, start, later));
+        banner.appendChild(panel);
+        form.addEventListener('input', dismiss, { once: true });
+    }
+
+    // Two quiet offers for the minutes a patient spends stuck on a
+    // question — deliberately in the sidebar, not competing with the
+    // one action this page exists for.
+    function renderAsideNote() {
+        const aside = document.querySelector('.toc');
+        if (!aside) return;
+        aside.appendChild(h('p', { class: 'aside-note', html:
+            'Waiting on something? <a href="/portal/education/">Twelve guides</a> are ready to read, '
+            + 'and if you have old imaging or operative notes you can '
+            + '<a href="/portal/documents/">upload them now</a>.' }));
+    }
+
     async function boot() {
+        // Build first so a failed boot has a real form to disable rather
+        // than an empty page with a warning floating over it.
+        buildToc();
+        buildSections();
+        renderAsideNote();
+        setActiveIdx(0);
         try {
             const me = await fetch('/api/v1/auth/me', { credentials: 'same-origin' });
             if (me.status === 401) { location.href = '/portal/login/'; return; }
             if (me.status === 404) { location.href = '/portal/'; return; }
             const r = await fetch('/api/v1/patient/intake/current', { credentials: 'same-origin' });
+            if (!r.ok) { bootFailed(); return; }
             const data = await r.json();
-
-            buildToc();
-            buildSections();
 
             if (data?.intake) {
                 intakeId = data.intake.id;
@@ -1090,7 +1148,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                                 credentials: 'include',
                             });
                             const j = await r.json();
-                            if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+                            // POST /intake/new answers { intake_id, status,
+                            // started_at, completion_pct, resumed } — there is
+                            // no `ok` field, so requiring one made this button
+                            // throw on every success and never work at all.
+                            if (!r.ok || !j.intake_id) throw new Error(j.error || ('HTTP ' + r.status));
                             window.location.reload();
                         } catch (e) {
                             again.disabled = false;
@@ -1114,13 +1176,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const create = await fetch('/api/v1/patient/intake/new', {
                     method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: '{}',
                 });
-                const cb = await create.json();
+                const cb = await create.json().catch(() => ({}));
+                // No intake id means every PATCH below is a no-op. That is a
+                // boot failure, not a quiet one.
+                if (!create.ok || !cb.intake_id) { bootFailed(); return; }
                 intakeId = cb.intake_id;
                 setProgress(0);
             }
             setActiveIdx(0);
+            if (!data?.intake || data.intake.status === 'in_progress') renderWelcome();
         } catch (err) {
-            showStatus('Could not load intake', 'err');
+            bootFailed();
         }
     }
     boot();

@@ -259,6 +259,42 @@
             color: var(--fg-dim);
             text-transform: uppercase;
         }
+        .progress-dots {
+            display: flex; align-items: center; gap: 0;
+            margin: 0 0 22px 0; padding: 0; flex-wrap: nowrap;
+            list-style: none;
+        }
+        .progress-dots > li { list-style: none; }
+        .progress-dots .step {
+            display: flex; align-items: center; gap: 8px;
+            flex: 0 0 auto;
+        }
+        .progress-dots .dot {
+            width: 11px; height: 11px; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: transparent; flex: 0 0 auto;
+        }
+        .progress-dots .label {
+            font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--fg-dim); white-space: nowrap;
+        }
+        .progress-dots .bar {
+            flex: 1 1 auto; height: 1px; min-width: 14px;
+            margin: 0 10px; background: rgba(255, 255, 255, 0.14);
+        }
+        .progress-dots .step.done .dot {
+            background: var(--green); border-color: var(--green);
+        }
+        .progress-dots .step.current .dot {
+            background: var(--accent-soft); border-color: var(--accent-soft);
+            box-shadow: 0 0 0 4px rgba(var(--glow-purple), 0.18);
+        }
+        .progress-dots .step.done .label,
+        .progress-dots .step.current .label { color: var(--fg-strong); }
+        @media (max-width: 420px) {
+            .progress-dots .label { font-size: 10px; letter-spacing: 0.08em; }
+            .progress-dots .bar { margin: 0 6px; }
+        }
         .empty-state {
             padding: 28px 18px;
             text-align: center;
@@ -456,14 +492,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <span style="color: var(--fg-dim);">/portal/appointments/book</span>
         </div>
 
+        <ol class="progress-dots" id="progress-dots" aria-label="Your booking steps">
+            <li class="step" id="step-history"><span class="dot" aria-hidden="true"></span><span class="label">History</span></li>
+            <li class="bar" aria-hidden="true"></li>
+            <li class="step" id="step-review"><span class="dot" aria-hidden="true"></span><span class="label">Review</span></li>
+            <li class="bar" aria-hidden="true"></li>
+            <li class="step" id="step-book"><span class="dot" aria-hidden="true"></span><span class="label">Book</span></li>
+        </ol>
+
         <p class="eyebrow">Step 3 · Pick your visit</p>
         <h1>Book your visit</h1>
-        <p class="lede" id="lede">Loading your visit categorization…</p>
+        <p class="lede" id="lede">Getting your visit details…</p>
 
         <div id="error-banner" class="error-banner"></div>
 
         <section id="triage-card" class="card" style="display:none;">
-            <h2 id="triage-card-title">Your visit, categorized</h2>
+            <h2 id="triage-card-title">Your visit</h2>
             <div class="triage-fields" id="triage-fields"></div>
             <div class="rationale" id="triage-rationale" style="display:none;"></div>
             <div class="modality-toggle" id="modality-toggle" style="display:none;">
@@ -488,7 +532,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2>Choose a date and time</h2>
             <div class="date-strip" id="date-strip"></div>
             <div id="slot-list" class="slot-grid"></div>
-            <div id="slot-empty" class="empty-state" style="display:none;">No slots available on this day. Try another date.</div>
+            <div id="slot-empty" class="empty-state" style="display:none;">No times on this day. Try another date &mdash; new times open regularly.</div>
+            <div id="slot-empty-range" class="empty-state" style="display:none;">
+                There aren&rsquo;t any times open right now. Send us a message and we&rsquo;ll find you one.
+                <div style="margin-top:14px;"><a href="/portal/messages/">Message the practice &rarr;</a></div>
+            </div>
         </section>
 
         <section id="confirm-card" class="card confirm-card">
@@ -557,6 +605,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             dates: [],
             selectedDate: null,
             selectedSlot: null,
+            noTimesAtAll: false,
             countdownIntervalId: null,
         };
 
@@ -634,6 +683,20 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             return body;
         }
 
+        // History -> Review -> Book. The gates are sequential and the server
+        // enforces them, but until now nothing on the page said so — a patient
+        // who had not finished her history just saw a booking page with no
+        // times on it.
+        function setProgress(stage) {
+            const order = ['history', 'review', 'book'];
+            const at = order.indexOf(stage);
+            order.forEach((k, i) => {
+                const el = $('step-' + k);
+                if (!el) return;
+                el.className = 'step' + (i < at ? ' done' : i === at ? ' current' : '');
+            });
+        }
+
         function showError(msg) {
             const banner = $('error-banner');
             banner.textContent = msg;
@@ -657,21 +720,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     // returned 200 and served the MARKETING HOMEPAGE, so the
                     // brand-new member — told correctly to do her intake first —
                     // clicked the only link offered and left the portal.
-                    $('lede').innerHTML = 'You need to complete an intake first. <a href="/portal/intake/">Start your intake →</a>';
+                    setProgress('history');
+                    $('lede').innerHTML = 'Your health history comes first &mdash; it&rsquo;s how we know which kind of visit you need. '
+                        + '<a href="/portal/intake/">Start your history &rarr;</a>';
                 } else if (e.code === 'unauthorized') {
                     window.location.href = '/portal/login?next=' + encodeURIComponent(location.pathname);
                 } else {
-                    showError(e.message || 'Could not load your visit categorization.');
+                    showError(e.message || "We couldn't load your visit details just now. Reload the page, or message us if it keeps happening.");
                 }
             }
         }
 
         function renderTriageCard() {
             $('triage-card').style.display = 'block';
+            setProgress(state.triage.status === 'released' ? 'book' : 'review');
             $('lede').textContent = state.triage.status === 'released'
-                ? "We've categorized your visit and held times that fit. Pick what works."
+                ? "We've set aside times that fit the kind of visit you need. Pick what works."
                 : state.triage.status === 'pending_review'
-                    ? "Your intake is in for clinician review. Slots release as soon as it's reviewed."
+                    ? "Your history is in. Dr. Mabini is reviewing it now, and your times will appear here as soon as he's done — usually within a few hours."
                     : "Your intake needs manual review. The clinician will reach out with a slot directly.";
 
             const t = state.triage;
@@ -767,8 +833,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     state.selectedDate = firstDateWithSlots(state.dates, state.slotsByDate) || state.dates[0];
                 }
                 state.selectedSlot = null;
+                state.noTimesAtAll = Object.keys(state.slotsByDate)
+                    .every(d => (state.slotsByDate[d] || []).length === 0);
                 renderDateStrip();
                 renderSlotList();
+                $('slot-empty-range').style.display = state.noTimesAtAll ? 'block' : 'none';
+                $('date-strip').style.display = state.noTimesAtAll ? 'none' : '';
                 $('picker-card').style.display = 'block';
             } catch (e) {
                 if (e.code === 'no_released_triage') {
@@ -830,7 +900,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const slots = (state.slotsByDate[state.selectedDate] || []);
             if (slots.length === 0) {
                 list.innerHTML = '';
-                empty.style.display = 'block';
+                // "try another date" is wrong advice when every date is empty;
+                // that case gets its own message and its own way out.
+                empty.style.display = state.noTimesAtAll ? 'none' : 'block';
                 return;
             }
             empty.style.display = 'none';

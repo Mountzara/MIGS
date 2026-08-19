@@ -115,6 +115,7 @@
         button[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
         .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; display: none; }
         .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.32); color: rgba(110, 231, 183, 0.95); }
         .alt { font-size: 13px; color: var(--fg-soft); text-align: center; }
         @keyframes mzRise {
             from { opacity: 0; transform: translateY(8px); }
@@ -228,10 +229,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const msg = document.getElementById('msg');
         const submitBtn = document.getElementById('submitBtn');
         function showError(t) { msg.textContent = t; msg.className = 'msg error'; }
+        function showErrorHtml(html) { msg.innerHTML = html; msg.className = 'msg error'; }
+        function showOk(t) { msg.textContent = t; msg.className = 'msg ok'; }
         function clearMsg() { msg.className = 'msg'; msg.textContent = ''; }
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearMsg();
+            let created = false;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating account…';
             try {
@@ -250,22 +254,35 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     }),
                 });
                 if (res.status === 201) {
-                    location.href = '/portal/profile/';
+                    // The page promised the health history and used to land on
+                    // /portal/profile/ — the one page a brand-new member has no
+                    // reason to open. Confirm inline, then go where we said.
+                    created = true;
+                    const firstName = document.getElementById('first_name').value.trim();
+                    showOk("You're in, " + firstName + '. Taking you to your health history now.');
+                    submitBtn.textContent = 'Account created';
+                    setTimeout(() => { location.href = '/portal/intake/?welcome=1'; }, 1500);
                     return;
                 }
-                const body = await res.json().catch(() => ({}));
                 if (res.status === 409) {
                     showError('An account already exists for that email. Try signing in instead.');
                 } else if (res.status === 404) {
-                    showError('Sign-up is not yet open to the public.');
+                    // Pre-launch: /api/v1/auth/signup 404s while
+                    // PORTAL_PUBLIC_LAUNCH is off. The waitlist form lives on
+                    // the Coming Soon page the middleware serves at /portal/.
+                    showErrorHtml("The portal isn't open to new members yet. "
+                        + '<a href="/portal/">Join the waitlist</a>'
+                        + " and we'll email you the moment it opens.");
                 } else {
-                    showError(body.message || 'Sign-up failed. Please check your information and try again.');
+                    showError("We couldn't create your account with those details. Check your email address and date of birth, then try again.");
                 }
             } catch (err) {
-                showError('Network error. Please check your connection and try again.');
+                showError("We couldn't reach the server. Check your connection and try again.");
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create account';
+                if (!created) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create account';
+                }
             }
         });
     </script>
