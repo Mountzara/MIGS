@@ -68,6 +68,33 @@ a:hover { color: var(--fg-strong); }
 
 /* ===== Attention required feed ===== */
 .attn-list { display: flex; flex-direction: column; gap: 8px; }
+.setup-panel { border-color: rgba(167,139,250,.38); }
+.setup-headline { font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+.setup-headline .ok { color: #6ee7b7; }
+.setup-headline .blocked { color: #fcd34d; }
+.setup-list { display: flex; flex-direction: column; gap: 7px; }
+.setup-step { display: flex; gap: 11px; align-items: flex-start; padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,.09); border-radius: 11px; background: rgba(255,255,255,.03); }
+.setup-step.todo.blocks { border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.06); }
+.setup-step.attention { border-color: rgba(245,158,11,.30); }
+.setup-step.done { opacity: .62; }
+.setup-mark { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; margin-top: 1px;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.20); }
+.setup-step.done .setup-mark { background: rgba(16,185,129,.22); border-color: rgba(16,185,129,.55); color: #6ee7b7; }
+.setup-step.todo .setup-mark { color: rgba(255,255,255,.45); }
+.setup-step.attention .setup-mark { background: rgba(245,158,11,.18); border-color: rgba(245,158,11,.5); color: #fcd34d; }
+.setup-body { flex: 1; min-width: 0; }
+.setup-name { font-size: 13.5px; font-weight: 600; }
+.setup-name .req { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: #fcd34d; border: 1px solid rgba(245,158,11,.45); border-radius: 999px; padding: 1px 7px; margin-left: 8px; }
+.setup-why { font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,.62); margin-top: 3px; }
+.setup-detail { font-size: 12px; margin-top: 4px; color: rgba(255,255,255,.48); }
+.setup-go { flex: 0 0 auto; font-size: 12px; text-decoration: none; padding: 6px 13px; border-radius: 999px;
+  background: rgba(167,139,250,.16); border: 1px solid rgba(167,139,250,.45); color: #c4b5fd; align-self: center; }
+.setup-toggle { font: inherit; font-size: 11.5px; cursor: pointer; padding: 4px 11px; border-radius: 999px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.7); }
+
 .attn-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; transition: all 0.18s ease; }
 .attn-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(var(--glow-purple), 0.32); }
 .attn-item .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
@@ -212,6 +239,29 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </div>
             <div class="now"><span id="ai-status" class="ai-status"><span class="pulse"></span>Loading insights…</span></div>
         </header>
+
+        <!-- ===============================================================
+             PRACTICE SETUP (2026-08-19)
+             ===============================================================
+             The product promise is "a private practice platform out of the
+             box". A console that renders empty pages and explains nothing
+             does not keep that promise — from the outside, blank and broken
+             look identical. This panel is the guided path: every step's
+             status is COMPUTED from real data (/api/v1/admin/setup-status),
+             never remembered in a flag, and it collapses itself once the
+             practice is operational so a working install is not nagged.
+             =============================================================== -->
+        <section class="panel setup-panel" id="setup-panel" style="display:none;" aria-labelledby="setup-h">
+            <div class="panel-head">
+                <h2 id="setup-h"><span class="eb">Setup</span> <span id="setup-title">Getting your practice running</span></h2>
+                <div class="head-actions">
+                    <span id="setup-progress">—</span>
+                    <button type="button" id="setup-toggle" class="setup-toggle">Hide</button>
+                </div>
+            </div>
+            <div id="setup-headline" class="setup-headline"></div>
+            <div id="setup-list" class="setup-list"></div>
+        </section>
 
         <!-- HERO KPI STRIP -->
         <div class="kpi-strip" id="kpi-strip">
@@ -613,6 +663,72 @@ async function refreshTrendBriefsBadge() {
 }
 refreshTrendBriefsBadge();
 setInterval(refreshTrendBriefsBadge, 5 * 60 * 1000);
+
+// =====================================================================
+// Practice setup checklist
+// =====================================================================
+// Shown expanded while anything blocking is outstanding, collapsed to a
+// single line once the practice is operational, and hidden entirely if
+// the endpoint is unavailable — a setup panel that errors is worse than
+// no panel, because it makes a working install look broken.
+(function () {
+    var LSKEY = 'mz_setup_collapsed';
+    function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) {
+        return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+
+    fetch('/api/v1/admin/setup-status', { credentials: 'include', cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+            if (!d || !d.steps) return;
+            var panel = document.getElementById('setup-panel');
+            var sum = d.summary;
+            panel.style.display = '';
+
+            document.getElementById('setup-progress').textContent =
+                sum.done + ' of ' + sum.total + ' done';
+
+            var head = document.getElementById('setup-headline');
+            if (sum.ready_to_see_patients) {
+                head.innerHTML = '<span class="ok">Everything required to see patients is in place.</span> '
+                    + 'The remaining items below are improvements, not blockers.';
+                document.getElementById('setup-title').textContent = 'Practice setup';
+            } else {
+                head.innerHTML = '<span class="blocked">' + sum.blocking_remaining
+                    + ' thing(s) still stand between you and seeing a patient.</span> '
+                    + (sum.next ? 'Start with <strong>' + esc(sum.next.title) + '</strong>.' : '');
+            }
+
+            document.getElementById('setup-list').innerHTML = d.steps.map(function (s) {
+                var mark = s.status === 'done' ? '✓' : (s.status === 'attention' ? '!' : '');
+                return '<div class="setup-step ' + s.status + (s.blocking ? ' blocks' : '') + '">'
+                    + '<span class="setup-mark">' + mark + '</span>'
+                    + '<span class="setup-body">'
+                    + '<span class="setup-name">' + esc(s.title)
+                    + (s.blocking && s.status !== 'done' ? '<span class="req">required</span>' : '') + '</span>'
+                    + '<div class="setup-why">' + esc(s.why) + '</div>'
+                    + '<div class="setup-detail">' + esc(s.detail) + '</div>'
+                    + '</span>'
+                    + (s.status === 'done' ? '' : '<a class="setup-go" href="' + esc(s.href) + '">Open →</a>')
+                    + '</div>';
+            }).join('');
+
+            // A finished practice should not be nagged; an unfinished one
+            // should not be able to hide the thing it still has to do.
+            var collapsed = sum.ready_to_see_patients && localStorage.getItem(LSKEY) !== 'open';
+            function apply() {
+                document.getElementById('setup-list').style.display = collapsed ? 'none' : '';
+                document.getElementById('setup-headline').style.display = collapsed ? 'none' : '';
+                document.getElementById('setup-toggle').textContent = collapsed ? 'Show' : 'Hide';
+            }
+            apply();
+            document.getElementById('setup-toggle').addEventListener('click', function () {
+                collapsed = !collapsed;
+                try { localStorage.setItem(LSKEY, collapsed ? 'closed' : 'open'); } catch (e) {}
+                apply();
+            });
+        })
+        .catch(function () { /* leave the panel hidden */ });
+})();
 </script>
 </body>
 </html>
