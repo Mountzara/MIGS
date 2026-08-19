@@ -76,9 +76,12 @@ async function runSweep(ctx, actor) {
     let emailed = false;
     const lines = digestText(plan.counts);
     if (plan.notify && lines.length > 0) {
-        // ADMIN_EMAILS is the practice inbox list; the first is enough —
-        // this is an operational nudge, not a broadcast.
-        const to = String(env.ADMIN_EMAILS || "").split(/[,\s]+/).filter(Boolean)[0];
+        // ALERT_EMAIL is where operational alerts go. It is deliberately its
+        // OWN setting rather than reusing ADMIN_EMAILS, which is a Cloudflare
+        // Access allowlist — changing who gets paged must never quietly
+        // change who can log in. Falls back to the first admin address so
+        // the alert still goes somewhere if ALERT_EMAIL is unset.
+        const to = String(env.ALERT_EMAIL || env.ADMIN_EMAILS || "").split(/[,\s]+/).filter(Boolean)[0];
         if (to) {
             try {
                 await notify(env, {
