@@ -114,6 +114,11 @@
     {
       "path": "/portal/orders/",
       "title_contains": "Tests"
+    },
+    {
+      "path": "/admin/cases/",
+      "title_contains": "Patient charts",
+      "_note": "This route 404'd while _nav.js highlighted it — audited so it cannot silently vanish again."
     }
   ],
   "unaudited": [
@@ -121,7 +126,6 @@
     "/admin/billing/",
     "/admin/briefings/",
     "/admin/carousels/",
-    "/admin/cases/",
     "/admin/compliance/",
     "/admin/content/",
     "/admin/debug/",

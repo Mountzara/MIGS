@@ -198,8 +198,9 @@
     function render() {
         var rows = STATE.rows;
         if (!rows.length) {
-            $("list").innerHTML = '<div class="empty">Nothing here. When an encounter is synced from the ' +
-                'Transcription app it appears in this queue.</div>';
+            $("list").innerHTML = '<div class="empty">After-visit summaries wait here for your signature &mdash; ' +
+                'a patient cannot read one until you approve it. Encounters arrive automatically from the ' +
+                'Transcription app, so there is nothing to do here until your first visit is recorded.</div>';
             return;
         }
         $("list").innerHTML = rows.map(rowHtml).join("");

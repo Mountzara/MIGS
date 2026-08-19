@@ -809,10 +809,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function render() {
             if (state.rows.length === 0) {
                 const msg = state.statusFilter === 'pending'
-                    ? 'No triage rows pending review.'
+                    ? 'New intakes land here for you to confirm or override the visit type before booking slots are released. Nothing is waiting \u2014 a row appears within seconds of a patient submitting their intake.'
                     : state.statusFilter === 'released'
-                        ? 'No released triage rows yet.'
-                        : 'No triage rows.';
+                        ? 'Nothing released yet. Rows appear here once you confirm one, or automatically four hours after the AI categorises it if you have not.'
+                        : 'No intake has been submitted yet. Invite a patient to the portal and their completed intake arrives here.';
                 $list.innerHTML = `<div class="empty-state"><span class="emoji">✓</span>${msg}</div>`;
                 return;
             }
