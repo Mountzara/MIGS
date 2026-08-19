@@ -497,42 +497,24 @@ function fmtAgo(ms) {
 // so every request 401'd and the whole page was non-functional. We now attach
 // `Authorization: Basic` from sessionStorage — the SAME key the Content admin
 // uses (`mz_admin_basic`), so one sign-in works across both admin tools.
-function ensureAdminCreds(force) {
-    if (!force) {
-        const cached = sessionStorage.getItem("mz_admin_basic");
-        if (cached) return cached;
-    }
-    const u = prompt("Admin email:", "chris.mabini@gmail.com");
-    if (!u) return null;
-    const p = prompt("Admin password:");
-    if (!p) return null;
-    const b = btoa(`${u}:${p}`);
-    sessionStorage.setItem("mz_admin_basic", b);
-    return b;
-}
-
-// Generic authenticated fetch for ANY admin URL (trend-briefs AND deep-dive
-// endpoints share the same Basic-auth backend). Attaches the header and
-// reprompts once on 401. Use this instead of raw fetch(..., credentials:"include")
-// anywhere on this page.
+// 2026-08-19: this page carried its OWN prompt() credential collection —
+// a third sign-in surface, defaulting to an email the server never
+// accepts. Removed. The admin session cookie minted at page load
+// authenticates same-origin requests, so authFetch just sends them.
 async function authFetch(url, opts) {
     opts = opts || {};
-    const build = (creds) => ({
+    const res = await fetch(url, {
         method: opts.method || "GET",
+        credentials: "include",
         headers: {
             ...(opts.body ? { "content-type": "application/json" } : {}),
-            ...(creds ? { "Authorization": "Basic " + creds } : {}),
             ...(opts.headers || {}),
         },
         body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
-    let creds = ensureAdminCreds(false);
-    let res = await fetch(url, build(creds));
-    if (res.status === 401) {
-        sessionStorage.removeItem("mz_admin_basic");
-        creds = ensureAdminCreds(true);
-        if (creds) res = await fetch(url, build(creds));
-    }
+    // A 401 here means the session expired, not that we forgot a header.
+    // Reloading re-runs the one sign-in the whole backend shares.
+    if (res.status === 401) { location.reload(); return new Promise(() => {}); }
     return res;
 }
 

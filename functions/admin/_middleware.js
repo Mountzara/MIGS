@@ -136,6 +136,17 @@ export async function onRequest({ request, env, next }) {
             );
         }
 
+        // A valid admin session cookie is sufficient: it was minted by this
+        // same middleware after a successful password check. Without this
+        // branch the browser is re-challenged on every page load even though
+        // the SPA is already authenticated — which is how the backend ended
+        // up asking for credentials twice.
+        {
+            const sess = await import("../_lib/admin_session.js");
+            const existing = await sess.verifyAdminSession(request, env);
+            if (existing) return next();
+        }
+
         const authHeader = request.headers.get("Authorization") || "";
         if (!authHeader.startsWith("Basic ")) {
             return unauthorized();
@@ -269,7 +280,26 @@ export async function onRequest({ request, env, next }) {
             }
         }
 
-        return next();
+        // Password (and MFA, when enabled) accepted — mint the session so
+        // every subsequent request, page load or API fetch, carries proof of
+        // this sign-in. One prompt, whole backend.
+        {
+            const resp = await next();
+            try {
+                const sess = await import("../_lib/admin_session.js");
+                const cookie = await sess.buildAdminSessionCookie(env, expectedUser);
+                if (cookie) {
+                    const out = new Response(resp.body, resp);
+                    out.headers.append("Set-Cookie", cookie);
+                    return out;
+                }
+            } catch (e) {
+                // A session we could not mint is not a reason to deny a
+                // request that already authenticated — Basic still works.
+                console.warn("admin._middleware session mint failed", String(e && e.message || e));
+            }
+            return resp;
+        }
     } catch (e) {
         // Last-resort safety net for ANY unanticipated throw above.
         console.error("admin._middleware top-level threw", {

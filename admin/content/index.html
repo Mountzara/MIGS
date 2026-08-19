@@ -793,7 +793,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // Only auto-refresh while signed in — a signed-out/cancelled state must
         // not trigger background calls (which previously re-prompted on a loop).
         setInterval(() => {
-            if (sessionStorage.getItem('mz_admin_basic')) loadPosts({ silent: true });
+            loadPosts({ silent: true });   // session cookie authenticates; no stored creds to check
         }, 30000);
     </script>
 </body>

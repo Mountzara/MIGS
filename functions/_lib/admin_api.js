@@ -49,6 +49,19 @@ export function unauthorizedAdminJson() {
  */
 export async function readAdminIdentity(request, env) {
     if (!env.ADMIN_PASS_HASH) return null;
+
+    // A signed admin session cookie is accepted first. It is minted by
+    // functions/admin/_middleware.js after a real password check, and it is
+    // what lets the admin SPA call this API without collecting credentials
+    // a second time — the second prompt was the bug, not the solution.
+    // Basic auth still works for API clients (the transcription app,
+    // scripts, curl), which have no cookie jar.
+    try {
+        const sess = await import("./admin_session.js");
+        const viaCookie = await sess.verifyAdminSession(request, env);
+        if (viaCookie) return viaCookie;
+    } catch { /* fall through to Basic */ }
+
     const auth = request.headers.get("Authorization") || "";
     if (!auth.startsWith("Basic ")) return null;
     let decoded;
