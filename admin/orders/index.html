@@ -157,7 +157,7 @@
             const r = await fetch(url, { method: method || 'GET', credentials: 'include',
                 headers: body ? { 'content-type': 'application/json' } : {},
                 body: body ? JSON.stringify(body) : undefined });
-            if (r.status === 401) { location.reload(); return new Promise(() => {}); }
+            if (r.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
             const d = await r.json().catch(() => ({}));
             return { ok: r.ok, status: r.status, data: d };
         }

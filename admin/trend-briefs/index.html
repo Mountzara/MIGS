@@ -514,7 +514,7 @@ async function authFetch(url, opts) {
     });
     // A 401 here means the session expired, not that we forgot a header.
     // Reloading re-runs the one sign-in the whole backend shares.
-    if (res.status === 401) { location.reload(); return new Promise(() => {}); }
+    if (res.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
     return res;
 }
 

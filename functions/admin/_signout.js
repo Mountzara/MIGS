@@ -105,7 +105,7 @@ export async function onRequest({ request, env }) {
         <div class="eyebrow">Signed out</div>
         <h1>You're signed out of the admin.</h1>
         <p>Your browser has dropped the cached admin credentials. Close this tab when you're done, or click below to sign back in.</p>
-        <a class="btn" href="/admin/">Sign back in</a>
+        <a class="btn" href="/admin/_login">Sign back in</a>
         <a class="btn secondary" href="/">Go home</a>
         <div class="small">
             If the next admin page still loads without prompting, fully quit and reopen your browser to be certain — some browsers stubbornly cache Basic Auth credentials per-window.

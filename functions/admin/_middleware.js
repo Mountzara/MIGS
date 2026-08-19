@@ -136,11 +136,19 @@ export async function onRequest({ request, env, next }) {
             );
         }
 
-        // A valid admin session cookie is sufficient: it was minted by this
-        // same middleware after a successful password check. Without this
-        // branch the browser is re-challenged on every page load even though
-        // the SPA is already authenticated — which is how the backend ended
-        // up asking for credentials twice.
+        const reqUrl = new URL(request.url);
+
+        // The sign-in page and its POST must be reachable without auth, or
+        // the only way in would be the grey dialog this replaced.
+        if (reqUrl.pathname === "/admin/_login" || reqUrl.pathname === "/admin/_login/") {
+            return next();
+        }
+
+        // A valid admin session cookie is sufficient: it was minted after a
+        // successful password check. Without this branch the browser is
+        // re-challenged on every page load even though the operator is
+        // already signed in — which is how the backend ended up asking for
+        // credentials twice.
         {
             const sess = await import("../_lib/admin_session.js");
             const existing = await sess.verifyAdminSession(request, env);
@@ -149,6 +157,24 @@ export async function onRequest({ request, env, next }) {
 
         const authHeader = request.headers.get("Authorization") || "";
         if (!authHeader.startsWith("Basic ")) {
+            // A BROWSER gets the branded sign-in page; an API client gets a
+            // 401 it can act on. Sending WWW-Authenticate to a browser is
+            // what summons the unstyled grey dialog, so it is deliberately
+            // withheld here — Basic is still ACCEPTED above, just never
+            // demanded of a person.
+            const accept = request.headers.get("Accept") || "";
+            const wantsHtml = accept.includes("text/html");
+            const isDoc = request.headers.get("Sec-Fetch-Mode") === "navigate" || wantsHtml;
+            if (isDoc) {
+                const next_ = reqUrl.pathname + reqUrl.search;
+                return new Response(null, {
+                    status: 302,
+                    headers: {
+                        location: `/admin/_login?next=${encodeURIComponent(next_)}`,
+                        "cache-control": "no-store",
+                    },
+                });
+            }
             return unauthorized();
         }
 
