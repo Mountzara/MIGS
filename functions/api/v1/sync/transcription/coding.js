@@ -235,17 +235,27 @@ export async function onRequestPost(ctx) {
             // which reads as missing rather than as a wrong number — a
             // silently invented price on a real claim is worse than none.
             const vt = s(body.visit_type || body.visit_type_actual, 64);
-            if (vt) {
-                try {
-                    const row = await env.DB.prepare(
-                        `SELECT default_unit_price_cents FROM billing_service_catalog
-                          WHERE visit_type_key = ? AND is_active = 1 LIMIT 1`).bind(vt).first();
+            try {
+                const alias = await import("../../../../_lib/visit_type_alias.js");
+                const cat = await env.DB.prepare(
+                    `SELECT visit_type_key, default_unit_price_cents FROM billing_service_catalog
+                      WHERE is_active = 1 AND visit_type_key IS NOT NULL`).all();
+                const rows = cat?.results || [];
+                const keys = rows.map((r) => r.visit_type_key);
+                // The app speaks in labels ("Problem Visit"); the catalog is
+                // keyed by slug. Try the label, then its alias, then the E/M
+                // code as a coarse floor — and record WHICH, so a fallback
+                // price is never mistaken for the app's own figure.
+                let hit = alias.toCatalogKey(vt, keys);
+                if (!hit.key) hit = alias.fromEmCode(em_code, keys);
+                if (hit.key) {
+                    const row = rows.find((r) => r.visit_type_key === hit.key);
                     if (row && row.default_unit_price_cents > 0) {
                         expected_collection_cents = Number(row.default_unit_price_cents);
-                        expected_from_catalog = true;
+                        expected_from_catalog = hit.via;
                     }
-                } catch { /* leave it at 0 */ }
-            }
+                }
+            } catch { /* leave it at 0 */ }
         }
 
         // ---- Compliance ----
@@ -487,7 +497,12 @@ export async function onRequestPost(ctx) {
             lines_inserted: lineInserts.length,
             diagnoses_inserted: dxInserts.length,
             expected_collection_cents,
-            expected_priced_from_catalog: expected_from_catalog,
+            // 'exact' | 'alias' | 'em_code' | false. These are the practice's
+            // CASH prices: sound while every patient is self-pay, and to be
+            // superseded by a contracted rate the moment a payer contract
+            // exists. Never presented as a payer expectation.
+            expected_priced_from: expected_from_catalog || null,
+            expected_price_basis: expected_from_catalog ? "practice_cash_catalog" : null,
             pricing_note: expected_collection_cents ? undefined
                 : "No expected collection: send totals.expected_collection_cents, or a visit_type matching the practice service catalog.",
             // Never let a drop be silent: a claim whose diagnoses were all
