@@ -195,13 +195,36 @@ export async function onRequestPost(ctx) {
 
         // Optional AI summary row.
         let ai_summary_id = null;
-        if (patient_visible_summary || clinician_full_summary) {
+        // If the app sent no patient-facing recap, draft one from the note
+        // it DID send. Otherwise the encounter lands as "not drafted": no
+        // draft waiting for him, nothing for the patient, and a manual
+        // click on every visit. Nothing is authored here — his assessment
+        // and plan are lifted verbatim (see _lib/note_extract.js) — and the
+        // draft is created pending review, so it cannot reach a patient
+        // until he has rewritten and approved it.
+        let auto_drafted = false;
+        let effective_patient_summary = patient_visible_summary;
+        if (!effective_patient_summary) {
+            try {
+                const { draftFromNote } = await import("../../../../_lib/note_extract.js");
+                const draft = draftFromNote(note_body, {
+                    chiefComplaint: chief_complaint,
+                    plan_summary, next_step_summary,
+                    medications: medications_list,
+                });
+                if (draft) { effective_patient_summary = draft; auto_drafted = true; }
+            } catch (e) {
+                console.error("notes sync: auto-draft failed", String(e).slice(0, 200));
+            }
+        }
+
+        if (effective_patient_summary || clinician_full_summary) {
             ai_summary_id = newId();
             let pvKey = null, pvDek = null, cfKey = null, cfDek = null;
-            if (patient_visible_summary) {
+            if (effective_patient_summary) {
                 pvKey = `encounter/${patient_id}/${encounter_id}/summary_patient.bin`;
                 try {
-                    const put = await putPhiObject(env, pvKey, patient_visible_summary,
+                    const put = await putPhiObject(env, pvKey, effective_patient_summary,
                         `encounter/${encounter_id}/summary_patient`);
                     pvDek = put.wrapped_dek;
                 } catch (e) { return syncError("phi_encrypt_pvSummary_failed", 500); }
@@ -222,10 +245,14 @@ export async function onRequestPost(ctx) {
                      patient_visible_wrapped_dek, clinician_full_wrapped_dek,
                      plan_summary, medications_list_json, next_step_summary,
                      status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, 'transcription_app', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_clinician_review', ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_clinician_review', ?, ?)
             `).bind(
                 ai_summary_id, encounter_id, patient_id, CLINICIAN_ID,
-                session_id, ai_model, ai_prompt_version,
+                // Distinguish a recap the app wrote from one this server
+                // lifted out of the note — he should know which he is
+                // reading before he approves it.
+                auto_drafted ? "note_extract" : "transcription_app",
+                session_id, auto_drafted ? "note-extract/1" : ai_model, ai_prompt_version,
                 pvKey, cfKey, pvDek, cfDek,
                 plan_summary,
                 medications_list ? JSON.stringify(medications_list) : null,
@@ -271,6 +298,7 @@ export async function onRequestPost(ctx) {
 
         return syncJson({
             ok: true,
+            auto_drafted,
             encounter_id,
             ai_summary_id,
             note_r2_key: noteR2Key,

@@ -101,6 +101,42 @@ export async function onRequest(ctx) {
         const action = String(body?.action || "");
 
         // ---- generate -------------------------------------------------
+        // ---- draft_from_note ------------------------------------------
+        // The deterministic path: lift his own assessment and plan out of
+        // the note verbatim (no model involved, so it works with no API key
+        // and no bridge). Used by the sync rail for new notes and by
+        // scripts/backfill_avs_drafts.mjs for ones that arrived before it
+        // existed. Refuses when a draft already exists — his edits are not
+        // something a backfill gets to overwrite.
+        if (action === "draft_from_note") {
+            if (existing) {
+                return jsonError("A summary already exists for this encounter — drafting again would discard it.", 409);
+            }
+            if (!enc.note_r2_key || enc.note_key_lost || !enc.note_wrapped_dek) {
+                return jsonError("This note cannot be read, so there is nothing to draft from.", 409);
+            }
+            const noteText = await readBody(env, enc.note_r2_key, enc.note_wrapped_dek, enc.note_aad || null);
+            if (!noteText) return jsonError("The note decrypted empty.", 409);
+            const { draftFromNote } = await import("../../../../../_lib/note_extract.js");
+            const draft = draftFromNote(noteText, { chiefComplaint: enc.chief_complaint });
+            if (!draft) {
+                return jsonError("This note has no recognisable assessment or plan, so no draft was made. A draft assembled from fragments would be worse than none.", 422);
+            }
+            const sumId = newId();
+            const pKey = `encounter/${enc.patient_id}/${enc.id}/summary_patient.bin`;
+            const put = await putPhiObject(env, pKey, new TextEncoder().encode(draft), `visit_summary_patient:${sumId}`);
+            await env.DB.prepare(`
+                INSERT INTO encounter_ai_summaries
+                    (id, encounter_id, patient_id, clinician_id, source, ai_model,
+                     patient_visible_r2_key, patient_visible_wrapped_dek,
+                     status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, 'note_extract', 'note-extract/1', ?, ?, 'pending_clinician_review', ?, ?)
+            `).bind(sumId, enc.id, enc.patient_id, enc.clinician_id || null,
+                    pKey, put.wrapped_dek, now(), now()).run();
+            return jsonResponse({ ok: true, summary_id: sumId, status: "pending_clinician_review",
+                                  drafted_from: "note", chars: draft.length });
+        }
+
         if (action === "generate") {
             if (!enc.note_r2_key) {
                 return jsonError("This encounter has no note yet. A summary of nothing would be a fabrication.", 409);
