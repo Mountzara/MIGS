@@ -39,6 +39,11 @@ import { newId } from "../../../../_lib/db.js";
 import { putPhiObject } from "../../../../_lib/phi.js";
 
 const APP = "transcription";
+async function sha256Hex(bytes) {
+    const buf = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const MAX_NOTE_BYTES = 200 * 1024;       // 200 KB plaintext upper bound
 const MAX_SUMMARY_BYTES = 16 * 1024;
 const MAX_PDF_BYTES = 5 * 1024 * 1024;   // 5 MB PDF cap
@@ -97,12 +102,39 @@ export async function onRequestPost(ctx) {
         if (!patient) return syncError("patient_not_found", 404);
 
         // Idempotency — one encounter per (patient, transcription_session_id).
+        //
+        // A repeat push is TWO different situations and they must not share
+        // an answer. The app is offline-tolerant: it queues a push, the write
+        // succeeds, the response is lost to a dropped connection, and the
+        // retry arrives. Answering that with 409 tells a correct client its
+        // note failed when the note is already safely stored — so it retries
+        // forever, or marks a saved visit unsynced. Comparing the note's
+        // digest separates the retry from a genuine conflict.
+        const noteSha = await sha256Hex(new TextEncoder().encode(note_body));
         const existing = await env.DB.prepare(`
-            SELECT id FROM encounters
+            SELECT id, note_sha256 FROM encounters
             WHERE patient_id = ? AND transcription_session_id = ?
         `).bind(patient_id, session_id).first();
         if (existing) {
-            return syncError("duplicate_session", 409, { existing_encounter_id: existing.id });
+            if (!existing.note_sha256 || existing.note_sha256 === noteSha) {
+                // Same content (or pre-dates hashing): the earlier push won.
+                // This IS success — say so, and hand back the id the client
+                // was waiting for.
+                const priorSummary = await env.DB.prepare(
+                    `SELECT id FROM encounter_ai_summaries WHERE encounter_id = ? LIMIT 1`
+                ).bind(existing.id).first().catch(() => null);
+                return syncJson({
+                    ok: true, duplicate: true, encounter_id: existing.id,
+                    ai_summary_id: priorSummary ? priorSummary.id : null,
+                    note: "This session was already synced with identical content — nothing was written twice.",
+                });
+            }
+            // Different note under the same session id: a real conflict, and
+            // the second note must never be silently dropped.
+            return syncError("duplicate_session_different_content", 409, {
+                existing_encounter_id: existing.id,
+                message: "A different note is already stored for this transcription_session_id. Push the revision with a new session id, or correct the existing encounter.",
+            });
         }
 
         const encounter_id = newId();
@@ -142,10 +174,10 @@ export async function onRequestPost(ctx) {
                 (id, patient_id, clinician_id, appointment_id, visit_date,
                  visit_type_actual, chief_complaint,
                  note_r2_key, note_pdf_r2_key, note_source, transcription_session_id,
-                 note_wrapped_dek, note_pdf_wrapped_dek, note_aad, note_pdf_aad,
+                 note_wrapped_dek, note_pdf_wrapped_dek, note_aad, note_pdf_aad, note_sha256,
                  omt_codes_json, cpt_codes_json, icd10_codes_json,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'transcription_app', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'transcription_app', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             encounter_id, patient_id, CLINICIAN_ID, appointment_id, visit_date,
             visit_type_actual, chief_complaint,
@@ -154,7 +186,7 @@ export async function onRequestPost(ctx) {
             // R2 carries the IVs and AAD but deliberately not key material.
             // It used to be computed and dropped, which made every synced
             // note permanently unreadable. See schema/0038.
-            notePut.wrapped_dek, pdfWrappedDek, aad, pdfR2Key ? pdfAad : null,
+            notePut.wrapped_dek, pdfWrappedDek, aad, pdfR2Key ? pdfAad : null, noteSha,
             safeJsonArr(body.omt_codes),
             safeJsonArr(body.cpt_codes),
             safeJsonArr(body.icd10_codes),

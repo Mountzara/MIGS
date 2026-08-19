@@ -35,6 +35,22 @@ what is PROVEN to work, not what was intended to.
    **once Dr. Mabini approves it** in /admin/visits/. Nothing reaches the
    patient unreviewed.
 
+### Retries are safe (added 2026-08-19)
+
+`POST /notes` is idempotent on `(patient_id, transcription_session_id)`
+**by content**:
+
+* same session id, identical note → `200 { ok:true, duplicate:true,
+  encounter_id }`. The earlier push won; nothing is written twice. A
+  client whose response was lost to a dropped connection can simply
+  retry and treat this as success.
+* same session id, DIFFERENT note → `409
+  duplicate_session_different_content`, carrying the existing encounter
+  id. The second note is never silently discarded; push the revision
+  under a new session id.
+
+So the queue-and-retry loop needs no special casing: retry until 2xx.
+
 4. **Coding analysis** — `POST /coding`
    `{ patient_id, encounter_id?, source_session_id, visit_date,
       em:{code,mdm_level,wRVU,confidence}, diagnoses:[{icd10|code|icd10_code,
