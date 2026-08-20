@@ -34,8 +34,14 @@ rows are read by someone who was not in the room.
 
 ```
 Base URL:  https://mountzara.com/api/v1/sync/transcription
-Header:    Authorization: Bearer mztx_Poi0w8iqiwuGYPjOJi7aYEu8eT5922
+Header:    Authorization: Bearer <TRANSCRIPTION_SYNC_TOKEN>
 ```
+
+The token itself is deliberately NOT in this file — it authenticates
+writes into a system holding patient data, and this document travels.
+Get it from the owner (it lives outside any repo, in
+`~/.config/mountzara/transcription-sync-token.txt` on the operations
+machine).
 
 Store both in the app's existing
 `~/Library/Application Support/MedicalTranscription/config.json` as
@@ -45,7 +51,7 @@ a Keychain helper). Today the app has neither key in that file.
 Verify from the Mac before touching Swift:
 
 ```bash
-T="mztx_Poi0w8iqiwuGYPjOJi7aYEu8eT5922"
+T="<TRANSCRIPTION_SYNC_TOKEN>"   # ask the owner; never commit this value
 B="https://mountzara.com/api/v1/sync/transcription"
 curl -s -o /dev/null -w "auth %{http_code} (want 200)\n" -H "Authorization: Bearer $T" "$B/patients"
 ```
