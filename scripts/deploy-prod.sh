@@ -1052,6 +1052,30 @@ else
     exit 1
 fi
 
+# ---------------------------------------------------------------------------
+# Public-header assertion (post-deploy, live).
+#
+# _headers is not enough and never was: Cloudflare does not apply it to a
+# response a FUNCTION returns, so /education/* served twelve clinical guides
+# with no CSP, no HSTS and no frame protection while the file that
+# "configured" them looked correct. /portal/* hit the identical trap
+# earlier. Configuration is not evidence — this reads the live headers.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_public_headers.mjs ]; then
+    echo ""
+    echo "🛡  public-header assertion..."
+    if MZ_ADMIN_BASIC="${MZ_ADMIN_BASIC:-}" node scripts/check_public_headers.mjs --strict > /tmp/_pubhdr.log 2>&1; then
+        tail -1 /tmp/_pubhdr.log
+        echo "   ✅ public headers verified on the live site"
+    else
+        echo ""
+        echo "🛑 A public route is under-protected:"
+        cat /tmp/_pubhdr.log
+        exit 1
+    fi
+fi
+
+
 echo "🔍 Runtime-CSS audit — getComputedStyle assertions on live site..."
         if "$PY" scripts/audit_runtime_css.py homepage > /tmp/_runtime_css_audit.log 2>&1; then
             tail -2 /tmp/_runtime_css_audit.log
