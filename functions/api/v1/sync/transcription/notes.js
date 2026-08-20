@@ -101,6 +101,51 @@ export async function onRequestPost(ctx) {
         const patient = await env.DB.prepare(`SELECT id FROM patients WHERE id = ?`).bind(patient_id).first();
         if (!patient) return syncError("patient_not_found", 404);
 
+        // DRY RUN — validate a REAL note without storing it.
+        //
+        // Every test of this rail so far used synthetic notes, which proves
+        // the plumbing and nothing about whether the practice's actual
+        // dictation survives it. This answers that question without writing
+        // PHI: it parses the note, shows the draft that WOULD be produced,
+        // names the jargon a patient would meet, and lists the education
+        // that would attach — then discards everything.
+        if (body.dry_run === true) {
+            const { draftFromNote, parseSoap, flagJargon } = await import("../../../../_lib/note_extract.js");
+            const soap = parseSoap(note_body);
+            const draft = patient_visible_summary || draftFromNote(note_body, {
+                chiefComplaint: chief_complaint, plan_summary, next_step_summary,
+                medications: medications_list,
+            });
+            let education = [];
+            try {
+                const edu = await import("../../../../_lib/avs_education.js");
+                const lib = await env.DB.prepare(
+                    `SELECT id, slug, title, summary, topic_tags_json FROM education_materials WHERE status='published'`).all();
+                education = edu.selectForVisit(lib?.results || [], {
+                    icd10: Array.isArray(body.icd10_codes) ? body.icd10_codes : [],
+                    visit_type: visit_type_actual || "",
+                }).materials.map((m) => m.title);
+            } catch { education = []; }
+            return syncJson({
+                ok: true, dry_run: true, wrote_nothing: true,
+                note_bytes: noteBytes,
+                parsed_sections: Object.keys(soap).filter((k) => soap[k]),
+                // The two that decide whether this rail is useful on a real note.
+                would_draft_summary: Boolean(draft),
+                draft_source: patient_visible_summary ? "app_supplied" : (draft ? "note_extract" : null),
+                draft_preview: draft ? String(draft).slice(0, 600) : null,
+                jargon_a_patient_would_look_up: draft ? flagJargon(draft).map((j) => `${j.term} → ${j.plain}`) : [],
+                education_that_would_attach: education,
+                warnings: [
+                    !soap.assessment && "no Assessment section found — no summary could be drafted from this note",
+                    !soap.plan && !plan_summary && "no Plan section found",
+                    !chief_complaint && "no chief_complaint sent",
+                    !Array.isArray(body.icd10_codes) || body.icd10_codes.length === 0
+                        ? "no icd10_codes sent — no patient education can be matched to this visit" : null,
+                ].filter(Boolean),
+            });
+        }
+
         // Idempotency — one encounter per (patient, transcription_session_id).
         //
         // A repeat push is TWO different situations and they must not share

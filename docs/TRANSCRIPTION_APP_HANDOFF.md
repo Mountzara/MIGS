@@ -300,6 +300,41 @@ accumulating silently — see §7.
 
 ---
 
+## 4.5 Validate against REAL notes before syncing them
+
+Everything tested so far used synthetic notes, which proves the plumbing
+and nothing about whether the practice's own dictation survives it. The
+app holds ~23 real encounters locally that have never been through this
+rail.
+
+`POST /notes` accepts **`"dry_run": true`**. It parses the note, shows
+the draft that would be produced, names the jargon a patient would meet,
+lists the education that would attach — and **stores nothing**.
+
+```jsonc
+// response
+{ "ok": true, "dry_run": true, "wrote_nothing": true,
+  "parsed_sections": ["subjective","objective","assessment","plan"],
+  "would_draft_summary": true, "draft_source": "note_extract",
+  "draft_preview": "What we talked about\nYou came in about …",
+  "jargon_a_patient_would_look_up": ["menorrhagia → heavy periods", …],
+  "education_that_would_attach": ["Endometriosis — what it is …", …],
+  "warnings": [] }
+```
+
+**Run every real note through this first and read the `warnings`.** The
+ones that matter:
+* *no Assessment section found* — no summary can be drafted from it;
+* *no icd10_codes sent* — no patient education can be matched to the
+  visit;
+* a long `jargon_a_patient_would_look_up` list — the summary is written
+  in clinician language and the patient will need a dictionary.
+
+That single pass over the existing 23 encounters will tell both sides
+more about production readiness than any amount of synthetic testing.
+
+---
+
 ## 5. Suggested build order
 
 1. **Send `patient_visible_summary`** to §4.2 quality. Highest value:
