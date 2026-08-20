@@ -123,7 +123,14 @@ def main():
     # environment rather than being a Mac-only hard blocker. The orphan-
     # discovery contract above still applies in all environments.
     def _gated(path):
-        return path.startswith("/admin") or path.startswith("/portal")
+        # /education/* is gated the same way: functions/education/_middleware.js
+        # serves a Coming Soon page to the public until
+        # EDUCATION_PUBLIC_LAUNCH is set, because each of the twelve patient
+        # guides is clinical content awaiting review. Auditing it without
+        # admin credentials would assert the Coming Soon title forever and
+        # then fail the day the gate opens — the audit must follow the gate,
+        # not fight it.
+        return path.startswith("/admin") or path.startswith("/portal") or path.startswith("/education")
 
     pw = admin_pass()
     public_only = not pw

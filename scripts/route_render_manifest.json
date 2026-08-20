@@ -119,6 +119,11 @@
       "path": "/admin/cases/",
       "title_contains": "Patient charts",
       "_note": "This route 404'd while _nav.js highlighted it — audited so it cannot silently vanish again."
+    },
+    {
+      "path": "/education/",
+      "title_contains": "Patient guides",
+      "_note": "Index for the twelve public guides; its absence was the only broken internal link on the site. Gated by EDUCATION_PUBLIC_LAUNCH — audited only when admin credentials are available, since the public sees the Coming Soon page until the guides are approved."
     }
   ],
   "unaudited": [

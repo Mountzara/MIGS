@@ -406,6 +406,27 @@ fi
 # ?from=1900-01-01 trends request returned 46,000 points in 1.6 MB.
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
+# Internal-link gate. A console whose own navigation points at a 404 reads
+# as broken software no matter how well the rest works — /admin/cases/ sat
+# like that for weeks while the nav highlighted it, and the single broken
+# link on the public site was the Education button on the 404 page, offered
+# to someone who had already hit a dead end.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_internal_links.mjs ]; then
+    echo ""
+    echo "🔗 internal-link gate..."
+    if node scripts/check_internal_links.mjs --strict > /tmp/_links.log 2>&1; then
+        head -1 /tmp/_links.log
+        echo "   ✅ internal-link gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a page links somewhere that does not exist:"
+        cat /tmp/_links.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Orders / results / estimates / referral gates.
 #
 # These three suites guard the parts of the system where a silent bug is a
