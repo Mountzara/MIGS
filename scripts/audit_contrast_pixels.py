@@ -27,7 +27,7 @@ import sys
 import time
 
 sys.path.insert(0, "/home/user/MIGS/scripts")
-from _lib_pw_launch import launch_chromium  # noqa: E402
+from _lib_pw_launch import launch_reachable  # noqa: E402
 from playwright.sync_api import sync_playwright  # noqa: E402
 from PIL import Image  # noqa: E402
 
@@ -315,9 +315,22 @@ def main():
 
     report, total = {}, 0
     with sync_playwright() as p:
-        b, _, note = launch_chromium(p, headless=True)
-        if note:
-            print(f"  (launcher: {note})")
+        # ---------------------------------------------------------------
+        # 2026-08-20 — WAS launch_chromium(). This VM's proxy resets every
+        # Chromium connection, so every page load raised
+        # ERR_CONNECTION_RESET, every page was recorded as {"error": ...},
+        # and the summary — which counted only CONTRAST failures — printed
+        # "0 failure(s) across 9 page(s) x 2 viewport(s)". The deploy read
+        # that as green. This gate had been measuring nothing, and it let
+        # near-black text ship on a near-black About panel at about 1.1:1.
+        #
+        # launch_reachable probes the real site and falls back to WebKit,
+        # which connects natively here, and raises rather than returning a
+        # browser that cannot see the site at all.
+        # ---------------------------------------------------------------
+        probe = f"{base}{pages[0]}" + ("index.html" if local else "")
+        b, engine, note = launch_reachable(p, probe, headless=True)
+        print(f"  (engine: {engine}{'; ' + note if note else ''})")
         for vp, label in VIEWPORTS:
             dpr = 2 if label == "mobile" else 1
             ctx = b.new_context(viewport=vp, device_scale_factor=dpr, ignore_https_errors=True)
@@ -403,8 +416,21 @@ def main():
     out = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--json=")]
     if out:
         json.dump(report, open(out[0], "w"), indent=1)
-    print(f"\npixel-measured contrast: {total} failure(s) across {len(pages)} page(s) x {len(VIEWPORTS)} viewport(s)")
-    return 1 if total else 0
+    # A page that never loaded was never measured. Counting only contrast
+    # failures meant "everything failed to load" and "everything is fine"
+    # produced the same green summary — which is exactly how this gate came
+    # to pass while the site shipped 1.1:1 text. Load errors are failures.
+    load_errors = sum(1 for byvp in report.values() for r in byvp.values() if "error" in r)
+    measured = sum(1 for byvp in report.values() for r in byvp.values() if "error" not in r)
+    print(f"\npixel-measured contrast: {total} failure(s) across "
+          f"{measured} page-viewport(s) actually measured "
+          f"({len(pages)} page(s) x {len(VIEWPORTS)} viewport(s) attempted)")
+    if load_errors:
+        print(f"  ✗ {load_errors} page-viewport(s) never loaded — those were NOT measured.")
+    if not measured:
+        print("  ✗ NOTHING was measured. A gate that saw no pixels cannot report clean.")
+        return 1
+    return 1 if (total or load_errors) else 0
 
 
 sys.exit(main())

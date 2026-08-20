@@ -2069,19 +2069,18 @@
             font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.01em;
-            color: #6d28d9;
-            opacity: 0;
-            transform: translateY(3px);
+            color: #c4b5fd;
+            /* Was opacity:0 until hover. The whole tile is an <a>; hiding its
+               only affordance meant a visitor had to discover by accident
+               that these were clickable, and touch users never hover at all. */
+            opacity: 0.72;
             transition: opacity 0.22s ease, transform 0.22s ease;
         }
         /* Revealed on hover on pointer devices; always visible where hover
            does not exist, so a touch user is never left guessing that the
            tile is tappable. */
         .stat:hover .stat-go,
-        .stat:focus-visible .stat-go { opacity: 1; transform: none; }
-        @media (hover: none) {
-            .stat-go { opacity: 1; transform: none; }
-        }
+        .stat:focus-visible .stat-go { opacity: 1; }
 
         .stat-num {
             font-size: 30px;
@@ -2118,46 +2117,31 @@
             line-height: 1.3;
         }
 
-        /* 2026-05-27 — light-theme stat override. The .about-section uses
-           background: var(--bg-light) + color: var(--dark) — a deliberate
-           light pane inside the otherwise-dark site. The base .stat rule
-           above was tuned for the dark theme (white 4% bg, white 74%
-           label) which rendered as INVISIBLE white-on-light on the about
-           pane. These overrides keep the design intent (Apple-glass +
-           purple accent) but invert lightness so the numbers and labels
-           actually read on the light pane. User flagged 2026-05-27. */
-        .about-section .stat {
-            background: rgba(109, 40, 217, 0.05);
-            border: 1px solid rgba(109, 40, 217, 0.20);
-        }
-        .about-section .stat:hover {
-            background: rgba(109, 40, 217, 0.10);
-            border-color: rgba(109, 40, 217, 0.50);
-        }
-        .about-section .stat-num {
-            /* 2026-05-27 — light-theme variant: use saturated purple-to-deep
-               gradient so the numerals stay readable on the cream-cream
-               about-section panel AND signal the brand. */
-            color: #6d28d9;
-            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-            .about-section .stat-num {
-                background: transparent;
-                color: #6d28d9;
-                -webkit-text-fill-color: #6d28d9;
-            }
-        }
-        .about-section .stat-label {
-            color: rgba(31, 22, 17, 0.72);
-        }
-        .about-section .stat-line { color: #1f1611; }
-        .about-section .stat-detail { color: rgba(31, 22, 17, 0.78); opacity: 1; }
-        .about-section .stat-glyph { color: #6d28d9; }
-        .about-section .stat-go { color: #5b21b6; }
+        /* =====================================================================
+           .about-section IS DARK. IT HAS NOT BEEN A LIGHT PANE SINCE 2026-06.
+           ---------------------------------------------------------------------
+           A block of light-theme overrides used to live here, opening with a
+           comment describing "a deliberate light pane inside the otherwise-dark
+           site" and setting near-black text (#1f1611) and deep violet accents
+           (#5b21b6, #6d28d9) so they would read on cream.
+
+           The section was later converted to dark — it is
+           `background-color: rgba(18, 15, 27, 0.88) !important` at the foot of
+           this file — and THAT change patched only the elements that existed at
+           the time (.stat-num, .stat-label, headline, sub, h3) with !important,
+           leaving this block and its comment in place.
+
+           The result was a trap. On 2026-08-20 four new elements were added to
+           this section, the stale comment was believed rather than the rendered
+           pixels, and #1f1611 text shipped on a #120f1b ground at about 1.1:1 —
+           invisible. Measured, not guessed, after the owner reported it.
+
+           The whole light-pane block is gone. Colours for this section now live
+           in ONE place, with the background that sets them: search for the
+           .about-section background rule near the end of this file. If you add an element
+           here, put its colour there, and CHECK IT IN A BROWSER — the contrast
+           gate now samples these tiles (scripts/audit_contrast_pixels.py).
+           ===================================================================== */
 
         /* ========== Surgical Excellence Section ========== */
         .excellence-section {
@@ -4280,6 +4264,22 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
             color: #ffffff;
+        }
+
+        /* 2026-08-20 — measured 1.36:1. The badge is a translucent WHITE chip
+           with white text, which reads on the dark app visuals and disappears
+           on the cream ".warm" ones. Same failure and same fix as
+           .app-visual.warm .rl-cap two rules up: an opaque light chip with
+           deep-violet text on the cream ground. Found once the contrast gate
+           was repaired — it had been reporting clean while measuring nothing,
+           because every Chromium page load was being reset by the proxy. */
+        .app-visual.warm .app-visual-label {
+            background: rgba(255, 246, 234, 0.94);
+            border-color: rgba(30, 18, 55, 0.18);
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            color: #2b1c4d;
         }
 
         .app-icon-large {
@@ -7750,8 +7750,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* Section eyebrows outside the (light) About panel sit on dark bands, where
    the deep violet measured 1.37:1. Light violet everywhere else. */
 section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
-.about-section .stat-num  { color: #c4b5fd !important; }
+/* ---------------------------------------------------------------------------
+   Every colour for the (dark) About section lives here, next to the
+   background that makes them necessary. The light-pane block that used to
+   sit further up this file is gone — see the note where it was.
+
+   !important throughout because these must beat the generic .stat* rules
+   regardless of where a future edit inserts them. -webkit-text-fill-color is
+   set explicitly on .stat-num: `color` alone does NOT override it, so the
+   old background-clip gradient kept painting deep violet on near-black even
+   after the colour was corrected.
+   --------------------------------------------------------------------------- */
+.about-section .stat {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+.about-section .stat:hover {
+    background: rgba(167, 139, 250, 0.10) !important;
+    border-color: rgba(167, 139, 250, 0.45) !important;
+}
+.about-section .stat-num  {
+    color: #c4b5fd !important;
+    background: none !important;
+    -webkit-text-fill-color: #c4b5fd !important;
+}
 .about-section .stat-label { color: #ffffff !important; }
+.about-section .stat-line   { color: #ffffff !important; }
+.about-section .stat-detail { color: rgba(255, 255, 255, 0.82) !important; opacity: 1 !important; }
+.about-section .stat-glyph  { color: #c4b5fd !important; }
+.about-section .stat-go     { color: #c4b5fd !important; }
+.about-section .mz-read-btn { color: #c4b5fd !important; }
+.about-section .mz-read-btn:hover { color: #ffffff !important; }
 .about-section .about-text-block {
     background: rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.14) !important;
