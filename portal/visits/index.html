@@ -97,7 +97,16 @@
             color: rgba(252,165,165,.92); line-height: 1.55;
         }
         .panic strong { color: rgba(252,211,77,.96); font-weight: 600; }
-    </style>
+            .reading { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.10); }
+        .reading-h { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+                     color: rgba(167,139,250,.95); margin-bottom: 10px; }
+        .reading-item { display: block; text-decoration: none; padding: 11px 13px; margin-bottom: 8px;
+                        border: 1px solid rgba(255,255,255,.10); border-radius: 10px;
+                        background: rgba(255,255,255,.03); }
+        .reading-item:hover { border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.07); }
+        .reading-t { display: block; font-size: 14.5px; color: #fff; }
+        .reading-why { display: block; font-size: 12.5px; margin-top: 3px; color: rgba(255,255,255,.62); line-height: 1.5; }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -187,6 +196,36 @@
             var d = await api("/api/v1/patient/visits?id=" + encodeURIComponent(id) + "&cb=" + Date.now());
             if (!d) return;
             box.textContent = d.visit.text || "";
+            // The reading Dr. Mabini attached to THIS visit. It was being
+            // returned by the API and rendered nowhere, so the education
+            // selected for her was invisible — the whole point of tying it
+            // to the visit is that she meets it here, next to the plan.
+            var reading = (d.visit && d.visit.reading) || [];
+            if (reading.length) {
+                var rw = document.createElement("div");
+                rw.className = "reading";
+                var rh = document.createElement("div");
+                rh.className = "reading-h";
+                rh.textContent = reading.length === 1 ? "Reading for you" : "Reading for you";
+                rw.appendChild(rh);
+                reading.forEach(function (r) {
+                    var a = document.createElement("a");
+                    a.className = "reading-item";
+                    a.href = r.href;
+                    var t = document.createElement("span");
+                    t.className = "reading-t";
+                    t.textContent = r.title;
+                    a.appendChild(t);
+                    if (r.reason) {
+                        var why = document.createElement("span");
+                        why.className = "reading-why";
+                        why.textContent = r.reason;
+                        a.appendChild(why);
+                    }
+                    rw.appendChild(a);
+                });
+                box.appendChild(rw);
+            }
             if (d.note) {
                 var n = document.createElement("div");
                 n.className = "note";

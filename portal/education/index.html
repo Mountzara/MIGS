@@ -131,6 +131,11 @@
             padding: 3px 8px; border-radius: 999px;
             white-space: nowrap;
         }
+        /* The reason a guide was picked for her. A bare "Assigned" badge
+           reads as filing; the sentence reads as her clinician thinking
+           about her, which is what it actually was. */
+        .ed-why { font-size: 12.5px; line-height: 1.5; color: rgba(196,181,253,.92);
+                  margin: 6px 0 0; }
         .badge-assigned {
             background: rgba(245, 158, 11, 0.12);
             color: rgba(252, 211, 77, 0.95);
@@ -645,6 +650,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         ${badges.length ? `<div class="ed-badge-row">${badges.join('')}</div>` : ''}
                         <h3>${escapeHtml(m.title)}</h3>
                         <p class="ed-summary">${escapeHtml(m.summary || '')}</p>
+                        ${m.assignment && m.assignment.reason
+                            ? `<p class="ed-why">${escapeHtml(m.assignment.reason)}</p>` : ''}
                         <div class="ed-meta">${tagChips}</div>
                     </a>
                 `;
