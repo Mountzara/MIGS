@@ -8128,3 +8128,25 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
 /* Cache-key rotation 2026-08-20b — a CDN edge served the previous body
    under this file's new ?v= key; deploy-prod.sh blocks on that and needs
    a fresh key rather than a correct-looking hash over stale bytes. */
+
+        /* Featured research cards: the authored summary now lives in the
+           reading sheet, and this one-line lede holds its place on the card.
+           The card must be a column flexbox for .mz-read-btn's margin-top:auto
+           to pin the control to the foot, so a row of cards lines its buttons
+           up regardless of how long each title wrapped. */
+        .research-card { display: flex; flex-direction: column; }
+        .research-card-lede {
+            font-size: 16px;
+            line-height: 1.5;
+            letter-spacing: -0.006em;
+            color: #ffffff;
+            margin: 0 0 14px;
+        }
+        /* initReadingSheet inserts the control where the copy was, so on
+           these cards it lands between the lede and the video reel. It must
+           not take margin-top:auto here or it would be pushed past the reel. */
+        .research-card .mz-read-btn {
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 16px;
+        }

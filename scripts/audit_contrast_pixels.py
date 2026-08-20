@@ -234,6 +234,39 @@ REST_OVERLAY = """() => {
 }"""
 
 
+
+class BrowserCrashed(RuntimeError):
+    """The engine died mid-capture. This is NOT a contrast verdict."""
+
+
+def _screenshot_or_crash(page, attempts=3):
+    """Screenshot, retrying a crashed target once with a pause.
+
+    2026-08-20 — a deploy reported "CONTRAST GATE FAILED — text on this site
+    does not meet WCAG" when WebKit had simply died taking the capture
+    ("Target crashed"). The traceback escaped main(), Python exited non-zero,
+    and deploy-prod.sh printed the contrast message for it. A crash is
+    UNJUDGEABLE, not a failing ratio, and saying otherwise sends the next
+    person hunting for a colour problem that does not exist.
+
+    This page is tall and the capture is full-viewport at DPR 2, so the crash
+    is resource pressure and usually clears on a retry. If it does not, the
+    caller raises BrowserCrashed and the run reports the real reason. It must
+    still BLOCK — a gate that cannot see the page has proved nothing, and the
+    whole point of the recent repair was that a gate measuring nothing must
+    never read as green.
+    """
+    last = None
+    for i in range(attempts):
+        try:
+            return page.screenshot(type="png")
+        except Exception as e:               # noqa: BLE001 - re-raised below
+            last = e
+            if "crash" not in str(e).lower():
+                raise
+            page.wait_for_timeout(1200 * (i + 1))
+    raise BrowserCrashed(f"engine died taking the capture after {attempts} attempts: {last}")
+
 def audit_page(page, dpr, scroll_y=0):
     """Returns failures for the CURRENT scroll position."""
     items = page.evaluate(COLLECT)
@@ -246,11 +279,11 @@ def audit_page(page, dpr, scroll_y=0):
     # white); two rAFs plus a settle make the capture deterministic.
     page.evaluate("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
     page.wait_for_timeout(260)
-    shot = page.screenshot(type="png")
+    shot = _screenshot_or_crash(page)
     img = Image.open(io.BytesIO(shot)).convert("RGB")
     if _frame_is_blank(img):
         page.wait_for_timeout(500)
-        shot = page.screenshot(type="png")
+        shot = _screenshot_or_crash(page)
         img = Image.open(io.BytesIO(shot)).convert("RGB")
         if _frame_is_blank(img):
             page.evaluate(SHOW_TEXT)
@@ -363,15 +396,29 @@ def main():
                 seen, fails = set(), []
                 height = page.evaluate("document.body.scrollHeight")
                 step = vp["height"]
-                for y in range(0, min(height, step * 12), step):
-                    page.evaluate(f"window.scrollTo(0, {y})")
-                    page.wait_for_timeout(450)
-                    for f in audit_page(page, dpr, y):
-                        k = (f["txt"], f["cls"], f["color"])
-                        if k in seen:
-                            continue
-                        seen.add(k)
-                        fails.append(f)
+                try:
+                    for y in range(0, min(height, step * 12), step):
+                        page.evaluate(f"window.scrollTo(0, {y})")
+                        page.wait_for_timeout(450)
+                        for f in audit_page(page, dpr, y):
+                            k = (f["txt"], f["cls"], f["color"])
+                            if k in seen:
+                                continue
+                            seen.add(k)
+                            fails.append(f)
+                except BrowserCrashed as e:
+                    # Same channel as a failed goto: NOT MEASURED. That still
+                    # blocks the deploy (see the `measured` guard in main), but
+                    # it blocks with the true reason instead of claiming the
+                    # site has a colour-contrast violation.
+                    print(f"  ✗ {path} [{label}] CAPTURE CRASHED — not measured: {e}")
+                    report.setdefault(path, {})[label] = {"error": f"engine crashed: {e}"[:90]}
+                    try:
+                        page.close()
+                    except Exception:
+                        pass
+                    page = ctx.new_page()
+                    continue
                 # Final confirmation: re-meet each candidate the way a reader
                 # does — scroll it to the middle of the viewport and measure
                 # again. Pinned/sticky sections mean an element's rect can sit

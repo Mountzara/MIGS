@@ -794,7 +794,6 @@
 
             hosts.forEach((nodes, host) => {
                 const html = nodes.map(n => n.outerHTML).join('');
-                nodes.forEach(n => n.remove());
 
                 const btn = document.createElement('button');
                 btn.type = 'button';
@@ -802,7 +801,19 @@
                 btn.setAttribute('aria-haspopup', 'dialog');
                 btn.innerHTML = (host.getAttribute('data-read-cta') || 'Read more') +
                                 '<span aria-hidden="true">\u2192</span>';
-                host.appendChild(btn);
+
+                // Put the control WHERE THE TEXT WAS, not at the end of the
+                // card. On a safety card the paragraph is the last element so
+                // the two are the same, but a featured research card has a
+                // video reel after its summary — appending would park the
+                // control under the reel, where it reads as a caption for the
+                // video rather than as the way back to the copy that just
+                // disappeared from above it.
+                const anchor = nodes[0];
+                if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor);
+                else host.appendChild(btn);
+
+                nodes.forEach(n => n.remove());
 
                 btn.addEventListener('click', (e) => {
                     // Cards are sometimes themselves clickable (role=button,

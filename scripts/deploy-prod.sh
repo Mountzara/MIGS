@@ -1290,8 +1290,20 @@ if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixel
         echo "   ✅ contrast gate passed"
     else
         echo ""
-        echo "🛑 CONTRAST GATE FAILED — text on this site does not meet WCAG"
-        echo "   4.5:1 (3:1 for large text) against its real painted backdrop:"
+        # The audit exits non-zero for two different reasons: real failing
+        # ratios, and pages it could not measure (load error, engine crash
+        # mid-capture). Both must block — a gate that saw no pixels has
+        # proved nothing — but naming the wrong one sends the next person
+        # hunting a colour bug that does not exist. 2026-08-20: a WebKit
+        # "Target crashed" was reported here as "does not meet WCAG".
+        if grep -qE 'CAPTURE CRASHED|never loaded|NOTHING was measured' /tmp/_contrast_audit.log; then
+            echo "🛑 CONTRAST GATE COULD NOT MEASURE THE SITE — this is not a"
+            echo "   contrast verdict; the engine failed to capture some pages:"
+            grep -E 'CAPTURE CRASHED|never loaded|NOTHING was measured' /tmp/_contrast_audit.log | head -10
+        else
+            echo "🛑 CONTRAST GATE FAILED — text on this site does not meet WCAG"
+            echo "   4.5:1 (3:1 for large text) against its real painted backdrop:"
+        fi
         grep -E '✗|:1 \(need' /tmp/_contrast_audit.log | head -20
         echo ""
         echo "   Full log: /tmp/_contrast_audit.log"
