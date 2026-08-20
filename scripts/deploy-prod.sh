@@ -814,6 +814,33 @@ if [ "$STRIPPED" -gt 0 ]; then
     fi
 fi
 
+# Strip ALL authoring comments from the PUBLIC copy (2026-08-20)
+# ---------------------------------------------------------------------------
+# The block above removed the §0.8 / kb_doc_id provenance comments and
+# nothing else, so everything else this repo writes into markup was still
+# being served: which gate enforces which invariant, where the hero
+# fingerprint lock lives, why each breakpoint is the number it is, what
+# every data- attribute drives, and the reasoning behind each fix. On
+# index.html alone that was 71 comments and 14.6 KB — a design document,
+# published, against the owner's explicit directive that a visitor must not
+# be able to learn how the site works.
+#
+# The repo keeps every comment (that is how the next session avoids
+# re-breaking things); the STAGE loses them. The stripper skips <script>
+# and <style> regions, because a JS string may contain the characters
+# "<!--" and a naive regex would eat live code from there to the next
+# "-->". See scripts/strip_html_comments.mjs and its --self-test.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/strip_html_comments.mjs ]; then
+    if ! node scripts/strip_html_comments.mjs --self-test > /tmp/_strip_selftest.log 2>&1; then
+        echo "🛑 DEPLOY BLOCKED — strip_html_comments self-test failed; refusing to run it over the stage."
+        cat /tmp/_strip_selftest.log
+        exit 1
+    fi
+    echo -n "🔒 "
+    node scripts/strip_html_comments.mjs "$STAGE_DIR"
+fi
+
 # ---------------------------------------------------------------------------
 # Stage-integrity assertion (added 2026-08-13)
 # ---------------------------------------------------------------------------
@@ -1280,6 +1307,41 @@ fi
 # video type, faststart moov, and a real ffmpeg decode of the first frames.
 # Skip with DEPLOY_SKIP_VIDEO_SRC_AUDIT=1.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Nav + reading-sheet gate (2026-08-20)
+# ---------------------------------------------------------------------------
+# Added after a nav consolidation shipped with `.mobile-toggle{display:none}`
+# as the LAST rule for that selector. The hamburger was invisible at every
+# width and there was NO navigation below 1180px. Every other gate passed —
+# fact-sync, contrast, visual, route-render, public headers, the lot —
+# because not one of them asks whether a person can reach the menu.
+#
+# It also covers the reading sheet, whose entire value is typographic: a
+# silent fallback to card sizing leaves the feature apparently working while
+# defeating its purpose.
+#
+# WebKit, not Chromium: this VM's proxy resets Chromium connections (the
+# same note is in audit_visual_runtime.py). A transport failure reports
+# UNJUDGEABLE and exits 0 — proving the site is reachable is the canary's
+# job, and blocking every deploy on a proxy quirk would make this useless.
+# Skip with DEPLOY_SKIP_NAV_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -z "${DEPLOY_SKIP_NAV_AUDIT:-}" ] && command -v python3 >/dev/null 2>&1 && [ -f scripts/audit_nav_and_reading.py ]; then
+    echo ""
+    echo "🔍 Nav + reading-sheet gate — menu reachable, sheet typography intact..."
+    if python3 scripts/audit_nav_and_reading.py "https://mountzara.com/" > /tmp/_nav_read.log 2>&1; then
+        tail -2 /tmp/_nav_read.log
+        echo "   ✅ nav + reading-sheet gate passed"
+    else
+        echo ""
+        echo "🛑 NAV / READING-SHEET GATE FAILED — the live site's navigation or"
+        echo "   reading sheet is broken:"
+        grep -E '✗|FAILED' /tmp/_nav_read.log | head -12
+        echo "   Override: DEPLOY_SKIP_NAV_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+        exit 1
+    fi
+fi
+
 if [ -z "${DEPLOY_SKIP_VIDEO_SRC_AUDIT:-}" ] && command -v node >/dev/null 2>&1 && [ -f scripts/audit_video_sources.mjs ]; then
     echo ""
     echo "🔍 Video-source gate — every reel URL playable at file level..."

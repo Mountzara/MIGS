@@ -285,6 +285,32 @@
         .nav-more-menu a:hover,
         .nav-more-menu a:focus-visible { background: rgba(167, 139, 250, 0.16); }
 
+        /* ---------------------------------------------------------------
+           SOURCE ORDER MATTERS HERE. This base rule hides the hamburger on
+           wide screens; the media query BELOW re-shows it once the bar
+           collapses. Both selectors have the same specificity, so whichever
+           comes last wins — a media query does not add weight.
+
+           This rule used to sit AFTER the collapse block. It won, the
+           hamburger was display:none at every width, and the only reason
+           the site still worked was a second `.mobile-toggle{display:block}`
+           further down in the old 768px responsive block. Consolidating the
+           panel rules removed that second declaration and, with it, the
+           entire navigation below 1180px — hamburger invisible, links
+           already hidden. Caught by a live browser test, not by any gate.
+
+           If you move this rule, move it UP, never down.
+           --------------------------------------------------------------- */
+        .mobile-toggle {
+            display: none;
+            color: var(--white);
+            font-size: 18px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
         /* Collapse to the menu button while the row is still comfortable,
            not only once it has already broken.
            ----------------------------------------------------------------
@@ -362,16 +388,6 @@
                 font-size: 15px;
                 border-radius: 0;
             }
-        }
-
-        .mobile-toggle {
-            display: none;
-            color: var(--white);
-            font-size: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
         }
 
         /* ========== Cinematic intro video backdrop ========== */
@@ -1989,7 +2005,7 @@
             margin-top: 32px;
         }
 
-        @media (min-width: 600px) {
+        @media (min-width: 1080px) {
             .stats-row {
                 grid-template-columns: repeat(4, 1fr);
             }
@@ -2003,13 +2019,17 @@
            glassy fill, purple-glow border, purple-accent stat number. */
         .stat {
             background: rgba(255, 255, 255, 0.04);
-            border-radius: 14px;
-            padding: 28px 20px;
+            border-radius: 16px;
+            padding: 24px 22px 20px;
             text-align: left;
             border: 1px solid rgba(255, 255, 255, 0.10);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
             transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            /* Each tile is now an <a> into the section that proves it. */
+            display: flex;
+            flex-direction: column;
+            color: inherit;
         }
         .stat:hover {
             transform: translateY(-2px);
@@ -2017,12 +2037,61 @@
             background: rgba(167, 139, 250, 0.06);
         }
 
+        .stat-glyph {
+            display: block;
+            width: 34px;
+            height: 34px;
+            margin-bottom: 16px;
+            color: #7c3aed;
+        }
+        .stat-glyph svg { display: block; width: 100%; height: 100%; }
+
+        /* The headline sentence. The numeral lives INSIDE it rather than
+           floating above it, so the reader never has to hold a number in
+           their head while hunting for its subject. */
+        .stat-line {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.35;
+            letter-spacing: -0.012em;
+            margin: 0 0 8px;
+        }
+
+        .stat-detail {
+            font-size: 14px;
+            line-height: 1.55;
+            margin: 0 0 16px;
+            opacity: 0.78;
+        }
+
+        .stat-go {
+            margin-top: auto;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #6d28d9;
+            opacity: 0;
+            transform: translateY(3px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        /* Revealed on hover on pointer devices; always visible where hover
+           does not exist, so a touch user is never left guessing that the
+           tile is tappable. */
+        .stat:hover .stat-go,
+        .stat:focus-visible .stat-go { opacity: 1; transform: none; }
+        @media (hover: none) {
+            .stat-go { opacity: 1; transform: none; }
+        }
+
         .stat-num {
-            font-size: 40px;
+            font-size: 30px;
             font-weight: 700;
             letter-spacing: -0.025em;
             line-height: 1;
-            margin-bottom: 8px;
+            margin-bottom: 0;
+            margin-right: 4px;
+            display: inline-block;
+            vertical-align: -2px;
             /* 2026-05-27 — apply medium-intensity purple gradient so the
                stat numerals match the brand purple treatment on the hero
                and section headlines. Solid color fallback below for
@@ -2085,6 +2154,10 @@
         .about-section .stat-label {
             color: rgba(31, 22, 17, 0.72);
         }
+        .about-section .stat-line { color: #1f1611; }
+        .about-section .stat-detail { color: rgba(31, 22, 17, 0.78); opacity: 1; }
+        .about-section .stat-glyph { color: #6d28d9; }
+        .about-section .stat-go { color: #5b21b6; }
 
         /* ========== Surgical Excellence Section ========== */
         .excellence-section {
@@ -2365,20 +2438,29 @@
         /* Scope + honesty line under the grid. Deliberately not a footnote in
            small grey type — a patient reading a safety section should be able
            to read the caveat as easily as the claim. */
+        /* Now a single link out to the full operative log rather than a
+           paragraph of caveat — centred so it reads as the section's exit,
+           not as an orphaned sentence hanging off the last card. */
         .safety-note {
-            margin: 26px auto 0;
-            max-width: 1000px;
+            margin: 28px 0 0;
+            text-align: center;
             font-size: 15px;
-            line-height: 1.65;
-            color: rgba(255, 255, 255, 0.82);
-            letter-spacing: -0.004em;
         }
         .safety-note a {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 600;
             color: #c4b5fd;
-            border-bottom: 1px solid rgba(196, 181, 253, 0.4);
-            white-space: nowrap;
+            border: 1px solid rgba(196, 181, 253, 0.32);
+            background: rgba(255, 255, 255, 0.05);
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         }
-        .safety-note a:hover { color: #ffffff; border-bottom-color: #ffffff; }
+        .safety-note a:hover {
+            color: #ffffff;
+            border-color: rgba(196, 181, 253, 0.7);
+            background: rgba(167, 139, 250, 0.14);
+        }
 
         /* Domain grid */
         .domain-eyebrow {
@@ -2806,9 +2888,20 @@
             background-clip: text;
             margin-bottom: 8px;
         }
+        /* "73 of 74" — the denominator is what makes the numerator mean
+           anything, but at 44px it would dominate the number it qualifies.
+           Set smaller and inline so the pair reads as one figure. */
+        .hub-content-stat .stat-of {
+            font-size: 0.42em;
+            font-weight: 500;
+            letter-spacing: 0;
+            margin-left: 0.35em;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.72);
+            color: rgba(255, 255, 255, 0.72);
+        }
         .hub-content-stat .stat-label {
-            font-size: 12.5px;
-            line-height: 1.55;
+            font-size: 14px;
+            line-height: 1.6;
             color: #ffffff;
         }
 
@@ -3663,7 +3756,7 @@
             line-height: 1.4;
         }
         .evidence-faq-a {
-            font-size: 13.5px;
+            font-size: 16px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -4989,7 +5082,7 @@
             content: 'Learn more →';
             display: inline-block;
             margin-top: 14px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.04em;
             color: #c4b5fd;
@@ -5565,7 +5658,7 @@
         }
         .feature-tile-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
         .feature-tile h4 {
-            font-size: 16.5px;
+            font-size: 17.5px;
             font-weight: 600;
             color: var(--white);
             margin: 0 0 8px;
@@ -5573,7 +5666,7 @@
             line-height: 1.3;
         }
         .feature-tile p {
-            font-size: 14.5px;
+            font-size: 16px;
             font-weight: 400;
             line-height: 1.6;
             color: #ffffff;
@@ -5607,7 +5700,7 @@
             font-weight: 600;
             display: block;
             margin-bottom: 4px;
-            font-size: 15.5px;
+            font-size: 17px;
             letter-spacing: -0.005em;
         }
         .usecase-row p {
@@ -7791,3 +7884,218 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
                 font-size: 118%;
             }
         }
+
+
+        /* =====================================================================
+           MODAL READING LAYER  (2026-08-20)
+           ---------------------------------------------------------------------
+           The site's rule is now: the surface is scannable, and anything longer
+           than a line lives one click away in a modal. That only works if the
+           modal is a genuinely better place to read than the page was —
+           otherwise the click just relocates the wall of text.
+
+           Two things make the difference and neither was set:
+
+           1. MEASURE. .app-modal-card is min(96%, 1180px) wide. A paragraph
+              set across 1,070px of that runs to roughly 150 characters a line;
+              the eye loses the return sweep somewhere past 90 and starts
+              re-reading the line it just left. Prose is capped at 72ch here.
+              Grids, pill rows and tiles are deliberately NOT capped — they are
+              scanned, not read, and they want the full width.
+
+           2. LEADING. Long-form body copy wants more air than a card does.
+              Modal prose runs at 1.7 rather than the 1.55 used on the surface.
+
+           Section eyebrows, titles and leads keep their own rules; this block
+           only touches the paragraphs underneath them.
+           ===================================================================== */
+        .app-modal-section > p,
+        .app-modal-section-lead,
+        .feature-tile p,
+        .usecase-row p,
+        .dm-timeline-body p,
+        .evidence-section-body,
+        .evidence-faq-a {
+            max-width: 72ch;
+            line-height: 1.7;
+        }
+
+        /* Tiles sit in a two-up grid that is already narrower than the measure
+           cap; letting the cap apply there would do nothing but is harmless.
+           The tiles DO want their own slightly tighter leading so a four-line
+           description does not tower over its heading. */
+        .feature-tile p { line-height: 1.62; }
+
+        @media (min-width: 1024px) {
+            /* At desktop the modal has room for real editorial spacing. */
+            .app-modal-section-lead { font-size: 19px; }
+            .app-modal-body { padding: 56px clamp(56px, 6vw, 88px); }
+        }
+
+
+        /* =====================================================================
+           READING SHEET  (2026-08-20)
+           ---------------------------------------------------------------------
+           The point of moving copy off the card is that it can then be set
+           properly. Everything here exists to make a long paragraph pleasant
+           rather than merely legible:
+
+             MEASURE   66ch. Past roughly 90 characters the eye starts losing
+                       the return sweep and re-reads the line it just left.
+             SIZE      20px rising to 22px on large screens — a step above the
+                       page, because the reader has chosen to read now.
+             LEADING   1.8. Card copy runs at 1.55; prose wants more air.
+             PADDING   clamp(28px, 6vw, 88px). The whitespace IS the design —
+                       it is what tells the eye it has arrived somewhere calm.
+             RHYTHM    Paragraph spacing of 1.15em rather than a flat margin,
+                       so spacing scales with the type.
+
+           The panel is capped at 900px and centred rather than filling the
+           viewport: a full-width sheet on a 27" display would put the text
+           back at the unreadable measure it was rescued from.
+           ===================================================================== */
+        .mz-read {
+            width: min(94vw, 900px);
+            max-width: 900px;
+            max-height: min(90vh, 1000px);
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 28px;
+            background: linear-gradient(160deg, rgba(42, 38, 58, 0.94) 0%, rgba(22, 20, 30, 0.96) 60%, rgba(15, 14, 20, 0.97) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            box-shadow: 0 48px 140px rgba(0, 0, 0, 0.62),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .mz-read::backdrop {
+            background: rgba(8, 8, 12, 0.66);
+            backdrop-filter: blur(8px) saturate(140%);
+            -webkit-backdrop-filter: blur(8px) saturate(140%);
+        }
+        .mz-read[open] {
+            animation: mzReadIn 320ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes mzReadIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.985); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .mz-read[open] { animation: none; }
+        }
+
+        .mz-read-scroll {
+            max-height: min(90vh, 1000px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        .mz-read-inner {
+            padding: clamp(40px, 6vw, 88px) clamp(28px, 6vw, 88px) clamp(44px, 6vw, 88px);
+        }
+
+        .mz-read-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            z-index: 2;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .mz-read-close svg { width: 18px; height: 18px; }
+        .mz-read-close:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.06); }
+
+        .mz-read-eyebrow {
+            margin: 0 0 14px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+        .mz-read-eyebrow[hidden] { display: none; }
+
+        .mz-read-title {
+            margin: 0 0 28px;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 600;
+            line-height: 1.14;
+            letter-spacing: -0.026em;
+            color: #ffffff;
+            /* No background-clip:text. This heading is arbitrary authored
+               copy — it can contain a descender, a comma or an ellipsis, all
+               of which the clip has bitten before. Solid white always reads. */
+            max-width: 20ch;
+        }
+
+        .mz-read-body {
+            font-size: 20px;
+            line-height: 1.8;
+            letter-spacing: -0.003em;
+            color: rgba(255, 255, 255, 0.92);
+            max-width: 66ch;
+        }
+        @media (min-width: 1280px) {
+            .mz-read-body { font-size: 22px; }
+        }
+        .mz-read-body > * { margin: 0 0 1.15em; }
+        .mz-read-body > *:last-child { margin-bottom: 0; }
+        .mz-read-body strong { color: #ffffff; font-weight: 600; }
+        .mz-read-body a {
+            color: #c4b5fd;
+            border-bottom: 1px solid rgba(196, 181, 253, 0.45);
+        }
+        .mz-read-body a:hover { color: #ffffff; border-bottom-color: #ffffff; }
+        .mz-read-body ul, .mz-read-body ol { padding-left: 1.3em; }
+        .mz-read-body li { margin-bottom: 0.55em; }
+
+        /* The affordance injected into each host card. Sits at the foot of
+           the card via margin-top:auto so a row of cards has its buttons on
+           one line regardless of how much copy each headline needed. */
+        .mz-read-btn {
+            margin-top: auto;
+            padding-top: 16px;
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #c4b5fd;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s ease, gap 0.2s ease;
+        }
+        .mz-read-btn:hover { color: #ffffff; gap: 11px; }
+        .mz-read-btn:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 3px; border-radius: 4px; }
+
+        /* Hosts that gained a .mz-read-btn need to be a column flexbox for
+           the button's margin-top:auto to pin it to the foot of the card.
+           .safety-card already is; these were not. */
+        .about-text-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* The about pane is a deliberate light panel inside a dark site
+           (see the .about-section .stat overrides above), so the sheet
+           affordance needs the dark-on-light variant or it reads as a
+           pale violet smudge on cream. */
+        .about-section .mz-read-btn { color: #5b21b6; }
+        .about-section .mz-read-btn:hover { color: #2e1065; }
+        .about-section .mz-read-btn:focus-visible { outline-color: #5b21b6; }
+
+/* Cache-key rotation 2026-08-20b — a CDN edge served the previous body
+   under this file's new ?v= key; deploy-prod.sh blocks on that and needs
+   a fresh key rather than a correct-looking hash over stale bytes. */

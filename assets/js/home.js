@@ -744,6 +744,100 @@
             });
         });
 
+        // Cache-key rotation 2026-08-20a: the first deploy of this file hit a
+        // poisoned CDN edge (the previous body served under the new ?v= key).
+        // scripts/deploy-prod.sh detects that and requires a fresh key rather
+        // than letting a stale bundle sit behind a correct-looking hash.
+        // ==========================================================
+        // Reading sheet — relocate long copy out of the scan layer
+        // ==========================================================
+        // The homepage carries roughly 4,000 words. Most of it is good
+        // writing in the wrong place: paragraphs set at 15px inside a
+        // four-up card grid, where the measure is short, the leading is
+        // tight and the reader is trying to SCAN, not read.
+        //
+        // This lifts any element marked [data-read] out of its card and
+        // into #mz-read, where prose gets the room it needs. The card keeps
+        // its illustration, its headline and its one-line proof, and gains
+        // a "Read more" control.
+        //
+        // Deliberate properties:
+        //   * The copy stays authored in the page HTML. It is moved at
+        //     runtime, not fetched, so it is present for crawlers, for
+        //     Reader Mode, and for anyone with JS disabled — who simply
+        //     sees the original card with the paragraph still in it.
+        //   * Nothing is deleted. innerHTML is preserved verbatim,
+        //     including links and citation markers.
+        //   * <dialog> does the focus trap, the ESC handling and the
+        //     inert-background work; hand-rolling those is where the other
+        //     modals on this page accumulated their bugs.
+        (function initReadingSheet() {
+            const dlg = document.getElementById('mz-read');
+            if (!dlg) return;
+            const elTitle = document.getElementById('mz-read-title');
+            const elEyebrow = document.getElementById('mz-read-eyebrow');
+            const elBody = document.getElementById('mz-read-body');
+            const scroll = dlg.querySelector('.mz-read-scroll');
+
+            const blocks = document.querySelectorAll('[data-read]');
+            if (!blocks.length) return;
+
+            // Group by host card so a card with two paragraphs gets one
+            // button, not two.
+            const hosts = new Map();
+            blocks.forEach(node => {
+                const host = node.closest('[data-read-title]');
+                if (!host) return;              // unhosted: leave it on the page
+                if (!hosts.has(host)) hosts.set(host, []);
+                hosts.get(host).push(node);
+            });
+
+            hosts.forEach((nodes, host) => {
+                const html = nodes.map(n => n.outerHTML).join('');
+                nodes.forEach(n => n.remove());
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'mz-read-btn';
+                btn.setAttribute('aria-haspopup', 'dialog');
+                btn.innerHTML = (host.getAttribute('data-read-cta') || 'Read more') +
+                                '<span aria-hidden="true">\u2192</span>';
+                host.appendChild(btn);
+
+                btn.addEventListener('click', (e) => {
+                    // Cards are sometimes themselves clickable (role=button,
+                    // or an <a>). Do not let the card's own handler fire too.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    elTitle.textContent = host.getAttribute('data-read-title') || '';
+                    const eyebrow = host.getAttribute('data-read-eyebrow') || '';
+                    elEyebrow.textContent = eyebrow;
+                    elEyebrow.hidden = !eyebrow;
+                    elBody.innerHTML = html;
+                    if (scroll) scroll.scrollTop = 0;
+                    if (typeof dlg.showModal === 'function') dlg.showModal();
+                    else dlg.setAttribute('open', '');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            const close = () => {
+                if (typeof dlg.close === 'function' && dlg.open) dlg.close();
+                else dlg.removeAttribute('open');
+            };
+            dlg.querySelector('[data-mz-read-close]')?.addEventListener('click', close);
+            // Backdrop click. A <dialog>'s click target is the dialog itself
+            // when the backdrop is hit, so compare against the content box
+            // rather than trusting e.target === dlg alone.
+            dlg.addEventListener('click', (e) => {
+                const box = dlg.getBoundingClientRect();
+                const outside = e.clientX < box.left || e.clientX > box.right ||
+                                e.clientY < box.top  || e.clientY > box.bottom;
+                if (outside) close();
+            });
+            dlg.addEventListener('close', () => { document.body.style.overflow = ''; });
+        })();
+
         // ==========================================================
         // Evidence + Care Path modal — patient + clinician resource
         // Sections: intro · who · services · what to expect · FAQ · published literature
