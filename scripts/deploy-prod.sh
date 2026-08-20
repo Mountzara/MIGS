@@ -406,6 +406,32 @@ fi
 # ?from=1900-01-01 trends request returned 46,000 points in 1.6 MB.
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
+# Citation-integrity gate.
+#
+# The patient guides invite a reader to check the sources. That invitation
+# has to be true on every deploy, not on the days somebody remembers to
+# audit — the guides shipped for months with 556 references of which 85
+# were cited anywhere, one guide had two <li id="ref-14"> blocks so every
+# [14] resolved to the wrong paper, and none of it was visible until
+# someone went looking. Structural only, so it never depends on a network.
+# Run scripts/verify_citations.mjs (PubMed) before publishing new clinical
+# content.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_integrity.mjs ]; then
+    echo ""
+    echo "📚 citation-integrity gate..."
+    if node scripts/check_citation_integrity.mjs > /tmp/_cites.log 2>&1; then
+        head -2 /tmp/_cites.log
+        echo "   ✅ citation-integrity gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a citation does not hold up:"
+        cat /tmp/_cites.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Internal-link gate. A console whose own navigation points at a 404 reads
 # as broken software no matter how well the rest works — /admin/cases/ sat
 # like that for weeks while the nav highlighted it, and the single broken
