@@ -780,6 +780,41 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Strip internal provenance comments from the PUBLIC copy (2026-08-20)
+# ---------------------------------------------------------------------------
+# The §0.8 anchors record which KB document and which field each claim came
+# from. They are genuinely useful IN THE REPO — the citation audit reads
+# them — and they have no business on the public internet: they publish
+# internal knowledge-base document ids, the field taxonomy (keyPoints,
+# criticalThresholds…) and the internal spec numbering, which together
+# describe how the content pipeline works to anyone who views source.
+#
+# 278 of them were being served. The repo keeps them; the deployed bytes
+# do not. Comments are removed from the STAGE only, so nothing in git
+# changes and the audit tooling still works.
+# ---------------------------------------------------------------------------
+STRIPPED=0
+while IFS= read -r f; do
+    if grep -q '<!-- §0.8 anchor\|kb_doc_id=' "$f" 2>/dev/null; then
+        # NOTE the [\s\S] rather than [^>]: the biggest leak was a 6,200-char
+        # "§0.8 KB-anchor manifest" comment carrying a JSON block of KB
+        # document ids, titles, fields and the claims quoted from them —
+        # and JSON contains '>' characters, so a [^>] pattern stopped at the
+        # first one and left the manifest in place.
+        perl -0pi -e 's/<!--\s*§0\.8[\s\S]*?-->//gs; s/<!--[^>]*kb_doc_id[\s\S]*?-->//gs' "$f"
+        STRIPPED=$((STRIPPED+1))
+    fi
+done < <(find "$STAGE_DIR" -name '*.html' -not -path '*/node_modules/*')
+if [ "$STRIPPED" -gt 0 ]; then
+    echo "🔒 stripped internal KB provenance comments from $STRIPPED staged page(s)"
+    if grep -rq 'kb_doc_id=' "$STAGE_DIR" --include='*.html' 2>/dev/null; then
+        echo "🛑 DEPLOY BLOCKED — internal kb_doc_id references still present in the stage after stripping."
+        grep -rl 'kb_doc_id=' "$STAGE_DIR" --include='*.html' | head -5
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Stage-integrity assertion (added 2026-08-13)
 # ---------------------------------------------------------------------------
 # The exclude list above is a set of UNANCHORED patterns, so `docs/` did not
