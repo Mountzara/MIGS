@@ -432,6 +432,30 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_integrity.mjs 
 fi
 
 # ---------------------------------------------------------------------------
+# Citation-SUPPORT report (advisory, never blocks).
+#
+# The integrity gate proves a citation resolves. This asks the harder
+# question — does the cited paper's own abstract support the SENTENCE it
+# sits behind, and if the sentence asserts a figure, does that figure
+# appear in the abstract. It found real mismatches: an endometrial-
+# sampling paper cited for AUB epidemiology, for coagulation testing and
+# for saline sonohysterography, and a stat card reading 90% while the
+# paper it cited reported 71-95%.
+#
+# Advisory on purpose. A claim can be supported by a paper that phrases it
+# differently, and only the full text settles some of them — blocking on
+# that would train everyone to skip the gate. It prints, every deploy, so
+# the number is never invisible.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_support.mjs ]; then
+    echo ""
+    echo "🔬 citation-support report (advisory)..."
+    node scripts/check_citation_support.mjs > /tmp/_cite_support.log 2>&1 || true
+    head -1 /tmp/_cite_support.log
+    echo "      full detail: node scripts/check_citation_support.mjs"
+fi
+
+# ---------------------------------------------------------------------------
 # Internal-link gate. A console whose own navigation points at a 404 reads
 # as broken software no matter how well the rest works — /admin/cases/ sat
 # like that for weeks while the nav highlighted it, and the single broken
