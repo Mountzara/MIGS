@@ -67,6 +67,43 @@ export async function onRequestPost(ctx) {
         const p = await env.DB.prepare(`SELECT id FROM patients WHERE id = ?`).bind(patient_id).first();
         if (!p) return syncError("patient_not_found", 404);
 
+        // DRY RUN — same contract as the transcription rail. Lets a real
+        // encounter captured on the phone be validated end to end before
+        // any PHI is committed: it parses the note, shows the summary that
+        // would be drafted, names the jargon a patient would meet, lists
+        // the education that would attach, and writes nothing.
+        if (body.dry_run === true) {
+            const { draftFromNote, parseSoap, flagJargon } = await import("../../../../_lib/note_extract.js");
+            const soap = parseSoap(note_body);
+            const draft = draftFromNote(note_body, { chiefComplaint: chief_complaint });
+            let education = [];
+            try {
+                const edu = await import("../../../../_lib/avs_education.js");
+                const lib = await env.DB.prepare(
+                    `SELECT id, slug, title, summary, topic_tags_json FROM education_materials WHERE status='published'`).all();
+                education = edu.selectForVisit(lib?.results || [], {
+                    icd10: Array.isArray(body.icd10_codes) ? body.icd10_codes : [],
+                    visit_type: visit_type_actual || "",
+                }).materials.map((m) => m.title);
+            } catch { education = []; }
+            return syncJson({
+                ok: true, dry_run: true, wrote_nothing: true,
+                note_bytes: new TextEncoder().encode(note_body).length,
+                parsed_sections: Object.keys(soap).filter((k) => soap[k]),
+                would_draft_summary: Boolean(draft),
+                draft_preview: draft ? String(draft).slice(0, 600) : null,
+                jargon_a_patient_would_look_up: draft ? flagJargon(draft).map((j) => `${j.term} → ${j.plain}`) : [],
+                education_that_would_attach: education,
+                warnings: [
+                    !soap.assessment && "no Assessment section found — no summary could be drafted",
+                    !soap.plan && "no Plan section found",
+                    !chief_complaint && "no chief_complaint sent",
+                    (!Array.isArray(body.icd10_codes) || body.icd10_codes.length === 0)
+                        && "no icd10_codes sent — no patient education can be matched",
+                ].filter(Boolean),
+            });
+        }
+
         const existing = await env.DB.prepare(`
             SELECT id FROM encounters
             WHERE patient_id = ? AND transcription_session_id = ?
