@@ -195,11 +195,19 @@ refused it (*"a draft assembled from fragments would be worse than
 none"*). **The app should not be able to sync an encounter in that
 state.** Block it locally with a clear message.
 
-### 3.6 Also never sent
-`cpt_codes`, `procedures`, `compliance` flags,
-`upcoding_opportunities`, `documentation_suggestions`,
-`note_pdf_base64`. The platform has UI for all of them — the compliance
-flag queue and upcoding review are built and empty.
+### 3.6 Present in the app, not mapped into the payload
+`cpt_codes`, `procedures`, `compliance`, `upcoding_opportunities`,
+`documentation_suggestions`, `note_pdf_base64`.
+
+**Corrected:** the app session confirms `compliance` and
+`upcoding_opportunities` already exist in `CodingAnalysis` and simply are
+not mapped into the sync body. So this is a serialisation gap, not a
+missing feature — my earlier phrasing ("sending zero flags means the
+check is not running") was wrong. Mapping them across is a small change
+with immediate value: the platform's compliance-flag queue and upcoding
+review are built, wired into the claim approval gate, and currently
+empty. A claim with unresolved error-severity flags is blocked from
+approval, so those flags do real work the moment they arrive.
 
 ---
 
@@ -254,15 +262,41 @@ knowledge.
 * Diagnoses must be present, coded, and **sequenced** — primary first.
 * The E/M level must be defensible from the documentation, with the MDM
   basis stated. `confidence` is already sent; keep it honest.
-* Compliance flags and documentation gaps are the point of the feature.
-  Sending zero flags on every claim means the check is not running.
+* Compliance flags and documentation gaps already exist in
+  `CodingAnalysis` — map them into the payload. The platform blocks
+  approval of a claim carrying unresolved error-severity flags, so they
+  are load-bearing the moment they arrive.
 * Never upcode. The platform screens for it and the practice's
   double-dip guard refuses membership-covered services on claims.
 
-### 4.4 Consistency
-Four near-identical encounters were synced for the same test patient
-within minutes, each under a new session id. Whatever loop produced that
-would produce duplicate real visits. One encounter per visit.
+### 4.4 Encounters arrive in pairs — layer not yet identified
+**Corrected 2026-08-19 after the app session pushed back, and they were
+right to.** My first reading ("a sync loop") was wrong. The data:
+
+```
+22:13:13  sid=B4D38E26…  sha=bec1bb12
+22:13:22  sid=4255C6B2…  sha=23550a34     ← 9s later, DIFFERENT content
+22:19:36  sid=3D70EB29…  sha=741c508e
+22:19:44  sid=E75F9013…  sha=95328068     ← 8s later, DIFFERENT content
+22:21:55  sid=A463FAEC…  sha=2ffc7573
+22:22:03  sid=95750C75…  sha=2e15c161     ← 8s later, DIFFERENT content
+```
+
+Three runs, each producing **two** encounters 8–9 seconds apart, each
+with a distinct session id **and a distinct note hash**. So this is not
+a retry (sync is idempotent per session id, and identical content
+returns `200 duplicate:true` without writing twice) and not identical
+content re-sent. Two genuinely different notes are being created per
+run.
+
+That is either two local encounters per visit, or a test harness pushing
+twice — **only the app side can tell, and it should confirm before
+either layer "fixes" it.** The platform cannot distinguish them, because
+each note is legitimately distinct.
+
+It still matters clinically: two encounters for one visit means two
+claims for one visit. The platform now flags this rather than
+accumulating silently — see §7.
 
 ---
 

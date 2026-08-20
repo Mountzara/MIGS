@@ -137,6 +137,31 @@ export async function onRequestPost(ctx) {
             });
         }
 
+        // NEAR-DUPLICATE WATCH. A second note for the same patient on the
+        // same visit date, minutes after the first, is a real clinical and
+        // billing hazard — two encounters for one visit means two claims
+        // for one visit. It is NOT blocked: two notes for one day is
+        // legitimate (a morning call and an afternoon procedure), and the
+        // server cannot tell those apart from a duplicate. It is reported,
+        // so whichever layer is creating them can see it happening instead
+        // of discovering it in a payer rejection.
+        let near_duplicate = null;
+        try {
+            const recent = await env.DB.prepare(`
+                SELECT id, transcription_session_id, created_at FROM encounters
+                 WHERE patient_id = ? AND visit_date = ? AND created_at >= ?
+                 ORDER BY created_at DESC LIMIT 1
+            `).bind(patient_id, visit_date, Date.now() - 15 * 60 * 1000).first();
+            if (recent) {
+                near_duplicate = {
+                    existing_encounter_id: recent.id,
+                    existing_session_id: recent.transcription_session_id,
+                    minutes_ago: Math.round((Date.now() - Number(recent.created_at)) / 60000),
+                    message: "Another encounter for this patient and visit date was created minutes ago under a different session id. If this visit produced one note, one of these is a duplicate.",
+                };
+            }
+        } catch { /* advisory only */ }
+
         const encounter_id = newId();
         const noteR2Key = `encounter/${patient_id}/${encounter_id}/note.bin`;
         const aad = `encounter/${encounter_id}/note`;
@@ -299,6 +324,7 @@ export async function onRequestPost(ctx) {
         return syncJson({
             ok: true,
             auto_drafted,
+            near_duplicate,
             encounter_id,
             ai_summary_id,
             note_r2_key: noteR2Key,

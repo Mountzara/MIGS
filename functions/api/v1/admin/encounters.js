@@ -122,6 +122,24 @@ export async function onRequestGet(ctx) {
             awaiting_review: counts.pending_review || 0,
             ready_to_draft: counts.not_drafted || 0,
             unreadable_notes: counts.note_unreadable || 0,
+            // Same patient, same visit date, more than one encounter. Two
+            // encounters for one visit means two claims for one visit, so
+            // it is surfaced rather than left to be found in a rejection.
+            // Advisory: two notes for one day is sometimes legitimate.
+            duplicate_visit_days: (() => {
+                const byKey = new Map();
+                for (const r of rows) {
+                    const k = `${r.patient_id}|${r.visit_date}`;
+                    byKey.set(k, (byKey.get(k) || 0) + 1);
+                }
+                return Array.from(byKey.entries())
+                    .filter(([, n]) => n > 1)
+                    .map(([k, n]) => {
+                        const [patient_id, visit_date] = k.split("|");
+                        const one = rows.find((r) => r.patient_id === patient_id && r.visit_date === visit_date);
+                        return { patient_id, patient_name: one ? one.patient_name : null, visit_date, encounters: n };
+                    });
+            })(),
             rows: filtered,
         });
     });
