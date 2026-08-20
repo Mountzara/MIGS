@@ -66,7 +66,11 @@
             background: transparent;  /* html canvas gradient shows through (2026-07-22) */
             color: var(--text-on-dark);
             overflow-x: hidden;
-            line-height: 1.4;
+            /* 2026-08-20 — 1.4 was set when the page was mostly headlines.
+               Now that most of the page is prose, 1.4 reads as cramped at
+               desk viewing distance. 1.5 is the usual comfortable minimum
+               for body copy and is what WCAG 1.4.12 assumes as a baseline. */
+            line-height: 1.5;
         }
 
         a { color: inherit; text-decoration: none; }
@@ -122,7 +126,7 @@
         .bento-grid > *,
         .apps-bento > *,
         .domain-grid > *,
-        .zero-grid > *,
+        .safety-grid > *,
         .techniques-grid > *,
         .populations-grid > *,
         .awards-grid > *,
@@ -132,7 +136,7 @@
         .bento-card p,
         .app-card-v2 p,
         .domain-card p,
-        .zero-cell p,
+        .safety-card p,
         .technique-cell p,
         .population-card p,
         .award-tile p,
@@ -220,7 +224,7 @@
 
         .nav-links a {
             color: #ffffff;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 400;
             padding: 0 12px;
             line-height: 48px;
@@ -228,6 +232,137 @@
         }
 
         .nav-links a:hover { color: var(--white); }
+
+        /* ---- "More" group (2026-08-20) -------------------------------
+           Thirteen links overflowed the bar at every desktop width and
+           clipped the last one. Six stay visible; the rest live here.
+           Opens on hover AND on focus-within, so it is reachable by
+           keyboard without any JS. */
+        .nav-more { position: relative; }
+        .nav-more-btn {
+            font: inherit;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 400;
+            padding: 0 12px;
+            line-height: 48px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.18s ease;
+        }
+        .nav-more-caret { font-size: 9px; opacity: 0.65; }
+        .nav-more-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 172px;
+            list-style: none;
+            margin: 0;
+            padding: 6px;
+            background: rgba(18, 15, 27, 0.97);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(22px) saturate(160%);
+            -webkit-backdrop-filter: blur(22px) saturate(160%);
+            z-index: 1200;
+        }
+        .nav-more:hover .nav-more-menu,
+        .nav-more:focus-within .nav-more-menu,
+        .nav-more.open .nav-more-menu { display: block; }
+        .nav-more-menu a {
+            display: block;
+            padding: 9px 12px;
+            line-height: 1.3;
+            border-radius: 8px;
+            font-size: 12.5px;
+        }
+        .nav-more-menu a:hover,
+        .nav-more-menu a:focus-visible { background: rgba(167, 139, 250, 0.16); }
+
+        /* Collapse to the menu button while the row is still comfortable,
+           not only once it has already broken.
+           ----------------------------------------------------------------
+           This breakpoint and the PANEL styling below must be the same
+           number. They were not on the first pass: the collapse moved to
+           1180px while the panel rules stayed in the old 768px block, so
+           between 769px and 1180px the hamburger appeared, toggling .open
+           did nothing (nothing defined .nav-links.open at that width) and
+           the entire menu was unreachable. If you change 1180 here, change
+           it in the panel block too — or better, don't split them again. */
+        @media (max-width: 1180px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 48px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 16px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                max-height: calc(100vh - 48px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-links.open { display: flex; }
+
+            .nav-links a {
+                line-height: 36px;
+                font-size: 15px;
+                padding: 4px 22px;
+            }
+
+            .mobile-toggle { display: block; }
+
+            /* Flatten "More" inside the panel. A hover-opened dropdown is
+               meaningless on a touch device and would hide seven links
+               behind a control that never opens, so the group becomes a
+               labelled sub-list and every destination is on screen. */
+            .nav-more { position: static; }
+            .nav-more-btn {
+                display: block;
+                width: 100%;
+                text-align: left;
+                padding: 4px 22px;
+                line-height: 36px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.55);
+                pointer-events: none;   /* it is a heading here, not a button */
+                margin-top: 6px;
+            }
+            .nav-more-caret { display: none; }
+            .nav-more-menu {
+                display: block;
+                position: static;
+                min-width: 0;
+                padding: 0;
+                margin: 0;
+                background: none;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            .nav-more-menu a {
+                padding: 4px 22px;
+                line-height: 36px;
+                font-size: 15px;
+                border-radius: 0;
+            }
+        }
 
         .mobile-toggle {
             display: none;
@@ -874,7 +1009,7 @@
             letter-spacing: -0.01em;
         }
         .award-tile p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -1023,7 +1158,7 @@
             line-height: 1.3;
         }
         .curriculum-institution {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
             letter-spacing: 0.02em;
             color: rgba(167, 139, 250, 0.8);
@@ -1031,7 +1166,7 @@
             margin: 0 0 16px;
         }
         .curriculum-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -1076,7 +1211,7 @@
             color: #fff;
             border-radius: 999px;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 16px;
             text-decoration: none;
             transition: all 0.22s ease;
         }
@@ -1244,7 +1379,7 @@
             line-height: 1.3;
         }
         .timeline-row p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -1524,7 +1659,7 @@
             font-size: clamp(32px, 5vw, 56px);
             font-weight: 700;
             letter-spacing: -0.028em;
-            line-height: 1.04;
+            line-height: 1.1;
             margin-bottom: 28px;
             max-width: none;          /* run to the full content width */
             text-wrap: pretty;        /* normal wrapping (fills each line) — not balance, which made headlines break early into short lines */
@@ -1549,6 +1684,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            /* Same descender clip as .pinned-frame .frame-headline — the
+               base .section-headline line-height of 1.04 leaves no room
+               below the baseline for the gradient to paint into. Bottom
+               margin is trimmed by the same amount so vertical rhythm
+               against .section-sub is unchanged. */
+            padding-bottom: 0.14em;
+            margin-bottom: 20px;
         }
 
         .section-sub {
@@ -1733,7 +1875,7 @@
             margin: 0 0 8px;
         }
         .surgical-card-body p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
             margin: 0;
@@ -2103,8 +2245,22 @@
         }
 
         /* Zero stats grid — 2026-06-25 — Match the pill glass verbatim. */
-        .zero-eyebrow {
-            margin: 64px auto 24px;
+        /* =====================================================================
+           SAFETY BLOCK  (was .zero-*, renamed 2026-08-20)
+           ---------------------------------------------------------------------
+           The old cards were a 56px gradient number over two lines of text.
+           They are now illustration-led: a diagram sets the subject, a
+           sentence states the principle, and the figure appears BELOW the
+           sentence as supporting proof rather than above it as decoration.
+           The number is deliberately smaller than it was — it is evidence
+           for a claim, not the claim itself.
+
+           .safety-figure uses currentColor throughout so a single color
+           declaration re-themes every diagram. Do not hard-code stroke
+           colors into the inline SVGs.
+           ===================================================================== */
+        .safety-eyebrow {
+            margin: 64px auto 28px;
             width: fit-content;
             text-align: center;
             font-size: 13px;
@@ -2120,69 +2276,109 @@
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
 
-        .zero-grid {
+        .safety-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 18px;
         }
 
-        @media (min-width: 700px) {
-            .zero-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 760px) {
+            .safety-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
-        @media (min-width: 1024px) {
-            .zero-grid { grid-template-columns: repeat(4, 1fr); }
+        @media (min-width: 1240px) {
+            .safety-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
-        .zero-card {
+        .safety-card {
             background: var(--bg-soft);
             border-radius: 24px;
-            padding: 44px 32px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 30px 28px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.45s var(--ease-out-quint), border-color 0.3s ease, box-shadow 0.45s var(--ease-out-quint);
-            min-height: 240px;
             display: flex;
             flex-direction: column;
         }
 
-        .zero-card:hover {
+        .safety-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(109, 40, 217, 0.3);
+            border-color: rgba(109, 40, 217, 0.32);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
         }
 
-        .zero-num {
-            font-size: 56px;
-            font-weight: 700;
-            letter-spacing: -0.035em;
-            line-height: 1;
+        /* The diagram. Sized in ch-independent units so it holds its
+           proportion at every breakpoint; the SVG viewBox is 120x84. */
+        .safety-figure {
+            width: 100%;
+            max-width: 150px;
             margin-bottom: 20px;
-            /* 2026-05-27 — was white→gray (#fff → #888), reads as
-               desaturated gray on the dark surgical-section. Swapped to
-               medium-intensity purple gradient so the Zero / >95% callouts
-               carry the brand color like the hero + section headlines. */
-            background: linear-gradient(180deg, #ffffff 0%, #a78bfa 35%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #c4b5fd;
+        }
+        .safety-figure svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
         }
 
-        .zero-card h3 {
-            font-size: 18px;
+        .safety-card h3 {
+            font-size: 19px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.014em;
-            line-height: 1.25;
-            margin-bottom: 12px;
+            line-height: 1.28;
+            margin: 0 0 14px;
         }
 
-        .zero-card p {
-            font-size: 14px;
-            line-height: 1.55;
+        /* The figure that backs the claim. Rendered as a rule-topped row so
+           it reads as a citation for the sentence above it, not a headline. */
+        .safety-proof {
+            font-size: 15px;
+            line-height: 1.45;
+            color: #ded7f5;
+            letter-spacing: -0.006em;
+            padding-top: 13px;
+            border-top: 1px solid rgba(196, 181, 253, 0.22);
+            margin-bottom: 14px;
+        }
+        .safety-proof strong {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #ffffff;
+            /* No background-clip:text here. These strings carry a comma and a
+               decimal point; clipping a gradient to punctuation at 26px made
+               the comma disappear on the first attempt. Solid white reads. */
+            margin-right: 6px;
+            display: inline-block;
+            vertical-align: -1px;
+        }
+
+        .safety-card p {
+            font-size: 15px;
+            line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
-            margin-top: auto;
+            margin: 0;
         }
+
+        /* Scope + honesty line under the grid. Deliberately not a footnote in
+           small grey type — a patient reading a safety section should be able
+           to read the caveat as easily as the claim. */
+        .safety-note {
+            margin: 26px auto 0;
+            max-width: 1000px;
+            font-size: 15px;
+            line-height: 1.65;
+            color: rgba(255, 255, 255, 0.82);
+            letter-spacing: -0.004em;
+        }
+        .safety-note a {
+            color: #c4b5fd;
+            border-bottom: 1px solid rgba(196, 181, 253, 0.4);
+            white-space: nowrap;
+        }
+        .safety-note a:hover { color: #ffffff; border-bottom-color: #ffffff; }
 
         /* Domain grid */
         .domain-eyebrow {
@@ -2299,7 +2495,7 @@
         }
 
         .domain-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -2455,8 +2651,8 @@
             color: var(--white);
         }
         .hub-tile p {
-            font-size: 13.5px;
-            line-height: 1.55;
+            font-size: 15.5px;
+            line-height: 1.6;
             color: #ffffff;
             margin: 0;
         }
@@ -2617,7 +2813,7 @@
         }
 
         .hub-content-body h4 {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.20em;
             text-transform: uppercase;
@@ -2809,7 +3005,7 @@
         }
 
         .technique-cell p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.003em;
@@ -2922,7 +3118,7 @@
         }
 
         .population-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -3035,7 +3231,7 @@
         }
 
         .evidence-card-meta {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.16em;
             text-transform: uppercase;
@@ -3180,7 +3376,7 @@
             text-wrap: balance;
         }
         .evidence-modal-intro {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0 0 28px;
@@ -3206,7 +3402,7 @@
             background: rgba(139, 92, 246, 0.04);
         }
         .evidence-study-title {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.008em;
@@ -3365,7 +3561,7 @@
             margin: 0 0 18px;
         }
         .evidence-section-body {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -3392,7 +3588,7 @@
             background: rgba(139, 92, 246, 0.04);
         }
         .evidence-service-name {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.005em;
@@ -3400,7 +3596,7 @@
             margin: 0 0 6px;
         }
         .evidence-service-desc {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.55;
             color: #ffffff;
             margin: 0;
@@ -3430,7 +3626,7 @@
             margin: 0 0 10px;
         }
         .evidence-expect-col-body {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -3441,7 +3637,7 @@
             background: rgba(139, 92, 246, 0.06);
             border: 1px solid rgba(139, 92, 246, 0.18);
             border-radius: 12px;
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.6;
             color: #ffffff;
         }
@@ -3459,7 +3655,7 @@
             border-radius: 12px;
         }
         .evidence-faq-q {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--white);
             margin: 0 0 8px;
@@ -3490,7 +3686,7 @@
         @media (prefers-reduced-transparency: reduce) {
             .section-eyebrow,
             .sub-eyebrow,
-            .zero-eyebrow,
+            .safety-eyebrow,
             .surgical-hub-eyebrow,
             .about-text-block,
             .omm-quote-block {
@@ -3642,7 +3838,7 @@
         }
 
         .bento-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -4032,7 +4228,7 @@
         }
 
         .app-card-v2 p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.003em;
@@ -4097,30 +4293,33 @@
         }
 
         .aagl-stat {
-            text-align: center;
+            flex: 1 1 300px;
             min-width: 0;
+            max-width: 460px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            text-align: left;
         }
 
-        .aagl-num {
-            font-size: clamp(28px, 4vw, 40px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1;
-            color: var(--accent-soft);
-            margin-bottom: 6px;
-            background: linear-gradient(180deg, #a78bfa 0%, #6d28d9 100%);
-            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .aagl-stat-icon {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            color: #c4b5fd;
         }
+        .aagl-stat-icon svg { display: block; width: 100%; height: 100%; }
 
-        .aagl-label {
-            font-size: 12px;
-            font-weight: 500;
+        .aagl-stat-text {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.55;
+            letter-spacing: -0.005em;
             color: #ffffff;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+        }
+        .aagl-stat-text strong {
+            font-weight: 700;
+            color: #ddd2ff;
         }
 
         .aagl-divider {
@@ -4201,8 +4400,25 @@
             display: inline-block;
         }
 
+        /* 2026-08-20 — the year column. Previously only two of the twelve
+           research rows carried one, so the eye read the other ten as
+           "undated" rather than "same year, not repeated". Every row now
+           fills this slot: a publication year, or "Ongoing" for the two
+           active IRB studies, which is more useful than back-dating them to
+           their IRB approval year and cannot be misread as a publication
+           date. Where the year was also the last token of the journal line
+           it was removed there, so it appears once per row — except the GMIT
+           citation, whose "2026;15:297–299" is a single volume/page token
+           that scripts/audit_fact_sync.mjs requires verbatim. */
         .tag.year {
             margin-left: auto;
+            padding-left: 12px;
+            flex: 0 0 auto;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.72);
+            font-variant-numeric: tabular-nums;
         }
 
         .research-info h3 {
@@ -4215,7 +4431,7 @@
         }
 
         .research-info .journal {
-            font-size: 13px;
+            font-size: 15px;
             color: #ffffff;
             letter-spacing: -0.005em;
         }
@@ -4294,7 +4510,7 @@
         }
 
         .research-detail-inner p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -4349,7 +4565,7 @@
         .pub-link {
             display: inline-block;
             margin-top: 16px;
-            font-size: 14px;
+            font-size: 16px;
             color: var(--accent-soft);
             font-weight: 500;
         }
@@ -4479,13 +4695,13 @@
         }
 
         .research-card-journal {
-            font-size: 13px;
+            font-size: 15px;
             color: #ffffff;
             margin: 0 0 16px;
         }
 
         .research-card-summary {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0 0 20px;
@@ -4697,7 +4913,7 @@
             padding: 48px 22px 32px;
             border-top: 1px solid rgba(255, 255, 255, 0.14);
             box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .footer-content {
@@ -4718,7 +4934,7 @@
 
         .footer-links a {
             color: #ffffff;
-            font-size: 12px;
+            font-size: 14px;
             transition: color 0.2s;
         }
 
@@ -4757,7 +4973,7 @@
         }
 
         .copyright {
-            font-size: 12px;
+            font-size: 14px;
             color: #ffffff;
         }
 
@@ -4942,7 +5158,7 @@
         .app-modal-title {
             font-size: clamp(34px, 4vw, 56px);
             font-weight: 700;
-            line-height: 1.04;
+            line-height: 1.12;
             letter-spacing: -0.025em;
             margin: 0 0 12px;
             color: var(--white);
@@ -5123,7 +5339,7 @@
             font-weight: 200;
             line-height: 1.05;
             /* 2026-05-27 — apply medium-intensity purple gradient to match
-               .stat-num / .zero-num / .hero-title treatment. */
+               .stat-num / .safety-proof strong / .hero-title treatment. */
             color: rgba(167, 139, 250, 0.95);
             background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             -webkit-background-clip: text;
@@ -5140,7 +5356,7 @@
             }
         }
         .dm-stat-label {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             margin: 0 0 6px;
@@ -5194,7 +5410,7 @@
         .dm-rba-col li {
             position: relative;
             padding-left: 18px;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
             margin-bottom: 8px;
@@ -5236,7 +5452,7 @@
             padding-top: 2px;
         }
         .dm-timeline-body p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.62;
             color: #ffffff;
             margin: 0 0 8px;
@@ -5299,7 +5515,7 @@
             position: relative;
             padding: 12px 0 12px 36px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
         }
@@ -5396,7 +5612,7 @@
         }
         .usecase-row p {
             color: #ffffff;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 400;
             line-height: 1.58;
             margin: 0;
@@ -5788,11 +6004,22 @@
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
         .pinned-frame .frame-headline {
-            font-size: clamp(40px, 6vw, 84px);
+            font-size: clamp(44px, 6.4vw, 88px);
             font-weight: 600;
-            line-height: 1.02;
+            line-height: 1.08;
             letter-spacing: -0.034em;
-            margin: 0 0 18px;
+            margin: 0 0 6px;
+            /* 2026-08-20 — DESCENDER CLIP FIX. background-clip:text paints the
+               gradient into the element's PADDING BOX and then keeps only the
+               glyph-shaped part of it. With line-height:1.02 the padding box
+               stopped above the font's descender line, so the tails of g / j / y
+               fell outside the painted area and vanished — reported as "the
+               bottom parts of the text is getting cut off" on "…not just a
+               diagnosis." and "…the working surgeon.". Two independent changes
+               so neither alone is load-bearing: line-height raised to 1.08 and
+               an em-scaled padding-bottom that follows the clamp() font-size.
+               Do NOT reduce either without re-checking a descender at 88px. */
+            padding-bottom: 0.16em;
             /* 2026-05-27 — match evidence-page gradient on the pinned-frame
                headlines "Whole-person care, not just a diagnosis." and
                "Engineered for the working surgeon." (user feedback: these
@@ -5861,28 +6088,9 @@
 
         /* ========== Responsive ========== */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 48px;
-                left: 0;
-                right: 0;
-                background: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(20px);
-                flex-direction: column;
-                padding: 16px 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            }
-
-            .nav-links.open { display: flex; }
-
-            .nav-links a {
-                line-height: 36px;
-                font-size: 14px;
-                padding: 4px 22px;
-            }
-
-            .mobile-toggle { display: block; }
+            /* The nav panel rules used to live here. They now live with the
+               1180px collapse breakpoint above so the two cannot drift apart
+               again — see the note there. */
 
             /* 2026-06-25 — keep copyright (left) and LinkedIn (right) on ONE
                line at the footer bottom even on mobile, per user request. */
@@ -5991,7 +6199,7 @@
         }
 
         .contact-modal p.modal-sub {
-            font-size: 14px;
+            font-size: 16px;
             color: #ffffff;
             margin-bottom: 24px;
             letter-spacing: -0.005em;
@@ -6491,7 +6699,7 @@
         .soc-list li {
             position: relative;
             padding-left: 18px;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
         }
@@ -6557,7 +6765,7 @@
             margin: 0;
         }
         .traj-body {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -6692,7 +6900,7 @@
         .curriculum-card,
         .surgical-card,
         .domain-card,
-        .zero-card,
+        .safety-card,
         .population-card,
         .evidence-card,
         .bento-card,
@@ -6720,7 +6928,7 @@
         .curriculum-card:hover,
         .surgical-card:hover,
         .domain-card:hover,
-        .zero-card:hover,
+        .safety-card:hover,
         .population-card:hover,
         .evidence-card:hover,
         .bento-card:hover,
@@ -6912,13 +7120,13 @@
             background: rgba(167, 139, 250, 0.18);
         }
         .identity-card-label {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
             color: #ffffff;
             letter-spacing: -0.005em;
         }
         .identity-card-sub {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.45;
             color: #ffffff;
             flex: 1 1 auto;
@@ -7217,7 +7425,7 @@
             .curriculum-card,
             .surgical-card,
             .domain-card,
-            .zero-card,
+            .safety-card,
             .population-card,
             .evidence-card,
             .bento-card,
@@ -7235,7 +7443,7 @@
            just muddies text legibility. These keep their own fills but get
            backdrop-filter: none to avoid iOS layer promotion.
 
-           2026-06-25 — Removed .surgical-hub-eyebrow, .zero-eyebrow, and
+           2026-06-25 — Removed .surgical-hub-eyebrow, .safety-eyebrow, and
            .section-eyebrow from this list; those now use the pill glass
            verbatim per user request.
            ============================================================ */
@@ -7505,3 +7713,81 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
     text-shadow: 0 1px 6px rgba(0,0,0,0.8);
 }
 .research-card-video:hover .video-preview-overlay { justify-content: center; padding-bottom: 0; }
+
+
+        /* =====================================================================
+           LARGE-VIEWPORT TYPE UPLIFT  (2026-08-20)
+           ---------------------------------------------------------------------
+           Reported: "even on fullscreen on desktop computer, the font is too
+           small, it's difficult to read, I have to squint."
+
+           The cause is that the page was sized for a ~1280px laptop and then
+           shown on a much wider display. Every body-copy rule is in px, so the
+           text stays physically the same while the viewport — and therefore the
+           viewing distance — grows. Headlines already use clamp() and scale;
+           body copy did not, so the gap between headline and paragraph widened
+           until the paragraphs looked like fine print.
+
+           This block scales the reading layer (paragraphs, list items, card
+           bodies, journal lines) at the two breakpoints where that gap becomes
+           obvious. It deliberately does NOT touch:
+             - eyebrows, tags, chips, badges, .award-year and other uppercase
+               micro-labels — they are letter-spaced and sized to sit inside
+               fixed-height pills; growing them breaks those pills;
+             - anything inside the hero, which is fingerprint-locked
+               (scripts/hero_animation.lock).
+
+           Percentages are used rather than fixed px so a future change to a
+           base size carries through here automatically.
+           ===================================================================== */
+        @media (min-width: 1440px) {
+            .section-sub,
+            .curriculum-card p,
+            .timeline-row p,
+            .surgical-card-body p,
+            .domain-card p,
+            .hub-tile p,
+            .technique-cell p,
+            .population-card p,
+            .bento-card p,
+            .app-card-v2 p,
+            .award-tile p,
+            .research-card-summary,
+            .research-detail-inner p,
+            .usecase-row p,
+            .dm-timeline-body p,
+            .dm-rba-col li,
+            .soc-list li,
+            .traj-body,
+            .evidence-section-body,
+            .evidence-modal-intro {
+                font-size: 108%;
+            }
+        }
+
+        @media (min-width: 1800px) {
+            .container { max-width: 1280px; }
+            .container-wide { max-width: 1560px; }
+
+            .curriculum-card p,
+            .timeline-row p,
+            .surgical-card-body p,
+            .domain-card p,
+            .hub-tile p,
+            .technique-cell p,
+            .population-card p,
+            .bento-card p,
+            .app-card-v2 p,
+            .award-tile p,
+            .research-card-summary,
+            .research-detail-inner p,
+            .usecase-row p,
+            .dm-timeline-body p,
+            .dm-rba-col li,
+            .soc-list li,
+            .traj-body,
+            .evidence-section-body,
+            .evidence-modal-intro {
+                font-size: 118%;
+            }
+        }

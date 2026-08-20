@@ -60,7 +60,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=507c57aaa4">
+<link rel="stylesheet" href="/assets/css/home.css?v=b0b2793011">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -84,22 +84,37 @@
                 <img src="assets/images/mount-zara-monogram.png" alt="Mount Zara" />
                 <span class="nav-brand-text">MOUNT ZARA</span>
             </a>
-            <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menu">
+            <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
             </button>
             <ul class="nav-links" id="navLinks">
+                <!-- 2026-08-20 — thirteen top-level links overflowed the bar at
+                     every desktop width and clipped "Contact"; the hamburger
+                     only appeared below 768px, so nothing collapsed in between.
+                     The six a patient actually navigates by stay visible; the
+                     seven that are depth (AI, Apps, Research, Awards,
+                     Curriculum, Trending, Bio) live under More. The full flat
+                     list still renders inside the mobile panel, so nothing
+                     becomes unreachable at any width. -->
                 <li><a href="#about">About</a></li>
                 <li><a href="#surgical">Surgery</a></li>
                 <li><a href="#osteopathic">Osteopathic</a></li>
-                <li><a href="#ai">AI</a></li>
-                <li><a href="#apps">Apps</a></li>
-                <li><a href="#research">Research</a></li>
-                <li><a href="#awards">Awards</a></li>
-                <li><a href="#curriculum">Curriculum</a></li>
                 <li><a href="/evidence/">Evidence</a></li>
-                <li><a href="/trending/">Trending</a></li>
+                <li class="nav-more">
+                    <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">
+                        More<span class="nav-more-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <ul class="nav-more-menu">
+                        <li><a href="#ai">AI</a></li>
+                        <li><a href="#apps">Apps</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#awards">Awards</a></li>
+                        <li><a href="#curriculum">Curriculum</a></li>
+                        <li><a href="/trending/">Trending</a></li>
+                        <li><a href="/about/">Bio</a></li>
+                    </ul>
+                </li>
                 <li><a href="/portal/" class="nav-portal-link">Member Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
-                <li><a href="/about/">Bio</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -369,39 +384,13 @@
                  canonical 5-option entry point into Surgery / Research / Apps
                  / Osteopathy / Education. -->
 
-            <div class="hero-meta">
-                <!-- 2026-08-12 owner directive: the PRACTICE / PRIME Saint
-                     Francis / Evanston block is gone (fellowship complete);
-                     the Preclinical Fellowship joins the CBG/MIGS fellowship. -->
-                <div class="meta-item">
-                    <span class="meta-label">Fellowship</span>
-                    <span class="meta-value"><strong>Complex Benign Gynecology</strong><br>&amp; Minimally Invasive Gynecologic Surgery</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Preclinical Fellowship</span>
-                    <span class="meta-value"><strong>Osteopathic Manipulative Treatment</strong><br>&amp; Anatomy</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Focus</span>
-                    <span class="meta-value">
-                        <span class="focus-list">
-                            <span>Robotic Surgery</span>
-                            <span>Laparoscopic Surgery</span>
-                            <span>Hysteroscopic Surgery</span>
-                            <span>Endometriosis</span>
-                            <span>Fibroids</span>
-                            <span>RPOC</span>
-                            <span>Fertility-sparing Surgery</span>
-                            <span>Asherman's Syndrome</span>
-                            <span>Isthmocele Repair</span>
-                            <span>Menopausal HRT</span>
-                            <span>OMT</span>
-                            <span>Clinical AI</span>
-                            <span>Surgical Education</span>
-                        </span>
-                    </span>
-                </div>
-            </div>
+            <!-- 2026-08-20 owner directive: the FELLOWSHIP / PRECLINICAL
+                 FELLOWSHIP / FOCUS band is removed entirely. It presented
+                 credentials and thirteen topic chips with no statement of
+                 what any of it meant for the patient reading it. The CSS
+                 (.hero-meta / .meta-item / .focus-list) stays in home.css —
+                 unused and harmless — and home.js touches .hero-meta only
+                 behind a null guard. -->
         </div>
 
         <div class="scroll-indicator">Scroll</div>
@@ -568,29 +557,110 @@
                 </cite>
             </div>
 
-            <div class="zero-eyebrow">Safety record across the fellowship</div>
-            <div class="zero-grid" data-count-trigger>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Conversions to laparotomy</h3>
-                    <p>Across the entire fellowship &mdash; every advanced minimally invasive case completed minimally invasively.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Major bowel and bladder injuries</h3>
-                    <p>Despite extensive adhesiolysis and complex pelvic dissection &mdash; exceptional tissue handling and injury recognition.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Ureteral, vascular, and nerve injuries</h3>
-                    <p>Through extensive retroperitoneal dissection &mdash; anatomical awareness practiced as a discipline.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-target="90" data-count-suffix=".4%">90.4%</div>
-                    <h3>Same-day discharge</h3>
-                    <p>Major surgery without the major hospital stay &mdash; MIS means you get home sooner, with less pain and a faster recovery.</p>
-                </div>
+            <!-- =================================================================
+                 SAFETY — rebuilt 2026-08-20.
+                 The previous version was four cards reading "Zero / Zero /
+                 Zero / 90.4%". Two problems with that, both raised by the
+                 owner:
+
+                 1. A bare number with no verb and no denominator does not
+                    tell a patient anything. "Zero" of what, out of how many,
+                    over what period? It read as decoration, not information.
+                 2. "Zero" is a claim with an expiry date. Every surgeon
+                    eventually has a complication; the day that happens the
+                    homepage becomes false and has to be quietly edited, which
+                    is the worst possible moment to be rewriting a safety
+                    claim. Owner directive: "make it effective idea overall
+                    big picture than specific zero."
+
+                 So each card now leads with a DIAGRAM of the thing being
+                 described, states the practice as a durable principle, and
+                 backs it with a figure that is a completed historical record
+                 (the fellowship operative log, Sept 2023 - May 2026) rather
+                 than a running promise. Card three states the complication
+                 rate outright, so a future complication CONFIRMS this section
+                 instead of contradicting it.
+
+                 Every figure here is from cite_audit/authoritative-cv-2026-08.txt
+                 and matches cv/index.html. scripts/audit_fact_sync.mjs enforces
+                 that agreement - do not edit a number here without editing it
+                 there, and read SYSTEM_MAP §7.10 first.
+
+                 Class names: the .zero-* hooks were renamed .safety-*; the
+                 count-up observer in assets/js/home.js and the reveal registry
+                 were updated in the same commit. grep before renaming again.
+                 ================================================================= -->
+            <div class="safety-eyebrow">How the operation is kept safe</div>
+            <div class="safety-grid" data-count-trigger>
+
+                <article class="safety-card">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M24 14c0-4 9-7 36-7s36 3 36 7c4 18 3 39-6 54-4 7-16 10-30 10s-26-3-30-10C21 53 20 32 24 14Z" stroke="currentColor" stroke-width="1.6" opacity=".34"/>
+                            <path d="M60 20v46" stroke="currentColor" stroke-width="2" stroke-dasharray="4 6" opacity=".3"/>
+                            <circle cx="60" cy="25" r="3.6" fill="currentColor"/>
+                            <circle cx="38" cy="45" r="3.6" fill="currentColor"/>
+                            <circle cx="82" cy="45" r="3.6" fill="currentColor"/>
+                            <circle cx="60" cy="60" r="3.6" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h3>Stay minimally invasive, even when the case is hard</h3>
+                    <div class="safety-proof"><strong data-count-text="1,475">1,475</strong> of 1,511 procedures done through small incisions</div>
+                    <p>A 20-week uterus, dense adhesions from prior surgery, Stage IV endometriosis &mdash; these are the cases that historically get opened. They were approached laparoscopically or robotically instead. Where an open incision was the right answer it was planned in advance, not reached for mid-operation.</p>
+                </article>
+
+                <article class="safety-card">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M14 8c14 15 22 34 24 66" stroke="currentColor" stroke-width="1.4" opacity=".26"/>
+                            <path d="M106 8c-14 15-22 34-24 66" stroke="currentColor" stroke-width="1.4" opacity=".26"/>
+                            <path d="M22 26c22 6 44 14 76 7" stroke="currentColor" stroke-width="3.4" opacity=".4" stroke-linecap="round"/>
+                            <path d="M41 6c6 21 10 38 6 72" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                            <circle cx="45" cy="29" r="10" stroke="currentColor" stroke-width="1.6"/>
+                            <circle cx="45" cy="29" r="2.6" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h3>Find the ureter before dividing anything</h3>
+                    <div class="safety-proof"><strong data-count-text="90">90</strong> retroperitoneal dissections with the ureter directly visualised</div>
+                    <p>The ureter runs millimetres from where this surgery happens, and it does not always run where the textbook says. In 90 cases the retroperitoneum was opened and the ureter was seen &mdash; 22 of those needing formal ureterolysis &mdash; rather than its course being inferred from a surface landmark.</p>
+                </article>
+
+                <article class="safety-card">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M12 66h96" stroke="currentColor" stroke-width="1.4" opacity=".35"/>
+                            <rect x="20" y="52" width="16" height="14" rx="3" fill="currentColor" opacity=".9"/>
+                            <rect x="44" y="18" width="16" height="48" rx="3" fill="currentColor" opacity=".68"/>
+                            <rect x="68" y="39" width="16" height="27" rx="3" fill="currentColor" opacity=".48"/>
+                            <rect x="92" y="63" width="16" height="3" rx="1.5" fill="currentColor" opacity=".3"/>
+                            <text x="28" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">I</text>
+                            <text x="52" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">II</text>
+                            <text x="76" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">III</text>
+                            <text x="100" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">IV</text>
+                        </svg>
+                    </div>
+                    <h3>Count every complication, and grade it publicly</h3>
+                    <div class="safety-proof"><strong data-count-target="3" data-count-suffix=".15%">3.15%</strong> reportable across 444 cases &mdash; graded, not described</div>
+                    <p>Complications happen in surgery, and a surgeon who says otherwise is not measuring. Every event was scored on a published severity scale &mdash; ClassIntra during the operation, Clavien&ndash;Dindo afterwards &mdash; giving 14 events in total. The chart shows how they fell by grade: mostly minor, none in the highest band. The full breakdown is on the CV.</p>
+                </article>
+
+                <article class="safety-card">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <circle cx="60" cy="40" r="30" stroke="currentColor" stroke-width="6" opacity=".16"/>
+                            <circle cx="60" cy="40" r="30" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="170.4 188.5" transform="rotate(-90 60 40)"/>
+                            <path d="M49 42l11-9 11 9v13H49z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M56 55v-8h8v8" stroke="currentColor" stroke-width="1.6"/>
+                        </svg>
+                    </div>
+                    <h3>Recovery is designed to happen at home</h3>
+                    <div class="safety-proof"><strong data-count-target="90" data-count-suffix=".4%">90.4%</strong> of minimally invasive cases discharged the same day</div>
+                    <p>Including patients who arrived with one or more previous abdominal or pelvic operations. Small incisions, opioid-sparing anaesthesia and an enhanced-recovery pathway mean major surgery without the major hospital stay &mdash; you sleep in your own bed.</p>
+                </article>
+
             </div>
+
+            <p class="safety-note">These are the complete fellowship operative log &mdash; 444 cases, September 2023 to May 2026, across four Chicago-area teaching hospitals. They describe a defined series that is finished and counted; they are not a prediction about any individual operation. Every procedure carries risk, and the risks specific to yours are what informed consent is for. <a href="/cv/#operative">See the full outcome breakdown &rarr;</a></p>
 
             <div class="surgical-hub-eyebrow">Seven clinical practice areas</div>
             <div class="surgical-hub" id="surgical-hub" role="tablist" aria-label="Clinical practice areas">
@@ -1309,15 +1379,32 @@
             <h2 class="section-headline gradient">Peer-reviewed work.</h2>
             <p class="section-sub">Abstracts, videos, and oral presentations at AAGL — the American Association of Gynecologic Laparoscopists — including the Golden Hysteroscope Award at the AAGL Global Congress. Additional national presentations at ACOG and award-winning research at CAOG. Select a publication for a plain-language summary.</p>
 
+            <!-- 2026-08-20 — was two bare numerals ("4×" and "2") over
+                 uppercase micro-labels. A numeral with no verb makes the
+                 reader do the work of guessing what is being counted; owner
+                 feedback was that it "comes off as confusing than anything
+                 else". Each stat is now a sentence that stands on its own,
+                 with the numeral kept as emphasis INSIDE the sentence rather
+                 than floating above it. -->
             <div class="aagl-accepted-banner">
                 <div class="aagl-stat">
-                    <div class="aagl-num">4×</div>
-                    <div class="aagl-label">AAGL Global Congress · 2020, 2022, 2024, 2025</div>
+                    <div class="aagl-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 25V13M12 25V8M18 25V16M24 25V5"/>
+                            <path d="M4 28h24"/>
+                        </svg>
+                    </div>
+                    <p class="aagl-stat-text">Work accepted at the <strong>AAGL Global Congress</strong> &mdash; the international meeting of gynecologic laparoscopists &mdash; in <strong>four separate years</strong>: 2020, 2022, 2024 and 2025.</p>
                 </div>
                 <div class="aagl-divider"></div>
                 <div class="aagl-stat">
-                    <div class="aagl-num">2</div>
-                    <div class="aagl-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
+                    <div class="aagl-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="16" cy="13" r="7"/>
+                            <path d="M11.5 19.2 9 29l7-3.6 7 3.6-2.5-9.8"/>
+                        </svg>
+                    </div>
+                    <p class="aagl-stat-text"><strong>Two peer-reviewed research awards</strong>: the AAGL Golden Hysteroscope, and the CAOG Dr. George W. Morley Memorial Paper Award.</p>
                 </div>
             </div>
 
@@ -1433,9 +1520,10 @@
                             <div class="research-tags">
                                 <span class="tag">ICG Imaging</span>
                                 <span class="tag">Case Report</span>
+                                <span class="tag year">2025</span>
                             </div>
                             <h3>Indocyanine Green (ICG) Imaging: Innovative Isthmocele Diagnosis and Repair in a Post-Ablation Patient</h3>
-                            <div class="journal">Archives of Gynecology and Obstetrics · 2025</div>
+                            <div class="journal">Archives of Gynecology and Obstetrics</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1456,9 +1544,10 @@
                             <div class="research-tags">
                                 <span class="tag">Anatomy</span>
                                 <span class="tag">Surgical Safety</span>
+                                <span class="tag year">2025</span>
                             </div>
                             <h3>Mapping of the Deep Epigastric Vessels Stratified by Body Mass Index (BMI)</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · 2025</div>
+                            <div class="journal">J. Minimally Invasive Gynecology</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1503,7 +1592,8 @@
                             <div class="research-tags">
                                 <span class="tag">IRB study</span>
                                 <span class="tag">ERAS</span>
-                                                            </div>
+                                <span class="tag year">Ongoing</span>
+                            </div>
                             <h3>Post-Op Pain after TAP Block in CBG/MIGS: Randomized Control Trial in an ERAS Protocol</h3>
                             <div class="journal">PRIME Illinois St. Francis · IRB: RIL20240009</div>
                         </div>
@@ -1525,6 +1615,7 @@
                             <div class="research-tags">
                                 <span class="tag">Endometriosis</span>
                                 <span class="tag">Multi-author</span>
+                                <span class="tag year">2026</span>
                             </div>
                             <h3>Multifocal Endometriosis with Atypical Papillary Fragments: Appendiceal and Tubal Involvement in an Infertility Patient</h3>
                             <div class="journal">Gynecology and Minimally Invasive Therapy · 2026;15:297–299</div>
@@ -1549,6 +1640,7 @@
                                 <span class="tag award">George W. Morley Memorial Paper Award</span>
                                 <span class="tag">Oral Presentation · AAGL Global Congress</span>
                                 <span class="tag">CAOG</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>The Use of Indocyanine Green (ICG) in the Detection of Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
                             <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Dr. George W. Morley Memorial Paper Award, CAOG 91st Annual Meeting, Indianapolis · October 2024</div>
@@ -1572,6 +1664,7 @@
                             <div class="research-tags">
                                 <span class="tag">ACOG National</span>
                                 <span class="tag">ICG · Fluorescence</span>
+                                <span class="tag year">2024</span>
                             </div>
                             <h3>Fluorescent Imaging Using Indocyanine Green (ICG) for Intraoperative Detection of Endometriosis</h3>
                             <div class="journal">Ward, M., Mabini, C.Z., Tam, M.T. · Presented at ACOG Annual Conference · May 2024</div>
@@ -1594,6 +1687,7 @@
                             <div class="research-tags">
                                 <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Hysteroscopy · Infertility</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>Infertility and Retained Products of Conception (RPOC): A Hysteroscopic Approach to Diagnosis and Treatment</h3>
                             <div class="journal">Mabini C, Tam M · Abstract 8342 · Journal of Minimally Invasive Gynecology · Vol. 29, S121 · AAGL Global Congress 2022</div>
@@ -1617,6 +1711,7 @@
                             <div class="research-tags">
                                 <span class="tag">ACOG District</span>
                                 <span class="tag">ICG · Endometriosis</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>Use of Indocyanine Green (ICG) in Detecting Clear Endometriosis Lesions</h3>
                             <div class="journal">Mabini, C., Tam, M. · ACOG Annual District Conference, Chicago, IL · September 2022</div>
@@ -1639,9 +1734,10 @@
                             <div class="research-tags">
                                 <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Robotic Surgery</span>
+                                <span class="tag year">2020</span>
                             </div>
                             <h3>Robotic Myomectomy: 101</h3>
-                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress · 2020</div>
+                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1662,7 +1758,8 @@
                             <div class="research-tags">
                                 <span class="tag">IRB study</span>
                                 <span class="tag">ICG · Appendiceal Endometriosis</span>
-                                                            </div>
+                                <span class="tag year">Ongoing</span>
+                            </div>
                             <h3>Detection of Appendiceal Endometriosis and Associated Fibrosis Using Indocyanine Green (ICG)</h3>
                             <div class="journal">PRIME Illinois St. Francis Hospital — CBG/MIGS Fellowship · IRB: RIL20240078 · Mabini, C., Tam, M., Siddique, S.</div>
                         </div>
@@ -1862,7 +1959,7 @@
             <span class="section-eyebrow">Connect</span>
             <h2 class="section-headline">Let's build something remarkable.</h2>
             <p class="section-sub center">Open to research collaborations, AI consulting, locum opportunities, and speaking engagements.</p>
-            <button type="button" class="btn btn-primary" onclick="openContactModal()">Contact Me <span class="arrow"></span></button>
+            <button type="button" class="btn btn-primary" onclick="openContactModal()">Let’s connect <span class="arrow"></span></button>
         </div>
     </section>
 
@@ -2075,7 +2172,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=72ce9e4fb3" defer></script>
+    <script src="/assets/js/home.js?v=9f96815b49" defer></script>
 
 <!-- Identity Map full-screen sheet modal (Commit 2 — 2026-05-26).
      Populated dynamically by openSheet(sectionId). The cloned grid

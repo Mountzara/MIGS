@@ -680,13 +680,67 @@
         }
 
         function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('open');
+            const panel = document.getElementById('navLinks');
+            const open = panel.classList.toggle('open');
+            const btn = document.querySelector('.mobile-toggle');
+            if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
-        // Close mobile menu when link clicked
+        // ----------------------------------------------------------
+        // Desktop "More" group (2026-08-20)
+        // ----------------------------------------------------------
+        // The menu itself opens purely in CSS, on :hover and on
+        // :focus-within, so it works with JS disabled and is reachable by
+        // keyboard without a keydown handler. What CSS cannot do is keep
+        // aria-expanded truthful, and a button that permanently announces
+        // "collapsed" while its menu is on screen is worse for a screen
+        // reader than no attribute at all. This mirrors the real state.
+        //
+        // The click handler exists for pointers that are neither hover nor
+        // keyboard — a trackpad user who taps rather than dwells, and touch
+        // laptops — where hover fires and immediately cancels.
+        (function initNavMore() {
+            const group = document.querySelector('.nav-more');
+            if (!group) return;
+            const btn = group.querySelector('.nav-more-btn');
+            if (!btn) return;
+            const sync = (state) => btn.setAttribute('aria-expanded', state ? 'true' : 'false');
+
+            group.addEventListener('mouseenter', () => sync(true));
+            group.addEventListener('mouseleave', () => { if (!group.contains(document.activeElement)) sync(false); });
+            group.addEventListener('focusin', () => sync(true));
+            group.addEventListener('focusout', () => {
+                // focusout fires before the new element receives focus, so
+                // defer the check or every arrow-down through the menu would
+                // read as a close.
+                setTimeout(() => { if (!group.contains(document.activeElement)) sync(false); }, 0);
+            });
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const nowOpen = group.classList.toggle('open');
+                sync(nowOpen);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                group.classList.remove('open');
+                sync(false);
+            });
+            document.addEventListener('click', (e) => {
+                if (group.contains(e.target)) return;
+                group.classList.remove('open');
+                sync(false);
+            });
+        })();
+
+        // Close mobile menu when link clicked. This covers the links inside
+        // the flattened "More" sub-list too — they are descendants of
+        // .nav-links, so leaving the panel open after a jump would hide the
+        // section the user just navigated to behind the panel.
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('navLinks').classList.remove('open');
+                const btn = document.querySelector('.mobile-toggle');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             });
         });
 
@@ -1877,8 +1931,8 @@
             // ----------------------------------------------------------
             // Safety-stat count-up on first scroll-into-view
             // ----------------------------------------------------------
-            const zeroGrid = document.querySelector('.zero-grid[data-count-trigger]');
-            if (zeroGrid && 'IntersectionObserver' in window) {
+            const safetyGrid = document.querySelector('.safety-grid[data-count-trigger]');
+            if (safetyGrid && 'IntersectionObserver' in window) {
                 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 const obs = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
@@ -1919,7 +1973,7 @@
                         });
                     });
                 }, { threshold: 0.35 });
-                obs.observe(zeroGrid);
+                obs.observe(safetyGrid);
             }
         })();
 
@@ -2099,8 +2153,8 @@
             // never revealed — about stats, safety record, hub tiles,
             // identity cards, curriculum cards/CTA.
             { sel: '.stats-row > *', kind: 'up' },
-            { sel: '.zero-eyebrow', kind: 'up' },
-            { sel: '.zero-card', kind: 'scale' },
+            { sel: '.safety-eyebrow', kind: 'up' },
+            { sel: '.safety-card', kind: 'scale' },
             { sel: '.surgical-hub-eyebrow', kind: 'up' },
             { sel: '.hub-tile', kind: 'scale' },
             { sel: '.identity-card', kind: 'scale' },
