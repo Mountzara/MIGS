@@ -108,10 +108,45 @@ export function draftFromNote(noteText, { chiefComplaint, plan_summary, next_ste
     return parts.join("\n").trim();
 }
 
+// Words a patient would have to look up. The draft lifts his clinical
+// language verbatim — which is correct for a DRAFT and wrong for the
+// thing she reads — so approving one unedited quietly hands her the
+// note. This does not block: it is his call, and some drafts are already
+// plain. It just makes the choice visible at the moment he makes it.
+const JARGON = [
+    ["leiomyoma", "fibroid"], ["menorrhagia", "heavy periods"], ["metrorrhagia", "bleeding between periods"],
+    ["dysmenorrhea", "painful periods"], ["dyspareunia", "pain with sex"], ["adenomyosis", "adenomyosis (explain it)"],
+    ["endometrioma", "ovarian cyst from endometriosis"], ["adnexal", "near the ovary or tube"],
+    ["hysterosalpingogram", "dye test of the tubes"], ["laparoscopy", "keyhole surgery"],
+    ["myomectomy", "surgery to remove a fibroid"], ["hysterectomy", "surgery to remove the uterus"],
+    ["oophorectomy", "surgery to remove an ovary"], ["salpingectomy", "surgery to remove a tube"],
+    ["endometrial", "lining of the womb"], ["anovulatory", "cycles without ovulation"],
+    ["euvolemic", "normal fluid balance"], ["afebrile", "no fever"], ["gravida", "pregnancies"],
+    ["para ", "births"], ["NSAID", "anti-inflammatory painkiller"], ["LNG-IUS", "hormonal IUD"],
+    ["TXA", "tranexamic acid"], ["ferritin", "iron stores blood test"],
+    ["CBC", "full blood count"], ["CMP", "routine chemistry panel"],
+    ["etiology", "cause"], ["idiopathic", "no known cause"], ["prn", "as needed"],
+    ["bid", "twice a day"], ["tid", "three times a day"], ["qhs", "at bedtime"],
+];
+
+/**
+ * Terms in a patient-facing draft that a patient would not know.
+ * Returns [{ term, plain }] — never throws, never rewrites.
+ */
+export function flagJargon(text) {
+    const t = String(text || "");
+    const hits = [];
+    for (const [term, plain] of JARGON) {
+        const re = new RegExp(`\\b${term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+        if (re.test(t)) hits.push({ term: term.trim(), plain });
+    }
+    return hits;
+}
+
 // Shown to HIM in the admin review screen — never inside the patient
 // text, where a disclaimer about drafting would be noise to the reader.
 export const DRAFT_NOTICE =
     "Drafted automatically from your note — the assessment and plan are your own words, lifted verbatim. " +
     "Rewrite it in patient language before approving; nothing here reaches the patient until you do.";
 
-export default { parseSoap, draftFromNote, DRAFT_NOTICE };
+export default { parseSoap, draftFromNote, flagJargon, DRAFT_NOTICE };

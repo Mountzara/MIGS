@@ -71,8 +71,20 @@ export async function onRequest(ctx) {
                 clinicianText = await readBody(env, existing.clinician_full_r2_key,
                     existing.clinician_full_wrapped_dek, [`visit_summary_clinician:${existing.id}`, `encounter/${encounterId}/summary_clinician`]);
             }
+            let jargon = [];
+            if (patientText) {
+                try {
+                    const { flagJargon } = await import("../../../../../_lib/note_extract.js");
+                    jargon = flagJargon(patientText);
+                } catch { jargon = []; }
+            }
             return jsonResponse({
                 ok: true,
+                // Words she would have to look up, with the plain
+                // equivalent. Advisory: a draft lifted from his note keeps
+                // his language, which is right for a draft and wrong for
+                // the thing she reads.
+                jargon,
                 encounter: { id: enc.id, visit_date: enc.visit_date, visit_type: enc.visit_type_actual,
                              chief_complaint: enc.chief_complaint,
                              has_note: Boolean(enc.note_r2_key) && !enc.note_key_lost,
@@ -332,9 +344,25 @@ export async function onRequest(ctx) {
                 }
             }
 
+            let approvedJargon = [];
+            if (r.patient_sees) {
+                try {
+                    const { flagJargon } = await import("../../../../../_lib/note_extract.js");
+                    const txt = await readBody(env, existing.patient_visible_r2_key,
+                        existing.patient_visible_wrapped_dek,
+                        [`visit_summary_patient:${existing.id}`, `encounter/${encounterId}/summary_patient`]);
+                    approvedJargon = flagJargon(txt);
+                } catch { approvedJargon = []; }
+            }
             return jsonResponse({
                 ok: true, status: r.status, visible_to_patient: r.patient_sees,
                 patient_notified: notified, education_attached: attached,
+                // Not a block — his call — but never silent. Approving an
+                // unedited extraction hands her the note in his words.
+                jargon_in_approved_text: approvedJargon,
+                jargon_warning: approvedJargon.length
+                    ? `She will read ${approvedJargon.length} term(s) most patients would look up: ${approvedJargon.map(j => j.term).join(", ")}. Edit and re-approve if that was not intended.`
+                    : undefined,
                 message: r.patient_sees
                     ? (notified
                         ? "Approved. It is in her portal now and she has been emailed."

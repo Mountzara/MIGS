@@ -54,5 +54,17 @@ t("...and the note's P line is then not duplicated", !/CBC and ferritin/.test(d2
 t("notice tells him to rewrite", /Rewrite it in patient language/.test(n.DRAFT_NOTICE));
 t("notice states nothing reaches the patient first", /reaches the patient until you do/.test(n.DRAFT_NOTICE));
 
+// --- jargon flagging: what she would have to look up -----------------
+const j = n.flagJargon("Abnormal uterine bleeding with suspected leiomyoma; CBC and ferritin today.");
+t("flags a clinical term", j.some(x => x.term === "leiomyoma"));
+t("offers the plain word", j.find(x => x.term === "leiomyoma").plain === "fibroid");
+t("flags lab shorthand", j.some(x => x.term === "CBC"));
+t("plain patient text flags nothing",
+  n.flagJargon("We talked about your heavy periods. You will have a blood test and a scan.").length === 0);
+t("empty text is safe", n.flagJargon("").length === 0);
+t("null is safe", n.flagJargon(null).length === 0);
+t("matching is case-insensitive", n.flagJargon("LEIOMYOMA noted").length > 0);
+t("flagging never rewrites the text", typeof n.flagJargon("x") === "object");
+
 console.log(`note extract: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
