@@ -335,6 +335,54 @@ more about production readiness than any amount of synthetic testing.
 
 ---
 
+## 4.6 The real encounters are on the iPhone — build for that target
+
+**The owner's actual clinical encounters live in the app on his iPhone,
+not on the Mac.** The Mac copy holds ~23 RedactedCharts; the phone is
+where the real work is. That has three consequences for this build:
+
+1. **Put the sync configuration and client in SHARED code**, not behind
+   `#if os(macOS)`. A sync service that only compiles into the Mac target
+   leaves every real encounter stranded on the device that has them.
+2. **Use the transcription rail from the phone too** — same base URL,
+   same token. There is a separate `/sync/ios/encounters` endpoint for
+   the older MountZaraAI-iOS capture app; the transcription app should
+   NOT use it. One app, one rail, regardless of platform.
+3. **Background/foreground reality on iOS**: the push must survive the
+   app being backgrounded mid-upload. Queue to disk first, upload after,
+   and retry on next foreground. The rail is idempotent by
+   `(patient_id, transcription_session_id)` with content comparison, so
+   an interrupted upload that already reached the server returns
+   `200 duplicate:true` on retry — see §2.3. Retry until 2xx.
+
+### Validating a real note from the phone before any code ships
+
+`dry_run: true` writes nothing, so a genuine encounter can be run
+through the entire chain from the device that holds it. On iOS this
+works today with a Shortcut — no app change required:
+
+> Shortcuts → new shortcut → **Get Contents of URL**
+> URL: `https://mountzara.com/api/v1/sync/transcription/notes`
+> Method: `POST`
+> Headers: `Authorization: Bearer <transcription token>`,
+> `Content-Type: application/json`
+> Request Body (JSON):
+> `{"patient_id":"<a real platform patient_id>", "transcription_session_id":"probe-1", "visit_date":"2026-08-19", "dry_run":true, "chief_complaint":"…", "icd10_codes":["…"], "note_body":"<paste one real note>"}`
+
+The response comes back on the phone: which SOAP sections parsed, the
+summary that would be drafted, the jargon a patient would have to look
+up, the education that would attach, and any warnings. **PHI never
+leaves the owner's own systems** — phone to his own platform — and
+nothing is stored.
+
+Run several real notes through that before writing the client. It will
+show, in minutes, whether the real dictation carries an Assessment and
+Plan the drafter can use and whether the coding carries ICD codes the
+education matcher can match. Those two answers determine most of what
+§4.1–4.3 have to fix.
+
+---
+
 ## 5. Suggested build order
 
 1. **Send `patient_visible_summary`** to §4.2 quality. Highest value:
