@@ -1352,6 +1352,50 @@ URL lives inside locked `startHeroSequence`).
 Deliverable produced for the owner: `mz-hero-drawing-transparent.png` —
 the completed drawing from hero-ink-v2.webp (transparent, 1920×1080).
 
+### 7.13.1 Hero title ghost glyphs in Chrome 151 — parent clip-text gradient (2026-08-20)
+
+Owner-reported (Chrome 151.0.7922.170 / macOS 15.6 arm64): the hero
+headline rendered with a pile of duplicate glyphs at the line start —
+"Aasaisrion for women's health." — deterministic (every load, survives
+zoom re-raster, scroll-away, Incognito), while copy/paste of the
+headline yielded the correct single string.
+
+**Root cause (CONFIRMED by live console bisection with the owner).**
+The `<h1>` carries TWO copies of the gradient treatment: each `.w`
+paints its slice of the line-spanning gradient, and the PARENT
+(`.hero-title` / `.word-reveal` rules) ALSO has
+`background-clip: text` + gradient — deliberately, as the first-paint
+fallback for the moment before `splitWords` runs. Post-split, the h1's
+only direct text is inter-word whitespace, so the parent layer should
+paint nothing. Chrome 151 instead paints the parent's
+descendant-glyph clip mask at collapsed offsets, compositing a ghost
+copy of EVERY word at the line start. The bisection that proved it,
+in order, all live on the owner's machine: `will-change: auto` on all
+`.w` → no change; `filter: none` on the h1 → no change;
+`background-position: 0` on all `.w` → gradient went per-word, ghost
+unchanged (per-word slices innocent); `background: none` on the h1 →
+**ghost gone instantly**. DOM was verified clean throughout
+(`elementsFromPoint`, one `.hero-title`, five non-overlapping masks).
+
+**Fix in `assets/js/home.js`** directly after the
+`applyLineSpanGradient` invocation block (deliberately OUTSIDE every
+fingerprinted region — lock hash unchanged, verify with
+`node scripts/hero_anim_fingerprint.mjs --check`): once
+`heroTitle.dataset.split === '1'`, set inline `background: none` on
+the h1. The `.w` slices own the gradient from that point; the
+pre-split fallback still paints for no-JS, reduced-motion (no split),
+and pre-script first paint. Two hygiene measures shipped alongside
+(neither was the root cause): release `will-change: auto` on the `.w`
+spans via `transitionend` after the entrance settles (five permanent
+GPU layers for a run-once entrance), and re-run
+`applyLineSpanGradient` on `document.fonts.ready` (the lone rAF
+measurement runs against fallback-font metrics on a cold cache).
+
+Upstream: this is a Chrome 151 regression in parent-level
+`background-clip: text` masking over inline-block descendants. If a
+later Chrome fixes it, the inline `background: none` stays — it is
+correct layering regardless (the parent copy is redundant post-split).
+
 ### 7.14 Research reel autoplay — ONE observer owns .video-preview (2026-08-12)
 
 The four "Peer-reviewed work" reels were dead. Root-caused by patching

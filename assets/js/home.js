@@ -2165,6 +2165,56 @@
                 clearTimeout(_resizeT);
                 _resizeT = setTimeout(() => applyLineSpanGradient(heroTitle), 80);
             });
+            // 2026-08-20 — Avenir Next lands AFTER the rAF measurement on a
+            // cold cache: every word reflows to its real metrics but --w-x /
+            // --w-total still describe the fallback-font layout. Re-measure
+            // once the webfonts are actually in.
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => applyLineSpanGradient(heroTitle));
+            }
+            // 2026-08-20 — Chrome 151 ghost-glyph fix (CONFIRMED root cause,
+            // reproduced live on Chrome 151.0.7922.170 / macOS 15.6 arm64).
+            // The PARENT h1 carries its own background-clip:text gradient as
+            // the pre-split first-paint fallback (see .hero-title in
+            // home.css). After splitWords, the h1's only direct text is the
+            // whitespace between .word-mask spans, so that parent layer
+            // should paint nothing — but Chrome 151 paints the parent's
+            // descendant-glyph clip mask at collapsed offsets, compositing a
+            // ghost copy of EVERY word at the line start ("Aasaisrion...").
+            // Verified in the owner's console: killing only the parent
+            // background cleared the garble instantly while the per-word
+            // gradient slices kept rendering correctly. So: once the split
+            // has happened (the .w slices own the gradient from here on),
+            // drop the parent's now-redundant copy. Inline style — the
+            // locked .hero-title / .word-reveal CSS rules are untouched, and
+            // the pre-split fallback still paints on browsers with JS off,
+            // reduced motion (no split), or before this script runs.
+            if (heroTitle.dataset.split === '1') {
+                heroTitle.style.background = 'none';
+            }
+            // 2026-08-20 — Chrome ghost-glyph hygiene. `.word-reveal .w` carries
+            // `will-change: transform, opacity` (locked CSS — do not edit it),
+            // which keeps EVERY word promoted to its own GPU layer forever.
+            // Each layer holds a rasterized copy of its background-clip:text
+            // glyphs; when Chrome re-lays-out the line mid-flight (font swap,
+            // scroll-fade opacity writes from tick()) a stale raster can be
+            // composited at a stale offset. Releasing will-change AFTER the
+            // entrance settles demotes the layers and forces one clean
+            // repaint. NOT the root cause of the 2026-08-20 ghost (that was
+            // the parent gradient above — live testing proved the .w layers
+            // innocent), but kept as defense-in-depth: five permanent GPU
+            // layers for a run-once entrance is waste regardless. The
+            // entrance itself still runs fully promoted, so the choreography
+            // (hero_animation.lock) is untouched.
+            heroTitle.addEventListener('transitionend', (e) => {
+                if (!e.target.classList || !e.target.classList.contains('w')) return;
+                if (e.propertyName !== 'transform') return;
+                const words = heroTitle.querySelectorAll('.w');
+                const settled = [...words].every(w =>
+                    getComputedStyle(w).transform === 'none' ||
+                    getComputedStyle(w).transform === 'matrix(1, 0, 0, 1, 0, 0)');
+                if (settled) words.forEach(w => { w.style.willChange = 'auto'; });
+            });
         }
 
         // -- 3) IntersectionObserver: fire reveal when element top crosses 85% viewport --
