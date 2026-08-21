@@ -239,6 +239,20 @@ class BrowserCrashed(RuntimeError):
     """The engine died mid-capture. This is NOT a contrast verdict."""
 
 
+def _is_crash(exc):
+    """Did the browser die, as opposed to the page failing an assertion?
+
+    Playwright surfaces this from whatever call happened to be in flight —
+    Page.screenshot raises Error("Target crashed"), while a scroll or a
+    wait afterwards raises TargetClosedError("Page crashed"). The first
+    version of this guard only wrapped screenshot(), so the very next
+    deploy crashed inside wait_for_timeout and was reported, once again,
+    as a WCAG failure. Match on the message, not the call site.
+    """
+    m = str(exc).lower()
+    return "crash" in m or "target closed" in m or "browser has been closed" in m
+
+
 def _screenshot_or_crash(page, attempts=3):
     """Screenshot, retrying a crashed target once with a pause.
 
@@ -262,9 +276,14 @@ def _screenshot_or_crash(page, attempts=3):
             return page.screenshot(type="png")
         except Exception as e:               # noqa: BLE001 - re-raised below
             last = e
-            if "crash" not in str(e).lower():
+            if not _is_crash(e):
                 raise
-            page.wait_for_timeout(1200 * (i + 1))
+            try:
+                page.wait_for_timeout(1200 * (i + 1))
+            except Exception:
+                # The pause itself fails once the target is gone; the page is
+                # unusable either way, so stop retrying on this one.
+                break
     raise BrowserCrashed(f"engine died taking the capture after {attempts} attempts: {last}")
 
 def audit_page(page, dpr, scroll_y=0):
@@ -386,6 +405,24 @@ def main():
                     const top = setInterval(() => {}, 100000);
                     for (let i = 1; i <= top; i++) clearInterval(i);
                 }""")
+                # Stop every video before measuring. Two reasons:
+                #
+                #  * CORRECTNESS — a playing reel changes what is behind the
+                #    text between the two capture passes, which is the same
+                #    class of error the interval freeze above prevents.
+                #  * STABILITY — WebKit repeatedly died capturing the desktop
+                #    homepage ("Target crashed"). That page composites several
+                #    autoplaying H.264 reels behind backdrop-filter layers at
+                #    DPR 2; releasing the decoders is what makes the capture
+                #    survivable. Reported as unmeasured when it still dies,
+                #    never as a contrast verdict.
+                page.evaluate("""() => {
+                    document.querySelectorAll('video').forEach(v => {
+                        try { v.pause(); v.autoplay = false; v.removeAttribute('autoplay');
+                              v.preload = 'none'; v.currentTime = 0; } catch (e) {}
+                    });
+                }""")
+                page.wait_for_timeout(200)
                 stuck = page.evaluate(REST_OVERLAY)
                 if stuck:
                     for o in stuck:
@@ -406,12 +443,14 @@ def main():
                                 continue
                             seen.add(k)
                             fails.append(f)
-                except BrowserCrashed as e:
+                except Exception as e:  # noqa: BLE001 — re-raised unless it is a crash
                     # Same channel as a failed goto: NOT MEASURED. That still
                     # blocks the deploy (see the `measured` guard in main), but
                     # it blocks with the true reason instead of claiming the
                     # site has a colour-contrast violation.
-                    print(f"  ✗ {path} [{label}] CAPTURE CRASHED — not measured: {e}")
+                    if not isinstance(e, BrowserCrashed) and not _is_crash(e):
+                        raise
+                    print(f"  ✗ {path} [{label}] CAPTURE CRASHED — not measured: {str(e)[:120]}")
                     report.setdefault(path, {})[label] = {"error": f"engine crashed: {e}"[:90]}
                     try:
                         page.close()

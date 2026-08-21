@@ -476,6 +476,43 @@ export function isRoleAddress(email) {
     return ROLE_ALIASES.has(local);
 }
 
+/**
+ * Is this address structurally undeliverable?
+ *
+ * 2026-08-20 — AWS declined production access a second time, citing risk to
+ * "your sender reputation and the deliverability of your emails" without
+ * naming a defect. The outbox explains the concern. Of thirteen sends this
+ * account has ever attempted, SIX were aimed at seed and test accounts:
+ *
+ *     demo@mountzara.test          x4
+ *     e2e-probe@mountzara.test     x1
+ *     flow-1787112333@mountzara.test  x1
+ *
+ * In the sandbox those were harmlessly refused as unverified identities. WITH
+ * production access they would have been accepted and delivered nowhere:
+ * .test is reserved by RFC 2606 and can never resolve, so every one becomes a
+ * HARD BOUNCE. A young account whose first real traffic is half hard bounces
+ * is precisely the outcome AWS's letter is written to prevent.
+ *
+ * The reserved names (RFC 2606 / RFC 6761) exist so that test fixtures cannot
+ * reach a real mailbox. That guarantee only holds if we refuse to send to
+ * them, so this is checked before the provider is ever called — and it is
+ * recorded as `abandoned` rather than `failed`, because nothing went wrong.
+ *
+ * Seed and demo data is supposed to be inert. Any future fixture that invents
+ * an address should keep using a reserved name; this makes that safe.
+ */
+const RESERVED_TLDS = new Set(["test", "invalid", "localhost", "example"]);
+const RESERVED_DOMAINS = new Set(["example.com", "example.net", "example.org"]);
+
+export function isUndeliverableAddress(email) {
+    const domain = String(email || "").split("@")[1];
+    if (!domain) return false;
+    const d = domain.trim().toLowerCase().replace(/\.$/, "");
+    if (RESERVED_DOMAINS.has(d)) return true;
+    return RESERVED_TLDS.has(d.split(".").pop());
+}
+
 export async function isSuppressed(env, email) {
     if (!env?.DB || !email) return { suppressed: false };
     try {
@@ -501,6 +538,19 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
     // nothing and never reaches the provider.
     // Never mail a role alias — see ROLE_ALIASES above. Refused before the
     // suppression lookup because it needs no database.
+    // A reserved-name address can never be delivered, so sending to one buys
+    // a guaranteed hard bounce. Refused before the suppression lookup because
+    // it needs no database — see isUndeliverableAddress above.
+    if (isUndeliverableAddress(to)) {
+        console.warn(`notify: "${template}" refused — reserved/undeliverable domain`);
+        await queue(env, {
+            to, template, subject: "(not sent)", text: "", html: "", patient_id,
+            status: "abandoned",
+            error: "recipient uses a reserved, undeliverable domain (RFC 2606/6761)",
+        });
+        return { sent: false, refused: true, reason: "undeliverable_domain" };
+    }
+
     if (isRoleAddress(to)) {
         console.warn(`notify: "${template}" refused — role alias recipient`);
         return { sent: false, refused: true, reason: "role_alias_recipient" };
