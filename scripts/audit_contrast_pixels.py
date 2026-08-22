@@ -405,6 +405,24 @@ def main():
                     const top = setInterval(() => {}, 100000);
                     for (let i = 1; i <= top; i++) clearInterval(i);
                 }""")
+                # SETTLE IN-FLIGHT TRANSITIONS. Clearing intervals stops the
+                # NEXT rotation, but a crossfade already running keeps
+                # running: an app-reel scene sampled mid-fade sits at
+                # ancestor opacity ~0.3 — past the visibility check's 0.05
+                # floor — while its own background chip contributes almost
+                # nothing to the pixels. Measured: the ABOG reel caption
+                # (#2b1c4d on a cream chip, 12.9:1 as designed) reported
+                # 1.04:1 against the dark card bleeding through the fade.
+                # Kill transitions so every property snaps to its settled
+                # value, and finish() finite animations; infinite ones
+                # (Ken Burns) throw on finish() and are left alone.
+                page.evaluate("""() => {
+                    const st = document.createElement('style');
+                    st.textContent = '*, *::before, *::after { transition: none !important; }';
+                    document.head.appendChild(st);
+                    const anims = document.getAnimations ? document.getAnimations({ subtree: true }) : [];
+                    anims.forEach(a => { try { a.finish(); } catch (e) { /* infinite */ } });
+                }""")
                 # Stop every video before measuring. Two reasons:
                 #
                 #  * CORRECTNESS — a playing reel changes what is behind the

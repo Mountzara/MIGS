@@ -84,8 +84,14 @@ ok(isPermanent("recipient is on the suppression list"), "a suppressed address is
     eq(d.causes.length, 1, "six identical failures group into one cause");
     eq(d.causes[0].cause, "ses_sandbox", "and it is correctly identified as the sandbox");
     eq(d.causes[0].count, 6, "with the real count");
-    ok(/production access/i.test(d.causes[0].action), "the action names the actual fix");
-    ok(/us-east-2/i.test(d.causes[0].action), "and names the region, which is where people get it wrong");
+    // 2026-08-20 — the actual fix changed. These rows are relics of the SES
+    // sandbox era; the remedy is no longer "go beg AWS for production
+    // access" (refused twice on no-history grounds) but the Cloudflare
+    // provider switch. The advice must name the switch and the script that
+    // performs it, and must reassure that queued rows retry on their own.
+    ok(/cloudflare/i.test(d.causes[0].action), "the action names the actual fix (the Cloudflare provider)");
+    ok(/setup_cloudflare_email/.test(d.causes[0].action), "and names the script that performs it");
+    ok(/retry/i.test(d.causes[0].action), "and says the queued rows recover automatically");
     ok(/sandbox/i.test(d.headline), "the headline says what is wrong without needing to expand anything");
     ok(d.causes[0].recipients.every((r) => r.includes("***")), "recipient addresses are masked");
 }

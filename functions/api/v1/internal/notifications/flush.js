@@ -63,7 +63,10 @@ export function isDue(row, now = Date.now()) {
  */
 export function isPermanent(error) {
     const e = String(error || "").toLowerCase();
-    return /invalid|malformed|does not exist|no such user|blocked|suppress|bounce|rejected as spam/.test(e)
+    // "undeliverable" and "reserved" cover the RFC 2606 guard in
+    // _lib/notify.js — a .test address will bounce on every provider until
+    // the end of time, so retrying it is not persistence, it is sabotage.
+    return /invalid|malformed|does not exist|no such user|blocked|suppress|bounce|rejected as spam|undeliverable|reserved/.test(e)
         && !/not verified/.test(e);   // "not verified" IS the sandbox — recoverable
 }
 

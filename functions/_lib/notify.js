@@ -366,6 +366,113 @@ async function sendViaSES(env, { to, subject, text, html }) {
     return await res.json().catch(() => ({}));
 }
 
+// ---------------------------------------------------------------------
+// Cloudflare Email Sending over the REST API.
+//
+// 2026-08-20 — AWS declined SES production access a second time on "no
+// sending history" grounds, a catch-22 for a sandboxed account that is
+// not allowed to build one. This stack is already Cloudflare end to end
+// (Pages, Functions, D1, R2, DNS), and Cloudflare Email Sending has no
+// sandbox and no approval gauntlet: onboard the domain, mint a token
+// with Email Sending: Edit, send. Owner directive: "Fix this for
+// cloudflare."
+//
+// WHY THE REST API AND NOT THE send_email BINDING: the binding is
+// configured per-Worker in wrangler config, and this project's bindings
+// live in the Pages deployment_config where wrangler.toml is dev-only
+// (see CLAUDE.md's anti-patterns). The REST call needs nothing but a
+// token in an env var, works identically in `wrangler dev` and
+// production, and — decisively — returns per-recipient delivery status,
+// which the binding does not.
+//
+// THAT RESPONSE IS THE BOUNCE PIPELINE. SES needed an SNS topic, an
+// HTTPS subscription, a confirmation dance and a public webhook to tell
+// us about a hard bounce minutes later (see ses/feedback.js and its
+// scars). Cloudflare reports `permanent_bounces` IN THE SEND RESPONSE,
+// so the suppression row is written synchronously, in the same request
+// that learned of the bounce. The SNS path stays wired for the SES
+// fallback but is not needed while this provider is active.
+//
+// Error codes worth knowing at 3am (numeric, from the REST API):
+//   10105 not_entitled       — account has never enabled Email Sending
+//   10203 sending_disabled   — domain not onboarded / disabled
+//   10102 forbidden          — token lacks Email Sending: Edit
+//   10004 throttled          — back off; the flush retry loop handles it
+// ---------------------------------------------------------------------
+async function sendViaCloudflare(env, { to, subject, text, html }) {
+    const token = env.CF_EMAIL_TOKEN;
+    const account = env.CF_EMAIL_ACCOUNT_ID;
+    if (!token || !account) {
+        throw new Error("cloudflare email requires CF_EMAIL_TOKEN and CF_EMAIL_ACCOUNT_ID");
+    }
+
+    const payload = {
+        to,
+        from: { address: env.NOTIFY_FROM, name: env.NOTIFY_FROM_NAME || "Mount Zara" },
+        ...(env.NOTIFY_REPLY_TO ? { reply_to: env.NOTIFY_REPLY_TO } : {}),
+        subject,
+        text,
+        html,
+    };
+
+    const res = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${account}/email/sending/send`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        }
+    );
+
+    const bodyText = await res.text();
+    if (!res.ok) {
+        throw new Error(`cloudflare-email ${res.status}: ${bodyText.slice(0, 300)}`);
+    }
+
+    let out = {};
+    try { out = JSON.parse(bodyText); } catch { /* tolerated; success path below */ }
+    const result = out.result || {};
+    const bounced = (result.permanent_bounces || []).map((a) => String(a).toLowerCase());
+
+    if (bounced.includes(String(to).toLowerCase())) {
+        // The mailbox does not exist. Suppress NOW — same row the SES SNS
+        // pipeline would eventually write, minus the pipeline — and report
+        // the send as failed, because it was.
+        try {
+            const now = new Date().toISOString();
+            await env.DB.prepare(`
+                CREATE TABLE IF NOT EXISTS email_suppression (
+                    email        TEXT PRIMARY KEY,
+                    reason       TEXT NOT NULL,
+                    detail       TEXT,
+                    suppressed   INTEGER NOT NULL DEFAULT 1,
+                    soft_bounces INTEGER NOT NULL DEFAULT 0,
+                    first_seen   TEXT NOT NULL,
+                    last_seen    TEXT NOT NULL,
+                    cleared_by   TEXT,
+                    cleared_at   TEXT
+                )`).run();
+            await env.DB.prepare(`
+                INSERT INTO email_suppression (email, reason, detail, suppressed, first_seen, last_seen)
+                VALUES (?, 'hard_bounce', 'cloudflare permanent_bounce at send', 1, ?, ?)
+                ON CONFLICT(email) DO UPDATE SET
+                    reason = 'hard_bounce', detail = excluded.detail,
+                    suppressed = 1, last_seen = excluded.last_seen,
+                    cleared_by = NULL, cleared_at = NULL
+            `).bind(String(to).trim().toLowerCase(), now, now).run();
+        } catch (e) {
+            console.error("cloudflare email: bounce recorded in response but suppression write failed",
+                String(e).slice(0, 160));
+        }
+        throw new Error("cloudflare-email: permanent bounce — recipient suppressed");
+    }
+
+    return result;
+}
+
 async function sendViaResend(env, { to, subject, text, html }) {
     const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -414,6 +521,9 @@ export function notifyConfigured(env) {
     if (p === "ses") {
         return Boolean(env.SES_REGION && env.SES_ACCESS_KEY_ID && env.SES_SECRET_ACCESS_KEY);
     }
+    if (p === "cloudflare") {
+        return Boolean(env.CF_EMAIL_TOKEN && env.CF_EMAIL_ACCOUNT_ID);
+    }
     return Boolean(env.NOTIFY_API_KEY);
 }
 
@@ -422,6 +532,19 @@ export function notifyConfigured(env) {
  * Verified 2026-08-12: Resend and Postmark both decline; AWS SES is
  * HIPAA-eligible and AWS signs one. Refusing here is deliberate — the
  * cheap-and-easy provider is the one that quietly creates the exposure.
+ *
+ * CLOUDFLARE (checked 2026-08-20): the Email Service documentation says
+ * NOTHING about HIPAA or a BAA — the product launched in 2025 and its
+ * compliance posture is undocumented. Cloudflare does sign BAAs on
+ * enterprise agreements, but whether Email Sending is in scope is a
+ * question for Cloudflare, not a fact to assume. So "cloudflare" is
+ * deliberately NOT in this set: while the practice is pre-launch and the
+ * only recipients are the owner and testers, NOTIFY_ALLOW_NON_BAA=yes is
+ * accurate (the traffic is provably not PHI — there are no patients).
+ * BEFORE PORTAL_PUBLIC_LAUNCH FLIPS, either Cloudflare confirms a BAA
+ * covering Email Service (then add it here, citing the agreement), or
+ * the provider switches back to one that does. Do not resolve that
+ * tension by quietly editing this set.
  */
 const BAA_PROVIDERS = new Set(["ses"]);
 
@@ -599,12 +722,14 @@ export async function notify(env, { to, template, data = {}, patient_id = null, 
         const provider = String(env.NOTIFY_PROVIDER).toLowerCase();
         if (!providerPermitted(env)) {
             throw new Error(
-                `provider "${provider}" does not sign a BAA; patient notifications ` +
-                `require one. Use NOTIFY_PROVIDER=ses, or set ` +
-                `NOTIFY_ALLOW_NON_BAA=yes only for traffic that is provably not PHI.`
+                `provider "${provider}" is not confirmed to sign a BAA; patient ` +
+                `notifications require one. Use NOTIFY_PROVIDER=ses, or set ` +
+                `NOTIFY_ALLOW_NON_BAA=yes only for traffic that is provably not ` +
+                `PHI (e.g. pre-launch testing with no patients enrolled).`
             );
         }
         if (provider === "ses") await sendViaSES(env, base);
+        else if (provider === "cloudflare") await sendViaCloudflare(env, base);
         else if (provider === "resend") await sendViaResend(env, base);
         else if (provider === "postmark") await sendViaPostmark(env, base);
         else throw new Error(`unsupported NOTIFY_PROVIDER "${provider}"`);
@@ -644,6 +769,25 @@ export async function sendDirect(env, { to, subject, text, html }) {
     if (!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(to))) {
         return { ok: false, error: "invalid recipient" };
     }
+    // 2026-08-20 — the SAME guards notify() applies, because this is the
+    // outbox RETRY path and the outbox is where the dangerous rows live.
+    // Six queued sends target @mountzara.test seed accounts; the sandbox
+    // refused them as "not verified", which isPermanent() treats as
+    // recoverable, so the first flush after a WORKING provider went live
+    // would have replayed all six as guaranteed hard bounces — on the new
+    // provider's very first day. The error strings here deliberately match
+    // isPermanent() in notifications/flush.js so the rows are abandoned,
+    // not retried forever.
+    if (isUndeliverableAddress(to)) {
+        return { ok: false, error: "recipient uses a reserved, undeliverable domain (RFC 2606/6761)" };
+    }
+    if (isRoleAddress(to)) {
+        return { ok: false, error: "role alias recipient — blocked as undeliverable-by-policy" };
+    }
+    const sup = await isSuppressed(env, to);
+    if (sup.suppressed) {
+        return { ok: false, error: `recipient suppressed: ${sup.reason}` };
+    }
     if (!notifyConfigured(env)) {
         return { ok: false, error: "NOTIFY_PROVIDER/API_KEY/FROM not set" };
     }
@@ -654,6 +798,7 @@ export async function sendDirect(env, { to, subject, text, html }) {
     try {
         const payload = { to, subject, text, html };
         if (provider === "ses") await sendViaSES(env, payload);
+        else if (provider === "cloudflare") await sendViaCloudflare(env, payload);
         else if (provider === "resend") await sendViaResend(env, payload);
         else if (provider === "postmark") await sendViaPostmark(env, payload);
         else return { ok: false, error: `unsupported NOTIFY_PROVIDER "${provider}"` };

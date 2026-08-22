@@ -48,7 +48,7 @@ export function diagnose(rows) {
         if (SANDBOX_HINT.test(err)) {
             key = "ses_sandbox";
             explain = "AWS SES is still in the sandbox, so it will only deliver to addresses you have verified individually. Every patient email fails until production access is granted.";
-            action = "In the AWS console: Amazon SES → Account dashboard → Request production access (region us-east-2). Until it is granted, no patient can receive a sign-in link, an appointment confirmation, or a message alert.";
+            action = "These failures are from the SES sandbox era. The fix is NOTIFY_PROVIDER=cloudflare (scripts/setup_cloudflare_email.sh) — no approval process, no sandbox. Rows retry automatically once a working provider is configured.";
         } else if (/NOTIFY_PROVIDER|not set|not configured/i.test(err)) {
             key = "not_configured";
             explain = "No mail provider is configured for this deployment.";
@@ -116,6 +116,7 @@ export async function onRequestGet(ctx) {
         // healthy while the subscription was still unconfirmed. A liveness
         // check that a test can satisfy is worse than none. SNS identifies
         // itself by user agent; nothing else here does.
+        const activeProvider = String(env.NOTIFY_PROVIDER || "").toLowerCase();
         let sns = { configured: !!env.SES_SNS_TOPIC_ARN, last_inbound_at: null, real_events: 0 };
         try {
             const row = await env.DB.prepare(`
@@ -124,12 +125,23 @@ export async function onRequestGet(ctx) {
                   FROM sns_confirmations`).first();
             if (row) { sns.last_inbound_at = row.last_at || null; sns.real_events = Number(row.real_events) || 0; }
         } catch { /* table appears on first inbound event */ }
-        sns.healthy = sns.configured && sns.real_events > 0;
-        sns.note = !sns.configured
-            ? "SES_SNS_TOPIC_ARN is not set — the feedback endpoint refuses all input."
-            : sns.real_events > 0
-                ? "Bounce/complaint events are reaching the application."
-                : "Configured, but no SNS event has EVER arrived. Bounces are not being auto-suppressed yet — the subscription is probably still unconfirmed.";
+        if (activeProvider === "cloudflare") {
+            // With Cloudflare Email Sending, the SNS pipeline is not the
+            // bounce path: the REST send response reports permanent_bounces
+            // synchronously and notify.js writes the suppression row in the
+            // same request. Reporting the SNS subscription as unhealthy here
+            // would send someone to fix plumbing the active provider does
+            // not use.
+            sns.healthy = true;
+            sns.note = "Not in use — the Cloudflare send response reports bounces synchronously and suppression is written at send time. (SNS remains wired for the SES fallback.)";
+        } else {
+            sns.healthy = sns.configured && sns.real_events > 0;
+            sns.note = !sns.configured
+                ? "SES_SNS_TOPIC_ARN is not set — the feedback endpoint refuses all input."
+                : sns.real_events > 0
+                    ? "Bounce/complaint events are reaching the application."
+                    : "Configured, but no SNS event has EVER arrived. Bounces are not being auto-suppressed yet — the subscription is probably still unconfirmed.";
+        }
 
         // The most recent SUCCESSFUL send is the honest liveness signal:
         // "0 failures" means nothing if nothing has been attempted.
@@ -145,6 +157,16 @@ export async function onRequestGet(ctx) {
                 ? { at: lastSent.sent_at || lastSent.created_at, template: lastSent.template }
                 : null,
             never_delivered_anything: !lastSent,
+            provider: {
+                active: activeProvider || null,
+                // The BAA question is a launch gate, not a config detail —
+                // surfaced here so it cannot be forgotten. See BAA_PROVIDERS
+                // in _lib/notify.js for the reasoning.
+                baa_confirmed: activeProvider === "ses",
+                baa_note: activeProvider === "cloudflare"
+                    ? "Cloudflare Email Service's BAA coverage is undocumented. Fine pre-launch (no patients enrolled). Before PORTAL_PUBLIC_LAUNCH: confirm a BAA with Cloudflare or switch providers."
+                    : null,
+            },
             sns_feedback_pipeline: sns,
             recent: rows.slice(0, 20).map((r) => ({
                 id: r.id, template: r.template, to: maskEmail(r.to_email),

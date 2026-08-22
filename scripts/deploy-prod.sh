@@ -490,7 +490,7 @@ fi
 #   * referrals  — an HMO/EPO member routed out of network is a denied claim
 #                  the patient pays. A false "ok" here has a dollar value.
 # ---------------------------------------------------------------------------
-for _suite in orders gfe referrals avs_education visit_type_alias note_extract undeliverable_domains; do
+for _suite in orders gfe referrals avs_education visit_type_alias note_extract undeliverable_domains notify_provider; do
     if command -v node >/dev/null 2>&1 && [ -f "scripts/test_${_suite}.mjs" ]; then
         echo ""
         echo "🔒 ${_suite} gate..."

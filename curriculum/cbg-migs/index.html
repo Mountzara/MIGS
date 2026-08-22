@@ -254,7 +254,12 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
    rgb(64,58,67) — #a78bfa is 4.05:1 (pixel-measured deploy gate), #b7a4fc
    is 5.11:1. Body-size links elsewhere pass with the token; this chip is
    the smallest text on the page. */
-.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: #b7a4fc; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
+/* 2026-08-20 — #b7a4fc measured 3.65:1 against the tint the 18%-alpha
+   purple chip composites to over this card (rgb(87,77,104)); 11px text
+   needs 4.5:1. #ddd6fe = 5.67:1, with headroom for a darker card.
+   Surfaced only after the contrast audit began settling in-flight
+   transitions — mid-fade sampling had been hiding real pairs. */
+.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: #ddd6fe; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
 .site h4 { margin: 0 0 4px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.25; }
 .site .city { font-size: 12px; color: var(--fg-soft); margin-bottom: 12px; }
 .site .focus { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
