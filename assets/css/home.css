@@ -66,7 +66,11 @@
             background: transparent;  /* html canvas gradient shows through (2026-07-22) */
             color: var(--text-on-dark);
             overflow-x: hidden;
-            line-height: 1.4;
+            /* 2026-08-20 — 1.4 was set when the page was mostly headlines.
+               Now that most of the page is prose, 1.4 reads as cramped at
+               desk viewing distance. 1.5 is the usual comfortable minimum
+               for body copy and is what WCAG 1.4.12 assumes as a baseline. */
+            line-height: 1.5;
         }
 
         a { color: inherit; text-decoration: none; }
@@ -122,7 +126,7 @@
         .bento-grid > *,
         .apps-bento > *,
         .domain-grid > *,
-        .zero-grid > *,
+        .safety-grid > *,
         .techniques-grid > *,
         .populations-grid > *,
         .awards-grid > *,
@@ -132,7 +136,7 @@
         .bento-card p,
         .app-card-v2 p,
         .domain-card p,
-        .zero-cell p,
+        .safety-card p,
         .technique-cell p,
         .population-card p,
         .award-tile p,
@@ -220,7 +224,7 @@
 
         .nav-links a {
             color: #ffffff;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 400;
             padding: 0 12px;
             line-height: 48px;
@@ -229,6 +233,74 @@
 
         .nav-links a:hover { color: var(--white); }
 
+        /* ---- "More" group (2026-08-20) -------------------------------
+           Thirteen links overflowed the bar at every desktop width and
+           clipped the last one. Six stay visible; the rest live here.
+           Opens on hover AND on focus-within, so it is reachable by
+           keyboard without any JS. */
+        .nav-more { position: relative; }
+        .nav-more-btn {
+            font: inherit;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 400;
+            padding: 0 12px;
+            line-height: 48px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.18s ease;
+        }
+        .nav-more-caret { font-size: 9px; opacity: 0.65; }
+        .nav-more-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 172px;
+            list-style: none;
+            margin: 0;
+            padding: 6px;
+            background: rgba(18, 15, 27, 0.97);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(22px) saturate(160%);
+            -webkit-backdrop-filter: blur(22px) saturate(160%);
+            z-index: 1200;
+        }
+        .nav-more:hover .nav-more-menu,
+        .nav-more:focus-within .nav-more-menu,
+        .nav-more.open .nav-more-menu { display: block; }
+        .nav-more-menu a {
+            display: block;
+            padding: 9px 12px;
+            line-height: 1.3;
+            border-radius: 8px;
+            font-size: 12.5px;
+        }
+        .nav-more-menu a:hover,
+        .nav-more-menu a:focus-visible { background: rgba(167, 139, 250, 0.16); }
+
+        /* ---------------------------------------------------------------
+           SOURCE ORDER MATTERS HERE. This base rule hides the hamburger on
+           wide screens; the media query BELOW re-shows it once the bar
+           collapses. Both selectors have the same specificity, so whichever
+           comes last wins — a media query does not add weight.
+
+           This rule used to sit AFTER the collapse block. It won, the
+           hamburger was display:none at every width, and the only reason
+           the site still worked was a second `.mobile-toggle{display:block}`
+           further down in the old 768px responsive block. Consolidating the
+           panel rules removed that second declaration and, with it, the
+           entire navigation below 1180px — hamburger invisible, links
+           already hidden. Caught by a live browser test, not by any gate.
+
+           If you move this rule, move it UP, never down.
+           --------------------------------------------------------------- */
         .mobile-toggle {
             display: none;
             color: var(--white);
@@ -237,6 +309,85 @@
             border: none;
             cursor: pointer;
             padding: 0;
+        }
+
+        /* Collapse to the menu button while the row is still comfortable,
+           not only once it has already broken.
+           ----------------------------------------------------------------
+           This breakpoint and the PANEL styling below must be the same
+           number. They were not on the first pass: the collapse moved to
+           1180px while the panel rules stayed in the old 768px block, so
+           between 769px and 1180px the hamburger appeared, toggling .open
+           did nothing (nothing defined .nav-links.open at that width) and
+           the entire menu was unreachable. If you change 1180 here, change
+           it in the panel block too — or better, don't split them again. */
+        @media (max-width: 1180px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 48px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 16px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                max-height: calc(100vh - 48px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-links.open { display: flex; }
+
+            .nav-links a {
+                line-height: 36px;
+                font-size: 15px;
+                padding: 4px 22px;
+            }
+
+            .mobile-toggle { display: block; }
+
+            /* Flatten "More" inside the panel. A hover-opened dropdown is
+               meaningless on a touch device and would hide seven links
+               behind a control that never opens, so the group becomes a
+               labelled sub-list and every destination is on screen. */
+            .nav-more { position: static; }
+            .nav-more-btn {
+                display: block;
+                width: 100%;
+                text-align: left;
+                padding: 4px 22px;
+                line-height: 36px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.55);
+                pointer-events: none;   /* it is a heading here, not a button */
+                margin-top: 6px;
+            }
+            .nav-more-caret { display: none; }
+            .nav-more-menu {
+                display: block;
+                position: static;
+                min-width: 0;
+                padding: 0;
+                margin: 0;
+                background: none;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            .nav-more-menu a {
+                padding: 4px 22px;
+                line-height: 36px;
+                font-size: 15px;
+                border-radius: 0;
+            }
         }
 
         /* ========== Cinematic intro video backdrop ========== */
@@ -874,7 +1025,7 @@
             letter-spacing: -0.01em;
         }
         .award-tile p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -1023,7 +1174,7 @@
             line-height: 1.3;
         }
         .curriculum-institution {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
             letter-spacing: 0.02em;
             color: rgba(167, 139, 250, 0.8);
@@ -1031,7 +1182,7 @@
             margin: 0 0 16px;
         }
         .curriculum-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -1076,7 +1227,7 @@
             color: #fff;
             border-radius: 999px;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 16px;
             text-decoration: none;
             transition: all 0.22s ease;
         }
@@ -1244,7 +1395,7 @@
             line-height: 1.3;
         }
         .timeline-row p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -1524,7 +1675,7 @@
             font-size: clamp(32px, 5vw, 56px);
             font-weight: 700;
             letter-spacing: -0.028em;
-            line-height: 1.04;
+            line-height: 1.1;
             margin-bottom: 28px;
             max-width: none;          /* run to the full content width */
             text-wrap: pretty;        /* normal wrapping (fills each line) — not balance, which made headlines break early into short lines */
@@ -1549,6 +1700,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            /* Same descender clip as .pinned-frame .frame-headline — the
+               base .section-headline line-height of 1.04 leaves no room
+               below the baseline for the gradient to paint into. Bottom
+               margin is trimmed by the same amount so vertical rhythm
+               against .section-sub is unchanged. */
+            padding-bottom: 0.14em;
+            margin-bottom: 20px;
         }
 
         .section-sub {
@@ -1733,7 +1891,7 @@
             margin: 0 0 8px;
         }
         .surgical-card-body p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
             margin: 0;
@@ -1847,7 +2005,7 @@
             margin-top: 32px;
         }
 
-        @media (min-width: 600px) {
+        @media (min-width: 1080px) {
             .stats-row {
                 grid-template-columns: repeat(4, 1fr);
             }
@@ -1861,13 +2019,17 @@
            glassy fill, purple-glow border, purple-accent stat number. */
         .stat {
             background: rgba(255, 255, 255, 0.04);
-            border-radius: 14px;
-            padding: 28px 20px;
+            border-radius: 16px;
+            padding: 24px 22px 20px;
             text-align: left;
             border: 1px solid rgba(255, 255, 255, 0.10);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
             transition: transform 0.22s, border-color 0.22s, background 0.22s;
+            /* Each tile is now an <a> into the section that proves it. */
+            display: flex;
+            flex-direction: column;
+            color: inherit;
         }
         .stat:hover {
             transform: translateY(-2px);
@@ -1875,12 +2037,60 @@
             background: rgba(167, 139, 250, 0.06);
         }
 
+        .stat-glyph {
+            display: block;
+            width: 34px;
+            height: 34px;
+            margin-bottom: 16px;
+            color: #7c3aed;
+        }
+        .stat-glyph svg { display: block; width: 100%; height: 100%; }
+
+        /* The headline sentence. The numeral lives INSIDE it rather than
+           floating above it, so the reader never has to hold a number in
+           their head while hunting for its subject. */
+        .stat-line {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.35;
+            letter-spacing: -0.012em;
+            margin: 0 0 8px;
+        }
+
+        .stat-detail {
+            font-size: 14px;
+            line-height: 1.55;
+            margin: 0 0 16px;
+            opacity: 0.78;
+        }
+
+        .stat-go {
+            margin-top: auto;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #c4b5fd;
+            /* Was opacity:0 until hover. The whole tile is an <a>; hiding its
+               only affordance meant a visitor had to discover by accident
+               that these were clickable, and touch users never hover at all. */
+            opacity: 0.72;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        /* Revealed on hover on pointer devices; always visible where hover
+           does not exist, so a touch user is never left guessing that the
+           tile is tappable. */
+        .stat:hover .stat-go,
+        .stat:focus-visible .stat-go { opacity: 1; }
+
         .stat-num {
-            font-size: 40px;
+            font-size: 30px;
             font-weight: 700;
             letter-spacing: -0.025em;
             line-height: 1;
-            margin-bottom: 8px;
+            margin-bottom: 0;
+            margin-right: 4px;
+            display: inline-block;
+            vertical-align: -2px;
             /* 2026-05-27 — apply medium-intensity purple gradient so the
                stat numerals match the brand purple treatment on the hero
                and section headlines. Solid color fallback below for
@@ -1907,42 +2117,31 @@
             line-height: 1.3;
         }
 
-        /* 2026-05-27 — light-theme stat override. The .about-section uses
-           background: var(--bg-light) + color: var(--dark) — a deliberate
-           light pane inside the otherwise-dark site. The base .stat rule
-           above was tuned for the dark theme (white 4% bg, white 74%
-           label) which rendered as INVISIBLE white-on-light on the about
-           pane. These overrides keep the design intent (Apple-glass +
-           purple accent) but invert lightness so the numbers and labels
-           actually read on the light pane. User flagged 2026-05-27. */
-        .about-section .stat {
-            background: rgba(109, 40, 217, 0.05);
-            border: 1px solid rgba(109, 40, 217, 0.20);
-        }
-        .about-section .stat:hover {
-            background: rgba(109, 40, 217, 0.10);
-            border-color: rgba(109, 40, 217, 0.50);
-        }
-        .about-section .stat-num {
-            /* 2026-05-27 — light-theme variant: use saturated purple-to-deep
-               gradient so the numerals stay readable on the cream-cream
-               about-section panel AND signal the brand. */
-            color: #6d28d9;
-            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-            .about-section .stat-num {
-                background: transparent;
-                color: #6d28d9;
-                -webkit-text-fill-color: #6d28d9;
-            }
-        }
-        .about-section .stat-label {
-            color: rgba(31, 22, 17, 0.72);
-        }
+        /* =====================================================================
+           .about-section IS DARK. IT HAS NOT BEEN A LIGHT PANE SINCE 2026-06.
+           ---------------------------------------------------------------------
+           A block of light-theme overrides used to live here, opening with a
+           comment describing "a deliberate light pane inside the otherwise-dark
+           site" and setting near-black text (#1f1611) and deep violet accents
+           (#5b21b6, #6d28d9) so they would read on cream.
+
+           The section was later converted to dark — it is
+           `background-color: rgba(18, 15, 27, 0.88) !important` at the foot of
+           this file — and THAT change patched only the elements that existed at
+           the time (.stat-num, .stat-label, headline, sub, h3) with !important,
+           leaving this block and its comment in place.
+
+           The result was a trap. On 2026-08-20 four new elements were added to
+           this section, the stale comment was believed rather than the rendered
+           pixels, and #1f1611 text shipped on a #120f1b ground at about 1.1:1 —
+           invisible. Measured, not guessed, after the owner reported it.
+
+           The whole light-pane block is gone. Colours for this section now live
+           in ONE place, with the background that sets them: search for the
+           .about-section background rule near the end of this file. If you add an element
+           here, put its colour there, and CHECK IT IN A BROWSER — the contrast
+           gate now samples these tiles (scripts/audit_contrast_pixels.py).
+           ===================================================================== */
 
         /* ========== Surgical Excellence Section ========== */
         .excellence-section {
@@ -2103,8 +2302,22 @@
         }
 
         /* Zero stats grid — 2026-06-25 — Match the pill glass verbatim. */
-        .zero-eyebrow {
-            margin: 64px auto 24px;
+        /* =====================================================================
+           SAFETY BLOCK  (was .zero-*, renamed 2026-08-20)
+           ---------------------------------------------------------------------
+           The old cards were a 56px gradient number over two lines of text.
+           They are now illustration-led: a diagram sets the subject, a
+           sentence states the principle, and the figure appears BELOW the
+           sentence as supporting proof rather than above it as decoration.
+           The number is deliberately smaller than it was — it is evidence
+           for a claim, not the claim itself.
+
+           .safety-figure uses currentColor throughout so a single color
+           declaration re-themes every diagram. Do not hard-code stroke
+           colors into the inline SVGs.
+           ===================================================================== */
+        .safety-eyebrow {
+            margin: 64px auto 28px;
             width: fit-content;
             text-align: center;
             font-size: 13px;
@@ -2120,68 +2333,117 @@
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
 
-        .zero-grid {
+        .safety-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 18px;
         }
 
-        @media (min-width: 700px) {
-            .zero-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 760px) {
+            .safety-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
-        @media (min-width: 1024px) {
-            .zero-grid { grid-template-columns: repeat(4, 1fr); }
+        @media (min-width: 1240px) {
+            .safety-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
-        .zero-card {
+        .safety-card {
             background: var(--bg-soft);
             border-radius: 24px;
-            padding: 44px 32px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 30px 28px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.45s var(--ease-out-quint), border-color 0.3s ease, box-shadow 0.45s var(--ease-out-quint);
-            min-height: 240px;
             display: flex;
             flex-direction: column;
         }
 
-        .zero-card:hover {
+        .safety-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(109, 40, 217, 0.3);
+            border-color: rgba(109, 40, 217, 0.32);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
         }
 
-        .zero-num {
-            font-size: 56px;
-            font-weight: 700;
-            letter-spacing: -0.035em;
-            line-height: 1;
+        /* The diagram. Sized in ch-independent units so it holds its
+           proportion at every breakpoint; the SVG viewBox is 120x84. */
+        .safety-figure {
+            width: 100%;
+            max-width: 150px;
             margin-bottom: 20px;
-            /* 2026-05-27 — was white→gray (#fff → #888), reads as
-               desaturated gray on the dark surgical-section. Swapped to
-               medium-intensity purple gradient so the Zero / >95% callouts
-               carry the brand color like the hero + section headlines. */
-            background: linear-gradient(180deg, #ffffff 0%, #a78bfa 35%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #c4b5fd;
+        }
+        .safety-figure svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
         }
 
-        .zero-card h3 {
-            font-size: 18px;
+        .safety-card h3 {
+            font-size: 19px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.014em;
-            line-height: 1.25;
-            margin-bottom: 12px;
+            line-height: 1.28;
+            margin: 0 0 14px;
         }
 
-        .zero-card p {
-            font-size: 14px;
-            line-height: 1.55;
+        /* The figure that backs the claim. Rendered as a rule-topped row so
+           it reads as a citation for the sentence above it, not a headline. */
+        .safety-proof {
+            font-size: 15px;
+            line-height: 1.45;
+            color: #ded7f5;
+            letter-spacing: -0.006em;
+            padding-top: 13px;
+            border-top: 1px solid rgba(196, 181, 253, 0.22);
+            margin-bottom: 14px;
+        }
+        .safety-proof strong {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #ffffff;
+            /* No background-clip:text here. These strings carry a comma and a
+               decimal point; clipping a gradient to punctuation at 26px made
+               the comma disappear on the first attempt. Solid white reads. */
+            margin-right: 6px;
+            display: inline-block;
+            vertical-align: -1px;
+        }
+
+        .safety-card p {
+            font-size: 15px;
+            line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
-            margin-top: auto;
+            margin: 0;
+        }
+
+        /* Scope + honesty line under the grid. Deliberately not a footnote in
+           small grey type — a patient reading a safety section should be able
+           to read the caveat as easily as the claim. */
+        /* Now a single link out to the full operative log rather than a
+           paragraph of caveat — centred so it reads as the section's exit,
+           not as an orphaned sentence hanging off the last card. */
+        .safety-note {
+            margin: 28px 0 0;
+            text-align: center;
+            font-size: 15px;
+        }
+        .safety-note a {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 600;
+            color: #c4b5fd;
+            border: 1px solid rgba(196, 181, 253, 0.32);
+            background: rgba(255, 255, 255, 0.05);
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .safety-note a:hover {
+            color: #ffffff;
+            border-color: rgba(196, 181, 253, 0.7);
+            background: rgba(167, 139, 250, 0.14);
         }
 
         /* Domain grid */
@@ -2299,7 +2561,7 @@
         }
 
         .domain-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -2455,8 +2717,8 @@
             color: var(--white);
         }
         .hub-tile p {
-            font-size: 13.5px;
-            line-height: 1.55;
+            font-size: 15.5px;
+            line-height: 1.6;
             color: #ffffff;
             margin: 0;
         }
@@ -2610,14 +2872,25 @@
             background-clip: text;
             margin-bottom: 8px;
         }
+        /* "73 of 74" — the denominator is what makes the numerator mean
+           anything, but at 44px it would dominate the number it qualifies.
+           Set smaller and inline so the pair reads as one figure. */
+        .hub-content-stat .stat-of {
+            font-size: 0.42em;
+            font-weight: 500;
+            letter-spacing: 0;
+            margin-left: 0.35em;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.72);
+            color: rgba(255, 255, 255, 0.72);
+        }
         .hub-content-stat .stat-label {
-            font-size: 12.5px;
-            line-height: 1.55;
+            font-size: 14px;
+            line-height: 1.6;
             color: #ffffff;
         }
 
         .hub-content-body h4 {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.20em;
             text-transform: uppercase;
@@ -2809,7 +3082,7 @@
         }
 
         .technique-cell p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.003em;
@@ -2922,7 +3195,7 @@
         }
 
         .population-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -3035,7 +3308,7 @@
         }
 
         .evidence-card-meta {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.16em;
             text-transform: uppercase;
@@ -3180,7 +3453,7 @@
             text-wrap: balance;
         }
         .evidence-modal-intro {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0 0 28px;
@@ -3206,7 +3479,7 @@
             background: rgba(139, 92, 246, 0.04);
         }
         .evidence-study-title {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.008em;
@@ -3365,7 +3638,7 @@
             margin: 0 0 18px;
         }
         .evidence-section-body {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -3392,7 +3665,7 @@
             background: rgba(139, 92, 246, 0.04);
         }
         .evidence-service-name {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--white);
             letter-spacing: -0.005em;
@@ -3400,7 +3673,7 @@
             margin: 0 0 6px;
         }
         .evidence-service-desc {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.55;
             color: #ffffff;
             margin: 0;
@@ -3430,7 +3703,7 @@
             margin: 0 0 10px;
         }
         .evidence-expect-col-body {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -3441,7 +3714,7 @@
             background: rgba(139, 92, 246, 0.06);
             border: 1px solid rgba(139, 92, 246, 0.18);
             border-radius: 12px;
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.6;
             color: #ffffff;
         }
@@ -3459,7 +3732,7 @@
             border-radius: 12px;
         }
         .evidence-faq-q {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--white);
             margin: 0 0 8px;
@@ -3467,7 +3740,7 @@
             line-height: 1.4;
         }
         .evidence-faq-a {
-            font-size: 13.5px;
+            font-size: 16px;
             line-height: 1.65;
             color: #ffffff;
             margin: 0;
@@ -3490,7 +3763,7 @@
         @media (prefers-reduced-transparency: reduce) {
             .section-eyebrow,
             .sub-eyebrow,
-            .zero-eyebrow,
+            .safety-eyebrow,
             .surgical-hub-eyebrow,
             .about-text-block,
             .omm-quote-block {
@@ -3642,7 +3915,7 @@
         }
 
         .bento-card p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -3993,6 +4266,22 @@
             color: #ffffff;
         }
 
+        /* 2026-08-20 — measured 1.36:1. The badge is a translucent WHITE chip
+           with white text, which reads on the dark app visuals and disappears
+           on the cream ".warm" ones. Same failure and same fix as
+           .app-visual.warm .rl-cap two rules up: an opaque light chip with
+           deep-violet text on the cream ground. Found once the contrast gate
+           was repaired — it had been reporting clean while measuring nothing,
+           because every Chromium page load was being reset by the proxy. */
+        .app-visual.warm .app-visual-label {
+            background: rgba(255, 246, 234, 0.94);
+            border-color: rgba(30, 18, 55, 0.18);
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            color: #2b1c4d;
+        }
+
         .app-icon-large {
             width: 72px;
             height: 72px;
@@ -4032,7 +4321,7 @@
         }
 
         .app-card-v2 p {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             letter-spacing: -0.003em;
@@ -4097,30 +4386,33 @@
         }
 
         .aagl-stat {
-            text-align: center;
+            flex: 1 1 300px;
             min-width: 0;
+            max-width: 460px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            text-align: left;
         }
 
-        .aagl-num {
-            font-size: clamp(28px, 4vw, 40px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1;
-            color: var(--accent-soft);
-            margin-bottom: 6px;
-            background: linear-gradient(180deg, #a78bfa 0%, #6d28d9 100%);
-            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .aagl-stat-icon {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            color: #c4b5fd;
         }
+        .aagl-stat-icon svg { display: block; width: 100%; height: 100%; }
 
-        .aagl-label {
-            font-size: 12px;
-            font-weight: 500;
+        .aagl-stat-text {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.55;
+            letter-spacing: -0.005em;
             color: #ffffff;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+        }
+        .aagl-stat-text strong {
+            font-weight: 700;
+            color: #ddd2ff;
         }
 
         .aagl-divider {
@@ -4201,8 +4493,25 @@
             display: inline-block;
         }
 
+        /* 2026-08-20 — the year column. Previously only two of the twelve
+           research rows carried one, so the eye read the other ten as
+           "undated" rather than "same year, not repeated". Every row now
+           fills this slot: a publication year, or "Ongoing" for the two
+           active IRB studies, which is more useful than back-dating them to
+           their IRB approval year and cannot be misread as a publication
+           date. Where the year was also the last token of the journal line
+           it was removed there, so it appears once per row — except the GMIT
+           citation, whose "2026;15:297–299" is a single volume/page token
+           that scripts/audit_fact_sync.mjs requires verbatim. */
         .tag.year {
             margin-left: auto;
+            padding-left: 12px;
+            flex: 0 0 auto;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.72);
+            font-variant-numeric: tabular-nums;
         }
 
         .research-info h3 {
@@ -4215,7 +4524,7 @@
         }
 
         .research-info .journal {
-            font-size: 13px;
+            font-size: 15px;
             color: #ffffff;
             letter-spacing: -0.005em;
         }
@@ -4294,7 +4603,7 @@
         }
 
         .research-detail-inner p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.6;
             color: #ffffff;
             letter-spacing: -0.005em;
@@ -4349,7 +4658,7 @@
         .pub-link {
             display: inline-block;
             margin-top: 16px;
-            font-size: 14px;
+            font-size: 16px;
             color: var(--accent-soft);
             font-weight: 500;
         }
@@ -4479,13 +4788,13 @@
         }
 
         .research-card-journal {
-            font-size: 13px;
+            font-size: 15px;
             color: #ffffff;
             margin: 0 0 16px;
         }
 
         .research-card-summary {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0 0 20px;
@@ -4697,7 +5006,7 @@
             padding: 48px 22px 32px;
             border-top: 1px solid rgba(255, 255, 255, 0.14);
             box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .footer-content {
@@ -4718,7 +5027,7 @@
 
         .footer-links a {
             color: #ffffff;
-            font-size: 12px;
+            font-size: 14px;
             transition: color 0.2s;
         }
 
@@ -4757,7 +5066,7 @@
         }
 
         .copyright {
-            font-size: 12px;
+            font-size: 14px;
             color: #ffffff;
         }
 
@@ -4773,7 +5082,7 @@
             content: 'Learn more →';
             display: inline-block;
             margin-top: 14px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.04em;
             color: #c4b5fd;
@@ -4942,7 +5251,7 @@
         .app-modal-title {
             font-size: clamp(34px, 4vw, 56px);
             font-weight: 700;
-            line-height: 1.04;
+            line-height: 1.12;
             letter-spacing: -0.025em;
             margin: 0 0 12px;
             color: var(--white);
@@ -5123,7 +5432,7 @@
             font-weight: 200;
             line-height: 1.05;
             /* 2026-05-27 — apply medium-intensity purple gradient to match
-               .stat-num / .zero-num / .hero-title treatment. */
+               .stat-num / .safety-proof strong / .hero-title treatment. */
             color: rgba(167, 139, 250, 0.95);
             background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             -webkit-background-clip: text;
@@ -5140,7 +5449,7 @@
             }
         }
         .dm-stat-label {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
             color: #ffffff;
             margin: 0 0 6px;
@@ -5194,7 +5503,7 @@
         .dm-rba-col li {
             position: relative;
             padding-left: 18px;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
             margin-bottom: 8px;
@@ -5236,7 +5545,7 @@
             padding-top: 2px;
         }
         .dm-timeline-body p {
-            font-size: 15px;
+            font-size: 17px;
             line-height: 1.62;
             color: #ffffff;
             margin: 0 0 8px;
@@ -5299,7 +5608,7 @@
             position: relative;
             padding: 12px 0 12px 36px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
         }
@@ -5349,7 +5658,7 @@
         }
         .feature-tile-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
         .feature-tile h4 {
-            font-size: 16.5px;
+            font-size: 17.5px;
             font-weight: 600;
             color: var(--white);
             margin: 0 0 8px;
@@ -5357,7 +5666,7 @@
             line-height: 1.3;
         }
         .feature-tile p {
-            font-size: 14.5px;
+            font-size: 16px;
             font-weight: 400;
             line-height: 1.6;
             color: #ffffff;
@@ -5391,12 +5700,12 @@
             font-weight: 600;
             display: block;
             margin-bottom: 4px;
-            font-size: 15.5px;
+            font-size: 17px;
             letter-spacing: -0.005em;
         }
         .usecase-row p {
             color: #ffffff;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 400;
             line-height: 1.58;
             margin: 0;
@@ -5788,11 +6097,22 @@
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
         .pinned-frame .frame-headline {
-            font-size: clamp(40px, 6vw, 84px);
+            font-size: clamp(44px, 6.4vw, 88px);
             font-weight: 600;
-            line-height: 1.02;
+            line-height: 1.08;
             letter-spacing: -0.034em;
-            margin: 0 0 18px;
+            margin: 0 0 6px;
+            /* 2026-08-20 — DESCENDER CLIP FIX. background-clip:text paints the
+               gradient into the element's PADDING BOX and then keeps only the
+               glyph-shaped part of it. With line-height:1.02 the padding box
+               stopped above the font's descender line, so the tails of g / j / y
+               fell outside the painted area and vanished — reported as "the
+               bottom parts of the text is getting cut off" on "…not just a
+               diagnosis." and "…the working surgeon.". Two independent changes
+               so neither alone is load-bearing: line-height raised to 1.08 and
+               an em-scaled padding-bottom that follows the clamp() font-size.
+               Do NOT reduce either without re-checking a descender at 88px. */
+            padding-bottom: 0.16em;
             /* 2026-05-27 — match evidence-page gradient on the pinned-frame
                headlines "Whole-person care, not just a diagnosis." and
                "Engineered for the working surgeon." (user feedback: these
@@ -5861,28 +6181,9 @@
 
         /* ========== Responsive ========== */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 48px;
-                left: 0;
-                right: 0;
-                background: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(20px);
-                flex-direction: column;
-                padding: 16px 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            }
-
-            .nav-links.open { display: flex; }
-
-            .nav-links a {
-                line-height: 36px;
-                font-size: 14px;
-                padding: 4px 22px;
-            }
-
-            .mobile-toggle { display: block; }
+            /* The nav panel rules used to live here. They now live with the
+               1180px collapse breakpoint above so the two cannot drift apart
+               again — see the note there. */
 
             /* 2026-06-25 — keep copyright (left) and LinkedIn (right) on ONE
                line at the footer bottom even on mobile, per user request. */
@@ -5991,7 +6292,7 @@
         }
 
         .contact-modal p.modal-sub {
-            font-size: 14px;
+            font-size: 16px;
             color: #ffffff;
             margin-bottom: 24px;
             letter-spacing: -0.005em;
@@ -6491,7 +6792,7 @@
         .soc-list li {
             position: relative;
             padding-left: 18px;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.55;
             color: #ffffff;
         }
@@ -6557,7 +6858,7 @@
             margin: 0;
         }
         .traj-body {
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
             color: #ffffff;
             margin: 0;
@@ -6692,7 +6993,7 @@
         .curriculum-card,
         .surgical-card,
         .domain-card,
-        .zero-card,
+        .safety-card,
         .population-card,
         .evidence-card,
         .bento-card,
@@ -6720,7 +7021,7 @@
         .curriculum-card:hover,
         .surgical-card:hover,
         .domain-card:hover,
-        .zero-card:hover,
+        .safety-card:hover,
         .population-card:hover,
         .evidence-card:hover,
         .bento-card:hover,
@@ -6912,13 +7213,13 @@
             background: rgba(167, 139, 250, 0.18);
         }
         .identity-card-label {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
             color: #ffffff;
             letter-spacing: -0.005em;
         }
         .identity-card-sub {
-            font-size: 13px;
+            font-size: 15px;
             line-height: 1.45;
             color: #ffffff;
             flex: 1 1 auto;
@@ -7217,7 +7518,7 @@
             .curriculum-card,
             .surgical-card,
             .domain-card,
-            .zero-card,
+            .safety-card,
             .population-card,
             .evidence-card,
             .bento-card,
@@ -7235,7 +7536,7 @@
            just muddies text legibility. These keep their own fills but get
            backdrop-filter: none to avoid iOS layer promotion.
 
-           2026-06-25 — Removed .surgical-hub-eyebrow, .zero-eyebrow, and
+           2026-06-25 — Removed .surgical-hub-eyebrow, .safety-eyebrow, and
            .section-eyebrow from this list; those now use the pill glass
            verbatim per user request.
            ============================================================ */
@@ -7449,8 +7750,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* Section eyebrows outside the (light) About panel sit on dark bands, where
    the deep violet measured 1.37:1. Light violet everywhere else. */
 section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
-.about-section .stat-num  { color: #c4b5fd !important; }
+/* ---------------------------------------------------------------------------
+   Every colour for the (dark) About section lives here, next to the
+   background that makes them necessary. The light-pane block that used to
+   sit further up this file is gone — see the note where it was.
+
+   !important throughout because these must beat the generic .stat* rules
+   regardless of where a future edit inserts them. -webkit-text-fill-color is
+   set explicitly on .stat-num: `color` alone does NOT override it, so the
+   old background-clip gradient kept painting deep violet on near-black even
+   after the colour was corrected.
+   --------------------------------------------------------------------------- */
+.about-section .stat {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+.about-section .stat:hover {
+    background: rgba(167, 139, 250, 0.10) !important;
+    border-color: rgba(167, 139, 250, 0.45) !important;
+}
+.about-section .stat-num  {
+    color: #c4b5fd !important;
+    background: none !important;
+    -webkit-text-fill-color: #c4b5fd !important;
+}
 .about-section .stat-label { color: #ffffff !important; }
+.about-section .stat-line   { color: #ffffff !important; }
+.about-section .stat-detail { color: rgba(255, 255, 255, 0.82) !important; opacity: 1 !important; }
+.about-section .stat-glyph  { color: #c4b5fd !important; }
+.about-section .stat-go     { color: #c4b5fd !important; }
+.about-section .mz-read-btn { color: #c4b5fd !important; }
+.about-section .mz-read-btn:hover { color: #ffffff !important; }
 .about-section .about-text-block {
     background: rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.14) !important;
@@ -7505,3 +7835,318 @@ section:not(.about-section) .section-eyebrow { color: #c4b5fd !important; }
     text-shadow: 0 1px 6px rgba(0,0,0,0.8);
 }
 .research-card-video:hover .video-preview-overlay { justify-content: center; padding-bottom: 0; }
+
+
+        /* =====================================================================
+           LARGE-VIEWPORT TYPE UPLIFT  (2026-08-20)
+           ---------------------------------------------------------------------
+           Reported: "even on fullscreen on desktop computer, the font is too
+           small, it's difficult to read, I have to squint."
+
+           The cause is that the page was sized for a ~1280px laptop and then
+           shown on a much wider display. Every body-copy rule is in px, so the
+           text stays physically the same while the viewport — and therefore the
+           viewing distance — grows. Headlines already use clamp() and scale;
+           body copy did not, so the gap between headline and paragraph widened
+           until the paragraphs looked like fine print.
+
+           This block scales the reading layer (paragraphs, list items, card
+           bodies, journal lines) at the two breakpoints where that gap becomes
+           obvious. It deliberately does NOT touch:
+             - eyebrows, tags, chips, badges, .award-year and other uppercase
+               micro-labels — they are letter-spaced and sized to sit inside
+               fixed-height pills; growing them breaks those pills;
+             - anything inside the hero, which is fingerprint-locked
+               (scripts/hero_animation.lock).
+
+           Percentages are used rather than fixed px so a future change to a
+           base size carries through here automatically.
+           ===================================================================== */
+        @media (min-width: 1440px) {
+            .section-sub,
+            .curriculum-card p,
+            .timeline-row p,
+            .surgical-card-body p,
+            .domain-card p,
+            .hub-tile p,
+            .technique-cell p,
+            .population-card p,
+            .bento-card p,
+            .app-card-v2 p,
+            .award-tile p,
+            .research-card-summary,
+            .research-detail-inner p,
+            .usecase-row p,
+            .dm-timeline-body p,
+            .dm-rba-col li,
+            .soc-list li,
+            .traj-body,
+            .evidence-section-body,
+            .evidence-modal-intro {
+                font-size: 108%;
+            }
+        }
+
+        @media (min-width: 1800px) {
+            .container { max-width: 1280px; }
+            .container-wide { max-width: 1560px; }
+
+            .curriculum-card p,
+            .timeline-row p,
+            .surgical-card-body p,
+            .domain-card p,
+            .hub-tile p,
+            .technique-cell p,
+            .population-card p,
+            .bento-card p,
+            .app-card-v2 p,
+            .award-tile p,
+            .research-card-summary,
+            .research-detail-inner p,
+            .usecase-row p,
+            .dm-timeline-body p,
+            .dm-rba-col li,
+            .soc-list li,
+            .traj-body,
+            .evidence-section-body,
+            .evidence-modal-intro {
+                font-size: 118%;
+            }
+        }
+
+
+        /* =====================================================================
+           MODAL READING LAYER  (2026-08-20)
+           ---------------------------------------------------------------------
+           The site's rule is now: the surface is scannable, and anything longer
+           than a line lives one click away in a modal. That only works if the
+           modal is a genuinely better place to read than the page was —
+           otherwise the click just relocates the wall of text.
+
+           Two things make the difference and neither was set:
+
+           1. MEASURE. .app-modal-card is min(96%, 1180px) wide. A paragraph
+              set across 1,070px of that runs to roughly 150 characters a line;
+              the eye loses the return sweep somewhere past 90 and starts
+              re-reading the line it just left. Prose is capped at 72ch here.
+              Grids, pill rows and tiles are deliberately NOT capped — they are
+              scanned, not read, and they want the full width.
+
+           2. LEADING. Long-form body copy wants more air than a card does.
+              Modal prose runs at 1.7 rather than the 1.55 used on the surface.
+
+           Section eyebrows, titles and leads keep their own rules; this block
+           only touches the paragraphs underneath them.
+           ===================================================================== */
+        .app-modal-section > p,
+        .app-modal-section-lead,
+        .feature-tile p,
+        .usecase-row p,
+        .dm-timeline-body p,
+        .evidence-section-body,
+        .evidence-faq-a {
+            max-width: 72ch;
+            line-height: 1.7;
+        }
+
+        /* Tiles sit in a two-up grid that is already narrower than the measure
+           cap; letting the cap apply there would do nothing but is harmless.
+           The tiles DO want their own slightly tighter leading so a four-line
+           description does not tower over its heading. */
+        .feature-tile p { line-height: 1.62; }
+
+        @media (min-width: 1024px) {
+            /* At desktop the modal has room for real editorial spacing. */
+            .app-modal-section-lead { font-size: 19px; }
+            .app-modal-body { padding: 56px clamp(56px, 6vw, 88px); }
+        }
+
+
+        /* =====================================================================
+           READING SHEET  (2026-08-20)
+           ---------------------------------------------------------------------
+           The point of moving copy off the card is that it can then be set
+           properly. Everything here exists to make a long paragraph pleasant
+           rather than merely legible:
+
+             MEASURE   66ch. Past roughly 90 characters the eye starts losing
+                       the return sweep and re-reads the line it just left.
+             SIZE      20px rising to 22px on large screens — a step above the
+                       page, because the reader has chosen to read now.
+             LEADING   1.8. Card copy runs at 1.55; prose wants more air.
+             PADDING   clamp(28px, 6vw, 88px). The whitespace IS the design —
+                       it is what tells the eye it has arrived somewhere calm.
+             RHYTHM    Paragraph spacing of 1.15em rather than a flat margin,
+                       so spacing scales with the type.
+
+           The panel is capped at 900px and centred rather than filling the
+           viewport: a full-width sheet on a 27" display would put the text
+           back at the unreadable measure it was rescued from.
+           ===================================================================== */
+        .mz-read {
+            width: min(94vw, 900px);
+            max-width: 900px;
+            max-height: min(90vh, 1000px);
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 28px;
+            background: linear-gradient(160deg, rgba(42, 38, 58, 0.94) 0%, rgba(22, 20, 30, 0.96) 60%, rgba(15, 14, 20, 0.97) 100%);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            box-shadow: 0 48px 140px rgba(0, 0, 0, 0.62),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .mz-read::backdrop {
+            background: rgba(8, 8, 12, 0.66);
+            backdrop-filter: blur(8px) saturate(140%);
+            -webkit-backdrop-filter: blur(8px) saturate(140%);
+        }
+        .mz-read[open] {
+            animation: mzReadIn 320ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes mzReadIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.985); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .mz-read[open] { animation: none; }
+        }
+
+        .mz-read-scroll {
+            max-height: min(90vh, 1000px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        .mz-read-inner {
+            padding: clamp(40px, 6vw, 88px) clamp(28px, 6vw, 88px) clamp(44px, 6vw, 88px);
+        }
+
+        .mz-read-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            z-index: 2;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .mz-read-close svg { width: 18px; height: 18px; }
+        .mz-read-close:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.06); }
+
+        .mz-read-eyebrow {
+            margin: 0 0 14px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+        .mz-read-eyebrow[hidden] { display: none; }
+
+        .mz-read-title {
+            margin: 0 0 28px;
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 600;
+            line-height: 1.14;
+            letter-spacing: -0.026em;
+            color: #ffffff;
+            /* No background-clip:text. This heading is arbitrary authored
+               copy — it can contain a descender, a comma or an ellipsis, all
+               of which the clip has bitten before. Solid white always reads. */
+            max-width: 20ch;
+        }
+
+        .mz-read-body {
+            font-size: 20px;
+            line-height: 1.8;
+            letter-spacing: -0.003em;
+            color: rgba(255, 255, 255, 0.92);
+            max-width: 66ch;
+        }
+        @media (min-width: 1280px) {
+            .mz-read-body { font-size: 22px; }
+        }
+        .mz-read-body > * { margin: 0 0 1.15em; }
+        .mz-read-body > *:last-child { margin-bottom: 0; }
+        .mz-read-body strong { color: #ffffff; font-weight: 600; }
+        .mz-read-body a {
+            color: #c4b5fd;
+            border-bottom: 1px solid rgba(196, 181, 253, 0.45);
+        }
+        .mz-read-body a:hover { color: #ffffff; border-bottom-color: #ffffff; }
+        .mz-read-body ul, .mz-read-body ol { padding-left: 1.3em; }
+        .mz-read-body li { margin-bottom: 0.55em; }
+
+        /* The affordance injected into each host card. Sits at the foot of
+           the card via margin-top:auto so a row of cards has its buttons on
+           one line regardless of how much copy each headline needed. */
+        .mz-read-btn {
+            margin-top: auto;
+            padding-top: 16px;
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #c4b5fd;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s ease, gap 0.2s ease;
+        }
+        .mz-read-btn:hover { color: #ffffff; gap: 11px; }
+        .mz-read-btn:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 3px; border-radius: 4px; }
+
+        /* Hosts that gained a .mz-read-btn need to be a column flexbox for
+           the button's margin-top:auto to pin it to the foot of the card.
+           .safety-card already is; these were not. */
+        .about-text-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* The about pane is a deliberate light panel inside a dark site
+           (see the .about-section .stat overrides above), so the sheet
+           affordance needs the dark-on-light variant or it reads as a
+           pale violet smudge on cream. */
+        .about-section .mz-read-btn { color: #5b21b6; }
+        .about-section .mz-read-btn:hover { color: #2e1065; }
+        .about-section .mz-read-btn:focus-visible { outline-color: #5b21b6; }
+
+/* Cache-key rotation 2026-08-20b — a CDN edge served the previous body
+   under this file's new ?v= key; deploy-prod.sh blocks on that and needs
+   a fresh key rather than a correct-looking hash over stale bytes. */
+
+        /* Featured research cards: the authored summary now lives in the
+           reading sheet, and this one-line lede holds its place on the card.
+           The card must be a column flexbox for .mz-read-btn's margin-top:auto
+           to pin the control to the foot, so a row of cards lines its buttons
+           up regardless of how long each title wrapped. */
+        .research-card { display: flex; flex-direction: column; }
+        .research-card-lede {
+            font-size: 16px;
+            line-height: 1.5;
+            letter-spacing: -0.006em;
+            color: #ffffff;
+            margin: 0 0 14px;
+        }
+        /* initReadingSheet inserts the control where the copy was, so on
+           these cards it lands between the lede and the video reel. It must
+           not take margin-top:auto here or it would be pushed past the reel. */
+        .research-card .mz-read-btn {
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 16px;
+        }

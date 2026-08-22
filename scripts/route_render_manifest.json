@@ -19,46 +19,173 @@
   ],
   "homepage_title": "Mount Zara — Complex Benign Gynecology & MIGS",
   "routes": [
-    { "path": "/", "title_contains": "Complex Benign Gynecology", "selector": "#identity-map", "allow_homepage_title": true },
-    { "path": "/about/", "title_contains": "The Story" },
-    { "path": "/evidence/", "title_contains": "Physician Blog" },
-    { "path": "/trending/", "title_contains": "Trend Briefs" },
-    { "path": "/portal/", "title_contains": "Member Portal",
-      "_note": "Client-redirects to /portal/login/ when no patient session — both titles contain 'Member Portal', so the assertion holds on either side of the redirect." },
-    { "path": "/portal/messages/", "title_contains": "Messages · Member Portal", "selector": "#urgency-row" },
-    { "path": "/portal/tech-check/", "title_contains": "Test your device" },
-    { "path": "/portal/visit/route-render-audit/launch/", "title_contains": "Get ready for your visit", "selector": "#launchForm" },
-    { "path": "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/", "title_contains": "One quick question", "selector": "#scale button" },
-    { "path": "/admin/", "title_contains": "Admin Mission Control" },
-    { "path": "/admin/scheduling/", "title_contains": "Scheduling", "selector": "#appt-list" },
-    { "path": "/admin/messages/", "title_contains": "Messages · Mount Zara Admin", "selector": "#thread-list" },
-    { "path": "/admin/analytics/", "title_contains": "Analytics", "selector": "#nps-scores" },
-    { "path": "/admin/cases/8cc1aa63-5931-4c54-babb-e06bc196d743/", "title_contains": "Case", "selector": "#id-verify-banner",
-      "_note": "Jane Doe, the seeded test patient (scripts/_seed_jane_doe.sh) — a real id so the SPA renders its normal path; bogus ids tear down the DOM on the 404 error screen." }
+    {
+      "path": "/",
+      "title_contains": "Complex Benign Gynecology",
+      "selector": "#identity-map",
+      "allow_homepage_title": true
+    },
+    {
+      "path": "/about/",
+      "title_contains": "The Story"
+    },
+    {
+      "path": "/evidence/",
+      "title_contains": "Physician Blog"
+    },
+    {
+      "path": "/trending/",
+      "title_contains": "Trend Briefs"
+    },
+    {
+      "path": "/portal/",
+      "title_contains": "Member Portal",
+      "_note": "Client-redirects to /portal/login/ when no patient session — both titles contain 'Member Portal', so the assertion holds on either side of the redirect."
+    },
+    {
+      "path": "/portal/messages/",
+      "title_contains": "Messages · Member Portal",
+      "selector": "#urgency-row"
+    },
+    {
+      "path": "/portal/tech-check/",
+      "title_contains": "Test your device"
+    },
+    {
+      "path": "/portal/visit/route-render-audit/launch/",
+      "title_contains": "Get ready for your visit",
+      "selector": "#launchForm"
+    },
+    {
+      "path": "/portal/nps/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/",
+      "title_contains": "One quick question",
+      "selector": "#scale button"
+    },
+    {
+      "path": "/admin/",
+      "title_contains": "Admin Mission Control"
+    },
+    {
+      "path": "/admin/scheduling/",
+      "title_contains": "Scheduling",
+      "selector": "#appt-list"
+    },
+    {
+      "path": "/admin/messages/",
+      "title_contains": "Messages · Mount Zara Admin",
+      "selector": "#thread-list"
+    },
+    {
+      "path": "/admin/analytics/",
+      "title_contains": "Analytics",
+      "selector": "#nps-scores"
+    },
+    {
+      "path": "/admin/cases/8cc1aa63-5931-4c54-babb-e06bc196d743/",
+      "title_contains": "Case",
+      "selector": "#id-verify-banner",
+      "_note": "Jane Doe, the seeded test patient (scripts/_seed_jane_doe.sh) — a real id so the SPA renders its normal path; bogus ids tear down the DOM on the 404 error screen."
+    },
+    {
+      "path": "/privacy/",
+      "title_contains": "Privacy Policy"
+    },
+    {
+      "path": "/privacy-practices/",
+      "title_contains": "Notice of Privacy Practices"
+    },
+    {
+      "path": "/terms/",
+      "title_contains": "Terms of Use"
+    },
+    {
+      "path": "/telehealth-consent/",
+      "title_contains": "Telehealth Consent"
+    },
+    {
+      "path": "/accessibility/",
+      "title_contains": "Accessibility"
+    },
+    {
+      "path": "/admin/orders/",
+      "title_contains": "Orders",
+      "_note": "Result-tracking board — the missed-result safety net."
+    },
+    {
+      "path": "/portal/orders/",
+      "title_contains": "Tests"
+    },
+    {
+      "path": "/admin/cases/",
+      "title_contains": "Patient charts",
+      "_note": "This route 404'd while _nav.js highlighted it — audited so it cannot silently vanish again."
+    },
+    {
+      "path": "/education/",
+      "title_contains": "Patient guides",
+      "_note": "Index for the twelve public guides; its absence was the only broken internal link on the site. Gated by EDUCATION_PUBLIC_LAUNCH — audited only when admin credentials are available, since the public sees the Coming Soon page until the guides are approved."
+    }
   ],
   "unaudited": [
-    "/portal/appointments/", "/portal/billing/", "/portal/documents/",
-    "/portal/education/", "/portal/intake/", "/portal/login/",
-    "/portal/magic-link/", "/portal/nps/", "/portal/profile/",
-    "/portal/proms/", "/portal/signup/", "/portal/symptoms/",
-    "/admin/billing/", "/admin/briefings/", "/admin/carousels/",
-    "/admin/cases/", "/admin/compliance/", "/admin/content/",
-    "/admin/debug/", "/admin/education/", "/admin/feedback/",
-    "/admin/login/", "/admin/patients/", "/admin/trend-briefs/",
+    "/404.html",
+    "/admin/billing/",
+    "/admin/briefings/",
+    "/admin/carousels/",
+    "/admin/compliance/",
+    "/admin/content/",
+    "/admin/debug/",
+    "/admin/education/",
+    "/admin/feedback/",
+    "/admin/gfe/",
+    "/admin/login/",
+    "/admin/membership/",
+    "/admin/patients/",
+    "/admin/referrals/",
+    "/admin/trend-briefs/",
     "/admin/triage/",
-    "/cv/", "/curriculum/", "/curriculum/cbg-migs/",
-    "/curriculum/hospice-clerkship/", "/curriculum/hospice-training/",
-    "/education/abnormal-uterine-bleeding/", "/education/adenomyosis/",
-    "/education/chronic-pelvic-pain/", "/education/contraception/",
-    "/education/dysmenorrhea/", "/education/endometriosis/",
-    "/education/fibroids/", "/education/menopause/",
-    "/education/ovarian-masses/", "/education/pcos/",
-    "/education/postoperative-recovery/", "/education/pregnancy-loss/",
-    "/portal/education/abnormal-uterine-bleeding/", "/portal/education/adenomyosis/",
-    "/portal/education/chronic-pelvic-pain/", "/portal/education/contraception/",
-    "/portal/education/dysmenorrhea/", "/portal/education/endometriosis/",
-    "/portal/education/fibroids/", "/portal/education/menopause/",
-    "/portal/education/ovarian-masses/", "/portal/education/pcos/",
-    "/portal/education/postoperative-recovery/", "/portal/education/pregnancy-loss/"
+    "/admin/visits/",
+    "/curriculum/",
+    "/curriculum/cbg-migs/",
+    "/curriculum/hospice-clerkship/",
+    "/curriculum/hospice-training/",
+    "/cv/",
+    "/education/abnormal-uterine-bleeding/",
+    "/education/adenomyosis/",
+    "/education/chronic-pelvic-pain/",
+    "/education/contraception/",
+    "/education/dysmenorrhea/",
+    "/education/endometriosis/",
+    "/education/fibroids/",
+    "/education/menopause/",
+    "/education/ovarian-masses/",
+    "/education/pcos/",
+    "/education/postoperative-recovery/",
+    "/education/pregnancy-loss/",
+    "/portal/appointments/",
+    "/portal/billing/",
+    "/portal/documents/",
+    "/portal/education/",
+    "/portal/education/abnormal-uterine-bleeding/",
+    "/portal/education/adenomyosis/",
+    "/portal/education/chronic-pelvic-pain/",
+    "/portal/education/contraception/",
+    "/portal/education/dysmenorrhea/",
+    "/portal/education/endometriosis/",
+    "/portal/education/fibroids/",
+    "/portal/education/menopause/",
+    "/portal/education/ovarian-masses/",
+    "/portal/education/pcos/",
+    "/portal/education/postoperative-recovery/",
+    "/portal/education/pregnancy-loss/",
+    "/portal/intake/",
+    "/portal/login/",
+    "/portal/magic-link/",
+    "/portal/nps/",
+    "/portal/profile/",
+    "/portal/proms/",
+    "/portal/signup/",
+    "/portal/symptoms/",
+    "/portal/visits/",
+    "/privacy-practices/acknowledgment-form/"
   ]
 }

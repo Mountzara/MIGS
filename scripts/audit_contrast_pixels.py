@@ -27,7 +27,7 @@ import sys
 import time
 
 sys.path.insert(0, "/home/user/MIGS/scripts")
-from _lib_pw_launch import launch_chromium  # noqa: E402
+from _lib_pw_launch import launch_reachable  # noqa: E402
 from playwright.sync_api import sync_playwright  # noqa: E402
 from PIL import Image  # noqa: E402
 
@@ -234,6 +234,58 @@ REST_OVERLAY = """() => {
 }"""
 
 
+
+class BrowserCrashed(RuntimeError):
+    """The engine died mid-capture. This is NOT a contrast verdict."""
+
+
+def _is_crash(exc):
+    """Did the browser die, as opposed to the page failing an assertion?
+
+    Playwright surfaces this from whatever call happened to be in flight —
+    Page.screenshot raises Error("Target crashed"), while a scroll or a
+    wait afterwards raises TargetClosedError("Page crashed"). The first
+    version of this guard only wrapped screenshot(), so the very next
+    deploy crashed inside wait_for_timeout and was reported, once again,
+    as a WCAG failure. Match on the message, not the call site.
+    """
+    m = str(exc).lower()
+    return "crash" in m or "target closed" in m or "browser has been closed" in m
+
+
+def _screenshot_or_crash(page, attempts=3):
+    """Screenshot, retrying a crashed target once with a pause.
+
+    2026-08-20 — a deploy reported "CONTRAST GATE FAILED — text on this site
+    does not meet WCAG" when WebKit had simply died taking the capture
+    ("Target crashed"). The traceback escaped main(), Python exited non-zero,
+    and deploy-prod.sh printed the contrast message for it. A crash is
+    UNJUDGEABLE, not a failing ratio, and saying otherwise sends the next
+    person hunting for a colour problem that does not exist.
+
+    This page is tall and the capture is full-viewport at DPR 2, so the crash
+    is resource pressure and usually clears on a retry. If it does not, the
+    caller raises BrowserCrashed and the run reports the real reason. It must
+    still BLOCK — a gate that cannot see the page has proved nothing, and the
+    whole point of the recent repair was that a gate measuring nothing must
+    never read as green.
+    """
+    last = None
+    for i in range(attempts):
+        try:
+            return page.screenshot(type="png")
+        except Exception as e:               # noqa: BLE001 - re-raised below
+            last = e
+            if not _is_crash(e):
+                raise
+            try:
+                page.wait_for_timeout(1200 * (i + 1))
+            except Exception:
+                # The pause itself fails once the target is gone; the page is
+                # unusable either way, so stop retrying on this one.
+                break
+    raise BrowserCrashed(f"engine died taking the capture after {attempts} attempts: {last}")
+
 def audit_page(page, dpr, scroll_y=0):
     """Returns failures for the CURRENT scroll position."""
     items = page.evaluate(COLLECT)
@@ -246,11 +298,11 @@ def audit_page(page, dpr, scroll_y=0):
     # white); two rAFs plus a settle make the capture deterministic.
     page.evaluate("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
     page.wait_for_timeout(260)
-    shot = page.screenshot(type="png")
+    shot = _screenshot_or_crash(page)
     img = Image.open(io.BytesIO(shot)).convert("RGB")
     if _frame_is_blank(img):
         page.wait_for_timeout(500)
-        shot = page.screenshot(type="png")
+        shot = _screenshot_or_crash(page)
         img = Image.open(io.BytesIO(shot)).convert("RGB")
         if _frame_is_blank(img):
             page.evaluate(SHOW_TEXT)
@@ -315,9 +367,22 @@ def main():
 
     report, total = {}, 0
     with sync_playwright() as p:
-        b, _, note = launch_chromium(p, headless=True)
-        if note:
-            print(f"  (launcher: {note})")
+        # ---------------------------------------------------------------
+        # 2026-08-20 — WAS launch_chromium(). This VM's proxy resets every
+        # Chromium connection, so every page load raised
+        # ERR_CONNECTION_RESET, every page was recorded as {"error": ...},
+        # and the summary — which counted only CONTRAST failures — printed
+        # "0 failure(s) across 9 page(s) x 2 viewport(s)". The deploy read
+        # that as green. This gate had been measuring nothing, and it let
+        # near-black text ship on a near-black About panel at about 1.1:1.
+        #
+        # launch_reachable probes the real site and falls back to WebKit,
+        # which connects natively here, and raises rather than returning a
+        # browser that cannot see the site at all.
+        # ---------------------------------------------------------------
+        probe = f"{base}{pages[0]}" + ("index.html" if local else "")
+        b, engine, note = launch_reachable(p, probe, headless=True)
+        print(f"  (engine: {engine}{'; ' + note if note else ''})")
         for vp, label in VIEWPORTS:
             dpr = 2 if label == "mobile" else 1
             ctx = b.new_context(viewport=vp, device_scale_factor=dpr, ignore_https_errors=True)
@@ -340,6 +405,42 @@ def main():
                     const top = setInterval(() => {}, 100000);
                     for (let i = 1; i <= top; i++) clearInterval(i);
                 }""")
+                # SETTLE IN-FLIGHT TRANSITIONS. Clearing intervals stops the
+                # NEXT rotation, but a crossfade already running keeps
+                # running: an app-reel scene sampled mid-fade sits at
+                # ancestor opacity ~0.3 — past the visibility check's 0.05
+                # floor — while its own background chip contributes almost
+                # nothing to the pixels. Measured: the ABOG reel caption
+                # (#2b1c4d on a cream chip, 12.9:1 as designed) reported
+                # 1.04:1 against the dark card bleeding through the fade.
+                # Kill transitions so every property snaps to its settled
+                # value, and finish() finite animations; infinite ones
+                # (Ken Burns) throw on finish() and are left alone.
+                page.evaluate("""() => {
+                    const st = document.createElement('style');
+                    st.textContent = '*, *::before, *::after { transition: none !important; }';
+                    document.head.appendChild(st);
+                    const anims = document.getAnimations ? document.getAnimations({ subtree: true }) : [];
+                    anims.forEach(a => { try { a.finish(); } catch (e) { /* infinite */ } });
+                }""")
+                # Stop every video before measuring. Two reasons:
+                #
+                #  * CORRECTNESS — a playing reel changes what is behind the
+                #    text between the two capture passes, which is the same
+                #    class of error the interval freeze above prevents.
+                #  * STABILITY — WebKit repeatedly died capturing the desktop
+                #    homepage ("Target crashed"). That page composites several
+                #    autoplaying H.264 reels behind backdrop-filter layers at
+                #    DPR 2; releasing the decoders is what makes the capture
+                #    survivable. Reported as unmeasured when it still dies,
+                #    never as a contrast verdict.
+                page.evaluate("""() => {
+                    document.querySelectorAll('video').forEach(v => {
+                        try { v.pause(); v.autoplay = false; v.removeAttribute('autoplay');
+                              v.preload = 'none'; v.currentTime = 0; } catch (e) {}
+                    });
+                }""")
+                page.wait_for_timeout(200)
                 stuck = page.evaluate(REST_OVERLAY)
                 if stuck:
                     for o in stuck:
@@ -350,15 +451,31 @@ def main():
                 seen, fails = set(), []
                 height = page.evaluate("document.body.scrollHeight")
                 step = vp["height"]
-                for y in range(0, min(height, step * 12), step):
-                    page.evaluate(f"window.scrollTo(0, {y})")
-                    page.wait_for_timeout(450)
-                    for f in audit_page(page, dpr, y):
-                        k = (f["txt"], f["cls"], f["color"])
-                        if k in seen:
-                            continue
-                        seen.add(k)
-                        fails.append(f)
+                try:
+                    for y in range(0, min(height, step * 12), step):
+                        page.evaluate(f"window.scrollTo(0, {y})")
+                        page.wait_for_timeout(450)
+                        for f in audit_page(page, dpr, y):
+                            k = (f["txt"], f["cls"], f["color"])
+                            if k in seen:
+                                continue
+                            seen.add(k)
+                            fails.append(f)
+                except Exception as e:  # noqa: BLE001 — re-raised unless it is a crash
+                    # Same channel as a failed goto: NOT MEASURED. That still
+                    # blocks the deploy (see the `measured` guard in main), but
+                    # it blocks with the true reason instead of claiming the
+                    # site has a colour-contrast violation.
+                    if not isinstance(e, BrowserCrashed) and not _is_crash(e):
+                        raise
+                    print(f"  ✗ {path} [{label}] CAPTURE CRASHED — not measured: {str(e)[:120]}")
+                    report.setdefault(path, {})[label] = {"error": f"engine crashed: {e}"[:90]}
+                    try:
+                        page.close()
+                    except Exception:
+                        pass
+                    page = ctx.new_page()
+                    continue
                 # Final confirmation: re-meet each candidate the way a reader
                 # does — scroll it to the middle of the viewport and measure
                 # again. Pinned/sticky sections mean an element's rect can sit
@@ -403,8 +520,21 @@ def main():
     out = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--json=")]
     if out:
         json.dump(report, open(out[0], "w"), indent=1)
-    print(f"\npixel-measured contrast: {total} failure(s) across {len(pages)} page(s) x {len(VIEWPORTS)} viewport(s)")
-    return 1 if total else 0
+    # A page that never loaded was never measured. Counting only contrast
+    # failures meant "everything failed to load" and "everything is fine"
+    # produced the same green summary — which is exactly how this gate came
+    # to pass while the site shipped 1.1:1 text. Load errors are failures.
+    load_errors = sum(1 for byvp in report.values() for r in byvp.values() if "error" in r)
+    measured = sum(1 for byvp in report.values() for r in byvp.values() if "error" not in r)
+    print(f"\npixel-measured contrast: {total} failure(s) across "
+          f"{measured} page-viewport(s) actually measured "
+          f"({len(pages)} page(s) x {len(VIEWPORTS)} viewport(s) attempted)")
+    if load_errors:
+        print(f"  ✗ {load_errors} page-viewport(s) never loaded — those were NOT measured.")
+    if not measured:
+        print("  ✗ NOTHING was measured. A gate that saw no pixels cannot report clean.")
+        return 1
+    return 1 if (total or load_errors) else 0
 
 
 sys.exit(main())

@@ -680,15 +680,174 @@
         }
 
         function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('open');
+            const panel = document.getElementById('navLinks');
+            const open = panel.classList.toggle('open');
+            const btn = document.querySelector('.mobile-toggle');
+            if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
-        // Close mobile menu when link clicked
+        // ----------------------------------------------------------
+        // Desktop "More" group (2026-08-20)
+        // ----------------------------------------------------------
+        // The menu itself opens purely in CSS, on :hover and on
+        // :focus-within, so it works with JS disabled and is reachable by
+        // keyboard without a keydown handler. What CSS cannot do is keep
+        // aria-expanded truthful, and a button that permanently announces
+        // "collapsed" while its menu is on screen is worse for a screen
+        // reader than no attribute at all. This mirrors the real state.
+        //
+        // The click handler exists for pointers that are neither hover nor
+        // keyboard — a trackpad user who taps rather than dwells, and touch
+        // laptops — where hover fires and immediately cancels.
+        (function initNavMore() {
+            const group = document.querySelector('.nav-more');
+            if (!group) return;
+            const btn = group.querySelector('.nav-more-btn');
+            if (!btn) return;
+            const sync = (state) => btn.setAttribute('aria-expanded', state ? 'true' : 'false');
+
+            group.addEventListener('mouseenter', () => sync(true));
+            group.addEventListener('mouseleave', () => { if (!group.contains(document.activeElement)) sync(false); });
+            group.addEventListener('focusin', () => sync(true));
+            group.addEventListener('focusout', () => {
+                // focusout fires before the new element receives focus, so
+                // defer the check or every arrow-down through the menu would
+                // read as a close.
+                setTimeout(() => { if (!group.contains(document.activeElement)) sync(false); }, 0);
+            });
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const nowOpen = group.classList.toggle('open');
+                sync(nowOpen);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                group.classList.remove('open');
+                sync(false);
+            });
+            document.addEventListener('click', (e) => {
+                if (group.contains(e.target)) return;
+                group.classList.remove('open');
+                sync(false);
+            });
+        })();
+
+        // Close mobile menu when link clicked. This covers the links inside
+        // the flattened "More" sub-list too — they are descendants of
+        // .nav-links, so leaving the panel open after a jump would hide the
+        // section the user just navigated to behind the panel.
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('navLinks').classList.remove('open');
+                const btn = document.querySelector('.mobile-toggle');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             });
         });
+
+        // Cache-key rotation 2026-08-20a: the first deploy of this file hit a
+        // poisoned CDN edge (the previous body served under the new ?v= key).
+        // scripts/deploy-prod.sh detects that and requires a fresh key rather
+        // than letting a stale bundle sit behind a correct-looking hash.
+        // ==========================================================
+        // Reading sheet — relocate long copy out of the scan layer
+        // ==========================================================
+        // The homepage carries roughly 4,000 words. Most of it is good
+        // writing in the wrong place: paragraphs set at 15px inside a
+        // four-up card grid, where the measure is short, the leading is
+        // tight and the reader is trying to SCAN, not read.
+        //
+        // This lifts any element marked [data-read] out of its card and
+        // into #mz-read, where prose gets the room it needs. The card keeps
+        // its illustration, its headline and its one-line proof, and gains
+        // a "Read more" control.
+        //
+        // Deliberate properties:
+        //   * The copy stays authored in the page HTML. It is moved at
+        //     runtime, not fetched, so it is present for crawlers, for
+        //     Reader Mode, and for anyone with JS disabled — who simply
+        //     sees the original card with the paragraph still in it.
+        //   * Nothing is deleted. innerHTML is preserved verbatim,
+        //     including links and citation markers.
+        //   * <dialog> does the focus trap, the ESC handling and the
+        //     inert-background work; hand-rolling those is where the other
+        //     modals on this page accumulated their bugs.
+        (function initReadingSheet() {
+            const dlg = document.getElementById('mz-read');
+            if (!dlg) return;
+            const elTitle = document.getElementById('mz-read-title');
+            const elEyebrow = document.getElementById('mz-read-eyebrow');
+            const elBody = document.getElementById('mz-read-body');
+            const scroll = dlg.querySelector('.mz-read-scroll');
+
+            const blocks = document.querySelectorAll('[data-read]');
+            if (!blocks.length) return;
+
+            // Group by host card so a card with two paragraphs gets one
+            // button, not two.
+            const hosts = new Map();
+            blocks.forEach(node => {
+                const host = node.closest('[data-read-title]');
+                if (!host) return;              // unhosted: leave it on the page
+                if (!hosts.has(host)) hosts.set(host, []);
+                hosts.get(host).push(node);
+            });
+
+            hosts.forEach((nodes, host) => {
+                const html = nodes.map(n => n.outerHTML).join('');
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'mz-read-btn';
+                btn.setAttribute('aria-haspopup', 'dialog');
+                btn.innerHTML = (host.getAttribute('data-read-cta') || 'Read more') +
+                                '<span aria-hidden="true">\u2192</span>';
+
+                // Put the control WHERE THE TEXT WAS, not at the end of the
+                // card. On a safety card the paragraph is the last element so
+                // the two are the same, but a featured research card has a
+                // video reel after its summary — appending would park the
+                // control under the reel, where it reads as a caption for the
+                // video rather than as the way back to the copy that just
+                // disappeared from above it.
+                const anchor = nodes[0];
+                if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor);
+                else host.appendChild(btn);
+
+                nodes.forEach(n => n.remove());
+
+                btn.addEventListener('click', (e) => {
+                    // Cards are sometimes themselves clickable (role=button,
+                    // or an <a>). Do not let the card's own handler fire too.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    elTitle.textContent = host.getAttribute('data-read-title') || '';
+                    const eyebrow = host.getAttribute('data-read-eyebrow') || '';
+                    elEyebrow.textContent = eyebrow;
+                    elEyebrow.hidden = !eyebrow;
+                    elBody.innerHTML = html;
+                    if (scroll) scroll.scrollTop = 0;
+                    if (typeof dlg.showModal === 'function') dlg.showModal();
+                    else dlg.setAttribute('open', '');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            const close = () => {
+                if (typeof dlg.close === 'function' && dlg.open) dlg.close();
+                else dlg.removeAttribute('open');
+            };
+            dlg.querySelector('[data-mz-read-close]')?.addEventListener('click', close);
+            // Backdrop click. A <dialog>'s click target is the dialog itself
+            // when the backdrop is hit, so compare against the content box
+            // rather than trusting e.target === dlg alone.
+            dlg.addEventListener('click', (e) => {
+                const box = dlg.getBoundingClientRect();
+                const outside = e.clientX < box.left || e.clientX > box.right ||
+                                e.clientY < box.top  || e.clientY > box.bottom;
+                if (outside) close();
+            });
+            dlg.addEventListener('close', () => { document.body.style.overflow = ''; });
+        })();
 
         // ==========================================================
         // Evidence + Care Path modal — patient + clinician resource
@@ -1877,8 +2036,8 @@
             // ----------------------------------------------------------
             // Safety-stat count-up on first scroll-into-view
             // ----------------------------------------------------------
-            const zeroGrid = document.querySelector('.zero-grid[data-count-trigger]');
-            if (zeroGrid && 'IntersectionObserver' in window) {
+            const safetyGrid = document.querySelector('.safety-grid[data-count-trigger]');
+            if (safetyGrid && 'IntersectionObserver' in window) {
                 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 const obs = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
@@ -1919,7 +2078,7 @@
                         });
                     });
                 }, { threshold: 0.35 });
-                obs.observe(zeroGrid);
+                obs.observe(safetyGrid);
             }
         })();
 
@@ -2099,8 +2258,8 @@
             // never revealed — about stats, safety record, hub tiles,
             // identity cards, curriculum cards/CTA.
             { sel: '.stats-row > *', kind: 'up' },
-            { sel: '.zero-eyebrow', kind: 'up' },
-            { sel: '.zero-card', kind: 'scale' },
+            { sel: '.safety-eyebrow', kind: 'up' },
+            { sel: '.safety-card', kind: 'scale' },
             { sel: '.surgical-hub-eyebrow', kind: 'up' },
             { sel: '.hub-tile', kind: 'scale' },
             { sel: '.identity-card', kind: 'scale' },
@@ -2164,6 +2323,56 @@
             window.addEventListener('resize', () => {
                 clearTimeout(_resizeT);
                 _resizeT = setTimeout(() => applyLineSpanGradient(heroTitle), 80);
+            });
+            // 2026-08-20 — Avenir Next lands AFTER the rAF measurement on a
+            // cold cache: every word reflows to its real metrics but --w-x /
+            // --w-total still describe the fallback-font layout. Re-measure
+            // once the webfonts are actually in.
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => applyLineSpanGradient(heroTitle));
+            }
+            // 2026-08-20 — Chrome 151 ghost-glyph fix (CONFIRMED root cause,
+            // reproduced live on Chrome 151.0.7922.170 / macOS 15.6 arm64).
+            // The PARENT h1 carries its own background-clip:text gradient as
+            // the pre-split first-paint fallback (see .hero-title in
+            // home.css). After splitWords, the h1's only direct text is the
+            // whitespace between .word-mask spans, so that parent layer
+            // should paint nothing — but Chrome 151 paints the parent's
+            // descendant-glyph clip mask at collapsed offsets, compositing a
+            // ghost copy of EVERY word at the line start ("Aasaisrion...").
+            // Verified in the owner's console: killing only the parent
+            // background cleared the garble instantly while the per-word
+            // gradient slices kept rendering correctly. So: once the split
+            // has happened (the .w slices own the gradient from here on),
+            // drop the parent's now-redundant copy. Inline style — the
+            // locked .hero-title / .word-reveal CSS rules are untouched, and
+            // the pre-split fallback still paints on browsers with JS off,
+            // reduced motion (no split), or before this script runs.
+            if (heroTitle.dataset.split === '1') {
+                heroTitle.style.background = 'none';
+            }
+            // 2026-08-20 — Chrome ghost-glyph hygiene. `.word-reveal .w` carries
+            // `will-change: transform, opacity` (locked CSS — do not edit it),
+            // which keeps EVERY word promoted to its own GPU layer forever.
+            // Each layer holds a rasterized copy of its background-clip:text
+            // glyphs; when Chrome re-lays-out the line mid-flight (font swap,
+            // scroll-fade opacity writes from tick()) a stale raster can be
+            // composited at a stale offset. Releasing will-change AFTER the
+            // entrance settles demotes the layers and forces one clean
+            // repaint. NOT the root cause of the 2026-08-20 ghost (that was
+            // the parent gradient above — live testing proved the .w layers
+            // innocent), but kept as defense-in-depth: five permanent GPU
+            // layers for a run-once entrance is waste regardless. The
+            // entrance itself still runs fully promoted, so the choreography
+            // (hero_animation.lock) is untouched.
+            heroTitle.addEventListener('transitionend', (e) => {
+                if (!e.target.classList || !e.target.classList.contains('w')) return;
+                if (e.propertyName !== 'transform') return;
+                const words = heroTitle.querySelectorAll('.w');
+                const settled = [...words].every(w =>
+                    getComputedStyle(w).transform === 'none' ||
+                    getComputedStyle(w).transform === 'matrix(1, 0, 0, 1, 0, 0)');
+                if (settled) words.forEach(w => { w.style.willChange = 'auto'; });
             });
         }
 

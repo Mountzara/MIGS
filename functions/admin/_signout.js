@@ -15,10 +15,12 @@
 // =====================================================================
 
 export async function onRequest({ request, env }) {
+    // Built first, then the admin-session cookie is appended before return.
+    const clearAdmin = (await import("../_lib/admin_session.js")).clearAdminSessionCookie();
     // Always return 401 with a new realm. The browser clearing happens
     // because the realm differs from "Mount Zara Admin" used everywhere
     // else; the cache is keyed by (origin, realm).
-    return new Response(`<!doctype html>
+    const resp = new Response(`<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -103,7 +105,7 @@ export async function onRequest({ request, env }) {
         <div class="eyebrow">Signed out</div>
         <h1>You're signed out of the admin.</h1>
         <p>Your browser has dropped the cached admin credentials. Close this tab when you're done, or click below to sign back in.</p>
-        <a class="btn" href="/admin/">Sign back in</a>
+        <a class="btn" href="/admin/_login">Sign back in</a>
         <a class="btn secondary" href="/">Go home</a>
         <div class="small">
             If the next admin page still loads without prompting, fully quit and reopen your browser to be certain — some browsers stubbornly cache Basic Auth credentials per-window.
@@ -122,7 +124,13 @@ export async function onRequest({ request, env }) {
             "cache-control": "no-store, max-age=0",
             // Strip any member portal session cookie that might be in the
             // same browser. Idempotent if no cookie present.
+            // Signing out must kill the ADMIN SESSION as well, or the
+            // cookie keeps the backend open after the operator believes
+            // they have left. A second Set-Cookie needs Headers.append,
+            // so the response is rebuilt below.
             "set-cookie": "mz_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0",
         },
     });
+    resp.headers.append("Set-Cookie", clearAdmin);
+    return resp;
 }

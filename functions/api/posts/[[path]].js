@@ -107,6 +107,15 @@ async function verifyPbkdf2(password, stored) {
 }
 
 async function isAdminRequest(request, env) {
+    // Path 0: the admin session cookie minted by admin/_middleware.js after
+    // a password check. Same reason as _lib/admin_api.js — the content
+    // pipeline is part of "the backend" and must not ask for credentials
+    // again once the operator has signed in.
+    try {
+        const sess = await import("../../_lib/admin_session.js");
+        if (await sess.verifyAdminSession(request, env)) return true;
+    } catch { /* fall through */ }
+
     // Path 1: Cloudflare Access JWT headers (set up via dashboard).
     const accessEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
     const accessJwt = request.headers.get("Cf-Access-Jwt-Assertion");

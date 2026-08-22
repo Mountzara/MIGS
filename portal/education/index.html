@@ -131,6 +131,11 @@
             padding: 3px 8px; border-radius: 999px;
             white-space: nowrap;
         }
+        /* The reason a guide was picked for her. A bare "Assigned" badge
+           reads as filing; the sentence reads as her clinician thinking
+           about her, which is what it actually was. */
+        .ed-why { font-size: 12.5px; line-height: 1.5; color: rgba(196,181,253,.92);
+                  margin: 6px 0 0; }
         .badge-assigned {
             background: rgba(245, 158, 11, 0.12);
             color: rgba(252, 211, 77, 0.95);
@@ -470,6 +475,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 }
                 // Non-blocking notice; FEATURED stays visible.
                 console.warn('Education list API failed (FEATURED guides still available):', e);
+                // Say what failed WITHOUT taking the reading away: the twelve
+                // guides below are static and still perfectly readable.
+                const host = $('grid');
+                if (host && !document.getElementById('ed-api-strip')) {
+                    const strip = document.createElement('div');
+                    strip.id = 'ed-api-strip';
+                    strip.style.cssText = 'display:flex;gap:10px;align-items:flex-start;margin:0 0 14px;padding:11px 14px;' +
+                        'border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.10);border-radius:10px;font-size:13px;line-height:1.5;';
+                    strip.innerHTML = '<span>We couldn\u2019t load the guides your care team picked for you. ' +
+                        'Everything below is still here to read.</span>';
+                    const x = document.createElement('button');
+                    x.type = 'button'; x.textContent = 'Dismiss';
+                    x.style.cssText = 'margin-left:auto;font:inherit;font-size:12px;cursor:pointer;background:none;border:none;color:inherit;opacity:.7;';
+                    x.addEventListener('click', () => strip.remove());
+                    strip.appendChild(x);
+                    host.parentNode.insertBefore(strip, host);
+                }
                 const grid = $('grid');
                 if (grid && !grid.querySelector('.ed-card')) {
                     // FEATURED render fell through (shouldn't happen); show old error
@@ -516,56 +538,56 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 {
                     slug: 'chronic-pelvic-pain',
                     href: '/portal/education/chronic-pelvic-pain/',
-                    title: 'Chronic pelvic pain — why it&rsquo;s rarely one thing',
+                    title: 'Chronic pelvic pain — why it’s rarely one thing',
                     summary: 'The four overlapping layers of CPP (organs, pelvic floor, nerves, fascia), how each is worked up, and the multi-modal treatment ladder — medical, pelvic-floor PT, osteopathic, surgical — that gets most women better. Every claim cited, every abstract included.',
                     topic_tags: ['CPP', 'OMT', 'Pelvic Floor PT'],
                 },
                 {
                     slug: 'abnormal-uterine-bleeding',
                     href: '/portal/education/abnormal-uterine-bleeding/',
-                    title: 'Abnormal uterine bleeding — what&rsquo;s normal, what isn&rsquo;t, what to do',
-                    summary: 'The PALM&ndash;COEIN framework, the layered workup (TVUS, sonohysterography, biopsy, hysteroscopy), and the full medical and procedural treatment ladder — NSAIDs, tranexamic acid, hormones, LNG-IUD, hysteroscopic polypectomy or myomectomy, endometrial ablation. With every claim cited and every abstract included.',
+                    title: 'Abnormal uterine bleeding — what’s normal, what isn’t, what to do',
+                    summary: 'The PALM–COEIN framework, the layered workup (TVUS, sonohysterography, biopsy, hysteroscopy), and the full medical and procedural treatment ladder — NSAIDs, tranexamic acid, hormones, LNG-IUD, hysteroscopic polypectomy or myomectomy, endometrial ablation. With every claim cited and every abstract included.',
                     topic_tags: ['AUB', 'HMB', 'Fibroids'],
                 },
                 {
                     slug: 'menopause',
                     href: '/portal/education/menopause/',
-                    title: 'Menopause — what&rsquo;s happening, what&rsquo;s normal, what we can do',
-                    summary: 'Stages, symptoms (vasomotor, GSM, mood, bone, cardiovascular), and the modern evidence on hormone therapy in 2026 &mdash; including fezolinetant, paroxetine, vaginal estrogen, and bisphosphonates. The WHI story re-told with 18-year follow-up. Cited and abstract-linked throughout.',
+                    title: 'Menopause — what’s happening, what’s normal, what we can do',
+                    summary: 'Stages, symptoms (vasomotor, GSM, mood, bone, cardiovascular), and the modern evidence on hormone therapy in 2026 — including fezolinetant, paroxetine, vaginal estrogen, and bisphosphonates. The WHI story re-told with 18-year follow-up. Cited and abstract-linked throughout.',
                     topic_tags: ['Menopause', 'MHT', 'GSM', 'Bone'],
                 },
                 {
                     slug: 'fibroids',
                     href: '/portal/education/fibroids/',
                     title: 'Uterine fibroids — what they are, what they do, what we can do about them',
-                    summary: 'The FIGO Types 0&ndash;8 system, what each type does, and how it shapes treatment. Medical, hysteroscopic, laparoscopic myomectomy, UAE, hysterectomy &mdash; the full uterus-preserving and definitive menu. Fertility, sarcoma risk, and the disparities in fibroid care for Black women, addressed honestly.',
+                    summary: 'The FIGO Types 0–8 system, what each type does, and how it shapes treatment. Medical, hysteroscopic, laparoscopic myomectomy, UAE, hysterectomy — the full uterus-preserving and definitive menu. Fertility, sarcoma risk, and the disparities in fibroid care for Black women, addressed honestly.',
                     topic_tags: ['Fibroids', 'HMB', 'Myomectomy'],
                 },
                 {
                     slug: 'dysmenorrhea',
                     href: '/portal/education/dysmenorrhea/',
-                    title: 'Painful periods — what&rsquo;s normal, what isn&rsquo;t, what to do',
-                    summary: 'Primary vs secondary dysmenorrhea, the workup, and the full ladder &mdash; NSAIDs, hormonal suppression, pelvic-floor PT, osteopathic care, GnRH antagonists, surgery. When to suspect endometriosis or adenomyosis as the underlying cause.',
+                    title: 'Painful periods — what’s normal, what isn’t, what to do',
+                    summary: 'Primary vs secondary dysmenorrhea, the workup, and the full ladder — NSAIDs, hormonal suppression, pelvic-floor PT, osteopathic care, GnRH antagonists, surgery. When to suspect endometriosis or adenomyosis as the underlying cause.',
                     topic_tags: ['Dysmenorrhea', 'CPP', 'Endometriosis'],
                 },
                 {
                     slug: 'adenomyosis',
                     href: '/portal/education/adenomyosis/',
                     title: 'Adenomyosis — the often-missed cause of heavy painful periods',
-                    summary: 'Diffuse vs focal disease, imaging-based diagnosis (TVUS MUSA + MRI junctional zone), and the full medical and surgical treatment ladder &mdash; LNG-IUD, GnRH antagonists, focal adenomyomectomy with delivery planning, hysterectomy when needed.',
+                    summary: 'Diffuse vs focal disease, imaging-based diagnosis (TVUS MUSA + MRI junctional zone), and the full medical and surgical treatment ladder — LNG-IUD, GnRH antagonists, focal adenomyomectomy with delivery planning, hysterectomy when needed.',
                     topic_tags: ['Adenomyosis', 'HMB', 'Dysmenorrhea'],
                 },
                 {
                     slug: 'pcos',
                     href: '/portal/education/pcos/',
                     title: 'PCOS — what it is, what it does, what changes the trajectory',
-                    summary: 'Rotterdam diagnostic criteria, phenotypes A&ndash;D, and the full management menu &mdash; lifestyle, metformin, GLP-1 agonists, COC, spironolactone, letrozole for ovulation induction. Plus the lifespan surveillance for diabetes, cardiovascular risk, and endometrial cancer.',
+                    summary: 'Rotterdam diagnostic criteria, phenotypes A–D, and the full management menu — lifestyle, metformin, GLP-1 agonists, COC, spironolactone, letrozole for ovulation induction. Plus the lifespan surveillance for diabetes, cardiovascular risk, and endometrial cancer.',
                     topic_tags: ['PCOS', 'Metabolic', 'Fertility'],
                 },
                 {
                     slug: 'ovarian-masses',
                     href: '/portal/education/ovarian-masses/',
-                    title: 'Ovarian cysts &amp; adnexal masses — when to watch, when to operate',
+                    title: 'Ovarian cysts & adnexal masses — when to watch, when to operate',
                     summary: 'Types (functional, dermoid, endometrioma, cystadenoma, malignant), the modern workup (TVUS + IOTA risk-stratification, selective CA-125), watch vs operate decision-tree, cystectomy vs oophorectomy, BRCA / hereditary risk and risk-reducing surgery.',
                     topic_tags: ['Ovarian cysts', 'BRCA', 'Surgery'],
                 },
@@ -573,21 +595,21 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     slug: 'postoperative-recovery',
                     href: '/portal/education/postoperative-recovery/',
                     title: 'After your surgery — what to expect, what to do, what to watch for',
-                    summary: 'ERAS-based recovery timeline (week before, day of, days 1&ndash;7, weeks 2&ndash;6), opioid-sparing pain control, medication holds (GLP-1s, anticoagulants, herbs), and the four things that drive most post-op calls &mdash; constipation, pain, urinary, bleeding.',
+                    summary: 'ERAS-based recovery timeline (week before, day of, days 1–7, weeks 2–6), opioid-sparing pain control, medication holds (GLP-1s, anticoagulants, herbs), and the four things that drive most post-op calls — constipation, pain, urinary, bleeding.',
                     topic_tags: ['Post-op', 'ERAS', 'Recovery'],
                 },
                 {
                     slug: 'contraception',
                     href: '/portal/education/contraception/',
                     title: 'Contraception — the full menu, what fits your life',
-                    summary: 'The full effectiveness tier hierarchy &mdash; LARC, hormonal short-acting, barriers, behavioral, emergency contraception, permanent contraception. US MEC 2024 for medical conditions, life-stage considerations, shared-decision-making framing.',
+                    summary: 'The full effectiveness tier hierarchy — LARC, hormonal short-acting, barriers, behavioral, emergency contraception, permanent contraception. US MEC 2024 for medical conditions, life-stage considerations, shared-decision-making framing.',
                     topic_tags: ['Contraception', 'LARC', 'EC'],
                 },
                 {
                     slug: 'pregnancy-loss',
                     href: '/portal/education/pregnancy-loss/',
-                    title: 'Pregnancy loss — what&rsquo;s happening, what&rsquo;s normal, what comes next',
-                    summary: 'A trauma-informed walkthrough of early pregnancy loss &mdash; diagnosis, the three management options (expectant, medical mife+miso, surgical), ectopic pregnancy, recurrent loss workup, and the emotional and mental-health support that matters as much as the medical care.',
+                    title: 'Pregnancy loss — what’s happening, what’s normal, what comes next',
+                    summary: 'A trauma-informed walkthrough of early pregnancy loss — diagnosis, the three management options (expectant, medical mife+miso, surgical), ectopic pregnancy, recurrent loss workup, and the emotional and mental-health support that matters as much as the medical care.',
                     topic_tags: ['Pregnancy loss', 'Grief', 'Recurrent loss'],
                 },
             ];
@@ -628,6 +650,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         ${badges.length ? `<div class="ed-badge-row">${badges.join('')}</div>` : ''}
                         <h3>${escapeHtml(m.title)}</h3>
                         <p class="ed-summary">${escapeHtml(m.summary || '')}</p>
+                        ${m.assignment && m.assignment.reason
+                            ? `<p class="ed-why">${escapeHtml(m.assignment.reason)}</p>` : ''}
                         <div class="ed-meta">${tagChips}</div>
                     </a>
                 `;
@@ -643,7 +667,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             // Empty-state message ONLY when both FEATURED and D1 returned nothing
             // (which can only happen if the tag filter excludes every guide).
             if (!featuredFiltered.length && !matchesDeduped.length) {
-                $('grid').innerHTML = '<div class="empty-state">No primers in this view yet. Try clearing the topic filter.</div>';
+                $('grid').innerHTML = '<div class="empty-state">No guides match that topic. Clear the filter to see all twelve.</div>';
             }
         }
 

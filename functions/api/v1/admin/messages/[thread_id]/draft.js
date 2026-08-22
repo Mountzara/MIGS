@@ -28,6 +28,8 @@
 
 import { adminRoute, jsonResponse, jsonError, readJsonBody } from "../../../../../_lib/admin_api.js";
 import { callClaude, AnthropicError, extractJson } from "../../../../../_lib/anthropic.js";
+import { groundClinical, groundingInstruction, verifyGrounding, refusalMessage, provenanceLine }
+    from "../../../../../_lib/clinical_grounding.js";
 import { loadThreadMessages } from "../../../../../_lib/messaging.js";
 import { logAudit } from "../../../../../_lib/audit.js";
 
@@ -106,6 +108,27 @@ export async function onRequestPost(ctx) {
     const body = await readJsonBody(request).catch(() => ({}));
     const steer = String(body?.instruction || "").slice(0, 500);
 
+    // ------------------------------------------------------------------
+    // GROUND IT IN HIS LIBRARY, OR DO NOT WRITE IT.
+    // ------------------------------------------------------------------
+    // A reply drafted here becomes clinical advice in a patient's inbox
+    // under his name. Until now this prompt carried no reference material
+    // at all, so every clinical sentence in it came from the model's
+    // general training — the precise thing the practice KB exists to
+    // prevent. The search text is the patient's own words plus the
+    // subject, because that is what the answer has to address.
+    const kbQuery = [thread.subject || "", steer,
+                     list.filter((m) => m.from_role === "patient")
+                         .map((m) => String(m.body || m.body_text || "")).join(" ")]
+                    .join(" ").slice(0, 2000);
+    const kb = await groundClinical(env, { kind: "message_draft", query: kbQuery });
+    if (!kb.grounded) {
+        return jsonResponse({
+            ok: false, refused: true, reason: kb.reason,
+            message: refusalMessage(kb),
+        }, 200);
+    }
+
     let parsed;
     try {
         const res = await callClaude(env, {
@@ -115,18 +138,45 @@ export async function onRequestPost(ctx) {
             messages: [{
                 role: "user",
                 content:
+                    `${groundingInstruction(kb)}\n\n` +
+                    `---\n\n` +
                     `Patient first name: ${thread.first_name || "(unknown)"}\n` +
                     `Thread subject: ${thread.subject || "(none)"}\n` +
                     `Urgency: ${thread.urgency || "routine"}\n\n` +
                     `THREAD SO FAR (oldest first):\n${transcript}\n\n` +
                     (steer ? `Dr. Mabini's steer for this reply: ${steer}\n\n` : "") +
-                    `Draft the next CLINIC reply.`,
+                    `Draft the next CLINIC reply. Cite [KB:<doc_id>] after every clinical statement, ` +
+                    `using only the ids listed above. If the references do not cover something the ` +
+                    `patient asked, say so in the draft rather than answering it from general knowledge.`,
             }],
         });
         const text = res?.content?.[0]?.text || res?.text || "";
         parsed = extractJson(text);
         if (!parsed || typeof parsed.draft !== "string") {
             return jsonError("model did not return a usable draft", 502);
+        }
+
+        // THE ENFORCEMENT POINT. A fabricated citation, a citation that
+        // does not support its claim, or any uncited clinical statement
+        // means this never reaches him as a ready-to-send draft.
+        const verdict = verifyGrounding(parsed.draft, kb);
+        parsed.grounding = {
+            ok: verdict.ok,
+            summary: verdict.summary,
+            provenance: provenanceLine(kb, verdict),
+            citations: kb.citations,
+            fabricated: verdict.fabricated,
+            uncited: verdict.uncited,
+            unsupported: verdict.unsupported,
+            kb_coverage: Math.round((kb.coverage || 0) * 100) / 100,
+        };
+        if (verdict.blocked) {
+            return jsonResponse({
+                ok: false, refused: true, reason: "grounding_check_failed",
+                message: `The draft was written but did not hold up against the practice library, so it is not being offered as a reply: ${verdict.summary}. Write this one yourself.`,
+                grounding: parsed.grounding,
+                rejected_draft: parsed.draft,
+            }, 200);
         }
         // Audit that a draft was generated — traceability for a PHI-bearing
         // model call. The draft text itself is not logged.

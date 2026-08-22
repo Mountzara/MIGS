@@ -357,6 +357,32 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* ===== Message attachments (2026-08-18) ===== */
+.attach-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.attach-row input[type="file"] { display: none; }
+.attach-pick {
+    font: inherit; font-size: 12.5px; cursor: pointer;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.82);
+}
+.attach-pick:hover { border-color: rgba(196,181,253,0.6); }
+.attach-name { font-size: 12.5px; color: rgba(255,255,255,0.72); word-break: break-all; }
+.attach-clear {
+    font: inherit; font-size: 12px; cursor: pointer; border: none;
+    background: none; color: rgba(252,165,165,0.9); padding: 2px 6px;
+}
+.attach-hint { font-size: 11.5px; color: rgba(255,255,255,0.5); flex-basis: 100%; }
+.msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.msg-attachments a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; text-decoration: none;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(139,92,246,0.14); border: 1px solid rgba(139,92,246,0.45);
+    color: #c4b5fd; max-width: 100%; word-break: break-all;
+}
+.msg-attachments a:hover { background: rgba(139,92,246,0.24); }
 </style>
 </head>
 <body>
@@ -391,6 +417,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div class="compose">
                 <label for="reply-body">Reply</label>
                 <textarea id="reply-body" placeholder="Type a reply…"></textarea>
+                <div class="attach-row">
+                    <label class="attach-pick" for="reply-file">📎 Attach a file</label>
+                    <input type="file" id="reply-file"
+                           accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                    <span class="attach-name" id="reply-file-name"></span>
+                    <button type="button" class="attach-clear" id="reply-file-clear" style="display:none;">remove</button>
+                    <span class="attach-hint">Photos, PDFs, or documents up to 25 MB — e.g. an incision photo or an outside record.</span>
+                </div>
                 <div class="actions">
                     <button id="btn-send-reply">Send reply</button>
                 </div>
@@ -406,6 +440,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div class="field-row">
                 <label for="new-body">Your message</label>
                 <textarea id="new-body" placeholder="Describe your question or update…"></textarea>
+            </div>
+            <div class="field-row">
+                <div class="attach-row">
+                    <label class="attach-pick" for="new-file">📎 Attach a file</label>
+                    <input type="file" id="new-file"
+                           accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                    <span class="attach-name" id="new-file-name"></span>
+                    <button type="button" class="attach-clear" id="new-file-clear" style="display:none;">remove</button>
+                    <span class="attach-hint">Photos, PDFs, or documents up to 25 MB.</span>
+                </div>
             </div>
             <!-- Phase 18 R8 — response-window SLA urgency selection -->
             <div class="field-row" id="urgency-row">
@@ -509,7 +553,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         function renderThreadList() {
             if (state.threads.length === 0) {
-                $('thread-list').innerHTML = '<div class="empty-state">No messages yet. Click "+ New message" to start.</div>';
+                $('thread-list').innerHTML = '<div class="empty-state">No messages yet. Use + New message for anything that isn\'t urgent &mdash; you\'ll usually hear back within one business day.</div>';
                 return;
             }
             $('thread-list').innerHTML = state.threads.map(t => {
@@ -549,6 +593,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         }
 
+        function fmtBytes(n) {
+            if (n == null || isNaN(n)) return '';
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+            return (n / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function attachmentChips(m) {
+            if (!m.attachments || m.attachments.length === 0) return '';
+            return `<div class="msg-attachments">${m.attachments.map(a => `
+                <a href="/api/v1/patient/messages/attachments/${encodeURIComponent(a.id)}"
+                   target="_blank" rel="noopener">📎 ${escapeHtml(a.filename)}
+                   <span style="opacity:.65">${fmtBytes(a.size_bytes)}</span></a>
+            `).join('')}</div>`;
+        }
+
         function renderMessages() {
             $('messages').innerHTML = state.messages.map(m => `
                 <div class="msg from-${m.from_role}">
@@ -558,8 +618,59 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         ${m.read_at ? '<span>read</span>' : ''}
                     </div>
                     <div class="msg-body">${escapeHtml(m.body)}</div>
+                    ${attachmentChips(m)}
                 </div>
             `).join('');
+        }
+
+        // ---- Attachment picker + upload ----
+        const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
+        function wirePicker(inputId, nameId, clearId) {
+            const input = $(inputId), name = $(nameId), clear = $(clearId);
+            input.addEventListener('change', () => {
+                const f = input.files && input.files[0];
+                if (f && f.size > MAX_ATTACHMENT_BYTES) {
+                    showToast('That file is larger than 25 MB — please choose a smaller one.', true);
+                    input.value = '';
+                    name.textContent = '';
+                    clear.style.display = 'none';
+                    return;
+                }
+                name.textContent = f ? `${f.name} (${fmtBytes(f.size)})` : '';
+                clear.style.display = f ? 'inline' : 'none';
+            });
+            clear.addEventListener('click', () => {
+                input.value = '';
+                name.textContent = '';
+                clear.style.display = 'none';
+            });
+        }
+        wirePicker('reply-file', 'reply-file-name', 'reply-file-clear');
+        wirePicker('new-file', 'new-file-name', 'new-file-clear');
+
+        function clearPicker(inputId, nameId, clearId) {
+            $(inputId).value = '';
+            $(nameId).textContent = '';
+            $(clearId).style.display = 'none';
+        }
+
+        // Raw fetch, NOT fetchJson — a multipart body must not carry the
+        // JSON content-type header fetchJson sets by default.
+        async function uploadAttachment(thread_id, message_id, file) {
+            const fd = new FormData();
+            fd.append('file', file, file.name);
+            const res = await fetch(
+                `/api/v1/patient/messages/${encodeURIComponent(thread_id)}/${encodeURIComponent(message_id)}/attachments`,
+                { method: 'POST', credentials: 'include', body: fd }
+            );
+            if (!res.ok) {
+                const b = await res.json().catch(() => ({}));
+                const why = b.error === 'file_too_large' ? 'the file is larger than 25 MB'
+                    : b.error === 'unsupported_mime' ? 'that file type is not supported'
+                    : (b.error || ('upload failed (' + res.status + ')'));
+                throw new Error(why);
+            }
         }
 
         $('btn-back').addEventListener('click', () => {
@@ -570,6 +681,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('btn-new').addEventListener('click', () => {
             $('new-subject').value = '';
             $('new-body').value = '';
+            clearPicker('new-file', 'new-file-name', 'new-file-clear');
             document.querySelectorAll('input[name="new-urgency"]').forEach(r => { r.checked = false; });
             showView('new');
             setTimeout(() => $('new-subject').focus(), 50);
@@ -589,7 +701,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     method: 'POST',
                     body: JSON.stringify({ subject, body, urgency: urgencyEl.value }),
                 });
-                showToast('Sent.');
+                const newFile = $('new-file').files && $('new-file').files[0];
+                if (newFile) {
+                    try {
+                        await uploadAttachment(data.thread_id, data.message_id, newFile);
+                        showToast('Sent with attachment.');
+                    } catch (ue) {
+                        showToast('Message sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast('Sent.');
+                }
+                clearPicker('new-file', 'new-file-name', 'new-file-clear');
                 await loadThreads();
                 openThread(data.thread_id);
             } catch (e) {
@@ -604,12 +727,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!state.currentThread) return;
             $('btn-send-reply').disabled = true;
             try {
-                await fetchJson(`/api/v1/patient/messages/${state.currentThread.id}`, {
+                const data = await fetchJson(`/api/v1/patient/messages/${state.currentThread.id}`, {
                     method: 'POST',
                     body: JSON.stringify({ body }),
                 });
                 $('reply-body').value = '';
-                showToast('Reply sent.');
+                const replyFile = $('reply-file').files && $('reply-file').files[0];
+                if (replyFile) {
+                    try {
+                        await uploadAttachment(data.thread_id, data.message_id, replyFile);
+                        showToast('Reply sent with attachment.');
+                    } catch (ue) {
+                        showToast('Reply sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast('Reply sent.');
+                }
+                clearPicker('reply-file', 'reply-file-name', 'reply-file-clear');
                 openThread(state.currentThread.id);
             } catch (e) {
                 showToast('Reply failed: ' + e.message, true);

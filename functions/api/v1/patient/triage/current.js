@@ -13,7 +13,7 @@
 //     status='pending_review' and an `auto_release_eta_ms` so the page
 //     can show a "Awaiting clinician review" state with countdown.
 //   - 404 with code 'no_triage' if neither — patient hasn't completed
-//     an intake yet (route them to /portal/intake/new).
+//     an intake yet (route them to /portal/intake/).
 //
 // PHI safety: only fields the patient's own UI needs are returned. The
 // AI rationale + secondary concerns are surfaced because they are the

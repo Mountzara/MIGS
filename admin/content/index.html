@@ -478,19 +478,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // on every API fetch explicitly. No persistent storage — sessionStorage
         // dies with the tab, so a password manager paste each session is still
         // the workflow. If the credentials are bad we 401 and re-prompt once.
-        async function ensureAdminCreds(force) {
-            if (!force) {
-                const cached = sessionStorage.getItem('mz_admin_basic');
-                if (cached) return cached;
-            }
-            const u = prompt('Admin email:', 'chris.mabini@gmail.com');
-            if (!u) return null;
-            const p = prompt('Admin password:');
-            if (!p) return null;
-            const b = btoa(`${u}:${p}`);
-            sessionStorage.setItem('mz_admin_basic', b);
-            return b;
-        }
+        // Removed: ensureAdminCreds() and its two prompt() dialogs. The
+        // browser's Basic-Auth session that admitted the user to
+        // /admin/content/ answers the API's 401 challenge automatically —
+        // the same pattern every other admin page uses. One legacy cleanup:
+        sessionStorage.removeItem('mz_admin_basic');
 
         // `noPrompt` (used by the silent 30s auto-refresh) means: never pop a
         // credential prompt. Without it, a user who hit Cancel on the login
@@ -498,24 +490,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // 401'd → reprompted on a loop). Now the background refresh fails quietly
         // and only a user-initiated action re-prompts.
         async function api(method, path, body, { noPrompt = false } = {}) {
-            const opts = { method, headers: {} };
+            const opts = { method, headers: {}, credentials: 'include' };
             if (body !== undefined) {
                 opts.headers['content-type'] = 'application/json';
                 opts.body = JSON.stringify(body);
             }
-            let creds = sessionStorage.getItem('mz_admin_basic')
-                || (noPrompt ? null : await ensureAdminCreds(false));
-            if (creds) opts.headers['Authorization'] = 'Basic ' + creds;
-            let res = await fetch(`${API}${path}`, opts);
-            // On a 401 the cached creds are stale/absent. Reprompt ONCE and retry
-            // — but NEVER during a silent background refresh (noPrompt).
+            const res = await fetch(`${API}${path}`, opts);
             if (res.status === 401 && !noPrompt) {
-                sessionStorage.removeItem('mz_admin_basic');
-                creds = await ensureAdminCreds(true);
-                if (creds) {
-                    opts.headers['Authorization'] = 'Basic ' + creds;
-                    res = await fetch(`${API}${path}`, opts);
-                }
+                // The browser's Basic-Auth session lapsed. A reload
+                // re-triggers the native dialog on the page itself, which is
+                // the one place credentials should ever be typed.
+                location.reload();
+                return new Promise(() => {});   // reload takes it from here
             }
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
@@ -540,6 +526,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     : null;
                 state.posts = data.posts || [];
                 renderSidebar();
+                if (!state.selectedId) renderMain();
                 const stillExists = state.selectedId && state.posts.find(p => p.id === state.selectedId);
                 if (state.selectedId && !stillExists) {
                     state.selectedId = null;
@@ -570,9 +557,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             document.getElementById('publishedCount').textContent = published.length;
             document.getElementById('rejectedCount').textContent = rejected.length;
 
-            function renderList(arr, container) {
+            function renderList(arr, container, emptyMsg) {
                 if (!arr.length) {
-                    container.innerHTML = '<div class="empty-list">No items.</div>';
+                    container.innerHTML = `<div class="empty-list">${esc(emptyMsg)}</div>`;
                     return;
                 }
                 container.innerHTML = arr.map(p => `
@@ -593,9 +580,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     });
                 });
             }
-            renderList(drafts, document.getElementById('draftList'));
-            renderList(published, document.getElementById('publishedList'));
-            renderList(rejected, document.getElementById('rejectedList'));
+            renderList(drafts, document.getElementById('draftList'), 'Nothing pending.');
+            renderList(published, document.getElementById('publishedList'), 'Nothing published.');
+            renderList(rejected, document.getElementById('rejectedList'), 'Nothing rejected.');
         }
 
         async function loadDetail(id) {
@@ -612,7 +599,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function renderMain(post) {
             const main = document.getElementById('main');
             if (!post) {
-                main.innerHTML = `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
+                // Zero posts anywhere is a different state from "nothing
+                // selected yet" — the second sentence would be a lie in the
+                // first case, so they get different copy.
+                main.innerHTML = state.posts.length === 0
+                    ? `<div class="empty-main"><p style="max-width: 54ch; line-height: 1.6;">Drafts from the writing pipeline land here to approve, edit or reject before they go public. Nothing is waiting — the pipeline posts new drafts on its Monday and Tuesday runs.</p></div>`
+                    : `<div class="empty-main"><h2>Select a post from the sidebar</h2><p>Drafts pending your review show up at the top. Click any item to preview, edit, approve, or reject.</p></div>`;
                 return;
             }
             const publicPath = post.kind === 'blog' ? `/trending/?id=${encodeURIComponent(post.id)}` : `/evidence/?id=${encodeURIComponent(post.id)}`;
@@ -807,7 +799,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // Only auto-refresh while signed in — a signed-out/cancelled state must
         // not trigger background calls (which previously re-prompted on a loop).
         setInterval(() => {
-            if (sessionStorage.getItem('mz_admin_basic')) loadPosts({ silent: true });
+            loadPosts({ silent: true });   // session cookie authenticates; no stored creds to check
         }, 30000);
     </script>
 </body>

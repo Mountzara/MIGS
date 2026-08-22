@@ -106,8 +106,28 @@
             border-radius: 14px;
             padding: 36px 20px; text-align: center;
             color: var(--fg-soft); font-size: 13px;
+            line-height: 1.6;
             backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
         }
+        dialog {
+            background: #1a1626; color: var(--fg-strong);
+            border: 1px solid var(--border); border-radius: 14px;
+            padding: 22px; max-width: 520px; width: 92vw;
+        }
+        dialog::backdrop { background: rgba(0,0,0,0.6); }
+        dialog h2 { margin: 0 0 4px 0; font-weight: 300; font-size: 20px; }
+        dialog p.hint { font-size: 12.5px; color: var(--fg-soft); margin: 0 0 6px 0; line-height: 1.55; }
+        dialog label { display: block; font-size: 12px; color: var(--fg-soft); margin: 10px 0 4px; }
+        dialog input {
+            width: 100%; font: inherit; font-size: 13px;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 10px; color: var(--fg-strong);
+        }
+        dialog .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        dialog .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        dialog .msg { font-size: 12.5px; margin-top: 12px; line-height: 1.55; min-height: 1em; }
+        dialog .msg.bad { color: #fca5a5; }
+        dialog .msg.good { color: #6ee7b7; }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -195,12 +215,48 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <div class="controls">
             <input type="search" id="q" placeholder="Search by last name, first name, or email…">
+            <button class="primary" id="btn-add">+ Add patient</button>
+            <button class="ghost" id="btn-invite">Send portal invite</button>
             <button class="ghost" id="btn-refresh">Refresh</button>
             <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="count">—</span>
         </div>
 
-        <div id="list" class="list"><div class="empty-state">Loading…</div></div>
+        <div id="list" class="list"><div class="empty-state">Loading the roster…</div></div>
     </div>
+
+    <dialog id="dlg-add">
+        <h2>Add patient</h2>
+        <p class="hint">This creates the chart only. It does not give the patient portal access &mdash;
+        send a portal invite for that.</p>
+        <div class="grid2">
+            <div><label for="a-first">First name</label><input id="a-first" autocomplete="off"></div>
+            <div><label for="a-last">Last name</label><input id="a-last" autocomplete="off"></div>
+        </div>
+        <label for="a-email">Email</label><input id="a-email" type="email" autocomplete="off">
+        <div class="grid2">
+            <div><label for="a-dob">Date of birth (YYYY-MM-DD)</label><input id="a-dob" placeholder="1984-03-22" autocomplete="off"></div>
+            <div><label for="a-phone">Phone (optional)</label><input id="a-phone" autocomplete="off"></div>
+        </div>
+        <div class="msg" id="a-msg"></div>
+        <div class="acts">
+            <button class="primary" id="a-save">Add patient</button>
+            <button class="ghost" id="a-cancel">Cancel</button>
+        </div>
+    </dialog>
+
+    <dialog id="dlg-invite">
+        <h2>Send portal invite</h2>
+        <p class="hint">This mints a signed sign-up link. Nothing is emailed &mdash; copy the link below
+        and send it to the patient yourself.</p>
+        <label for="i-email">Email</label><input id="i-email" type="email" autocomplete="off">
+        <label for="i-name">Full name (optional)</label><input id="i-name" autocomplete="off">
+        <label for="i-url">Invite link</label><input id="i-url" readonly placeholder="Appears here once minted">
+        <div class="msg" id="i-msg"></div>
+        <div class="acts">
+            <button class="primary" id="i-save">Mint invite</button>
+            <button class="ghost" id="i-cancel">Close</button>
+        </div>
+    </dialog>
 
     <script>
         const $ = (id) => document.getElementById(id);
@@ -219,6 +275,35 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 throw e;
             }
             return body;
+        }
+        async function postJson(url, body) {
+            const res = await fetch(url, {
+                method: 'POST', credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const ct = res.headers.get('content-type') || '';
+            const data = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((data && data.message) || (data && data.error) || res.statusText);
+                e.code = data && data.error; e.status = res.status;
+                throw e;
+            }
+            return data;
+        }
+        // The API answers with slugs. An operator should not have to read them.
+        const ERRORS = {
+            invalid_email: 'That email address is not valid.',
+            invalid_first_name: 'Enter a first name.',
+            invalid_last_name: 'Enter a last name.',
+            invalid_dob: 'Enter the date of birth as YYYY-MM-DD.',
+            email_already_registered: 'A patient with that email is already on the roster.',
+        };
+        function humanError(e) { return ERRORS[e.code] || e.message || 'Something went wrong.'; }
+        function setMsg(id, text, cls) {
+            const el = $(id);
+            el.textContent = text;
+            el.className = 'msg' + (cls ? ' ' + cls : '');
         }
         function escapeHtml(s) {
             if (s == null) return '';
@@ -246,14 +331,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 state.patients = data.patients || [];
                 render();
             } catch (e) {
-                $('list').innerHTML = `<div class="empty-state">Could not load: ${escapeHtml(e.message)}</div>`;
+                $('list').innerHTML = `<div class="empty-state">Could not load the roster: ${escapeHtml(e.message)}. Press Refresh to try again.</div>`;
             }
         }
 
         function render() {
             $('count').textContent = `${state.patients.length} patient${state.patients.length === 1 ? '' : 's'}`;
             if (state.patients.length === 0) {
-                $('list').innerHTML = '<div class="empty-state">No patients match this search.</div>';
+                // "Nobody has been added yet" and "your search excluded everyone"
+                // are different problems and need different next steps.
+                $('list').innerHTML = state.filter
+                    ? `<div class="empty-state">No patient matches &ldquo;${escapeHtml(state.filter)}&rdquo;. Clear the search to see the full roster.</div>`
+                    : '<div class="empty-state">This is everyone in your practice — click a name to open their whole chart. Add your first patient with + Add patient, or send a portal invite and let them register themselves.</div>';
                 return;
             }
             $('list').innerHTML = state.patients.map(p => {
@@ -286,6 +375,73 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }, 220);
         });
         $('btn-refresh').addEventListener('click', load);
+
+        // ---- add patient (POST /api/v1/admin/patients) ----
+        $('btn-add').addEventListener('click', () => {
+            setMsg('a-msg', '', '');
+            $('dlg-add').showModal();
+            $('a-first').focus();
+        });
+        $('a-cancel').addEventListener('click', () => $('dlg-add').close());
+        $('a-save').addEventListener('click', async () => {
+            const btn = $('a-save');
+            const body = {
+                first_name: $('a-first').value.trim(),
+                last_name: $('a-last').value.trim(),
+                email: $('a-email').value.trim(),
+                dob: $('a-dob').value.trim(),
+            };
+            const phone = $('a-phone').value.trim();
+            if (phone) body.phone = phone;
+            if (!body.first_name || !body.last_name || !body.email || !body.dob) {
+                setMsg('a-msg', 'First name, last name, email and date of birth are all required.', 'bad');
+                return;
+            }
+            btn.disabled = true;
+            setMsg('a-msg', 'Adding…', '');
+            try {
+                await postJson('/api/v1/admin/patients', body);
+                ['a-first', 'a-last', 'a-email', 'a-dob', 'a-phone'].forEach(id => { $(id).value = ''; });
+                setMsg('a-msg', '', '');
+                $('dlg-add').close();
+                // A stale search would hide the patient just created.
+                $('q').value = ''; state.filter = '';
+                load();
+            } catch (e) {
+                setMsg('a-msg', humanError(e), 'bad');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // ---- portal invite (POST /api/v1/admin/preview-invite) ----
+        $('btn-invite').addEventListener('click', () => {
+            setMsg('i-msg', '', '');
+            $('i-url').value = '';
+            $('dlg-invite').showModal();
+            $('i-email').focus();
+        });
+        $('i-cancel').addEventListener('click', () => $('dlg-invite').close());
+        $('i-save').addEventListener('click', async () => {
+            const btn = $('i-save');
+            const email = $('i-email').value.trim();
+            if (!email) { setMsg('i-msg', 'Enter the email address to invite.', 'bad'); return; }
+            const body = { email };
+            const full_name = $('i-name').value.trim();
+            if (full_name) body.full_name = full_name;
+            btn.disabled = true;
+            setMsg('i-msg', 'Minting…', '');
+            try {
+                const data = await postJson('/api/v1/admin/preview-invite', body);
+                $('i-url').value = data.grant_url || '';
+                $('i-url').select();
+                setMsg('i-msg', 'Invite minted. Copy the link above and send it to the patient — nothing is emailed automatically.', 'good');
+            } catch (e) {
+                setMsg('i-msg', humanError(e), 'bad');
+            } finally {
+                btn.disabled = false;
+            }
+        });
 
         load();
     </script>

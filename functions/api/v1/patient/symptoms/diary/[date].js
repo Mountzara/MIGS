@@ -24,6 +24,7 @@ import { previewAccess, preLaunchNotFound } from "../../../../../_lib/preview_ga
 import { requireRole, nowMs } from "../../../../../_lib/auth.js";
 import { logAudit } from "../../../../../_lib/audit.js";
 import { newId } from "../../../../../_lib/db.js";
+import { isIsoDate, isLoggableDate } from "../../../../../_lib/iso_date.js";
 
 function err(status, code, message, extra = {}) {
     return new Response(JSON.stringify({ error: code, message, ...extra }), {
@@ -32,7 +33,10 @@ function err(status, code, message, extra = {}) {
     });
 }
 
-function isDate(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+// This was a check on the SHAPE of the string only, so 2026-02-31 was
+// accepted, stored, and then matched no real-calendar query ever again —
+// written, acknowledged, and effectively lost. See _lib/iso_date.js.
+const isDate = isIsoDate;
 
 async function loadCatalog(env) {
     const res = await env.DB.prepare(`
@@ -164,7 +168,15 @@ export async function onRequestPut(ctx) {
     if (!session.patient_id || !env.DB) return err(500, "server_error", "DB not bound");
 
     const entry_date = String(params?.date || "");
-    if (!isDate(entry_date)) return err(400, "invalid_date", "YYYY-MM-DD");
+    if (!isDate(entry_date)) return err(400, "invalid_date", "YYYY-MM-DD, and a real date on the calendar");
+    // A diary entry records a day that has happened. Without this a
+    // mistyped year files the entry decades away, where it falls outside
+    // every window the portal shows while the patient is told it saved.
+    // One day of grace: a patient west of UTC is legitimately on
+    // "tomorrow" by our clock during their evening.
+    if (!isLoggableDate(entry_date)) {
+        return err(400, "future_date", "you cannot log symptoms for a day that has not happened yet");
+    }
 
     let body;
     try { body = await request.json(); } catch { return err(400, "invalid_json_body"); }

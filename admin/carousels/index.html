@@ -334,7 +334,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 ? allCarousels.filter((c) => c.status === activeFilter)
                 : allCarousels;
             if (!list.length) {
-                grid.innerHTML = '<div class="empty">No carousels yet. Run the pipeline + publisher to queue one.</div>';
+                grid.innerHTML = '<div class="empty">Generated social slide decks wait here for your approval before anything publishes. None queued — run the carousel generator and publisher, then approve any card badged READY.</div>';
                 return;
             }
             grid.innerHTML = list.map(carouselCard).join("\n");

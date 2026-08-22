@@ -161,7 +161,12 @@ ok(!TIERS.some((t) => (t.benefits || []).some((b) => /in.person|in the office|cl
 
 // ---------------------------------------------------------------------
 section("Evidence — sourced, dated, and honest about its limits");
-ok(EVIDENCE.length >= 4, "there is a real evidence base, not one statistic");
+// Was >= 4 before the racial-disparities item was removed. Three remains a
+// real evidence base — wait times, diagnostic delay and continuity, each
+// with a source, a URL and a year — and the honest move on removing a
+// citation is to lower the bar to what is actually there rather than to
+// find a replacement statistic to keep a number up.
+ok(EVIDENCE.length >= 3, "there is a real evidence base, not one statistic");
 ok(EVIDENCE.every((e) => e.claim && e.source && e.url && e.year),
    "every item carries a claim, a source, a URL and a year — checkable, not asserted");
 ok(EVIDENCE.every((e) => e.year >= 2018), "nothing cited is stale");
@@ -169,8 +174,17 @@ ok(EVIDENCE.every((e) => e.supports), "every item says WHAT IT SUPPORTS, so it c
 
 const continuity = EVIDENCE.find((e) => e.key === "continuity");
 ok(/caus/i.test(continuity.caveat || ""), "the continuity evidence is explicitly labelled associative, not causal");
-const disparities = EVIDENCE.find((e) => e.key === "disparities");
-ok(disparities.caveat, "the disparities claim carries a caveat rather than overclaiming");
+// The racial-disparities citation was REMOVED on 2026-08-14 at the owner's
+// instruction — "don't exploit black women". Assert its absence, so it
+// cannot drift back in: a disparity this practice is not addressing is not
+// evidence for a paid tier, and citing it borrows the moral weight of
+// someone else's harm. It remains in the clinical education material,
+// where a patient is being informed rather than sold to.
+ok(!EVIDENCE.some((e) => e.key === "disparities"),
+   "the racial-disparities citation is NOT used as evidence for the membership");
+ok(!EVIDENCE.some((e) => /black wom|racial dispar/i.test(
+       [e.claim, e.detail, e.source, e.supports, e.caveat].filter(Boolean).join(" "))),
+   "no evidence item invokes racial disparity to justify a price");
 ok(!EVIDENCE.some((e) => /this practice (improves|reduces|prevents)/i.test(e.claim)),
    "no citation is used to claim an outcome for THIS practice — the evidence describes the problem, not our results");
 

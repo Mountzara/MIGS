@@ -383,6 +383,31 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* ===== Message attachments (2026-08-18) ===== */
+.attach-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.attach-row input[type="file"] { display: none; }
+.attach-pick {
+    font: inherit; font-size: 12px; cursor: pointer;
+    padding: 5px 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--fg-soft);
+}
+.attach-pick:hover { border-color: rgba(var(--glow-purple), 0.55); color: var(--fg-strong); }
+.attach-name { font-size: 12px; color: var(--fg-soft); word-break: break-all; }
+.attach-clear {
+    font: inherit; font-size: 11.5px; cursor: pointer; border: none;
+    background: none; color: rgba(252,165,165,0.9); padding: 2px 6px;
+}
+.msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.msg-attachments a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; text-decoration: none;
+    padding: 4px 11px; border-radius: 999px;
+    background: rgba(var(--glow-purple), 0.14); border: 1px solid rgba(var(--glow-purple), 0.45);
+    color: var(--accent-soft); max-width: 100%; word-break: break-all;
+}
+.msg-attachments a:hover { background: rgba(var(--glow-purple), 0.24); }
 </style>
 </head>
 <body>
@@ -424,7 +449,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </section>
 
             <section id="reader-panel" class="panel">
-                <div id="reader-empty" class="empty-state">Select a thread to read.</div>
+                <div id="reader-empty" class="empty-state">Select a thread to read it.</div>
                 <div id="reader" class="reader">
                     <div class="reader-header">
                         <h3 id="reader-subject">—</h3>
@@ -440,6 +465,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="compose">
                         <label for="reply-body">Reply to patient</label>
                         <textarea id="reply-body" placeholder="Type a reply…"></textarea>
+                        <div class="attach-row">
+                            <label class="attach-pick" for="reply-file">📎 Attach a file</label>
+                            <input type="file" id="reply-file"
+                                   accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                            <span class="attach-name" id="reply-file-name"></span>
+                            <button type="button" class="attach-clear" id="reply-file-clear" style="display:none;">remove</button>
+                        </div>
                         <div class="actions">
                             <button class="primary" id="btn-send-reply">Send reply</button>
                         </div>
@@ -458,6 +490,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <input id="new-subject" maxlength="140" placeholder="Subject of the conversation">
                 <label for="new-body">Message</label>
                 <textarea id="new-body" placeholder="Type your message…"></textarea>
+                <div class="attach-row">
+                    <label class="attach-pick" for="new-file">📎 Attach a file</label>
+                    <input type="file" id="new-file"
+                           accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                    <span class="attach-name" id="new-file-name"></span>
+                    <button type="button" class="attach-clear" id="new-file-clear" style="display:none;">remove</button>
+                </div>
                 <div class="actions">
                     <button class="primary" id="btn-send-new">Send</button>
                     <button class="ghost" id="btn-cancel-new">Cancel</button>
@@ -582,7 +621,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 ? state.threads.filter(t => t.unread_count > 0)
                 : state.threads;
             if (filtered.length === 0) {
-                $('thread-list').innerHTML = '<div class="empty-state">No threads.</div>';
+                $('thread-list').innerHTML = state.threads.length === 0
+                    ? '<div class="empty-state">Patients&rsquo; secure messages arrive here. Nothing yet — the inbox fills the first time someone writes to you.</div>'
+                    : '<div class="empty-state">Nothing unread. Switch the filter to All to see every thread.</div>';
                 return;
             }
             $('thread-list').innerHTML = filtered.map(t => {
@@ -637,6 +678,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         }
 
+        function fmtBytes(n) {
+            if (n == null || isNaN(n)) return '';
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+            return (n / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function attachmentChips(m) {
+            if (!m.attachments || m.attachments.length === 0) return '';
+            return `<div class="msg-attachments">${m.attachments.map(a => `
+                <a href="/api/v1/admin/messages/attachments/${encodeURIComponent(a.id)}"
+                   target="_blank" rel="noopener">📎 ${escapeHtml(a.filename)}
+                   <span style="opacity:.65">${fmtBytes(a.size_bytes)}</span></a>
+            `).join('')}</div>`;
+        }
+
         function renderMessages() {
             $('messages').innerHTML = state.messages.map(m => {
                 const who = m.from_role === 'patient' ? 'Patient'
@@ -650,10 +707,56 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${m.read_at && m.from_role === 'clinician' ? '<span>read by patient</span>' : ''}
                         </div>
                         <div class="msg-body">${escapeHtml(m.body)}</div>
+                        ${attachmentChips(m)}
                     </div>
                 `;
             }).join('');
             $('messages').scrollTop = $('messages').scrollHeight;
+        }
+
+        // ---- Attachment picker + upload ----
+        const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
+        function wirePicker(inputId, nameId, clearId) {
+            const input = $(inputId), name = $(nameId), clear = $(clearId);
+            input.addEventListener('change', () => {
+                const f = input.files && input.files[0];
+                if (f && f.size > MAX_ATTACHMENT_BYTES) {
+                    showToast('That file is larger than 25 MB.', true);
+                    input.value = ''; name.textContent = ''; clear.style.display = 'none';
+                    return;
+                }
+                name.textContent = f ? `${f.name} (${fmtBytes(f.size)})` : '';
+                clear.style.display = f ? 'inline' : 'none';
+            });
+            clear.addEventListener('click', () => {
+                input.value = ''; name.textContent = ''; clear.style.display = 'none';
+            });
+        }
+        wirePicker('reply-file', 'reply-file-name', 'reply-file-clear');
+        wirePicker('new-file', 'new-file-name', 'new-file-clear');
+
+        function clearPicker(inputId, nameId, clearId) {
+            $(inputId).value = '';
+            $(nameId).textContent = '';
+            $(clearId).style.display = 'none';
+        }
+
+        // Raw fetch, NOT fetchJson — multipart must not carry the JSON header.
+        async function uploadAttachment(thread_id, message_id, file) {
+            const fd = new FormData();
+            fd.append('file', file, file.name);
+            const res = await fetch(
+                `/api/v1/admin/messages/${encodeURIComponent(thread_id)}/${encodeURIComponent(message_id)}/attachments`,
+                { method: 'POST', credentials: 'include', body: fd }
+            );
+            if (!res.ok) {
+                const b = await res.json().catch(() => ({}));
+                const why = b.error === 'file_too_large' ? 'the file is larger than 25 MB'
+                    : b.error === 'unsupported_mime' ? 'that file type is not supported'
+                    : (b.error || ('upload failed (' + res.status + ')'));
+                throw new Error(why);
+            }
         }
 
         $('btn-refresh').addEventListener('click', () => loadThreads());
@@ -667,12 +770,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!tid) return;
             $('btn-send-reply').disabled = true;
             try {
-                await fetchJson(`/api/v1/admin/messages/${tid}`, {
+                const data = await fetchJson(`/api/v1/admin/messages/${tid}`, {
                     method: 'POST',
                     body: JSON.stringify({ body }),
                 });
                 if (state.currentThreadId === tid) $('reply-body').value = '';
-                showToast('Reply sent to patient.');
+                const replyFile = $('reply-file').files && $('reply-file').files[0];
+                if (replyFile) {
+                    try {
+                        await uploadAttachment(tid, data.message_id, replyFile);
+                        showToast('Reply sent to patient with attachment.');
+                    } catch (ue) {
+                        showToast('Reply sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast('Reply sent to patient.');
+                }
+                clearPicker('reply-file', 'reply-file-name', 'reply-file-clear');
                 openThread(tid);
             } catch (e) {
                 showToast('Reply failed: ' + e.message, true);
@@ -695,6 +809,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('search-patient').value = '';
             $('new-subject').value = '';
             $('new-body').value = '';
+            clearPicker('new-file', 'new-file-name', 'new-file-clear');
             $('patient-results').innerHTML = '';
             state.selectedPatient = null;
             $('new-modal').classList.add('open');
@@ -714,7 +829,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     const d = await fetchJson(`/api/v1/admin/patients?q=${encodeURIComponent(q)}&limit=8`);
                     const list = d.patients || [];
                     if (list.length === 0) {
-                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No matches.</div>';
+                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No patient matches that. Type at least two letters of a first or last name.</div>';
                         return;
                     }
                     $('patient-results').innerHTML = list.map(p => {
@@ -751,7 +866,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         subject, body: bodyText,
                     }),
                 });
-                showToast(`Sent to ${state.selectedPatient.name}.`);
+                const newFile = $('new-file').files && $('new-file').files[0];
+                if (newFile) {
+                    try {
+                        await uploadAttachment(data.thread_id, data.message_id, newFile);
+                        showToast(`Sent to ${state.selectedPatient.name} with attachment.`);
+                    } catch (ue) {
+                        showToast('Message sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast(`Sent to ${state.selectedPatient.name}.`);
+                }
+                clearPicker('new-file', 'new-file-name', 'new-file-clear');
                 $('new-modal').classList.remove('open');
                 await loadThreads();
                 openThread(data.thread_id);

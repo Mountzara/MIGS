@@ -254,7 +254,12 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
    rgb(64,58,67) — #a78bfa is 4.05:1 (pixel-measured deploy gate), #b7a4fc
    is 5.11:1. Body-size links elsewhere pass with the token; this chip is
    the smallest text on the page. */
-.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: #b7a4fc; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
+/* 2026-08-20 — #b7a4fc measured 3.65:1 against the tint the 18%-alpha
+   purple chip composites to over this card (rgb(87,77,104)); 11px text
+   needs 4.5:1. #ddd6fe = 5.67:1, with headroom for a darker card.
+   Surfaced only after the contrast audit began settling in-flight
+   transitions — mid-fade sampling had been hiding real pairs. */
+.site .abbrev { display: inline-block; background: rgba(var(--glow-purple), 0.18); color: #ddd6fe; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.10em; margin-bottom: 10px; }
 .site h4 { margin: 0 0 4px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.25; }
 .site .city { font-size: 12px; color: var(--fg-soft); margin-bottom: 12px; }
 .site .focus { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
@@ -343,7 +348,13 @@ button.detail-card {
     transition: all 0.22s ease;
 }
 button.detail-card:hover, button.detail-card:focus-visible { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.08); outline: none; }
-.detail-card .dk { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
+/* 2026-08-20 — was rgba(var(--glow-purple), .95) = #a78bfa, which lands at
+   4.14:1 on this card's rgb(59,52,62) ground. At 10.5px it is small text
+   and needs 4.5:1. #c4b5fd gives 6.51:1, so the label survives a future
+   darkening of the card without going back under the line. Measured by
+   scripts/audit_contrast_pixels.py, which only found it once the crashed
+   homepage capture stopped masking the whole run. */
+.detail-card .dk { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #c4b5fd; margin-bottom: 8px; }
 .detail-card h4 { margin: 0 0 8px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.3; }
 .detail-card p { margin: 0; font-size: 13px; color: var(--fg-mid); line-height: 1.55; }
 /* Simulation series: 9 cards — 3×3 at desktop so no orphan strands on a 4-col row. */

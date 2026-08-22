@@ -88,7 +88,7 @@ heartbeat() {
 # site so the queue never has to carry clinical text.
 build_prompt() {
     local kind="$1" payload="$2"
-    local ref resp text removed catalog
+    local ref resp text removed catalog kb
 
     # Every kind fetches its context from the SAME de-identified endpoint.
     # There is no path here that obtains raw patient text — the server
@@ -108,6 +108,12 @@ build_prompt() {
     # context. Never hard-code it here — a list typed from memory is how
     # an invented visit type reached a triage row and broke booking.
     catalog=$(jq -r '.catalog // empty' <<<"$resp")
+    # The practice reference library block. Clinical answers must come from
+    # HIS KB, never from the model's general knowledge — that is the owner's
+    # standing rule. The server assembles and ships it; like the catalog it
+    # is NEVER written here. Reference knowledge, not patient data, so it is
+    # not de-identified and does not need to be.
+    kb=$(jq -r '.kb_instruction // empty' <<<"$resp")
     if [ -z "$text" ]; then
         echo "  ! server released nothing: $(jq -r '.error // "no text"' <<<"$resp")" >&2
         echo ""; return 1
@@ -118,6 +124,8 @@ build_prompt() {
     case "$kind" in
     message_draft)
         cat <<EOF
+${kb}
+
 You are drafting a patient-portal reply for Dr. Christopher Mabini, DO, MSAEd —
 a fellowship-trained complex benign gynecology / MIGS surgeon.
 
@@ -131,6 +139,11 @@ HARD RULES: do not diagnose, prescribe, change a dose, or promise an outcome.
 Do not introduce a clinical fact that is not in the thread. If anything reads
 as an emergency, tell them to seek emergency care now. If key information is
 missing, ASK rather than assume.
+
+SOURCES: every clinical statement must come from the REFERENCE EXCERPTS at the
+top and be cited [KB:<doc_id>]. Nothing from your own medical knowledge. If the
+references do not cover what was asked, say so in the draft — the server checks
+your citations and discards a draft that invents one.
 
 TOKENS: this thread has been de-identified. Names and dates appear as
 [NAME_1], [DATE_2] and so on. Use those tokens verbatim wherever you would
@@ -182,6 +195,8 @@ EOF
         ;;
     visit_summary)
         cat <<EOF
+${kb}
+
 You are writing the after-visit summary for a patient of Dr. Christopher
 Mabini, DO. He reads it and decides whether to approve it before the patient
 ever sees it.
@@ -192,6 +207,11 @@ FIRST the PATIENT-FACING summary:
   * Second person, plain language, explain any medical word on first use.
   * Headings: What we talked about / The plan / Your medicines / What happens next
   * ONLY what is in the note. No added fact, no reassurance, no new advice.
+  * Where you explain what something IS — background the note assumes rather
+    than states — that explanation comes from the REFERENCE EXCERPTS at the
+    top, cited [KB:<doc_id>]. Never from your own medical knowledge. The
+    server verifies every citation and discards the summary if one is
+    invented or unsupported.
   * Do not promise an outcome. Do not minimise anything the patient raised.
     Do not speculate about what a symptom "could be".
   * Where the note records uncertainty, say so — "we do not know yet" is a

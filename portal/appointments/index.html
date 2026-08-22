@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Appointments &middot; Member Portal &middot; Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        :root { --accent:#a78bfa; --border:rgba(255,255,255,.10); }
+        * { box-sizing:border-box; }
+        html { background: radial-gradient(110vmax 80vmax at 82% -10%, rgba(139,92,246,.09), transparent 62%),
+               linear-gradient(178deg,#191526 0%,#120f1b 55%,#161321 100%); }
+        body { margin:0; padding:0; background-color:transparent; color:#fff; min-height:100vh;
+               font-family:'Avenir Next','Avenir',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+               -webkit-font-smoothing:antialiased; }
+        .wrap { max-width:820px; margin:0 auto; padding:28px 22px 80px; }
+        .top-row { display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:22px; }
+        a { color:var(--accent); text-decoration:none; }
+        .eyebrow { font-size:11px; letter-spacing:.18em; text-transform:uppercase; opacity:.6; margin:0 0 8px; }
+        h1 { font-weight:200; font-size:clamp(24px,4vw,32px); letter-spacing:-.02em; margin:0 0 10px; }
+        .lede { font-size:14.5px; line-height:1.6; opacity:.85; margin:0 0 24px; }
+        h2 { font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+             opacity:.6; margin:30px 0 12px; }
+        .card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:12px;
+                padding:16px 18px; margin-bottom:12px; }
+        .row1 { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+        .what { font-size:15.5px; font-weight:600; }
+        .pill { font-size:10.5px; padding:2px 10px; border-radius:999px; border:1px solid var(--border); opacity:.9; }
+        .pill.green { border-color:rgba(16,185,129,.55); color:#6ee7b7; }
+        .pill.amber { border-color:rgba(245,158,11,.55); color:#fcd34d; }
+        .stage { font-size:13px; opacity:.8; margin-top:8px; line-height:1.6; }
+        .empty { opacity:.65; font-size:14px; padding:26px 0; line-height:1.6; }
+        .cta { margin-top:14px; }
+        .note { font-size:12.5px; opacity:.7; line-height:1.6; margin-top:22px; border-top:1px solid var(--border); padding-top:16px; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top-row"><a href="/portal/">&larr; Member portal</a><span style="opacity:.5;">/portal/appointments</span></div>
+        <p class="eyebrow">Member portal &middot; Appointments</p>
+        <h1>Your appointments</h1>
+        <p class="lede">
+            Everything booked, and everything you have already been seen for. If you need to move or cancel a visit,
+            send us a message rather than letting it lapse &mdash; we will find you another time.
+        </p>
+
+        <h2>Upcoming</h2>
+        <div id="upcoming"><div class="empty">Loading&hellip;</div></div>
+
+        <h2>Past visits</h2>
+        <div id="past"><div class="empty">Loading&hellip;</div></div>
+
+        <div class="note">
+            Bring your insurance card and photo ID to an in-person visit, and arrive fifteen minutes early. For a
+            telehealth visit the Join button appears on your portal home page fifteen minutes before the start time.
+        </div>
+    </div>
+    <script>
+    (function () {
+        'use strict';
+        var $ = function (id) { return document.getElementById(id); };
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
+
+        function fmtDay(iso) {
+            if (!iso) return '';
+            var d = new Date(String(iso).length <= 10 ? iso + 'T12:00:00Z' : iso);
+            if (isNaN(d)) return esc(iso);
+            return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric', timeZone:'America/Chicago' });
+        }
+        function fmtWhen(ms) {
+            if (!ms) return null;
+            var d = new Date(Number(ms));
+            if (isNaN(d)) return null;
+            // Pinned to the practice's zone with the zone shown — the same
+            // rule the dashboard uses. A patient in another state reading a
+            // browser-local time with no label will arrive at the wrong hour.
+            return d.toLocaleString('en-US', { weekday:'long', month:'long', day:'numeric',
+                                               hour:'numeric', minute:'2-digit',
+                                               timeZone:'America/Chicago', timeZoneName:'short' });
+        }
+
+        // Every one of these paths exists: /api/v1/patient/triage/current,
+        // /api/v1/patient/appointments/<id> and /api/v1/patient/visits. There
+        // is no list-all-appointments endpoint, so the booked visit is reached
+        // the same way the dashboard reaches it — through the triage row that
+        // carries its id.
+        function api(path) {
+            return fetch(path, { credentials:'include', cache:'no-store' }).then(function (r) {
+                if (r.status === 401) {
+                    location.href = '/portal/login?next=/portal/appointments/';
+                    return null;
+                }
+                return r.json().catch(function () { return {}; }).then(function (body) {
+                    if (!r.ok) {
+                        var e = new Error((body && body.message) || r.statusText);
+                        e.code = body && body.error;
+                        e.status = r.status;
+                        throw e;
+                    }
+                    return body;
+                });
+            });
+        }
+
+        function showUpcoming(html) { $('upcoming').innerHTML = html; }
+
+        // ---- the four states, in the order a patient passes through them ----
+
+        function stateNoHistory() {
+            showUpcoming('<div class="empty">You don\'t have any appointments yet. Finish your health history and we\'ll open the right times for you to book.'
+                + '<div class="cta"><a href="/portal/intake/">Continue your history &rarr;</a></div></div>');
+        }
+        function stateAwaitingReview() {
+            showUpcoming('<div class="empty">Nothing booked yet. Dr. Mabini is reviewing your history now and your times will appear here, usually within a few hours.</div>');
+        }
+        function stateReadyToBook() {
+            showUpcoming('<div class="empty">Nothing booked yet.'
+                + '<div class="cta"><a href="/portal/appointments/book/">Pick a time &rarr;</a></div></div>');
+        }
+        function stateBooked(appt) {
+            var when = fmtWhen(appt.starts_at);
+            var tele = appt.modality === 'telehealth';
+            showUpcoming(
+                '<div class="card">'
+                + '<div class="row1">'
+                + '<span class="what">' + esc(appt.visit_type_label || appt.visit_type || 'Your visit') + '</span>'
+                + '<span class="pill green">booked</span>'
+                + (tele ? '<span class="pill amber">telehealth</span>' : '<span class="pill">in person</span>')
+                + '</div>'
+                + (when ? '<div class="stage">' + esc(when) + (appt.duration_min ? ' &middot; ' + esc(appt.duration_min) + ' minutes' : '') + '</div>' : '')
+                + '<div class="stage">' + (tele
+                    ? 'Your Join button goes live fifteen minutes before the start time, on your portal home page. <a href="/portal/tech-check/">Run a device check</a> beforehand.'
+                    : 'Please arrive fifteen minutes early with your insurance card and photo ID.') + '</div>'
+                + '</div>');
+        }
+
+        function loadUpcoming() {
+            return api('/api/v1/patient/triage/current').then(function (d) {
+                if (!d) return;
+                var t = d.triage || {};
+                if (t.appointment_id) {
+                    return api('/api/v1/patient/appointments/' + encodeURIComponent(t.appointment_id))
+                        .then(function (a) {
+                            if (!a) return;
+                            var appt = a.appointment || {};
+                            var over = appt.starts_at && Number(appt.starts_at) < Date.now();
+                            var dead = appt.status === 'cancelled' || appt.status === 'no_show';
+                            // A visit already behind us is not "upcoming"; it is
+                            // in the past list below, and the patient is free to
+                            // book again.
+                            if (!appt.starts_at || over || dead) { stateReadyToBook(); return; }
+                            stateBooked(appt);
+                        })
+                        .catch(function () { stateReadyToBook(); });
+                }
+                if (t.status === 'released') { stateReadyToBook(); return; }
+                stateAwaitingReview();
+            }).catch(function (e) {
+                if (e.code === 'no_triage' || e.status === 404) { stateNoHistory(); return; }
+                showUpcoming('<div class="empty">We couldn\'t load your appointments just now. Reload the page, or message us if it keeps happening.'
+                    + '<div class="cta"><a href="/portal/messages/">Message the practice &rarr;</a></div></div>');
+            });
+        }
+
+        function loadPast() {
+            return api('/api/v1/patient/visits').then(function (d) {
+                if (!d) return;
+                var visits = (d && d.visits) || [];
+                if (visits.length === 0) {
+                    $('past').innerHTML = '<div class="empty">No past visits yet.</div>';
+                    return;
+                }
+                $('past').innerHTML = visits.map(function (v) {
+                    return '<div class="card">'
+                        + '<div class="row1">'
+                        + '<span class="what">' + esc(v.visit_type || 'Visit') + '</span>'
+                        + (v.new_for_you ? '<span class="pill amber">new summary</span>' : '')
+                        + '</div>'
+                        + '<div class="stage">' + esc(fmtDay(v.visit_date)) + '</div>'
+                        + (v.plan ? '<div class="stage">' + esc(v.plan) + '</div>' : '')
+                        + '<div class="stage"><a href="/portal/visits/">Read the full summary &rarr;</a></div>'
+                        + '</div>';
+                }).join('');
+            }).catch(function () {
+                $('past').innerHTML = '<div class="empty">We couldn\'t load your past visits just now. Reload the page, or message us if it keeps happening.</div>';
+            });
+        }
+
+        loadUpcoming();
+        loadPast();
+    })();
+    </script>
+</body>
+</html>

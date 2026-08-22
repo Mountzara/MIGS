@@ -60,7 +60,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=507c57aaa4">
+<link rel="stylesheet" href="/assets/css/home.css?v=119a2becbb">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -84,22 +84,37 @@
                 <img src="assets/images/mount-zara-monogram.png" alt="Mount Zara" />
                 <span class="nav-brand-text">MOUNT ZARA</span>
             </a>
-            <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menu">
+            <button class="mobile-toggle" onclick="toggleMenu()" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
             </button>
             <ul class="nav-links" id="navLinks">
+                <!-- 2026-08-20 — thirteen top-level links overflowed the bar at
+                     every desktop width and clipped "Contact"; the hamburger
+                     only appeared below 768px, so nothing collapsed in between.
+                     The six a patient actually navigates by stay visible; the
+                     seven that are depth (AI, Apps, Research, Awards,
+                     Curriculum, Trending, Bio) live under More. The full flat
+                     list still renders inside the mobile panel, so nothing
+                     becomes unreachable at any width. -->
                 <li><a href="#about">About</a></li>
                 <li><a href="#surgical">Surgery</a></li>
                 <li><a href="#osteopathic">Osteopathic</a></li>
-                <li><a href="#ai">AI</a></li>
-                <li><a href="#apps">Apps</a></li>
-                <li><a href="#research">Research</a></li>
-                <li><a href="#awards">Awards</a></li>
-                <li><a href="#curriculum">Curriculum</a></li>
                 <li><a href="/evidence/">Evidence</a></li>
-                <li><a href="/trending/">Trending</a></li>
+                <li class="nav-more">
+                    <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">
+                        More<span class="nav-more-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <ul class="nav-more-menu">
+                        <li><a href="#ai">AI</a></li>
+                        <li><a href="#apps">Apps</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#awards">Awards</a></li>
+                        <li><a href="#curriculum">Curriculum</a></li>
+                        <li><a href="/trending/">Trending</a></li>
+                        <li><a href="/about/">Bio</a></li>
+                    </ul>
+                </li>
                 <li><a href="/portal/" class="nav-portal-link">Member Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
-                <li><a href="/about/">Bio</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -369,39 +384,13 @@
                  canonical 5-option entry point into Surgery / Research / Apps
                  / Osteopathy / Education. -->
 
-            <div class="hero-meta">
-                <!-- 2026-08-12 owner directive: the PRACTICE / PRIME Saint
-                     Francis / Evanston block is gone (fellowship complete);
-                     the Preclinical Fellowship joins the CBG/MIGS fellowship. -->
-                <div class="meta-item">
-                    <span class="meta-label">Fellowship</span>
-                    <span class="meta-value"><strong>Complex Benign Gynecology</strong><br>&amp; Minimally Invasive Gynecologic Surgery</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Preclinical Fellowship</span>
-                    <span class="meta-value"><strong>Osteopathic Manipulative Treatment</strong><br>&amp; Anatomy</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Focus</span>
-                    <span class="meta-value">
-                        <span class="focus-list">
-                            <span>Robotic Surgery</span>
-                            <span>Laparoscopic Surgery</span>
-                            <span>Hysteroscopic Surgery</span>
-                            <span>Endometriosis</span>
-                            <span>Fibroids</span>
-                            <span>RPOC</span>
-                            <span>Fertility-sparing Surgery</span>
-                            <span>Asherman's Syndrome</span>
-                            <span>Isthmocele Repair</span>
-                            <span>Menopausal HRT</span>
-                            <span>OMT</span>
-                            <span>Clinical AI</span>
-                            <span>Surgical Education</span>
-                        </span>
-                    </span>
-                </div>
-            </div>
+            <!-- 2026-08-20 owner directive: the FELLOWSHIP / PRECLINICAL
+                 FELLOWSHIP / FOCUS band is removed entirely. It presented
+                 credentials and thirteen topic chips with no statement of
+                 what any of it meant for the patient reading it. The CSS
+                 (.hero-meta / .meta-item / .focus-list) stays in home.css —
+                 unused and harmless — and home.js touches .hero-meta only
+                 behind a null guard. -->
         </div>
 
         <div class="scroll-indicator">Scroll</div>
@@ -445,37 +434,77 @@
             <p class="section-sub">Combining surgical excellence, osteopathic foundations, educational leadership, and applied AI to redefine modern women's healthcare.</p>
 
             <div class="about-grid">
-                <div class="about-text-block">
+                <div class="about-text-block" data-read-title="Multidisciplinary by design" data-read-eyebrow="About">
                     <h3>Multidisciplinary by design.</h3>
-                    <p>Dr. Mabini is a board-eligible, fellowship-trained minimally invasive gynecologic surgeon. He completed his Complex Benign Gynecology &amp; MIGS Fellowship at PRIME St. Francis Hospital in Evanston, IL in 2026.</p>
-                    <p>Trained as a Doctor of Osteopathic Medicine with an additional Anatomy &amp; OPP Preclinical Fellowship, his practice integrates whole-person care with cutting-edge surgical and digital tools.</p>
-                    <p>With a Master's in Adult Education and an active AI/LLM development practice, he bridges traditional osteopathic philosophy with surgical innovation and software engineering.</p>
+                    <p>Dr. Mabini is a board-eligible, fellowship-trained minimally invasive gynecologic surgeon.</p>
+                    <p data-read>He completed his Complex Benign Gynecology &amp; MIGS Fellowship at PRIME St. Francis Hospital in Evanston, IL in 2026.</p>
+                    <p data-read>Trained as a Doctor of Osteopathic Medicine with an additional Anatomy &amp; OPP Preclinical Fellowship, his practice integrates whole-person care with cutting-edge surgical and digital tools.</p>
+                    <p data-read>With a Master's in Adult Education and an active AI/LLM development practice, he bridges traditional osteopathic philosophy with surgical innovation and software engineering.</p>
                 </div>
-                <div class="about-text-block">
+                <div class="about-text-block" data-read-title="The work" data-read-eyebrow="About" data-read-cta="See the detail">
                     <h3>The work.</h3>
-                    <p><strong>Surgery.</strong> Indocyanine Green (ICG) imaging, Narrow-Band Imaging (NBI), advanced hysteroscopy, robotic myomectomy, complex laparoscopy.</p>
-                    <p><strong>Research.</strong> Multiple IRB-approved studies on endometriosis detection, adenomyosis imaging, isthmocele repair, and ERAS protocols.</p>
-                    <p><strong>AI & Software.</strong> A native suite of macOS applications for clinical practice, board prep, research workflow, and surgical education.</p>
+                    <p><strong>Surgery.</strong> ICG and narrow-band imaging, advanced hysteroscopy, robotic myomectomy.</p>
+                    <p data-read><strong>Surgery.</strong> Indocyanine Green (ICG) imaging, Narrow-Band Imaging (NBI), advanced hysteroscopy, robotic myomectomy, complex laparoscopy.</p>
+                    <p data-read><strong>Research.</strong> Multiple IRB-approved studies on endometriosis detection, adenomyosis imaging, isthmocele repair, and ERAS protocols.</p>
+                    <p data-read><strong>AI &amp; Software.</strong> A native suite of macOS applications for clinical practice, board prep, research workflow, and surgical education.</p>
                 </div>
             </div>
 
+            <!-- =================================================================
+                 2026-08-20 — was four bare numerals over uppercase labels
+                 ("15 / 2 / 2 / 6"). Owner feedback, twice: a numeral on its
+                 own is not information, it is decoration that the reader has
+                 to decode. Each tile now carries a glyph, states the figure
+                 inside a sentence, names WHAT the figure is made of, and
+                 links to the section that proves it — so the row does
+                 navigational work instead of sitting there being admired.
+
+                 scripts/audit_fact_sync.mjs asserts the literal
+                 stat-num">15< is present (publications count). Keep the
+                 class and the value together on one line or that gate fails.
+                 ================================================================= -->
             <div class="stats-row">
-                <div class="stat">
-                    <div class="stat-num">15</div>
-                    <div class="stat-label">Peer-reviewed publications &amp; presentations</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">2</div>
-                    <div class="stat-label">Active IRB studies</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">2</div>
-                    <div class="stat-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">6</div>
-                    <div class="stat-label">Native clinical apps in beta</div>
-                </div>
+                <a class="stat" href="#research">
+                    <span class="stat-glyph" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 4h13l5 5v19H7z"/><path d="M20 4v5h5"/><path d="M11 14h10M11 18h10M11 22h6"/>
+                        </svg>
+                    </span>
+                    <p class="stat-line"><span class="stat-num">15</span> peer-reviewed publications and presentations</p>
+                    <p class="stat-detail">Four journal articles, plus eleven podium and poster presentations at AAGL, ACOG and CAOG.</p>
+                    <span class="stat-go">See the research &rarr;</span>
+                </a>
+                <a class="stat" href="#research">
+                    <span class="stat-glyph" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 4h6M14 4v9l-6 11a3 3 0 0 0 2.6 4.5h10.8A3 3 0 0 0 24 24l-6-11V4"/><path d="M11 21h10"/>
+                        </svg>
+                    </span>
+                    <p class="stat-line"><span class="stat-num">2</span> active IRB studies</p>
+                    <p class="stat-detail">Narrow-band imaging for adenomyosis at hysteroscopy, and ICG detection of appendiceal endometriosis.</p>
+                    <span class="stat-go">See the studies &rarr;</span>
+                </a>
+                <a class="stat" href="#awards">
+                    <span class="stat-glyph" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="16" cy="13" r="7"/><path d="M11.5 19.2 9 29l7-3.6 7 3.6-2.5-9.8"/>
+                        </svg>
+                    </span>
+                    <p class="stat-line"><span class="stat-num">2</span> peer-reviewed research awards</p>
+                    <p class="stat-detail">The AAGL Golden Hysteroscope, and the CAOG Dr. George W. Morley Memorial Paper Award.</p>
+                    <span class="stat-go">See the awards &rarr;</span>
+                </a>
+                <a class="stat" href="#apps">
+                    <span class="stat-glyph" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="10" height="10" rx="2.5"/><rect x="18" y="4" width="10" height="10" rx="2.5"/>
+                            <rect x="4" y="18" width="10" height="10" rx="2.5"/><rect x="18" y="18" width="10" height="10" rx="2.5"/>
+                        </svg>
+                    </span>
+                    <p class="stat-line"><span class="stat-num">6</span> native clinical apps in beta</p>
+                    <p class="stat-detail">Clinical evidence, board prep, transcription, research and surgical media &mdash; reasoning on-device.</p>
+                    <span class="stat-go">See the suite &rarr;</span>
+                </a>
             </div>
         </div>
     </section>
@@ -568,29 +597,114 @@
                 </cite>
             </div>
 
-            <div class="zero-eyebrow">Safety record across the fellowship</div>
-            <div class="zero-grid" data-count-trigger>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Conversions to laparotomy</h3>
-                    <p>Across the entire fellowship &mdash; every advanced minimally invasive case completed minimally invasively.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Major bowel and bladder injuries</h3>
-                    <p>Despite extensive adhesiolysis and complex pelvic dissection &mdash; exceptional tissue handling and injury recognition.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-text="Zero">Zero</div>
-                    <h3>Ureteral, vascular, and nerve injuries</h3>
-                    <p>Through extensive retroperitoneal dissection &mdash; anatomical awareness practiced as a discipline.</p>
-                </div>
-                <div class="zero-card">
-                    <div class="zero-num" data-count-target="90" data-count-suffix=".4%">90.4%</div>
-                    <h3>Same-day discharge</h3>
-                    <p>Major surgery without the major hospital stay &mdash; MIS means you get home sooner, with less pain and a faster recovery.</p>
-                </div>
+            <!-- =================================================================
+                 SAFETY — rebuilt 2026-08-20.
+                 The previous version was four cards reading "Zero / Zero /
+                 Zero / 90.4%". Two problems with that, both raised by the
+                 owner:
+
+                 1. A bare number with no verb and no denominator does not
+                    tell a patient anything. "Zero" of what, out of how many,
+                    over what period? It read as decoration, not information.
+                 2. "Zero" is a claim with an expiry date. Every surgeon
+                    eventually has a complication; the day that happens the
+                    homepage becomes false and has to be quietly edited, which
+                    is the worst possible moment to be rewriting a safety
+                    claim. Owner directive: "make it effective idea overall
+                    big picture than specific zero."
+
+                 So each card now leads with a DIAGRAM of the thing being
+                 described, states the practice as a durable principle, and
+                 backs it with a figure that is a completed historical record
+                 (the fellowship operative log, Sept 2023 - May 2026) rather
+                 than a running promise. Card three states the complication
+                 rate outright, so a future complication CONFIRMS this section
+                 instead of contradicting it.
+
+                 Every figure here is from cite_audit/authoritative-cv-2026-08.txt
+                 and matches cv/index.html. scripts/audit_fact_sync.mjs enforces
+                 that agreement - do not edit a number here without editing it
+                 there, and read SYSTEM_MAP §7.10 first.
+
+                 Class names: the .zero-* hooks were renamed .safety-*; the
+                 count-up observer in assets/js/home.js and the reveal registry
+                 were updated in the same commit. grep before renaming again.
+                 ================================================================= -->
+            <div class="safety-eyebrow">How the surgery is done</div>
+            <div class="safety-grid" data-count-trigger>
+
+                <article class="safety-card" data-read-title="Small incisions, even for big operations" data-read-eyebrow="Minimally invasive">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M24 14c0-4 9-7 36-7s36 3 36 7c4 18 3 39-6 54-4 7-16 10-30 10s-26-3-30-10C21 53 20 32 24 14Z" stroke="currentColor" stroke-width="1.6" opacity=".34"/>
+                            <path d="M60 20v46" stroke="currentColor" stroke-width="2" stroke-dasharray="4 6" opacity=".3"/>
+                            <circle cx="60" cy="25" r="3.6" fill="currentColor"/>
+                            <circle cx="38" cy="45" r="3.6" fill="currentColor"/>
+                            <circle cx="82" cy="45" r="3.6" fill="currentColor"/>
+                            <circle cx="60" cy="60" r="3.6" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h3>Small incisions, even for big operations</h3>
+                    <div class="safety-proof"><strong data-count-text="1,475">1,475</strong> of 1,511 procedures performed through small incisions</div>
+                    <p data-read>Large fibroids, extensive scar tissue, advanced endometriosis &mdash; the operations that once meant a long open incision are done laparoscopically or robotically. That means less pain, a smaller scar, and a quicker return to your own life.</p>
+                </article>
+
+                <article class="safety-card" data-read-title="Your anatomy, seen before it is touched" data-read-eyebrow="Anatomical safety">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M14 8c14 15 22 34 24 66" stroke="currentColor" stroke-width="1.4" opacity=".26"/>
+                            <path d="M106 8c-14 15-22 34-24 66" stroke="currentColor" stroke-width="1.4" opacity=".26"/>
+                            <path d="M22 26c22 6 44 14 76 7" stroke="currentColor" stroke-width="3.4" opacity=".4" stroke-linecap="round"/>
+                            <path d="M41 6c6 21 10 38 6 72" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                            <circle cx="45" cy="29" r="10" stroke="currentColor" stroke-width="1.6"/>
+                            <circle cx="45" cy="29" r="2.6" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h3>Your anatomy, seen before it is touched</h3>
+                    <div class="safety-proof"><strong data-count-text="90">90</strong> dissections with the ureter identified by sight</div>
+                    <p data-read>The ureter &mdash; the fine tube that carries urine from your kidney to your bladder &mdash; lies close to where this surgery takes place. Opening the tissue around it and identifying it by sight is the surest way to protect it, and in this series that was done in 90 operations.</p>
+                </article>
+
+                <article class="safety-card" data-read-title="Outcomes tracked on published scales" data-read-eyebrow="Outcomes">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <path d="M12 66h96" stroke="currentColor" stroke-width="1.4" opacity=".35"/>
+                            <rect x="20" y="52" width="16" height="14" rx="3" fill="currentColor" opacity=".9"/>
+                            <rect x="44" y="18" width="16" height="48" rx="3" fill="currentColor" opacity=".68"/>
+                            <rect x="68" y="39" width="16" height="27" rx="3" fill="currentColor" opacity=".48"/>
+                            <rect x="92" y="63" width="16" height="3" rx="1.5" fill="currentColor" opacity=".3"/>
+                            <text x="28" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">I</text>
+                            <text x="52" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">II</text>
+                            <text x="76" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">III</text>
+                            <text x="100" y="79" font-size="9" fill="currentColor" opacity=".55" text-anchor="middle">IV</text>
+                        </svg>
+                    </div>
+                    <h3>Outcomes tracked on published scales</h3>
+                    <div class="safety-proof"><strong data-count-text="444">444</strong> cases scored on ClassIntra and Clavien&ndash;Dindo</div>
+                    <p data-read>ClassIntra and Clavien&ndash;Dindo are the scales the surgical community uses to grade outcomes from I to IV, so results from different practices can be compared like for like. Across this series 3.15% of cases had a reportable event, the great majority of them minor &mdash; the chart shows how they fell by grade. The full grade-by-grade record is published on the CV.</p>
+                </article>
+
+                <article class="safety-card" data-read-title="Home the same day" data-read-eyebrow="Recovery">
+                    <div class="safety-figure" aria-hidden="true">
+                        <svg viewBox="0 0 120 84" fill="none">
+                            <circle cx="60" cy="40" r="30" stroke="currentColor" stroke-width="6" opacity=".16"/>
+                            <circle cx="60" cy="40" r="30" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="170.4 188.5" transform="rotate(-90 60 40)"/>
+                            <path d="M49 42l11-9 11 9v13H49z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M56 55v-8h8v8" stroke="currentColor" stroke-width="1.6"/>
+                        </svg>
+                    </div>
+                    <h3>Home the same day</h3>
+                    <div class="safety-proof"><strong data-count-target="90" data-count-suffix=".4%">90.4%</strong> of minimally invasive cases go home the same day</div>
+                    <p data-read>Including patients who have already had abdominal or pelvic surgery. Small incisions, opioid-sparing anaesthesia and a planned recovery pathway mean you get to recover in the place you are most comfortable &mdash; your own home.</p>
+                </article>
+
             </div>
+
+            <!-- 2026-08-20 — the scope-and-risk paragraph that sat here was
+                 removed at the owner's request. The figures above already name
+                 their own denominators and the CV carries the full series, so
+                 what remains is the link to it. -->
+            <p class="safety-note"><a href="/cv/#operative">See the full operative log and outcome breakdown &rarr;</a></p>
 
             <div class="surgical-hub-eyebrow">Seven clinical practice areas</div>
             <div class="surgical-hub" id="surgical-hub" role="tablist" aria-label="Clinical practice areas">
@@ -605,7 +719,7 @@
                             </svg>
                         </div>
                         <h3>Endometriosis &amp; DIE</h3>
-                        <p>Complete excision of all visible disease, ICG-guided fibrosis detection. Stages I&ndash;IV including bowel, bladder, ureter, and appendiceal involvement.</p>
+                        <p>Complete excision of visible disease at every stage, including bowel, bladder and ureter.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">Active IRB</span>
                         </div>
@@ -621,7 +735,7 @@
                             </svg>
                         </div>
                         <h3>Fibroids &amp; Myomectomy</h3>
-                        <p>Robotic and laparoscopic myomectomy for fibroids of any size, location, or number. Gel-port containment for tissue extraction &mdash; published in JMIG, presented at AAGL.</p>
+                        <p>Robotic and laparoscopic myomectomy for fibroids of any size, number or location.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">AAGL Video Abstract</span>
                         </div>
@@ -636,7 +750,7 @@
                             </svg>
                         </div>
                         <h3>Minimally Invasive Hysterectomy</h3>
-                        <p>Robotic, laparoscopic, vNOTES, and hysteroscopic routes. Every hysterectomy of the fellowship completed minimally invasively &mdash; no conversions to laparotomy.</p>
+                        <p>Robotic, laparoscopic, vNOTES and hysteroscopic routes &mdash; 93% of hysterectomies done through small incisions, including uteri to 20-week size.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">Da Vinci</span>
                             <span class="hub-badge">90.4% Same-Day</span>
@@ -653,7 +767,7 @@
                             </svg>
                         </div>
                         <h3>Hysteroscopy &mdash; Operative + Office</h3>
-                        <p>Hysteroscopic myomectomy, polypectomy, septum resection, isthmocele repair, RPOC management, lysis of intrauterine adhesions (Asherman&rsquo;s), and Bettocchi no-touch in-office vaginoscopy.</p>
+                        <p>Fibroids, polyps, septa, scarring and isthmocele repair &mdash; much of it possible in the office.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">Golden Hysteroscope 2024</span>
                         </div>
@@ -667,7 +781,7 @@
                             </svg>
                         </div>
                         <h3>Fertility-Conscious &amp; Ovarian Preservation</h3>
-                        <p>Uterine-sparing fibroid management, careful adhesion prevention, fallopian tube preservation, isthmocele repair, and reserve-conscious cystectomy with minimized cautery.</p>
+                        <p>Surgery planned around keeping your uterus, ovaries and tubes wherever that is possible.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">Uterine + Tubal Preservation</span>
                         </div>
@@ -683,7 +797,7 @@
                             </svg>
                         </div>
                         <h3>Pelvic Reconstruction</h3>
-                        <p>Uterosacral ligament suspension, anterior and posterior colporrhaphy, native-tissue repair. Apical and compartment-specific approaches.</p>
+                        <p>Repair built from your own tissue rather than mesh, matched to the compartment involved.</p>
                         <div class="hub-tile-badges">
                         </div>
                     </button>
@@ -695,7 +809,7 @@
                             </svg>
                         </div>
                         <h3>Complex Adhesiolysis &amp; Cross-Specialty</h3>
-                        <p>Multi-quadrant adhesive disease, dense bowel and pelvic sidewall pathology, retroperitoneal dissection, cystoscopy, ureteral stent placement, small/large bowel repair, and appendectomy.</p>
+                        <p>Extensive scar tissue and disease that crosses into the bowel, bladder and pelvic sidewall.</p>
                         <div class="hub-tile-badges">
                             <span class="hub-badge">Highest Fellowship Volume</span>
                             <span class="hub-badge">Multidisciplinary</span>
@@ -717,9 +831,9 @@
                  section so View Source is one place for everything. -->
             <div class="hub-content-source" hidden>
                 <article data-category="endometriosis">
-                    <div class="hub-content-stat" data-stat-num="Zero">
-                        <div class="stat-value">Zero</div>
-                        <div class="stat-label">ureteral, vascular, and nerve injuries through extensive retroperitoneal dissection.</div>
+                    <div class="hub-content-stat" data-stat-num="109">
+                        <div class="stat-value">109</div>
+                        <div class="stat-label">endometriosis cases staged on the AAGL classification &mdash; 48 of them Stage III&ndash;IV.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
@@ -736,9 +850,9 @@
                 </article>
 
                 <article data-category="fibroids">
-                    <div class="hub-content-stat" data-stat-num="Zero">
-                        <div class="stat-value">Zero</div>
-                        <div class="stat-label">conversions to laparotomy &mdash; every fibroid case completed minimally invasively.</div>
+                    <div class="hub-content-stat" data-stat-num="73 of 74">
+                        <div class="stat-value">73<span class="stat-of">of 74</span></div>
+                        <div class="stat-label">myomectomies completed with the uterus preserved &mdash; up to 20 fibroids removed in one operation.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
@@ -755,13 +869,13 @@
                 </article>
 
                 <article data-category="hysterectomy">
-                    <div class="hub-content-stat" data-stat-num="90.4%">
-                        <div class="stat-value">90.4%</div>
-                        <div class="stat-label">same-day discharge across the fellowship &mdash; major surgery without the major hospital stay.</div>
+                    <div class="hub-content-stat" data-stat-num="93%">
+                        <div class="stat-value">93%</div>
+                        <div class="stat-label">of 177 hysterectomies done through minimally invasive routes, including uteri to 20-week size.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
-                        <p>Proficiency across every minimally invasive route &mdash; robotic, conventional laparoscopic, vNOTES, and (where indicated) hysteroscopic and cystoscopic adjuncts. Every hysterectomy of the fellowship completed minimally invasively &mdash; no conversions, no laparotomy.</p>
+                        <p>Every minimally invasive route &mdash; robotic, conventional laparoscopic, vNOTES, and where indicated hysteroscopic and cystoscopic adjuncts. 165 of 177 hysterectomies were completed through minimally invasive routes; the remaining twelve were planned open from the outset for large pathology.</p>
                         <ul class="hub-content-list">
                             <li>Robotic Da Vinci across the full complexity range</li>
                             <li>Conventional and reduced-port laparoscopy</li>
@@ -797,9 +911,9 @@
                 </article>
 
                 <article data-category="fertility">
-                    <div class="hub-content-stat" data-stat-num="Sparing">
-                        <div class="stat-value">Sparing</div>
-                        <div class="stat-label">technique anchored in future fertility &mdash; uterus, ovary, and tubal preservation.</div>
+                    <div class="hub-content-stat" data-stat-num="48">
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">ovarian cystectomies with the ovary preserved &mdash; three by partial oophorectomy.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
@@ -817,9 +931,9 @@
                 </article>
 
                 <article data-category="reconstruction">
-                    <div class="hub-content-stat" data-stat-num="Native">
-                        <div class="stat-value">Native</div>
-                        <div class="stat-label">tissue repair &mdash; mesh-free approaches where the anatomy supports them.</div>
+                    <div class="hub-content-stat" data-stat-num="49">
+                        <div class="stat-value">49</div>
+                        <div class="stat-label">uterosacral ligament suspensions and 52 colporrhaphy repairs &mdash; native tissue, no mesh.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
@@ -835,9 +949,9 @@
                 </article>
 
                 <article data-category="adhesiolysis">
-                    <div class="hub-content-stat" data-stat-num="Zero">
-                        <div class="stat-value">Zero</div>
-                        <div class="stat-label">major bowel injuries despite the highest adhesiolysis volume of the fellowship.</div>
+                    <div class="hub-content-stat" data-stat-num="90">
+                        <div class="stat-value">90</div>
+                        <div class="stat-label">retroperitoneal dissections with the ureter directly visualised, plus 21 bowel dissections.</div>
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
@@ -902,7 +1016,7 @@
                         </svg>
                         <div class="num">03 — Care Path</div>
                         <h3>What Working With Me Looks Like</h3>
-                        <p>A walk-through of who I see, the services I offer, what to expect from a first visit, and frequently asked questions — for patients and the clinicians who refer to me.</p>
+                        <p>Who I see, what a first visit looks like, and the questions I am asked most.</p>
                         <span class="bento-cta">Read more <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
@@ -937,7 +1051,7 @@
                         </svg>
                         <div class="num">06 — Evidence</div>
                         <h3>Evidence-Based Care, Tailored to Each Patient</h3>
-                        <p>Whole-person osteopathic care — structure and function as one — matched to the woman in front of me and anchored in the published literature. Women's health, pregnancy &amp; postpartum, post-operative recovery, and pelvic pain, each with its own PubMed-indexed evidence review.</p>
+                        <p>Four patient populations, each with its own PubMed-indexed evidence review.</p>
                         <span class="bento-cta">See the evidence <span class="arrow">&rarr;</span></span>
                     </div>
                 </div>
@@ -1037,34 +1151,34 @@
             <div class="container" style="margin-bottom: 0;">
                 <span class="section-eyebrow">Mount Zara Suite</span>
                 <h2 class="section-headline">Six apps. One mission.</h2>
-                <p class="section-sub">A native suite for the modern physician — clinical decision support, board prep, research, transcription, and surgical media. Built end-to-end with modern AI. <strong>All apps are fully developed and currently in active beta testing.</strong></p>
+                <p class="section-sub">Clinical decision support, board prep, research, transcription and surgical media. <strong>All six are built and in active beta.</strong></p>
                 <div class="apps-arch">
                     <div class="apps-arch-item">
                         <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h8v8H8z"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></span>
                         <div>
                             <strong>Base AI runs on-device.</strong>
-                            <span>Every app ships with native, on-device AI reasoning — fast, free, fully private. No internet required for the core workflow.</span>
+                            <span>Native reasoning in every app. Fast, private, and no internet needed for the core workflow.</span>
                         </div>
                     </div>
                     <div class="apps-arch-item">
                         <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
                         <div>
                             <strong>Optional Claude API for elevated reasoning.</strong>
-                            <span>For users who want deeper synthesis or larger-context reasoning, every app supports bring-your-own Claude API key — toggleable per query.</span>
+                            <span>Bring your own Claude API key when a query needs deeper synthesis — toggleable per query.</span>
                         </div>
                     </div>
                     <div class="apps-arch-item">
                         <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
                         <div>
                             <strong>Auto PHI redaction — on-device, before anything leaves.</strong>
-                            <span>Every app auto-redacts patient identifiers (names, MRNs, DOBs, addresses, dates) on-device before any external call. PHI isn't even stored long-term — it's stripped from the in-memory pipeline. No PHI ever leaves the phone or the Mac.</span>
+                            <span>Names, MRNs, dates of birth and addresses are stripped in memory, on-device, before any external call. PHI never leaves the phone or the Mac.</span>
                         </div>
                     </div>
                     <div class="apps-arch-item">
                         <span class="apps-arch-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span>
                         <div>
                             <strong>HIPAA-compliant by design.</strong>
-                            <span>Every app implements the security architecture documented in Medical Transcription: on-device de-identification, encrypted at rest, no cloud audio, no cloud transcripts, audit-logged access. The same security model applies across the suite.</span>
+                            <span>On-device de-identification, encrypted at rest, no cloud audio or transcripts, audit-logged access — the same model across the suite.</span>
                         </div>
                     </div>
                 </div>
@@ -1107,7 +1221,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Clinical AI · Flagship</span>
                         <h3>Mount Zara Clinical AI</h3>
-                        <p>A private clinical evidence engine — index your PDFs, synthesize meta-analyses with I² and confidence intervals, and detect conflicts across ACOG, AAGL, and ASRM. Fully on-device via Apple&rsquo;s foundation-model framework (iOS&nbsp;27).</p>
+                        <p>Index your PDFs. Ask a question. Get a meta-analysis back &mdash; on-device.</p>
                     </div>
                 </div>
 
@@ -1143,7 +1257,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Board Prep · 101 Categories</span>
                         <h3>ABOG Case List Manager</h3>
-                        <p>All 101 ABOG categories pre-loaded. Import a hospital chart PDF → on-device AI automatically redacts all PHI before analysis, then extracts, categorizes, and maps the case. Nothing identifiable is stored or transmitted. Oral exam simulator evaluates your voice answers against ACOG guidelines.</p>
+                        <p>All 101 ABOG categories, filled in from a chart PDF with the PHI stripped first.</p>
                     </div>
                 </div>
 
@@ -1180,7 +1294,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Mac · iPhone · Apple Watch</span>
                         <h3>Medical Transcription</h3>
-                        <p>Record encounters on Mac, iPhone, or Watch. On-device Whisper transcribes and de-identifies — no audio or PHI ever leaves the device. Structures into CBG/MIGS-tailored SOAP notes, auto-generates billing/coding analysis with missed-opportunity flags, medico-legal documentation recommendations, inline edits, patient education summaries, and point-of-care ACOG/AAGL/CDC/ESHRE guidelines — no internet required.</p>
+                        <p>Record on Mac, iPhone or Watch. A structured SOAP note and billing codes come out.</p>
                     </div>
                 </div>
 
@@ -1218,7 +1332,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Study Management · Manuscript</span>
                         <h3>MZ Research Suite</h3>
-                        <p>PICO study design wizard, custom case report form builder, participant tracking with full audit trail, statistical engine (t-test, ANOVA, chi-square), and a manuscript editor that auto-validates every citation against your library.</p>
+                        <p>Design the study, run the statistics, and write the manuscript in one place.</p>
                     </div>
                 </div>
 
@@ -1256,7 +1370,7 @@
                     <div class="app-meta">
                         <span class="app-tag">Video Analysis · AI Pipeline</span>
                         <h3>Surgical Video Archive</h3>
-                        <p>Analyze your operative videos with an integrated AI pipeline — Whisper transcription + OCR + the MountZara Clinical AI engine generates an AI report formatted the way surgeons actually want to see the data: clinical summary, key intra-operative findings, technique notes, procedure tags, and confidence score. Smart search reads natural-language surgical queries across your personal library.</p>
+                        <p>Your operative video, read back to you as a structured surgical report.</p>
                     </div>
                 </div>
 
@@ -1294,7 +1408,7 @@
                     <div class="app-meta">
                         <span class="app-tag">iPad · Patient Education</span>
                         <h3>Video and PACS Medical Imaging Viewer and Annotation</h3>
-                        <p>A patient education tool for the exam room. Load a patient's DICOM imaging or surgical video on the iPad, draw and annotate with Apple Pencil in real time, and walk through anatomy, pathology, and treatment plans together. Making complex medical concepts visual and understandable — the way tech should serve physicians and patients.</p>
+                        <p>Draw on the imaging with the patient sitting right next to you.</p>
                     </div>
                 </div>
             </div>
@@ -1307,17 +1421,34 @@
         <div class="container">
             <span class="section-eyebrow">Research</span>
             <h2 class="section-headline gradient">Peer-reviewed work.</h2>
-            <p class="section-sub">Abstracts, videos, and oral presentations at AAGL — the American Association of Gynecologic Laparoscopists — including the Golden Hysteroscope Award at the AAGL Global Congress. Additional national presentations at ACOG and award-winning research at CAOG. Select a publication for a plain-language summary.</p>
+            <p class="section-sub">Peer-reviewed work presented at AAGL, ACOG and CAOG. Open any publication for a plain-language summary.</p>
 
+            <!-- 2026-08-20 — was two bare numerals ("4×" and "2") over
+                 uppercase micro-labels. A numeral with no verb makes the
+                 reader do the work of guessing what is being counted; owner
+                 feedback was that it "comes off as confusing than anything
+                 else". Each stat is now a sentence that stands on its own,
+                 with the numeral kept as emphasis INSIDE the sentence rather
+                 than floating above it. -->
             <div class="aagl-accepted-banner">
                 <div class="aagl-stat">
-                    <div class="aagl-num">4×</div>
-                    <div class="aagl-label">AAGL Global Congress · 2020, 2022, 2024, 2025</div>
+                    <div class="aagl-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 25V13M12 25V8M18 25V16M24 25V5"/>
+                            <path d="M4 28h24"/>
+                        </svg>
+                    </div>
+                    <p class="aagl-stat-text">Work accepted at the <strong>AAGL Global Congress</strong> &mdash; the international meeting of gynecologic laparoscopists &mdash; in <strong>four separate years</strong>: 2020, 2022, 2024 and 2025.</p>
                 </div>
                 <div class="aagl-divider"></div>
                 <div class="aagl-stat">
-                    <div class="aagl-num">2</div>
-                    <div class="aagl-label">Peer-reviewed research awards · AAGL Global · CAOG</div>
+                    <div class="aagl-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="16" cy="13" r="7"/>
+                            <path d="M11.5 19.2 9 29l7-3.6 7 3.6-2.5-9.8"/>
+                        </svg>
+                    </div>
+                    <p class="aagl-stat-text"><strong>Two peer-reviewed research awards</strong>: the AAGL Golden Hysteroscope, and the CAOG Dr. George W. Morley Memorial Paper Award.</p>
                 </div>
             </div>
 
@@ -1325,14 +1456,15 @@
             <div class="research-cards" data-mobile-carousel="research">
 
                 <!-- Card 1: Golden Hysteroscope -->
-                <article class="research-card" data-reveal="up">
+                <article class="research-card" data-reveal="up" data-read-title="To See or Not to See: a visually directed approach to RPOC in an arcuate uterus" data-read-eyebrow="Golden Hysteroscope Award 2024" data-read-cta="Read the summary">
                     <div class="research-card-header">
                         <span class="research-badge award">Golden Hysteroscope Award</span>
                         <span class="research-badge">2024</span>
                     </div>
                     <h3 class="research-card-title">To See or Not to See: a visually directed approach to RPOC in an arcuate uterus</h3>
                     <p class="research-card-journal">Journal of Minimally Invasive Gynecology · Vol. 31, Issue 11, S14 · AAGL Global Congress 2024</p>
-                    <p class="research-card-summary">Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
+                    <p class="research-card-lede">Direct hysteroscopic vision in place of blind curettage.</p>
+                    <p class="research-card-summary" data-read>Retained products of conception in an arcuate uterus classically defy blind dilation and curettage. By substituting direct hysteroscopic visualization for blind instrumentation, the team preserved endometrial integrity and protected future fertility.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-golden-hysteroscope.mp4', this)">
                         <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/rpoc-golden-hysteroscope-reel-v2-poster.jpg">
                             <source src="/media/rpoc-golden-hysteroscope-reel-v2.mp4" type="video/mp4">
@@ -1349,14 +1481,15 @@
                 </article>
 
                 <!-- Card 2: Myomectomy -->
-                <article class="research-card" data-reveal="up">
+                <article class="research-card" data-reveal="up" data-read-title="Fibroids à La Carte: Robotic myomectomy with gel-port extraction" data-read-eyebrow="Featured case" data-read-cta="Read the summary">
                     <div class="research-card-header">
                         <span class="research-badge">Featured Case</span>
                         <span class="research-badge">2024</span>
                     </div>
                     <h3 class="research-card-title">Fibroids à La Carte: Robotic myomectomy with gel-port extraction</h3>
                     <p class="research-card-journal">Advanced Surgical Technique · Robotic Platform</p>
-                    <p class="research-card-summary">Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
+                    <p class="research-card-lede">A hybrid robotic myomectomy — precise inside, efficient on extraction.</p>
+                    <p class="research-card-summary" data-read>Demonstrates a hybrid robotic approach to myomectomy combining precision intracorporeal enucleation with efficient gel-port specimen extraction — optimizing both cosmesis and operative efficiency.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/myomectomy-gel-port.mp4', this)">
                         <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/myomectomy-gel-port-reel-v2-poster.jpg">
                             <source src="/media/myomectomy-gel-port-reel-v2.mp4" type="video/mp4">
@@ -1373,14 +1506,15 @@
                 </article>
 
                 <!-- Card 3: Isthmocele -->
-                <article class="research-card" data-reveal="up">
+                <article class="research-card" data-reveal="up" data-read-title="Isthmocele Repair in Severe Asherman's Syndrome: ICG-guided robotic excision" data-read-eyebrow="ICG imaging" data-read-cta="Read the summary">
                     <div class="research-card-header">
                         <span class="research-badge">ICG Imaging</span>
                         <span class="research-badge">2023</span>
                     </div>
                     <h3 class="research-card-title">Isthmocele Repair in Severe Asherman's Syndrome: ICG-guided robotic excision</h3>
                     <p class="research-card-journal">Complex Case Management · Fertility Preservation</p>
-                    <p class="research-card-summary">ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
+                    <p class="research-card-lede">ICG fluorescence pinpointed the defect so the repair could be targeted.</p>
+                    <p class="research-card-summary" data-read>ICG fluorescence imaging guided precise identification of the isthmocele defect in a patient with severe Asherman's syndrome, enabling targeted robotic repair while preserving remaining endometrial tissue.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/isthmocele-ashermans.mp4', this)">
                         <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/isthmocele-ashermans-reel-v2-poster.jpg">
                             <source src="/media/isthmocele-ashermans-reel-v2.mp4" type="video/mp4">
@@ -1396,14 +1530,15 @@
                     </div>
                 </article>
 
-                <article class="research-card" data-reveal="up">
+                <article class="research-card" data-reveal="up" data-read-title="RPOC in an Arcuate Uterus: visually-directed hysteroscopic management" data-read-eyebrow="Featured case" data-read-cta="Read the summary">
                     <div class="research-card-header">
                         <span class="research-badge">Featured Case</span>
                         <span class="research-badge">2024</span>
                     </div>
                     <h3 class="research-card-title">RPOC in an Arcuate Uterus: visually-directed hysteroscopic management</h3>
                     <p class="research-card-journal">AAGL Global Congress · Surgical Video Library</p>
-                    <p class="research-card-summary">Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
+                    <p class="research-card-lede">Seeing the cavity directly, rather than working blind.</p>
+                    <p class="research-card-summary" data-read>Retained products of conception in an arcuate uterus carry an outsized risk of incomplete evacuation and intrauterine synechiae when approached by blind D&amp;C. Direct hysteroscopic visualization through a targeted endometrial sweep preserves anatomy and protects future fertility — captured here from a real case.</p>
                     <div class="research-card-video" onclick="openVideoModal('/media/rpoc-arcuate.mp4', this)">
                         <video class="video-preview" muted loop playsinline autoplay preload="metadata" aria-hidden="true" poster="/media/rpoc-arcuate-reel-v2-poster.jpg">
                             <source src="/media/rpoc-arcuate-reel-v2.mp4" type="video/mp4">
@@ -1433,9 +1568,10 @@
                             <div class="research-tags">
                                 <span class="tag">ICG Imaging</span>
                                 <span class="tag">Case Report</span>
+                                <span class="tag year">2025</span>
                             </div>
                             <h3>Indocyanine Green (ICG) Imaging: Innovative Isthmocele Diagnosis and Repair in a Post-Ablation Patient</h3>
-                            <div class="journal">Archives of Gynecology and Obstetrics · 2025</div>
+                            <div class="journal">Archives of Gynecology and Obstetrics</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1456,9 +1592,10 @@
                             <div class="research-tags">
                                 <span class="tag">Anatomy</span>
                                 <span class="tag">Surgical Safety</span>
+                                <span class="tag year">2025</span>
                             </div>
                             <h3>Mapping of the Deep Epigastric Vessels Stratified by Body Mass Index (BMI)</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · 2025</div>
+                            <div class="journal">J. Minimally Invasive Gynecology</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1503,7 +1640,8 @@
                             <div class="research-tags">
                                 <span class="tag">IRB study</span>
                                 <span class="tag">ERAS</span>
-                                                            </div>
+                                <span class="tag year">Ongoing</span>
+                            </div>
                             <h3>Post-Op Pain after TAP Block in CBG/MIGS: Randomized Control Trial in an ERAS Protocol</h3>
                             <div class="journal">PRIME Illinois St. Francis · IRB: RIL20240009</div>
                         </div>
@@ -1525,6 +1663,7 @@
                             <div class="research-tags">
                                 <span class="tag">Endometriosis</span>
                                 <span class="tag">Multi-author</span>
+                                <span class="tag year">2026</span>
                             </div>
                             <h3>Multifocal Endometriosis with Atypical Papillary Fragments: Appendiceal and Tubal Involvement in an Infertility Patient</h3>
                             <div class="journal">Gynecology and Minimally Invasive Therapy · 2026;15:297–299</div>
@@ -1549,6 +1688,7 @@
                                 <span class="tag award">George W. Morley Memorial Paper Award</span>
                                 <span class="tag">Oral Presentation · AAGL Global Congress</span>
                                 <span class="tag">CAOG</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>The Use of Indocyanine Green (ICG) in the Detection of Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
                             <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Dr. George W. Morley Memorial Paper Award, CAOG 91st Annual Meeting, Indianapolis · October 2024</div>
@@ -1572,6 +1712,7 @@
                             <div class="research-tags">
                                 <span class="tag">ACOG National</span>
                                 <span class="tag">ICG · Fluorescence</span>
+                                <span class="tag year">2024</span>
                             </div>
                             <h3>Fluorescent Imaging Using Indocyanine Green (ICG) for Intraoperative Detection of Endometriosis</h3>
                             <div class="journal">Ward, M., Mabini, C.Z., Tam, M.T. · Presented at ACOG Annual Conference · May 2024</div>
@@ -1594,6 +1735,7 @@
                             <div class="research-tags">
                                 <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Hysteroscopy · Infertility</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>Infertility and Retained Products of Conception (RPOC): A Hysteroscopic Approach to Diagnosis and Treatment</h3>
                             <div class="journal">Mabini C, Tam M · Abstract 8342 · Journal of Minimally Invasive Gynecology · Vol. 29, S121 · AAGL Global Congress 2022</div>
@@ -1617,6 +1759,7 @@
                             <div class="research-tags">
                                 <span class="tag">ACOG District</span>
                                 <span class="tag">ICG · Endometriosis</span>
+                                <span class="tag year">2022</span>
                             </div>
                             <h3>Use of Indocyanine Green (ICG) in Detecting Clear Endometriosis Lesions</h3>
                             <div class="journal">Mabini, C., Tam, M. · ACOG Annual District Conference, Chicago, IL · September 2022</div>
@@ -1639,9 +1782,10 @@
                             <div class="research-tags">
                                 <span class="tag">AAGL Global Congress</span>
                                 <span class="tag">Robotic Surgery</span>
+                                <span class="tag year">2020</span>
                             </div>
                             <h3>Robotic Myomectomy: 101</h3>
-                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress · 2020</div>
+                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress</div>
                         </div>
                         <span class="toggle-icon"></span>
                     </button>
@@ -1662,7 +1806,8 @@
                             <div class="research-tags">
                                 <span class="tag">IRB study</span>
                                 <span class="tag">ICG · Appendiceal Endometriosis</span>
-                                                            </div>
+                                <span class="tag year">Ongoing</span>
+                            </div>
                             <h3>Detection of Appendiceal Endometriosis and Associated Fibrosis Using Indocyanine Green (ICG)</h3>
                             <div class="journal">PRIME Illinois St. Francis Hospital — CBG/MIGS Fellowship · IRB: RIL20240078 · Mabini, C., Tam, M., Siddique, S.</div>
                         </div>
@@ -1746,7 +1891,7 @@
         <div class="container">
             <span class="section-eyebrow">Medical Education</span>
             <h2 class="section-headline gradient">Curriculum design grounded in Adult Education theory.</h2>
-            <p class="section-sub">Master's in Adult Education (MSAEd) with a concentration in Curriculum Development & Instructional Design. Designed and implemented medical education curricula for hospice care, graduate medical education, and surgical fellowship training — applying evidence-based instructional design principles to physician learning.</p>
+            <p class="section-sub">A Master's in Adult Education, applied to real programmes — hospice care, residency training and surgical fellowship.</p>
 
             <div class="curriculum-grid">
                 <div class="curriculum-card">
@@ -1789,7 +1934,7 @@
             <div class="curriculum-cta">
                 <div class="curriculum-cta-inner">
                     <h3>Curriculum design consulting available.</h3>
-                    <p>Curriculum design grounded in Malcolm Knowles' Adult Learning Theory, David Kolb's Experiential Learning Cycle, Robert Gagné's Nine Events of Instruction, and Dick & Carey's systems approach. Engagements range from a curriculum audit to a full multi-year fellowship build — for fellowships, residencies, and clinician training programs.</p>
+                    <p>Grounded in Knowles, Kolb, Gagn&eacute; and Dick &amp; Carey. Engagements run from a single audit to a full multi-year fellowship build.</p>
                     <p style="margin-top: 18px;"><a href="/curriculum/" class="curriculum-consult-link">Explore curriculum consulting →</a></p>
                 </div>
             </div>
@@ -1862,14 +2007,18 @@
             <span class="section-eyebrow">Connect</span>
             <h2 class="section-headline">Let's build something remarkable.</h2>
             <p class="section-sub center">Open to research collaborations, AI consulting, locum opportunities, and speaking engagements.</p>
-            <button type="button" class="btn btn-primary" onclick="openContactModal()">Contact Me <span class="arrow"></span></button>
+            <button type="button" class="btn btn-primary" onclick="openContactModal()">Let’s connect <span class="arrow"></span></button>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <div class="copyright">© 2026 Mount Zara, LLC</div>
+            <div class="copyright">© 2026 Mount Zara, LLC
+                <span style="opacity:.75"> · <a href="/privacy/" style="color:inherit">Privacy</a>
+                · <a href="/privacy-practices/" style="color:inherit">Privacy Practices</a>
+                · <a href="/terms/" style="color:inherit">Terms</a>
+                · <a href="/accessibility/" style="color:inherit">Accessibility</a></span></div>
             <div class="footer-social">
                 <a href="https://www.linkedin.com/in/mzllc/" target="_blank" rel="noopener" aria-label="Connect on LinkedIn">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.99 0 1.78-.77 1.78-1.72V1.72C24 .77 23.21 0 22.22 0z"/></svg>
@@ -2071,7 +2220,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=9b43e62612" defer></script>
+    <script src="/assets/js/home.js?v=e5545a56a2" defer></script>
 
 <!-- Identity Map full-screen sheet modal (Commit 2 — 2026-05-26).
      Populated dynamically by openSheet(sectionId). The cloned grid
@@ -2081,6 +2230,50 @@
     <div class="mz-sheet-handle" aria-hidden="true"></div>
     <button type="button" class="mz-sheet-close-btn" aria-label="Close" data-mz-sheet-close>&times;</button>
     <div class="mz-sheet-content" id="mz-sheet-content"></div>
+</dialog>
+
+<!-- =====================================================================
+     READING SHEET  (2026-08-20)
+     ---------------------------------------------------------------------
+     Owner directive: the page surface should be visual and scannable, and
+     any copy longer than a line should live behind a click in something
+     large, generously spaced and pleasant to read.
+
+     Earlier attempts at this SHORTENED the copy in place. That is the
+     wrong trade — it buys scannability by deleting information. This
+     relocates instead: the paragraph is authored on the page exactly as
+     before (so it is still in the served HTML for crawlers and for anyone
+     with JS off), and at runtime it is lifted out of the card into this
+     sheet, where it can be set at 20px on a 66-character measure with 1.8
+     leading and 4rem of padding — none of which is possible inside a
+     four-up card grid.
+
+     WHY NOT REUSE #mz-sheet ABOVE: that one clones interactive GRIDS out
+     of the identity map and is styled for them. This one is a prose
+     surface. Merging them would mean one set of typography rules serving
+     two opposite jobs, which is how the old modals ended up at 13.5px.
+
+     AUTHORING — no JS changes needed to use it:
+        <article class="card" data-read-title="Heading for the sheet"
+                              data-read-eyebrow="Optional kicker">
+            ...visual, headline, short proof line...
+            <p data-read>The long copy. Multiple [data-read] elements in
+               one host are concatenated in document order.</p>
+        </article>
+     initReadingSheet() in assets/js/home.js does the rest, including the
+     "Read more" affordance. See that function before changing this markup.
+     ===================================================================== -->
+<dialog class="mz-read" id="mz-read" aria-labelledby="mz-read-title">
+    <button type="button" class="mz-read-close" aria-label="Close" data-mz-read-close>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+    </button>
+    <div class="mz-read-scroll">
+        <div class="mz-read-inner">
+            <p class="mz-read-eyebrow" id="mz-read-eyebrow"></p>
+            <h2 class="mz-read-title" id="mz-read-title"></h2>
+            <div class="mz-read-body" id="mz-read-body"></div>
+        </div>
+    </div>
 </dialog>
 
     <script>

@@ -531,6 +531,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             window: null,
             briefings: [],     // raw briefing objects from the window API
             appointments: [],
+            anyAppointments: null,  // null = not checked yet, true/false = answered
             selectedPatientId: null,
             range: "day",
         };
@@ -545,7 +546,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function fmtTime(ms) {
             if (!ms) return "";
             const d = new Date(ms);
-            return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+            // Practice time. He may open this from anywhere; the schedule is
+            // always the clinic's clock.
+            return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit",
+                timeZone: "America/Chicago", timeZoneName: "short" });
         }
         function fmtDate(ms) {
             if (!ms) return "";
@@ -594,9 +598,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (state.selectedPatientId) {
                     loadBriefingForPatient(state.selectedPatientId);
                 } else {
-                    $("#main").innerHTML = `<div class="card placeholder">
-                        No scheduled patients in this window. Try widening the range or
-                        loading a single patient by ID.</div>`;
+                    renderEmptyMain();
                 }
             } catch (e) {
                 rail.innerHTML = `<div class="rail-head">Schedule</div>
@@ -604,11 +606,37 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         }
 
+        // An empty window and an empty practice are different problems and the
+        // window API cannot tell them apart, so ask once for a wide range.
+        // Returns true / false, or null when the check itself failed.
+        async function hasAnyAppointments() {
+            if (state.anyAppointments !== null) return state.anyAppointments;
+            try {
+                const resp = await fetch("/api/v1/admin/appointments?from=2020-01-01&to=2099-12-31",
+                    { credentials: "include" });
+                if (!resp.ok) return null;
+                const data = await resp.json();
+                state.anyAppointments = (data.appointments || []).length > 0;
+            } catch (e) {
+                return null;
+            }
+            return state.anyAppointments;
+        }
+
+        async function renderEmptyMain() {
+            const any = await hasAnyAppointments();
+            const msg = (any === false)
+                ? 'A briefing is the one page you read before walking into the room — history, prior visits, PROMs and medication flags, assembled per patient. Nothing is booked yet; publish open hours in <a href="/admin/scheduling/">Scheduling</a> so patients can book.'
+                : 'No visits in this window. Switch to Week, or pick another date.';
+            $("#main").innerHTML = `<div class="card placeholder">${msg}` +
+                `<div style="margin-top:12px;"><a href="/admin/patients/">Patient roster</a></div></div>`;
+        }
+
         function renderRail() {
             const rail = $("#rail");
             if (!state.briefings.length) {
                 rail.innerHTML = `<div class="rail-head">Schedule</div>
-                    <div class="rail-empty">No appointments in window.</div>`;
+                    <div class="rail-empty">Nothing booked in this window.</div>`;
                 return;
             }
             // Build rail items keyed by appointment_focus (the earliest appt per patient).

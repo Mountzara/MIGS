@@ -33,6 +33,7 @@ import { requireRole, nowMs } from "../../../../_lib/auth.js";
 import { logAudit } from "../../../../_lib/audit.js";
 import { newId } from "../../../../_lib/db.js";
 import { getVisitType, isValidVisitTypeKey } from "../../../../_lib/visit_types.js";
+import { recordAcknowledgment, hasAcknowledged } from "../../../../_lib/acknowledgments.js";
 import { dateStringToMs } from "../../../../_lib/scheduling.js";
 import {
     getLicensedStates,
@@ -96,6 +97,7 @@ export async function onRequestPost(ctx) {
         SELECT id, intake_id, patient_id,
                ai_visit_type, ai_duration_min, ai_in_person_required,
                clinician_override_visit_type, clinician_override_duration_min,
+               clinician_override_in_person_required,
                final_visit_type, final_duration_min, clinician_reviewed_at,
                appointment_id
         FROM appointment_triage WHERE id = ? AND patient_id = ?
@@ -177,10 +179,39 @@ export async function onRequestPost(ctx) {
         ? body.duration_min
         : (triage.final_duration_min || triage.clinician_override_duration_min || triage.ai_duration_min || vt.duration_min);
 
-    // Modality validation against triage.
-    if (triage.ai_in_person_required && modality !== "in_person") {
+    // Modality validation against triage. The override wins when he made
+    // one (?? not ||: an override TO telehealth is stored as 0, which || 
+    // would discard). Book and available MUST resolve this identically, or
+    // the slots offered and the bookings accepted disagree — that split is
+    // exactly how the in-person checkbox managed to do nothing for months.
+    const inPersonRequired = !!(triage.clinician_override_in_person_required
+        ?? triage.ai_in_person_required);
+    if (inPersonRequired && modality !== "in_person") {
         return err(409, "in_person_required",
             "This visit type requires in-person attendance.");
+    }
+
+    // ------------------------------------------------------------------
+    // TELEHEALTH CONSENT, DOCUMENTED. Illinois (225 ILCS 150) and
+    // California (Bus. & Prof. Code §2290.5) both provide for telehealth
+    // consent documented in the record. The consent PAGE has said "the
+    // portal asks you to acknowledge" since it was written; this is the
+    // code that actually asks. Version-sensitive: a materially revised
+    // consent (a bumped DOC_VERSIONS entry) requires re-acknowledgment.
+    // 428 Precondition Required, so the client can distinguish "show the
+    // consent" from every other booking failure.
+    // ------------------------------------------------------------------
+    if (modality === "telehealth") {
+        const already = await hasAcknowledged(env, session.patient_id, "telehealth_consent");
+        if (!already && body.telehealth_consent_ack !== true) {
+            return err(428, "telehealth_consent_required",
+                "Before your first telehealth visit, please review the telehealth consent at /telehealth-consent/ and confirm it when booking.");
+        }
+        if (!already) {
+            await recordAcknowledgment(env, {
+                patient_id: session.patient_id, doc_key: "telehealth_consent", request,
+            });
+        }
     }
     const procedureOrOmt = vt && (vt.category === "procedure" || visit_type === "omt_treatment");
     if (procedureOrOmt && modality === "telehealth") {
@@ -343,7 +374,9 @@ export async function onRequestPost(ctx) {
     // the patient is marked dirty for snapshot regeneration. Best-effort.
     try {
         const startsDate = new Date(starts_at);
-        const summary = `Appointment booked: ${vt?.display_name || visit_type}`
+        // The catalogue field is `label`; display_name has never existed, so
+        // every encounter event read "Appointment booked: new_patient_standard".
+        const summary = `Appointment booked: ${vt?.label || visit_type}`
             + ` on ${startsDate.toISOString().slice(0, 10)} (${modality})`;
         const { recordEncounterEvent } = await import("../../../../_lib/encounters.js");
         await recordEncounterEvent(env, {

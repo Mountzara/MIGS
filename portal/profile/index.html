@@ -187,8 +187,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.10);">
                 <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Intake</div>
-                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your intake</div>
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Your health history</div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your health history</div>
                     <div style="font-size: 13px; color: var(--fg-soft);">18 short sections, autosaved. Resume any time. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
                 </a>
                 <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
@@ -202,6 +202,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div class="card" id="identityCard">
             <h2>Identity &middot; on the record</h2>
             <div class="loading" id="identityLoading">Loading…</div>
+            <div id="identityError" class="msg error" role="status" aria-live="polite" style="display:none;">
+                We couldn&rsquo;t load your details just now. Reload the page, or message us if it keeps happening.
+            </div>
             <dl id="identityList" style="display:none">
                 <dt>Name</dt><dd id="fName"></dd>
                 <dt>Email</dt><dd id="fEmail"></dd>
@@ -225,6 +228,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                      overflow: hidden; flex-shrink: 0; font-size: 38px; font-weight: 300;
                      color: rgba(167,139,250,0.95);">
                     <span id="photoInitial">?</span>
+                    <span id="photoPlaceholderLabel" style="display:none; font-size:12px; font-weight:400;
+                          color: var(--fg-soft, rgba(255,255,255,0.7)); text-align:center; padding:0 6px;">Add a photo</span>
                     <img id="photoPreview" alt="" style="display:none; width:100%; height:100%; object-fit: cover;">
                 </div>
                 <div style="flex: 1 1 220px; min-width: 220px;">
@@ -264,8 +269,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div class="card" id="careGoalsCard">
             <h2>Your goals &amp; preferences for care</h2>
             <p class="hint" style="color: var(--ink-mute); font-size: 13px; margin: 0 0 14px;">
-                Tell us what matters most to you. We'll pull these into every pre-visit briefing so they shape
-                each conversation. Add one per line.
+                What matters most to you about your care? Anything you write here, Dr. Mabini reads before your visit.
+                Add one per line.
             </p>
             <div class="grid-2">
                 <label>Goals (what you'd like out of care)
@@ -303,7 +308,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </div>
 
         <div class="card">
-            <h2>Editable</h2>
+            <h2>Your details</h2>
             <form id="profileForm" autocomplete="on">
                 <div class="grid-2">
                     <label>Preferred name
@@ -322,7 +327,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </select>
                     </label>
                     <label>Time zone
-                        <input type="text" id="timezone" name="timezone" placeholder="America/Chicago">
+                        <select id="timezone" name="timezone">
+                            <option value="America/Chicago">Central &mdash; America/Chicago</option>
+                            <option value="America/New_York">Eastern &mdash; America/New_York</option>
+                            <option value="America/Denver">Mountain &mdash; America/Denver</option>
+                            <option value="America/Phoenix">Arizona &mdash; America/Phoenix</option>
+                            <option value="America/Los_Angeles">Pacific &mdash; America/Los_Angeles</option>
+                            <option value="America/Anchorage">Alaska &mdash; America/Anchorage</option>
+                            <option value="Pacific/Honolulu">Hawaii &mdash; Pacific/Honolulu</option>
+                        </select>
                     </label>
                 </div>
                 <button class="primary" type="submit" id="saveBtn">Save changes</button>
@@ -348,13 +361,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 }
 
                 const r = await fetch('/api/v1/patient/profile', { credentials: 'same-origin' });
-                if (!r.ok) { showMsg('Could not load profile.', 'error'); return; }
+                if (!r.ok) { failIdentity(); return; }
                 const body = await r.json();
                 const p = body.profile;
                 $('fName').textContent = `${p.first_name} ${p.last_name}${p.preferred_name ? ' (' + p.preferred_name + ')' : ''}`;
                 $('fEmail').textContent = p.email;
                 $('fDob').textContent = p.dob;
-                $('fStatus').textContent = p.status;
+                $('fStatus').textContent = statusLabel(p.status);
                 $('fCreated').textContent = new Date(p.created_at).toLocaleDateString();
                 $('identityLoading').style.display = 'none';
                 $('identityList').style.display = '';
@@ -362,7 +375,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('pronouns').value = p.pronouns || '';
                 $('phone').value = p.phone || '';
                 $('preferred_language').value = p.preferred_language || 'en';
-                $('timezone').value = p.timezone || 'America/Chicago';
+                setTimezone(p.timezone);
 
                 // Phase 14 Round D — Photo / nickname / care_goals
                 $('nickname').value = p.nickname || '';
@@ -373,8 +386,41 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('cg_avoid').value = (cg.avoid || []).join('\n');
                 $('cg_notes').value = cg.notes || '';
             } catch (err) {
-                showMsg('Network error loading profile.', 'error');
+                failIdentity();
             }
+        }
+
+        // The identity card used to be left reading "Loading…" for the rest of
+        // the session on any failure, which reads as a hung page rather than a
+        // failed fetch. Hide the spinner, then say so.
+        function failIdentity() {
+            $('identityLoading').style.display = 'none';
+            $('identityError').style.display = '';
+        }
+
+        // A stored zone outside the shortlist must not silently blank the
+        // select and then get saved back as an empty string on the next save.
+        function setTimezone(tz) {
+            const sel = $('timezone');
+            const want = String(tz || '').trim() || 'America/Chicago';
+            if (!Array.prototype.some.call(sel.options, o => o.value === want)) {
+                const opt = document.createElement('option');
+                opt.value = want;
+                opt.textContent = want;
+                sel.appendChild(opt);
+            }
+            sel.value = want;
+        }
+
+        // The raw enum is a database value, not something to show a patient.
+        const STATUS_LABELS = {
+            active: 'Active',
+            suspended: 'On hold — message us',
+            closed: 'Closed',
+        };
+        function statusLabel(v) {
+            const k = String(v == null ? '' : v).trim().toLowerCase();
+            return STATUS_LABELS[k] || (k ? k.charAt(0).toUpperCase() + k.slice(1) : '—');
         }
 
         function renderPhoto(p) {
@@ -388,11 +434,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 img.src = `${p.photo_url}?v=${v}`;
                 img.style.display = '';
                 $('photoInitial').style.display = 'none';
+                $('photoPlaceholderLabel').style.display = 'none';
                 $('photoDeleteBtn').style.display = '';
             } else {
                 img.style.display = 'none';
                 img.removeAttribute('src');
-                $('photoInitial').style.display = '';
+                $('photoInitial').style.display = 'none';
+                $('photoPlaceholderLabel').style.display = '';
                 $('photoDeleteBtn').style.display = 'none';
             }
         }

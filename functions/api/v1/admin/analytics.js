@@ -50,7 +50,10 @@ export async function onRequestGet(ctx) {
             appointments_completed:            await scalar(env, `SELECT COUNT(*) AS n FROM appointments WHERE status='completed'`),
             messages_threads:                  await scalar(env, `SELECT COUNT(*) AS n FROM message_threads`),
             messages_unread_for_clinician:     await scalar(env, `SELECT COALESCE(SUM(clinician_unread_count), 0) AS n FROM message_threads`),
-            symptom_entries_window:            await scalarBind(env, `SELECT COUNT(*) AS n FROM symptom_diary_entries WHERE entry_date >= ?`, [from]),
+            // Bounded at both ends — the field is literally named "window",
+            // and a future-dated row would inflate the count of a period it
+            // is not in.
+            symptom_entries_window:            await scalarBind(env, `SELECT COUNT(*) AS n FROM symptom_diary_entries WHERE entry_date >= ? AND entry_date <= ?`, [from, today]),
             documents:                         await scalar(env, `SELECT COUNT(*) AS n FROM documents`),
             education_published:               await scalar(env, `SELECT COUNT(*) AS n FROM education_materials WHERE status = 'published'`),
             education_assigned:                await scalar(env, `SELECT COUNT(*) AS n FROM patient_education_assignments`),
@@ -133,8 +136,8 @@ export async function onRequestGet(ctx) {
         const recentSymp = await env.DB.prepare(`
             SELECT patient_id, entry_date, values_json
             FROM symptom_diary_entries
-            WHERE entry_date >= ?
-        `).bind(addDaysISO(today, -6)).all();
+            WHERE entry_date >= ? AND entry_date <= ?
+        `).bind(addDaysISO(today, -6), today).all();
         const recentRows = recentSymp?.results || [];
         const uniquePatients = new Set(recentRows.map(r => r.patient_id));
         let painSum = 0, painN = 0;

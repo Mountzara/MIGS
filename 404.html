@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Page not found · Mount Zara</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <!-- =================================================================
+         WHY THIS FILE EXISTS — 2026-08-14
+         =================================================================
+         The site had no 404 page, so Cloudflare Pages served the MARKETING
+         HOMEPAGE with HTTP 200 for every unmatched path. That is not a
+         cosmetic gap: it hid a real bug for as long as it existed.
+
+         portal/appointments/book/ linked a brand-new member to
+         /portal/intake/new — a path that does not exist. Instead of an
+         error she got 200 and the homepage, so she was silently ejected
+         from the portal at exactly the step she had just been told to
+         complete. Nothing logged it, nothing looked broken, and a 200
+         cannot be alerted on.
+
+         A real 404 means a wrong link fails visibly the first time someone
+         follows it, which is the only reliable way these get found.
+         ================================================================= -->
+    <style>
+        :root {
+            --bg: #120b22; --fg: #fff; --accent-soft: #a78bfa; --glow: 167, 139, 250;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(var(--glow), .16), transparent 62%),
+                var(--bg);
+            color: var(--fg);
+            font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            display: flex; align-items: center; justify-content: center;
+        }
+        main { max-width: 640px; padding: clamp(32px, 7vw, 64px) clamp(20px, 5vw, 40px); }
+        .eyebrow {
+            font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+            color: rgba(var(--glow), .95); margin: 0 0 18px;
+        }
+        h1 {
+            font-weight: 200; font-size: clamp(30px, 5.5vw, 48px); letter-spacing: -.025em;
+            line-height: 1.1; margin: 0 0 18px;
+        }
+        p { font-size: 16px; line-height: 1.65; opacity: .82; margin: 0 0 26px; max-width: 52ch; }
+        .links { display: flex; flex-wrap: wrap; gap: 10px; }
+        a.btn {
+            display: inline-block; font-size: 14px; text-decoration: none; color: #fff;
+            background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 10px; padding: 11px 18px; transition: border-color .2s, background .2s;
+        }
+        a.btn:hover { border-color: rgba(var(--glow), .6); background: rgba(var(--glow), .1); }
+        a.btn.primary { background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-color: transparent; }
+        .fine { font-size: 13px; opacity: .55; margin-top: 28px; }
+        .fine a { color: var(--accent-soft); }
+    </style>
+</head>
+<body>
+    <main>
+        <p class="eyebrow">Page not found</p>
+        <h1>That page isn&rsquo;t here.</h1>
+        <p>The link may be out of date, or the address may have a typo in it. Nothing is wrong with
+        your account &mdash; if you were signed in to the member portal, you still are.</p>
+        <div class="links">
+            <a class="btn primary" href="/">Home</a>
+            <a class="btn" href="/portal/">Member portal</a>
+            <a class="btn" href="/about/">About Dr. Mabini</a>
+            <a class="btn" href="/education/">Education</a>
+        </div>
+        <p class="fine">If you followed a link from this site and landed here, please tell us at
+        <a href="mailto:info@mountzara.com">info@mountzara.com</a> so it can be fixed &mdash; that is
+        genuinely useful. <a href="/privacy/">Privacy</a> &middot; <a href="/terms/">Terms</a></p>
+    </main>
+</body>
+</html>

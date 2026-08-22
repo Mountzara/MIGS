@@ -27,9 +27,18 @@ export async function onRequestGet(ctx) {
         if (!patient_id) return jsonError("missing_patient_id", 400);
 
         // Patient header.
+        //
+        // `dob` is the column. There is no `sex` and no `gender_identity`
+        // on `patients` — there never has been; the fields live in the
+        // encrypted intake, not in a queryable column. Naming them here
+        // made D1 throw on the FIRST statement of the handler, so this
+        // endpoint returned 500 for every patient, for every version, and
+        // the admin snapshot dashboard had never rendered. Aliased to
+        // `date_of_birth` so the response shape the dashboard reads is
+        // unchanged.
         const patient = await env.DB.prepare(`
-            SELECT id, first_name, last_name, preferred_name, email, phone, date_of_birth,
-                   sex, gender_identity, pronouns, created_at
+            SELECT id, first_name, last_name, preferred_name, email, phone,
+                   dob AS date_of_birth, pronouns, created_at
             FROM patients
             WHERE id = ?
         `).bind(patient_id).first();
@@ -103,47 +112,77 @@ export async function onRequestGet(ctx) {
         const thirtyAgo = new Date(Date.now() - 30 * 86400 * 1000).toISOString().slice(0, 10);
         let symptom_diary_30d = [];
         try {
+            // The columns are `values_json` and `note`. `symptoms_json` and
+            // `notes` do not exist, so this threw on every call — and the
+            // bare `catch {}` below turned the throw into an empty array.
+            // The sparklines were not "flat because the patient logged
+            // nothing"; they were flat because the query never ran.
+            // Bounded at BOTH ends. The field is called `symptom_diary_30d`
+            // and feeds a 30-day sparkline, but the query had only a lower
+            // bound — so a future-dated row was returned inside a window
+            // whose own name says it is not there, and the sparkline's
+            // x-axis and its data disagreed.
+            const today = new Date().toISOString().slice(0, 10);
             const sdR = await env.DB.prepare(`
-                SELECT entry_date, symptoms_json, notes
+                SELECT entry_date, values_json, note
                 FROM symptom_diary_entries
-                WHERE patient_id = ? AND entry_date >= ?
+                WHERE patient_id = ? AND entry_date >= ? AND entry_date <= ?
                 ORDER BY entry_date ASC
-            `).bind(patient_id, thirtyAgo).all();
+            `).bind(patient_id, thirtyAgo, today).all();
             symptom_diary_30d = (sdR.results || []).map((row) => ({
                 entry_date: row.entry_date,
-                symptoms: safeJson(row.symptoms_json),
-                notes: row.notes,
+                symptoms: safeJson(row.values_json),
+                notes: row.note,
             }));
-        } catch {}
+        } catch (e) {
+            // Still non-fatal, but no longer silent: a swallowed error here
+            // is indistinguishable from "no data", which is what hid the bug.
+            console.error("snapshots: symptom diary query failed", String(e).slice(0, 200));
+        }
 
         // Education progress.
         let education_progress = { assigned: 0, viewed: 0 };
         try {
+            // `first_opened_at`, not `viewed_at`. `completed_at` is
+            // reported separately because "opened it" and "finished it"
+            // are different facts and the dashboard was conflating them
+            // into one number it could not compute anyway.
             const epR = await env.DB.prepare(`
                 SELECT
                     COUNT(*) AS assigned,
-                    SUM(CASE WHEN viewed_at IS NOT NULL THEN 1 ELSE 0 END) AS viewed
+                    SUM(CASE WHEN first_opened_at IS NOT NULL THEN 1 ELSE 0 END) AS viewed,
+                    SUM(CASE WHEN completed_at IS NOT NULL THEN 1 ELSE 0 END) AS completed
                 FROM patient_education_assignments
                 WHERE patient_id = ?
             `).bind(patient_id).first();
-            if (epR) education_progress = { assigned: epR.assigned || 0, viewed: epR.viewed || 0 };
-        } catch {}
+            if (epR) education_progress = {
+                assigned: epR.assigned || 0, viewed: epR.viewed || 0, completed: epR.completed || 0,
+            };
+        } catch (e) {
+            console.error("snapshots: education progress query failed", String(e).slice(0, 200));
+        }
 
         // Appointments summary.
         let appointments_summary = null;
         try {
+            // The column is `starts_at`. `start_at` never existed, so the
+            // "last visit / next visit" panel on the snapshot dashboard has
+            // always been blank — which reads as "this patient has never
+            // been seen", the most misleading thing this page could say.
             const apR = await env.DB.prepare(`
                 SELECT
                     COUNT(*) AS total,
-                    SUM(CASE WHEN start_at < ? THEN 1 ELSE 0 END) AS past,
-                    SUM(CASE WHEN start_at >= ? THEN 1 ELSE 0 END) AS upcoming,
-                    MAX(CASE WHEN start_at < ? THEN start_at ELSE NULL END) AS last_visit_at,
-                    MIN(CASE WHEN start_at >= ? THEN start_at ELSE NULL END) AS next_visit_at
+                    SUM(CASE WHEN starts_at < ? THEN 1 ELSE 0 END) AS past,
+                    SUM(CASE WHEN starts_at >= ? THEN 1 ELSE 0 END) AS upcoming,
+                    MAX(CASE WHEN starts_at < ? THEN starts_at ELSE NULL END) AS last_visit_at,
+                    MIN(CASE WHEN starts_at >= ? THEN starts_at ELSE NULL END) AS next_visit_at
                 FROM appointments
                 WHERE patient_id = ? AND status NOT IN ('cancelled', 'no_show')
             `).bind(Date.now(), Date.now(), Date.now(), Date.now(), patient_id).first();
             appointments_summary = apR;
-        } catch {}
+        } catch (e) {
+            console.error("snapshots: appointment summary query failed", String(e).slice(0, 200));
+        }
 
         // Recent billing claims.
         let recent_claims = [];

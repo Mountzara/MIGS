@@ -382,7 +382,7 @@ async function loadSignatures() {
 
 function renderSignatures() {
     if (!currentSignatures.length) {
-        return '<div class="empty">No signatures stored yet. Upload one below.</div>';
+        return '<div class="empty">No signature stored yet. Upload a transparent-background PNG at least 400×100 — every policy you sign and every after-visit summary a patient reads uses this image.</div>';
     }
     return currentSignatures.map(s => {
         const retired = !!s.retired_at;
@@ -489,8 +489,16 @@ async function loadDocs() {
 }
 
 function renderDocs() {
-    if (!currentDocs.length) return '<div class="empty">No compliance docs registered.</div>';
-    return currentDocs.map(d => {
+    // 2026-08-19 — the five policies are compiled into
+    // functions/_lib/signatures.js (COMPLIANCE_DOCS) and the endpoint always
+    // returns all of them, so the old "No compliance docs registered." branch
+    // was unreachable. Removed. What IS reachable is the zero-signed state,
+    // which had no copy at all.
+    const signedCount = currentDocs.filter(d => d.status && d.status !== 'unsigned').length;
+    const summary = signedCount === 0
+        ? `<div class="empty">Five practice policies ship with the platform and none are signed yet. Start with the Controlled Substances Prescribing Policy — signing records the document's hash, so a later edit forces a re-sign.</div>`
+        : `<div class="empty">${signedCount} of 5 policies signed.</div>`;
+    return summary + currentDocs.map(d => {
         // 2026-06-12: read the ACTUAL backend shape (docs/index.js) — flat fields
         // + a `status` enum — not a nested `active_signature` object (which the
         // endpoint never returned, so every doc rendered "Unsigned" with a dead

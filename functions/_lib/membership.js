@@ -508,16 +508,28 @@ export const EVIDENCE = [
         supports: "Continuity is the mechanism the membership actually sells. This is the strongest evidence in the set, and it is associative, not causal.",
         caveat: "Association, not proof of causation. The reviews say so explicitly.",
     },
-    {
-        key: "disparities",
-        claim: "Black women are about half as likely to undergo minimally invasive hysterectomy for benign disease, and carry roughly 1.7-fold higher risk of surgical morbidity.",
-        detail: "The disparity persists after adjustment for fibroids, prior surgery, comorbidity and obesity. Contributing factors include slower diffusion of minimally invasive technique in under-resourced hospitals and reduced access to high-volume surgeons.",
-        source: "Racial Disparities in Minimally Invasive Benign Hysterectomy (2024)",
-        url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC11694781/",
-        year: 2024,
-        supports: "Access to a high-volume minimally invasive surgeon is itself the disparity. A virtual-first practice that reaches patients wherever they are addresses the access half of that problem.",
-        caveat: "Access is one contributor among several; this model does not claim to solve structural inequity.",
-    },
+    // ------------------------------------------------------------------
+    // REMOVED 2026-08-14, at the owner's instruction: "don't exploit black
+    // women".
+    //
+    // There was an entry here citing racial disparities in access to
+    // minimally invasive hysterectomy as evidence FOR the membership. The
+    // finding is real and it matters. Using it to sell a paid tier is not.
+    //
+    // Its own caveat gave the game away — "this model does not claim to
+    // solve structural inequity" — which raises the obvious question of why
+    // it was being cited on a pricing page at all. A disparity you are not
+    // addressing is not evidence for your product; invoking it borrows the
+    // moral weight of someone else's harm to make a $59-a-month tier look
+    // principled.
+    //
+    // This is NOT a decision to stop discussing the disparity. It stays in
+    // the clinical education material (education/fibroids/) and in the
+    // fellowship curriculum, where a patient or a trainee is being informed
+    // rather than sold to. The distinction is the context, not the fact.
+    //
+    // Do not reinstate it here.
+    // ------------------------------------------------------------------
 ];
 
 /**
@@ -548,8 +560,12 @@ export const MODEL_COMPARISON = [
       evidence: "diagnostic_delay" },
     { dimension: "Where you have to be",
       traditional: "In the building, during business hours.",
-      here: "Virtual-first. Access does not depend on your geography or your ability to take a day off work.",
-      evidence: "disparities" },
+      here: "Virtual-first. Access does not depend on your geography or your ability to take a day off work." },
+      // Deliberately uncited. This row used to reference the racial-
+      // disparities study, which was removed on 2026-08-14 — see EVIDENCE.
+      // The row stands on its own: virtual-first access is a plain
+      // description of how the practice works, and it does not need
+      // someone else's harm to justify it.
     { dimension: "Keeping your own doctor",
       traditional: "A second opinion means starting over somewhere else, or nothing.",
       here: "You keep your OB/GYN. Navigator prepares you for the visits you already have — a subspecialist organising your history so the fifteen minutes count.",
