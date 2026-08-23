@@ -37,7 +37,14 @@ function maskEmail(e) {
  * refusal is one problem, not six.
  */
 export function diagnose(rows) {
-    const failed = rows.filter((r) => r.status !== "sent");
+    // "abandoned" is a CLOSED outcome, not a live failure: every abandoned
+    // row carries an explicit reason (reserved-domain recipient, expired
+    // magic link, permanent provider refusal) and was retired on purpose.
+    // Counting them as failures kept this endpoint red forever after the
+    // 2026-08-23 provider switch, when the entire backlog was consciously
+    // dispositioned and the one deliverable message was delivered — an
+    // alarm that cannot go green teaches people to ignore it.
+    const failed = rows.filter((r) => r.status !== "sent" && r.status !== "abandoned");
     if (!failed.length) {
         return { healthy: true, headline: "Email is delivering.", causes: [] };
     }
@@ -152,7 +159,8 @@ export async function onRequestGet(ctx) {
             ...d,
             counts,
             total_recorded: rows.length,
-            undelivered: rows.filter((r) => r.status !== "sent").length,
+            undelivered: rows.filter((r) => r.status !== "sent" && r.status !== "abandoned").length,
+            abandoned_with_reason: rows.filter((r) => r.status === "abandoned").length,
             last_successful_send: lastSent
                 ? { at: lastSent.sent_at || lastSent.created_at, template: lastSent.template }
                 : null,
