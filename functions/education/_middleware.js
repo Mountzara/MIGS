@@ -86,6 +86,20 @@ export async function onRequest(ctx) {
         return harden(await next());
     }
 
+    // 2026-08-23 — the header above has promised since this file was
+    // written that EDUCATION_PUBLIC_LAUNCH = "true" opens the gate, but no
+    // code ever READ that variable: the only check was previewAccess(),
+    // which looks at PORTAL_PUBLIC_LAUNCH. So the owner's education release
+    // (approved after the citation verification) silently did nothing when
+    // the flag was set — the gate stayed closed and nothing reported the
+    // contradiction. Education and the portal launch INDEPENDENTLY: the
+    // guides are reviewed public content; the portal is accounts and PHI.
+    // Same exact-string discipline as isPortalLaunched: only "true" opens.
+    const eduLaunched = (env.EDUCATION_PUBLIC_LAUNCH || "false").toString().trim().toLowerCase() === "true";
+    if (eduLaunched) {
+        return harden(await next());
+    }
+
     // Otherwise: same gate as /portal/*. Launched OR admin-authed → through.
     const { allow } = await previewAccess(request, env);
     if (allow) {
