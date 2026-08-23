@@ -86,7 +86,10 @@ const idxRaw = readFileSync("index.html", "utf8");
 if (!idxRaw.includes("90.4")) fail("index.html: same-day discharge must state the canonical 90.4%");
 if (!/stat-num">15</.test(idxRaw)) fail("index.html: publications stat must be 15");
 const curRaw = readFileSync("curriculum/cbg-migs/index.html", "utf8");
-if (!curRaw.includes("444") || !/1,?511/.test(curRaw)) fail("curriculum/cbg-migs: canonical 444 / 1,511 volumes missing");
+// 2026-08-23 — the 444 CASE count moved to the by-request CV only
+// (owner: raw case tallies are a credentialing document, not public).
+// The 1,511 PROCEDURE total is allowed to remain on the curriculum page.
+if (!/1,?511/.test(curRaw)) fail("curriculum/cbg-migs: canonical 1,511 procedure volume missing");
 
 const cur = readFileSync("curriculum/cbg-migs/index.html", "utf8");
 if (!/three-year/i.test(cur) || !/thirty-six months|36 months|Each of 36/i.test(cur)) fail("curriculum/cbg-migs: missing three-year / 36-month structure");
