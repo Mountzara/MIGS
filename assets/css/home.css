@@ -693,6 +693,17 @@
             align-items: center;
             justify-content: center;
             transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+            /* 2026-08-23 FAILSAFE. The loader covers the whole viewport and was
+               dismissed only by home.js. A single JS error before that line —
+               and this repo has shipped exactly that (a ReferenceError that
+               halted every script) — left the visitor on a permanent black
+               screen. This CSS-only watchdog fades the loader out at 4s no
+               matter what: if the JS runs it dismisses far sooner (~0.7s), and
+               if the JS never runs the content still appears. Belt and braces. */
+            animation: loaderFailsafe 0s linear 4s forwards;
+        }
+        @keyframes loaderFailsafe {
+            to { opacity: 0; visibility: hidden; pointer-events: none; }
         }
         .page-loader.hidden {
             opacity: 0;
@@ -1584,9 +1595,12 @@
         }
 
         .btn-primary:hover {
-            background: #0080ff;
+            /* 2026-08-23 — was Apple system blue #0080ff, a leftover from the
+               template this was forked from: the primary CTA turned blue on a
+               purple site. Hover to a deeper brand violet instead. */
+            background: #5b21b6;
             transform: translateY(-1px);
-            box-shadow: 0 8px 16px -4px rgba(109, 40, 217, 0.4);
+            box-shadow: 0 10px 24px -6px rgba(109, 40, 217, 0.5);
         }
 
         .btn-secondary {

@@ -2,13 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
-    <link rel="apple-touch-icon" href="/assets/images/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Square icons (2026-08-23): the two flagship pages were pointing icon
+         AND apple-touch-icon at a 997x402 wordmark, which rendered squished in
+         the tab and distorted on an iOS home screen. Point at the real icons. -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="canonical" href="https://mountzara.com/">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#120f1b">
-    <meta name="description" content="Mount Zara — Complex Benign Gynecology &amp; Minimally Invasive Gynecologic Surgery (CBG/MIGS), Osteopathic Care, and AI Innovation.">
-    <title>Mount Zara — Complex Benign Gynecology &amp; MIGS</title>
+    <meta name="description" content="Dr. Christopher Mabini, DO — fellowship-trained minimally invasive gynecologic surgery for endometriosis, fibroids, and complex pelvic pain, with whole-person osteopathic care. Serving Illinois and California.">
+    <title>Dr. Christopher Mabini, DO — Minimally Invasive Gynecologic Surgery</title>
+    <!-- Rich link previews: a shared link now renders a branded card, not a bare URL. -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mount Zara">
+    <meta property="og:title" content="Minimally invasive gynecologic surgery — Dr. Christopher Mabini, DO">
+    <meta property="og:description" content="Fellowship-trained surgery for endometriosis, fibroids, and complex pelvic pain — with whole-person osteopathic care.">
+    <meta property="og:url" content="https://mountzara.com/">
+    <meta property="og:image" content="https://mountzara.com/assets/images/og-default.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Dr. Christopher Mabini, DO — minimally invasive gynecologic surgery">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Minimally invasive gynecologic surgery — Dr. Christopher Mabini, DO">
+    <meta name="twitter:description" content="Fellowship-trained surgery for endometriosis, fibroids, and complex pelvic pain — with whole-person osteopathic care.">
+    <meta name="twitter:image" content="https://mountzara.com/assets/images/og-default.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Physician",
+      "name": "Christopher Z. Mabini, DO",
+      "url": "https://mountzara.com/",
+      "image": "https://mountzara.com/assets/images/og-default.png",
+      "medicalSpecialty": "Gynecologic Surgery",
+      "description": "Fellowship-trained minimally invasive gynecologic surgeon (complex benign gynecology / MIGS) and osteopathic physician.",
+      "knowsAbout": ["Endometriosis", "Uterine fibroids", "Minimally invasive gynecologic surgery", "Chronic pelvic pain", "Adenomyosis", "Osteopathic manipulative treatment"],
+      "areaServed": ["Illinois", "California"],
+      "availableService": {"@type": "MedicalProcedure", "name": "Minimally invasive gynecologic surgery"},
+      "email": "info@mountzara.com"
+    }
+    </script>
     <!-- SELF-HOSTED VARIABLE FONT (re-applied 2026-08-11; pure performance,
          identical typeface). The Google link loaded 18 Nunito Sans variants
          and each file arriving mid-opening forced a full-document relayout
@@ -60,7 +95,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=7ea80171a0">
+<link rel="stylesheet" href="/assets/css/home.css?v=cb04ff1983">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -70,6 +105,7 @@
     <a href="#about" class="skip-link">Skip to main content</a>
 
     <!-- Page loader: visible until critical assets are ready -->
+    <noscript><style>#pageLoader{display:none!important}</style></noscript>
     <div id="pageLoader" class="page-loader" aria-hidden="true">
         <div class="page-loader-inner">
             <img src="assets/images/mount-zara-monogram.png" alt="" class="page-loader-mark">
@@ -527,7 +563,7 @@
     <section id="identity-map" class="identity-map-section" aria-label="Choose your path">
         <div class="container-wide">
             <span class="section-eyebrow">Choose your path</span>
-            <h2 class="section-headline">Five identities. One practice.</h2>
+            <h2 class="section-headline">Many disciplines. One practice.</h2>
             <p class="section-sub">Surgeon · researcher · engineer · educator · osteopath. <span class="im-hint-swipe">Swipe to choose where to start.</span><span class="im-hint-choose">Choose where to start.</span></p>
 
             <div class="identity-map-track" role="tablist">
@@ -587,7 +623,7 @@
         <div class="container-wide">
             <span class="section-eyebrow">Surgical Practice</span>
             <h2 class="section-headline gradient">The full range of complex benign &amp; minimally invasive gynecology &mdash; trained, practiced, and reviewed without reservation.</h2>
-            <p class="section-sub">A three-year CBG/MIGS Fellowship at PRIME St. Francis Hospital in the Chicagoland area &mdash; across four hospital sites, every required category exceeded, every safety milestone achieved.</p>
+            <p class="section-sub">A three-year fellowship in complex benign and minimally invasive gynecologic surgery at PRIME St. Francis Hospital in the Chicagoland area, across four teaching hospitals.</p>
 
             <div class="excellence-quote">
                 <blockquote>I strongly recommend Dr. Mabini for independent practice as a specialist in MIGS and complex benign gynecology &mdash; without reservation. He has demonstrated the knowledge, skills, and professional attributes necessary for independent practice at an advanced level.</blockquote>
@@ -662,7 +698,7 @@
                     </div>
                     <h3>Your anatomy, seen before it is touched</h3>
                     <div class="safety-proof">The time taken to see and protect the delicate structures around the surgery</div>
-                    <p data-read>The ureter &mdash; the fine tube that carries urine from your kidney to your bladder &mdash; lies close to where this surgery takes place. Opening the tissue around it and identifying it by sight is the surest way to protect it, and in this series that was done in 90 operations.</p>
+                    <p data-read>The ureter &mdash; the fine tube that carries urine from your kidney to your bladder &mdash; lies close to where this surgery takes place. Opening the tissue around it and identifying it by sight, rather than assuming where it runs, is the surest way to keep it safe &mdash; and that step is standard in every case, not saved for when trouble is expected.</p>
                 </article>
 
                 <article class="safety-card" data-read-title="Outcomes tracked on published scales" data-read-eyebrow="Outcomes">
@@ -811,7 +847,7 @@
                         <h3>Complex Adhesiolysis &amp; Cross-Specialty</h3>
                         <p>Extensive scar tissue and disease that crosses into the bowel, bladder and pelvic sidewall.</p>
                         <div class="hub-tile-badges">
-                            <span class="hub-badge">Highest Fellowship Volume</span>
+                            <span class="hub-badge">Full complexity range</span>
                             <span class="hub-badge">Multidisciplinary</span>
                         </div>
                     </button>
@@ -875,7 +911,7 @@
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
-                        <p>Every minimally invasive route &mdash; robotic, conventional laparoscopic, vNOTES, and where indicated hysteroscopic and cystoscopic adjuncts. 165 of 177 hysterectomies were completed through minimally invasive routes; the remaining twelve were planned open from the outset for large pathology.</p>
+                        <p>Every minimally invasive route &mdash; robotic, conventional laparoscopic, vNOTES, and where indicated hysteroscopic and cystoscopic adjuncts. Even large or complex cases are approached through small incisions wherever it is safe, so recovery happens at home; an open approach is chosen in advance only when the anatomy calls for it.</p>
                         <ul class="hub-content-list">
                             <li>Robotic Da Vinci across the full complexity range</li>
                             <li>Conventional and reduced-port laparoscopy</li>
@@ -955,7 +991,7 @@
                     </div>
                     <div class="hub-content-body">
                         <h4>What this looks like in practice</h4>
-                        <p>Multi-quadrant adhesive disease and dense bowel/pelvic-sidewall pathology, dissected sharply and with carefully chosen energy &mdash; without a single major bowel injury across the entire fellowship. Cross-specialty competence layered on top: cystoscopy, ureteral stent placement, small bowel repair, appendectomy, and retroperitoneal dissection.</p>
+                        <p>Multi-quadrant adhesive disease and dense bowel and pelvic-sidewall pathology, dissected carefully with the bowel and ureter protected as a matter of routine. Cross-specialty skill is layered on top: cystoscopy, ureteral stent placement, small-bowel repair, appendectomy and retroperitoneal dissection.</p>
                         <ul class="hub-content-list">
                             <li>Multi-quadrant sharp and energy-based dissection</li>
                             <li>Cystoscopy and ureteral stent placement</li>
