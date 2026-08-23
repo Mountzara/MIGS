@@ -66,6 +66,8 @@ fail() { printf '\n🛑 %s\n' "$*"; exit 1; }
 say "1/7 Verifying the token…"
 V=$(curl -s -H "Authorization: Bearer $TOKEN" "$API/user/tokens/verify")
 echo "$V" | grep -q '"status":"active"' || fail "token is not active: $(echo "$V" | head -c 200)"
+# NOTE: the limits endpoint 401s even for a working send-capable token
+# (observed live 2026-08-23), so its result is advisory only below.
 
 # The limits endpoint doubles as the permission + entitlement probe:
 # 403/10102 = token lacks Email Sending: Edit; 403/10105 = the account has
@@ -82,29 +84,70 @@ case "$L" in
 esac
 
 # ---------------------------------------------------------------------
-say "2/7 Onboarding $DOMAIN onto Email Sending…"
-if CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACC" \
-   npx --yes wrangler email sending enable "$DOMAIN" > /tmp/_ces_enable.log 2>&1; then
-    echo "   onboarded (or already onboarded)"
+say "2/7 Checking $DOMAIN is onboarded onto Email Sending…"
+# 2026-08-23 — the first live run taught this step three things:
+#   * wrangler `email sending enable` needs ZONE LOOKUP (a Zone:Read
+#     token permission) before it ever reaches the email API, so it dies
+#     with "Could not find a zone" even when the email permission is fine;
+#   * calling the underlying POST /zones/{id}/email/sending/subdomains
+#     directly returns 401 (code 2036) for an account-scoped Email
+#     Sending: Edit token — onboarding wants a ZONE-scoped grant the
+#     token-creation UI does not plainly offer;
+#   * the earlier fallback `grep -qiE "already|enabled|exists"` matched
+#     the word "exists" INSIDE wrangler's error text ("Make sure the
+#     domain or its parent zone exists") and reported "already
+#     onboarded" over a hard failure. Never classify an error stream by
+#     matching words an error message might also contain.
+# So this step no longer tries to onboard. It PROBES: a minimal send
+# attempt distinguishes the three states unambiguously —
+#   HTTP 200                     onboarded, keep going
+#   403 + code 10203             account fine, DOMAIN not onboarded
+#   anything else                token/entitlement problem, stop
+PROBE=$(curl -s -o /tmp/_ces_probe.json -w "%{http_code}" -X POST \
+      "$API/accounts/$ACC/email/sending/send" \
+      -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+      --data "{\"to\": \"$OWNER_EMAIL\", \"from\": {\"address\": \"$FROM_ADDR\", \"name\": \"Mount Zara\"}, \"subject\": \"Mount Zara — Email Sending onboarding probe\", \"text\": \"Probe only. If this arrives, the domain is onboarded.\"}")
+if [ "$PROBE" = 200 ]; then
+    echo "   onboarded — probe send accepted"
+elif grep -q 10203 /tmp/_ces_probe.json; then
+    cat <<'STEPS'
+
+   The domain is NOT onboarded yet, and that is the one step that needs
+   the dashboard (the API refuses account-scoped tokens for it):
+
+     1. https://dash.cloudflare.com  → account: Mount Zara
+     2. Compute & AI  →  Email Service  →  Email Sending
+     3. "Onboard Domain"  →  choose mountzara.com
+     4. "Add records and onboard"   (DNS is added for you, automatically)
+
+   Then re-run this script — everything from here on is automatic.
+STEPS
+    exit 2
 else
-    grep -qiE "already|enabled|exists" /tmp/_ces_enable.log \
-        && echo "   already onboarded" \
-        || { cat /tmp/_ces_enable.log; fail "onboarding failed — see output above"; }
+    head -c 300 /tmp/_ces_probe.json; echo
+    fail "probe send failed (HTTP $PROBE) — token or entitlement problem, see body above"
 fi
-CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACC" \
-    npx --yes wrangler email sending dns get "$DOMAIN" 2>/dev/null | sed 's/^/   /' || true
 
 # ---------------------------------------------------------------------
 say "3/7 Checking the sending DNS actually resolves…"
 # Onboarding writes records under cf-bounce.<domain> plus SPF/DKIM TXTs.
 # 5–15 min propagation is typical on Cloudflare DNS; poll briefly.
+# (dig is not installed here; python's resolver is always present)
 ok_dns=0
 for i in 1 2 3 4 5 6; do
-    if dig +short MX "cf-bounce.$DOMAIN" | grep -q . ; then ok_dns=1; break; fi
+    if python3 - <<'PYEOF'
+import socket, sys
+try:
+    socket.getaddrinfo("cf-bounce.mountzara.com", 25)
+    sys.exit(0)
+except OSError:
+    sys.exit(1)
+PYEOF
+    then ok_dns=1; break; fi
     sleep 20
 done
-[ "$ok_dns" = 1 ] && echo "   cf-bounce MX resolving" \
-                  || echo "   ⚠ cf-bounce MX not visible yet (propagation) — the test send below is the real check"
+[ "$ok_dns" = 1 ] && echo "   cf-bounce resolving" \
+                  || echo "   ⚠ cf-bounce not visible yet (propagation) — the test send below is the real check"
 
 # ---------------------------------------------------------------------
 say "4/7 Sending a REAL test email to $OWNER_EMAIL…"
