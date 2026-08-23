@@ -2389,9 +2389,19 @@
 
         /* The figure that backs the claim. Rendered as a rule-topped row so
            it reads as a citation for the sentence above it, not a headline. */
+        /* 2026-08-23 — these lines used to LEAD with a 26px operative-log
+           number (444 cases, 90 dissections, 73 of 74…). A peer reads a
+           surgeon's personal case counts on a patient page as a scoreboard,
+           and the community regards that as self-promotional. Owner
+           directive: report what the fact MEANS for the patient, not the
+           tally. The lines are now benefit sentences; the actual figures
+           live in the reading sheet behind each card for anyone who opens
+           it. Where a number does appear inline (the 90.4% same-day figure,
+           which is patient expectation-setting, not a brag) it is bolded at
+           reading size, not blown up. */
         .safety-proof {
-            font-size: 15px;
-            line-height: 1.45;
+            font-size: 15.5px;
+            line-height: 1.55;
             color: #ded7f5;
             letter-spacing: -0.006em;
             padding-top: 13px;
@@ -2399,16 +2409,8 @@
             margin-bottom: 14px;
         }
         .safety-proof strong {
-            font-size: 26px;
             font-weight: 700;
-            letter-spacing: -0.025em;
             color: #ffffff;
-            /* No background-clip:text here. These strings carry a comma and a
-               decimal point; clipping a gradient to punctuation at 26px made
-               the comma disappear on the first attempt. Solid white reads. */
-            margin-right: 6px;
-            display: inline-block;
-            vertical-align: -1px;
         }
 
         .safety-card p {
@@ -2861,16 +2863,22 @@
         }
         .hub-content-stat .stat-value {
             font-family: 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
-            font-size: clamp(32px, 3.4vw, 44px);
-            font-weight: 200;
-            letter-spacing: -0.018em;
-            line-height: 1;
+            /* 2026-08-23 — the value is now EITHER a short percentage ("93%")
+               or a two-to-three word principle ("Every stage", "Your own
+               tissue"), replacing the raw case counts a peer reads as a
+               scoreboard. A phrase cannot ride the 44px size a numeral did,
+               so this is smaller with real line-height and wrapping room. */
+            font-size: clamp(22px, 2.4vw, 30px);
+            font-weight: 400;
+            letter-spacing: -0.014em;
+            line-height: 1.12;
+            text-wrap: balance;
             color: var(--white);
-            background: linear-gradient(180deg, rgba(167, 139, 250, 1) 0%, rgba(109, 40, 217, 1) 100%);
+            background: linear-gradient(180deg, rgba(196, 181, 253, 1) 0%, rgba(139, 92, 246, 1) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         /* "73 of 74" — the denominator is what makes the numerator mean
            anything, but at 44px it would dominate the number it qualifies.
