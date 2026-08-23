@@ -174,7 +174,9 @@ curl -s -X PATCH "$API/accounts/$ACC/pages/projects/mountzara" \
         \"CF_EMAIL_ACCOUNT_ID\": {\"value\": \"$ACC\",   \"type\": \"secret_text\"},
         \"NOTIFY_PROVIDER\":     {\"value\": \"cloudflare\", \"type\": \"secret_text\"},
         \"NOTIFY_ALLOW_NON_BAA\":{\"value\": \"yes\", \"type\": \"secret_text\"}
-      }}}}" | grep -q '"success":true' || fail "Pages env-var PATCH failed"
+      }}}}" | grep -qE '"success":[[:space:]]*true' || fail "Pages env-var PATCH failed"
+# (the API pretty-prints '"success": true' WITH a space — the tight match
+#  failed a PATCH that had actually succeeded, live, 2026-08-23)
 echo "   CF_EMAIL_TOKEN, CF_EMAIL_ACCOUNT_ID, NOTIFY_PROVIDER=cloudflare set"
 echo "   NOTIFY_ALLOW_NON_BAA=yes — VALID ONLY PRE-LAUNCH. Before patients enroll:"
 echo "   confirm a BAA with Cloudflare covering Email Service, or switch back to ses."
