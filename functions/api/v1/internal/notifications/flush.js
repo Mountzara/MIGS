@@ -101,6 +101,31 @@ export async function onRequestPost(ctx) {
     const detail = [];
 
     for (const row of rows) {
+        // A magic link is a TIME-LIMITED credential. Re-sending the stored
+        // body is exactly right while the token is alive (see the note at
+        // the send site below) and exactly wrong after it expires: the
+        // recipient gets a sign-in link that fails, which reads as "the
+        // portal is broken" — worse than the email never arriving. Found
+        // live 2026-08-23: five magic_link rows from the SES-sandbox era,
+        // eight to ten DAYS old, were still classified retryable and would
+        // have delivered dead links the moment the provider switch made
+        // sending work. One hour is generous — the issued token lives 15
+        // minutes; a patient who still wants in has long since re-requested.
+        const ageMs = now - Date.parse(row.created_at || 0);
+        if (row.template === "magic_link" && ageMs > 60 * 60 * 1000) {
+            if (!dryRun) {
+                await env.DB.prepare(
+                    `UPDATE notification_outbox
+                        SET status = 'abandoned',
+                            error = 'magic link expired before delivery was possible; patient must re-request'
+                      WHERE id = ?`
+                ).bind(row.id).run().catch(() => {});
+            }
+            abandoned++;
+            detail.push({ id: row.id, to: row.to_email, outcome: "abandoned",
+                          why: "expired magic link — resending would deliver a dead sign-in link" });
+            continue;
+        }
         if (Number(row.attempts || 0) >= MAX_ATTEMPTS || isPermanent(row.error)) {
             if (!dryRun) {
                 await env.DB.prepare(
