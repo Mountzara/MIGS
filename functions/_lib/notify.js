@@ -406,9 +406,22 @@ async function sendViaCloudflare(env, { to, subject, text, html }) {
         throw new Error("cloudflare email requires CF_EMAIL_TOKEN and CF_EMAIL_ACCOUNT_ID");
     }
 
+    // NOTIFY_FROM was configured in the SES era, where FromEmailAddress
+    // accepts the RFC 5322 display form — "Mount Zara <no-reply@…>".
+    // Cloudflare's from.address takes the BARE address only and 400s
+    // (code 10202 email.invalid) on the display form. Found live
+    // 2026-08-23: every direct test passed (explicit bare address) while
+    // the deployed notify() path failed, because the two used different
+    // sources for the sender. Parse both forms so the secret does not
+    // have to change shape underneath the SES fallback.
+    const rawFrom = String(env.NOTIFY_FROM || "");
+    const m = rawFrom.match(/^\s*(?:"?([^"<]*?)"?\s*)?<([^>]+)>\s*$/);
+    const fromAddress = (m ? m[2] : rawFrom).trim();
+    const fromName = (m && m[1] ? m[1].trim() : "") || env.NOTIFY_FROM_NAME || "Mount Zara";
+
     const payload = {
         to,
-        from: { address: env.NOTIFY_FROM, name: env.NOTIFY_FROM_NAME || "Mount Zara" },
+        from: { address: fromAddress, name: fromName },
         ...(env.NOTIFY_REPLY_TO ? { reply_to: env.NOTIFY_REPLY_TO } : {}),
         subject,
         text,

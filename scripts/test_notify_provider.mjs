@@ -198,5 +198,34 @@ ck("ses branch unaffected",
     ck("API error carried through with code", out.ok === false && /10203|403/.test(out.error), out.error);
 }
 
+// ---------------------------------------------------------------------
+// 7. NOTIFY_FROM display-form parsing
+// ---------------------------------------------------------------------
+// The secret predates this provider and holds the SES-era display form
+// "Mount Zara <no-reply@…>". Cloudflare's from.address 400s (10202) on
+// that; the sender must be split into address + name. Both shapes pinned.
+{
+    for (const [rawFrom, wantAddr, wantName] of [
+        ["Mount Zara <no-reply@mountzara.com>", "no-reply@mountzara.com", "Mount Zara"],
+        ['"Mount Zara" <no-reply@mountzara.com>', "no-reply@mountzara.com", "Mount Zara"],
+        ["no-reply@mountzara.com", "no-reply@mountzara.com", "Mount Zara"],
+        ["<no-reply@mountzara.com>", "no-reply@mountzara.com", "Mount Zara"],
+    ]) {
+        const env = { ...BASE_ENV(), NOTIFY_FROM: rawFrom };
+        let body = null;
+        mockFetch(async (url, opts) => {
+            body = JSON.parse(opts.body);
+            return new Response(JSON.stringify({ success: true,
+                result: { delivered: ["x@y.com"], permanent_bounces: [], queued: [] } }), { status: 200 });
+        });
+        await sendDirect(env, { to: "chris.mabini@gmail.com", subject: "s", text: "t", html: "h" });
+        restoreFetch();
+        ck(`NOTIFY_FROM ${JSON.stringify(rawFrom)} → bare address`,
+           body && body.from.address === wantAddr, JSON.stringify(body && body.from));
+        ck(`NOTIFY_FROM ${JSON.stringify(rawFrom)} → name preserved`,
+           body && body.from.name === wantName, JSON.stringify(body && body.from));
+    }
+}
+
 if (failures) { console.error(`notify-provider gate: ${failures} failure(s)`); process.exit(2); }
-console.log("notify-provider gate: 24 checks pass — payload shape, synchronous bounce suppression, guarded retry path, BAA gate");
+console.log("notify-provider gate: 32 checks pass — payload shape, synchronous bounce suppression, guarded retry path, BAA gate");
