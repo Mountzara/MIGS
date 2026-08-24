@@ -784,18 +784,23 @@
             gap: 32px;
         }
         .page-loader-mark {
-            width: 70px;
+            /* 2026-08-24f — the mark was 70px and pulsed down to 0.5 opacity on
+               top of a 0.86 filter opacity: ~43% of a thin script logo on paper,
+               i.e. barely there. Owner: "not the actual monogram spinner that
+               was working before." Bigger, solid ink, and the pulse floor is
+               raised so it never fades out. */
+            width: 132px;
             height: auto;
-            opacity: 0.92;
-            animation: loaderMarkPulse 2s ease-in-out infinite;
+            opacity: 1;
+            animation: loaderMarkPulse 2.2s ease-in-out infinite;
         }
         @keyframes loaderMarkPulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.03); }
+            0%, 100% { opacity: 0.86; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.035); }
         }
         .page-loader-spinner {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border: 2px solid var(--hairline);
             border-top-color: rgba(255,255,255,0.85);
             border-radius: 50%;
@@ -8251,9 +8256,11 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
            vanish. Tint them to ink with a filter (brightness(0) → black, then
            a touch of the violet via sepia/hue is overkill; plain near-black
            reads as a refined mark on paper). */
-        .nav-brand img, .page-loader-mark, .hero-inner img[src*="monogram"], img[src*="monogram-white"] {
+        .nav-brand img, .hero-inner img[src*="monogram"], img[src*="monogram-white"] {
             filter: brightness(0) saturate(100%) opacity(0.86);
         }
+        /* the loader mark is the opening impression — full-strength ink */
+        .page-loader-mark { filter: brightness(0) saturate(100%); }
 
         /* =====================================================================
            MAJOR DISPLAY HEADLINES — deep purple gradient (2026-08-24)
