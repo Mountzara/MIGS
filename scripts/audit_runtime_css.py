@@ -198,23 +198,25 @@ def audit_homepage(page) -> list[dict[str, Any]]:
     for g in dark_glass:
         if g["count"] == 0:
             continue
-        bf = g.get("backdropFilter") or "none"
-        has_glass = "blur(" in bf
-        # Background should be translucent (alpha < 0.15 for real glass)
         bg = g.get("background") or ""
+        # LIGHT THEME (2026-08-24): cards are SOLID warm-white surfaces, not
+        # translucent glass. Assert an opaque, light fill — this catches a card
+        # losing its surface (going transparent/invisible), the corruption
+        # class this gate exists for.
         m = re.match(r"rgba?\(([^)]+)\)", bg)
-        translucent = False
+        opaque_light = False
         if m:
             parts = [p.strip() for p in m.group(1).split(",")]
-            if len(parts) == 4:
-                try:
-                    translucent = float(parts[3]) < 0.15
-                except ValueError:
-                    pass
+            try:
+                r_,g_,b_ = float(parts[0]), float(parts[1]), float(parts[2])
+                a_ = float(parts[3]) if len(parts) == 4 else 1.0
+                opaque_light = a_ >= 0.9 and (r_ + g_ + b_) / 3 > 200
+            except ValueError:
+                pass
         results.append(make_check(
-            f"dark-section {g['selector']} real Apple glass (blur + translucent)",
-            has_glass and translucent,
-            f"backdrop-filter={bf!r} bg={bg!r} ({g['count']} elements)"
+            f"{g['selector']} solid light card surface",
+            opaque_light,
+            f"bg={bg!r} ({g['count']} elements)"
         ))
 
     # 2026-08-08 — .app-card-v2 moved OUT of this list: the apps section has
@@ -260,16 +262,22 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                  textColor: p ? getComputedStyle(p).color : null };
     }""")
     if app_glass.get("present"):
-        bf = app_glass.get("backdropFilter") or "none"
+        # LIGHT THEME: app-card text must be INK (dark), not white — this is
+        # the inverse of the old white-on-dark assertion and guards the same
+        # illegibility class (now white-on-light).
+        tc = app_glass.get("textColor") or ""
+        m = re.match(r"rgba?\(([^)]+)\)", tc)
+        is_ink = False
+        if m:
+            parts = [p.strip() for p in m.group(1).split(",")]
+            try:
+                is_ink = (float(parts[0]) + float(parts[1]) + float(parts[2])) / 3 < 110
+            except ValueError:
+                pass
         results.append(make_check(
-            "apps .app-card-v2 dark glass ON",
-            "blur(" in bf,
-            f"backdrop-filter={bf!r}"
-        ))
-        results.append(make_check(
-            "apps .app-card-v2 text is white",
-            app_glass.get("textColor") == "rgb(255, 255, 255)",
-            f"color={app_glass.get('textColor')!r}"
+            "apps .app-card-v2 text is ink (dark on light)",
+            is_ink,
+            f"color={tc!r}"
         ))
 
     # Sections must be translucent so hero drawing shows through
@@ -327,10 +335,24 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                             break
                     except ValueError:
                         pass
+        # LIGHT THEME: sections are OPAQUE warm paper (the drawing is a
+        # hero-only feature now, not a site-wide texture). Assert opaque so a
+        # section can't silently lose its ground.
+        m2 = re.match(r"rgba?\(([^)]+)\)", bg)
+        opaque = False
+        if m2:
+            parts = [p.strip() for p in m2.group(1).split(",")]
+            try:
+                a2 = float(parts[3]) if len(parts) == 4 else 1.0
+                opaque = a2 >= 0.9
+            except ValueError:
+                pass
+        elif bg.startswith("rgb(") or bg == "":
+            opaque = True
         results.append(make_check(
-            f"{s['selector']} translucent (drawing shows through)",
-            translucent,
-            f"bg-color={bg!r} bg-image={(bgimg or '')[:60]!r}"
+            f"{s['selector']} opaque paper ground",
+            opaque or translucent,
+            f"bg-color={bg!r}"
         ))
 
     # POSITIVE GLASS INVARIANT — real frosted glass MUST survive on the few

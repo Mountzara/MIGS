@@ -551,9 +551,8 @@
             transition: opacity 0.8s ease-out;
         }
         .hero-bg-stage.faded {
-            /* Prominent, not a watermark — the drawing stays a clear presence
-               on the paper even after the fade (owner directive 2026-08-24). */
-            opacity: 0.9;
+            /* Prominent, not a watermark — full presence on the paper. */
+            opacity: 1;
         }
         .hero-bg-vignette {
             /* 2026-07-22 — repurposed as the PLUM OVERLAY. iOS Safari ignores
@@ -611,7 +610,7 @@
                paper) and darkens the strokes; hue-rotate() restores the violet
                that invert would otherwise flip to green; full saturation and a
                touch of contrast keep the line crisp, not muddy. */
-            filter: invert(1) hue-rotate(185deg) saturate(1.55) brightness(0.92) contrast(1.2);
+            filter: invert(1) hue-rotate(185deg) saturate(1.9) contrast(1.5);
             /* 2026-07-22 — screen-blend the video so its black pixels become
                transparent: the mauve line-art now draws ITSELF directly onto
                the purple-gradient stage instead of carrying its own black
@@ -1056,7 +1055,7 @@
            highlight in box-shadow only, no extra ::before / ::after overlays */
         .award-tile:hover {
             transform: translateY(-5px) scale(1.005);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: var(--violet-600);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.10),
                 0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45),
@@ -1231,7 +1230,7 @@
             font-size: 15px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(167, 139, 250, 0.8);
+            color: var(--violet-600);
             color: rgba(139, 92, 246, 0.8);
             margin: 0 0 16px;
         }
@@ -1287,7 +1286,7 @@
         }
         .curriculum-consult-link:hover {
             background: rgba(167, 139, 250, 0.34);
-            border-color: rgba(167, 139, 250, 0.8);
+            border-color: var(--violet-600);
         }
         .curriculum-cta {
             margin-top: 48px;
@@ -1431,7 +1430,7 @@
         .timeline-row .year {
             font-size: 14px;
             font-weight: 600;
-            color: rgba(167, 139, 250, 0.75);
+            color: var(--violet-600);
             color: rgba(139, 92, 246, 0.75);
             letter-spacing: 0.04em;
             text-transform: uppercase;
@@ -1890,7 +1889,7 @@
         .surgical-card:hover {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(167, 139, 250, 0.32);
+            border-color: var(--violet-600);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
             transform: translateY(-5px) scale(1.005);
             background: linear-gradient(135deg,
@@ -2089,7 +2088,7 @@
         }
         .stat:hover {
             transform: translateY(-2px);
-            border-color: rgba(167, 139, 250, 0.45);
+            border-color: var(--violet-600);
             background: rgba(167, 139, 250, 0.06);
         }
 
@@ -2151,7 +2150,7 @@
                stat numerals match the brand purple treatment on the hero
                and section headlines. Solid color fallback below for
                browsers without background-clip:text. */
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: var(--ink);
@@ -2160,8 +2159,8 @@
         @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
             .stat-num {
                 background: transparent;
-                color: rgba(167, 139, 250, 0.95);
-                -webkit-text-fill-color: rgba(167, 139, 250, 0.95);
+                color: var(--violet-600);
+                -webkit-text-fill-color: var(--violet-600);
             }
         }
 
@@ -2564,7 +2563,7 @@
             gap: 8px;
             font-size: 12.5px;
             font-weight: 600;
-            color: rgba(167, 139, 250, 0.92);
+            color: var(--violet-600);
             letter-spacing: 0.04em;
             text-transform: uppercase;
             opacity: 0.78;
@@ -2685,7 +2684,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.85);
+            color: var(--violet-600);
             margin: clamp(40px, 5vw, 72px) auto 22px;
             width: fit-content;
             padding: 8px 16px;
@@ -2729,16 +2728,16 @@
         }
         .hub-tile:hover {
             transform: translateY(-2px);
-            border-color: rgba(167, 139, 250, 0.45);
+            border-color: var(--violet-600);
             background: rgba(167, 139, 250, 0.06);
         }
         .hub-tile:focus-visible {
             outline: none;
-            border-color: rgba(167, 139, 250, 0.7);
+            border-color: var(--violet-600);
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
         }
         .hub-tile.active {
-            border-color: rgba(167, 139, 250, 0.7);
+            border-color: var(--violet-600);
             background: rgba(167, 139, 250, 0.10);
             box-shadow: 0 16px 40px -16px rgba(109, 40, 217, 0.45);
         }
@@ -2759,7 +2758,7 @@
             justify-content: center;
             border-radius: 9px;
             background: rgba(167, 139, 250, 0.10);
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             border: 1px solid rgba(167, 139, 250, 0.22);
         }
         .hub-tile-icon svg {
@@ -2797,7 +2796,7 @@
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid rgba(167, 139, 250, 0.22);
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
         }
 
         /* 2026-06-26 — Full-screen modal overlay (was inline panel). User: "modal
@@ -2884,7 +2883,7 @@
         .hub-panel-close:hover, .hub-panel-close:focus-visible {
             background: var(--paper-3);
             transform: scale(1.06);
-            border-color: rgba(167, 139, 250, 0.5);
+            border-color: var(--violet-600);
             outline: none;
         }
         .hub-panel-inner {
@@ -2958,7 +2957,7 @@
             font-weight: 700;
             letter-spacing: 0.20em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.85);
+            color: var(--violet-600);
             margin: 0 0 10px;
         }
         .hub-content-body p {
@@ -3024,13 +3023,13 @@
         .domain-cta-btn:hover::after { transform: translateX(3px); }
         .domain-cta-btn.ghost {
             background: var(--paper-3);
-            border-color: rgba(167, 139, 250, 0.35);
-            color: rgba(167, 139, 250, 0.95);
+            border-color: var(--violet-600);
+            color: var(--violet-600);
         }
         .domain-cta-btn.ghost:hover {
             background: rgba(167, 139, 250, 0.10);
             color: var(--ink);
-            border-color: rgba(167, 139, 250, 0.7);
+            border-color: var(--violet-600);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -3211,7 +3210,7 @@
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.85);
+            color: var(--violet-600);
             color: var(--violet-600);
             transition: color 0.3s ease;
         }
@@ -3331,7 +3330,7 @@
         .evidence-card:focus-visible {
             transform: translateY(-4px);
             background: linear-gradient(180deg, rgba(41,151,255,0.10), rgba(255,255,255,0.025));
-            border-color: rgba(167, 139, 250, 0.32);
+            border-color: var(--violet-600);
             border-color: rgba(139, 92, 246, 0.32);
             box-shadow: 0 28px 60px rgba(0, 0, 0, 0.45);
             outline: none;
@@ -3376,7 +3375,7 @@
             font-weight: 600;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.85);
+            color: var(--violet-600);
             color: var(--violet-600);
         }
         .evidence-card h4 {
@@ -3398,7 +3397,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            color: rgba(167, 139, 250, 0.9);
+            color: var(--violet-600);
             color: rgba(139, 92, 246, 0.9);
             display: inline-flex;
             align-items: center;
@@ -3503,7 +3502,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.9);
+            color: var(--violet-600);
             color: rgba(139, 92, 246, 0.9);
             margin-bottom: 12px;
         }
@@ -3537,7 +3536,7 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         .evidence-study:hover {
-            border-color: rgba(167, 139, 250, 0.28);
+            border-color: var(--violet-600);
             background: rgba(167, 139, 250, 0.04);
             border-color: rgba(139, 92, 246, 0.28);
             background: rgba(139, 92, 246, 0.04);
@@ -3924,7 +3923,7 @@
         }
         .bento-card.omt-bento-clickable:hover,
         .bento-card.omt-bento-clickable:focus-visible {
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.06);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.35),
                         0 0 0 1px rgba(var(--glow-purple), 0.18);
@@ -3940,7 +3939,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.04em;
-            color: rgba(var(--glow-purple), 0.92);
+            color: var(--violet-600);
             margin-top: 14px;
             opacity: 0.72;
             transition: opacity 0.22s ease, gap 0.22s ease;
@@ -5117,7 +5116,7 @@
         .footer-social a:hover {
             color: var(--violet-600);
             background: rgba(167, 139, 250, 0.12);
-            border-color: rgba(167, 139, 250, 0.32);
+            border-color: var(--violet-600);
             color: #8b5cf6;
             background: rgba(139, 92, 246, 0.12);
             border-color: rgba(139, 92, 246, 0.32);
@@ -5464,7 +5463,7 @@
             font-weight: 600;
         }
         .dm-body em {
-            color: rgba(167, 139, 250, 0.92);
+            color: var(--violet-600);
             font-style: normal;
             font-weight: 500;
         }
@@ -5487,7 +5486,7 @@
         }
         .dm-stat:hover {
             transform: translateY(-2px);
-            border-color: rgba(167, 139, 250, 0.32);
+            border-color: var(--violet-600);
             background: var(--paper-3);
         }
         .dm-stat-num {
@@ -5497,7 +5496,7 @@
             line-height: 1.05;
             /* 2026-05-27 — apply medium-intensity purple gradient to match
                .stat-num / .safety-proof strong / .hero-title treatment. */
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: var(--ink);
@@ -5508,8 +5507,8 @@
         @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
             .dm-stat-num {
                 background: transparent;
-                color: rgba(167, 139, 250, 0.95);
-                -webkit-text-fill-color: rgba(167, 139, 250, 0.95);
+                color: var(--violet-600);
+                -webkit-text-fill-color: var(--violet-600);
             }
         }
         .dm-stat-label {
@@ -5541,7 +5540,7 @@
         .dm-rba-col h4 {
             font-size: 17px;
             font-weight: 600;
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             letter-spacing: -0.01em;
             margin: 0 0 6px;
         }
@@ -5605,7 +5604,7 @@
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.92);
+            color: var(--violet-600);
             padding-top: 2px;
         }
         .dm-timeline-body p {
@@ -5648,7 +5647,7 @@
         }
         .dm-qa-q::before {
             content: 'Q · ';
-            color: rgba(167, 139, 250, 0.92);
+            color: var(--violet-600);
             font-weight: 700;
             letter-spacing: 0.04em;
             margin-right: 2px;
@@ -5690,12 +5689,12 @@
             justify-content: center;
             font-size: 11px;
             font-weight: 700;
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             background: rgba(167, 139, 250, 0.10);
             border: 1px solid rgba(167, 139, 250, 0.22);
         }
         .dm-refs a {
-            color: rgba(167, 139, 250, 0.92);
+            color: var(--violet-600);
             text-decoration: none;
             border-bottom: 1px dashed rgba(167, 139, 250, 0.4);
             transition: color 0.22s, border-color 0.22s;
@@ -6065,7 +6064,7 @@
             font-weight: 700;
             letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.10);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -6077,14 +6076,14 @@
         }
         .nav-portal-link:hover .nav-portal-badge {
             background: rgba(var(--glow-purple), 0.18);
-            border-color: rgba(var(--glow-purple), 0.68);
+            border-color: var(--violet-600);
         }
         .nav-portal-badge-footer {
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.90);
+            color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.10);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -6546,7 +6545,7 @@
         .skill-card:hover,
         .nav-linkedin:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
             box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
@@ -6569,7 +6568,7 @@
         .carepath-icon {
             width: 32px;
             height: 32px;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
         }
         .carepath-icon svg { width: 100%; height: 100%; }
         .carepath-title {
@@ -6586,7 +6585,7 @@
             margin: 0;
         }
         .carepath-body strong {
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             font-weight: 600;
         }
 
@@ -6599,11 +6598,11 @@
             outline: none;
         }
         .carepath-card.carepath-clickable:focus-visible {
-            border-color: rgba(var(--glow-purple), 0.65);
+            border-color: var(--violet-600);
             box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.22);
         }
         .carepath-card.carepath-clickable .carepath-icon {
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             transition: transform 0.22s ease;
         }
         .carepath-card.carepath-clickable:hover .carepath-icon,
@@ -6617,7 +6616,7 @@
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.04em;
-            color: rgba(var(--glow-purple), 0.92);
+            color: var(--violet-600);
             margin-top: 4px;
             opacity: 0.72;
             transition: opacity 0.22s ease, gap 0.22s ease;
@@ -6689,14 +6688,14 @@
         }
         .omt-modal-close:hover {
             background: rgba(var(--glow-purple), 0.15);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             color: var(--ink);
         }
         .omt-modal-close svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.6; fill: none; }
         .omt-modal-eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             margin-bottom: 12px;
         }
         .omt-modal-card h3 {
@@ -6751,7 +6750,7 @@
         }
         .pillar-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.06);
         }
         .pillar-num {
@@ -6759,7 +6758,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             font-feature-settings: "tnum";
         }
         .pillar-title {
@@ -6779,7 +6778,7 @@
         }
         .pillar-mech strong,
         .pillar-content strong {
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             font-weight: 600;
         }
         .pillar-cite {
@@ -6814,7 +6813,7 @@
         }
         .soc-block:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.06);
         }
         .soc-header {
@@ -6835,7 +6834,7 @@
             font-weight: 700;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             padding: 3px 8px;
             border: 1px solid rgba(var(--glow-purple), 0.45);
             border-radius: 999px;
@@ -6866,7 +6865,7 @@
             border-radius: 50%;
             background: rgba(var(--glow-purple), 0.85);
         }
-        .soc-list li em { color: rgba(var(--glow-purple), 0.95); font-style: italic; }
+        .soc-list li em { color: var(--violet-600); font-style: italic; }
         .soc-anchors {
             font-size: 12px;
             line-height: 1.55;
@@ -6899,7 +6898,7 @@
         }
         .traj-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: rgba(var(--glow-purple), 0.06);
         }
         .traj-week {
@@ -6907,7 +6906,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             font-feature-settings: "tnum";
         }
         .traj-title {
@@ -6975,7 +6974,7 @@
         .carepath-block:hover,
         .education-card:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: var(--violet-600);
             background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
             box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
@@ -7089,7 +7088,7 @@
         .research-card:hover,
         .research-item:hover,
         .research-card-video:hover {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: var(--violet-600);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.10),
                 0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45),
@@ -7220,7 +7219,7 @@
         .identity-card:hover,
         .identity-card:focus-visible {
             transform: translateY(-3px);
-            border-color: rgba(167, 139, 250, 0.55);
+            border-color: var(--violet-600);
             background: linear-gradient(135deg,
                 rgba(255,255,255,0.08) 0%,
                 rgba(167, 139, 250, 0.06) 60%,
@@ -7232,7 +7231,7 @@
             outline: none;
         }
         .identity-card.is-active {
-            border-color: rgba(167, 139, 250, 0.70);
+            border-color: var(--violet-600);
             background: linear-gradient(135deg,
                 rgba(167, 139, 250, 0.10) 0%,
                 rgba(109, 40, 217, 0.05) 60%,
@@ -7244,7 +7243,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
         }
         .identity-card-num {
             /* 2026-05-28: numeric badges → sleek purple line-icons per user
@@ -7260,7 +7259,7 @@
             margin: 4px 0 2px;
             border-radius: 14px;
             background: rgba(167, 139, 250, 0.10);
-            color: rgba(167, 139, 250, 0.95);
+            color: var(--violet-600);
             transition: transform 0.25s, background 0.25s;
         }
         .identity-card-num svg {
@@ -7292,7 +7291,7 @@
             font-weight: 600;
             letter-spacing: 0.04em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: var(--violet-600);
             margin-top: 6px;
             transition: gap 0.22s ease, color 0.22s ease;
         }
@@ -7450,7 +7449,7 @@
         .mz-sheet-close-btn:hover,
         .mz-sheet-close-btn:focus-visible {
             background: rgba(167, 139, 250, 0.18);
-            border-color: rgba(167, 139, 250, 0.55);
+            border-color: var(--violet-600);
         }
         .mz-sheet-content {
             flex: 1 1 auto;
@@ -7799,9 +7798,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 }
 .about-section .section-headline,
 .about-section .section-headline.in {
-    color: var(--ink) !important;
-    -webkit-text-fill-color: var(--ink) !important;
-    background: none !important;
+    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #4c1d95 !important;
 }
 .about-section .section-sub,
 .about-section .about-text-block p { color: var(--ink-2) !important; }
@@ -7828,7 +7829,7 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
 }
 .about-section .stat:hover {
     background: rgba(167, 139, 250, 0.10) !important;
-    border-color: rgba(167, 139, 250, 0.45) !important;
+    border-color: var(--violet-600) !important;
 }
 .about-section .stat-num  {
     color: #c4b5fd !important;
@@ -8219,3 +8220,43 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
         .nav-brand img, .page-loader-mark, .hero-inner img[src*="monogram"], img[src*="monogram-white"] {
             filter: brightness(0) saturate(100%) opacity(0.86);
         }
+
+        /* =====================================================================
+           MAJOR DISPLAY HEADLINES — deep purple gradient (2026-08-24)
+           Owner: all-ink headlines read harsh for a women's-health brand; the
+           big headers should carry the deep purple. These are LARGE display
+           text, so even the lighter gradient stop clears the 3:1 large-text
+           minimum on paper (#7c3aed ≈ 4.8:1). Body copy stays ink for reading
+           contrast — the gradient is reserved for the hero + section headers.
+           ===================================================================== */
+        .hero-title,
+        .section-headline,
+        .section-headline.gradient,
+        .word-reveal,
+        .word-reveal .w,
+        .pinned-frame .frame-headline {
+            background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #4c1d95;
+        }
+
+        /* =====================================================================
+           APP-PREVIEW REELS stay a DARK component (2026-08-24)
+           The .app-reel / .reel-scene blocks are little dark app-mockup screens
+           inside the app cards — deliberately dark UI regardless of the light
+           page theme. The global white->ink sweep darkened their captions to
+           ink, which then failed contrast on their dark grounds. Force white
+           text back on every reel element so the mockups read correctly.
+           ===================================================================== */
+        .app-reel, .reel-scene,
+        .app-reel .rl-cap, .app-reel .rl-pin, .app-reel .rl-row,
+        .app-reel .rl-chip, .app-reel .rl-line, .app-reel span,
+        .reel-scene .rl-cap, .reel-scene .rl-pin, .reel-scene .rl-row,
+        .reel-scene .rl-chip, .reel-scene span {
+            color: #ffffff;
+        }
+        /* the "ok/warn" status chips keep their semantic tints */
+        .app-reel .rl-chip.ok, .reel-scene .rl-chip.ok { color: #86efac; }
+        .app-reel .rl-chip.warn, .reel-scene .rl-chip.warn { color: #fdba74; }

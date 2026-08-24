@@ -21,13 +21,13 @@
   "routes": [
     {
       "path": "/",
-      "title_contains": "Complex Benign Gynecology",
+      "title_contains": "Minimally Invasive Gynecologic Surgery",
       "selector": "#identity-map",
       "allow_homepage_title": true
     },
     {
       "path": "/about/",
-      "title_contains": "The Story"
+      "title_contains": "About Dr. Christopher Mabini"
     },
     {
       "path": "/evidence/",
