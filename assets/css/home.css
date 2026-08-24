@@ -617,7 +617,12 @@
                rectangle. Screen blending only ever lightens, so the drawing
                stays exactly as vivid; the stage gradient shows through where
                the video is black. */
-            mix-blend-mode: screen;
+            /* 2026-08-24 — this was a SECOND mix-blend-mode declaration in the
+               same rule; it silently won the cascade over the multiply set
+               above, so on the light theme the inverted (white-field) video
+               screen-blended to pure white: PLAYING BUT INVISIBLE. One
+               declaration now, and it is the light-theme one. */
+            mix-blend-mode: multiply;
             /* Diagonal: tilt the landscape composition up-to-the-right and scale
                so the anatomy fills the viewport corner-to-corner. 2026-06-25 —
                increased scale by 10% (1.9 → 2.09) and shifted right 2% (-50% →
@@ -797,7 +802,7 @@
            recipe that actually works on iPhone. */
         .glass,
         .glass-panel {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -841,7 +846,7 @@
 
            2026-06-25 — Match the pill VERBATIM. No more inventing recipes. The
            pill (`.frame-eyebrow`) that the user confirmed works uses:
-               background: var(--paper-3);
+               background: rgba(255, 255, 255, 0.62);
                backdrop-filter: saturate(180%) blur(20px);
            Copy that exactly. The prior blur(40px) + brightness(1.2) was my
            invention that never matched. */
@@ -1037,7 +1042,7 @@
         .award-tile {
             position: relative;
             /* 2026-06-25 — Apple frosted glass recipe (solid fill, saturate BEFORE blur) */
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -1334,7 +1339,7 @@
             top: 56px;
             bottom: 56px;
             width: 1px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 1px;
         }
 
@@ -1370,7 +1375,7 @@
             gap: clamp(24px, 4vw, 48px);
             padding: 28px;
             position: relative;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -1498,7 +1503,7 @@
             /* 2026-06-25 — EXACT pill recipe: rgba(255,255,255,0.08), saturate(180%)
                blur(20px), border 0.12, NO box-shadow. Previous 0.13 fill + box-shadow
                made it look opaque/heavy instead of glassy. */
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 18px;
             overflow: hidden;
             backdrop-filter: saturate(180%) blur(20px);
@@ -1574,7 +1579,7 @@
             letter-spacing: 0.005em;
             padding: 3px 9px;
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             color: var(--ink);
         }
@@ -1709,7 +1714,7 @@
             padding: 8px 16px;
             border: 1px solid var(--hairline);
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
@@ -2008,7 +2013,7 @@
            a light background (user: "glass not good enough on white/grey"). */
         .about-text-block {
             padding: 30px 32px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(30px);
             -webkit-backdrop-filter: saturate(180%) blur(30px);
             border: 1px solid var(--hairline);
@@ -2073,7 +2078,7 @@
            into the scroll. Converted to the canonical Apple-glass recipe:
            glassy fill, purple-glow border, purple-accent stat number. */
         .stat {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 16px;
             padding: 24px 22px 20px;
             text-align: left;
@@ -2256,7 +2261,7 @@
             margin: 64px auto 0;
             max-width: 880px;
             padding: clamp(48px, 6vw, 72px) clamp(32px, 5vw, 72px);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border-radius: 24px;
@@ -2313,7 +2318,7 @@
         .excellence-cite-divider {
             width: 40px;
             height: 1px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             margin: 0 auto 20px;
         }
 
@@ -2351,7 +2356,7 @@
                 margin: 6px 0;
                 height: 1px;
                 width: 24px;
-                background: var(--paper-3);
+                background: rgba(255, 255, 255, 0.62);
             }
             .excellence-quote cite .cite-sep::before { content: ''; }
         }
@@ -2383,7 +2388,7 @@
             padding: 8px 16px;
             border: 1px solid var(--hairline);
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
@@ -2457,7 +2462,7 @@
         .safety-proof {
             font-size: 15.5px;
             line-height: 1.55;
-            color: #ded7f5;
+            color: var(--violet-600);
             letter-spacing: -0.006em;
             padding-top: 13px;
             border-top: 1px solid rgba(196, 181, 253, 0.22);
@@ -2494,7 +2499,7 @@
             font-weight: 600;
             color: var(--violet-600);
             border: 1px solid rgba(196, 181, 253, 0.32);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         }
         .safety-note a:hover {
@@ -2656,7 +2661,7 @@
             padding: clamp(60px, 8vw, 120px) clamp(20px, 4vw, 28px);
             /* 2026-06-24 — translucent so hero drawing shows through (the radial
                gradient overlays in ::before still paint on top). */
-            background-color: var(--paper);
+            background-color: rgba(251, 250, 248, 0.86);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -2690,7 +2695,7 @@
             padding: 8px 16px;
             border: 1px solid var(--hairline);
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
@@ -2718,7 +2723,7 @@
             padding: 20px 22px 18px;
             font: inherit;
             color: var(--ink);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(180%);
@@ -2867,7 +2872,7 @@
             height: 38px;
             border-radius: 50%;
             border: 1px solid var(--hairline);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             color: var(--ink);
             font-size: 24px;
             line-height: 1;
@@ -2881,7 +2886,7 @@
             transition: background 200ms ease, transform 200ms ease, border-color 200ms ease;
         }
         .hub-panel-close:hover, .hub-panel-close:focus-visible {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             transform: scale(1.06);
             border-color: var(--violet-600);
             outline: none;
@@ -3022,7 +3027,7 @@
         }
         .domain-cta-btn:hover::after { transform: translateX(3px); }
         .domain-cta-btn.ghost {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-color: var(--violet-600);
             color: var(--violet-600);
         }
@@ -3043,7 +3048,7 @@
         /* ========== OMM Section ========== */
         .omm-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: var(--paper);
+            background-color: rgba(251, 250, 248, 0.86);
             position: relative;
         }
 
@@ -3073,7 +3078,7 @@
             padding: 8px 16px;
             border: 1px solid var(--hairline);
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -3102,7 +3107,7 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 1px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 22px;
             overflow: hidden;
         }
@@ -3279,7 +3284,7 @@
             font-weight: 500;
             color: var(--ink);
             letter-spacing: 0.02em;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             padding: 5px 11px;
             border-radius: 980px;
             border: 1px solid var(--hairline);
@@ -3456,7 +3461,7 @@
         .evidence-modal-card::-webkit-scrollbar { width: 8px; }
         .evidence-modal-card::-webkit-scrollbar-track { background: transparent; }
         .evidence-modal-card::-webkit-scrollbar-thumb {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 999px;
         }
         .evidence-modal.open .evidence-modal-card {
@@ -3473,7 +3478,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             color: var(--ink);
             display: inline-flex;
             align-items: center;
@@ -3484,7 +3489,7 @@
             z-index: 2;
         }
         .evidence-modal-close:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             color: var(--ink);
             transform: rotate(90deg);
         }
@@ -3647,7 +3652,7 @@
         }
         .evidence-study-year {
             color: var(--ink);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
         }
         .pop-evidence-count {
@@ -3999,7 +4004,7 @@
                could never read as the dark frosted video-thumbnails the user
                wants. Now matches .research-section (rgba(0,0,0,0.45)) so the
                vivid fixed line-art shows boldly behind the now-glass cards. */
-            background-color: var(--paper);
+            background-color: rgba(251, 250, 248, 0.86);
             color: var(--ink);
         }
 
@@ -4030,7 +4035,7 @@
             gap: 14px;
             align-items: flex-start;
             padding: 18px 20px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -4112,7 +4117,7 @@
                The card now frosts the fixed line-art drawing showing through the
                dark apps section, exactly like the .research-card video thumbnails
                the user points at. Text flipped to light below. */
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -4180,11 +4185,11 @@
         @keyframes rlIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
         .rl-row {
             display: flex; align-items: center; gap: 8px;
-            background: var(--paper-3); border: 1px solid var(--paper-3);
+            background: rgba(255, 255, 255, 0.62); border: 1px solid var(--paper-3);
             border-radius: 8px; padding: 6px 9px; font-size: 10.5px; color: var(--ink);
         }
         .rl-row .ic { width: 13px; height: 13px; flex: none; stroke: #c9b8ff; }
-        .rl-bar { position: relative; flex: 1; height: 4px; border-radius: 2px; background: var(--paper-3); overflow: hidden; }
+        .rl-bar { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.62); overflow: hidden; }
         .rl-bar::after { content: ''; position: absolute; inset: 0; width: 0; border-radius: 2px; background: linear-gradient(90deg, #a78bfa, #7c4dff); }
         .reel-scene.active .rl-bar::after { animation: rlFill 1.4s 0.5s var(--ease-out-quint) forwards; }
         @keyframes rlFill { to { width: 100%; } }
@@ -4321,7 +4326,7 @@
             /* 2026-06-25 — Apple frosted glass badge matching the video thumbnails */
             padding: 6px 12px;
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -4367,7 +4372,7 @@
             display: inline-block;
             padding: 6px 14px;
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -4423,7 +4428,7 @@
                texture for research cards to frost with real glass. Alpha low
                enough (0.45) that the now-vivid (0.75 opacity) drawing reads
                through boldly, giving glass cards intense texture to frost. */
-            background-color: var(--paper);
+            background-color: rgba(251, 250, 248, 0.86);
         }
 
         .aagl-accepted-banner {
@@ -4475,7 +4480,7 @@
         }
         .aagl-stat-text strong {
             font-weight: 700;
-            color: #ddd2ff;
+            color: var(--violet-600);
         }
 
         .aagl-divider {
@@ -4596,7 +4601,7 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -4829,7 +4834,7 @@
             text-transform: uppercase;
             padding: 4px 10px;
             border-radius: 6px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -4942,7 +4947,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 50%;
             color: #000;
             margin-bottom: 4px;
@@ -5108,7 +5113,7 @@
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             color: var(--ink);
             transition: all 0.25s var(--ease-out-quint);
@@ -5220,7 +5225,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             color: var(--ink);
             display: flex;
@@ -5233,7 +5238,7 @@
             transition: background 200ms ease, transform 200ms ease;
         }
         .app-modal-close:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             transform: scale(1.06);
         }
         .app-modal-close svg {
@@ -5281,7 +5286,7 @@
             width: 88px;
             height: 88px;
             border-radius: 22px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             display: flex;
             align-items: center;
@@ -5304,7 +5309,7 @@
             text-transform: uppercase;
             color: var(--ink);
             padding: 6px 12px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -5354,7 +5359,7 @@
             font-weight: 500;
             color: var(--ink);
             padding: 7px 14px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -5402,13 +5407,13 @@
         }
         .feature-tile {
             padding: 24px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 16px;
             transition: background 220ms ease, transform 220ms ease, border-color 220ms ease;
         }
         .feature-tile:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-color: var(--hairline);
             transform: translateY(-2px);
         }
@@ -5477,7 +5482,7 @@
         }
         .dm-stat {
             padding: 16px 18px 14px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 12px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -5487,7 +5492,7 @@
         .dm-stat:hover {
             transform: translateY(-2px);
             border-color: var(--violet-600);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
         }
         .dm-stat-num {
             display: block;
@@ -5531,7 +5536,7 @@
         }
         .dm-rba-col {
             padding: 18px 18px 16px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -5593,7 +5598,7 @@
             grid-template-columns: 130px 1fr;
             gap: 14px;
             padding: 14px 16px 12px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 12px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -5700,7 +5705,7 @@
             transition: color 0.22s, border-color 0.22s;
         }
         .dm-refs a:hover {
-            color: rgba(196, 181, 253, 1);
+            color: var(--violet-600);
             border-bottom-color: rgba(196, 181, 253, 0.8);
         }
         .dm-refs .dm-ref-pmid {
@@ -5784,7 +5789,7 @@
             font-weight: 500;
             color: var(--ink);
             padding: 8px 14px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -5964,12 +5969,13 @@
             height: 2px;
             z-index: 200;
             pointer-events: none;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
         }
         .scroll-progress-bar {
             height: 100%;
             width: 0;
-            background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(180,180,200,0.45));
+            /* 2026-08-24 LIGHT — was white-on-white (invisible on paper). */
+            background: linear-gradient(90deg, var(--violet-600), var(--violet-400));
             transform-origin: 0 0;
             transition: width 0.08s linear;
         }
@@ -6153,7 +6159,7 @@
             padding: 8px 16px;
             border: 1px solid var(--hairline);
             border-radius: 999px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
         }
@@ -6318,7 +6324,7 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             color: var(--ink);
             display: inline-flex;
             align-items: center;
@@ -6329,7 +6335,7 @@
         }
 
         .contact-modal-close:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             color: var(--ink);
         }
 
@@ -6361,7 +6367,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 12px;
             padding: 12px 14px;
@@ -6388,7 +6394,7 @@
             font-size: 12px;
             font-weight: 500;
             color: var(--ink);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 8px;
             cursor: pointer;
@@ -6398,7 +6404,7 @@
         }
 
         .copy-btn:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-color: var(--hairline);
         }
 
@@ -6435,7 +6441,7 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
         }
 
         .modal-actions {
@@ -6449,7 +6455,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 14px 16px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 12px;
             color: var(--ink);
@@ -6461,7 +6467,7 @@
         }
 
         .modal-action:hover {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border-color: var(--hairline);
             transform: translateY(-1px);
         }
@@ -6678,7 +6684,7 @@
         .omt-modal-close {
             position: absolute; top: 16px; right: 16px;
             width: 38px; height: 38px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 50%;
             color: var(--ink);
@@ -6741,7 +6747,7 @@
             flex-direction: column;
             gap: 12px;
             scroll-margin-top: 80px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -6801,7 +6807,7 @@
         }
         .soc-block {
             padding: 22px 22px 20px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -6888,7 +6894,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -7041,7 +7047,7 @@
            2026-06-25 — STOP inventing a recipe. Copy the EXACT glass that the
            user repeatedly confirmed works: the `.frame-eyebrow` pill in the
            pinned showcase (line 5285-5289). That pill is:
-               background: var(--paper-3);
+               background: rgba(255, 255, 255, 0.62);
                backdrop-filter: saturate(180%) blur(20px);
            The previous `blur(40px) saturate(200%) brightness(1.15)` was MY
            invention — the brightness() washes the frost flat and the 40px
@@ -7060,7 +7066,7 @@
         .research-card,
         .research-item,
         .research-card-video {
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border: 1px solid var(--hairline);
@@ -7150,7 +7156,7 @@
            ============================================================ */
         .identity-map-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: var(--paper);
+            background-color: rgba(251, 250, 248, 0.86);
             position: relative;
         }
         .identity-map-section::before {
@@ -7307,7 +7313,7 @@
             width: 22px;
             height: 4px;
             border-radius: 2px;
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             transition: background 0.32s ease, width 0.32s ease;
         }
         .identity-pip.active {
@@ -7436,7 +7442,7 @@
             height: 44px;
             border-radius: 50%;
             border: 1px solid var(--hairline);
-            background: var(--paper-3);
+            background: rgba(255, 255, 255, 0.62);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: var(--ink);
@@ -7793,7 +7799,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
    1.70:1 both ways), and the sticky nav crossing a bright band. It is now a
    DARK surface like every other section — one ground, one text palette. */
 .about-section {
-    background-color: var(--paper-2) !important;
+    background-color: rgba(244, 241, 236, 0.88) !important;
     color: var(--ink) !important;
 }
 .about-section .section-headline,
@@ -7832,16 +7838,16 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
     border-color: var(--violet-600) !important;
 }
 .about-section .stat-num  {
-    color: #c4b5fd !important;
+    color: var(--violet-600) !important;
     background: none !important;
-    -webkit-text-fill-color: #c4b5fd !important;
+    -webkit-text-fill-color: var(--violet-600) !important;
 }
 .about-section .stat-label { color: var(--ink) !important; }
 .about-section .stat-line   { color: var(--ink) !important; }
 .about-section .stat-detail { color: var(--ink) !important; opacity: 1 !important; }
-.about-section .stat-glyph  { color: #c4b5fd !important; }
-.about-section .stat-go     { color: #c4b5fd !important; }
-.about-section .mz-read-btn { color: #c4b5fd !important; }
+.about-section .stat-glyph  { color: var(--violet-600) !important; }
+.about-section .stat-go     { color: var(--violet-600) !important; }
+.about-section .mz-read-btn { color: var(--violet-600) !important; }
 .about-section .mz-read-btn:hover { color: var(--ink) !important; }
 .about-section .about-text-block {
     background: var(--paper-3) !important;
@@ -8250,11 +8256,17 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
            ink, which then failed contrast on their dark grounds. Force white
            text back on every reel element so the mockups read correctly.
            ===================================================================== */
-        .app-reel, .reel-scene,
-        .app-reel .rl-cap, .app-reel .rl-pin, .app-reel .rl-row,
-        .app-reel .rl-chip, .app-reel .rl-line, .app-reel span,
-        .reel-scene .rl-cap, .reel-scene .rl-pin, .reel-scene .rl-row,
-        .reel-scene .rl-chip, .reel-scene span {
+        /* Light mockup rows/chips carry INK text; only the elements that sit
+           on dark grounds stay white: captions over the colorful app-visual
+           gradients, and pins over the dark .rl-frame imaging viewport. */
+        .app-reel .rl-row, .reel-scene .rl-row,
+        .app-reel .rl-row span, .reel-scene .rl-row span,
+        .app-reel .rl-chip, .reel-scene .rl-chip {
+            color: var(--ink);
+        }
+        .app-reel .rl-cap, .reel-scene .rl-cap,
+        .app-reel .rl-pin, .reel-scene .rl-pin,
+        .rl-frame .rl-pin {
             color: #ffffff;
         }
         /* the "ok/warn" status chips keep their semantic tints */

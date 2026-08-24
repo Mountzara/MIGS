@@ -203,20 +203,25 @@ def audit_homepage(page) -> list[dict[str, Any]]:
         # translucent glass. Assert an opaque, light fill — this catches a card
         # losing its surface (going transparent/invisible), the corruption
         # class this gate exists for.
+        # LIGHT APPLE GLASS (2026-08-24, owner: keep the glass): a light card
+        # is a TRANSLUCENT white fill (0.35–0.9 alpha) with backdrop blur ON,
+        # frosting the drawing texture behind the translucent section ground.
+        bf = g.get("backdropFilter") or "none"
+        has_glass = "blur(" in bf
         m = re.match(r"rgba?\(([^)]+)\)", bg)
-        opaque_light = False
+        light_translucent = False
         if m:
             parts = [p.strip() for p in m.group(1).split(",")]
             try:
                 r_,g_,b_ = float(parts[0]), float(parts[1]), float(parts[2])
                 a_ = float(parts[3]) if len(parts) == 4 else 1.0
-                opaque_light = a_ >= 0.9 and (r_ + g_ + b_) / 3 > 200
+                light_translucent = 0.35 <= a_ <= 0.9 and (r_ + g_ + b_) / 3 > 200
             except ValueError:
                 pass
         results.append(make_check(
-            f"{g['selector']} solid light card surface",
-            opaque_light,
-            f"bg={bg!r} ({g['count']} elements)"
+            f"{g['selector']} light Apple glass (translucent white + blur)",
+            has_glass and light_translucent,
+            f"bg={bg!r} blur={bf!r} ({g['count']} elements)"
         ))
 
     # 2026-08-08 — .app-card-v2 moved OUT of this list: the apps section has
@@ -335,23 +340,20 @@ def audit_homepage(page) -> list[dict[str, Any]]:
                             break
                     except ValueError:
                         pass
-        # LIGHT THEME: sections are OPAQUE warm paper (the drawing is a
-        # hero-only feature now, not a site-wide texture). Assert opaque so a
-        # section can't silently lose its ground.
+        # LIGHT THEME with glass: sections are TRANSLUCENT paper (0.6–0.95)
+        # so the fixed drawing texture reads through and cards can frost it.
         m2 = re.match(r"rgba?\(([^)]+)\)", bg)
-        opaque = False
+        ok_ground = False
         if m2:
             parts = [p.strip() for p in m2.group(1).split(",")]
             try:
                 a2 = float(parts[3]) if len(parts) == 4 else 1.0
-                opaque = a2 >= 0.9
+                ok_ground = 0.6 <= a2 <= 0.97
             except ValueError:
                 pass
-        elif bg.startswith("rgb(") or bg == "":
-            opaque = True
         results.append(make_check(
-            f"{s['selector']} opaque paper ground",
-            opaque or translucent,
+            f"{s['selector']} translucent paper ground (drawing texture reads through)",
+            ok_ground or translucent,
             f"bg-color={bg!r}"
         ))
 
