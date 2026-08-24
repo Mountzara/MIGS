@@ -95,7 +95,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=a896c60eb3">
+<link rel="stylesheet" href="/assets/css/home.css?v=d749623d22">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -412,7 +412,16 @@
             </div>
 
             <h1 class="hero-title">A passion for women's health.</h1>
-            <p class="hero-sub">Complex benign and minimally invasive gynecologic surgery, osteopathic care, and AI-driven innovation. <strong>Built by a surgeon, for the future of women's health.</strong></p>
+            <p class="hero-sub">Fellowship-trained minimally invasive surgery for endometriosis, fibroids, and complex pelvic pain &mdash; <strong>with whole-person osteopathic care behind every plan.</strong></p>
+
+            <!-- Hero CTAs restored 2026-08-24: the four-lens audit's #1 finding
+                 was that a patient had NO path to become a patient — the page's
+                 only CTA addressed collaborators. Primary action is the
+                 patient's; the collaborator lane lives at the foot of the page. -->
+            <div class="hero-ctas">
+                <button type="button" class="btn btn-primary" onclick="openContactModal()">Request an appointment <span class="arrow"></span></button>
+                <a href="/education/" class="btn btn-secondary">What I treat</a>
+            </div>
 
             <!-- Hero CTAs removed 2026-05-27 per user — listing only two of the
                  many components (research + apps) was misleading. The new
@@ -455,7 +464,7 @@
                 </div>
                 <div class="pinned-frame">
                     <span class="frame-eyebrow" data-reveal="fade">The Innovation</span>
-                    <h2 class="frame-headline" data-reveal data-stagger="1">Engineered for the working surgeon.</h2>
+                    <h2 class="frame-headline" data-reveal data-stagger="1">Technology that works for your care.</h2>
                     <p class="frame-sub" data-reveal data-stagger="2">A native suite of clinical AI tools — built, tested, and used by an active CBG/MIGS surgeon. Decision support, board prep, research, transcription, and surgical media.</p>
                 </div>
             </div>
@@ -2041,9 +2050,10 @@
     <section id="contact" class="contact-section">
         <div class="container">
             <span class="section-eyebrow">Connect</span>
-            <h2 class="section-headline">Let's build something remarkable.</h2>
-            <p class="section-sub center">Open to research collaborations, AI consulting, locum opportunities, and speaking engagements.</p>
-            <button type="button" class="btn btn-primary" onclick="openContactModal()">Let’s connect <span class="arrow"></span></button>
+            <h2 class="section-headline">Ready when you are.</h2>
+            <p class="section-sub center">Whether it&rsquo;s pelvic pain that keeps getting dismissed, a diagnosis you want a second opinion on, or surgery you&rsquo;re weighing &mdash; start the conversation. Telehealth and in-person, Illinois and California.</p>
+            <button type="button" class="btn btn-primary" onclick="openContactModal()">Request an appointment <span class="arrow"></span></button>
+            <p class="contact-secondary">Physicians and collaborators &mdash; for referrals, research, teaching or consulting, use the same address and it will find me.</p>
         </div>
     </section>
 
