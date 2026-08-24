@@ -197,11 +197,19 @@
                it hid the frost and read as a flat dark bar. A light tint (like
                the .frame-eyebrow pill) lets backdrop-filter actually frost the
                content scrolling underneath — real Apple glass. */
+            /* NOTE: the winning background/blur for this bar is the
+               `.main-nav, nav.main-nav` !important rule far below (search
+               "the balance point"). Change it there, not here. */
             background: rgba(251, 250, 248, 0.78);
             backdrop-filter: saturate(160%) blur(18px);
             -webkit-backdrop-filter: saturate(160%) blur(18px);
             border-bottom: 1px solid var(--hairline);
-            height: 64px;
+            /* Single source of truth for the bar height. The mobile panel
+               positions itself off this variable — they were hard-coded
+               separately (64px bar, panel at top:48px) and drifted, so the
+               panel opened 16px UP INSIDE the bar, overlapping the logo. */
+            --nav-h: 64px;
+            height: var(--nav-h);
             display: flex;
             align-items: center;
         }
@@ -357,30 +365,48 @@
            the entire menu was unreachable. If you change 1180 here, change
            it in the panel block too — or better, don't split them again. */
         @media (max-width: 1180px) {
+            /* 2026-08-24 MOBILE PANEL — was rgba(0,0,0,0.95), a leftover from
+               the dark theme. After the light conversion the links inherited
+               var(--ink-2) (#4A4658), so the entire menu shipped as near-black
+               text on a near-black panel: on an iPhone it was an unreadable
+               black slab with the hero ghosting through it. It is now the same
+               paper the rest of the site is made of.
+               `top` is derived from --nav-h so it can never again open part-way
+               up inside the bar. */
             .nav-links {
                 display: none;
-                position: absolute;
-                top: 48px;
+                position: fixed;
+                top: var(--nav-h, 64px);
                 left: 0;
                 right: 0;
-                background: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                background: var(--paper);
                 flex-direction: column;
-                padding: 16px 0;
+                padding: 8px 0 14px;
+                margin: 0;
                 border-bottom: 1px solid var(--hairline);
-                max-height: calc(100vh - 48px);
+                box-shadow: 0 26px 60px -28px rgba(26, 23, 38, 0.35);
+                /* dvh so iOS Safari's collapsing URL bar cannot clip the last
+                   items off the bottom of the list */
+                max-height: calc(100dvh - var(--nav-h, 64px));
                 overflow-y: auto;
+                overscroll-behavior: contain;
                 -webkit-overflow-scrolling: touch;
             }
 
             .nav-links.open { display: flex; }
 
+            .nav-links li { width: 100%; }
+
             .nav-links a {
-                line-height: 36px;
-                font-size: 15px;
-                padding: 4px 22px;
+                display: block;
+                color: var(--ink);
+                line-height: 1.3;
+                font-size: 16px;
+                /* 48px minimum tap target (14+14 padding + ~20px line) */
+                padding: 14px 24px;
+                border-bottom: 1px solid var(--hairline);
             }
+            .nav-links a:active { background: rgba(139, 92, 246, 0.09); }
 
             .mobile-toggle { display: block; }
 
@@ -393,15 +419,15 @@
                 display: block;
                 width: 100%;
                 text-align: left;
-                padding: 4px 22px;
-                line-height: 36px;
+                padding: 18px 24px 8px;
+                line-height: 1.2;
                 font-size: 11px;
-                font-weight: 600;
-                letter-spacing: 0.12em;
+                font-weight: 700;
+                letter-spacing: 0.16em;
                 text-transform: uppercase;
-                color: var(--ink-2);
+                color: var(--ink-3);
                 pointer-events: none;   /* it is a heading here, not a button */
-                margin-top: 6px;
+                margin: 0;
             }
             .nav-more-caret { display: none; }
             .nav-more-menu {
@@ -418,11 +444,21 @@
                 -webkit-backdrop-filter: none;
             }
             .nav-more-menu a {
-                padding: 4px 22px;
-                line-height: 36px;
-                font-size: 15px;
+                padding: 14px 24px;
+                line-height: 1.3;
+                font-size: 16px;
                 border-radius: 0;
             }
+
+            /* Contact is the last plain link, so it should not carry a rule
+               into the CTA block. */
+            .nav-links > li:last-of-type a { border-bottom: none; }
+            /* NOTE: the mobile treatment of .nav-cta / .nav-cta-li canNOT live
+               here — the base .nav-cta rule is declared much later in this file
+               and, at equal specificity, source order lets it win inside a
+               media query too. It lives in the MOBILE NAV CTA block at the end
+               of the file. This is the same trap that once hid the hamburger at
+               every width; see the note above .mobile-toggle. */
         }
 
         /* ========== Cinematic intro video backdrop ========== */
@@ -699,9 +735,12 @@
                 width: 100vw;
                 height: 56.25vw;       /* true 16:9 — no distortion */
                 object-fit: contain;
-                /* 2026-06-25 — increased scale by 10% (2.6 → 2.86) and shifted
-                   right 2% to fill tall mobile viewports better. */
-                transform: translate(-48%, -50%) rotate(-30deg) scale(2.86);
+                /* 2026-08-24 RESOLUTION — was scale(2.86). The hero asset is
+                   1536x864; at 2.86 on a 390pt phone it painted ~2230 device
+                   pixels wide from a 1536px source, a 1.45x upscale, and every
+                   thin stroke turned to a soft grey smear. 2.3 lands at ~1.16x
+                   — the line stays a line. It still runs corner to corner. */
+                transform: translate(-48%, -50%) rotate(-30deg) scale(2.3);
             }
             .hero-video.ken-burns {
                 /* same PERF rationale as the desktop rule: run once, hold */
@@ -709,10 +748,10 @@
             }
             @keyframes heroKenBurnsSlowMobile {
                 0% {
-                    transform: translate(-48%, -50%) rotate(-30deg) scale(2.86);
+                    transform: translate(-48%, -50%) rotate(-30deg) scale(2.3);
                 }
                 100% {
-                    transform: translate(-48%, -50%) rotate(-30deg) scale(3.06);
+                    transform: translate(-48%, -50%) rotate(-30deg) scale(2.46);
                 }
             }
             /* monogram size is handled responsively on the base rule
@@ -1091,7 +1130,11 @@
             font-weight: 700;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: rgba(255, 200, 80, 0.9);
+            /* 2026-08-24 — was rgba(255,200,80,.9): an amber tuned for the dark
+               card, measuring 1.33-1.48:1 once the tile went white. The year is
+               the first thing read on each award, so it takes the same violet
+               the other micro-labels use. */
+            color: var(--violet-700);
             margin-bottom: 12px;
         }
         .award-tile h3 {
@@ -4255,7 +4298,10 @@
         .rl-ring { --p: 92; width: 44px; height: 44px; border-radius: 50%; flex: none;
             background: conic-gradient(#a78bfa calc(var(--p)*1%), var(--paper-3) 0);
             display: flex; align-items: center; justify-content: center; }
-        .rl-ring i { font-style: normal; font-size: 10px; font-weight: 800; color: var(--ink);
+        /* the disc behind this number is #191129 — it must carry WHITE text.
+           The light sweep set it to ink and the score vanished into the disc.
+           (.app-visual.warm overrides BOTH below, for its cream disc.) */
+        .rl-ring i { font-style: normal; font-size: 10px; font-weight: 800; color: #ffffff;
             background: #191129; border-radius: 50%; width: 32px; height: 32px;
             display: flex; align-items: center; justify-content: center; }
         .rl-frame { position: relative; flex: 1; min-height: 74px; border-radius: 10px;
@@ -4865,10 +4911,13 @@
             color: var(--ink);
         }
 
+        /* 2026-08-24 — gold #ffd700 was legible on the old dark card; on the
+           light badge it measured 1.34:1. A deep bronze keeps the "award" cue
+           and clears 4.5:1 on paper. */
         .research-badge.award {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(218, 165, 32, 0.15));
-            border-color: rgba(255, 215, 0, 0.3);
-            color: #ffd700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(218, 165, 32, 0.18));
+            border-color: rgba(180, 120, 20, 0.45);
+            color: #6b4708;
         }
 
         .research-card-title {
@@ -7175,7 +7224,7 @@
         /* Skip-link tint — purple to match */
         .skip-link {
             background: rgba(var(--glow-purple), 0.95);
-            color: var(--ink);
+            color: #ffffff;
         }
 
         /* ============================================================
@@ -7762,9 +7811,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     border-radius: 6px;
 }
 /* The skip link was white on light purple (2.96:1). Dark plum ground = 13:1. */
+/* 2026-08-24 — the blanket white->ink sweep of the light conversion also
+   recoloured the elements whose ground deliberately stayed DARK. This one
+   sits on #2e1065, so ink text measured 1.15:1: the first control a keyboard
+   or screen-reader user meets was invisible. */
 .skip-link {
     background: #2e1065 !important;
-    color: var(--ink) !important;
+    color: #ffffff !important;
     border: 1px solid #c4b5fd;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -7808,11 +7861,24 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
    contrast gate verifies this from rendered pixels on every deploy), while
    28px blur + saturate(190%) makes the frost visibly glass again over
    scrolling content. */
+/* 2026-08-24 LIGHT/MOBILE — 0.80 was tuned when this bar was DARK glass:
+   dark ground, white labels, and whatever scrolled underneath went muddy.
+   Inverted to paper, "translucent" means dark body copy passes straight
+   through a light bar and stays perfectly legible across the logo — captured
+   on iPhone, and it reads as a rendering fault rather than as glass. 0.90
+   still tints and moves with the content behind it (glass, per the owner's
+   "not solid" directive) but no longer lets a sentence read through. The
+   heavier blur does the rest of the frosting. */
 .main-nav, nav.main-nav {
-    background: rgba(251, 250, 248, 0.80) !important;
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    background: rgba(251, 250, 248, 0.90) !important;
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
     border-bottom: 1px solid var(--hairline);
+}
+/* Safari/Firefox builds without backdrop-filter would otherwise show a
+   see-through bar with no frost at all. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .main-nav, nav.main-nav { background: var(--paper) !important; }
 }
 /* Small accent text needs a lighter violet than #a78bfa/#8b5cf6 to clear
    4.5:1 on glass (measured 3.2-4.4:1 before). Large display text keeps the
@@ -8291,27 +8357,49 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
            ink, which then failed contrast on their dark grounds. Force white
            text back on every reel element so the mockups read correctly.
            ===================================================================== */
-        /* Light mockup rows/chips carry INK text; only the elements that sit
-           on dark grounds stay white: captions over the colorful app-visual
-           gradients, and pins over the dark .rl-frame imaging viewport. */
-        .app-reel .rl-row, .reel-scene .rl-row,
-        .app-reel .rl-row span, .reel-scene .rl-row span,
-        .app-reel .rl-chip, .reel-scene .rl-chip {
-            color: var(--ink);
+        /* 2026-08-24e — CORRECTION. The 08-24d pass above was written on the
+           belief that "the app-visual panels went light with the theme" and
+           swept every reel element to ink. That belief was wrong, and measuring
+           the live panels settles it: of the six, only .warm is light
+           (#fef3e8 -> #f5d4a4). The other five kept their dark gradients —
+           (default) #2c2c2e, .accent #6d28d9 -> #0058a3, .violet #2d1b69 ->
+           #11999e, .dark #1d1d1f -> #000, .purple #7b2cbf -> #5a189a. Ink text
+           on those measured 1.12:1 to 3.61:1 in the pixel gate.
+
+           The chips make it worse: .rl-row / .app-visual-label carry a
+           rgba(255,255,255,0.34) fill, which over a dark gradient composites to
+           a MID-GREY (measured rgb(108,108,109)) — the one ground where neither
+           ink nor white is comfortable. So the dark panels get a dark fill and
+           white text, which is how these mockups were always meant to read.
+
+           Scope everything by variant. .warm is excluded and keeps the explicit
+           light treatment it already has further up; do not add a blanket reel
+           rule again. */
+        .app-visual:not(.warm) .rl-row,
+        .app-visual:not(.warm) .app-visual-label {
+            background: rgba(8, 6, 16, 0.52);
+            border-color: rgba(255, 255, 255, 0.22);
         }
-        /* 2026-08-24d — the app-visual panels went light with the theme, so
-           caps/pins are ink; ONLY pins inside the dark .rl-frame imaging
-           viewport stay white. (Text-walker verified: these were the last
-           white-on-light strings on the page.) */
-        .app-reel .rl-cap, .reel-scene .rl-cap,
-        .app-reel .rl-pin, .reel-scene .rl-pin {
-            color: var(--ink);
+        .app-visual:not(.warm) .rl-row,
+        .app-visual:not(.warm) .rl-row span,
+        .app-visual:not(.warm) .rl-chip,
+        .app-visual:not(.warm) .rl-cap,
+        .app-visual:not(.warm) .rl-pin,
+        .app-visual:not(.warm) .rl-ring i,
+        .app-visual:not(.warm) .app-visual-label {
+            color: #ffffff;
+        }
+        /* The light .warm panel keeps ink; its own rules above set the exact
+           tones, this only covers elements they do not name. */
+        .app-visual.warm .rl-row span,
+        .app-visual.warm .rl-pin {
+            color: #2b1c4d;
             text-shadow: none;
         }
         .rl-frame .rl-pin { color: #ffffff; }
-        /* the "ok/warn" status chips keep their semantic tints */
-        .app-reel .rl-chip.ok, .reel-scene .rl-chip.ok { color: #86efac; }
-        .app-reel .rl-chip.warn, .reel-scene .rl-chip.warn { color: #fdba74; }
+        /* the "ok/warn" status chips keep their semantic tints on dark panels */
+        .app-visual:not(.warm) .rl-chip.ok { color: #86efac; }
+        .app-visual:not(.warm) .rl-chip.warn { color: #fdba74; }
 
         .hero-ctas {
             display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
@@ -8387,9 +8475,13 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
         .footer-note { display: block; font-size: 13px; color: var(--ink-3); margin-top: 8px; }
         .footer-content { border-top: 1px solid var(--hairline); padding-top: 20px; padding-bottom: 26px; }
 
-        /* chips that sit on the colored gradient strips inside reels keep white */
-        .rl-chiprow .rl-chip, .app-visual .rl-chip:not(.ok):not(.warn) { color: var(--ink); }
-        .app-visual.warm .rl-chip:not(.ok):not(.warn) { color: var(--ink); }
+        /* 2026-08-24e — this rule's comment said the chips on the coloured
+           gradient strips "keep white" while the declaration set them to ink,
+           and being the last .rl-chip rule in the file at (0,4,0) it beat the
+           variant-scoped rules above. Now it matches its own intent: white on
+           the five dark panels, deep violet on the one cream panel. */
+        .app-visual:not(.warm) .rl-chip:not(.ok):not(.warn) { color: #ffffff; }
+        .app-visual.warm .rl-chip:not(.ok):not(.warn) { color: #4c1d95; }
 
         /* 2026-08-24c — GLASS EVERYWHERE (owner): every card and badge that
            floats over the drawing frosts it. The about .stat tiles and the
@@ -8412,3 +8504,110 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
             -webkit-backdrop-filter: blur(12px) saturate(180%);
             border: 1px solid rgba(109, 40, 217, 0.25);
         }
+
+/* =====================================================================
+   MOBILE NAV CTA (2026-08-24) — must be last
+   =====================================================================
+   The desktop bar carries "Request an appointment" as a small violet pill
+   (.nav-cta, declared above). Below 1180px .nav-links becomes a vertical
+   panel, and that pill was dropped into it untouched: it rendered as a
+   stray lozenge floating mid-list and overhanging the panel's left edge,
+   which is what the iPhone capture showed.
+
+   This block has to sit AFTER the base .nav-cta declaration. Media queries
+   add no specificity, so the earlier collapse block loses to the later base
+   rule even though it is inside @media — the same source-order trap that
+   once hid the hamburger at every width. Keep this at the bottom.
+   ===================================================================== */
+@media (max-width: 1180px) {
+    .nav-cta-li {
+        display: block;
+        width: 100%;
+        padding: 18px 24px 4px;
+        order: 99;               /* always last, below Contact */
+    }
+    .nav-cta {
+        display: block;
+        width: 100%;
+        font-size: 16px;
+        padding: 15px 18px;      /* >=48px tap target */
+        text-align: center;
+        border-radius: var(--radius-pill);
+    }
+    /* Same trap, second victim: the accessibility pass sets
+       `nav a, .main-nav a { display: inline-flex }` later in this file at
+       equal specificity to .nav-links a, so the panel's links shrank to the
+       width of their own label. The row separators then stopped at the end of
+       each word and the menu looked like a ragged staircase. Full-width block
+       rows, declared here where they actually win. */
+    .nav-links > li,
+    .nav-more-menu > li { display: block; width: 100%; }
+    .nav-links a {
+        display: block;
+        width: 100%;
+    }
+}
+
+/* =====================================================================
+   MOBILE SECTION RHYTHM (2026-08-24)
+   =====================================================================
+   The Ambience-pass rhythm is clamp(88px, 9vw, 132px). On a 390pt phone
+   9vw is 35px, so every one of these sections clamps to the 88px FLOOR —
+   desktop breathing room applied to a screen a quarter the width, on a
+   page that already runs ~23,000px on an iPhone. 56px keeps the sections
+   distinct without adding another half-screen of empty paper per band.
+   (Sections already tuned tighter elsewhere — .omm-section, .apps-section,
+   .research-section, .contact-section at 36px — are deliberately NOT
+   listed; naming them here would make them taller, not shorter.)
+   ===================================================================== */
+@media (max-width: 720px) {
+    .about-section,
+    .surgical-unified-section,
+    .awards-section,
+    .curriculum-section,
+    .education-section,
+    .meet-section {
+        padding-top: 56px;
+        padding-bottom: 56px;
+    }
+}
+
+/* =====================================================================
+   MOBILE GLASS OPACITY (2026-08-24) — "grey blocks and badges"
+   =====================================================================
+   Owner, on an iPhone: the cards and badges read as grey blocks and the
+   drawing shows through their edges, and none of it matches the desktop
+   site. Both symptoms are the same cause.
+
+   The drawing layer (.hero-bg-stage) is position:fixed at viewport size,
+   so on a phone the line-art covers the FULL screen at every scroll
+   position. Desktop cards sit in 2- and 3-column grids with wide gutters
+   in regions the drawing mostly does not reach, so a 0.34-alpha white
+   fill reads as a clean white card. On a phone every card is full-bleed
+   and always has line-art running underneath it — at 34% white the
+   strokes come straight through the card and the whole surface turns
+   muddy grey, with the drawing visibly crossing the card borders.
+
+   Raising the fill to 0.90 on small screens gives the phone the same
+   clean card the desktop shows, while staying translucent (and keeping
+   backdrop-filter on) so it is still glass, not a flat panel. 0.90 is
+   the ceiling the runtime-CSS design gate allows for a glass card —
+   do not raise it further without changing that gate deliberately.
+   ===================================================================== */
+@media (max-width: 720px) {
+    .curriculum-card,
+    .research-card,
+    .award-tile,
+    .bento-card,
+    .app-card,
+    .domain-card,
+    .education-card,
+    .identity-card,
+    .about-section .stat,
+    .hub-badge,
+    .hero-sub,
+    .pinned-frame .frame-sub,
+    .section-eyebrow {
+        background: rgba(255, 255, 255, 0.90) !important;
+    }
+}

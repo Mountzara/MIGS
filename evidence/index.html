@@ -198,10 +198,18 @@
             /* Nav must FIT a 390px phone: brand + 4 links measured 429px,
                giving every page a 39px sideways wobble (found by
                audit_reader_path.mjs mobile pass, 2026-07-22). */
-            .nav { padding-left: 14px; padding-right: 14px; }
-            .nav-brand { font-size: 15px; letter-spacing: 0.05em; gap: 8px; }
-            .nav-brand img { height: 26px; }
-            .nav-links { gap: 10px; font-size: 13px; }
+            /* 2026-08-24 — the 2026-07-22 sizes fit the row to EXACTLY 390px
+               (brand 175 + links 187 + 28 padding). With no slack the brand
+               broke "MOUNT ZARA" onto a second line and the nav grew to 82px
+               of cramped two-line header, links jammed against the wordmark.
+               Smaller type plus nowrap leaves ~40px of real slack. */
+            .nav { padding: 12px 14px; }
+            .nav-brand {
+                font-size: 13px; letter-spacing: 0.04em; gap: 7px;
+                white-space: nowrap; flex-shrink: 0;
+            }
+            .nav-brand img { height: 24px; }
+            .nav-links { gap: 9px; font-size: 12.5px; white-space: nowrap; }
             /* Post bodies must never widen the page: legacy inline-reference
                popovers (.mz-ref-pop, ~360px absolutely positioned) overflowed
                the viewport by 115-246px on W20/W21-era posts. */

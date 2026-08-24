@@ -20,7 +20,7 @@ the next deploy regresses.
 
 | Section | What's in it |
 |---|---|
-| §1 | Three reference incidents — the foundational regression archetypes this map exists to prevent. |
+| §1 | Four reference incidents — the foundational regression archetypes this map exists to prevent. |
 | §2 | Repository topology + deploy chain (Cloudflare Pages, wrangler, gates). |
 | §3 | `index.html` inline `<style>` atlas — line ranges, @media scopes, brace-balance checkpoints. |
 | §4 | `index.html` inline `<script>` atlas — function inventory, DOM-timing trap, reference graph. |
@@ -38,11 +38,11 @@ the next deploy regresses.
 
 ---
 
-## 1. Three reference incidents — DO NOT REPEAT
+## 1. Four reference incidents — DO NOT REPEAT
 
-These three regressions happened in a single working session on 2026-05-26.
-All three would have been preventable if this map had existed beforehand.
-They are the foundational patterns this file protects against.
+§1.1–1.3 happened in a single working session on 2026-05-26; §1.4 on
+2026-08-24. All would have been preventable if this map had been read
+beforehand. They are the foundational patterns this file protects against.
 
 ### 1.1 CSS corruption — `index.html` line 5703 (silent site-wide breakage)
 
@@ -131,6 +131,54 @@ block at line 7914+ that queries DOM elements MUST use the
 DOMContentLoaded guard if those elements live anywhere after line 7914
 in the document. Default to the guard pattern unless you've verified
 the target element is in a section ABOVE the script tag.
+
+---
+
+### 1.4 Cascade source order — the mobile nav shipped black-on-black (2026-08-24)
+
+**Symptom:** the owner opened mountzara.com on an iPhone. Tapping the
+hamburger produced an unreadable near-black slab: the hero showed through
+it, the links were invisible, the "Request an appointment" pill floated
+mid-list overhanging the panel's left edge, and the panel opened 16px up
+INSIDE the 64px nav bar. Nothing about it was caught by any deploy gate.
+
+**Cause — two independent instances of the same trap:**
+
+1. *A dark-theme value left behind by the light conversion.* The mobile
+   panel still declared `background: rgba(0, 0, 0, 0.95)` from the old dark
+   theme, while its links had been swept to `var(--ink-2)` (#4A4658) with
+   everything else. Near-black text on a near-black panel. The light sweep
+   was done by selector, and this selector was never visited because
+   nothing renders it above 1180px — **a desktop review physically cannot
+   see it.**
+2. *Media queries add no specificity.* The mobile overrides for `.nav-cta`
+   and `.nav-links a` sat in the `@media (max-width: 1180px)` collapse
+   block near the TOP of `assets/css/home.css`. The base `.nav-cta` rule
+   (~line 8400) and the accessibility rule `nav a, .main-nav a { display:
+   inline-flex }` (~line 7780) are declared LATER at equal specificity, so
+   they won inside the media query too. The CTA kept its 13px desktop pill
+   sizing and the panel's links shrank to the width of their own label,
+   which is why the row separators stopped mid-word.
+
+**Fix:** panel repainted in `--paper` with `--ink` links; `--nav-h: 64px`
+declared once on `nav.main-nav` so the panel's `top` is derived from it and
+cannot drift again; and every mobile rule that must beat a later base rule
+moved to a **MOBILE NAV CTA block at the END of the file**, labelled as
+such. `toggleMenu()` also gained a close-on-tap/Escape handler.
+
+**Prevention rules:**
+- Never trust that a light/dark theme sweep reached a rule that only
+  renders at a viewport you did not open. Sweep by *rendered viewport*,
+  not by selector list.
+- Before adding a mobile override, `grep` for the base selector. If any
+  declaration of it appears LATER in the file, your override belongs at
+  the end of the file, not in the collapse block. This is the same trap
+  documented above `.mobile-toggle` (which once hid the hamburger at every
+  width) — it has now cost three separate regressions.
+- `scripts/_capture_mobile_nav.py` asserts the measured facts (panel
+  ground, link colour, panel top vs nav bottom, ≥44px tap targets,
+  full-width CTA, close-on-tap). Run it against production after any nav
+  or theme change.
 
 ---
 
@@ -1946,7 +1994,7 @@ or it won't be backed up.
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
 | **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_deploy_gate.py` (structural-integrity hard gate — deploy gate #7; reuses `audit_accuracy.py` header-* + `audit_inline_refs.py`), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #9, env-resilient; `/` asserts `#identity-map` since 2026-07-22 — `#how-you-visit` moved to portal in 5953296), `_lib_pw_launch.py` (shared Playwright launcher: container-Chromium/engine fallback + proxy env wiring for ALL Python browser audits), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
-| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
+| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`, `_capture_mobile.py` (2026-08-24 — screenshots + horizontal-overflow report for `/`, `/about/`, `/evidence/` at 390×844 and 430×932; takes `[outdir] [base_url]` so it runs against production OR a local `python3 -m http.server`), `_capture_mobile_nav.py` (2026-08-24 — opens the hamburger panel and asserts the MEASURED facts that the 8/24 mobile regression broke: panel top == nav bottom, panel ground is paper not `rgba(0,0,0,.95)`, link colour is ink, every tap target ≥44px, CTA is full-width, and the panel closes on link tap). **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |
 | **D1** | `_backup_d1_to_r2.sh` (manual; cron does it nightly), `_apply_phase14_migration.sh`, `_verify_phase14_schema.sh` |

@@ -724,12 +724,31 @@
             item.classList.toggle('open');
         }
 
-        function toggleMenu() {
+        function toggleMenu(force) {
             const panel = document.getElementById('navLinks');
-            const open = panel.classList.toggle('open');
+            if (!panel) return;
+            const open = typeof force === 'boolean'
+                ? panel.classList.toggle('open', force)
+                : panel.classList.toggle('open');
             const btn = document.querySelector('.mobile-toggle');
             if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
+
+        // 2026-08-24 — the mobile panel used to stay open after a tap. Every
+        // link in it is either an in-page anchor or a same-tab navigation, so
+        // the panel was left covering the very section it had just scrolled to.
+        // Close it on any activation inside the panel, and on Escape.
+        (function initMobileNavDismiss() {
+            const panel = document.getElementById('navLinks');
+            if (!panel) return;
+            panel.addEventListener('click', (e) => {
+                if (!panel.classList.contains('open')) return;
+                if (e.target.closest('a, .nav-cta')) toggleMenu(false);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && panel.classList.contains('open')) toggleMenu(false);
+            });
+        })();
 
         // ----------------------------------------------------------
         // Desktop "More" group (2026-08-20)
