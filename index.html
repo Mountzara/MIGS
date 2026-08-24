@@ -82,7 +82,7 @@
             // phones: the image IS the hero — decode is needed
             var img = new Image();
             img.decoding = 'async';
-            img.src = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
+            img.src = 'https://mountzara.com/media/hero-animation-ink-v2.webp';
             window.__mzHeroPre = img;
         } else {
             // desktop: the VIDEO is the hero and this image is only the
@@ -92,13 +92,13 @@
             // shown. fetch() warms the HTTP cache with ZERO decode; if the
             // fallback is ever attached it loads instantly from cache and
             // decodes only then.
-            fetch('https://mountzara.com/media/hero-animation-lite-v1.webp',
+            fetch('https://mountzara.com/media/hero-animation-ink-v2.webp',
                   { cache: 'force-cache', mode: 'no-cors' }).catch(function () {});
         }
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=a6db4bd4f8">
+<link rel="stylesheet" href="/assets/css/home.css?v=a52bfae280">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -176,7 +176,7 @@
          and plays smoothly at the same file size.
          Robust fallback at startHeroSequence(): if heroVideo.play()
          rejects (autoplay genuinely blocked), JS replaces the <video>
-         with an <img src=hero-animation-lite-v1.webp> so the user never
+         with an <img src=hero-animation-ink-v2.webp> so the user never
          sees a play button. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
         <!-- 2026-05-27 — `autoplay` attribute REMOVED. With autoplay, the
@@ -221,8 +221,8 @@
         var v = document.getElementById('heroVideo');
         var loader = document.getElementById('pageLoader');
         if (!v) return;
-        var WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        var LAST = 'https://mountzara.com/media/hero-last-frame-v3.webp';
+        var WEBP = 'https://mountzara.com/media/hero-animation-ink-v2.webp';
+        var LAST = 'https://mountzara.com/media/hero-last-frame-ink-v2.webp';
         var touch = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -2029,7 +2029,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/home.js?v=eab5f83428" defer></script>
+    <script src="/assets/js/home.js?v=1b3f029e31" defer></script>
 
 <!-- Identity Map full-screen sheet modal (Commit 2 — 2026-05-26).
      Populated dynamically by openSheet(sectionId). The cloned grid

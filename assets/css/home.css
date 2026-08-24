@@ -8611,3 +8611,61 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
         background: rgba(255, 255, 255, 0.90) !important;
     }
 }
+
+/* =====================================================================
+   HERO DRAWING — PRE-RENDERED INK, NO RUNTIME FILTER (2026-08-24g)
+   =====================================================================
+   The touch hero is an animated WebP whose ink is now baked into the
+   asset: violet strokes already coloured, sitting on a white field. It
+   therefore needs NO invert/contrast/hue-rotate chain at runtime. The
+   multiply blend stays — that is what drops the white field onto the
+   paper — but it now blends clean, pre-coloured pixels instead of the
+   output of a filter chain.
+
+   (An alpha-channel variant was built first and rejected on weight:
+   WebP stores alpha losslessly, so it came out at 674 KB against 264 KB
+   for the white-ground version and 171 KB for the old asset. On
+   cellular that difference reads as a frozen hero.)
+
+   That matters beyond tidiness. The old pipeline asked one layer to be
+   large, scaled, rotated, inverted AND multiplied at once, and on a
+   phone that produced hard GREY/BLACK DIAGONAL LINES straight across
+   the page (the owner's "borders showing through that are grey on the
+   outside"): the rotated element's edge resampled against the
+   transparency outside it, which invert turned mid-grey and multiply
+   painted onto the paper. Reproduced in Chromium at 2x/390pt, proven to
+   come from this layer by a screenshot diff.
+
+   Fixes attempted on the CSS side, all measured, all rejected — do not
+   retry any of them:
+     * mask-image feather      — removes the line but destroys the
+                                 drawing (59,934 units of ink without it
+                                 vs 1,435 with it: mask isolates the
+                                 element and multiply loses its backdrop)
+     * clip-path: inset()      — identical failure, identical cause
+     * box-shadow black ring   — Chromium does not run the element's
+                                 filter over the shadow, so it painted a
+                                 black slab instead of inverting away
+     * content-box padding+bg  — no effect on the line at all
+
+   Removing the filter and the blend removes the artefact at its source,
+   and the strokes rasterise from real pixels instead of a magnified,
+   contrast-clamped video frame — which is also why they are sharper.
+
+   Scoped to img.hero-video: the DESKTOP hero is still a <video>, whose
+   H.264 has no alpha channel and still needs the old chain.
+
+   NOTE: headless WebKit in the deploy container composites neither
+   mix-blend-mode nor backdrop-filter, so none of this is visible in a
+   WebKit screenshot. Verify this layer in Chromium.
+   ===================================================================== */
+img.hero-video {
+    filter: none;
+    /* Strength is baked into the asset (the ink is composited onto its white
+       field at 55%), NOT applied here. The element must stay fully opaque:
+       audit_visual_runtime.py asserts #heroVideo opacity >= 0.95 under Reduce
+       Motion, and that assertion is doing real work — it is what catches a
+       hero that has faded to blank. Tune the tone by re-exporting the asset,
+       never by fading this element. */
+    opacity: 1;
+}

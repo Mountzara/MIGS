@@ -97,8 +97,8 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v3.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-ink-v2.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-ink-v2.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -180,7 +180,7 @@
             // <video> attempt failed because WebM was first and Safari
             // software-decoded VP9 slowly, missing the autoplay window).
             // If play() truly rejects (autoplay blocked on user's browser),
-            // swap to <img src=hero-animation-lite-v1.webp> so they never see a
+            // swap to <img src=hero-animation-ink-v2.webp> so they never see a
             // play button overlay. The WebP at full 1920x1080 is the
             // bulletproof fallback that worked in v3.
             if (heroVideo.tagName === 'VIDEO' && !HERO_TOUCH) {
@@ -250,7 +250,7 @@
                     // Safari tone-maps it; a plain sRGB still can't match by math alone).
                     // The owner saw the settle shift color and wants the video's purple
                     // kept — measured video-vs-v3 diff in WebKit: 0 (was max 28/255).
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v3.webp';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-ink-v2.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
