@@ -215,7 +215,7 @@ def audit_homepage(page) -> list[dict[str, Any]]:
             try:
                 r_,g_,b_ = float(parts[0]), float(parts[1]), float(parts[2])
                 a_ = float(parts[3]) if len(parts) == 4 else 1.0
-                light_translucent = 0.35 <= a_ <= 0.9 and (r_ + g_ + b_) / 3 > 200
+                light_translucent = 0.28 <= a_ <= 0.9 and (r_ + g_ + b_) / 3 > 200
             except ValueError:
                 pass
         results.append(make_check(
