@@ -11,6 +11,9 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="canonical" href="https://mountzara.com/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,530;9..144,600&display=swap">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#120f1b">
     <meta name="description" content="Dr. Christopher Mabini, DO — fellowship-trained minimally invasive gynecologic surgery for endometriosis, fibroids, and complex pelvic pain, with whole-person osteopathic care. Serving Illinois and California.">
@@ -95,7 +98,7 @@
     } catch (e) {}
 })();
 </script>
-<link rel="stylesheet" href="/assets/css/home.css?v=d749623d22">
+<link rel="stylesheet" href="/assets/css/home.css?v=0c43d390a5">
     <!-- Domain modal data — 9 patient-centered KB-anchored modals for #excellence cards.
          Loaded with defer so window.DOMAIN_MODAL_DATA is set before any click handler fires. -->
     <script src="/assets/js/domain-modals.js?v=9f4c03c282" defer></script>
@@ -150,7 +153,7 @@
                         <li><a href="/about/">Bio</a></li>
                     </ul>
                 </li>
-                <li><a href="/portal/" class="nav-portal-link">Member Portal <span class="nav-portal-badge">Coming Soon</span></a></li>
+                <li class="nav-cta-li"><button type="button" class="nav-cta" onclick="openContactModal()">Request an appointment</button></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -1605,292 +1608,11 @@
                  trapped its z-index inside the research section's stacking context,
                  letting the fixed nav paint over it and hide the close button. -->
 
-            <div class="research-list">
-                <!-- ICG Isthmocele -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">ICG Imaging</span>
-                                <span class="tag">Case Report</span>
-                                <span class="tag year">2025</span>
-                            </div>
-                            <h3>Indocyanine Green (ICG) Imaging: Innovative Isthmocele Diagnosis and Repair in a Post-Ablation Patient</h3>
-                            <div class="journal">Archives of Gynecology and Obstetrics</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>A 43-year-old patient with severe abnormal uterine bleeding and chronic pelvic pain after endometrial ablation presented a diagnostic puzzle: a uterine isthmocele complicated by altered tissue architecture. The team used Indocyanine Green (ICG) fluorescence imaging to precisely localize the defect and guide minimally invasive repair. The case — paired with a comprehensive literature review — illustrates how ICG enhances surgical precision, shortens operative time, and reduces complications, marking a meaningful advancement in isthmocele care.</p>
-                                <a href="https://link.springer.com/article/10.1007/s00404-025-08071-x" target="_blank" rel="noopener" class="pub-link">View publication →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- The 12-row publication list moved off the homepage 2026-08-24
+                 (four-lens audit: a patient should not scroll a CV; depth lives
+                 on /evidence/ and the by-request CV). Featured cards remain. -->
+            <p class="research-more"><a href="/evidence/">Explore the published evidence &rarr;</a></p>
 
-                <!-- Deep Epigastric -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">Anatomy</span>
-                                <span class="tag">Surgical Safety</span>
-                                <span class="tag year">2025</span>
-                            </div>
-                            <h3>Mapping of the Deep Epigastric Vessels Stratified by Body Mass Index (BMI)</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>Using CT imaging from 194 patients stratified by WHO BMI categories, this study reveals that the deep epigastric vessels shift laterally with rising BMI — meaning classic "safe zone" landmarks for laparoscopic port placement become unreliable in obese patients. The recommendation: position trocars more than 10 cm from the midline when BMI exceeds 35. The findings directly impact surgical safety in a growing patient population.</p>
-                                <a href="https://www.jmig.org/article/S1553-4650(24)01558-9/abstract" target="_blank" rel="noopener" class="pub-link">View publication →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NBI Adenomyosis -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">NBI · Adenomyosis</span>
-                                <span class="tag">Active IRB</span>
-                                <span class="tag year">2025</span>
-                            </div>
-                            <h3>Role of Narrow Band Imaging (NBI) in the Detection of Adenomyosis during Hysteroscopy: A Retrospective Cohort Analysis</h3>
-                            <div class="journal">J. Minimally Invasive Gynecology · Vol. 32, Issue 11, S105</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>Adenomyosis remains a clinical chameleon — easy to suspect, harder to confirm. This retrospective cohort study evaluates Narrow Band Imaging (NBI) hysteroscopy as a real-time, in-office diagnostic enhancement. By emphasizing surface vascular patterns invisible to standard white light, NBI helps distinguish adenomyotic features from healthy tissue.</p>
-                                <a href="https://doi.org/10.1016/j.jmig.2025.09.311" target="_blank" rel="noopener" class="pub-link">View publication &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAP Block -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">IRB study</span>
-                                <span class="tag">ERAS</span>
-                                <span class="tag year">Ongoing</span>
-                            </div>
-                            <h3>Post-Op Pain after TAP Block in CBG/MIGS: Randomized Control Trial in an ERAS Protocol</h3>
-                            <div class="journal">PRIME Illinois St. Francis · IRB: RIL20240009</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An ongoing randomized controlled trial investigating whether transversus abdominis plane (TAP) blocks — regional anesthesia infiltrated into the abdominal-wall plane — meaningfully reduce post-operative pain scores and opioid use in minimally invasive gynecologic surgery when layered into an Enhanced Recovery After Surgery (ERAS) protocol. Designed and conducted within the CBG/MIGS fellowship at PRIME Illinois St. Francis.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Multifocal Endo -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">Endometriosis</span>
-                                <span class="tag">Multi-author</span>
-                                <span class="tag year">2026</span>
-                            </div>
-                            <h3>Multifocal Endometriosis with Atypical Papillary Fragments: Appendiceal and Tubal Involvement in an Infertility Patient</h3>
-                            <div class="journal">Gynecology and Minimally Invasive Therapy · 2026;15:297–299</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An infertility workup uncovered an unusually complex multifocal endometriosis — with atypical papillary fragments involving both the appendix and fallopian tube. This accepted manuscript documents the diagnostic pathway, surgical findings, and pathology, expanding the clinical understanding of how aggressively endometriosis can manifest beyond classical pelvic sites.</p>
-                                <a href="https://doi.org/10.4103/gmit.gmit-d-25-00217" target="_blank" rel="noopener" class="pub-link">View publication &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ICG Endometriosis Fibrosis — AAGL Global Congress 2022 (oral presentation) + George W. Morley Memorial Paper Award (CAOG 2024) -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag award">George W. Morley Memorial Paper Award</span>
-                                <span class="tag">Oral Presentation · AAGL Global Congress</span>
-                                <span class="tag">CAOG</span>
-                                <span class="tag year">2022</span>
-                            </div>
-                            <h3>The Use of Indocyanine Green (ICG) in the Detection of Endometriosis-Related Fibrosis and Inflammatory Changes</h3>
-                            <div class="journal">Mabini C, Tam M · Journal of Minimally Invasive Gynecology · Vol. 29, S34–S35 · Oral presentation, AAGL Global Congress 2022 · Dr. George W. Morley Memorial Paper Award, CAOG 91st Annual Meeting, Indianapolis · October 2024</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>The foundational ICG-endometriosis research that earned the Dr. George W. Morley Memorial Paper Award at the CAOG 91st Annual Meeting, Indianapolis, October 2024. Selected as an oral presentation at the AAGL Global Congress (international) and additionally presented at CAOG, demonstrating how ICG fluorescence reveals endometriosis-related fibrosis and inflammatory changes invisible under standard white light — with direct implications for more complete excision and improved long-term symptom relief.</p>
-                                <a href="https://www.jmig.org/article/S1553-4650(22)00477-0/abstract" target="_blank" rel="noopener" class="pub-link">View publication →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fluorescent ICG ACOG 2024 -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">ACOG National</span>
-                                <span class="tag">ICG · Fluorescence</span>
-                                <span class="tag year">2024</span>
-                            </div>
-                            <h3>Fluorescent Imaging Using Indocyanine Green (ICG) for Intraoperative Detection of Endometriosis</h3>
-                            <div class="journal">Ward, M., Mabini, C.Z., Tam, M.T. · Presented at ACOG Annual Conference · May 2024</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An evolution of the ICG-endometriosis program — presented at the American College of Obstetricians and Gynecologists Annual Conference. The work extended the foundational ICG fibrosis detection research into a broader intraoperative imaging framework, refining how surgeons can use fluorescence-guided visualization for complete endometriosis identification.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RPOC Hysteroscopic Approach AAGL 2022 -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">AAGL Global Congress</span>
-                                <span class="tag">Hysteroscopy · Infertility</span>
-                                <span class="tag year">2022</span>
-                            </div>
-                            <h3>Infertility and Retained Products of Conception (RPOC): A Hysteroscopic Approach to Diagnosis and Treatment</h3>
-                            <div class="journal">Mabini C, Tam M · Abstract 8342 · Journal of Minimally Invasive Gynecology · Vol. 29, S121 · AAGL Global Congress 2022</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An early national presentation defining the hysteroscopic approach to retained products of conception in infertility patients — direct visualization replacing blind dilation and curettage. This work laid the conceptual foundation for the later Golden Hysteroscope-winning RPOC technique in arcuate uteri.</p>
-                                <a href="https://www.jmig.org/article/S1553-4650(22)00758-0/abstract" target="_blank" rel="noopener" class="pub-link">View publication →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ICG Clear Endometriosis ACOG District 2022 -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">ACOG District</span>
-                                <span class="tag">ICG · Endometriosis</span>
-                                <span class="tag year">2022</span>
-                            </div>
-                            <h3>Use of Indocyanine Green (ICG) in Detecting Clear Endometriosis Lesions</h3>
-                            <div class="journal">Mabini, C., Tam, M. · ACOG Annual District Conference, Chicago, IL · September 2022</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>A focused regional presentation on ICG fluorescence as a tool for detecting clear (atypical, non-pigmented) endometriosis lesions — historically the most under-recognized subtype, because they are nearly invisible under standard white light. Presented at the ACOG Annual District Conference in Chicago, extending the ICG-endometriosis program from fibrosis detection toward the hardest lesions to see.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Robotic Myomectomy 101 AAGL 2020 -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">AAGL Global Congress</span>
-                                <span class="tag">Robotic Surgery</span>
-                                <span class="tag year">2020</span>
-                            </div>
-                            <h3>Robotic Myomectomy: 101</h3>
-                            <div class="journal">Weyenberg, L., Mabini, C.Z., Tam, M.T. · J. Minimally Invasive Gynecology · 27(7):S98 · DOI:10.1016/j.jmig.2020.08.129 · Presented at AAGL Global Congress</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An early educational AAGL presentation establishing the foundational technique and decision-framework for robotic myomectomy — port placement, enucleation strategy, and multi-layer closure, taught from real cases. Published in the <em>Journal of Minimally Invasive Gynecology</em>, it preceded the later <em>Fibroids à La Carte</em> refinement of the robotic myomectomy workflow.</p>
-                                <a href="https://doi.org/10.1016/j.jmig.2020.08.129" target="_blank" rel="noopener" class="pub-link">View publication &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ICG Appendiceal Active IRB -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">IRB study</span>
-                                <span class="tag">ICG · Appendiceal Endometriosis</span>
-                                <span class="tag year">Ongoing</span>
-                            </div>
-                            <h3>Detection of Appendiceal Endometriosis and Associated Fibrosis Using Indocyanine Green (ICG)</h3>
-                            <div class="journal">PRIME Illinois St. Francis Hospital — CBG/MIGS Fellowship · IRB: RIL20240078 · Mabini, C., Tam, M., Siddique, S.</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>An active IRB-approved study extending the ICG-endometriosis program to the appendix — historically under-recognized as a site of endometriosis involvement. This study evaluates ICG's ability to detect appendiceal endometriotic lesions and associated fibrotic changes during minimally invasive surgery.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sandman 2012 -->
-                <div class="research-item">
-                    <button class="research-toggle" onclick="toggleResearch(this)">
-                        <div class="research-info">
-                            <div class="research-tags">
-                                <span class="tag">Foundational Research</span>
-                                <span class="tag">Behavioral Science</span>
-                                <span class="tag year">2012</span>
-                            </div>
-                            <h3>The Role of Self-Injury in the Organization of Behavior</h3>
-                            <div class="journal">Sandman C.A., Kemp A.S., Mabini C., Magnussun M. · Journal of Intellectual Disability Research · 56(5) 516–526 · PMID 22452417</div>
-                        </div>
-                        <span class="toggle-icon"></span>
-                    </button>
-                    <div class="research-detail">
-                        <div class="research-detail-clip">
-                            <div class="research-detail-inner">
-                                <p>His earliest peer-reviewed publication — clinical neuroscience work with the Sandman group examining how self-injurious behavior is temporally organized in individuals with intellectual disability, published in the <em>Journal of Intellectual Disability Research</em>. The research career that produced fifteen peer-reviewed works began here, a decade before fellowship.</p>
-                                <a href="https://pubmed.ncbi.nlm.nih.gov/22452417/" target="_blank" rel="noopener" class="pub-link">View publication &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -2047,6 +1769,23 @@
     </section>
 
     <!-- Contact -->
+    <!-- Meet the doctor — the homepage finally shows the physician.
+         (Four-lens audit: zero human imagery on the page; medicine is trust
+         through faces. Links through to the full About story.) -->
+    <section class="meet-section" aria-label="Meet Dr. Mabini">
+        <div class="container meet-grid">
+            <div class="meet-photo">
+                <img src="/assets/images/headshot.jpg" alt="Dr. Christopher Mabini, DO" loading="lazy" width="640" height="800">
+            </div>
+            <div class="meet-copy">
+                <span class="section-eyebrow">Meet your surgeon</span>
+                <h2 class="section-headline">Christopher Z. Mabini, DO</h2>
+                <p class="meet-lede">Fellowship-trained in complex benign and minimally invasive gynecologic surgery, and an osteopathic physician first &mdash; which means the plan treats you, not just the scan. Teaching, research and the operating room all feed one practice: yours.</p>
+                <a href="/about/" class="btn btn-secondary">Read his story</a>
+            </div>
+        </div>
+    </section>
+
     <section id="contact" class="contact-section">
         <div class="container">
             <span class="section-eyebrow">Connect</span>
@@ -2059,7 +1798,31 @@
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
+        <div class="footer-grid container">
+            <div class="footer-brand">
+                <img src="assets/images/mount-zara-monogram.png" alt="Mount Zara" class="footer-mark">
+                <p class="footer-tag">Minimally invasive gynecologic surgery with whole-person osteopathic care.</p>
+            </div>
+            <nav class="footer-col" aria-label="For patients">
+                <h4>Patients</h4>
+                <a href="/education/">What we treat</a>
+                <a href="/portal/">Member portal</a>
+                <a href="#contact">Request an appointment</a>
+            </nav>
+            <nav class="footer-col" aria-label="About the practice">
+                <h4>The practice</h4>
+                <a href="/about/">About Dr. Mabini</a>
+                <a href="/evidence/">Published evidence</a>
+                <a href="/curriculum/">Teaching &amp; curricula</a>
+                <a href="/cv/">CV (on request)</a>
+            </nav>
+            <div class="footer-col">
+                <h4>Reach us</h4>
+                <a href="mailto:info@mountzara.com">info@mountzara.com</a>
+                <span class="footer-note">Telehealth &amp; in-person &middot; Illinois &amp; California</span>
+            </div>
+        </div>
+        <div class="footer-content container">
             <div class="copyright">© 2026 Mount Zara, LLC
                 <span style="opacity:.75"> · <a href="/privacy/" style="color:inherit">Privacy</a>
                 · <a href="/privacy-practices/" style="color:inherit">Privacy Practices</a>

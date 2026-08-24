@@ -25,7 +25,10 @@
 import sys, time
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "https://mountzara.com/"
-NAV_LINK_MIN = 13     # six visible + seven under More
+NAV_LINK_MIN = 12     # 2026-08-24: Member Portal moved to the FOOTER when the
+                      # nav gained the Request-an-appointment CTA button; the
+                      # bar carries 12 destinations + the CTA. The portal's
+                      # reachability is asserted via the footer below.
 
 def main():
     try:
@@ -87,6 +90,10 @@ def main():
                        top + sub >= NAV_LINK_MIN, f"{top} in bar + {sub} under More")
                     ck(f"[{label}] the bar does not overflow its own width",
                        page.locator("nav").first.evaluate("n => n.scrollWidth <= n.clientWidth + 1"))
+                    ck(f"[{label}] nav carries the appointment CTA",
+                       page.locator(".nav-cta:visible").count() == 1)
+                    ck(f"[{label}] Member Portal reachable in the footer",
+                       page.locator("footer a[href='/portal/']").count() >= 1)
 
                 # ---- reading sheet ----------------------------------------
                 btns = page.locator(".mz-read-btn")

@@ -302,7 +302,7 @@
             list-style: none;
             margin: 0;
             padding: 6px;
-            background: rgba(18, 15, 27, 0.97);
+            background: rgba(255, 255, 255, 0.95);
             border: 1px solid var(--hairline);
             border-radius: 12px;
             box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
@@ -2833,7 +2833,7 @@
             pointer-events: auto;
             /* Lighter veil so the page refracts THROUGH the glass card (the card
                itself carries the heavy blur). Heavy veil here = opaque "frost". */
-            background: rgba(8, 8, 10, 0.52);
+            background: rgba(26, 23, 38, 0.30);
             backdrop-filter: blur(8px) saturate(140%);
             -webkit-backdrop-filter: blur(8px) saturate(140%);
         }
@@ -3426,7 +3426,7 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(8, 8, 10, 0.52);
+            background: rgba(26, 23, 38, 0.30);
             backdrop-filter: saturate(140%) blur(8px);
             -webkit-backdrop-filter: saturate(140%) blur(8px);
             opacity: 0;
@@ -3443,7 +3443,7 @@
             max-width: 760px;
             max-height: 88vh;
             overflow-y: auto;
-            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--hairline);
@@ -5068,9 +5068,9 @@
                frost it into real glass consistent with the cards/nav. */
             /* 2026-08-12 owner: strengthen the frost — the bar read as
                near-solid. Lighter luminous tint + heavier blur. */
-            background: linear-gradient(180deg, var(--paper-3) 0%, var(--paper-3) 42%, rgba(0,0,0,0.10) 100%);
-            backdrop-filter: saturate(190%) blur(32px);
-            -webkit-backdrop-filter: saturate(190%) blur(32px);
+            /* 2026-08-24 LIGHT — a paper footer needs no frost; the heavy blur
+               was flagged as a full-page blurred overlay on mobile. */
+            background: var(--paper-3);
             color: var(--ink);
             padding: 48px 22px 32px;
             border-top: 1px solid var(--hairline);
@@ -5184,7 +5184,7 @@
         .app-modal.open {
             opacity: 1;
             pointer-events: auto;
-            background: rgba(8, 8, 10, 0.52);
+            background: rgba(26, 23, 38, 0.30);
             backdrop-filter: blur(8px) saturate(140%);
             -webkit-backdrop-filter: blur(8px) saturate(140%);
         }
@@ -5195,7 +5195,7 @@
             max-height: calc(100vh - 48px);
             /* Apple "Liquid Glass" — translucent + vibrancy so the page shows through,
                luminous rim, specular top edge. (Was opaque #18181b → read as frost.) */
-            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--hairline);
@@ -6285,7 +6285,7 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(8, 8, 10, 0.52);
+            background: rgba(26, 23, 38, 0.30);
             backdrop-filter: saturate(140%) blur(8px);
             -webkit-backdrop-filter: saturate(140%) blur(8px);
             opacity: 0;
@@ -6304,7 +6304,7 @@
             max-width: 480px;
             max-height: calc(100vh - 48px);
             overflow-y: auto;
-            background: linear-gradient(155deg, rgba(48, 48, 58, 0.55) 0%, rgba(24, 24, 30, 0.60) 55%, rgba(16, 16, 22, 0.62) 100%);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--hairline);
@@ -6539,7 +6539,7 @@
         .timeline-card,
         .skill-card,
         .nav-linkedin {
-            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
+            background: rgba(255, 255, 255, 0.55);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
@@ -6557,7 +6557,7 @@
         .nav-linkedin:hover {
             transform: translateY(-2px);
             border-color: var(--violet-600);
-            background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
+            background: rgba(255, 255, 255, 0.75);
             box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
 
@@ -6663,7 +6663,7 @@
             width: min(820px, 100%);
             max-height: 86vh;
             overflow-y: auto;
-            background: linear-gradient(155deg, rgba(52, 48, 66, 0.55) 0%, rgba(24, 22, 32, 0.60) 55%, rgba(16, 15, 22, 0.62) 100%);
+            background: rgba(255, 255, 255, 0.94);
             border: 1px solid rgba(187, 165, 255, 0.28);
             border-radius: 22px;
             padding: 44px 36px 32px;
@@ -6970,7 +6970,7 @@
         .carepath-block,
         .education-card,
         .timeline-content {
-            background: linear-gradient(135deg, rgba(38, 38, 42, 0.96) 0%, rgba(22, 22, 26, 0.96) 100%);
+            background: rgba(255, 255, 255, 0.55);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
@@ -6986,7 +6986,7 @@
         .education-card:hover {
             transform: translateY(-2px);
             border-color: var(--violet-600);
-            background: linear-gradient(135deg, rgba(48, 48, 54, 0.97) 0%, rgba(30, 30, 36, 0.97) 100%);
+            background: rgba(255, 255, 255, 0.75);
             box-shadow: 0 18px 44px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--glow-purple), 0.18);
         }
         .app-card-v2:focus-visible,
@@ -7414,7 +7414,7 @@
             margin: 0;
             padding: 0;
             border: none;
-            background: rgba(10, 10, 12, 0.94);
+            background: rgba(251, 250, 248, 0.97);
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
             color: var(--ink);
@@ -8063,7 +8063,7 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
             padding: 0;
             border: 1px solid var(--hairline);
             border-radius: 28px;
-            background: linear-gradient(160deg, rgba(42, 38, 58, 0.94) 0%, rgba(22, 20, 30, 0.96) 60%, rgba(15, 14, 20, 0.97) 100%);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
             box-shadow: 0 48px 140px rgba(0, 0, 0, 0.62),
@@ -8072,7 +8072,7 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
             overflow: hidden;
         }
         .mz-read::backdrop {
-            background: rgba(8, 8, 12, 0.66);
+            background: rgba(26, 23, 38, 0.30);
             backdrop-filter: blur(8px) saturate(140%);
             -webkit-backdrop-filter: blur(8px) saturate(140%);
         }
@@ -8286,3 +8286,72 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
             margin: 22px auto 0; max-width: 560px;
             font-size: 14px; line-height: 1.6; color: var(--ink-3);
         }
+
+        /* ============ AMBIENCE POLISH PASS (2026-08-24) ============ */
+        /* 2. Retire the big hero monogram — the brand already lives in the nav
+           and the new footer; the hero leads with the message. (Owner may veto:
+           restore by deleting this rule.) */
+        .monogram-stage { display: none !important; }
+
+        /* 1. Nav CTA button */
+        .nav-cta-li { display: flex; align-items: center; }
+        .nav-cta {
+            font: inherit; font-size: 13px; font-weight: 600; color: #ffffff;
+            background: var(--violet-600); border: none; cursor: pointer;
+            padding: 9px 16px; border-radius: var(--radius-pill);
+            transition: background .18s ease, transform .18s ease;
+            white-space: nowrap;
+        }
+        .nav-cta:hover { background: var(--violet-700); transform: translateY(-1px); }
+
+        /* 4. Display face: Fraunces for the headline layer only */
+        .hero-title, .section-headline, .frame-headline,
+        .mz-read-title, .app-modal-title, .evidence-modal-title {
+            font-family: 'Fraunces', 'Avenir Next', Georgia, serif;
+            font-weight: 600;
+            letter-spacing: -0.012em;
+        }
+
+        /* 5. Research depth link */
+        .research-more { margin: 26px 0 0; text-align: center; font-size: 15px; }
+        .research-more a { color: var(--violet-600); font-weight: 600; }
+
+        /* 3. Meet-the-doctor band */
+        .meet-section { padding: clamp(88px, 9vw, 132px) 28px; background: rgba(244, 241, 236, 0.78); }
+        .meet-grid { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
+        @media (max-width: 820px) { .meet-grid { grid-template-columns: 1fr; } }
+        .meet-photo img { width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-2); }
+        .meet-lede { font-size: clamp(17px, 1.6vw, 20px); line-height: 1.7; color: var(--ink-2); margin: 18px 0 26px; max-width: 56ch; }
+
+        /* 6a. Consistent section rhythm */
+        .about-section, .surgical-unified-section, .omm-section, .ai-section,
+        .apps-section, .research-section, .awards-section, .curriculum-section,
+        .education-section, .contact-section {
+            padding-top: clamp(88px, 9vw, 132px);
+            padding-bottom: clamp(88px, 9vw, 132px);
+        }
+        /* 6b. Quiet the drawing after the hero so content owns the scroll */
+        .hero-bg-stage.faded { opacity: 0.45; }
+
+        /* 6c. Real footer */
+        footer { background: var(--paper-3); border-top: 1px solid var(--hairline); }
+        .footer-grid {
+            display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px); padding: 56px 32px 40px;
+        }
+        @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; } }
+        .footer-mark { height: 40px; width: auto; filter: brightness(0) opacity(0.85); }
+        .footer-tag { margin-top: 14px; font-size: 14px; line-height: 1.6; color: var(--ink-3); max-width: 30ch; }
+        .footer-col h4 {
+            font-size: 11px; font-weight: 700; letter-spacing: .14em;
+            text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px;
+        }
+        .footer-col a { display: block; font-size: 14.5px; color: var(--ink-2); padding: 5px 0; }
+        .footer-col a:hover { color: var(--violet-600); }
+        .footer-note { display: block; font-size: 13px; color: var(--ink-3); margin-top: 8px; }
+        .footer-content { border-top: 1px solid var(--hairline); padding-top: 20px; padding-bottom: 26px; }
+
+        /* chips that sit on the colored gradient strips inside reels keep white */
+        .rl-chiprow .rl-chip, .app-visual .rl-chip:not(.ok):not(.warn) { color: #ffffff; }
+        .app-visual.warm .rl-chip:not(.ok):not(.warn) { color: var(--ink); }

@@ -96,7 +96,11 @@ if (!/three-year/i.test(cur) || !/thirty-six months|36 months|Each of 36/i.test(
 if (/\btwo-year\b|twenty-four months/i.test(cur)) fail("curriculum/cbg-migs: stale two-year phrasing");
 const idx = readFileSync("index.html", "utf8");
 if (!idx.includes("Excellence in Minimally Invasive Gynecology")) fail("index: award name drifted from CV canonical");
-if (!/15:297/.test(idx)) fail("index: GMIT citation missing volume/pages (2026;15:297–299)");
+// 2026-08-24 — the 12-row publication list moved OFF the homepage (a
+// patient should not scroll a CV); the GMIT citation now lives on the
+// CV, which is where the canonical-volume requirement follows it.
+const cvGmit = readFileSync("cv/index.html", "utf8");
+if (!/15:297/.test(cvGmit)) fail("cv: GMIT citation missing volume/pages (2026;15:297–299)");
 const dep = readFileSync("scripts/deploy-prod.sh", "utf8");
 // The exclude must be ANCHORED to the repo root, and this gate must
 // require the anchored form rather than merely permit it.
