@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Postoperative recovery &mdash; what to know &middot; Mount Zara</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap">
     <meta name="description" content="A patient guide to recovery after CBG/MIGS gynecologic surgery: ERAS principles, week-by-week expectations, opioid-sparing pain control, medication holds, red flags. Evidence-based, peer-reviewed.">
     <meta name="robots" content="index, follow">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -12,15 +13,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
 :root {
-    --bg-base: #120f1b;
-    --bg-card: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.10);
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
-    --fg-dim: #ffffff;
+    --bg-base: #FBFAF8;
+    --bg-card: rgba(255,255,255,0.72);
+    --border: #E9E5EE;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
+    --fg-dim: #8B8698;
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
     --green: #10b981; --amber: #f59e0b; --red: #ef4444;
 }
@@ -43,10 +44,10 @@ a:hover { color: var(--fg-strong); }
 /* Site nav */
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10, 7, 20, 0.96);
+    background: rgba(251, 250, 248, 0.86);
     backdrop-filter: blur(22px) saturate(165%);
     -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #E9E5EE;
     padding: 10px clamp(16px, 4vw, 32px);
 }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
@@ -67,7 +68,7 @@ a:hover { color: var(--fg-strong); }
     padding: 5px 14px; border-radius: 999px;
     font-weight: 500; transition: all 0.2s;
 }
-.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+.site-nav .cta:hover { background: rgba(109, 40, 217, 0.9); color: #fff !important; transform: translateY(-1px); }
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
 
@@ -275,7 +276,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
     .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
 }
 .card {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
@@ -309,7 +310,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 
 /* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
 .symptom {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 11px;
     padding: 12px 14px 12px 44px;
@@ -339,8 +340,8 @@ sup.mz-ref.mz-open .mz-ref-pop {
     position: relative; margin-bottom: 16px;
     animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     cursor: pointer;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #E9E5EE;
     border-radius: 11px;
     padding: 12px 14px;
     transition: border-color 0.22s, background 0.22s;
@@ -371,7 +372,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
     display: grid;
     grid-template-columns: 56px 1fr auto;
     gap: 16px; align-items: start;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
@@ -426,7 +427,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 /* Q&A accordion */
 .qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 details.qa {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 11px;
     transition: border-color 0.22s, background 0.22s;
@@ -494,7 +495,7 @@ details.qa .qa-answer p:last-child { margin: 0; }
 .refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
 .refs-list li {
     padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid #E9E5EE;
     counter-increment: ref;
 }
 .refs-list li:last-child { border-bottom: none; }
@@ -520,13 +521,13 @@ details.qa .qa-answer p:last-child { margin: 0; }
     padding: 1px 6px; border-radius: 4px;
     white-space: nowrap;
 }
-.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.7); }
 .refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
 details.mz-abstract {
     margin-top: 10px;
     margin-left: 40px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #E9E5EE;
     border-radius: 8px;
 }
 details.mz-abstract summary {
@@ -555,7 +556,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 /* MODAL system */
 .mz-modal-bg {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.66);
+    background: rgba(244,241,236,0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 999;
@@ -582,7 +583,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
     position: absolute; top: 16px; right: 16px;
     width: 36px; height: 36px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     color: var(--fg-soft);
     font-size: 20px; line-height: 1;
@@ -603,7 +604,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 /* Footer note */
 .footer-note {
     margin-top: 40px; padding: 20px 24px;
-    background: rgba(255,255,255,0.02);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     font-size: 12.5px; color: var(--fg-dim);
@@ -626,7 +627,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 
     .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
     @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
-    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card { background: rgba(255,255,255,0.7); border: 1px solid #E9E5EE; border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
     .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
     .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; }
     .cause-card ul { padding-left: 20px; margin: 0; }
@@ -642,14 +643,14 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FBFAF8 0%, #F6F3EF 55%, #FBFAF8 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
                bottomed out at legacy #07070a black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: invert(1) hue-rotate(160deg) saturate(2.2) brightness(0.82) contrast(1.5); mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         section.panel p, details.qa .qa-answer p, .rung p, .mz-modal p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -699,6 +700,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     }
 }
 </style>
+<style>h1,h2{font-family:'Fraunces',Georgia,serif}</style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
@@ -1150,7 +1152,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </script>
 
 <style>
-.mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid rgba(255,255,255,0.07); font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #ffffff; text-align: center; }
+.mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid #E9E5EE; font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #ffffff; text-align: center; }
 .mz-page-note p { margin: 0; }
 .mz-page-note a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .mz-page-note a:hover, .mz-page-note a:focus-visible { color: rgba(201,119,89,0.95); }
