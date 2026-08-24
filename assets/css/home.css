@@ -90,10 +90,7 @@
             /* 2026-08-24 LIGHT — warm paper canvas with the faintest violet
                warmth top-right, so deep scroll still reads intentional, never
                flat. (Was the plum gradient.) */
-            background:
-                radial-gradient(120vmax 80vmax at 82% -10%, rgba(139,92,246,0.06), transparent 60%),
-                linear-gradient(180deg, #FBFAF8 0%, #F6F3EF 100%);
-            background-attachment: fixed;
+            background: #FBFAF8;
             /* Anchor jumps (#surgery, #research, #awards, …) must clear the
                fixed ~64px nav so section eyebrows aren't tucked underneath it. */
             scroll-padding-top: 80px;
@@ -432,16 +429,14 @@
         /* Apple-style fixed video backdrop that the page content rises over.
            Sits at z-index 0; everything else stacks on top. Fades out on scroll. */
         .cinematic-intro {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-            background: #000;
-            will-change: opacity;
+            /* 2026-08-24e — THE SHADE-SHIFTING CULPRIT. This dark-era backdrop
+               ran TWO infinite colour animations behind the page: gradientShift
+               (22s, a moving multi-stop gradient) and colorDrift (28s alternate,
+               drifting violet/blue/PINK radials on screen blend). On the light
+               theme they read exactly as the owner described — "the shades of
+               the website background change several times". The opening must be
+               ONE shade for the whole animation. Layer retired entirely. */
+            display: none !important;
         }
         .cinematic-intro .intro-gradient {
             position: absolute;
@@ -453,7 +448,7 @@
                 radial-gradient(ellipse 70% 55% at 80% 70%, #0f2440 0%, transparent 60%),
                 linear-gradient(135deg, #0a0a14 0%, #16162a 35%, #0d1428 65%, #0a0a14 100%);
             background-size: 200% 200%, 200% 200%, 200% 200%;
-            animation: gradientShift 22s ease-in-out infinite;
+            animation: none;
         }
         @keyframes gradientShift {
             0%, 100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
@@ -469,7 +464,7 @@
                 radial-gradient(ellipse 40% 35% at 65% 18%, rgba(255, 100, 180, 0.18), transparent 60%);
             mix-blend-mode: screen;
             pointer-events: none;
-            animation: colorDrift 28s ease-in-out infinite alternate;
+            animation: none;
         }
         @keyframes colorDrift {
             0%   { transform: scale(1) translate(0, 0); opacity: 0.95; }
@@ -544,10 +539,10 @@
             /* 2026-08-24 LIGHT — the drawing now floats on warm paper with two
                faint violet glows. The line-art reads as dark strokes on light
                via multiply blend (see .hero-video). */
-            background:
-                radial-gradient(120vmax 85vmax at 78% -8%, rgba(139, 92, 246, 0.10), transparent 60%),
-                radial-gradient(95vmax 75vmax at 8% 108%, rgba(109, 40, 217, 0.07), transparent 58%),
-                linear-gradient(180deg, #FBFAF8 0%, #F5F1EC 100%);
+            /* ONE SHADE. Flat soft off-white — the tone the owner said was
+               best — with no gradients or glows that shift as the drawing
+               accumulates ink under multiply. */
+            background: #FBFAF8;
             transition: opacity 0.8s ease-out;
         }
         .hero-bg-stage.faded {
@@ -617,7 +612,11 @@
                which multiply renders fully transparent — THEN color the clean
                strokes. Also dropped image-rendering:-webkit-optimize-contrast,
                which aliases scaled video. */
-            filter: invert(1) contrast(1.9) brightness(1.06) hue-rotate(160deg) saturate(1.8);
+            /* Consistent soft mauve-violet for the WHOLE playback: the old
+               saturate(1.8) pushed accumulating ink toward hot pink as more
+               strokes landed (owner screenshots). Lower saturation holds one
+               colour from first stroke to last. */
+            filter: invert(1) contrast(1.85) brightness(1.04) hue-rotate(178deg) saturate(0.95);
             /* 2026-07-22 — screen-blend the video so its black pixels become
                transparent: the mauve line-art now draws ITSELF directly onto
                the purple-gradient stage instead of carrying its own black
@@ -1459,7 +1458,7 @@
             transition: color 0.4s ease;
         }
         .timeline-row.tl-active .year {
-            color: rgba(186, 152, 255, 1);
+            color: var(--violet-600);
         }
         .timeline-row h4 {
             font-size: 19px;
@@ -2677,7 +2676,7 @@
             padding: clamp(60px, 8vw, 120px) clamp(20px, 4vw, 28px);
             /* 2026-06-24 — translucent so hero drawing shows through (the radial
                gradient overlays in ::before still paint on top). */
-            background-color: rgba(251, 250, 248, 0.58);
+            background-color: rgba(251, 250, 248, 0.62);
             position: relative;
         }
         .surgical-unified-section::before {
@@ -3068,7 +3067,7 @@
         /* ========== OMM Section ========== */
         .omm-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(251, 250, 248, 0.58);
+            background-color: rgba(251, 250, 248, 0.62);
             position: relative;
         }
 
@@ -3864,7 +3863,7 @@
             font-size: clamp(22px, 2.6vw, 32px);
             font-weight: 300;
             line-height: 1.4;
-            color: var(--text-on-dark);
+            color: var(--ink);
             max-width: 920px;
             margin: 0 auto;
             letter-spacing: -0.018em;
@@ -4024,7 +4023,7 @@
                could never read as the dark frosted video-thumbnails the user
                wants. Now matches .research-section (rgba(0,0,0,0.45)) so the
                vivid fixed line-art shows boldly behind the now-glass cards. */
-            background-color: rgba(251, 250, 248, 0.58);
+            background-color: rgba(251, 250, 248, 0.62);
             color: var(--ink);
         }
 
@@ -4448,7 +4447,7 @@
                texture for research cards to frost with real glass. Alpha low
                enough (0.45) that the now-vivid (0.75 opacity) drawing reads
                through boldly, giving glass cards intense texture to frost. */
-            background-color: rgba(251, 250, 248, 0.58);
+            background-color: rgba(251, 250, 248, 0.62);
         }
 
         .aagl-accepted-banner {
@@ -7185,7 +7184,7 @@
            ============================================================ */
         .identity-map-section {
             /* 2026-06-24 — translucent so hero drawing shows through. */
-            background-color: rgba(251, 250, 248, 0.58);
+            background-color: rgba(251, 250, 248, 0.62);
             position: relative;
         }
         .identity-map-section::before {
@@ -8293,11 +8292,16 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
         .app-reel .rl-chip, .reel-scene .rl-chip {
             color: var(--ink);
         }
+        /* 2026-08-24d — the app-visual panels went light with the theme, so
+           caps/pins are ink; ONLY pins inside the dark .rl-frame imaging
+           viewport stay white. (Text-walker verified: these were the last
+           white-on-light strings on the page.) */
         .app-reel .rl-cap, .reel-scene .rl-cap,
-        .app-reel .rl-pin, .reel-scene .rl-pin,
-        .rl-frame .rl-pin {
-            color: #ffffff;
+        .app-reel .rl-pin, .reel-scene .rl-pin {
+            color: var(--ink);
+            text-shadow: none;
         }
+        .rl-frame .rl-pin { color: #ffffff; }
         /* the "ok/warn" status chips keep their semantic tints */
         .app-reel .rl-chip.ok, .reel-scene .rl-chip.ok { color: #86efac; }
         .app-reel .rl-chip.warn, .reel-scene .rl-chip.warn { color: #fdba74; }
@@ -8377,7 +8381,7 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
         .footer-content { border-top: 1px solid var(--hairline); padding-top: 20px; padding-bottom: 26px; }
 
         /* chips that sit on the colored gradient strips inside reels keep white */
-        .rl-chiprow .rl-chip, .app-visual .rl-chip:not(.ok):not(.warn) { color: #ffffff; }
+        .rl-chiprow .rl-chip, .app-visual .rl-chip:not(.ok):not(.warn) { color: var(--ink); }
         .app-visual.warm .rl-chip:not(.ok):not(.warn) { color: var(--ink); }
 
         /* 2026-08-24c — GLASS EVERYWHERE (owner): every card and badge that
