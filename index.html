@@ -2309,8 +2309,10 @@
 }
 
 
-/* the two families the first pass missed + the eyebrow pills (were solid) */
-.section-eyebrow, .research-badge {
+/* the two families the first pass missed + the eyebrow pills (were solid).
+   self-compound (.x.x) outranks the per-section overrides at equal-or-lower specificity;
+   .award keeps its gold gradient */
+.section-eyebrow.section-eyebrow, .research-badge.research-badge:not(.award) {
     background: rgba(255, 255, 255, 0.42);
     -webkit-backdrop-filter: saturate(180%) blur(16px);
     backdrop-filter: saturate(180%) blur(16px);
