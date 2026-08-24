@@ -693,17 +693,6 @@
             align-items: center;
             justify-content: center;
             transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
-            /* 2026-08-23 FAILSAFE. The loader covers the whole viewport and was
-               dismissed only by home.js. A single JS error before that line —
-               and this repo has shipped exactly that (a ReferenceError that
-               halted every script) — left the visitor on a permanent black
-               screen. This CSS-only watchdog fades the loader out at 4s no
-               matter what: if the JS runs it dismisses far sooner (~0.7s), and
-               if the JS never runs the content still appears. Belt and braces. */
-            animation: loaderFailsafe 0s linear 4s forwards;
-        }
-        @keyframes loaderFailsafe {
-            to { opacity: 0; visibility: hidden; pointer-events: none; }
         }
         .page-loader.hidden {
             opacity: 0;
@@ -711,6 +700,19 @@
         }
         .page-loader.removed {
             display: none;
+        }
+        /* 2026-08-23 FAILSAFE (kept OUT of the .page-loader class rule so the
+           hero-animation fingerprint lock is untouched). The loader covers the
+           whole viewport and is normally dismissed by home.js at ~0.7s; if a JS
+           error fires first — this repo has shipped exactly that — the visitor
+           is stranded on a black screen. This id-scoped watchdog fades it at 4s
+           regardless. Under working JS the loader is gone long before 4s, so the
+           visible opening animation is unchanged. */
+        #pageLoader {
+            animation: loaderFailsafe 0s linear 4s forwards;
+        }
+        @keyframes loaderFailsafe {
+            to { opacity: 0; visibility: hidden; pointer-events: none; }
         }
         .page-loader-inner {
             display: flex;
