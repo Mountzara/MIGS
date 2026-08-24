@@ -166,7 +166,7 @@
                         <li><a href="/about/">Bio</a></li>
                     </ul>
                 </li>
-                <li class="nav-cta-li"><button type="button" class="nav-cta" onclick="openContactModal()">Request an appointment</button></li>
+                <li class="nav-cta-li"><button type="button" class="nav-cta" onclick="openContactModal('waitlist')">Get notified</button></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -435,7 +435,7 @@
                  only CTA addressed collaborators. Primary action is the
                  patient's; the collaborator lane lives at the foot of the page. -->
             <div class="hero-ctas">
-                <button type="button" class="btn btn-primary" onclick="openContactModal()">Request an appointment <span class="arrow"></span></button>
+                <button type="button" class="btn btn-primary" onclick="openContactModal('waitlist')">Sign up to be notified <span class="arrow"></span></button>
                 <a href="/education/" class="btn btn-secondary">What I treat</a>
             </div>
 
@@ -1804,7 +1804,7 @@
             <span class="section-eyebrow">Connect</span>
             <h2 class="section-headline">Ready when you are.</h2>
             <p class="section-sub center">Whether it&rsquo;s pelvic pain that keeps getting dismissed, a diagnosis you want a second opinion on, or surgery you&rsquo;re weighing &mdash; start the conversation. Telehealth and in-person, Illinois and California.</p>
-            <button type="button" class="btn btn-primary" onclick="openContactModal()">Request an appointment <span class="arrow"></span></button>
+            <button type="button" class="btn btn-primary" onclick="openContactModal('waitlist')">Sign up to be notified <span class="arrow"></span></button>
             <p class="contact-secondary">Physicians and collaborators &mdash; for referrals, research, teaching or consulting, use the same address and it will find me.</p>
         </div>
     </section>
@@ -1820,7 +1820,7 @@
                 <h4>Patients</h4>
                 <a href="/education/">What we treat</a>
                 <a href="/portal/">Member portal</a>
-                <a href="#contact">Request an appointment</a>
+                <a href="#contact">Sign up to be notified</a>
             </nav>
             <nav class="footer-col" aria-label="About the practice">
                 <h4>The practice</h4>
@@ -1931,6 +1931,21 @@
                 <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
             <h3 id="contactModalTitle">Get in touch</h3>
+            <p class="modal-status-note"><strong>The practice is not yet accepting new patients.</strong> Leave your details and you will be the first to know when it opens.</p>
+            <form id="contactForm" class="contact-form" novalidate>
+                <div class="cf-toggle" role="tablist">
+                    <button type="button" class="cf-tab active" data-kind="waitlist" role="tab">Notify me when accepting patients</button>
+                    <button type="button" class="cf-tab" data-kind="inquiry" role="tab">General message</button>
+                </div>
+                <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;opacity:0">
+                <label class="cf-label">Name<input class="cf-input" name="name" type="text" autocomplete="name" required maxlength="120"></label>
+                <label class="cf-label">Email<input class="cf-input" name="email" type="email" autocomplete="email" required maxlength="200"></label>
+                <label class="cf-label">Phone <span class="cf-opt">(optional)</span><input class="cf-input" name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+                <label class="cf-label cf-msg" hidden>Message <span class="cf-opt">— please do not include medical details in this form</span><textarea class="cf-input" name="message" rows="4" maxlength="800"></textarea></label>
+                <button type="submit" class="btn btn-primary cf-submit">Sign me up <span class="arrow"></span></button>
+                <p class="cf-state" role="status" aria-live="polite"></p>
+            </form>
+            <div class="modal-divider">Prefer email?</div>
             <p class="modal-sub">Copy the email, or open it directly in your preferred mail service.</p>
             <div class="email-row">
                 <span class="email-text" id="contactEmail">info@mountzara.com</span>
@@ -2326,6 +2341,20 @@
     color: #1a1726;
     border: 1px solid rgba(255, 255, 255, 0.85);
 }
+
+/* native contact form (2026-08-24 — notify-me premise; mailto stays secondary) */
+.modal-status-note{margin:2px 0 14px;padding:10px 14px;border-radius:12px;border:1px solid rgba(109,40,217,.22);background:rgba(139,92,246,.08);font-size:13.5px;line-height:1.5;color:#3d1478}
+.contact-form{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.cf-toggle{display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.cf-tab{flex:1;min-width:150px;padding:9px 12px;border-radius:999px;border:1px solid rgba(109,40,217,.25);background:rgba(255,255,255,.55);-webkit-backdrop-filter:saturate(170%) blur(12px);backdrop-filter:saturate(170%) blur(12px);color:#6d28d9;font-size:12.5px;font-weight:600;cursor:pointer}
+.cf-tab.active{background:#6d28d9;color:#fff;border-color:#6d28d9}
+.cf-label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:rgba(26,23,38,.72)}
+.cf-opt{font-weight:400;color:rgba(26,23,38,.5)}
+.cf-input{padding:11px 13px;border-radius:12px;border:1px solid rgba(26,23,38,.14);background:rgba(255,255,255,.65);-webkit-backdrop-filter:saturate(160%) blur(10px);backdrop-filter:saturate(160%) blur(10px);font:inherit;font-size:14.5px;color:#1a1726}
+.cf-input:focus{outline:none;border-color:rgba(109,40,217,.55);box-shadow:0 0 0 3px rgba(139,92,246,.18)}
+.cf-submit{margin-top:4px;justify-content:center}
+.cf-state{min-height:18px;margin:2px 0 0;font-size:13px;color:#6d28d9}
+.cf-state.err{color:#b3261e}
 
 </style>
 </body>

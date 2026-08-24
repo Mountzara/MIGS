@@ -632,13 +632,58 @@
 
         // Contact modal
         const contactModalEl = document.getElementById('contactModal');
-        function openContactModal() {
+        function openContactModal(mode) {
             window.__mzPrevFocus = document.activeElement;
             contactModalEl.classList.add('open');
             document.body.style.overflow = 'hidden';
-            const btn = contactModalEl.querySelector('.contact-modal-close');
-            if (btn) btn.focus();
+            setContactMode(mode === 'inquiry' ? 'inquiry' : 'waitlist');
+            const first = contactModalEl.querySelector('.cf-input[name="name"]');
+            if (first) first.focus(); else { const btn = contactModalEl.querySelector('.contact-modal-close'); if (btn) btn.focus(); }
         }
+        // 2026-08-24 — native form (owner: not yet accepting patients; premise is notify-me)
+        function setContactMode(kind) {
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+            form.dataset.kind = kind;
+            form.querySelectorAll('.cf-tab').forEach(t => t.classList.toggle('active', t.dataset.kind === kind));
+            const msg = form.querySelector('.cf-msg');
+            if (msg) msg.hidden = kind !== 'inquiry';
+            const sub = form.querySelector('.cf-submit');
+            if (sub) sub.firstChild.textContent = kind === 'inquiry' ? 'Send message ' : 'Sign me up ';
+            const title = document.getElementById('contactModalTitle');
+            if (title) title.textContent = kind === 'inquiry' ? 'Get in touch' : 'Be the first to know';
+        }
+        (function wireContactForm() {
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+            form.querySelectorAll('.cf-tab').forEach(t => t.addEventListener('click', () => setContactMode(t.dataset.kind)));
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const state = form.querySelector('.cf-state');
+                const btn = form.querySelector('.cf-submit');
+                const data = Object.fromEntries(new FormData(form).entries());
+                data.kind = form.dataset.kind || 'waitlist';
+                state.classList.remove('err'); state.textContent = 'Sending…'; btn.disabled = true;
+                try {
+                    const r = await fetch('/api/v1/contact', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+                    const out = await r.json().catch(() => ({}));
+                    if (r.ok && out.ok) {
+                        form.querySelectorAll('.cf-label, .cf-toggle, .cf-submit').forEach(el => el.style.display = 'none');
+                        state.textContent = data.kind === 'inquiry'
+                            ? 'Message sent — thank you. You will hear back at the email you provided.'
+                            : "You're on the list — you will be emailed the moment the practice begins accepting patients.";
+                    } else {
+                        state.classList.add('err');
+                        state.textContent = out.error === 'too_many_requests' ? 'Too many requests — please try again later.' : 'Something went wrong — please use the email options below.';
+                        btn.disabled = false;
+                    }
+                } catch {
+                    state.classList.add('err');
+                    state.textContent = 'Network error — please use the email options below.';
+                    btn.disabled = false;
+                }
+            });
+        })();
         function closeContactModal() {
             contactModalEl.classList.remove('open');
             document.body.style.overflow = '';
