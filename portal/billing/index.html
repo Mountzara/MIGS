@@ -10,9 +10,9 @@
     <script src="https://js.stripe.com/v3/"></script>
     <style>
 :root {
-    --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.10);
-    --fg-strong: #ffffff; --fg-mid: #ffffff; --fg-soft: #ffffff; --fg-dim: #ffffff;
-    --accent: #6d28d9; --accent-soft: #a78bfa; --glow-purple: 167, 139, 250;
+    --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72); --border: #E9E5EE;
+    --fg-strong: #1A1726; --fg-mid: #4A4658; --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+    --accent: #6d28d9; --accent-soft: #7c3aed; --glow-purple: 167, 139, 250;
     --green: #10b981; --amber: #f59e0b; --red: #ef4444;
 }
 * { box-sizing: border-box; }
@@ -28,12 +28,12 @@ a:hover { color: var(--fg-strong); }
 
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10,7,20,0.96);
+    background: rgba(255,255,255,0.96);
     backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px);
+    border-bottom: 1px solid #E9E5EE; padding: 10px clamp(16px, 4vw, 32px);
 }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
-.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
+.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: #6d28d9; }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
 .site-nav .right { margin-left: auto; display: flex; gap: 12px; }
 .site-nav .right a { font-size: 12.5px; color: var(--fg-soft); }
@@ -41,12 +41,12 @@ a:hover { color: var(--fg-strong); }
 .wrap { max-width: 1000px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
 @keyframes mzRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 14px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: #6d28d9; margin-bottom: 14px; }
 h1 { font-weight: 200; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.022em; line-height: 1.08; color: var(--fg-strong); margin: 0 0 14px 0; }
 .lede { font-size: 16px; line-height: 1.6; color: var(--fg-mid); max-width: 64ch; margin: 0 0 36px 0; }
 
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 36px; }
-.summary-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 20px; }
+.summary-card { background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 20px; }
 .summary-card .label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-soft); margin-bottom: 8px; }
 .summary-card .value { font-size: 26px; font-weight: 300; color: var(--fg-strong); letter-spacing: -0.01em; }
 .summary-card.outstanding .value { color: var(--amber); }
@@ -54,14 +54,14 @@ h1 { font-weight: 200; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.022
 
 .invoice-list { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
 .invoice-card {
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px;
+    background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
     padding: 22px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
     display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
 }
-.invoice-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); }
+.invoice-card:hover { transform: translateY(-2px); border-color: #6d28d9; }
 .invoice-card .left { flex: 1; min-width: 0; }
-.invoice-card .number { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 4px; }
+.invoice-card .number { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 4px; }
 .invoice-card .date { font-size: 14px; color: var(--fg-soft); margin-bottom: 6px; }
 .invoice-card .memo { font-size: 13.5px; color: var(--fg-mid); margin-top: 4px; }
 .invoice-card .amount { font-size: 22px; font-weight: 300; color: var(--fg-strong); margin-bottom: 4px; }
@@ -71,7 +71,7 @@ h1 { font-weight: 200; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.022
 .status-pill.sent, .status-pill.partially_paid { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.4); }
 .status-pill.paid { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.4); }
 .status-pill.refunded { background: rgba(167, 139, 250, 0.15); color: var(--accent-soft); border: 1px solid rgba(167, 139, 250, 0.4); }
-.status-pill.void { background: rgba(255, 255, 255, 0.06); color: var(--fg-soft); border: 1px solid rgba(255, 255, 255, 0.15); }
+.status-pill.void { background: rgba(255,255,255,0.72); color: var(--fg-soft); border: 1px solid #E9E5EE; }
 
 .pay-btn { display: inline-block; padding: 8px 18px; background: rgba(var(--glow-purple), 0.22); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--fg-strong); border-radius: 999px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.22s ease; text-decoration: none; }
 .pay-btn:hover { background: rgba(var(--glow-purple), 0.34); transform: translateY(-1px); }
@@ -81,30 +81,30 @@ h1 { font-weight: 200; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.022
 .err-banner { padding: 14px 20px; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; color: #fda4a4; margin-bottom: 24px; }
 
 /* Stripe Elements modal */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(7, 7, 10, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(26,23,38,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-backdrop.open { display: flex; animation: mzRise 0.22s ease both; }
 .modal {
-    background: rgba(20, 20, 28, 0.96); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px;
+    background: rgba(255,255,255,0.96); border: 1px solid #E9E5EE; border-radius: 18px;
     backdrop-filter: blur(40px) saturate(165%); -webkit-backdrop-filter: blur(40px) saturate(165%);
     width: 100%; max-width: 480px; padding: 28px; max-height: 90vh; overflow-y: auto;
 }
 .modal h2 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 400; font-size: 22px; }
 .modal .modal-subtitle { color: var(--fg-soft); font-size: 13.5px; margin-bottom: 22px; }
 .modal .amount-line { padding: 14px 18px; background: rgba(var(--glow-purple), 0.08); border: 1px solid rgba(var(--glow-purple), 0.30); border-radius: 12px; margin-bottom: 18px; }
-.modal .amount-line .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 4px; }
+.modal .amount-line .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 4px; }
 .modal .amount-line .val { font-size: 24px; font-weight: 300; color: var(--fg-strong); letter-spacing: -0.01em; }
 
-#stripe-payment-element { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 14px; min-height: 220px; }
+#stripe-payment-element { background: rgba(255,255,255,0.72); border-radius: 10px; padding: 14px; min-height: 220px; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
-.btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--fg-mid); padding: 10px 20px; border-radius: 999px; font-size: 13px; cursor: pointer; transition: all 0.22s ease; }
-.btn-cancel:hover { background: rgba(255,255,255,0.04); }
-.btn-pay-confirm { background: rgba(var(--glow-purple), 0.32); border: 1px solid rgba(var(--glow-purple), 0.7); color: #fff; padding: 10px 24px; border-radius: 999px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.22s ease; }
+.btn-cancel { background: transparent; border: 1px solid #E9E5EE; color: var(--fg-mid); padding: 10px 20px; border-radius: 999px; font-size: 13px; cursor: pointer; transition: all 0.22s ease; }
+.btn-cancel:hover { background: rgba(255,255,255,0.72); }
+.btn-pay-confirm { background: #6d28d9; border: 1px solid rgba(var(--glow-purple), 0.7); color: #fff; padding: 10px 24px; border-radius: 999px; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.22s ease; }
 .btn-pay-confirm:hover { background: rgba(var(--glow-purple), 0.46); transform: translateY(-1px); }
 .btn-pay-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .modal-error { padding: 12px 16px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; color: #fda4a4; font-size: 13px; margin-top: 14px; display: none; }
 .modal-error.show { display: block; }
 
-.disclaimer { margin-top: 48px; padding: 18px 22px; background: rgba(255,255,255,0.03); border-left: 3px solid rgba(var(--glow-purple), 0.5); border-radius: 8px; font-size: 12.5px; color: var(--fg-soft); line-height: 1.55; }
+.disclaimer { margin-top: 48px; padding: 18px 22px; background: rgba(255,255,255,0.72); border-left: 3px solid rgba(var(--glow-purple), 0.5); border-radius: 8px; font-size: 12.5px; color: var(--fg-soft); line-height: 1.55; }
 .disclaimer strong { color: var(--fg-mid); font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
     
@@ -115,14 +115,14 @@ h1 { font-weight: 200; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.022
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -150,7 +150,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -158,7 +158,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -171,7 +171,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <nav class="site-nav">
         <div class="inner">
             <a href="/portal/" class="brand">Mount Zara</a>
@@ -315,7 +315,7 @@ async function openPayModal(invoice_id, amount_cents, currency, invoice_number) 
         clientSecret = d.client_secret;
         if (!stripe) stripe = Stripe(d.publishable_key);
         if (elements) { try { elements.destroy?.(); } catch {} }
-        elements = stripe.elements({ clientSecret, appearance: { theme: "night", variables: { colorPrimary: "#a78bfa", colorBackground: "#1a1a22", colorText: "#ffffff", borderRadius: "10px" } } });
+        elements = stripe.elements({ clientSecret, appearance: { theme: "stripe", variables: { colorPrimary: "#6d28d9", colorBackground: "#ffffff", colorText: "#1A1726", borderRadius: "10px" } } });
         const pe = elements.create("payment");
         pe.mount("#stripe-payment-element");
     } catch (e) {

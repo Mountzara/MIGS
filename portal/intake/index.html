@@ -11,13 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981;
             --amber: #f59e0b;
@@ -43,8 +43,8 @@
 
         /* SIDEBAR */
         aside.toc {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -53,7 +53,7 @@
             position: sticky;
             top: 20px;
         }
-        .toc-title { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 12px; }
+        .toc-title { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #6d28d9; margin-bottom: 12px; }
         .progress {
             display: flex; align-items: center; gap: 10px;
             font-size: 13px; color: var(--fg-soft);
@@ -62,7 +62,7 @@
         .progress-bar {
             flex: 1;
             height: 6px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
             border-radius: 999px;
             overflow: hidden;
         }
@@ -109,9 +109,9 @@
             position: fixed;
             bottom: 22px; right: 22px;
             padding: 8px 14px;
-            background: rgba(7, 7, 10, 0.85);
+            background: rgba(255,255,255,0.96);
             backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
             font-size: 12.5px;
             color: var(--fg-soft);
@@ -120,8 +120,8 @@
             transition: opacity 0.22s ease;
         }
         .save-status.show { opacity: 1; }
-        .save-status.ok { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.35); }
-        .save-status.err { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.35); }
+        .save-status.ok { color: #047857; border-color: rgba(16, 185, 129, 0.35); }
+        .save-status.err { color: #B91C1C; border-color: rgba(239, 68, 68, 0.35); }
 
         section.panel {
             display: none;
@@ -129,8 +129,8 @@
         }
         section.panel.active { display: block; }
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -140,7 +140,7 @@
         .card h2 {
             font-size: 13px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 4px 0;
         }
         .card h3 {
@@ -154,7 +154,7 @@
         .card .subhead {
             font-size: 12.5px; font-weight: 600;
             letter-spacing: 0.06em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin: 22px 0 10px 0;
         }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
@@ -172,8 +172,8 @@
         input[type=number], select, textarea {
             width: 100%;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 9px;
             color: var(--fg-strong);
             font: inherit; font-size: 14px;
@@ -182,16 +182,16 @@
         textarea { resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.5; }
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: rgba(var(--glow-purple), 0.65);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #6d28d9;
+            background: rgba(255,255,255,0.72);
             box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
         }
         .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
         .check {
             display: flex; align-items: flex-start; gap: 10px;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 9px;
             cursor: pointer;
             transition: border-color 0.18s ease, background 0.18s ease;
@@ -199,7 +199,7 @@
             font-weight: 400;
         }
         .check input { margin: 2px 0 0 0; accent-color: var(--accent); }
-        .check:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .check:hover { border-color: #6d28d9; }
         .check input:checked + span { color: var(--fg-strong); }
         .check.with-detail { flex-direction: column; align-items: stretch; gap: 8px; }
         .check.with-detail .row { display: flex; align-items: center; gap: 10px; }
@@ -210,17 +210,17 @@
         .radio-row label {
             font-size: 13px; font-weight: 500;
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
             cursor: pointer;
             transition: border-color 0.18s ease, background 0.18s ease;
             display: inline-flex; align-items: center; gap: 8px;
         }
-        .radio-row label:hover { border-color: rgba(var(--glow-purple), 0.40); }
+        .radio-row label:hover { border-color: #6d28d9; }
         .radio-row input { accent-color: var(--accent); }
         .radio-row input:checked + span { color: var(--fg-strong); }
-        .radio-row label:has(input:checked) { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.50); }
+        .radio-row label:has(input:checked) { background: rgba(var(--glow-purple), 0.12); border-color: #6d28d9; }
 
         .footer-nav {
             display: flex; justify-content: space-between; gap: 12px;
@@ -228,15 +228,15 @@
         }
         button.nav-btn {
             padding: 11px 22px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 10px;
             color: var(--fg-strong);
             font: inherit; font-size: 14px; font-weight: 600;
             cursor: pointer;
             transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
         }
-        button.nav-btn:hover { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); }
+        button.nav-btn:hover { background: rgba(var(--glow-purple), 0.12); border-color: #6d28d9; }
         button.nav-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
         button.primary {
             padding: 11px 22px;
@@ -258,13 +258,13 @@
             margin-bottom: 16px;
         }
         .banner.info { background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.30); color: rgba(196, 181, 253, 0.95); }
-        .banner.warn { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.35); color: rgba(252, 211, 77, 0.95); }
-        .banner.ok   { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.30); color: rgba(110, 231, 183, 0.95); }
-        .banner.err  { background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.35); color: rgba(252, 165, 165, 0.95); }
+        .banner.warn { background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.35); color: #92400E; }
+        .banner.ok   { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.30); color: #047857; }
+        .banner.err  { background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.35); color: #B91C1C; }
         .banner strong { display: block; color: var(--fg-strong); font-weight: 600; margin-bottom: 8px; }
         .banner p { margin: 0 0 8px 0; }
         .banner .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
-        .aside-note { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.10); font-size: 12.5px; line-height: 1.55; color: var(--fg-soft); }
+        .aside-note { margin-top: 22px; padding-top: 18px; border-top: 1px solid #E9E5EE; font-size: 12.5px; line-height: 1.55; color: var(--fg-soft); }
 
         @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -276,14 +276,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -311,7 +311,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -319,7 +319,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -332,7 +332,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Member portal</a>

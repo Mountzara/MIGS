@@ -29,9 +29,9 @@
          ================================================================= -->
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg: #fff; --accent-soft: #a78bfa; --glow: 167, 139, 250;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg: #1A1726; --accent-soft: #7c3aed; --glow: 167, 139, 250;
         }
         * { box-sizing: border-box; }
         html, body {
@@ -70,7 +70,7 @@
         .meds li { font-size: 13px; opacity: .78; margin-bottom: 3px; }
         button.open {
             margin-top: 13px; font: inherit; font-size: 13.5px; cursor: pointer;
-            background: rgba(255,255,255,.07); color: #fff;
+            background: rgba(255,255,255,0.72); color: #fff;
             border: 1px solid var(--border); border-radius: 9px; padding: 8px 15px;
             transition: border-color .2s, background .2s;
         }
@@ -89,20 +89,20 @@
         .empty { opacity: .62; font-size: 14.5px; line-height: 1.6; max-width: 60ch; }
         .err {
             background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3);
-            border-radius: 11px; padding: 14px 17px; font-size: 14px; color: rgba(252,165,165,.95);
+            border-radius: 11px; padding: 14px 17px; font-size: 14px; color: #B91C1C;
         }
         .panic {
             margin-top: 36px; background: rgba(239,68,68,.05); border: 1px solid rgba(239,68,68,.25);
             border-radius: 12px; padding: 14px 18px; font-size: 13px;
-            color: rgba(252,165,165,.92); line-height: 1.55;
+            color: #B91C1C; line-height: 1.55;
         }
-        .panic strong { color: rgba(252,211,77,.96); font-weight: 600; }
-            .reading { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.10); }
+        .panic strong { color: #92400E; font-weight: 600; }
+            .reading { margin-top: 18px; padding-top: 14px; border-top: 1px solid #E9E5EE; }
         .reading-h { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
                      color: rgba(167,139,250,.95); margin-bottom: 10px; }
         .reading-item { display: block; text-decoration: none; padding: 11px 13px; margin-bottom: 8px;
-                        border: 1px solid rgba(255,255,255,.10); border-radius: 10px;
-                        background: rgba(255,255,255,.03); }
+                        border: 1px solid #E9E5EE; border-radius: 10px;
+                        background: rgba(255,255,255,0.72); }
         .reading-item:hover { border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.07); }
         .reading-t { display: block; font-size: 14.5px; color: #fff; }
         .reading-why { display: block; font-size: 12.5px; margin-top: 3px; color: rgba(255,255,255,.62); line-height: 1.5; }

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
+    <meta name="theme-color" content="#FBFAF8">
     <title>Hospice Pilot Rotation Curriculum — ACOM · Mount Zara</title>
     <meta name="description" content="Pilot hospice and palliative care clerkship curriculum at Alabama College of Osteopathic Medicine. Adult Learning Theory (Knowles), experiential learning (Kolb), reflective practice. Designed and launched 2018.">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -27,10 +27,10 @@
     </style>
     <style>
 :root {
-    --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.10);
-    --fg-strong: #ffffff; --fg-mid: #ffffff; --fg-soft: #ffffff; --fg-dim: #ffffff;
-    --accent: #6d28d9; --accent-soft: #a78bfa; --glow-purple: 167, 139, 250;
-    --amber: #f59e0b; --amber-soft: rgba(252, 211, 77, 0.92);
+    --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72); --border: #E9E5EE;
+    --fg-strong: #1A1726; --fg-mid: #4A4658; --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+    --accent: #6d28d9; --accent-soft: #7c3aed; --glow-purple: 167, 139, 250;
+    --amber: #f59e0b; --amber-soft: #92400E;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -43,9 +43,9 @@ html, body {
 a { color: var(--accent-soft); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--fg-strong); }
 
-.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(10,7,20,0.96); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px clamp(16px, 4vw, 32px); }
+.site-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%); border-bottom: 1px solid #E9E5EE; padding: 10px clamp(16px, 4vw, 32px); }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
-.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); white-space: nowrap; }
+.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: #6d28d9; white-space: nowrap; }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .site-nav .crumb .crumb-item + .crumb-item::before { content: "·"; margin: 0 7px; color: var(--fg-dim); }
 @media (max-width: 680px) {
@@ -56,12 +56,12 @@ a:hover { color: var(--fg-strong); }
 .site-nav .right-actions a { font-size: 12.5px; color: var(--fg-soft); white-space: nowrap; }
 .site-nav .right-actions a:hover { color: var(--fg-strong); }
 .site-nav .cta { background: rgba(var(--glow-purple), 0.16); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--accent-soft) !important; padding: 5px 14px; border-radius: 999px; font-weight: 500; transition: all 0.2s; }
-.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+.site-nav .cta:hover { background: #6d28d9; color: #fff !important; transform: translateY(-1px); }
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
 @keyframes mzRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 14px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: #6d28d9; margin-bottom: 14px; }
 .hero { margin-bottom: clamp(32px, 6vw, 56px); animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .hero h1 { font-weight: 200; font-size: clamp(30px, 5vw, 46px); letter-spacing: -0.022em; line-height: 1.08; color: var(--fg-strong); margin: 0 0 18px 0; max-width: 24ch; }
 .hero .lede { font-size: clamp(16px, 2vw, 18px); line-height: 1.6; color: var(--fg-mid); max-width: 64ch; }
@@ -85,9 +85,9 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-width: 70ch; margin: 0 0 14px 0; }
 
 .principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; align-items: start; }
-.principle-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
-.principle-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.05); }
-.principle-card .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
+.principle-card { background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+.principle-card:hover { transform: translateY(-2px); border-color: #6d28d9; background: rgba(var(--glow-purple), 0.05); }
+.principle-card .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #6d28d9; margin-bottom: 8px; }
 .principle-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16.5px; }
 .principle-card p { margin: 0; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
 .principle-card ul { margin: 8px 0 0 0; padding-left: 18px; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
@@ -96,8 +96,8 @@ section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-
 .nowrap { white-space: nowrap; }
 
 .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; align-items: start; }
-.component-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; transition: border-color 0.22s ease; }
-.component-card:hover { border-color: rgba(var(--glow-purple), 0.32); }
+.component-card { background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 12px; padding: 18px; transition: border-color 0.22s ease; }
+.component-card:hover { border-color: #6d28d9; }
 .component-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; }
 .component-card p { margin: 0; font-size: 13.5px; color: var(--fg-soft); line-height: 1.55; }
 
@@ -107,7 +107,7 @@ section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-
 .cta-block a.btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(var(--glow-purple), 0.22); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--fg-strong); padding: 12px 26px; border-radius: 999px; font-weight: 500; font-size: 14.5px; transition: all 0.22s ease; }
 .cta-block a.btn:hover { background: rgba(var(--glow-purple), 0.34); transform: translateY(-2px); }
 
-.foot { margin-top: 56px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12.5px; color: var(--fg-dim); }
+.foot { margin-top: 56px; padding-top: 26px; border-top: 1px solid #E9E5EE; font-size: 12.5px; color: var(--fg-dim); }
 .foot a { color: var(--fg-soft); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -128,14 +128,14 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* 2026-07-28 — REAL Apple glass + balanced reading measure (user: panels
    were "completely see-through", text hugged the left of a wide panel).
@@ -148,7 +148,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
         rgba(var(--glow-purple), 0.06);
     backdrop-filter: blur(28px) saturate(1.8);
     -webkit-backdrop-filter: blur(28px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
     max-width: 940px;
 }
 .synthesis p { max-width: none; }
@@ -157,7 +157,7 @@ a:focus-visible, .principle-card:focus-visible, .component-card:focus-visible, .
         linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%);
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
 }
 
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
@@ -186,7 +186,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -194,7 +194,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -205,12 +205,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     }
 }
 
-/* 2026-08-08 — small accent labels measured 4.1-4.5:1 on glass; #c4b5fd clears 4.5. */
-.label, .eyebrow, .principle-card .label, .component-card .label { color: #c4b5fd !important; }
+/* 2026-08-08 — small accent labels measured 4.1-4.5:1 on glass; #6d28d9 clears 4.5. */
+.label, .eyebrow, .principle-card .label, .component-card .label { color: #6d28d9 !important; }
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <a href="#main" class="skip-link">Skip to main content</a>
 
     <nav class="site-nav" aria-label="Primary">

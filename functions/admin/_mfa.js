@@ -66,7 +66,7 @@ export function mfaPromptHtml({ next = "/admin/", error = "" } = {}) {
         body {
             margin: 0; min-height: 100vh;
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #050514; color: #ffffff;
+            background: #FBFAF8; color: #ffffff;
             display: flex; align-items: center; justify-content: center;
             padding: 24px;
         }

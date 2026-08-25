@@ -26,7 +26,7 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
   :root {
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
-    --bg-base: #120b22;
+    --bg-base: #FBFAF8;
     --fg-strong: #ffffff;
     --fg-mid: #ffffff;
     --fg-soft: #ffffff;
@@ -53,6 +53,7 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
     display: inline-block; margin-bottom: 18px;
     background: rgba(var(--glow-purple), 0.07);
   }
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
 </head>
 <body>

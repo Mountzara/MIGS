@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
+    <meta name="theme-color" content="#FBFAF8">
     <title>FMIGS Fellowship Curriculum — Case Study · Mount Zara</title>
     <meta name="description" content="A complete fellowship curriculum in Complex Benign Gynecology & Minimally Invasive Gynecologic Surgery. Designed end-to-end against adult learning theory, ACGME competencies, and a four-hospital multi-site rotation. A fellowship curriculum case study.">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -27,15 +27,15 @@
     </style>
     <style>
 :root {
-    --bg-base: #120f1b;
-    --bg-card: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.10);
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
-    --fg-dim: #ffffff;
+    --bg-base: #FBFAF8;
+    --bg-card: rgba(255,255,255,0.72);
+    --border: #E9E5EE;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
+    --fg-dim: #8B8698;
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
 }
 * { box-sizing: border-box; }
@@ -55,19 +55,19 @@ a:hover { color: var(--fg-strong); }
 
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10,7,20,0.96);
+    background: rgba(255,255,255,0.96);
     backdrop-filter: blur(22px) saturate(165%); -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid #E9E5EE;
     padding: 10px clamp(16px, 4vw, 32px);
 }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1180px; margin: 0 auto; }
-.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); }
+.site-nav .brand { font-size: 13px; font-weight: 700; letter-spacing: 0.20em; text-transform: uppercase; color: #6d28d9; }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
 .site-nav .crumb a { color: inherit; }
 .site-nav .right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
 .site-nav .right a { font-size: 12.5px; color: var(--fg-soft); }
 .site-nav .cta { background: rgba(var(--glow-purple), 0.16); border: 1px solid rgba(var(--glow-purple), 0.55); color: var(--accent-soft) !important; padding: 5px 14px; border-radius: 999px; font-weight: 500; transition: all 0.2s; }
-.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+.site-nav .cta:hover { background: #6d28d9; color: #fff !important; transform: translateY(-1px); }
 
 .wrap { max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
 
@@ -81,7 +81,7 @@ a:hover { color: var(--fg-strong); }
 }
 
 .hero { padding-top: clamp(40px, 8vw, 80px); padding-bottom: clamp(40px, 8vw, 64px); animation: mzRise 0.7s both; }
-.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 18px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: #6d28d9; margin-bottom: 18px; }
 .hero h1 { font-weight: 200; font-size: clamp(34px, 6vw, 60px); letter-spacing: -0.022em; line-height: 1.04; color: var(--fg-strong); margin: 0 0 22px 0; max-width: 22ch; }
 .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent-soft), rgba(var(--glow-purple), 0.7)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 .hero .lede { font-size: clamp(16px, 2.2vw, 19px); line-height: 1.6; color: var(--fg-mid); max-width: 64ch; margin: 0 0 30px 0; }
@@ -91,13 +91,13 @@ a:hover { color: var(--fg-strong); }
 .counter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 36px 0 0 0; }
 .counter {
     padding: 22px 20px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
     transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
-.counter:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.05); }
+.counter:hover { transform: translateY(-3px); border-color: #6d28d9; background: rgba(var(--glow-purple), 0.05); }
 .counter .num { font-size: 38px; font-weight: 200; color: var(--fg-strong); letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; }
 .counter .num .unit { font-size: 0.6em; color: var(--accent-soft); margin-left: 2px; font-weight: 300; vertical-align: baseline; letter-spacing: 0; }
 .counter .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-soft); }
@@ -112,25 +112,25 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 .synthesis p:last-child { margin-bottom: 0; }
 .synthesis p strong { color: var(--fg-strong); font-weight: 500; }
 .key-decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 28px; padding-top: 24px; border-top: 1px solid rgba(var(--glow-purple), 0.2); }
-.kd-pill { padding: 12px 16px; background: rgba(0,0,0,0.16); border: 1px solid rgba(var(--glow-purple), 0.18); border-radius: 10px; font-size: 13.5px; line-height: 1.5; color: var(--fg-mid); }
+.kd-pill { padding: 12px 16px; background: #FFFFFF; border: 1px solid rgba(var(--glow-purple), 0.18); border-radius: 10px; font-size: 13.5px; line-height: 1.5; color: var(--fg-mid); }
 .kd-pill strong { color: var(--accent-soft); font-weight: 500; display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 4px; }
 
 .arch-phases { display: grid; gap: 14px; }
 .arch-phase {
     padding: 22px clamp(18px, 3vw, 28px);
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 16px;
     backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
 }
-.arch-phase .ph-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 4px; }
+.arch-phase .ph-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #6d28d9; margin-bottom: 4px; }
 .arch-phase h3 { margin: 0 0 16px 0; color: var(--fg-strong); font-weight: 400; font-size: 18px; letter-spacing: -0.005em; }
 .arch-chapters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
 .arch-chip {
     display: flex; align-items: baseline; gap: 8px;
     padding: 12px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.18s ease;
@@ -139,24 +139,24 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
     font-family: inherit;
     color: inherit;
 }
-.arch-chip:hover, .arch-chip:focus-visible { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.4); transform: translateY(-2px); outline: none; }
-.arch-chip .ch-num { font-size: 10px; font-weight: 700; color: rgba(var(--glow-purple), 0.95); flex-shrink: 0; letter-spacing: 0.05em; }
+.arch-chip:hover, .arch-chip:focus-visible { background: rgba(var(--glow-purple), 0.10); border-color: #6d28d9; transform: translateY(-2px); outline: none; }
+.arch-chip .ch-num { font-size: 10px; font-weight: 700; color: #6d28d9; flex-shrink: 0; letter-spacing: 0.05em; }
 .arch-chip .ch-title { color: var(--fg-mid); flex: 1; }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(7,7,10,0.74); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(26,23,38,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-backdrop.open { display: flex; animation: mzRise 0.22s ease both; }
 .modal-body {
-    background: rgba(20,20,28,0.96);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #E9E5EE;
     border-radius: 18px;
     backdrop-filter: blur(40px) saturate(165%); -webkit-backdrop-filter: blur(40px) saturate(165%);
     width: 100%; max-width: 720px; padding: 32px; max-height: 86vh; overflow-y: auto;
 }
-.modal-body .mn { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px; }
+.modal-body .mn { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #6d28d9; margin-bottom: 6px; }
 .modal-body h3 { margin: 0 0 18px 0; color: var(--fg-strong); font-weight: 300; font-size: 26px; letter-spacing: -0.012em; }
 .modal-body p { font-size: 14.5px; line-height: 1.65; color: var(--fg-mid); margin: 0 0 14px 0; }
-.modal-close { float: right; background: transparent; border: 1px solid rgba(255,255,255,0.18); color: var(--fg-mid); padding: 6px 14px; border-radius: 999px; font-size: 12px; cursor: pointer; font-family: inherit; }
-.modal-close:hover { background: rgba(255,255,255,0.05); color: var(--fg-strong); }
+.modal-close { float: right; background: transparent; border: 1px solid #E9E5EE; color: var(--fg-mid); padding: 6px 14px; border-radius: 999px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.modal-close:hover { background: rgba(255,255,255,0.72); color: var(--fg-strong); }
 .modal-body ul { padding-left: 22px; margin: 0 0 14px 0; }
 .modal-body li { font-size: 14px; color: var(--fg-mid); margin-bottom: 6px; }
 
@@ -171,8 +171,8 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 .timeline-year .yr-label {
     display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
     font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95); margin: 0 0 16px 0; padding: 0 0 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.10);
+    color: #6d28d9; margin: 0 0 16px 0; padding: 0 0 12px 0;
+    border-bottom: 1px solid #E9E5EE;
 }
 .timeline-year .yr-label .yr-sub {
     font-size: 12.5px; font-weight: 400; letter-spacing: 0.01em;
@@ -182,19 +182,19 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 @media (max-width: 560px) { .timeline-grid { grid-template-columns: 1fr; } }
 .month-tile {
     padding: 18px 18px 16px 18px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
     text-align: left;
     min-height: 132px;
     display: flex; flex-direction: column; gap: 10px;
 }
-.month-tile:hover { background: rgba(var(--glow-purple), 0.10); border-color: rgba(var(--glow-purple), 0.42); transform: translateY(-2px); }
+.month-tile:hover { background: rgba(var(--glow-purple), 0.10); border-color: #6d28d9; transform: translateY(-2px); }
 .month-tile .mo {
     display: inline-flex; align-self: flex-start; align-items: center;
     font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-    color: #c4b5fd; background: rgba(var(--glow-purple), 0.16);
+    color: #6d28d9; background: rgba(var(--glow-purple), 0.16);
     border: 1px solid rgba(var(--glow-purple), 0.34);
     padding: 4px 10px; border-radius: 999px; margin: 0;
 }
@@ -220,19 +220,19 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
     padding: 5px 11px; border-radius: 999px;
 }
 .authored-card h4 { margin: 2px 0 0 0; font-size: 19px; font-weight: 500; color: var(--fg-strong); line-height: 1.28; }
-.authored-card .ameta { font-size: 12.5px; color: #c4b5fd; font-weight: 500; letter-spacing: 0.01em; }
+.authored-card .ameta { font-size: 12.5px; color: #6d28d9; font-weight: 500; letter-spacing: 0.01em; }
 .authored-card p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-mid); }
 
 .stakeholder-svg { width: 100%; max-width: 760px; margin: 0 auto; display: block; }
 .stake-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 36px; }
-.stake-card { padding: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
+.stake-card { padding: 18px; background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 12px; }
 .stake-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 14.5px; }
-.stake-card .role { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 8px; }
+.stake-card .role { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #6d28d9; margin-bottom: 8px; }
 .stake-card p { margin: 0; font-size: 13px; color: var(--fg-soft); line-height: 1.55; }
 
 .competency-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 8px; }
-.comp-card { padding: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); transition: all 0.22s ease; }
-.comp-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.4); }
+.comp-card { padding: 20px; background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); transition: all 0.22s ease; }
+.comp-card:hover { transform: translateY(-2px); border-color: #6d28d9; }
 .comp-card .ck { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .comp-card .ck-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(var(--glow-purple), 0.18); color: var(--accent-soft); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
 .comp-card h4 { margin: 0; color: var(--fg-strong); font-weight: 500; font-size: 15.5px; letter-spacing: -0.005em; }
@@ -242,13 +242,13 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 .sites-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .site {
     padding: 20px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);
     transition: all 0.22s ease;
 }
-.site:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.4); }
+.site:hover { transform: translateY(-2px); border-color: #6d28d9; }
 .site.in-progress { background: rgba(var(--glow-purple), 0.04); border: 1px dashed rgba(var(--glow-purple), 0.32); }
 /* #b7a4fc not var(--accent-soft): 11px/700 on the measured glass ground
    rgb(64,58,67) — #a78bfa is 4.05:1 (pixel-measured deploy gate), #b7a4fc
@@ -265,7 +265,7 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
 .site .focus { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
 
 .grad-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-.grad-item { padding: 14px 18px; background: rgba(255,255,255,0.03); border-left: 2px solid rgba(var(--glow-purple), 0.5); border-radius: 8px; font-size: 14px; color: var(--fg-mid); line-height: 1.55; }
+.grad-item { padding: 14px 18px; background: rgba(255,255,255,0.72); border-left: 2px solid rgba(var(--glow-purple), 0.5); border-radius: 8px; font-size: 14px; color: var(--fg-mid); line-height: 1.55; }
 .grad-item strong { color: var(--fg-strong); font-weight: 500; }
 
 .cta-block { margin-top: clamp(48px, 8vw, 80px); padding: clamp(28px, 4vw, 44px); background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10), rgba(var(--glow-purple), 0.04)); border: 1px solid rgba(var(--glow-purple), 0.32); border-radius: 18px; text-align: center; }
@@ -287,14 +287,14 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* 2026-07-28 — REAL Apple glass + balanced reading measure (user: panels
    were "completely see-through", text hugged the left of a wide panel).
@@ -307,7 +307,7 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
         rgba(var(--glow-purple), 0.06);
     backdrop-filter: blur(28px) saturate(1.8);
     -webkit-backdrop-filter: blur(28px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
     max-width: 940px;
 }
 .synthesis p { max-width: none; }
@@ -316,7 +316,7 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
         linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%);
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
 }
 
 /* 2026-08-08 — Year-3 deep-dive v2: clickable curated modals. Month tiles and
@@ -326,7 +326,7 @@ section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; 
    Large panels keep true glass. */
 button.month-tile { font-family: inherit; color: inherit; cursor: pointer; width: 100%; min-width: 0; }
 .timeline-grid > * { min-width: 0; }
-button.month-tile:focus-visible { border-color: rgba(var(--glow-purple), 0.6); }
+button.month-tile:focus-visible { border-color: #6d28d9; }
 .month-tile, button.month-tile {
     backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
     background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.045) 55%, rgba(255,255,255,0.07) 100%) !important;
@@ -337,24 +337,24 @@ button.month-tile:focus-visible { border-color: rgba(var(--glow-purple), 0.6); }
 .tbl-scroll { overflow-x: auto; margin: 14px 0; }
 .mz-table { border-collapse: collapse; width: 100%; min-width: 420px; font-size: 13px; }
 .mz-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-soft); padding: 8px 10px; border-bottom: 1px solid rgba(var(--glow-purple), 0.35); }
-.mz-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--fg-mid); }
+.mz-table td { padding: 8px 10px; border-bottom: 1px solid #E9E5EE; color: var(--fg-mid); }
 .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
 button.detail-card {
     font-family: inherit; color: inherit; text-align: left; cursor: pointer;
     padding: 20px;
     background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%);
     backdrop-filter: blur(24px) saturate(1.8); -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14); border-radius: 14px;
+    border: 1px solid #E9E5EE; border-radius: 14px;
     transition: all 0.22s ease;
 }
-button.detail-card:hover, button.detail-card:focus-visible { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.08); outline: none; }
+button.detail-card:hover, button.detail-card:focus-visible { transform: translateY(-2px); border-color: #6d28d9; background: rgba(var(--glow-purple), 0.08); outline: none; }
 /* 2026-08-20 — was rgba(var(--glow-purple), .95) = #a78bfa, which lands at
    4.14:1 on this card's rgb(59,52,62) ground. At 10.5px it is small text
-   and needs 4.5:1. #c4b5fd gives 6.51:1, so the label survives a future
+   and needs 4.5:1. #6d28d9 gives 6.51:1, so the label survives a future
    darkening of the card without going back under the line. Measured by
    scripts/audit_contrast_pixels.py, which only found it once the crashed
    homepage capture stopped masking the whole run. */
-.detail-card .dk { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #c4b5fd; margin-bottom: 8px; }
+.detail-card .dk { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 8px; }
 .detail-card h4 { margin: 0 0 8px 0; color: var(--fg-strong); font-weight: 500; font-size: 15px; line-height: 1.3; }
 .detail-card p { margin: 0; font-size: 13px; color: var(--fg-mid); line-height: 1.55; }
 /* Simulation series: 9 cards — 3×3 at desktop so no orphan strands on a 4-col row. */
@@ -387,7 +387,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -395,7 +395,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -409,7 +409,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
    (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo,
-.footer-brand a, .site-footer a { color: #c4b5fd !important; }
+.footer-brand a, .site-footer a { color: #6d28d9 !important; }
 
 /* Card counts differ per section (4 responsibility, 6 week-days, 9 sim
    sessions, 1 case-log), so a single column count strands a card somewhere.
@@ -448,7 +448,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <a href="#main" class="skip-link">Skip to main content</a>
 
     <nav class="site-nav" aria-label="Primary">

@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -53,7 +53,7 @@
         .patient-meta .k { color: var(--fg-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10.5px; margin-right: 4px; }
         .summary-chips { display: flex; gap: 10px; flex-wrap: wrap; }
         .chip {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 10px; padding: 8px 12px;
             font-size: 12px; color: var(--fg-mid);
             display: inline-flex; align-items: baseline; gap: 8px;
@@ -61,32 +61,32 @@
         .chip .label { color: var(--fg-dim); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
         .chip .value { color: var(--fg-strong); font-weight: 500; font-size: 13px; }
         .chip.alert { border-color: rgba(245, 158, 11, 0.55); background: rgba(245, 158, 11, 0.06); }
-        .chip.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .chip.alert .value { color: #92400E; }
         .chip.good { border-color: rgba(16, 185, 129, 0.45); }
-        .chip.good .value { color: rgba(110, 231, 183, 0.95); }
-        .chip.purple { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.08); }
+        .chip.good .value { color: #047857; }
+        .chip.purple { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.08); }
         .chip.purple .value { color: var(--accent-soft); }
 
         /* tabs */
         .tab-bar {
             display: flex; gap: 6px; margin: 0 0 18px 0;
             overflow-x: auto; padding-bottom: 4px;
-            scrollbar-width: thin; scrollbar-color: rgba(var(--glow-purple), 0.4) transparent;
+            scrollbar-width: thin; scrollbar-color: #6d28d9 transparent;
         }
         .tab-bar::-webkit-scrollbar { height: 4px; }
         .tab-bar::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 2px; }
         .tab {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 7px 14px;
             color: var(--fg-soft); font-size: 12.5px; letter-spacing: 0.04em;
             font: inherit; cursor: pointer;
             white-space: nowrap;
             transition: all 0.18s;
         }
-        .tab:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .tab:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .tab.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
         .tab .count {
@@ -107,14 +107,14 @@
         .panel h2 {
             font-size: 12px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 14px 0;
         }
 
         /* overview grid */
         .overview-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
         .ov-card {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 12px; padding: 14px 16px;
         }
         .ov-card .head {
@@ -129,7 +129,7 @@
 
         /* intake section accordion */
         details.section {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 11px; padding: 0;
             margin-bottom: 8px;
             overflow: hidden;
@@ -159,12 +159,12 @@
         }
         .kv-grid .k { color: var(--fg-dim); font-size: 11px; padding-top: 1px; }
         .kv-grid .v { color: var(--fg-strong); word-break: break-word; }
-        .kv-grid .v.bool-true { color: rgba(252, 211, 77, 0.95); font-weight: 500; }
+        .kv-grid .v.bool-true { color: #92400E; font-weight: 500; }
         .kv-grid .v.bool-false { color: var(--fg-dim); }
 
         /* triage / appt / thread / doc row */
         .row {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 11px; padding: 12px 14px;
             margin-bottom: 8px;
             display: grid;
@@ -180,15 +180,15 @@
             letter-spacing: 0.14em; text-transform: uppercase;
             padding: 3px 8px; border-radius: 999px; white-space: nowrap;
         }
-        .badge-released { background: rgba(16, 185, 129, 0.12); color: rgba(110, 231, 183, 0.95); border: 1px solid rgba(16, 185, 129, 0.45); }
+        .badge-released { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.45); }
         .badge-pending  { background: rgba(var(--glow-purple), 0.16); color: var(--accent-soft); border: 1px solid rgba(var(--glow-purple), 0.55); }
-        .badge-urgent   { background: rgba(245, 158, 11, 0.12); color: rgba(252, 211, 77, 0.95); border: 1px solid rgba(245, 158, 11, 0.45); }
-        .badge-neutral  { background: rgba(255, 255, 255, 0.05); color: var(--fg-soft); border: 1px solid var(--border); }
-        .badge-cancelled { background: rgba(239, 68, 68, 0.12); color: rgba(252, 165, 165, 0.95); border: 1px solid rgba(239, 68, 68, 0.45); }
+        .badge-urgent   { background: rgba(245, 158, 11, 0.12); color: #92400E; border: 1px solid rgba(245, 158, 11, 0.45); }
+        .badge-neutral  { background: rgba(255,255,255,0.72); color: var(--fg-soft); border: 1px solid var(--border); }
+        .badge-cancelled { background: rgba(239, 68, 68, 0.12); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.45); }
 
         /* symptom chart */
         .trend-card {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 12px; padding: 14px 16px;
             margin-bottom: 12px;
         }
@@ -198,7 +198,7 @@
 
         /* audit list */
         .audit-row {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 9px; padding: 10px 14px; margin-bottom: 6px;
             font-size: 12.5px;
             display: grid;
@@ -232,9 +232,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -265,7 +265,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -273,7 +273,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -320,7 +320,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <!-- Phase 9.5 — "What's new since you last looked" panel.
              Hydrated by /api/v1/admin/cases/:id/whats-new. -->
-        <section class="panel" id="panel-whats-new" style="display:none; border-color: rgba(var(--glow-purple), 0.32);">
+        <section class="panel" id="panel-whats-new" style="display:none; border-color: #6d28d9;">
             <h2 style="display:flex; align-items:baseline; gap:14px;">
                 What's new since you last looked
                 <span id="whats-new-counts" style="font-size:13px; font-weight:400; color: var(--fg-soft);"></span>
@@ -469,7 +469,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const c = data.counts || { by_severity: {} };
             const cs = c.by_severity || {};
             const parts = [];
-            if (cs.urgent)  parts.push(`<span style="color: rgba(252,165,165,0.95);">${cs.urgent} urgent</span>`);
+            if (cs.urgent)  parts.push(`<span style="color: #B91C1C;">${cs.urgent} urgent</span>`);
             if (cs.warning) parts.push(`<span style="color: rgba(253,224,71,0.95);">${cs.warning} warning</span>`);
             if (cs.info)    parts.push(`<span style="color: var(--fg-soft);">${cs.info} info</span>`);
             const sinceLabel = data.first_visit
@@ -484,7 +484,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                           : e.severity === 'warning' ? '⚠ WARNING'
                           : '·';
                 return `
-                    <div style="padding:12px 14px; margin-bottom:8px; background: rgba(255,255,255,0.04); border: 1px solid ${tone}; border-radius: 10px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);">
+                    <div style="padding:12px 14px; margin-bottom:8px; background: rgba(255,255,255,0.72); border: 1px solid ${tone}; border-radius: 10px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%);">
                         <div style="display:flex; justify-content:space-between; gap:14px; align-items: baseline;">
                             <span style="font-size:14px; font-weight: 500; color: var(--fg-strong);">${escapeHtml(e.event_summary)}</span>
                             <span style="font-size: 11px; color: var(--fg-dim);">${sev} · ${new Date(e.occurred_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>
@@ -580,7 +580,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const deferred = !p.identity_verified_at && p.identity_verified_method === 'deferred';
             if (p.identity_verified_at) {
                 const m = (ID_METHODS.find(x => x[0] === p.identity_verified_method) || [,'verified'])[1];
-                el.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;background:rgba(16,185,129,0.12);color:rgba(110,231,183,0.95);border:1px solid rgba(16,185,129,0.45);">ID verified ${fmtDate(p.identity_verified_at)} · ${escapeHtml(m)}</div>`;
+                el.innerHTML = `<div style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;background:rgba(16,185,129,0.12);color:#047857;border:1px solid rgba(16,185,129,0.45);">ID verified ${fmtDate(p.identity_verified_at)} · ${escapeHtml(m)}</div>`;
                 return;
             }
             if (!(deferred || (isFirstVisitContext && hasUpcoming))) { el.innerHTML = ''; return; }
@@ -592,7 +592,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div style="font-size:13px;font-weight:600;color:var(--accent-soft);margin-bottom:10px;">${lead}</div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
                         ${ID_METHODS.map(m => `<button type="button" class="compactish" data-idm="${m[0]}" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(var(--glow-purple),0.45);background:rgba(var(--glow-purple),0.12);color:var(--fg-strong);font-size:12px;cursor:pointer;font-family:inherit;">${escapeHtml(m[1])}</button>`).join('')}
-                        <button type="button" data-idm="deferred" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--fg-soft);font-size:12px;cursor:pointer;font-family:inherit;">Defer (note reason)</button>
+                        <button type="button" data-idm="deferred" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.72);color:var(--fg-soft);font-size:12px;cursor:pointer;font-family:inherit;">Defer (note reason)</button>
                     </div>
                 </div>`;
             el.querySelectorAll('button[data-idm]').forEach(b => {
@@ -767,7 +767,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const label = t.clinician_reviewed_at ? (t.appointment_id ? 'booked' : 'released') : 'pending review';
                 const finalVT = t.final_visit_type || t.clinician_override_visit_type || t.ai_visit_type;
                 const overrideNote = t.clinician_override_visit_type && t.clinician_override_visit_type !== t.ai_visit_type
-                    ? `<div style="font-size: 11px; color: rgba(252, 211, 77, 0.92); margin-top: 4px;">Clinician overrode AI's <em>${escapeHtml(fmtVisitType(t.ai_visit_type))}</em>${t.clinician_override_reason ? ' — ' + escapeHtml(t.clinician_override_reason) : ''}</div>`
+                    ? `<div style="font-size: 11px; color: #92400E; margin-top: 4px;">Clinician overrode AI's <em>${escapeHtml(fmtVisitType(t.ai_visit_type))}</em>${t.clinician_override_reason ? ' — ' + escapeHtml(t.clinician_override_reason) : ''}</div>`
                     : '';
                 const rationale = t.ai_rationale ? `<div style="font-size: 12px; color: var(--fg-soft); margin-top: 6px; padding: 6px 10px; background: rgba(255,255,255,0.025); border-left: 2px solid rgba(var(--glow-purple), 0.55); border-radius: 0 6px 6px 0;">${escapeHtml(t.ai_rationale)}</div>` : '';
                 return `<div class="row" style="display:block;">
@@ -805,14 +805,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const base = 'display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap;';
             const dc = a.device_check;
             if (!dc) {
-                return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.05);color:rgba(235,235,240,0.62);border:1px solid rgba(255,255,255,0.12);">Device check not yet run</span>`;
+                return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.72);color:rgba(235,235,240,0.62);border:1px solid #E9E5EE;">Device check not yet run</span>`;
             }
             if (dc.status === 'passed') {
-                return `<span title="Camera, microphone, speaker, and network all passed." style="${base}background:rgba(16,185,129,0.12);color:rgba(110,231,183,0.95);border:1px solid rgba(16,185,129,0.45);">Device check passed · ${escapeHtml(fmtCheckTime(dc.checked_at))}</span>`;
+                return `<span title="Camera, microphone, speaker, and network all passed." style="${base}background:rgba(16,185,129,0.12);color:#047857;border:1px solid rgba(16,185,129,0.45);">Device check passed · ${escapeHtml(fmtCheckTime(dc.checked_at))}</span>`;
             }
             const comps = (dc.failures || []).map(f => f && f.component).filter(Boolean);
             const reason = comps.length ? comps.join(', ') : 'see patient';
-            return `<span title="One or more components failed the pre-visit check." style="${base}background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.95);border:1px solid rgba(239,68,68,0.45);">Device check FAILED · ${escapeHtml(reason)}</span>`;
+            return `<span title="One or more components failed the pre-visit check." style="${base}background:rgba(239,68,68,0.12);color:#B91C1C;border:1px solid rgba(239,68,68,0.45);">Device check FAILED · ${escapeHtml(reason)}</span>`;
         }
         function renderAppointments(d) {
             const up = d.appointments.upcoming || [];

@@ -48,31 +48,32 @@ function page({ next = "/admin/", error = "" } = {}) {
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;min-height:100vh;
-    background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(167,139,250,.18),transparent 60%),#120b22;
-    color:#fff;font-family:'Avenir Next','Avenir',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(167,139,250,.10),transparent 60%),#FBFAF8;
+    color:#1A1726;font-family:'Avenir Next','Avenir',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
     display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
   .card{width:min(92%,420px);
-    background:linear-gradient(155deg,rgba(48,48,58,.62),rgba(16,16,22,.66));
+    background:linear-gradient(155deg,rgba(255,255,255,.72),rgba(244,241,236,.78));
     backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
-    border:1px solid rgba(255,255,255,.14);border-radius:22px;
-    box-shadow:0 40px 120px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.22);
+    border:1px solid #E9E5EE;border-radius:22px;
+    box-shadow:0 40px 120px rgba(26,23,38,0.12),inset 0 1px 0 rgba(255,255,255,0.7);
     padding:34px 30px 28px}
   .eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
     color:rgba(167,139,250,.95);margin-bottom:12px}
   h1{margin:0 0 4px;font-size:23px;font-weight:300;letter-spacing:-.01em}
-  p.sub{margin:0;font-size:13px;color:rgba(255,255,255,.55)}
+  p.sub{margin:0;font-size:13px;color:#6E6A7C}
   label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-    color:rgba(255,255,255,.5);margin:20px 0 6px}
-  input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
-    border-radius:12px;padding:13px 14px;color:#fff;font-size:16px;outline:none}
-  input:focus{border-color:rgba(167,139,250,.7);background:rgba(255,255,255,.09)}
+    color:#6E6A7C;margin:20px 0 6px}
+  input{width:100%;background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;
+    border-radius:12px;padding:13px 14px;color:#1A1726;font-size:16px;outline:none}
+  input:focus{border-color:rgba(167,139,250,.7);background:rgba(255,255,255,0.72)}
   button{width:100%;margin-top:24px;border:none;border-radius:12px;padding:14px;
-    font-size:16px;font-weight:600;cursor:pointer;color:#fff;
+    font-size:16px;font-weight:600;cursor:pointer;color:#1A1726;
     background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
   button:active{transform:translateY(1px)}
   .err{margin-top:18px;padding:11px 14px;border-radius:10px;font-size:13px;
     background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#fca5a5}
-  .foot{margin-top:22px;font-size:11.5px;color:rgba(255,255,255,.38);line-height:1.55}
+  .foot{margin-top:22px;font-size:11.5px;color:#6E6A7C;line-height:1.55}
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
 </head>
 <body>

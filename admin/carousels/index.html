@@ -11,9 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:           #120b22;
-            --bg-elev:      #14141a;
-            --ink:          #f5f5f7;
+            --bg:           #FBFAF8;
+            --bg-elev:      #F4F1EC;
+            --ink:          #1A1726;
             --ink-mute:     rgba(245, 245, 247, 0.74);
             --ink-soft:     rgba(245, 245, 247, 0.46);
             --accent:       #6d28d9;
@@ -21,7 +21,7 @@
             --hairline:     rgba(255, 255, 255, 0.10);
             --terra:        #b85a47;
             --oxblood:      #8a3d2d;
-            --emerald:      #34d399;
+            --emerald:      #047857;
             --red:          #ef4444;
             --amber:        #fbbf24;
         }
@@ -45,7 +45,7 @@
             font-size: clamp(30px, 4.2vw, 46px);
         }
         .eyebrow {
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             text-transform: uppercase;
             letter-spacing: 0.22em;
             font-size: 11px;
@@ -67,7 +67,7 @@
             flex-wrap: wrap;
         }
         .filter-pill {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             border-radius: 999px;
             padding: 8px 16px;
@@ -77,14 +77,14 @@
             transition: background 0.18s, border-color 0.18s, color 0.18s;
         }
         .filter-pill:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(var(--glow-purple), 0.45);
+            background: rgba(255,255,255,0.72);
+            border-color: #6d28d9;
             color: var(--ink);
         }
         .filter-pill.active {
             background: rgba(var(--glow-purple), 0.10);
-            border-color: rgba(var(--glow-purple), 0.45);
-            color: rgba(var(--glow-purple), 0.95);
+            border-color: #6d28d9;
+            color: #6d28d9;
         }
         .grid {
             display: grid;
@@ -92,7 +92,7 @@
             gap: clamp(16px, 2.4vw, 28px);
         }
         .card {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--hairline);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(180%);
@@ -104,13 +104,13 @@
         }
         .card:hover {
             transform: translateY(-2px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.06);
         }
         .card-cover {
             width: 100%;
             aspect-ratio: 4 / 5;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255,255,255,0.72);
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
@@ -161,7 +161,7 @@
         .badge.status-draft     { color: var(--amber);   border-color: rgba(251, 191, 36, 0.45); }
         .badge.status-approved  { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
         .badge.status-rejected  { color: var(--red);     border-color: rgba(239, 68, 68, 0.45); }
-        .badge.status-published { color: rgba(var(--glow-purple), 0.95); border-color: rgba(var(--glow-purple), 0.45); }
+        .badge.status-published { color: #6d28d9; border-color: #6d28d9; }
         .badge.gate-ready  { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
         .badge.gate-blocked{ color: var(--red);     border-color: rgba(239, 68, 68, 0.45); }
         .actions {
@@ -177,14 +177,14 @@
             padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid var(--hairline);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             color: var(--ink);
             cursor: pointer;
             transition: background 0.18s, border-color 0.18s, color 0.18s;
         }
         .btn:hover {
             background: rgba(var(--glow-purple), 0.10);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
         }
         .btn.btn-approve { color: var(--emerald); border-color: rgba(52, 211, 153, 0.45); }
         .btn.btn-approve:disabled {
@@ -218,9 +218,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -251,7 +251,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -259,7 +259,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

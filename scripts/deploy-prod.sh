@@ -1282,10 +1282,33 @@ fi
 # measured backdrop is what the reader actually sees.
 # Skip with DEPLOY_SKIP_CONTRAST_AUDIT=1.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# DARK-SURFACE GATE (2026-08-25) — the site is light, site-wide.
+# ---------------------------------------------------------------------------
+# Static, colour-based companion to the contrast gate. The light conversion
+# shipped three times looking finished while a whole FAMILY of surface stayed
+# dark — tokens, then gradient canvases, then dialog/panel neutrals, then the
+# pages built inside Pages Functions that no file sweep touches. This checks
+# by COLOUR rather than by name, so a dark ground fails wherever it is written
+# and in whatever syntax. See SYSTEM_MAP §8.0.0.
+if [ -f scripts/audit_dark_surfaces.py ]; then
+    echo ""
+    echo "🔍 Dark-surface gate — no dark grounds outside brand violets and scrims..."
+    if python3 scripts/audit_dark_surfaces.py > /tmp/_dark_surfaces.log 2>&1; then
+        tail -1 /tmp/_dark_surfaces.log
+        echo "   ✅ dark-surface gate passed"
+    else
+        cat /tmp/_dark_surfaces.log
+        echo ""
+        echo "   Full log: /tmp/_dark_surfaces.log"
+        exit 1
+    fi
+fi
+
 if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
     echo ""
     echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."
-    if python3 scripts/audit_contrast_pixels.py https://mountzara.com > /tmp/_contrast_audit.log 2>&1; then
+    if python3 scripts/audit_contrast_pixels.py https://mountzara.com --open-modals > /tmp/_contrast_audit.log 2>&1; then
         tail -1 /tmp/_contrast_audit.log
         echo "   ✅ contrast gate passed"
     else

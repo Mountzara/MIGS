@@ -11,13 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981;
             --red: #ef4444;
@@ -42,7 +42,7 @@
         .eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 14px;
         }
         h1 {
@@ -56,7 +56,7 @@
         .lede { font-size: 15.5px; line-height: 1.65; color: var(--fg-soft); max-width: 64ch; margin: 0 0 28px 0; }
 
         .drop {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1.5px dashed rgba(var(--glow-purple), 0.35);
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
@@ -68,7 +68,7 @@
             margin-bottom: 24px;
         }
         .drop:hover, .drop.dragover {
-            border-color: rgba(var(--glow-purple), 0.65);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.08);
         }
         .drop h2 { font-size: 17px; font-weight: 500; color: var(--fg-strong); margin: 0 0 6px 0; letter-spacing: -0.01em; }
@@ -83,24 +83,24 @@
         .desc-row input {
             flex: 1;
             padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 9px;
             color: var(--fg-strong);
             font: inherit; font-size: 14px;
         }
-        .desc-row input:focus { outline: none; border-color: rgba(var(--glow-purple), 0.65); }
+        .desc-row input:focus { outline: none; border-color: #6d28d9; }
 
         .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
-        .msg.ok    { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
-        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg.ok    { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: #047857; }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: #B91C1C; }
         .msg.busy  { display: block; background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.32); color: rgba(196, 181, 253, 0.95); }
 
-        h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 32px 0 12px 0; }
+        h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin: 32px 0 12px 0; }
         .doc-list { display: flex; flex-direction: column; gap: 10px; }
         .doc-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 12px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -109,13 +109,13 @@
             transition: border-color 0.18s ease, background 0.18s ease;
             animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .doc-card:hover { border-color: rgba(var(--glow-purple), 0.35); background: rgba(var(--glow-purple), 0.05); }
+        .doc-card:hover { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.05); }
         .doc-ico {
             width: 36px; height: 36px;
             border-radius: 9px;
             display: inline-flex; align-items: center; justify-content: center;
             background: rgba(var(--glow-purple), 0.12);
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             flex-shrink: 0;
         }
         .doc-ico svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.6; fill: none; }
@@ -126,16 +126,16 @@
         .doc-actions button, .doc-actions a {
             font: inherit; font-size: 12.5px; font-weight: 600;
             padding: 7px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 8px;
             color: var(--fg-strong);
             cursor: pointer;
             transition: background 0.18s ease, border-color 0.18s ease;
             text-decoration: none;
         }
-        .doc-actions button:hover, .doc-actions a:hover { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); }
-        .doc-actions .danger { color: rgba(252, 165, 165, 0.95); }
+        .doc-actions button:hover, .doc-actions a:hover { background: rgba(var(--glow-purple), 0.12); border-color: #6d28d9; }
+        .doc-actions .danger { color: #B91C1C; }
         .doc-actions .danger:hover { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.40); }
         .empty {
             text-align: center;
@@ -154,14 +154,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -189,7 +189,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -197,7 +197,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -210,7 +210,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Member portal</a>

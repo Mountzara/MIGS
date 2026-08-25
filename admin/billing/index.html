@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -52,16 +52,16 @@
             align-items: center;
         }
         .filter-chip {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 6px 14px;
             color: var(--fg-soft); font-size: 12px;
             cursor: pointer; font: inherit;
             transition: all 0.18s;
         }
-        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
         .filter-chip .badge {
@@ -70,7 +70,7 @@
         }
         .search-input {
             flex: 1; min-width: 220px; max-width: 320px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 9px; padding: 7px 12px;
             font: inherit; font-size: 13px;
             color: var(--fg-strong);
@@ -78,7 +78,7 @@
         }
         .search-input::placeholder { color: var(--fg-dim); }
         .search-input:focus {
-            outline: none; border-color: rgba(var(--glow-purple), 0.55);
+            outline: none; border-color: #6d28d9;
         }
         /* The visit-date window select shares the search-input skin but must
            not flex-grow — it is a fixed control, and its popup list needs a
@@ -104,12 +104,12 @@
         .era-help code { color: var(--accent-soft); font-size: 11.5px; }
         #era-edi {
             width: 100%; min-height: 140px; resize: vertical;
-            background: rgba(0,0,0,0.28); border: 1px solid var(--border);
+            background: #FFFFFF; border: 1px solid var(--border);
             border-radius: 9px; padding: 10px 12px;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             font-size: 12px; line-height: 1.5; color: var(--fg-strong);
         }
-        #era-edi:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+        #era-edi:focus { outline: none; border-color: #6d28d9; }
         .era-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
         .era-post-btn {
             font: inherit; font-size: 12.5px; cursor: pointer;
@@ -121,7 +121,7 @@
         .era-post-btn:hover:not(:disabled) { background: rgba(var(--glow-purple), 0.28); }
         .era-post-btn:disabled { opacity: 0.5; cursor: default; }
         .era-status { font-size: 12px; color: var(--fg-soft); }
-        .era-status.err { color: rgba(252, 165, 165, 0.95); }
+        .era-status.err { color: #B91C1C; }
         .era-summary {
             display: flex; flex-wrap: wrap; gap: 8px 18px;
             font-size: 12.5px; color: var(--fg-mid); margin: 12px 0 8px;
@@ -137,8 +137,8 @@
             display: inline-block; font-size: 10.5px; padding: 2px 9px;
             border-radius: 999px; border: 1px solid var(--border); color: var(--fg-soft);
         }
-        .era-pill.ok { border-color: rgba(16,185,129,0.5); color: rgba(110,231,183,0.95); }
-        .era-pill.miss { border-color: rgba(245,158,11,0.5); color: rgba(252,211,77,0.95); }
+        .era-pill.ok { border-color: rgba(16,185,129,0.5); color: #047857; }
+        .era-pill.miss { border-color: rgba(245,158,11,0.5); color: #92400E; }
 
         /* KPI grid */
         .kpi-grid {
@@ -154,13 +154,13 @@
             transition: transform 0.22s, border-color 0.22s, background 0.22s;
             animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .kpi:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.30); }
+        .kpi:hover { transform: translateY(-2px); border-color: #6d28d9; }
         @keyframes mzRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .kpi .label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 6px; }
         .kpi .value { font-size: 28px; font-weight: 200; color: var(--fg-strong); letter-spacing: -0.02em; line-height: 1; }
         .kpi .sub { font-size: 11.5px; color: var(--fg-soft); margin-top: 4px; }
         .kpi.alert { border-color: rgba(245, 158, 11, 0.45); }
-        .kpi.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .kpi.alert .value { color: #92400E; }
         .kpi.good { border-color: rgba(16, 185, 129, 0.45); }
         .kpi.purple .value { color: var(--accent-soft); }
 
@@ -186,7 +186,7 @@
             grid-template-columns: minmax(0, 1fr) 70px 90px;
             gap: 10px;
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid #E9E5EE;
             cursor: pointer;
             transition: background 0.18s;
             animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -203,13 +203,13 @@
             font-size: 11.5px; color: var(--fg-soft); display: flex; gap: 8px; flex-wrap: wrap;
         }
         .claim-list .meta-line .pill {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 1px 8px; font-size: 10.5px;
         }
-        .claim-list .meta-line .pill.em { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
-        .claim-list .meta-line .pill.error { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.40); }
-        .claim-list .meta-line .pill.warn  { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.40); }
-        .claim-list .meta-line .pill.upcode { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.40); }
+        .claim-list .meta-line .pill.em { color: var(--accent-soft); border-color: #6d28d9; }
+        .claim-list .meta-line .pill.error { color: #B91C1C; border-color: rgba(239, 68, 68, 0.40); }
+        .claim-list .meta-line .pill.warn  { color: #92400E; border-color: rgba(245, 158, 11, 0.40); }
+        .claim-list .meta-line .pill.upcode { color: #047857; border-color: rgba(16, 185, 129, 0.40); }
         .claim-list .col-amount {
             font-size: 13px; font-weight: 500; color: var(--fg-strong);
             text-align: right;
@@ -222,21 +222,21 @@
             display: inline-block; font-size: 10px; font-weight: 700;
             letter-spacing: 0.08em; text-transform: uppercase;
             padding: 3px 9px; border-radius: 999px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             color: var(--fg-soft);
         }
-        .status-chip.pending_review { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
-        .status-chip.edited         { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
-        .status-chip.rejected       { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.45); }
-        .status-chip.ready_to_submit{ color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
+        .status-chip.pending_review { color: var(--accent-soft); border-color: #6d28d9; }
+        .status-chip.edited         { color: #047857; border-color: rgba(16, 185, 129, 0.45); }
+        .status-chip.rejected       { color: #B91C1C; border-color: rgba(239, 68, 68, 0.45); }
+        .status-chip.ready_to_submit{ color: var(--accent-soft); border-color: #6d28d9; }
         .status-chip.submitted, .status-chip.accepted_by_clearinghouse {
-            color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45);
+            color: #92400E; border-color: rgba(245, 158, 11, 0.45);
         }
         .status-chip.paid, .status-chip.partially_paid {
-            color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.55);
+            color: #047857; border-color: rgba(16, 185, 129, 0.55);
         }
         .status-chip.denied, .status-chip.appealed, .status-chip.rebilled {
-            color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.55);
+            color: #B91C1C; border-color: rgba(239, 68, 68, 0.55);
         }
         .status-chip.written_off { color: var(--fg-dim); }
 
@@ -267,7 +267,7 @@
             gap: 10px;
         }
         .detail-panel .stat {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 10px; padding: 10px 12px;
         }
         .detail-panel .stat .lbl {
@@ -294,7 +294,7 @@
             width: 100%; border-collapse: collapse; font-size: 12.5px;
         }
         .lines-table th, .lines-table td {
-            padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 10px; border-bottom: 1px solid #E9E5EE;
             text-align: left; vertical-align: top;
         }
         .lines-table th {
@@ -316,11 +316,11 @@
         .flag {
             border-radius: 10px; padding: 12px 14px;
             border: 1px solid var(--border);
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.72);
         }
         .flag.error   { border-color: rgba(239, 68, 68, 0.45);  background: rgba(239, 68, 68, 0.05); }
         .flag.warning { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.05); }
-        .flag.info    { border-color: rgba(var(--glow-purple), 0.35); }
+        .flag.info    { border-color: #6d28d9; }
         .flag.resolved { opacity: 0.55; }
         .flag-head {
             display: flex; justify-content: space-between; align-items: baseline;
@@ -330,8 +330,8 @@
         .flag-sev {
             font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
         }
-        .flag.error .flag-sev   { color: rgba(252, 165, 165, 0.95); }
-        .flag.warning .flag-sev { color: rgba(252, 211, 77, 0.95); }
+        .flag.error .flag-sev   { color: #B91C1C; }
+        .flag.warning .flag-sev { color: #92400E; }
         .flag.info .flag-sev    { color: var(--accent-soft); }
         .flag-body { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
         .flag-fix { font-size: 12px; color: var(--fg-soft); margin-top: 6px; }
@@ -348,10 +348,10 @@
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
         }
-        .upcode-codes { font-size: 14px; font-weight: 500; color: rgba(110, 231, 183, 0.95); }
+        .upcode-codes { font-size: 14px; font-weight: 500; color: #047857; }
         .upcode-codes .arrow { color: var(--fg-dim); margin: 0 6px; }
         .upcode-stats { font-size: 11.5px; color: var(--fg-soft); }
-        .upcode-stats strong { color: rgba(110, 231, 183, 0.95); font-weight: 600; }
+        .upcode-stats strong { color: #047857; font-weight: 600; }
         .upcode-required { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
         .upcode-rationale { font-size: 11.5px; color: var(--fg-soft); margin-top: 6px; font-style: italic; }
 
@@ -364,16 +364,16 @@
         }
         .docsugg.high   { border-color: rgba(245, 158, 11, 0.55); }
         .docsugg.medium { border-color: rgba(245, 158, 11, 0.30); background: rgba(245, 158, 11, 0.03); }
-        .docsugg.low    { border-color: rgba(255, 255, 255, 0.10); background: rgba(255, 255, 255, 0.02); }
+        .docsugg.low    { border-color: #E9E5EE; background: rgba(255,255,255,0.72); }
         .docsugg-head {
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 10px; margin-bottom: 6px;
         }
-        .docsugg-section { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(252, 211, 77, 0.95); }
+        .docsugg-section { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #92400E; }
         .docsugg-priority { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); }
         .docsugg-issue { font-size: 13px; color: var(--fg-strong); margin-bottom: 4px; }
         .docsugg-suggestion { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
-        .docsugg-revimpact { font-size: 11px; color: rgba(110, 231, 183, 0.85); margin-top: 6px; }
+        .docsugg-revimpact { font-size: 11px; color: #047857; margin-top: 6px; }
 
         .empty-state {
             text-align: center; padding: 60px 20px; color: var(--fg-soft);
@@ -385,26 +385,26 @@
             display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
             margin-top: 12px;
             padding-top: 14px;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid #E9E5EE;
         }
         .btn-action {
             font: inherit; font-size: 12.5px; font-weight: 500;
             padding: 7px 14px; border-radius: 999px;
             cursor: pointer; transition: all 0.2s;
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             color: var(--fg-mid);
             white-space: nowrap;
         }
         .btn-action:hover:not(:disabled) {
             color: var(--fg-strong);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             transform: translateY(-1px);
         }
         .btn-action:disabled { opacity: 0.45; cursor: not-allowed; }
         .btn-action.primary {
             background: rgba(var(--glow-purple), 0.14);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
             font-weight: 500;
         }
@@ -413,7 +413,7 @@
             color: var(--fg-strong);
         }
         .btn-action.danger {
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
             border-color: rgba(239, 68, 68, 0.40);
         }
         .btn-action.danger:hover:not(:disabled) {
@@ -422,7 +422,7 @@
             border-color: rgba(239, 68, 68, 0.65);
         }
         .btn-action.success {
-            color: rgba(110, 231, 183, 0.95);
+            color: #047857;
             border-color: rgba(16, 185, 129, 0.45);
         }
         .btn-action.success:hover:not(:disabled) {
@@ -432,7 +432,7 @@
         .btn-action.mini { font-size: 11px; padding: 4px 10px; }
         .action-toast {
             position: fixed; right: 22px; bottom: 22px;
-            background: rgba(7, 7, 10, 0.92);
+            background: rgba(255,255,255,0.96);
             border: 1px solid rgba(var(--glow-purple), 0.45);
             border-radius: 10px; padding: 10px 16px;
             color: var(--fg-strong); font-size: 13px;
@@ -448,17 +448,17 @@
         .pagination {
             display: flex; gap: 8px; align-items: center; justify-content: center;
             padding: 14px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid #E9E5EE;
             font-size: 12.5px; color: var(--fg-soft);
         }
         .pagination button {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 8px; padding: 5px 12px;
             color: var(--fg-soft); cursor: pointer; font: inherit; font-size: 12.5px;
             transition: all 0.18s;
         }
         .pagination button:hover:not(:disabled) {
-            color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--fg-strong); border-color: #6d28d9;
         }
         .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -474,9 +474,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -507,7 +507,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -515,7 +515,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -545,7 +545,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <a href="/admin/billing/clearinghouse/"
                style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
                       background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.50);
-                      color: #6ee7b7; text-decoration: none;">Clearinghouse / Go-Live →</a>
+                      color: #047857; text-decoration: none;">Clearinghouse / Go-Live →</a>
             <a href="/admin/billing/coach/"
                style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
                       background: rgba(var(--glow-purple), 0.18); border: 1px solid rgba(var(--glow-purple), 0.55);
@@ -975,7 +975,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${u.rationale ? `<div class="upcode-rationale">${escapeHtml(u.rationale)}</div>` : ''}
                             <div style="margin-top:8px;">
                                 ${u.accepted
-                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
+                                    ? `<span style="font-size:11px;color:#047857;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
                                        <button class="btn-action mini" style="margin-left:10px;" data-action="upcode-revert" data-id="${escapeHtml(u.id)}">Revert</button>`
                                     : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Accept upcode + apply to line</button>`
                                 }
@@ -999,7 +999,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${d.revenue_impact ? `<div class="docsugg-revimpact">Revenue impact: ${escapeHtml(d.revenue_impact)}</div>` : ''}
                             <div style="margin-top:8px;">
                                 ${d.applied
-                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Applied</span>
+                                    ? `<span style="font-size:11px;color:#047857;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Applied</span>
                                        <button class="btn-action mini" style="margin-left:10px;" data-action="docsugg-unapply" data-id="${escapeHtml(d.id)}">Mark not applied</button>`
                                     : `<button class="btn-action mini" data-action="docsugg-apply" data-id="${escapeHtml(d.id)}">Mark applied</button>`
                                 }
@@ -1015,7 +1015,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                        <button class="btn-action primary" data-action="claim-approve">Approve for submission</button>
                        <button class="btn-action danger" data-action="claim-reject">Reject claim</button>
                        <a class="btn-action" href="/admin/cases/${encodeURIComponent(c.patient_id)}/snapshot/" target="_blank" style="text-decoration:none;">Open patient snapshot ↗</a>
-                       ${tally.errors > 0 ? `<span style="font-size:11.5px;color:rgba(252,165,165,0.95);margin-left:auto;">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'} — resolve first or force-approve.</span>` : ''}
+                       ${tally.errors > 0 ? `<span style="font-size:11.5px;color:#B91C1C;margin-left:auto;">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'} — resolve first or force-approve.</span>` : ''}
                    </div>`
                 : `<div class="action-bar">
                        <span style="font-size:11.5px;color:var(--fg-soft);">Claim is <strong style="color:var(--fg-mid)">${escapeHtml(c.status.replace(/_/g, ' '))}</strong>${c.status_reason ? ` — ${escapeHtml(c.status_reason)}` : ''}. Approve/reject actions are unavailable in this state.</span>
@@ -1058,7 +1058,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                                 </div>
                                 <div class="mzlegal-caption">
                                     AI estimate of how well the documentation defends each billed code in the event of an audit.
-                                    ${tally.errors > 0 ? `<strong style="color:rgba(252,165,165,0.95)">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'}</strong> pulling this down. ` : ''}
+                                    ${tally.errors > 0 ? `<strong style="color:#B91C1C">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'}</strong> pulling this down. ` : ''}
                                     ${tally.warnings > 0 ? `${tally.warnings} warning${tally.warnings === 1 ? '' : 's'} to review.` : ''}
                                 </div>
                             </div>

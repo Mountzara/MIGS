@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981;
             --red: #ef4444;
@@ -43,7 +43,7 @@
         .eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 12px;
         }
         h1 {
@@ -72,7 +72,7 @@
         .panel h2 {
             font-size: 12px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 14px 0;
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -94,19 +94,19 @@
         }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         button.ghost {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border-color: var(--border);
             color: var(--fg-soft);
         }
         button.ghost:hover {
             color: var(--fg-strong);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
         }
         input, textarea {
             font: inherit;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 9px;
             color: var(--fg-strong);
@@ -114,7 +114,7 @@
             transition: border-color 0.22s, background 0.22s;
         }
         input:focus, textarea:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
             outline: none;
         }
@@ -132,7 +132,7 @@
 
         .thread-list { display: flex; flex-direction: column; gap: 10px; }
         .thread-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 14px 16px;
@@ -141,7 +141,7 @@
         }
         .thread-item:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.04);
         }
         .thread-item.unread {
@@ -228,14 +228,14 @@
             margin-bottom: 18px;
         }
         .msg {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 12px 14px;
         }
         .msg.from-clinician {
             background: rgba(var(--glow-purple), 0.06);
-            border-color: rgba(var(--glow-purple), 0.30);
+            border-color: #6d28d9;
         }
         .msg-meta {
             font-size: 11px;
@@ -254,7 +254,7 @@
             word-wrap: break-word;
         }
         .compose {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px dashed rgba(var(--glow-purple), 0.40);
             border-radius: 12px;
             padding: 14px;
@@ -287,7 +287,7 @@
             pointer-events: none;
             z-index: 1000;
         }
-        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: #B91C1C; }
         .toast.show { opacity: 1; transform: translateY(0); }
 
         @media (prefers-reduced-motion: reduce) {
@@ -304,14 +304,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -339,7 +339,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -347,7 +347,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -364,14 +364,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .attach-pick {
     font: inherit; font-size: 12.5px; cursor: pointer;
     padding: 6px 14px; border-radius: 999px;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
     color: rgba(255,255,255,0.82);
 }
 .attach-pick:hover { border-color: rgba(196,181,253,0.6); }
 .attach-name { font-size: 12.5px; color: rgba(255,255,255,0.72); word-break: break-all; }
 .attach-clear {
     font: inherit; font-size: 12px; cursor: pointer; border: none;
-    background: none; color: rgba(252,165,165,0.9); padding: 2px 6px;
+    background: none; color: #B91C1C; padding: 2px 6px;
 }
 .attach-hint { font-size: 11.5px; color: rgba(255,255,255,0.5); flex-basis: 100%; }
 .msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -380,13 +380,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     font-size: 12px; text-decoration: none;
     padding: 5px 12px; border-radius: 999px;
     background: rgba(139,92,246,0.14); border: 1px solid rgba(139,92,246,0.45);
-    color: #c4b5fd; max-width: 100%; word-break: break-all;
+    color: #6d28d9; max-width: 100%; word-break: break-all;
 }
 .msg-attachments a:hover { background: rgba(139,92,246,0.24); }
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Member portal</a>
@@ -454,11 +454,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <!-- Phase 18 R8 — response-window SLA urgency selection -->
             <div class="field-row" id="urgency-row">
                 <label>How urgent is your question?</label>
-                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);cursor:pointer;font-weight:400;">
+                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;cursor:pointer;font-weight:400;">
                     <input type="radio" name="new-urgency" value="urgent" style="margin-top:3px;accent-color:#6d28d9;">
                     <span style="font-size:13.5px;line-height:1.5;"><strong>Urgent (same business day)</strong> — Dr. Mabini will respond by close of the next business day. Use this for new symptoms or concerns about your care plan.</span>
                 </label>
-                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);cursor:pointer;font-weight:400;">
+                <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;cursor:pointer;font-weight:400;">
                     <input type="radio" name="new-urgency" value="non_urgent" style="margin-top:3px;accent-color:#6d28d9;">
                     <span style="font-size:13.5px;line-height:1.5;"><strong>Not urgent (within 48 business hours)</strong> — Use this for prescription refills, scheduling, billing, or general questions.</span>
                 </label>

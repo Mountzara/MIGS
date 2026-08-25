@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
+    <meta name="theme-color" content="#FBFAF8">
     <title>Curriculum Design Consulting · Mount Zara</title>
     <meta name="description" content="Curriculum design and instructional design consulting for fellowships, residencies, and clinical training programs. Adult Learning Theory (Knowles, Kolb, Gagné, Dick & Carey) applied to ACGME-aligned, competency-based, equity-anchored medical education. By the Inaugural CBG/MIGS Fellow.">
     <meta name="robots" content="index, follow">
@@ -36,17 +36,17 @@
    ============================================================ */
 
 :root {
-    --bg-base: #120f1b;
-    --bg-card: rgba(255, 255, 255, 0.04);
-    --border: rgba(255, 255, 255, 0.10);
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
-    --fg-dim: #ffffff;
+    --bg-base: #FBFAF8;
+    --bg-card: rgba(255,255,255,0.72);
+    --border: #E9E5EE;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
+    --fg-dim: #8B8698;
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
-    --amber: #f59e0b; --amber-soft: rgba(252, 211, 77, 0.92);
+    --amber: #f59e0b; --amber-soft: #92400E;
 }
 
 * { box-sizing: border-box; }
@@ -68,17 +68,17 @@ a:hover { color: var(--fg-strong); }
 /* Site nav — matches /education/ */
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10, 7, 20, 0.96);
+    background: rgba(255,255,255,0.96);
     backdrop-filter: blur(22px) saturate(165%);
     -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #E9E5EE;
     padding: 10px clamp(16px, 4vw, 32px);
 }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
 .site-nav .brand {
     font-size: 13px; font-weight: 700;
     letter-spacing: 0.20em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    color: #6d28d9;
 }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
 .site-nav .right-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
@@ -91,7 +91,7 @@ a:hover { color: var(--fg-strong); }
     padding: 5px 14px; border-radius: 999px;
     font-weight: 500; transition: all 0.2s;
 }
-.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+.site-nav .cta:hover { background: #6d28d9; color: #fff !important; transform: translateY(-1px); }
 
 .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 96px; }
 @keyframes mzRise {
@@ -104,7 +104,7 @@ a:hover { color: var(--fg-strong); }
 .eyebrow {
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.24em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    color: #6d28d9;
     margin-bottom: 14px;
 }
 .hero h1 {
@@ -168,8 +168,8 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     .framework-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .framework-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%);
     -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -178,12 +178,12 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .framework-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.45);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.05);
 }
 .framework-card .label {
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px;
+    color: #6d28d9; margin-bottom: 10px;
 }
 .framework-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 17px; letter-spacing: -0.005em; }
 .framework-card p { margin: 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
@@ -197,8 +197,8 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .case-card {
     display: block;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 16px;
     backdrop-filter: blur(28px) saturate(165%);
     -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -208,12 +208,12 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .case-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.55);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.06);
 }
 .case-card .program-type {
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95); margin-bottom: 10px;
+    color: #6d28d9; margin-bottom: 10px;
 }
 .case-card h3 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 19px; letter-spacing: -0.008em; line-height: 1.2; }
 .case-card .institution { color: var(--fg-soft); font-size: 13.5px; margin: 0 0 14px 0; }
@@ -224,7 +224,7 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .case-card:hover .read-more { color: var(--fg-strong); }
 .case-card.coming-soon { opacity: 0.62; cursor: default; }
-.case-card.coming-soon:hover { transform: none; background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.10); }
+.case-card.coming-soon:hover { transform: none; background: rgba(255,255,255,0.72); border-color: #E9E5EE; }
 .case-card .badge {
     display: inline-block;
     background: rgba(245, 158, 11, 0.16);
@@ -243,8 +243,8 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     margin-top: 8px;
 }
 .service-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%);
     -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -253,7 +253,7 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .service-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.45);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.05);
 }
 .service-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 16px; }
@@ -290,8 +290,8 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 .cycle-stage {
     text-align: center;
     padding: 14px 10px;
-    background: rgba(7, 7, 10, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #E9E5EE;
     border-radius: 12px;
     position: relative;
 }
@@ -314,8 +314,8 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
     margin-top: 8px;
 }
 .engage-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #E9E5EE;
     border-radius: 14px;
     backdrop-filter: blur(28px) saturate(165%);
     -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -324,7 +324,7 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 }
 .engage-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.45);
+    border-color: #6d28d9;
 }
 .engage-card h4 { margin: 0 0 6px 0; color: var(--fg-strong); font-weight: 500; font-size: 17px; }
 .engage-card p { margin: 0 0 8px 0; font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
@@ -355,11 +355,11 @@ section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; ma
 .cta-block a.btn:hover {
     background: rgba(var(--glow-purple), 0.34);
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.85);
+    border-color: #6d28d9;
 }
 
 /* ===== Footer note ===== */
-.foot { margin-top: 64px; padding-top: 28px; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 12.5px; color: var(--fg-dim); }
+.foot { margin-top: 64px; padding-top: 28px; border-top: 1px solid #E9E5EE; font-size: 12.5px; color: var(--fg-dim); }
 .foot a { color: var(--fg-soft); }
 .foot a:hover { color: var(--fg-strong); }
 
@@ -398,14 +398,14 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         .hero .lede, section.block .sub { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -421,7 +421,7 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
         rgba(var(--glow-purple), 0.06);
     backdrop-filter: blur(28px) saturate(1.8);
     -webkit-backdrop-filter: blur(28px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
     max-width: 940px;
 }
 .synthesis p { max-width: none; }
@@ -430,7 +430,7 @@ a:focus-visible, .case-card:focus-visible, .framework-card:focus-visible,
         linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%);
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid #E9E5EE;
 }
 
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
@@ -459,7 +459,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -467,7 +467,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -481,19 +481,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
    (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
-.footer-brand a, .site-footer a { color: #c4b5fd !important; }
+.footer-brand a, .site-footer a { color: #6d28d9 !important; }
 
 /* six design-cycle stages rendered 5 + 1; 3 + 3 reads as a deliberate row */
 @media (min-width: 900px) {
     .cycle-stages { grid-template-columns: repeat(3, 1fr) !important; }
 }
 
-/* 2026-08-08 — small accent labels measured 4.1-4.5:1 on glass; #c4b5fd clears 4.5. */
-.label, .eyebrow, .principle-card .label, .component-card .label { color: #c4b5fd !important; }
+/* 2026-08-08 — small accent labels measured 4.1-4.5:1 on glass; #6d28d9 clears 4.5. */
+.label, .eyebrow, .principle-card .label, .component-card .label { color: #6d28d9 !important; }
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <a href="#main" class="skip-link">Skip to main content</a>
 
     <nav class="site-nav" aria-label="Primary">

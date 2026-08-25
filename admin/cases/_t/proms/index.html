@@ -9,13 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
             --accent-soft: rgba(167, 139, 250, 0.95);
             --glow-purple: 167, 139, 250;
@@ -44,7 +44,7 @@
         }
         .stat-pill .label { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); }
         .stat-pill .value { font-size: 22px; font-weight: 200; color: var(--fg-strong); margin-top: 4px; }
-        .stat-pill[data-tone="urgent"] .value { color: rgba(252, 165, 165, 0.95); }
+        .stat-pill[data-tone="urgent"] .value { color: #B91C1C; }
         .stat-pill[data-tone="warning"] .value { color: rgba(253, 224, 71, 0.95); }
         .stat-pill[data-tone="purple"] .value { color: var(--accent-soft); }
         .section { margin-bottom: 36px; }
@@ -64,10 +64,10 @@
         .row .body strong { color: var(--fg-mid); }
         .badge { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
         .b-purple { background: rgba(167, 139, 250, 0.10); border-color: rgba(167, 139, 250, 0.30); color: var(--accent-soft); }
-        .b-amber  { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.34); color: rgba(252, 211, 77, 0.95); }
-        .b-red    { background: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.36); color: rgba(252, 165, 165, 0.95); }
-        .b-green  { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.30); color: rgba(110, 231, 183, 0.95); }
-        .b-gray   { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); color: var(--fg-soft); }
+        .b-amber  { background: rgba(245, 158, 11, 0.10); border-color: rgba(245, 158, 11, 0.34); color: #92400E; }
+        .b-red    { background: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.36); color: #B91C1C; }
+        .b-green  { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.30); color: #047857; }
+        .b-gray   { background: rgba(255,255,255,0.72); border-color: #E9E5EE; color: var(--fg-soft); }
         .empty { padding: 22px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; color: var(--fg-dim); font-size: 14px; text-align: center; }
         /* Score trend mini-chart */
         .trend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
@@ -92,9 +92,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -125,7 +125,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -133,7 +133,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

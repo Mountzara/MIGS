@@ -126,7 +126,7 @@ const COMING_SOON_HTML = `<!doctype html>
            --w-prose for reading text. Every section uses one or the other.
            ============================================================= */
         :root {
-            --bg-base: #120b22;
+            --bg-base: #FBFAF8;
             --fg: #ffffff;
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
@@ -159,7 +159,7 @@ const COMING_SOON_HTML = `<!doctype html>
             -moz-osx-font-smoothing: grayscale;
         }
         a { color: var(--accent-soft); text-decoration: none; transition: color .2s; }
-        a:hover { color: #fff; }
+        a:hover { color:#1A1726; }
         img, table { max-width: 100%; }
 
         .page { max-width: var(--w-page); margin: 0 auto; padding: 0 clamp(18px, 4vw, 32px); }
@@ -175,7 +175,7 @@ const COMING_SOON_HTML = `<!doctype html>
         }
         h2 {
             font-weight: 300; font-size: clamp(24px, 3.2vw, 34px);
-            letter-spacing: -.02em; line-height: 1.2; color: #fff;
+            letter-spacing: -.02em; line-height: 1.2; color:#1A1726;
             margin: 0 0 12px;
         }
         .sub { font-size: 15.5px; opacity: .74; margin: 0 0 clamp(24px, 3vw, 34px); max-width: var(--w-prose); }
@@ -196,7 +196,7 @@ const COMING_SOON_HTML = `<!doctype html>
         }
         h1 {
             font-weight: 200; font-size: clamp(30px, 5.4vw, 56px);
-            letter-spacing: -.026em; line-height: 1.06; color: #fff;
+            letter-spacing: -.026em; line-height: 1.06; color:#1A1726;
             margin: 0 0 20px; max-width: 20ch;
         }
         h1 em {
@@ -229,9 +229,9 @@ const COMING_SOON_HTML = `<!doctype html>
             font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
             color: rgba(var(--glow), .95); margin-bottom: 9px; min-height: 13px;
         }
-        .tier h3 { margin: 0 0 4px; font-size: 19px; font-weight: 600; color: #fff; }
+        .tier h3 { margin: 0 0 4px; font-size: 19px; font-weight: 600; color:#1A1726; }
         .tier .tag { font-size: 13px; opacity: .66; margin: 0 0 16px; line-height: 1.45; min-height: 38px; }
-        .tier .price { font-size: 30px; font-weight: 600; color: #fff; line-height: 1; }
+        .tier .price { font-size: 30px; font-weight: 600; color:#1A1726; line-height: 1; }
         .tier .price small { font-size: 13px; opacity: .6; font-weight: 400; letter-spacing: 0; }
         .tier .yr { font-size: 12.5px; opacity: .5; margin: 6px 0 18px; min-height: 17px; }
         .tier ul { list-style: none; padding: 0; margin: 0 0 16px; flex: 1; }
@@ -273,10 +273,10 @@ const COMING_SOON_HTML = `<!doctype html>
             background: var(--card); border: 1px solid var(--line);
             border-radius: 14px; padding: 19px 19px 17px;
         }
-        .card h4 { margin: 0 0 7px; font-size: 15.5px; font-weight: 600; color: #fff; line-height: 1.3; }
+        .card h4 { margin: 0 0 7px; font-size: 15.5px; font-weight: 600; color:#1A1726; line-height: 1.3; }
         .card p { margin: 0 0 8px; font-size: 13.6px; line-height: 1.55; opacity: .76; }
         .card p:last-child { margin-bottom: 0; }
-        .card .why { color: #c4b5fd; opacity: .95; font-size: 13px; }
+        .card .why { color: #6d28d9; opacity: .95; font-size: 13px; }
         .card .lab {
             font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
             color: rgba(var(--glow), .9); margin-bottom: 8px;
@@ -287,7 +287,7 @@ const COMING_SOON_HTML = `<!doctype html>
             border-left: 2px solid rgba(var(--glow), .55);
             padding: 2px 0 2px 18px; margin-bottom: 22px; max-width: var(--w-prose);
         }
-        .ev .claim { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 6px; line-height: 1.42; }
+        .ev .claim { font-size: 16px; font-weight: 600; color:#1A1726; margin: 0 0 6px; line-height: 1.42; }
         .ev .det { font-size: 14px; opacity: .74; margin: 0 0 8px; line-height: 1.6; }
         .ev .src { font-size: 12.5px; opacity: .55; margin: 0; }
         .ev .cav { font-size: 12.5px; opacity: .45; font-style: italic; margin: 6px 0 0; }
@@ -314,20 +314,20 @@ const COMING_SOON_HTML = `<!doctype html>
         }
         .signup input, .signup select {
             width: 100%; padding: 12px 13px; font-size: 16px; font-family: inherit;
-            color: #fff; background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.16); border-radius: 10px;
+            color:#1A1726; background:rgba(255,255,255,0.72);
+            border:1px solid #E9E5EE; border-radius: 10px;
         }
         .signup input:focus, .signup select:focus { outline: none; border-color: rgba(var(--glow), .65); }
-        .signup input::placeholder { color: rgba(255,255,255,.4); }
-        .signup select option { background: #1d1830; color: #fff; }
+        .signup input::placeholder { color:#6E6A7C; }
+        .signup select option { background: #F4F1EC; color:#1A1726; }
         .btn {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; border: 0;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed); color:#1A1726; border: 0;
             border-radius: 10px; padding: 13px 28px; font: 600 15px inherit; cursor: pointer;
         }
         .btn:disabled { opacity: .55; cursor: wait; }
         .msg { display: none; margin-top: 15px; font-size: 14px; line-height: 1.6; padding: 12px 14px; border-radius: 10px; white-space: pre-line; }
         .msg.ok { display: block; background: rgba(16,185,129,.15); color: #6ee7b7; }
-        .msg.err { display: block; background: rgba(167,139,250,.15); color: #ddd0ff; }
+        .msg.err { display: block; background: rgba(167,139,250,.10); color: #ddd0ff; }
         .fine { font-size: 12.5px; opacity: .58; margin: 15px 0 0; line-height: 1.55; }
 
         footer { padding: 30px 0 60px; font-size: 13px; opacity: .6; border-top: 1px solid var(--line); }
@@ -339,7 +339,8 @@ const COMING_SOON_HTML = `<!doctype html>
         }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
         .skeleton { opacity: .4; font-size: 14px; }
-    </style>
+      button,button:hover,.btn,.btn:hover{color:#fff}
+</style>
 </head>
 <body>
 <div class="page">

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
+    <meta name="theme-color" content="#FBFAF8">
     <meta name="description" content="Trend Briefs — public-facing evaluations of trending gynecologic claims circulating on social media.">
     <title>Trend Briefs — Mount Zara</title>
     <link rel="icon" type="image/png" href="/assets/images/mount-zara-monogram.png">
@@ -26,8 +26,8 @@
     </style>
     <style>
         :root {
-            --bg: #120f1b;
-            --white: #ffffff;
+            --bg: #FBFAF8;
+            --white: #1A1726;
             --gray-1: rgba(255, 255, 255, 0.72);
             --gray-2: rgba(255, 255, 255, 0.5);
             --gray-3: rgba(255, 255, 255, 0.3);
@@ -41,7 +41,7 @@
            html/body computed background is transparent and the browser's white
            canvas flashes through mid-scroll (overscroll, rubber-banding).
            The body's gradients paint above this. */
-        html { scroll-behavior: smooth; background-color: #120f1b; }
+        html { scroll-behavior: smooth; background-color: #FBFAF8; }
         body {
             font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
             /* 2026-07-22 — pure-black band -> deep plum near-black with soft purple
@@ -52,7 +52,7 @@
             background:
                 radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
                 radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.14), transparent 56%),
-                linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+                linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             color: var(--text-on-dark);
             min-height: 100vh;
             line-height: 1.5;
@@ -73,24 +73,27 @@
                and links keep brand purple (they are not grey). */
         dialog.mz-jc-modal, dialog.deepdive-modal {
             background:
-                linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%),
-                rgba(16, 11, 30, 0.68) !important;
+                linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.50) 100%),
+                rgba(251, 250, 248, 0.94) !important;
             -webkit-backdrop-filter: blur(28px) saturate(1.85) !important;
             backdrop-filter: blur(28px) saturate(1.85) !important;  /* 44px was heavy while scrolling the 12-section modal; 28px is visually equal frost at a fraction of the compositing cost */
-            border: 1px solid rgba(255, 255, 255, 0.14) !important;
-            color: #ffffff !important;
+            border: 1px solid #E9E5EE !important;
+            color: #1A1726 !important;
         }
-                .mz-ref-pop, .mz-ref-pop * { color: #ffffff !important; }
-        .mz-verdict-label { color: #ffffff !important; }
-        .mz-ref-pop .mz-ref-pop-title, .mz-ref-pop .mz-ref-title { color: #ffffff !important; }
+                .mz-ref-pop, .mz-ref-pop * { color: #1A1726 !important; }
+        .mz-verdict-label { color: #1A1726 !important; }
+        .mz-ref-pop .mz-ref-pop-title, .mz-ref-pop .mz-ref-title { color: #1A1726 !important; }
         dialog.mz-jc-modal::backdrop, dialog.deepdive-modal::backdrop {
-            background: rgba(6, 4, 14, 0.55);
+            /* a scrim stays a scrim — this is what separates the modal from
+               the page behind it, and it is the one surface that SHOULD be
+               dark on a light theme */
+            background: rgba(26, 23, 38, 0.45);
         }
         dialog.mz-jc-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
         label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *),
         dialog.deepdive-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
         label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *) {
-            color: #ffffff !important;
+            color: #1A1726 !important;
         }
 
 
@@ -119,11 +122,13 @@
             position: absolute; top: 50%; left: 50%;
             width: 100vw; height: 56.25vw;
             object-fit: contain; pointer-events: none;
-            filter: saturate(1.5) brightness(1.08) contrast(1.12);
+            /* 2026-08-25 — none: the asset ships pre-inked (violet strokes on a
+               white field), so there is no runtime colour transform left. */
+            filter: none;
             /* screen-blend: black pixels of the drawing become transparent so
                the mauve line-art floats directly on the plum gradient
                (mirrors index.html .hero-video, 2026-07-22). */
-            mix-blend-mode: screen;
+            mix-blend-mode: multiply;
             transform: translate(-48%, -50%) rotate(-22deg) scale(2.09);
         }
         a { color: inherit; text-decoration: none; }
@@ -135,10 +140,10 @@
             top: 0;
             z-index: 100;
             padding: 18px clamp(20px, 4vw, 48px);
-            background: rgba(10, 10, 12, 0.72);
+            background: rgba(255,255,255,0.96);
             backdrop-filter: blur(18px) saturate(160%);
             -webkit-backdrop-filter: blur(18px) saturate(160%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid #E9E5EE;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -152,7 +157,7 @@
             letter-spacing: 0.08em;
             color: var(--white);
         }
-        .nav-brand img { height: 32px; filter: brightness(0) invert(1); }
+        .nav-brand img { height: 32px; filter: brightness(0) saturate(100%) opacity(0.86); }
         .nav-links {
             display: flex;
             gap: clamp(14px, 2.2vw, 28px);
@@ -162,7 +167,7 @@
             color: #ffffff;
             transition: color 0.2s ease;
         }
-        .nav-links a:hover, .nav-links a.active { color: var(--white); }
+        .nav-links a:hover, .nav-links a.active { color: #6d28d9; }
 
         /* Hero */
         .hero {
@@ -185,7 +190,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 20px;
             position: relative;
         }
@@ -199,7 +204,7 @@
             position: relative;
         }
         .title-accent {
-            background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-purple), 0.95) 100%);
+            background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -312,12 +317,12 @@
             background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.02) 55%, rgba(255,255,255,0.05) 100%);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.13);
+            border: 1px solid #E9E5EE;
             border-radius: 22px;
             box-shadow:
                 0 1px 0 rgba(255,255,255,0.12) inset,
                 0 -1px 0 rgba(255,255,255,0.04) inset,
-                0 18px 44px -16px rgba(0,0,0,0.55),
+                0 18px 44px -16px rgba(26,23,38,0.14),
                 0 6px 16px -6px rgba(0,0,0,0.35);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s ease, background 0.3s ease;
             opacity: 0;
@@ -331,7 +336,7 @@
         }
         .post-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(var(--glow-purple), 0.42);
+            border-color: #6d28d9;
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10) 0%, rgba(var(--glow-purple), 0.02) 100%);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.10),
@@ -350,7 +355,7 @@
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             padding: 5px 11px;
             border-radius: 999px;
             background: rgba(var(--glow-purple), 0.10);
@@ -393,8 +398,8 @@
             font-weight: 500;
             color: #ffffff;
             padding: 4px 10px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
         }
         .post-cta {
@@ -403,7 +408,7 @@
             gap: 8px;
             font-size: 13px;
             font-weight: 600;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-top: auto;
             transition: gap 0.2s ease, color 0.2s ease;
         }
@@ -444,12 +449,12 @@
             margin-bottom: 32px;
             padding: 10px 16px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease;
         }
         .post-detail-back:hover {
-            background: rgba(var(--glow-purple), 0.12);
+            background: #6d28d9;
             color: #fff;
             gap: 12px;
         }
@@ -472,7 +477,7 @@
             color: #ffffff;
             margin-bottom: 36px;
             padding-bottom: 32px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid #E9E5EE;
         }
         .post-detail-body {
             font-size: 16px;
@@ -499,13 +504,13 @@
         .post-detail-body ul, .post-detail-body ol { margin: 14px 0; padding-left: 22px; }
         .post-detail-body li { margin: 8px 0; }
         .post-detail-body a {
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             border-bottom: 1px solid rgba(var(--glow-purple), 0.32);
             transition: color 0.2s ease, border-color 0.2s ease;
         }
-        .post-detail-body a:hover { color: #fff; border-bottom-color: rgba(var(--glow-purple), 0.95); }
+        .post-detail-body a:hover { color: #fff; border-bottom-color: #6d28d9; }
         .post-detail-body code {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.72);
             padding: 2px 7px;
             border-radius: 5px;
             font-family: 'SF Mono', Menlo, monospace;
@@ -519,7 +524,7 @@
             font-style: italic;
         }
         /* Prominent publication date at top of every post (per user directive 2026-05-25) */
-        .post-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .post-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; }
         .post-detail-pubdate::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(var(--glow-purple), 0.92); }
         .post-detail-pubdate-label { font-weight: 600; letter-spacing: 0.18em; }
         .post-detail-pubdate-date { font-weight: 500; color: #ffffff; letter-spacing: 0.06em; }
@@ -539,7 +544,7 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 12px;
         }
         .post-detail-manifest dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 18px; }
@@ -555,7 +560,7 @@
             width: 32px;
             height: 32px;
             border: 2px solid rgba(var(--glow-purple), 0.18);
-            border-top-color: rgba(var(--glow-purple), 0.95);
+            border-top-color: #6d28d9;
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
             margin: 0 auto 16px;
@@ -572,10 +577,10 @@
             background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
             backdrop-filter: saturate(180%) blur(28px);
             -webkit-backdrop-filter: saturate(180%) blur(28px);
-            border-top: 1px solid rgba(255,255,255,0.14);
+            border-top: 1px solid #E9E5EE;
             box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
         }
-        footer a { color: rgba(var(--glow-purple), 0.85); }
+        footer a { color: #6d28d9; }
     
         /* magazine-justify-2026-06-29 */
         .post-detail-subtitle, .post-detail-body, .post-detail-body p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -625,7 +630,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -633,7 +638,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -664,12 +669,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
    (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
-.footer-brand a, .site-footer a, footer a { color: #c4b5fd !important; }
+.footer-brand a, .site-footer a, footer a { color: #6d28d9 !important; }
 </style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true">
-        <img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt="">
+        <img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt="">
     </div>
     <nav class="nav">
         <a href="/" class="nav-brand">

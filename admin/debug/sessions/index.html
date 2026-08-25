@@ -11,13 +11,13 @@
 <script src="/admin/_nav.js"></script>
 <style>
 :root {
-    --bg-base: #120f1b;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --bg-base: #FBFAF8;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --fg-faint: rgba(245, 245, 247, 0.36);
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
     --hairline: rgba(255, 255, 255, 0.08);
     --glass: rgba(255, 255, 255, 0.04);
@@ -57,7 +57,7 @@ html, body {
 .page-head .eyebrow {
     display: block;
     font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.92);
+    color: #6d28d9;
     margin-bottom: 6px;
 }
 .page-head p.lede {
@@ -85,7 +85,7 @@ html, body {
 }
 .bar input, .bar select, .bar button {
     font: inherit;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255,255,255,0.72);
     border: 1px solid var(--hairline);
     border-radius: 8px;
     color: var(--fg-mid);
@@ -93,7 +93,7 @@ html, body {
     font-size: 13px;
     transition: border-color 0.18s, background 0.18s, color 0.18s;
 }
-.bar input:focus, .bar select:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+.bar input:focus, .bar select:focus { outline: none; border-color: #6d28d9; }
 .bar button {
     cursor: pointer;
     background: linear-gradient(180deg, var(--accent-soft), var(--accent));
@@ -129,10 +129,10 @@ html, body {
     padding: 12px 14px;
     transition: transform 0.18s, border-color 0.18s;
 }
-.summary .chip:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.4); }
+.summary .chip:hover { transform: translateY(-1px); border-color: #6d28d9; }
 .summary .chip .label {
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.85);
+    color: #6d28d9;
 }
 .summary .chip .nums {
     font-family: 'JetBrains Mono', monospace;
@@ -168,13 +168,13 @@ table.trace thead th {
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255,255,255,0.72);
     border-bottom: 1px solid var(--hairline);
     white-space: nowrap;
 }
 table.trace tbody td {
     padding: 8px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid #E9E5EE;
     vertical-align: top;
     color: var(--fg-mid);
 }
@@ -186,7 +186,7 @@ table.trace .method {
     color: var(--fg-soft);
     padding: 2px 7px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255,255,255,0.72);
     display: inline-block;
 }
 table.trace .status {
@@ -219,7 +219,7 @@ table.trace .label {
     color: var(--fg-soft);
     padding: 1px 6px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255,255,255,0.72);
 }
 table.trace .label.ally { background: rgba(var(--glow-purple), 0.18); color: var(--accent-soft); font-weight: 600; }
 table.trace .duration {
@@ -266,7 +266,7 @@ table.trace .detail {
     gap: 10px;
 }
 .invite-card .invite {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255,255,255,0.72);
     border: 1px solid var(--hairline);
     border-radius: 10px;
     padding: 12px 14px;
@@ -274,7 +274,7 @@ table.trace .detail {
 }
 .invite-card .invite .label {
     font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 10.5px;
-    color: rgba(var(--glow-purple), 0.85);
+    color: #6d28d9;
 }
 .invite-card .invite .meta { color: var(--fg-soft); font-size: 11.5px; margin-top: 4px; }
 .invite-card .invite .stat {
@@ -310,7 +310,7 @@ table.trace .detail {
 }
 .mint-form input {
     font: inherit;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255,255,255,0.72);
     border: 1px solid var(--hairline);
     border-radius: 8px;
     color: var(--fg-mid);
@@ -318,7 +318,7 @@ table.trace .detail {
     font-size: 13px;
     transition: border-color 0.18s, background 0.18s;
 }
-.mint-form input:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+.mint-form input:focus { outline: none; border-color: #6d28d9; }
 .mint-form button {
     font: inherit;
     cursor: pointer;
@@ -352,7 +352,7 @@ table.trace .detail {
     flex: 1 1 320px; min-width: 0;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11.5px;
-    background: rgba(0, 0, 0, 0.28);
+    background: #FFFFFF;
     border: 1px solid var(--hairline);
     border-radius: 8px;
     color: var(--fg-strong);
@@ -360,13 +360,13 @@ table.trace .detail {
 }
 .mint-result button.copy {
     font: inherit; font-size: 12px; cursor: pointer;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255,255,255,0.72);
     border: 1px solid var(--hairline);
     border-radius: 8px;
     color: var(--fg-mid);
     padding: 8px 14px;
 }
-.mint-result button.copy:hover { border-color: rgba(var(--glow-purple), 0.45); color: #fff; }
+.mint-result button.copy:hover { border-color: #6d28d9; color: #fff; }
 .mint-result .meta { margin-top: 8px; font-size: 11.5px; color: var(--fg-faint); }
 
 @keyframes mzPulse {
@@ -384,9 +384,9 @@ table.trace .detail {
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -417,7 +417,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -425,7 +425,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

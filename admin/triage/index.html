@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --amber: #f59e0b;
             --green: #10b981;
@@ -59,7 +59,7 @@
             margin: 0 0 24px 0;
         }
         .filter-chip {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 7px 14px;
@@ -71,12 +71,12 @@
         }
         .filter-chip:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
         .count-badge {
@@ -116,7 +116,7 @@
             overflow: hidden;
         }
         article.triage-card:hover {
-            border-color: rgba(var(--glow-purple), 0.30);
+            border-color: #6d28d9;
             transform: translateY(-1px);
         }
         article.triage-card.overdue {
@@ -197,26 +197,26 @@
         }
         .pill.overdue {
             background: rgba(245, 158, 11, 0.12);
-            color: rgba(252, 211, 77, 0.95);
+            color: #92400E;
             border: 1px solid rgba(245, 158, 11, 0.45);
         }
         .pill.released {
             background: rgba(16, 185, 129, 0.12);
-            color: rgba(110, 231, 183, 0.95);
+            color: #047857;
             border: 1px solid rgba(16, 185, 129, 0.45);
         }
         .pill.manual {
             background: rgba(239, 68, 68, 0.12);
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
             border: 1px solid rgba(239, 68, 68, 0.45);
         }
         .pill.urgent {
             background: rgba(239, 68, 68, 0.10);
-            color: rgba(252, 165, 165, 0.92);
+            color: #B91C1C;
             border: 1px solid rgba(239, 68, 68, 0.40);
         }
         .pill.routine {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             color: var(--fg-soft);
             border: 1px solid var(--border);
         }
@@ -249,7 +249,7 @@
             .detail-grid { grid-template-columns: 1fr 1fr; }
         }
         .ai-block, .clinician-block {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px 18px;
@@ -296,7 +296,7 @@
         .concern-chip {
             background: rgba(245, 158, 11, 0.10);
             border: 1px solid rgba(245, 158, 11, 0.35);
-            color: rgba(252, 211, 77, 0.95);
+            color: #92400E;
             font-size: 11px;
             padding: 3px 8px;
             border-radius: 6px;
@@ -314,7 +314,7 @@
         select, input, textarea {
             font: inherit;
             color: var(--fg-strong);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 8px 10px;
@@ -323,7 +323,7 @@
             transition: border-color 0.18s ease, background 0.18s ease;
         }
         select:focus, input:focus, textarea:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.06);
         }
         textarea { min-height: 70px; resize: vertical; }
@@ -368,7 +368,7 @@
         button:hover {
             transform: translateY(-1px);
             background: rgba(var(--glow-purple), 0.20);
-            border-color: rgba(var(--glow-purple), 0.65);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         button:disabled {
@@ -378,16 +378,16 @@
         }
         button.primary {
             background: rgba(var(--glow-purple), 0.25);
-            border-color: rgba(var(--glow-purple), 0.75);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         button.ghost {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border-color: var(--border);
             color: var(--fg-soft);
         }
         button.ghost:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
             color: var(--fg-strong);
         }
         .ai-meta {
@@ -439,7 +439,7 @@
         .toast.error {
             background: rgba(239, 68, 68, 0.18);
             border-color: rgba(239, 68, 68, 0.55);
-            color: rgba(252, 165, 165, 0.98);
+            color: #B91C1C;
         }
         .toast.show {
             opacity: 1;
@@ -460,9 +460,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -493,7 +493,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -501,7 +501,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

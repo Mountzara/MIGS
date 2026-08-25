@@ -11,12 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
+            --bg-base: #FBFAF8;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
         }
         * { box-sizing: border-box; }
@@ -47,7 +47,7 @@
         .eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 14px;
         }
         h1 {
@@ -60,8 +60,8 @@
         }
         .lede { font-size: 15.5px; line-height: 1.65; color: var(--fg-soft); margin: 0 0 28px 0; max-width: 56ch; }
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -69,7 +69,7 @@
             margin-bottom: 16px;
             animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .card h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .card h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; }
         dl { margin: 0; display: grid; grid-template-columns: 1fr 2fr; gap: 8px 18px; font-size: 14px; }
         dt { color: var(--fg-soft); }
         dd { margin: 0; color: var(--fg-strong); word-break: break-word; }
@@ -79,8 +79,8 @@
         input, select {
             width: 100%;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 9px;
             color: var(--fg-strong);
             font: inherit; font-size: 14px;
@@ -88,8 +88,8 @@
         }
         input:focus, select:focus {
             outline: none;
-            border-color: rgba(var(--glow-purple), 0.65);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #6d28d9;
+            background: rgba(255,255,255,0.72);
             box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
         }
         button.primary {
@@ -105,8 +105,8 @@
         button.primary:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(var(--glow-purple), 0.55); }
         button[disabled] { opacity: 0.5; cursor: not-allowed; }
         .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; margin-top: 10px; display: none; }
-        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
-        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: #047857; }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: #B91C1C; }
         .loading { color: var(--fg-soft); font-size: 14px; }
         @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -118,14 +118,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -153,7 +153,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -161,7 +161,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -174,7 +174,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Portal home</a>
@@ -186,13 +186,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.10);">
-                <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Your health history</div>
+                <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(255,255,255,0.96); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 6px;">Your health history</div>
                     <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your health history</div>
                     <div style="font-size: 13px; color: var(--fg-soft);">18 short sections, autosaved. Resume any time. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
                 </a>
-                <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Documents</div>
+                <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(255,255,255,0.96); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 6px;">Documents</div>
                     <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Upload records &amp; imaging</div>
                     <div style="font-size: 13px; color: var(--fg-soft);">Encrypted on the server. PDF, images, DOCX, DICOM. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
                 </a>
@@ -223,7 +223,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </p>
             <div style="display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;">
                 <div id="photoPreviewWrap" style="width: 96px; height: 96px; border-radius: 50%;
-                     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+                     background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                      display: flex; align-items: center; justify-content: center;
                      overflow: hidden; flex-shrink: 0; font-size: 38px; font-weight: 300;
                      color: rgba(167,139,250,0.95);">
@@ -254,8 +254,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </button>
                         <button type="button" id="nicknameSaveBtn"
                             style="padding: 8px 14px; border-radius: 10px;
-                                   background: rgba(255,255,255,0.04); color: var(--ink);
-                                   border: 1px solid rgba(255,255,255,0.10); font-size: 13px; font-weight: 600; cursor: pointer;">
+                                   background: rgba(255,255,255,0.72); color: var(--ink);
+                                   border: 1px solid #E9E5EE; font-size: 13px; font-weight: 600; cursor: pointer;">
                             Save nickname
                         </button>
                     </div>
@@ -277,28 +277,28 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <textarea id="cg_goals" rows="5"
                         placeholder="One per line — e.g.&#10;Avoid hysterectomy if possible&#10;Return to running by 12 weeks post-op"
                         style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Preferences (how you'd like care to feel)
                     <textarea id="cg_preferences" rows="5"
                         placeholder="One per line — e.g.&#10;Telehealth-first when feasible&#10;Morning visits"
                         style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Things to avoid
                     <textarea id="cg_avoid" rows="4"
                         placeholder="One per line — e.g.&#10;Opioids unless absolutely necessary"
                         style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Anything else we should know
                     <textarea id="cg_notes" rows="4" maxlength="1200"
                         placeholder="Schedule constraints, life context, what helps you feel heard…"
                         style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
             </div>

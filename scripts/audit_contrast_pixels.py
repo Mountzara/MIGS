@@ -286,6 +286,45 @@ def _screenshot_or_crash(page, attempts=3):
                 break
     raise BrowserCrashed(f"engine died taking the capture after {attempts} attempts: {last}")
 
+
+# =====================================================================
+# MODAL SURFACES (2026-08-25)
+# =====================================================================
+# Owner directive: the theme has to be correct on "ALL SUBPAGES, MODALS,
+# SUBPAGES WITH MODALS, MODALS OF THE SUBPAGES". A modal only paints once
+# something opens it, so a scroll-only audit never sees one — which is
+# exactly how 25 education pages shipped with a light modal carrying
+# white body text (`color:#ffffff !important`) and looked "converted".
+#
+# With --open-modals we force every modal/dialog/overlay container
+# visible before measuring, so its text is sampled against its own real
+# painted ground.
+OPEN_MODALS = """() => {
+    const sels = ['dialog', '[class*="modal"]', '[class*="overlay"]', '[class*="sheet"]',
+                  '[class*="drawer"]', '[class*="lightbox"]', '[class*="popover"]'];
+    const seen = new Set(); let n = 0;
+    for (const sel of sels) {
+        for (const el of document.querySelectorAll(sel)) {
+            if (seen.has(el)) continue;
+            seen.add(el);
+            try {
+                if (el.tagName === 'DIALOG' && !el.open) el.show();
+                el.classList.add('open', 'active', 'visible', 'is-open', 'show');
+                el.removeAttribute('hidden');
+                el.style.setProperty('display', el.tagName === 'DIALOG' ? 'block' : 'flex', 'important');
+                el.style.setProperty('opacity', '1', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                n++;
+            } catch (e) {}
+        }
+    }
+    return n;
+}"""
+
+
+OPEN_MODALS_FLAG = False
+
+
 def audit_page(page, dpr, scroll_y=0):
     """Returns failures for the CURRENT scroll position."""
     items = page.evaluate(COLLECT)
@@ -353,6 +392,8 @@ def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     base = args[0] if args else "https://mountzara.com"
     pages = DEFAULT_PAGES
+    global OPEN_MODALS_FLAG
+    OPEN_MODALS_FLAG = any(a == "--open-modals" for a in sys.argv[1:])
     for a in sys.argv[1:]:
         if a.startswith("--pages="):
             pages = a.split("=", 1)[1].split(",")
@@ -381,7 +422,13 @@ def main():
         # browser that cannot see the site at all.
         # ---------------------------------------------------------------
         probe = f"{base}{pages[0]}" + ("index.html" if local else "")
-        b, engine, note = launch_reachable(p, probe, headless=True)
+        # 2026-08-25 — LOCAL RUNS PREFER WEBKIT. The container proxy refuses
+        # Chromium's loopback connections, so against a local http.server the
+        # chromium-first order burned a 30s probe timeout per engine before
+        # falling back. WebKit connects to 127.0.0.1 natively. Production runs
+        # keep the chromium-first order unchanged.
+        order = ("webkit", "chromium", "firefox") if local else ("chromium", "webkit", "firefox")
+        b, engine, note = launch_reachable(p, probe, order=order, headless=True)
         print(f"  (engine: {engine}{'; ' + note if note else ''})")
         for vp, label in VIEWPORTS:
             dpr = 2 if label == "mobile" else 1
@@ -441,7 +488,17 @@ def main():
                     });
                 }""")
                 page.wait_for_timeout(200)
-                stuck = page.evaluate(REST_OVERLAY)
+                if OPEN_MODALS_FLAG:
+                    try:
+                        opened = page.evaluate(OPEN_MODALS)
+                        if opened:
+                            page.wait_for_timeout(500)
+                    except Exception:
+                        pass
+                # With --open-modals we deliberately forced overlays visible,
+                # so the "overlay stuck at rest" check cannot apply — it would
+                # report our own instrumentation as a defect.
+                stuck = [] if OPEN_MODALS_FLAG else page.evaluate(REST_OVERLAY)
                 if stuck:
                     for o in stuck:
                         print(f"  ✗ {path} [{label}] FULL-PAGE OVERLAY VISIBLE AT REST: "

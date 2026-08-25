@@ -1559,6 +1559,56 @@ popovers, 0 malformed hrefs, 0 empty popovers, 0 dangling
 
 ## 8. Static surfaces
 
+### 8.0.0 ONE THEME — the light conversion is site-wide (2026-08-25)
+
+**The site is light. There is no dark surface left by design except
+brand-violet button/badge grounds, the `/about/` magazine cover photo, and
+modal scrims.** If you are adding a page, it inherits the light tokens; if
+you are editing one, do not reintroduce a dark ground.
+
+**Why this is called out.** The light conversion shipped in stages and each
+stage looked finished while a whole class of surface stayed dark, because
+nobody was measuring rendered pixels across every route:
+
+* the first pass converted the homepage only;
+* the second converted 12 education page pairs — and left
+  `.mz-modal :is(p,li,td,…) { color:#ffffff !important }` in all 25 of them,
+  so every one of those pages had a LIGHT modal carrying WHITE text. The page
+  looked converted; open a modal and the text was gone;
+* 65 further pages (all of `/admin/*`, `/portal/*`, `/cv/`, `/curriculum/*`,
+  `/evidence/`, `/trending/`, `/about/`, `/accessibility/`, `404`) were still
+  dark, plus 7 pages built inside Pages Functions that no file sweep touches
+  (`functions/admin/_login.js`, `_signout.js`, `cv/_middleware.js`,
+  `education/_middleware.js`, `portal/_middleware.js`,
+  `portal/preview-grant/index.js`, `api/v1/admin/trend-briefs/[id]/preview.js`).
+
+**The four surface families, and how each was missed.** A regex for one
+family says nothing about the others — check all four:
+
+1. **Tokens** — `--bg-base`, `--fg-*`, `--border`, `--bg-card`. Easy, and
+   the only family the early passes handled.
+2. **Gradient canvases** — 52 pages paint `html` with
+   `linear-gradient(178deg, #191526, #120f1b, #161321)`. A `background: #hex`
+   regex does not match a gradient stop, so every one of these pages kept a
+   near-black canvas while its tokens read light.
+3. **Dark neutral surfaces** — `dialog { background:#1a1626 }`,
+   `#241d36`, `#131217`, and `background: rgba(0,0,0,.3)` input wells. These
+   are what kept MODALS dark after the page behind them went light.
+4. **Function-generated HTML** — never in the static tree at all.
+
+**Do NOT blanket-replace `color:#fff`.** On these pages most white text sits
+on a violet button/badge (`#2e1065`, `#6d28d9`, `#7c3aed`, `#4c1d95`) or on
+the `/about/` cover photo, where white is correct. Convert grounds, then let
+the rendered contrast gate name the exceptions.
+
+**Enforcement.** `scripts/audit_contrast_pixels.py` gained `--open-modals`
+(2026-08-25): it force-opens every `dialog` / `[class*=modal|overlay|sheet|
+drawer|lightbox|popover]` before measuring, because a modal only paints once
+something opens it — which is exactly how the 25 education modals shipped
+inverted and unnoticed. Scrims (containers ≥95% of the viewport) are excluded
+from the ground check; a dark scrim is correct on a light theme.
+
+
 ### 8.1 Root pages
 
 `index.html` (~10K lines — see §3, §4), `about/`, `evidence/`, `trending/`,

@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -50,16 +50,16 @@
             align-items: center;
         }
         .filter-chip {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 6px 14px;
             color: var(--fg-soft); font-size: 12px;
             cursor: pointer; font: inherit;
             transition: all 0.18s;
         }
-        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
 
@@ -76,7 +76,7 @@
             transition: border-color 0.22s;
             animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .kpi:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .kpi:hover { border-color: #6d28d9; }
         @keyframes mzRise {
             from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); }
         }
@@ -94,7 +94,7 @@
             font-size: 11.5px; color: var(--fg-soft); margin-top: 4px;
         }
         .kpi.alert { border-color: rgba(245, 158, 11, 0.45); }
-        .kpi.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .kpi.alert .value { color: #92400E; }
         .kpi.good { border-color: rgba(16, 185, 129, 0.45); }
         .kpi.purple .value { color: var(--accent-soft); }
 
@@ -115,7 +115,7 @@
         .panel h2 {
             font-size: 12px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 14px 0;
         }
 
@@ -130,7 +130,7 @@
         }
         .bar-row .label-cell { color: var(--fg-strong); }
         .bar-row .bar {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.72);
             height: 18px; border-radius: 4px; overflow: hidden;
         }
         .bar-row .bar-fill {
@@ -148,7 +148,7 @@
         /* funnel */
         .funnel { display: flex; gap: 8px; align-items: stretch; }
         .funnel-step {
-            flex: 1; background: rgba(255,255,255,0.03);
+            flex: 1; background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 10px; padding: 10px 12px;
             text-align: center;
@@ -166,7 +166,7 @@
         /* next-5 appointments list */
         .next-list { display: flex; flex-direction: column; gap: 8px; }
         .next-row {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 10px; padding: 10px 12px;
             display: grid;
             grid-template-columns: max-content 1fr max-content;
@@ -176,7 +176,7 @@
             transition: all 0.18s;
         }
         .next-row:hover {
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
         }
         .next-row .when { color: var(--fg-strong); font-weight: 500; }
@@ -200,7 +200,7 @@
             background: rgba(245, 158, 11, 0.10);
         }
         .alert-row .name { color: var(--fg-strong); font-weight: 500; font-size: 13.5px; }
-        .alert-row .pain { color: rgba(252, 165, 165, 0.95); font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .alert-row .pain { color: #B91C1C; font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
         .alert-row .when { font-size: 11px; color: var(--fg-dim); }
 
         .empty-state {
@@ -215,7 +215,7 @@
             padding: 16px 18px;
             border: 1px dashed rgba(255, 255, 255, 0.16);
             border-radius: 14px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             color: var(--fg-soft);
             font-size: 13.5px; line-height: 1.6;
             max-width: 80ch;
@@ -233,9 +233,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -266,7 +266,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -274,7 +274,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -444,10 +444,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const cell = (win, label) => {
                     const v = win && win.nps;
                     const col = v == null ? 'var(--fg-dim)'
-                              : v >= 50 ? 'rgba(110,231,183,0.95)'
+                              : v >= 50 ? '#047857'
                               : v >= 0 ? 'var(--accent-soft, rgba(167,139,250,0.95))'
-                              : 'rgba(252,165,165,0.95)';
-                    return `<div style="flex:1;min-width:110px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);text-align:center;">
+                              : '#B91C1C';
+                    return `<div style="flex:1;min-width:110px;padding:12px;border-radius:10px;background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;text-align:center;">
                         <div style="font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-dim);font-weight:700;">${label}</div>
                         <div style="font-size:30px;font-weight:200;color:${col};margin:4px 0 2px;">${v == null ? '—' : v}</div>
                         <div style="font-size:11px;color:var(--fg-dim);">${win ? win.responses : 0} responses${win && win.response_rate_pct != null ? ' · ' + win.response_rate_pct + '% rate' : ''}</div>
@@ -462,8 +462,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     return;
                 }
                 $('nps-why').innerHTML = r.responses.map(x => {
-                    const col = x.score >= 9 ? 'rgba(110,231,183,0.95)' : x.score <= 6 ? 'rgba(252,165,165,0.95)' : 'var(--accent-soft, rgba(167,139,250,0.95))';
-                    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+                    const col = x.score >= 9 ? '#047857' : x.score <= 6 ? '#B91C1C' : 'var(--accent-soft, rgba(167,139,250,0.95))';
+                    return `<div style="padding:10px 0;border-bottom:1px solid #E9E5EE;">
                         <span style="display:inline-block;min-width:28px;font-weight:700;color:${col};">${x.score}</span>
                         <span style="color:var(--fg-dim);font-size:11px;">· ${escapeHtml(String(x.responded_at).slice(0, 10))} · ${escapeHtml(x.patient_hash)}</span>
                         ${x.why ? `<div style="margin-top:4px;color:var(--fg-mid);line-height:1.5;">${escapeHtml(x.why)}</div>` : ''}
@@ -522,9 +522,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const tt = d.triage;
             $('triage-summary').innerHTML = `
                 <strong style="color:var(--fg-strong);">${tt.total}</strong> total triage runs ·
-                <span style="color: ${tt.pending > 0 ? 'rgba(252,211,77,0.95)' : 'var(--fg-soft)'};">${tt.pending} pending</span> ·
+                <span style="color: ${tt.pending > 0 ? '#92400E' : 'var(--fg-soft)'};">${tt.pending} pending</span> ·
                 ${tt.released} released · ${tt.booked} booked ·
-                ${tt.manual_review_required > 0 ? `<span style="color: rgba(252,165,165,0.95);">${tt.manual_review_required} manual review</span>` : 'no manual-review rows'}
+                ${tt.manual_review_required > 0 ? `<span style="color: #B91C1C;">${tt.manual_review_required} manual review</span>` : 'no manual-review rows'}
             `;
             $('triage-by-visit').innerHTML = renderBarChart(tt.by_visit_type.map(r => ({ label: fmtVT(r.visit_type), count: r.count })));
 
@@ -553,11 +553,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         <div style="font-size: 11px; color: var(--fg-soft);">patients logging</div>
                     </div>
                     <div>
-                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_avg && ss.recent_pain_avg >= 7 ? 'rgba(252, 165, 165, 0.95)' : 'var(--fg-strong)'};">${ss.recent_pain_avg != null ? ss.recent_pain_avg.toFixed(1) : '—'}</div>
+                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_avg && ss.recent_pain_avg >= 7 ? '#B91C1C' : 'var(--fg-strong)'};">${ss.recent_pain_avg != null ? ss.recent_pain_avg.toFixed(1) : '—'}</div>
                         <div style="font-size: 11px; color: var(--fg-soft);">avg pain (0-10)</div>
                     </div>
                     <div>
-                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_high_count > 0 ? 'rgba(252, 211, 77, 0.95)' : 'var(--fg-strong)'};">${ss.recent_pain_high_count}</div>
+                        <div style="font-size: 22px; font-weight: 200; color: ${ss.recent_pain_high_count > 0 ? '#92400E' : 'var(--fg-strong)'};">${ss.recent_pain_high_count}</div>
                         <div style="font-size: 11px; color: var(--fg-soft);">≥ 8/10 today</div>
                     </div>
                 </div>
@@ -579,7 +579,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('msg-summary').innerHTML = `
                 <strong style="color: var(--fg-strong);">${ma.messages_window}</strong> messages in window
                 (${ma.clinician_replies_window} from clinician/staff) ·
-                <strong style="color: ${ma.threads_with_unread > 0 ? 'rgba(252, 211, 77, 0.95)' : 'var(--fg-soft)'};">${ma.threads_with_unread}</strong>
+                <strong style="color: ${ma.threads_with_unread > 0 ? '#92400E' : 'var(--fg-soft)'};">${ma.threads_with_unread}</strong>
                 thread${ma.threads_with_unread === 1 ? '' : 's'} with unread.${oldestUnread ? ` Oldest unread: <strong>${oldestUnread}</strong>.` : ''}
             `;
             $('audit-by-action').innerHTML = renderBarChart((d.audit_signals.by_action || []).map(r => ({ label: r.action, count: r.count })));

@@ -136,7 +136,7 @@ const COMING_SOON_HTML = `<!doctype html>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120b22;
+            --bg-base: #FBFAF8;
             --fg-strong: #ffffff;
             --fg-mid: #ffffff;
             --fg-soft: #ffffff;
@@ -225,8 +225,8 @@ const COMING_SOON_HTML = `<!doctype html>
             margin: 0 0 44px 0;
         }
         .topic {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background:rgba(255,255,255,0.72);
+            border:1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -286,7 +286,8 @@ const COMING_SOON_HTML = `<!doctype html>
                 opacity: 1 !important; transform: none !important;
             }
         }
-    </style>
+      button,button:hover,.btn,.btn:hover{color:#fff}
+</style>
 </head>
 <body>
     <main class="wrap">

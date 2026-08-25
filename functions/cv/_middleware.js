@@ -131,27 +131,28 @@ function requestPage(notice = "") {
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;min-height:100vh;
-    background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(167,139,250,.18),transparent 60%),#120b22;
-    color:#fff;font-family:'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(167,139,250,.10),transparent 60%),#FBFAF8;
+    color:#1A1726;font-family:'Avenir Next','Avenir','Nunito Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
     display:flex;align-items:center;justify-content:center;line-height:1.55}
   .card{width:min(92%,560px);margin:48px auto;padding:clamp(28px,5vw,48px);
-    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;
+    background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;border-radius:24px;
     backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
-    box-shadow:0 40px 120px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14)}
-  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#c4b5fd;margin:0 0 14px}
+    box-shadow:0 40px 120px rgba(26,23,38,0.12),inset 0 1px 0 rgba(255,255,255,0.7)}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#6d28d9;margin:0 0 14px}
   h1{font-size:clamp(24px,4vw,32px);font-weight:600;line-height:1.15;letter-spacing:-.02em;margin:0 0 16px}
-  p{font-size:16px;color:rgba(255,255,255,.86);margin:0 0 16px}
+  p{font-size:16px;color:#4A4658;margin:0 0 16px}
   .cv-notice{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:10px 14px;font-size:14px}
-  label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin:14px 0 6px}
-  input,textarea{width:100%;padding:12px 14px;font:inherit;font-size:15px;color:#fff;
-    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:10px}
+  label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6E6A7C;margin:14px 0 6px}
+  input,textarea{width:100%;padding:12px 14px;font:inherit;font-size:15px;color:#1A1726;
+    background:rgba(255,255,255,0.72);border:1px solid #E9E5EE;border-radius:10px}
   textarea{min-height:84px;resize:vertical}
-  button{margin-top:20px;width:100%;padding:13px;font:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;
+  button{margin-top:20px;width:100%;padding:13px;font:inherit;font-size:15px;font-weight:600;color:#1A1726;cursor:pointer;
     background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:999px;transition:transform .15s,box-shadow .15s}
   button:hover{transform:translateY(-1px);box-shadow:0 10px 30px -8px rgba(109,40,217,.6)}
   button:disabled{opacity:.6;cursor:default;transform:none}
-  .ok{color:#c4b5fd;font-weight:600}
-  a{color:#c4b5fd}
+  .ok{color:#6d28d9;font-weight:600}
+  a{color:#6d28d9}
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
 </head>
 <body>
