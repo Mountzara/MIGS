@@ -8706,12 +8706,38 @@ img.hero-video {
        hero that has faded to blank. Tune the tone by re-exporting the asset,
        never by fading this element. */
     opacity: 1;
-    /* NOTE — do NOT try to hide the drawing layer's edge with padding + an
-       opaque surround. Tried 2026-08-25: a rotated rectangle's EDGES still
-       cut diagonally across the viewport even when its bounding box is far
-       larger than the screen, so the surround just moves the seam and, at
-       40vw of padding, pushed the drawing itself out of view. The bounding
-       box being bigger than the viewport is not the same as the edges being
-       off-screen. Pre-rendering the ink (above) is what actually made the
-       seam faint; leave the geometry alone. */
+    /* THE EDGE SEAM — READ THIS BEFORE TOUCHING THIS LAYER AGAIN.
+       Where this rotated element ends, the browser resamples its outermost
+       texels against the transparency outside it, and multiply prints that
+       half-transparent edge onto the paper as a faint grey diagonal. It is
+       real and it is visible in Chromium at 2x. It is NOT visible in the
+       deploy container's WebKit, which composites neither mix-blend-mode nor
+       backdrop-filter — verify this layer in Chromium or not at all.
+
+       FIVE fixes have been tried and every one either left the seam or
+       destroyed the drawing. Do not spend the afternoon on a sixth without
+       reading these:
+         * mask-image feather      seam gone, drawing gone (59,934 units of
+                                   ink without it vs 1,435 with it — the mask
+                                   isolates the element and multiply loses its
+                                   backdrop)
+         * clip-path: inset()      identical failure, identical cause
+         * box-shadow surround     painted a black slab: Chromium does not run
+                                   an element's filter over its shadow
+         * content-box padding     seam unchanged. A bigger bounding box is
+                                   NOT the same as edges being off-screen —
+                                   a rotated rectangle's edges still cut
+                                   across the viewport
+         * taller box + white fill geometry finally correct (short side past
+                                   the 930px viewport diagonal, so no edge on
+                                   screen) and the seam DID go — but the white
+                                   fill swallows the artwork under multiply:
+                                   measured 0 inked pixels
+
+       The pattern is consistent: any change to this element's box or its
+       paint kills the drawing under multiply. Pre-rendering the ink into the
+       asset is what made the seam faint rather than black, and that is where
+       the remaining win is too — a source export that is already rotated, so
+       the page can paint it with no transform at all and there is no rotated
+       edge to resample. That is an asset change, not a CSS one. */
 }
