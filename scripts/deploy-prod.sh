@@ -1291,6 +1291,30 @@ fi
 # pages built inside Pages Functions that no file sweep touches. This checks
 # by COLOUR rather than by name, so a dark ground fails wherever it is written
 # and in whatever syntax. See SYSTEM_MAP §8.0.0.
+# ---------------------------------------------------------------------------
+# PATIENT-JOURNEY GATE (2026-08-25)
+# ---------------------------------------------------------------------------
+# audit_route_render.py proves a route LOADS. It cannot tell you whether a
+# patient can get from one step to the next: a contact modal that opens onto
+# no email, a portal door that dead-ends instead of offering sign-in, an
+# education index whose cards link nowhere — each renders perfectly and passes
+# a render check while the journey is broken. This walks the path and asserts
+# what a patient must be able to DO at each step. Public surfaces only, so it
+# needs no credentials.
+if [ -f scripts/audit_patient_journey.py ]; then
+    echo ""
+    echo "🔍 Patient-journey gate — the path a patient is invited onto, walked..."
+    if python3 scripts/audit_patient_journey.py https://mountzara.com > /tmp/_patient_journey.log 2>&1; then
+        tail -1 /tmp/_patient_journey.log
+        echo "   ✅ patient-journey gate passed"
+    else
+        cat /tmp/_patient_journey.log
+        echo ""
+        echo "   Full log: /tmp/_patient_journey.log"
+        exit 1
+    fi
+fi
+
 if [ -f scripts/audit_dark_surfaces.py ]; then
     echo ""
     echo "🔍 Dark-surface gate — no dark grounds outside brand violets and scrims..."

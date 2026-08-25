@@ -1559,6 +1559,26 @@ popovers, 0 malformed hrefs, 0 empty popovers, 0 dangling
 
 ## 8. Static surfaces
 
+### 8.0.-1 The patient journey is gated, not just the routes (2026-08-25)
+
+`scripts/audit_patient_journey.py` walks the path a patient is actually
+invited onto and asserts the AFFORDANCE at each step — the appointment CTA
+opens a contact route and that route reaches an inbox; the education index
+offers guides and a guide has content; the portal door explains itself rather
+than dead-ending; sign-in has an email field and a submit; `/cv/` offers a
+working request form; the footer routes to portal, what-I-treat and contact.
+
+**Why it is separate from `audit_route_render.py`.** That gate proves a route
+LOADS — right title, right selector. It cannot tell you whether a patient can
+get from one step to the next. A contact modal that opens onto no email, a
+portal door that dead-ends, an education index whose cards link nowhere: each
+of those renders perfectly and passes a render check while the journey is
+broken. Assert what a patient must be able to DO, not what markup is present.
+
+Public surfaces only, so it runs on every deploy without credentials. `/cv/`
+is Function-gated, so its request-form assertion only runs against production
+— locally the gate is not in the path and the raw page is served.
+
 ### 8.0.0 ONE THEME — the light conversion is site-wide (2026-08-25)
 
 **The site is light. There is no dark surface left by design except
