@@ -1356,14 +1356,28 @@
             background: rgba(167, 139, 250, 0.34);
             border-color: var(--violet-600);
         }
+        /* 2026-08-25 — this was the one card on the page that was not glass.
+           It carried a violet wash at 0.08/0.02 alpha and NO backdrop-filter
+           at all, so on paper it had almost nothing to show and nothing to
+           frost: the owner read it as "basically completely transparent, not
+           apple glass like the others". (It also declared background and
+           border twice, the second pair silently winning.)
+
+           It now uses the same recipe as .curriculum-card — translucent white
+           over a real backdrop blur — with a violet tint layered ON TOP of
+           that glass rather than instead of it, so it still reads as the
+           highlighted call to action in the section. */
         .curriculum-cta {
             margin-top: 48px;
             padding: 40px;
-            background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(167, 139, 250, 0.02) 100%);
-            border: 1px solid rgba(167, 139, 250, 0.2);
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.2);
+            background:
+                linear-gradient(135deg, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.04) 100%),
+                rgba(255, 255, 255, 0.34);
+            backdrop-filter: saturate(200%) blur(22px);
+            -webkit-backdrop-filter: saturate(200%) blur(22px);
+            border: 1px solid rgba(139, 92, 246, 0.28);
             border-radius: 20px;
+            box-shadow: var(--shadow-1, 0 1px 2px rgba(26, 23, 38, 0.05));
         }
         .curriculum-cta-inner h3 {
             font-size: 26px;
@@ -8596,6 +8610,7 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
    ===================================================================== */
 @media (max-width: 720px) {
     .curriculum-card,
+    .curriculum-cta,
     .research-card,
     .award-tile,
     .bento-card,

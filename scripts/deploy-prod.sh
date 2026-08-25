@@ -1305,6 +1305,29 @@ if [ -f scripts/audit_dark_surfaces.py ]; then
     fi
 fi
 
+# ---------------------------------------------------------------------------
+# LIGHT-TEXT GATE (2026-08-25) — no text the same brightness as its ground.
+# ---------------------------------------------------------------------------
+# Runtime companion to the dark-surface gate, and the one that covers BREADTH.
+# audit_contrast_pixels.py is more rigorous but slow enough that it only ever
+# ran over nine routes; the light conversion broke text on eighty. This does
+# one paint per route with modals forced open, so "is any text invisible
+# anywhere on the site" is answerable on every deploy. It skips text over a
+# photograph (the /about/ cover) and text on violet buttons.
+if [ -f scripts/audit_light_text.py ]; then
+    echo ""
+    echo "🔍 Light-text gate — no text matching its own ground, incl. modals..."
+    if python3 scripts/audit_light_text.py https://mountzara.com > /tmp/_light_text.log 2>&1; then
+        tail -1 /tmp/_light_text.log
+        echo "   ✅ light-text gate passed"
+    else
+        cat /tmp/_light_text.log
+        echo ""
+        echo "   Full log: /tmp/_light_text.log"
+        exit 1
+    fi
+fi
+
 if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
     echo ""
     echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."

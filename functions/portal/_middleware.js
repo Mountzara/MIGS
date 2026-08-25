@@ -127,7 +127,7 @@ const COMING_SOON_HTML = `<!doctype html>
            ============================================================= */
         :root {
             --bg-base: #FBFAF8;
-            --fg: #ffffff;
+            --fg: #1A1726;
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
             --glow: 167, 139, 250;

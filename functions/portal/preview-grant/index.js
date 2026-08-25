@@ -45,9 +45,9 @@ ${refresh}
 <style>
 :root {
     --bg-base: #FBFAF8;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --accent: #6d28d9;
     --accent-soft: #a78bfa;
     --glow-purple: 167, 139, 250;

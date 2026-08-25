@@ -27,9 +27,9 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
     --bg-base: #FBFAF8;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --hairline: rgba(255, 255, 255, 0.08);
   }
   * { box-sizing: border-box; }

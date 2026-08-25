@@ -1582,26 +1582,55 @@ nobody was measuring rendered pixels across every route:
   `education/_middleware.js`, `portal/_middleware.js`,
   `portal/preview-grant/index.js`, `api/v1/admin/trend-briefs/[id]/preview.js`).
 
-**The four surface families, and how each was missed.** A regex for one
-family says nothing about the others — check all four:
+**The EIGHT surface families, and how each was missed.** Every one of these
+was found only after the previous fix had been declared done. A regex for one
+family says nothing about the others — walk all eight:
 
-1. **Tokens** — `--bg-base`, `--fg-*`, `--border`, `--bg-card`. Easy, and
-   the only family the early passes handled.
+1. **Tokens** — `--bg-base`, `--fg-*`, `--border`, `--bg-card`. Easy, and the
+   only family the early passes handled.
 2. **Gradient canvases** — 52 pages paint `html` with
    `linear-gradient(178deg, #191526, #120f1b, #161321)`. A `background: #hex`
    regex does not match a gradient stop, so every one of these pages kept a
    near-black canvas while its tokens read light.
-3. **Dark neutral surfaces** — `dialog { background:#1a1626 }`,
-   `#241d36`, `#131217`, and `background: rgba(0,0,0,.3)` input wells. These
-   are what kept MODALS dark after the page behind them went light.
-4. **Function-generated HTML** — never in the static tree at all.
+3. **Dark neutral surfaces** — `dialog { background:#1a1626 }`, `#241d36`,
+   `#131217`, `rgba(7,7,10,.96)` panels and `rgba(0,0,0,.3)` input wells.
+   THIS is what kept MODALS dark after the page behind them went light.
+4. **Function-generated HTML** — `functions/admin/_login.js`, `_mfa.js`,
+   `_signout.js`, `cv/_middleware.js`, `education/_middleware.js`,
+   `portal/_middleware.js`, `portal/preview-grant/`, the trend-brief preview.
+   Never in the static tree at all.
+5. **Shared JS components that inject their own CSS** — `admin/_nav.js` paints
+   the admin toolbar and `portal/_wizard.js` the patient intake; a sweep over
+   `*.html` plus `functions/**` misses both, leaving a near-black bar on every
+   otherwise-light admin page.
+6. **White text left on a ground that is now paper** — a rule that paints text
+   white and declares no dark ground of its own inherits whatever is behind
+   it. 78 such rules.
+7. **White gradients clipped to text** — `background: linear-gradient(#fff…)`
+   with `-webkit-text-fill-color: transparent`. The ground check reads it as a
+   background; the colour check finds no `color:` at all. On `/cv/` this left
+   the page's largest headline — the owner's own name — invisible.
+8. **Bespoke per-page text tokens** — `--muted`, `--dim`, `--soft`,
+   `--ink-mute`, `--fg-faint` and friends, defined white on individual pages.
+   40 definitions. A converter that only knows `--fg-*` walks straight past.
 
 **Do NOT blanket-replace `color:#fff`.** On these pages most white text sits
 on a violet button/badge (`#2e1065`, `#6d28d9`, `#7c3aed`, `#4c1d95`) or on
 the `/about/` cover photo, where white is correct. Convert grounds, then let
 the rendered contrast gate name the exceptions.
 
-**Enforcement.** `scripts/audit_contrast_pixels.py` gained `--open-modals`
+**Enforcement — three gates, all in the deploy chain.**
+
+* `scripts/audit_dark_surfaces.py` — static, and checks by COLOUR rather than
+  by name, so a dark ground fails wherever it is written and in whatever
+  syntax. Also covers families 6 and 7. Scans `**/*.html` AND `**/*.js`.
+* `scripts/audit_light_text.py` — runtime, and the one that covers BREADTH.
+  One paint per route with modals forced open, so it can run over every route
+  rather than nine. Resolves each text run's real ground (colour or gradient,
+  walking ancestors) and flags text within 42 luminance of it. Skips text over
+  a photograph — `/about/`'s cover is white type on a headshot, which is
+  correct — and text on violet buttons.
+* `scripts/audit_contrast_pixels.py` gained `--open-modals`
 (2026-08-25): it force-opens every `dialog` / `[class*=modal|overlay|sheet|
 drawer|lightbox|popover]` before measuring, because a modal only paints once
 something opens it — which is exactly how the 25 education modals shipped

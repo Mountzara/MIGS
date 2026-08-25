@@ -74,18 +74,70 @@ def scan(path):
                 out.append((line, f"rgba({r},{g},{b},{alpha})", round(L), decl.strip()[:60]))
     return out
 
+
+
+# =====================================================================
+# TWO MORE FAMILIES, both found only after the grounds were already light
+# =====================================================================
+# 5. White TEXT left behind on a ground that is now paper. A rule that
+#    paints text white and declares no dark ground of its own inherits
+#    whatever is behind it — which is now paper.
+# 6. White GRADIENTS CLIPPED TO TEXT (background: linear-gradient(#fff…)
+#    + -webkit-text-fill-color: transparent). Neither of the checks above
+#    sees these: the ground check reads it as a background, the colour
+#    check finds no `color:` at all. On the CV this left the page's
+#    largest headline — the owner's own name — invisible on paper.
+RULE = re.compile(r'([^{}]{1,160}?)(\{[^{}]{0,500}\})', re.S)
+WHITE_TXT = re.compile(r'color\s*:\s*(#fff\b|#ffffff\b|var\(--white\)|rgba\(255,\s*255,\s*255,\s*0?\.[89]\d*\))', re.I)
+HAS_DARK_BG = re.compile(r'background[^;]*(#2e1065|#6d28d9|#7c3aed|#4c1d95|#5b21b6|#047857|#3d1478|linear-gradient|rgba\(var\(--glow-purple\)|#0[0-9a-f]{5}|#1[0-9a-f]{5})', re.I)
+CLIP_TXT = re.compile(r'-webkit-text-fill-color:\s*transparent', re.I)
+LIGHT_STOP = re.compile(r'linear-gradient\([^;]*(#fff\b|#ffffff\b|rgba\(255,\s*255,\s*255)', re.I)
+SKIP_SEL = ('button', '.btn', '.cta', 'badge', 'pill', 'chip', '::selection',
+            ':hover', 'tag', 'cover-', 'credit-', 'mz-asn', 'backdrop', 'overlay')
+
+def scan_text(path):
+    out = []
+    try: src = open(path, encoding='utf-8').read()
+    except Exception: return out
+    # `var(--white)` is only a finding if THIS file still defines --white as a
+    # light colour. Several pages redefined it to ink during the conversion —
+    # the token now means "strongest ink", and flagging it would be noise.
+    m = re.search(r'--white:\s*(#[0-9a-fA-F]{3,6})', src)
+    white_is_light = True
+    if m:
+        L = lum_hex(m.group(1))
+        white_is_light = L is None or L > 150
+    for m in RULE.finditer(src):
+        sel, body = m.group(1).split('\n')[-1].strip(), m.group(2)
+        if any(k in sel.lower() for k in SKIP_SEL): continue
+        line = src.count('\n', 0, m.start()) + 1
+        hit = WHITE_TXT.search(body)
+        if hit and 'var(--white)' in hit.group(0) and not white_is_light:
+            hit = None
+        if hit and not HAS_DARK_BG.search(body):
+            out.append((line, sel[:46], "white text, no dark ground of its own"))
+        elif CLIP_TXT.search(body) and LIGHT_STOP.search(body):
+            out.append((line, sel[:46], "white gradient clipped to text — invisible on paper"))
+    return out
+
+
 def main():
     targets = []
-    for pat in ("**/*.html", "functions/**/*.js"):
+    # ALL js, not just functions/: shared components inject their own CSS.
+    # admin/_nav.js paints the admin toolbar and was missed by a
+    # functions-only sweep, leaving a near-black bar on every light admin page.
+    for pat in ("**/*.html", "**/*.js"):
         targets += glob.glob(os.path.join(ROOT, pat), recursive=True)
     targets = [t for t in targets if "node_modules" not in t and "/.git/" not in t
-               and "/docs/" not in t and "/assets/brand/" not in t]
+               and "/docs/" not in t and "/assets/brand/" not in t
+               and "/scripts/" not in t and "/cron-worker/" not in t]
     bad, nfiles = 0, 0
     for t in sorted(targets):
         hits = scan(t)
         # the /about/ cover is a photograph, not a themed surface
         if hits and t.endswith("about/index.html"):
             hits = [h for h in hits if 'cover' not in h[3].lower()]
+        hits += [(l, c, 0, why) for l, c, why in scan_text(t)]
         if hits:
             nfiles += 1
             rel = os.path.relpath(t, ROOT)
