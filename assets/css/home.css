@@ -1713,24 +1713,47 @@
             white-space: nowrap;
         }
 
+        /* 2026-08-25 — APPLE GLASS on both hero buttons (owner). The primary
+           was a flat violet fill and the secondary a plain outline; neither
+           frosted anything, so next to the glass cards they read as a
+           different material.
+
+           The primary keeps its violet IDENTITY by layering a violet tint on
+           TOP of the glass rather than instead of it, and switches to deep
+           violet text: white type on a translucent violet over paper would
+           measure around 1.4:1, which is exactly the failure this whole pass
+           has been clearing. Deep violet on the tinted glass measures ~7:1
+           and still reads as the strongest action on the page. */
         .btn-primary {
-            background: var(--violet-600);
-            color: #ffffff;
+            background:
+                linear-gradient(135deg, rgba(139, 92, 246, 0.30) 0%, rgba(109, 40, 217, 0.20) 100%),
+                rgba(255, 255, 255, 0.34);
+            backdrop-filter: saturate(200%) blur(22px);
+            -webkit-backdrop-filter: saturate(200%) blur(22px);
+            border: 1px solid rgba(109, 40, 217, 0.42);
+            color: #3d1478;
+            box-shadow: var(--shadow-1, 0 1px 2px rgba(26, 23, 38, 0.05));
         }
 
         .btn-primary:hover {
             /* 2026-08-23 — was Apple system blue #0080ff, a leftover from the
                template this was forked from: the primary CTA turned blue on a
-               purple site. Hover to a deeper brand violet instead. */
-            background: #5b21b6;
+               purple site. Hover deepens the violet tint over the same glass. */
+            background:
+                linear-gradient(135deg, rgba(139, 92, 246, 0.44) 0%, rgba(109, 40, 217, 0.34) 100%),
+                rgba(255, 255, 255, 0.34);
+            border-color: rgba(109, 40, 217, 0.6);
             transform: translateY(-1px);
-            box-shadow: 0 10px 24px -6px rgba(109, 40, 217, 0.5);
+            box-shadow: 0 10px 24px -8px rgba(109, 40, 217, 0.32);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: var(--violet-600);
-            border-color: rgba(109, 40, 217, 0.5);
+            background: rgba(255, 255, 255, 0.34);
+            backdrop-filter: saturate(200%) blur(22px);
+            -webkit-backdrop-filter: saturate(200%) blur(22px);
+            color: #5b21b6;
+            border: 1px solid rgba(109, 40, 217, 0.34);
+            box-shadow: var(--shadow-1, 0 1px 2px rgba(26, 23, 38, 0.05));
         }
 
         .btn-secondary:hover {
@@ -8683,4 +8706,12 @@ img.hero-video {
        hero that has faded to blank. Tune the tone by re-exporting the asset,
        never by fading this element. */
     opacity: 1;
+    /* NOTE — do NOT try to hide the drawing layer's edge with padding + an
+       opaque surround. Tried 2026-08-25: a rotated rectangle's EDGES still
+       cut diagonally across the viewport even when its bounding box is far
+       larger than the screen, so the surround just moves the seam and, at
+       40vw of padding, pushed the drawing itself out of view. The bounding
+       box being bigger than the viewport is not the same as the edges being
+       off-screen. Pre-rendering the ink (above) is what actually made the
+       seam faint; leave the geometry alone. */
 }
