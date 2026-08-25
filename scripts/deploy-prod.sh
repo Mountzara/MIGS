@@ -1301,6 +1301,37 @@ fi
 # a render check while the journey is broken. This walks the path and asserts
 # what a patient must be able to DO at each step. Public surfaces only, so it
 # needs no credentials.
+# ---------------------------------------------------------------------------
+# CITATION EVIDENCE GATE (2026-08-25)
+# ---------------------------------------------------------------------------
+# verify_citations.mjs proves each PMID resolves to the paper the tooltip
+# names (esummary: author, title, year). This proves the FIGURES: every
+# claim carrying a number is checked against the paper's own abstract, held
+# in scripts/pubmed_corpus.json.
+#
+# It blocks on one thing only — a cited PMID with no abstract in the corpus.
+# That has to block, because verification would otherwise skip it and report
+# FEWER findings, which reads exactly like progress. The unsupported figures
+# themselves are advisory: choosing what supports a medical claim is a
+# clinician's judgement, and a gate that blocks on 87 of those is a gate
+# everyone learns to skip.
+#
+# Offline and deterministic by construction: same tree, same result. Refresh
+# the corpus deliberately with --refresh and commit the diff.
+if [ -f scripts/cite_verify_pubmed.mjs ]; then
+    echo ""
+    echo "🔍 Citation evidence gate — every figure against the paper's own abstract..."
+    if node scripts/cite_verify_pubmed.mjs > /tmp/_cite_evidence.log 2>&1; then
+        tail -4 /tmp/_cite_evidence.log
+        echo "   ✅ citation evidence gate passed"
+    else
+        cat /tmp/_cite_evidence.log
+        echo ""
+        echo "   Full log: /tmp/_cite_evidence.log"
+        exit 1
+    fi
+fi
+
 if [ -f scripts/audit_patient_journey.py ]; then
     echo ""
     echo "🔍 Patient-journey gate — the path a patient is invited onto, walked..."
