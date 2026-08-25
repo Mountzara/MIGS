@@ -82,7 +82,7 @@
             // phones: the image IS the hero — decode is needed
             var img = new Image();
             img.decoding = 'async';
-            img.src = 'https://mountzara.com/media/hero-animation-ink-v2.webp';
+            img.src = 'https://mountzara.com/media/hero-animation-paper-v1.webp';
             window.__mzHeroPre = img;
         } else {
             // desktop: the VIDEO is the hero and this image is only the
@@ -92,7 +92,7 @@
             // shown. fetch() warms the HTTP cache with ZERO decode; if the
             // fallback is ever attached it loads instantly from cache and
             // decodes only then.
-            fetch('https://mountzara.com/media/hero-animation-ink-v2.webp',
+            fetch('https://mountzara.com/media/hero-animation-paper-v1.webp',
                   { cache: 'force-cache', mode: 'no-cors' }).catch(function () {});
         }
     } catch (e) {}
@@ -176,7 +176,7 @@
          and plays smoothly at the same file size.
          Robust fallback at startHeroSequence(): if heroVideo.play()
          rejects (autoplay genuinely blocked), JS replaces the <video>
-         with an <img src=hero-animation-ink-v2.webp> so the user never
+         with an <img src=hero-animation-paper-v1.webp> so the user never
          sees a play button. -->
     <div class="hero-bg-stage" id="heroBgStage" aria-hidden="true">
         <!-- 2026-05-27 — `autoplay` attribute REMOVED. With autoplay, the
@@ -221,8 +221,8 @@
         var v = document.getElementById('heroVideo');
         var loader = document.getElementById('pageLoader');
         if (!v) return;
-        var WEBP = 'https://mountzara.com/media/hero-animation-ink-v2.webp';
-        var LAST = 'https://mountzara.com/media/hero-last-frame-ink-v2.webp';
+        var WEBP = 'https://mountzara.com/media/hero-animation-paper-v1.webp';
+        var LAST = 'https://mountzara.com/media/hero-last-frame-paper-v1.webp';
         var touch = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;

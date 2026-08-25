@@ -8699,6 +8699,16 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
    ===================================================================== */
 img.hero-video {
     filter: none;
+    /* 2026-08-25 — THE SEAM, SOLVED, and not in CSS: the asset's field is now
+       the page's own paper (#FBFAF8) instead of white, so the layer's
+       rectangle is the same colour as everything around it and simply cannot
+       be seen. With nothing to hide, the multiply blend goes too — and multiply
+       was the mechanism that turned this element's half-transparent edge into
+       a grey diagonal in the first place. No blend, no filter, no seam.
+
+       This is why the five CSS attempts recorded below all failed: they were
+       trying to conceal an edge that only existed because of the blend. */
+    mix-blend-mode: normal;
     /* Strength is baked into the asset (the ink is composited onto its white
        field at 55%), NOT applied here. The element must stay fully opaque:
        audit_visual_runtime.py asserts #heroVideo opacity >= 0.95 under Reduce
