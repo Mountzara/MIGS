@@ -69,6 +69,23 @@ def convert_css(css):
         return m.group(0)
     css = re.sub(r'(background(?:-color)?\s*:\s*)rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([0-9.]+)\s*)?\)',
                  panel, css, flags=re.I)
+    # -- dark rgba STOPS inside gradients. The flat-panel rule above cannot
+    #    see these (family 2 all over again: a regex for one syntax says
+    #    nothing about the others). Found by the dark-surface gate's post
+    #    scan on the reference popover, which uses a gradient variant in
+    #    nine of the fifteen posts.
+    def grad_stop(m):
+        r_, g_, b_ = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        a_ = float(m.group(4) or 1)
+        if lum(r_, g_, b_) < 40 and a_ >= 0.5:
+            n[0] += 1
+            return "rgba(255,255,255,0.97)"
+        return m.group(0)
+    def in_grad(m):
+        inner = re.sub(r'rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([0-9.]+)\s*)?\)', grad_stop, m.group(2))
+        return m.group(1) + inner + ")"
+    css = re.sub(r'((?:linear|radial)-gradient\()([^;{}]*)\)', in_grad, css, flags=re.I)
+
     # low-alpha black wells (forest plot ground)
     sub(r'(background(?:-color)?\s*:\s*)rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0?\.[0-4]\d*\s*\)', r'\g<1>#F4F1EC')
     # dark hex grounds

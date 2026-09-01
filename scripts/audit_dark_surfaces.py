@@ -121,6 +121,55 @@ def scan_text(path):
     return out
 
 
+def scan_published_posts():
+    """The ninth family: posts in the mountzara-content R2 bucket carry their
+    own embedded stylesheets, and no file sweep touches them — which is how
+    the site went light in June while every brief's journal-club modal stayed
+    black. Pull each published post and run the same colour scan over its CSS.
+
+    Fails LOUD if the posts cannot be fetched: a scan that silently covered
+    zero posts would report clean, and clean-because-blind is this gate's
+    founding failure mode."""
+    import subprocess, json as _json, tempfile
+    ids, bodies = [], {}
+    for kind in ("evidence", "blog"):
+        out = subprocess.run(["curl", "-sS", "--fail-with-body",
+                              "-H", "User-Agent: mz-operator-tools/1.0 (dark-surface-gate)",
+                              f"https://mountzara.com/api/posts?kind={kind}&status=published"],
+                             capture_output=True, text=True)
+        if out.returncode != 0:
+            print(f"  ✗ POSTS UNREACHABLE (kind={kind}): {out.stderr.strip()[:90]}")
+            return None
+        for p_ in (_json.loads(out.stdout).get("posts") or []):
+            if p_["id"] not in ids:
+                ids.append(p_["id"])
+    findings = 0
+    for pid in ids:
+        out = subprocess.run(["curl", "-sS", "--fail-with-body",
+                              "-H", "User-Agent: mz-operator-tools/1.0 (dark-surface-gate)",
+                              f"https://mountzara.com/api/posts/{pid}"],
+                             capture_output=True, text=True)
+        if out.returncode != 0:
+            print(f"  ✗ POST UNREACHABLE: {pid}")
+            return None
+        doc = _json.loads(out.stdout)
+        post = doc.get("post") or doc
+        body = post.get("body_html") or post.get("body") or ""
+        css = " ".join(re.findall(r"<style[^>]*>([\s\S]*?)</style>", body)) + \
+              " ".join(re.findall(r'style="([^"]*)"', body))
+        with tempfile.NamedTemporaryFile("w", suffix=".css", delete=False) as t:
+            t.write(css); tmp = t.name
+        hits = scan(tmp)
+        os.unlink(tmp)
+        hits = [h for h in hits if "backdrop" not in h[3].lower()]
+        if hits:
+            findings += len(hits)
+            for line, col, L, decl in hits[:4]:
+                print(f"  ✗ post {pid}: {col} (lum {L})  {decl[:60]}")
+    print(f"  posts scanned: {len(ids)}, dark grounds: {findings}")
+    return findings
+
+
 def main():
     targets = []
     # ALL js, not just functions/: shared components inject their own CSS.
@@ -146,6 +195,12 @@ def main():
             if len(hits) > 6:
                 print(f"     … and {len(hits)-6} more in this file")
             bad += len(hits)
+    post_bad = scan_published_posts()
+    if post_bad is None:
+        print("\n🛑 DARK-SURFACE GATE FAILED — published posts could not be scanned.")
+        print("   A scan that covers zero posts would report clean; that is not a pass.")
+        return 1
+    bad += post_bad
     if bad:
         print(f"\n🛑 DARK-SURFACE GATE FAILED — {bad} dark ground(s) in {nfiles} file(s).")
         print("   The site is light (SYSTEM_MAP §8.0.0). Convert the ground, or if it is")
