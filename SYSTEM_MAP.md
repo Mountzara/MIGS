@@ -1683,61 +1683,81 @@ something opens it — which is exactly how the 25 education modals shipped
 inverted and unnoticed. Scrims (containers ≥95% of the viewport) are excluded
 from the ground check; a dark scrim is correct on a light theme.
 
-### 8.0.0.1 Citation popovers + the post-creation choke point (2026-09-01)
+### 8.0.0.1 Citation popovers — ONE rulebook, enforced everywhere (2026-09-01)
 
 **The requirement (owner, standing):** hovering ANY inline citation shows the
-paper's title, its PMID/meta line, and the curated plain-language summary of
-what the paper shows — on education guides, evidence briefs, trending posts,
-and every modal those surfaces open. 826 education popovers and a published
-brief shipped without this and no gate noticed, because the only popover
-check (`auditPopoverSummaries` in `functions/_lib/post_format.js`) inspected
-ONLY popovers that already carried a finding span in the current schema — a
-popover with no finding at all, or in the W20-era class schema
-(`mz-ref-title`/`-meta`/`-finding`, no `-pop-` infix), was invisible to it.
+paper's title, its journal/year/PMID meta line, and the curated
+plain-language summary of what the paper shows — on education guides,
+evidence briefs, trending posts, and every modal those surfaces open. 826
+education popovers and a published brief shipped without this; 51 post
+findings were verbatim abstract pastes; hundreds of metas carried the wrong
+thing entirely (author lists where the journal belongs; "PMID N" with no
+journal/year; citation lines mashed into the title). Root cause each time:
+**every surface had its own generation rules in its own script.**
+
+**THE RULE (owner directive, 2026-09-01): the popover rules live in ONE
+place — `functions/_lib/post_format.js`, `auditPopoverSurface()` — and every
+consumer walks surfaces into it. NEVER fork a copy of these rules into a
+per-surface script; change the module and every gate changes together.**
 
 **The spec markup** (single schema, everywhere):
-`<span class="mz-ref-pop"><span class="mz-ref-pop-title">…</span>
-<span class="mz-ref-pop-meta">…</span><span class="mz-ref-pop-finding">…</span></span>`
+`<span class="mz-ref-pop"><span class="mz-ref-pop-title">PubMed title</span>
+<span class="mz-ref-pop-meta">journal · year (education adds · PMID N)</span>
+<span class="mz-ref-pop-finding">curated summary</span></span>`
 inside `<sup class="mz-ref">`.
 
-**Two enforcement layers, one sourcing rule.**
+**The rulebook checks** (codes): `unstructured`, `missing-sourced` (summary
+absent though grounded text exists on the surface), `raw-dump` (finding
+starts with an abstract section label), `verbatim-dump` (finding is a
+contiguous copy of the paper's abstract — title-as-descriptor exempt),
+`near-empty`, `bad-title` / `bad-journal` / `bad-year` (metadata contradicts
+the paper's PubMed record; a meta year passes if ANY year in it is a PubMed
+date for the paper, so "Rev Assoc Med Bras (1992) · 2026" is fine).
+`missing-unsourced` is ADVISORY — writing "what a paper shows" is clinical
+content for the clinician, never for a gate.
 
-* **Deploy chain:** `scripts/audit_ref_popovers.py` (in `deploy-prod.sh`,
-  after the dark-surface gate). Surfaces DERIVED: education pages from the
-  tree glob, posts from the live API — a scan that covers zero posts FAILS.
-  BLOCKING: unstructured popover, or finding missing while curated text
-  exists on the same surface (education `.ref-what`, post cite-card lens).
-  ADVISORY: citations whose curated summary does not exist anywhere — those
-  are reported to the clinician, never authored by tooling.
-* **Publish choke point (`functions/_lib/post_format.js`, runs on every
-  POST/PUT/approve through `/api/posts` — this is what protects SCHEDULED
-  pipeline publishes between deploys):
-  `auditPopoverSummaries` now audits EVERY `mz-ref-pop` span (structure,
-  missing-finding-with-grounded-source, raw abstract dumps, near-empty), and
-  `auditDarkGrounds` (new) refuses a post whose embedded stylesheet paints
-  dark grounds — same colour rules and allowlist as
-  `audit_dark_surfaces.py`, because a post publishing dark between deploys
-  would sit live until the next deploy. Both are wired into
-  `auditPublishable`, so a failing auto-post is held as a draft.
+**Two enforcement layers around the one module:**
+
+* **Deploy chain:** `scripts/audit_ref_popovers.mjs` (in `deploy-prod.sh`) —
+  a WALKER only. Derives education pages from the tree and posts from the
+  live API (zero posts scanned = FAIL), and feeds each surface plus its
+  curated map into `auditPopoverSurface`. Metadata/dump facts come from the
+  committed corpus `scripts/popover_meta_corpus.json` (title / journal /
+  journal_abbrev / years / abstract for EVERY PMID cited anywhere on the
+  site, entities decoded; `--refresh` refetches, a cited PMID missing from
+  it fails the gate). Replaced `audit_ref_popovers.py` — deleted, do not
+  resurrect a second implementation.
+* **Publish choke point** (every POST/PUT/approve through `/api/posts`,
+  which is what protects SCHEDULED pipeline publishes between deploys):
+  `auditPopoverSummaries(post)` = the same `auditPopoverSurface` with the
+  post's own grounded pool; `auditDarkGrounds` refuses a dark embedded
+  stylesheet (same colour rules as `audit_dark_surfaces.py`). Both wired
+  into `auditPublishable`, so a failing auto-post is held as a draft. The
+  worker skips the metadata checks only because it has no corpus; the
+  deploy gate covers them.
 * **The heal** (`healPopoverSummaries`, runs in `autoHealBody` at ingest) is
-  grounded-only: (1) old-schema class rename (pure attribute rename, zero
-  text change), (2) raw-dump finding → the paper's own modal Bottom-line,
-  (3) missing finding filled from the modal Bottom-line or the cite card's
-  lens line (author lists and abstract dumps rejected, mirroring
-  `scripts/apply_inline_refs.py`). A citation with no grounded source in the
-  post is LEFT ALONE — writing "what a paper shows" is clinical content.
+  grounded-only: (1) W20-era class-schema rename (pure attribute rename),
+  (2) dump findings — labelled OR verbatim-paste — replaced from the paper's
+  own modal Bottom-line, (3) missing finding filled from
+  `groundedSummarySources` (Bottom-line, else cite-card lens; author lists
+  and abstract dumps rejected). No grounded source → LEFT ALONE.
 
 **Sourcing rule (unchanged, absolute):** no tool may author clinical text to
 silence a gate. Curated summaries come from the post's own cite cards /
 modal bottom-lines, the education pages' `.ref-what` blocks, or the owner.
+Metadata is different: title/journal/year are facts from PubMed and ARE
+deterministically correctable — `scripts/fix_popover_metadata.mjs` rebuilds
+every popover's title/meta from the corpus, uniformly, on every surface
+(and repaired the 2026-09-01 backlog: ~1,000 rebuilt metas/titles, 119
+dump findings replaced from grounded sources).
 
 All of it is unit-tested by `scripts/test_post_format_gate.mjs` (hard deploy
-gate; 94 checks). `scripts/fixtures/canonical_reference_post.json` carries
+gate; 101 checks). `scripts/fixtures/canonical_reference_post.json` carries
 the LIVE light stylesheet — refresh it from live W21 if the canonical
 palette ever changes again, or the dark-ground tests will fail the fixture.
-One-off repair scripts from the 2026-09-01 backfill:
-`scripts/fix_ref_popovers.py` (education pages, rebuilds from `.ref-what`),
-`scripts/fix_post_popovers.py` (posts, imports `apply_inline_refs.py` rules).
+One-off backfill scripts (2026-09-01, superseded for future work by the
+module + `fix_popover_metadata.mjs`): `scripts/fix_ref_popovers.py`,
+`scripts/fix_post_popovers.py`.
 
 
 ### 8.1 Root pages

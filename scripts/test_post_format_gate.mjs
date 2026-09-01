@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -218,6 +218,34 @@ if (healRes.ok) {
     const authorLens = findingLess.replace(/Same-day discharge[^<]*/, "Kizildemir YZ, İncebıyık M.");
     A(healPopoverSummaries(authorLens).changed === 0,
         "popover heal: an author-list lens line is rejected as a finding source");
+}
+// ---------------- POPOVER METADATA + VERBATIM DUMPS (one rulebook, 2026-09-01) ----------------
+{
+    const sup = (title, meta, finding) =>
+        `<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/42216742/">42216742</a><span class="mz-ref-pop" id="ref-pop-42216742"><span class="mz-ref-pop-title">${title}</span><span class="mz-ref-pop-meta">${meta}</span>${finding ? `<span class="mz-ref-pop-finding">${finding}</span>` : ""}</span></sup>`;
+    const meta = { 42216742: { title: "Survival after minimally invasive radical hysterectomy.", journal: "Obstetrics and gynecology", journal_abbrev: "Obstet Gynecol", years: ["2025", "2026"], abstract: "BACKGROUND: Radical hysterectomy is standard. RESULTS: Five-year survival favored open surgery in this cohort of 631 patients across 33 centers worldwide." } };
+    const abstracts = { 42216742: meta[42216742].abstract };
+    const ok = (h) => auditPopoverSurface(h, { meta, abstracts });
+    const good = sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2026", "A plain-language curated finding written in the clinician's own words.");
+    A(ok(good).problems.length === 0, "popover metadata: matching title/journal/year passes");
+    A(ok(sup("A completely different paper about something else entirely.", "Obstet Gynecol · 2026", "x".repeat(30))).problems.some((p) => p.code === "bad-title"),
+        "popover metadata: a title contradicting PubMed FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Lederman S, Ottery FD, et al.", "x".repeat(30))).problems.some((p) => p.code === "bad-journal"),
+        "popover metadata: an author list where the journal belongs FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2019", "x".repeat(30))).problems.some((p) => p.code === "bad-year"),
+        "popover metadata: a year PubMed never dates the paper FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol (1992) · 2026", "x".repeat(30))).problems.every((p) => p.code !== "bad-year"),
+        "popover metadata: a year inside the journal name does not trip bad-year when the real year matches");
+    // verbatim paste of the abstract = a dump, even without a section label
+    const paste = "Five-year survival favored open surgery in this cohort of 631 patients across 33 centers worldwide.";
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2026", paste)).problems.some((p) => p.code === "verbatim-dump"),
+        "popover finding: a verbatim abstract paste FAILS as a dump");
+    // …and the worker heal replaces a paste from the paper's own Bottom-line
+    const pasteBody = sup("T", "J · 2026", paste)
+        + `<dialog id="dd-42216742"><section class="mz-jc-section" id="dd-42216742-bottom"><h3>Bottom line</h3><p>Open surgery carried a survival advantage in this trial; minimally invasive routes need careful patient selection and counseling.</p></section><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>${meta[42216742].abstract}</p></div></dialog>`;
+    const ph2 = healPopoverSummaries(pasteBody);
+    A(ph2.changed === 1 && /Open surgery carried a survival advantage/.test(ph2.healed) && !ph2.healed.includes(`mz-ref-pop-finding">${paste}`),
+        "popover heal: a verbatim paste is replaced from the modal Bottom-line");
 }
 // ---------------- DARK-GROUND AUDIT (one light theme, 2026-09-01) ----------------
 {

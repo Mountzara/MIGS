@@ -1366,17 +1366,21 @@ fi
 # The owner's standing rule: hovering an inline citation shows the paper's
 # title, PMID and the curated plain-language summary — on education guides,
 # evidence briefs, trending posts, and every modal they open. 826 education
-# popovers shipped as bare one-liners and no gate noticed. This one derives
-# its surfaces (education pages from the tree, posts from the live API — a
-# scan that covers zero posts FAILS, it does not pass) and blocks on any
-# popover whose structure is broken or whose curated summary exists on the
-# same surface but is not wired through. Summaries that don't exist yet are
-# advisory: writing "what a paper shows" is clinical content for the owner,
-# not something a gate may author to silence itself.
-if [ -f scripts/audit_ref_popovers.py ]; then
+# popovers shipped as bare one-liners and no gate noticed. The RULES live in
+# ONE place — functions/_lib/post_format.js (auditPopoverSurface), the same
+# module the production publish gate runs — per the owner's 2026-09-01
+# directive that popover requirements apply uniformly site-wide from a
+# single source. This script is only the walker: it derives the surfaces
+# (education pages from the tree, posts from the live API — a scan that
+# covers zero posts FAILS, it does not pass) and checks every popover
+# against the committed PubMed corpus (structure, sourced summaries, no
+# abstract dumps, metadata faithful to PubMed). Summaries that don't exist
+# yet are advisory: writing "what a paper shows" is clinical content for
+# the owner, not something a gate may author to silence itself.
+if [ -f scripts/audit_ref_popovers.mjs ]; then
     echo ""
     echo "🔍 Ref-popover gate — every citation hover carries title, PMID, summary..."
-    if python3 scripts/audit_ref_popovers.py > /tmp/_ref_popovers.log 2>&1; then
+    if node scripts/audit_ref_popovers.mjs > /tmp/_ref_popovers.log 2>&1; then
         tail -2 /tmp/_ref_popovers.log
         echo "   ✅ ref-popover gate passed"
     else
