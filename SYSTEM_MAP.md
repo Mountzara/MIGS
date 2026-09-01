@@ -2183,6 +2183,20 @@ gzips via CompressionStream, PUTs to `mountzara-backups/d1/<UTC-date>.ndjson.gz`
 the cron-worker's enumerated table list (`cron-worker/src/index.js`)
 or it won't be backed up.
 
+**Content-pipeline stale-alert email (2026-09-01).** The daily 09:00 run
+also fires `runContentStaleAlert` → `POST
+/api/v1/internal/content/stale-alert` (Pages, X-Pipeline-Token — email
+delivery lives in the Pages runtime). The endpoint checks two facts and
+EMAILS the owner (`ALERT_EMAIL` || first `ADMIN_EMAILS`): newest published
+post older than 8 days (the Mac digest pipeline has stopped), and trend
+briefs sitting `pending` review longer than 7 days (the queue is waiting
+on a human and nobody knows). Throttles itself to one email per 7 days via
+its own `audit_log` rows (`action=content_stale_email`); counts and admin
+links only, no clinical content. This closes the freshness check's
+documented "KNOWN GAP: no mailer" — the W29 stall sat unnoticed for seven
+weeks with 15 briefs pending because the audit row existed and nothing
+told a human.
+
 ---
 
 ## 13. `scripts/*` — deploy chain + tooling (~129 files)

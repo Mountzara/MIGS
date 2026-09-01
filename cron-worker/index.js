@@ -225,6 +225,34 @@ async function runContentFreshnessCheck(env) {
 
 
 // =====================================================================
+// Content-pipeline stale-alert EMAIL (daily, piggybacks the 09:00 backup)
+// =====================================================================
+// 2026-09-01 — closes the "KNOWN GAP: no mailer exists yet" above. The
+// freshness check writes its audit row; this delegates the actual
+// alerting (posts stale > 8d, trend briefs pending > 7d, one email per
+// week max) to the Pages endpoint, because email delivery lives in the
+// Pages runtime. The endpoint throttles itself, so firing daily is safe.
+// The W29 stall sat unnoticed for SEVEN WEEKS with 15 briefs pending in
+// review — the audit row existed the whole time; nothing told a human.
+async function runContentStaleAlert(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("content stale-alert: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/content/stale-alert", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`content stale-alert: HTTP ${r.status} alert=${j.alert ?? "?"} emailed=${j.emailed ?? "?"} ` +
+                    `throttled=${j.throttled ?? false} newest_age=${j.newest_post_age_days ?? "?"}d pending=${j.pending_briefs ?? "?"}`);
+    } catch (e) {
+        console.error("content stale-alert failed", { error: String(e?.message || e) });
+    }
+}
+
+// =====================================================================
 // Triage auto-release (hourly)
 // =====================================================================
 // admin/triage/index.html promises, in the panel he works from: "Rows
@@ -352,6 +380,7 @@ export default {
         }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));
         ctx.waitUntil(runContentFreshnessCheck(env));
+        ctx.waitUntil(runContentStaleAlert(env));
     },
 
     /**
