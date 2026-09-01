@@ -5277,7 +5277,12 @@
             inset: 0;
             z-index: 250;
             display: flex;
-            align-items: stretch;
+            /* 2026-08-25 — was stretch, which pulled every card to full
+               viewport height and top-anchored its content: a short modal
+               (an app card, a practice-area brief) read as pinned to the
+               top-left with a dead lower third. Centre the card and let its
+               own max-height + inner scroll handle the tall ones. */
+            align-items: center;
             justify-content: center;
             background: rgba(8, 8, 10, 0);
             backdrop-filter: blur(0px);
@@ -5936,7 +5941,7 @@
         }
 
         @media (max-width: 768px) {
-            .app-modal-card { margin: 12px; max-height: calc(100vh - 24px); border-radius: 22px; }
+            .app-modal-card { margin: 12px auto; max-height: calc(100vh - 24px); border-radius: 22px; }
             .app-modal-hero { padding: 44px 24px 32px; }
             .app-modal-body { padding: 36px 24px; }
             .app-modal-section { margin-bottom: 40px; }
@@ -8188,6 +8193,16 @@ section:not(.about-section) .section-eyebrow { color: var(--violet-600) !importa
            back at the unreadable measure it was rescued from.
            ===================================================================== */
         .mz-read {
+            /* 2026-08-25 — CENTERED EXPLICITLY. A <dialog> centres itself via
+               the UA's `margin: auto`, and this page's universal reset
+               (* { margin: 0 }) silently removes that, leaving the sheet
+               pinned to the viewport's top-left corner. Same trap, same fix
+               as the evidence pages' journal-club modal ("The shell's
+               universal reset overrode the UA's dialog margin:auto"). */
+            position: fixed;
+            inset: 0;
+            margin: auto;
+            height: fit-content;
             width: min(94vw, 900px);
             max-width: 900px;
             max-height: min(90vh, 1000px);
