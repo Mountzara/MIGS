@@ -2183,6 +2183,19 @@ gzips via CompressionStream, PUTs to `mountzara-backups/d1/<UTC-date>.ndjson.gz`
 the cron-worker's enumerated table list (`cron-worker/src/index.js`)
 or it won't be backed up.
 
+**KB grounding for the content pipeline (2026-09-01).**
+`functions/api/v1/internal/kb/ground.js` — POST, X-Pipeline-Token or
+admin auth — exposes `groundClinical()` (the one retrieval rulebook in
+`_lib/clinical_grounding.js`, over the production `kb_docs` FTS5 index,
+1,500 docs) to producer sessions, so cloud-side brief/post generation
+grounds its clinical framing in the curated KB, never model memory
+(§0.8.1 constitution). Thin wrapper only: retrieval logic and per-kind
+policies stay in the lib. Companion config: R2 `mountzara-content`
+`config/trend-watchlist.json` — the claim ledger (seeded from the
+trend_brief_pending history) plus the owner-supplied influencer watch
+list (empty until he provides it; the Mac pipeline's list never reached
+the server, which is why every 2026-07-28 brief carries influencer=null).
+
 **Content-pipeline stale-alert email (2026-09-01).** The daily 09:00 run
 also fires `runContentStaleAlert` → `POST
 /api/v1/internal/content/stale-alert` (Pages, X-Pipeline-Token — email
