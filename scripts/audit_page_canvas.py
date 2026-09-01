@@ -69,7 +69,15 @@ def main():
         browser, engine, note = launch_engine(p, "webkit")
         if note:
             print("NOTE:", note)
-        ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+        # DARK color-scheme emulation is the point: a transparent document
+        # renders on the engine's canvas, which is WHITE in the default lab
+        # and would false-pass. Dark emulation makes the canvas dark, so a
+        # route that lost its opaque paper ground fails here the same way
+        # it fails a dark-mode Safari visitor. (Shipped one deploy AFTER the
+        # guards, deliberately — pre-guard live routes would have deadlocked
+        # the deploy that carried the fix.)
+        ctx = browser.new_context(viewport={"width": 1280, "height": 900},
+                                  color_scheme="dark")
         page = ctx.new_page()
         for route in routes:
             try:
