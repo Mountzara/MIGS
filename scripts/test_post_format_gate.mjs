@@ -246,6 +246,19 @@ if (healRes.ok) {
     const ph2 = healPopoverSummaries(pasteBody);
     A(ph2.changed === 1 && /Open surgery carried a survival advantage/.test(ph2.healed) && !ph2.healed.includes(`mz-ref-pop-finding">${paste}`),
         "popover heal: a verbatim paste is replaced from the modal Bottom-line");
+
+    // SOURCING GUARDS (2026-09-01, caught live on W21/W24): a Bottom-line cut
+    // off mid-sentence, or carrying an editorial placeholder, must NEVER be
+    // used as a finding source — three popovers quoted a truncated/stub
+    // Bottom-line and the structural gate blocked the deploy.
+    const truncBody = sup("T", "J · 2026", "")
+        .replace('</span></span></sup>', '</span></span></sup>')  // no finding span present
+        + `<dialog id="dd-42216742"><section class="mz-jc-section" id="dd-42216742-bottom"><h3>Bottom line</h3><p>In this prospective FET cohort of 589 cycles the protocol favored patients who</p></section></dialog>`;
+    A(healPopoverSummaries(truncBody).changed === 0,
+        "sourcing guard: a mid-sentence-truncated Bottom-line is never used as a finding");
+    const stubBody = truncBody.replace(/In this prospective[^<]*/, "The bottom line for the surgeon [Note: confirm effect size before publication] is that this changes practice.");
+    A(healPopoverSummaries(stubBody).changed === 0,
+        "sourcing guard: a Bottom-line carrying an editorial [Note:] placeholder is never used");
 }
 // ---------------- DARK-GROUND AUDIT (one light theme, 2026-09-01) ----------------
 {

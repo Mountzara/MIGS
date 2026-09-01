@@ -380,6 +380,20 @@ function isAuthorList(t) {
     return !core.split(/\s+/).some((w) => w.length >= 4 && /^\p{Ll}/u.test(w));
 }
 
+// A candidate summary-source is usable only when it reads as FINISHED
+// authored prose: it must end in terminal punctuation (a Bottom-line cut
+// off mid-sentence propagates a truncation into every popover that quotes
+// it — caught live 2026-09-01 on W21/W24), and must carry no editorial
+// placeholder ("[Note: …]", "Pending …review") — those are author-stubs,
+// not findings.
+function usableSummarySource(c) {
+    if (c.length < 80 || RAW_ABSTRACT_LABEL.test(c)) return false;
+    if (!/[.!?]["')\]]?$/.test(c)) return false;
+    if (/\[Note:/i.test(c)) return false;
+    if (/pending\b[^.]{0,40}\breview\b/i.test(c)) return false;
+    return true;
+}
+
 // pmid -> the paper's modal Bottom-line (cleaned; only when adequate).
 function modalBottomLines(h) {
     const bl = {};
@@ -389,7 +403,7 @@ function modalBottomLines(h) {
         const s = dm[2].match(/id="dd-\d+-bottom"[^>]*>([\s\S]*?)<\/section>/);
         if (!s) continue;
         const c = cleanBottomLine(visibleText(s[1]));
-        if (c.length >= 80 && !RAW_ABSTRACT_LABEL.test(c)) bl[dm[1]] = c;
+        if (usableSummarySource(c)) bl[dm[1]] = c;
     }
     return bl;
 }
@@ -416,7 +430,9 @@ function citeCardLenses(h) {
             const i1 = txt.indexOf(":"), i2 = txt.indexOf(":", i1 + 1);
             txt = (i2 >= 0 ? txt.slice(i2 + 1) : txt.slice(i1 + 1)).trim();
         }
-        if (txt.length >= 30 && !RAW_ABSTRACT_LABEL.test(txt) && !isAuthorList(txt)) out[pmid] = txt;
+        if (txt.length >= 30 && !RAW_ABSTRACT_LABEL.test(txt) && !isAuthorList(txt)
+            && /[.!?]["')\]]?$/.test(txt) && !/\[Note:/i.test(txt)
+            && !/pending\b[^.]{0,40}\breview\b/i.test(txt)) out[pmid] = txt;
     }
     return out;
 }
