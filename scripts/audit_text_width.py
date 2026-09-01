@@ -78,6 +78,12 @@ JS = r"""() => {
     // Content inside a CLOSED <details> still reports geometry in WebKit —
     // skip it; only rendered text can wrap wrong.
     if (el.closest("details:not([open])")) continue;
+    // Explicit design opt-out: an element (or ancestor) carrying
+    // data-widthok documents that its placement is deliberate (e.g. the
+    // /about/ cover deck anchored bottom-left to stay off the photographed
+    // face). The attribute is the audit trail — reviewers see the intent
+    // in the markup itself.
+    if (el.closest("[data-widthok]")) continue;
     // TRUE line-box geometry: rects of the element's VISIBLE text nodes,
     // grouped by line top — a line's width is the span from its leftmost
     // fragment to its rightmost. Two false-positive sources excluded:
@@ -147,9 +153,11 @@ JS = r"""() => {
                   sample: own.slice(0, 90) };
     if (avail > 800 && elW < 0.62 * avail && !centered) { rec.kind = "narrow-off-center"; out.push(rec); continue; }
     // An INLINE element that starts mid-line wraps "early" by normal flow —
-    // only block-level boxes can genuinely wrap prematurely.
+    // only block-level boxes can genuinely wrap prematurely. And in a box
+    // under ~320px (grid cards, pills) word length dictates where lines
+    // break — that granularity is not a wrap defect.
     const isBlockish = !cs.display.startsWith("inline");
-    if (isBlockish && maxLine > 0 && maxLine < 0.72 * elW) { rec.kind = "premature-wrap"; out.push(rec); continue; }
+    if (isBlockish && elW >= 320 && maxLine > 0 && maxLine < 0.72 * elW) { rec.kind = "premature-wrap"; out.push(rec); continue; }
     if (avail > 900 && elW < 420) { rec.kind = "tiny-measure"; out.push(rec); continue; }
   }
   return out;

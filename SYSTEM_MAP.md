@@ -1724,6 +1724,36 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+### 8.0.0.0b Text width + hero motion are MEASURED, not eyeballed (2026-09-02)
+
+**Owner reports:** "text wraps to next line in middle of page, doesn't use
+the entire width where it should — widespread throughout the ENTIRE
+website," and "the opening page animation is stalling AGAIN — prevent
+this from breaking after every revision."
+
+* **`scripts/audit_text_width.py`** (deploy gate) — renders every derived
+  route at 1440px and measures true line-box geometry per text block
+  (rects of visible text nodes grouped per line; grid/flex cells use
+  their own track as available width; inline elements, boxes <320px,
+  closed-`<details>` content, hidden descendants and `data-widthok`
+  opt-outs exempt). Flags narrow-off-center columns beside dead space,
+  premature mid-box wraps, tiny measures in wide containers. The
+  2026-09-02 sweep found 72 blocks/12 signatures; headline cause: 20
+  education pages declared `<section class="key-facts">` while the CSS
+  styles `.facts` — the stat grid NEVER applied and cards rendered as
+  stacked full-width strips. All fixed (also: curriculum subtitles,
+  admin ledes, /cv/ tagline, portal greeting widened; /about/ cover deck
+  judged intentional and annotated `data-widthok`; bonus: /about/
+  scene-2 headline was invisible from a malformed gradient — fixed).
+  Now CLEAN on all 92 routes.
+* **`scripts/audit_hero_motion.py`** (deploy gate) — the fingerprint lock
+  protects the animation CODE; this proves the RENDERED lifecycle on
+  desktop + iPhone emulation: hero media decoded, visible motion between
+  early and settled frames, IMG src reaching the last-frame asset (or
+  VIDEO reaching its end) within 16s, no stuck intro overlay, no page
+  errors. A halted script, renamed asset, broken handoff or endless
+  spinner now fails the deploy instead of reaching the owner.
+
 ### 8.0.0.1 Citation popovers — ONE rulebook, enforced everywhere (2026-09-01)
 
 **The requirement (owner, standing):** hovering ANY inline citation shows the
