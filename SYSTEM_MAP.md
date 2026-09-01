@@ -2183,6 +2183,24 @@ gzips via CompressionStream, PUTs to `mountzara-backups/d1/<UTC-date>.ndjson.gz`
 the cron-worker's enumerated table list (`cron-worker/src/index.js`)
 or it won't be backed up.
 
+**Cloud content producer (2026-09-01) — the Mac pipeline's replacement.**
+The Mac `MountZaraResearchDigest` producer died after 2026-07-28 (last
+published post W29 2026-07-13; 24 briefs stranded `pending`; its KB
+retrieval was already broken — `kb_manifest.fell_back_to_empty=true` on
+the whole 7/28 batch — and its influencer list never reached the server).
+Its job now runs as scheduled Claude sessions per
+`scripts/cloud_producer_runbook.md` — THE manual: constitution (never
+publish, KB+PubMed grounding only, clinician text stays clinician-owned,
+fail loud), both flows (Tuesday trend briefs via
+`/api/v1/admin/trend-briefs/pending-review`; pull of approved overrides →
+light-format draft posts → `/finalize`; Monday digest drafts), the
+verbatim 32-row §3.8 audit table, template anatomy, light palette, and
+the Routine definitions. Supporting pieces: the KB endpoint below; R2
+`config/trend-watchlist.json`; `scripts/relight_pending_briefs.py`
+(converted all 24 stranded pending bodies dark→light in R2 on 2026-09-01
+— they rendered white-on-paper in the admin preview shell, which is part
+of why review stalled; prose asserted byte-identical outside styling).
+
 **KB grounding for the content pipeline (2026-09-01).**
 `functions/api/v1/internal/kb/ground.js` — POST, X-Pipeline-Token or
 admin auth — exposes `groundClinical()` (the one retrieval rulebook in
