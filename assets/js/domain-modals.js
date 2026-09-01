@@ -60,7 +60,7 @@
                         intro: 'CPG-acknowledged option when symptoms are mild and infertility is not a near-term goal. Always paired with structured tracking.',
                         items: [
                             'Best for mild pain, no near-term fertility plan, no organ involvement on imaging.',
-                            'NSAIDs (ibuprofen 400–800 mg q6–8 h or naproxen 500 mg BID) are first-line analgesia per CPG.',
+                            'NSAIDs are first-line analgesia per the CPG.',
                             'Track symptoms with a pain-and-bleeding diary so a change is recognized early.',
                             'Pelvic floor physical therapy is under-used and helps the musculoskeletal contributors.'
                         ],
@@ -72,8 +72,8 @@
                         items: [
                             'Combined oral contraceptives — first-line for dysmenorrhea; continuous use often performs better than cyclic.',
                             'Oral norethindrone or depot medroxyprogesterone — Level B evidence; equivalent to more expensive regimens.',
-                            'Long-term (≥24 months) OC use reduces endometrioma recurrence and dysmenorrhea recurrence (Level B).',
-                            'GnRH agonist 3-month empiric trial after OC + NSAID failure is appropriate (Level B); add-back therapy supports continued use.',
+                            'Long-term OC use reduces endometrioma recurrence and dysmenorrhea recurrence (Level B).',
+                            'A time-limited empiric GnRH-agonist trial after first-line therapy fails is CPG-supported (Level B); add-back therapy supports continued use.',
                             'Elagolix (oral GnRH antagonist) — newer option for moderate-to-severe pain per the NEJM randomized trials (Taylor et al.).',
                             'Suppression is NOT a fertility treatment (Level A — explicitly).'
                         ],
@@ -150,7 +150,7 @@
             {
                 eyebrow: 'Evidence and outcomes',
                 title: 'What the data show.',
-                body: `<p>Compared to open abdominal myomectomy, laparoscopic myomectomy reduces blood loss, shortens hospital stay, and speeds the return of bowel function — at the cost of a longer operation — in a meta-analysis of 12 randomized trials totaling 1,783 patients (Chen, BMC Surgery 2020). GnRH agonist pretreatment for 2–3 months to shrink fibroids and improve preoperative anemia in patients with very heavy menstrual bleeding is an option described in ACOG Practice Bulletin 228. The risk of finding an unsuspected leiomyosarcoma is low — about 0.51 per 1,000 operations for presumed fibroids, roughly 1 in 2,000, per the Cochrane review of morcellation for laparoscopic myomectomy — but it is not zero, which is why contained extraction is standard.</p>`,
+                body: `<p>Compared to open abdominal myomectomy, laparoscopic myomectomy reduces blood loss, shortens hospital stay, and speeds the return of bowel function — at the cost of a longer operation — in a meta-analysis of 12 randomized trials totaling 1,783 patients (Chen, BMC Surgery 2020). A time-limited course of GnRH agonist pretreatment to shrink fibroids and improve preoperative anemia in patients with very heavy menstrual bleeding is an option described in ACOG Practice Bulletin 228. The risk of finding an unsuspected leiomyosarcoma is low — about 0.51 per 1,000 operations for presumed fibroids, roughly 1 in 2,000, per the Cochrane review of morcellation for laparoscopic myomectomy — but it is not zero, which is why contained extraction is standard.</p>`,
                 stats: [
                     { num: '~70%', label: 'of women have fibroids by menopause; only ~25% are clinically significant', source: 'ACOG · clinical synthesis' },
                     { num: '2–3×', label: 'higher fibroid prevalence in Black women than in White women', source: 'ACOG · epidemiology' },
@@ -180,7 +180,7 @@
                             'Tranexamic acid — non-hormonal, taken only on heavy days; an option for fibroid-related heavy bleeding in ACOG Practice Bulletin 228.',
                             'Combined oral contraceptives or progestin-only pills — reduce bleeding and cycle regularity.',
                             'GnRH antagonist with hormone add-back (elagolix combination) — reduced heavy menstrual bleeding in the Elaris UF phase 3 trials (Schlaff, NEJM 2020); a bridge for patients deferring surgery.',
-                            'GnRH agonists (Lupron) for 2–3 months before surgery to shrink fibroids and correct anemia.'
+                            'GnRH agonists (Lupron) as a time-limited course before surgery to shrink fibroids and correct anemia.'
                         ],
                         note: 'Medications address bleeding well; they do not address pressure symptoms.'
                     },
@@ -507,7 +507,7 @@
                 eyebrow: 'What to expect',
                 title: 'The arc of an office hysteroscopy visit.',
                 timeline: [
-                    { stage: 'Before the visit', body: 'A brief check-in by phone or portal — confirm timing relative to your cycle (best in the early proliferative phase if you menstruate), arrange for a ride home if you would prefer (most do not need one), and review medications. Take 600–800 mg of ibuprofen 30 minutes before arrival.' },
+                    { stage: 'Before the visit', body: 'A brief check-in by phone or portal — confirm timing relative to your cycle (best in the early proliferative phase if you menstruate), arrange for a ride home if you would prefer (most do not need one), and review medications, including whether to take an NSAID such as ibuprofen shortly before arrival.' },
                     { stage: 'During the visit', body: 'You change into a gown but remain awake the entire time. No speculum. No tenaculum in most cases. The hysteroscope is gently advanced into the vagina under saline flow, through the cervix, and into the cavity. The full inspection takes 3–5 minutes; a small polypectomy or biopsy adds another 5–15. Most patients describe it as a strong, brief cramp.' },
                     { stage: 'After the visit', body: 'You can drive home, return to work, or run errands. Mild cramping and light spotting for 24–48 hours are normal. No restrictions on intercourse, exercise, or tampons unless you had a biopsy or polypectomy (then wait 24 hours).' },
                     { stage: 'Follow-up', body: 'Biopsy results in 5–10 days. A short visit (or phone call) to review the findings and decide on next steps. Many patients leave the diagnostic office hysteroscopy with both an answer and a plan.' }
@@ -807,7 +807,7 @@
                 eyebrow: 'What to expect',
                 title: 'The arc of a pelvic reconstruction.',
                 timeline: [
-                    { stage: 'Before surgery', body: 'A complete pelvic exam (POP-Q staging), urodynamic testing if urinary symptoms coexist, a discussion of compartment-specific findings (anterior, apical, posterior), and an honest review of every option — pessary, pelvic floor therapy, and native-tissue repair, with referral when a mesh-augmented repair elsewhere would serve you better. Vaginal estrogen for 2–4 weeks pre-op if atrophic. ERAS optimization.' },
+                    { stage: 'Before surgery', body: 'A complete pelvic exam (POP-Q staging), urodynamic testing if urinary symptoms coexist, a discussion of compartment-specific findings (anterior, apical, posterior), and an honest review of every option — pessary, pelvic floor therapy, and native-tissue repair, with referral when a mesh-augmented repair elsewhere would serve you better. Vaginal estrogen pre-op if atrophic. ERAS optimization.' },
                     { stage: 'Day of surgery', body: 'General or regional anesthesia. The operation is compartment-specific and may combine routes (vaginal native-tissue repair plus laparoscopic apical suspension, for example). A cystoscopy at the end confirms bladder and ureteric integrity. Most patients go home the same day or after an overnight stay.' },
                     { stage: 'First 6 weeks', body: 'Pelvic rest (no tampons, no intercourse, no heavy lifting). Stool softener daily. Pelvic floor PT often starts at 6 weeks, though some surgeons begin gentle protocols sooner.' },
                     { stage: 'Beyond 6 weeks', body: 'Gradual return to full activity. Long-term follow-up to monitor for recurrence, with pelvic floor PT maintenance and steady management of constipation, chronic cough, and weight to protect the repair. Most patients describe substantial quality-of-life improvement.' }

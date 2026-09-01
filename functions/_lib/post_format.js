@@ -219,7 +219,7 @@ export function auditAbstractCompleteness(post) {
 // ---------------------------------------------------------------------
 export function auditPublishable(post) {
     const fmt = auditPostFormat(post);
-    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post), auditModalPlaceholders(post), auditDarkGrounds(post)];
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post), auditModalPlaceholders(post), auditDarkGrounds(post), auditDosingLanguage(post)];
     const problems = checks.flatMap((c) => c.problems);
     return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
 }
@@ -620,6 +620,38 @@ export function groundedSummarySources(html) {
 // neutral threshold, outside the brand-violet/semantic-tint allowlist and not
 // in a scrim/backdrop/photo context, must not publish. Deterministic+offline.
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Dosing-language audit (2026-09-01). Owner directive, verbatim: "I NEVER
+// want you to post actual dosing and things that really should be
+// reserved for private patient-doctor decisions about management." The
+// boundary: counseling/narrative prose is DOSE-FREE; text attributed to a
+// specific paper — verbatim abstracts, the deep-dive dialog analyses, the
+// per-paper cite cards and citation popovers — is research reporting and
+// keeps the study's own facts (an analysis that cannot say what dose a
+// trial tested is not an analysis). Deterministic + offline. The deploy-
+// side twin over the static surfaces is scripts/audit_no_dosing.py.
+// ---------------------------------------------------------------------
+const DOSING_RE = /\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b|\b(?:BID|TID|QID)\b/gi;
+export function auditDosingLanguage(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    let h = typeof post.body_html === "string" ? post.body_html : "";
+    h = h.replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/gi, " ")
+        .replace(/<details class="mz-abstract">[\s\S]*?<\/details>/gi, " ")
+        .replace(/<div class="abstract-body">[\s\S]*?<\/div>/gi, " ")
+        .replace(/<dialog\b[\s\S]*?<\/dialog>/gi, " ")
+        .replace(/<article class="mz-cite-card[\s\S]*?<\/article>/gi, " ")
+        .replace(/<sup class="mz-ref"[\s\S]*?<\/sup>/gi, " ")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+        .replace(/<[^>]+>/g, " ");
+    const found = [...new Set((h.match(DOSING_RE) || []).map((s) => s.trim()))];
+    if (found.length) {
+        problems.push(`counseling/narrative prose carries dosing (${found.slice(0, 6).join(", ")}) — dosing belongs to private patient-doctor management decisions, never to the site's own prose. Study doses stay inside the paper's attributed containers (abstract, deep-dive analysis, cite card).`);
+    }
+    return { ok: problems.length === 0, problems };
+}
+
 const THEME_ALLOW_HEX = new Set(["#2e1065", "#6d28d9", "#7c3aed", "#4c1d95", "#5b21b6", "#047857",
     "#166534", "#14532d", "#7c2d12", "#92400e", "#b91c1c", "#991b1b", "#3d1478"]);
 const THEME_SCRIM_HINT = /(backdrop|overlay|scrim|::backdrop|vignette|cover-|photo|darkener)/i;
@@ -1184,4 +1216,4 @@ export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {
     return { ok: true, healed: h, changed, fetched, problems };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, groundedSummarySources, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, auditDosingLanguage, groundedSummarySources, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };

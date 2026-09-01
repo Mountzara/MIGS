@@ -1392,6 +1392,54 @@ if [ -f scripts/audit_ref_popovers.mjs ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# NO-DOSING GATE (2026-09-01) — owner directive: no dosing in counseling prose.
+# ---------------------------------------------------------------------------
+# "I NEVER want you to post actual dosing and things that really should be
+# reserved for private patient-doctor decisions about management." Counseling
+# prose is dose-free everywhere; text attributed to a specific paper (verbatim
+# abstracts, deep-dive analyses, cite cards, popovers, ref-list entries) is
+# research reporting and keeps the study's own facts. Also enforces the
+# standing medico-legal disclaimer (mz-eddisclaimer) on every educational
+# surface. Surfaces derived (tree + posts API, fails loud). Worker twin:
+# auditDosingLanguage in functions/_lib/post_format.js.
+if [ -f scripts/audit_no_dosing.py ]; then
+    echo ""
+    echo "🔍 No-dosing gate — counseling prose dose-free, disclaimers present..."
+    if python3 scripts/audit_no_dosing.py > /tmp/_no_dosing.log 2>&1; then
+        tail -1 /tmp/_no_dosing.log
+        echo "   ✅ no-dosing gate passed"
+    else
+        cat /tmp/_no_dosing.log
+        echo ""
+        echo "   Full log: /tmp/_no_dosing.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# PAGE-CANVAS GATE (2026-09-01) — every route's ground is opaque paper.
+# ---------------------------------------------------------------------------
+# The light conversion left html/body TRANSPARENT on most routes (only tint
+# gradients painted), so the ground became the visitor's browser canvas —
+# grey in dark-mode Safari; the owner saw "an ugly grey". Runtime check over
+# every derived route: the document must compute an OPAQUE paper-family
+# ground. fix_page_canvas.py appends the guard style; this proves the
+# rendered result.
+if [ -f scripts/audit_page_canvas.py ]; then
+    echo ""
+    echo "🔍 Page-canvas gate — every route grounds on opaque paper..."
+    if python3 scripts/audit_page_canvas.py https://mountzara.com > /tmp/_page_canvas.log 2>&1; then
+        tail -1 /tmp/_page_canvas.log
+        echo "   ✅ page-canvas gate passed"
+    else
+        cat /tmp/_page_canvas.log
+        echo ""
+        echo "   Full log: /tmp/_page_canvas.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # LIGHT-TEXT GATE (2026-08-25) — no text the same brightness as its ground.
 # ---------------------------------------------------------------------------
 # Runtime companion to the dark-surface gate, and the one that covers BREADTH.

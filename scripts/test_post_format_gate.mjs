@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, auditDosingLanguage, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -259,6 +259,23 @@ if (healRes.ok) {
     const stubBody = truncBody.replace(/In this prospective[^<]*/, "The bottom line for the surgeon [Note: confirm effect size before publication] is that this changes practice.");
     A(healPopoverSummaries(stubBody).changed === 0,
         "sourcing guard: a Bottom-line carrying an editorial [Note:] placeholder is never used");
+}
+// ---------------- DOSING LANGUAGE (owner directive, 2026-09-01) ----------------
+{
+    const card = `<article class="mz-cite-card" id="mz-cite-9"><h3 class="mz-cite-title">t</h3><p class="mz-cite-fits">Phase-3 RCT of fezolinetant 30 mg or 45 mg daily vs placebo reduced vasomotor symptoms.</p></article>`;
+    const modal = `<dialog id="dd-9"><section class="mz-jc-section" id="dd-9-findings"><p>Intrathecal morphine 0.15 mg gave lower pain scores than 0.10 mg.</p></section></dialog>`;
+    A(auditDosingLanguage({ kind: "blog", body_html: card + modal + `<div class="mz-post-narrative">NSAIDs are first-line analgesia per the CPG.</div>` }).ok,
+        "dosing: study doses inside cite cards and deep-dive analyses are research reporting and PASS");
+    A(!auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-counseling"><p>Take ibuprofen 400–800 mg q6–8 h for cramping.</p></div>` }).ok,
+        "dosing: a dose in counseling prose FAILS");
+    A(!auditDosingLanguage({ kind: "evidence", body_html: `<div class="mz-post-narrative">Naproxen 500 mg BID outperformed placebo in our framing.</div>` }).ok,
+        "dosing: BID frequency in narrative prose FAILS");
+    A(auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-jc-abstract-body"><p>Patients received 2.5 mg letrozole daily.</p></div>` }).ok,
+        "dosing: verbatim abstract text is exempt");
+    A(auditDosingLanguage({ kind: "claim_proposal", body_html: `<p>50 mg</p>` }).ok,
+        "dosing: non-clinical kind exempt");
+    A(!auditPublishable({ kind: "blog", body_html: `<article class="mz-cite-card"><h3 class="mz-cite-title">t</h3></article><div class="mz-counseling">Start norethindrone 5 mg daily.</div>` }).publishable,
+        "publish gate: counseling dosing is NOT publishable");
 }
 // ---------------- DARK-GROUND AUDIT (one light theme, 2026-09-01) ----------------
 {
