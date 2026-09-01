@@ -8766,3 +8766,43 @@ img.hero-video {
        the page can paint it with no transform at all and there is no rotated
        edge to resample. That is an asset change, not a CSS one. */
 }
+
+/* ============================================================
+   NAV CTA AS AN ANCHOR (2026-09-02). The top-bar CTA became a link
+   (Member Sign-Up -> /portal/signup/), and the generic nav link rules
+   (.nav-links a — ink text, 400 weight, 48px line-height, 0 12px
+   padding; nav a — inline-flex) out-specify .nav-cta (a bare class),
+   which rendered near-invisible ink-on-violet text in a squashed pill.
+   These selectors out-specify all of them. Keep the pill identical to
+   the button it replaced: white text, violet ground, both themes of
+   interaction. If the CTA ever changes element again, this block is
+   the contract for how it must render.
+   ============================================================ */
+.main-nav .nav-links a.nav-cta {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: normal;
+    padding: 9px 16px;
+    background: var(--violet-600);
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.main-nav .nav-links a.nav-cta:hover {
+    color: #ffffff;
+    background: var(--violet-700);
+    transform: translateY(-1px);
+}
+@media (max-width: 1180px) {
+    .main-nav .nav-links a.nav-cta {
+        display: flex;
+        width: 100%;
+        font-size: 16px;
+        padding: 15px 18px;      /* >=48px tap target */
+        text-align: center;
+    }
+}
