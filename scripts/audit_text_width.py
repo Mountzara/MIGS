@@ -75,19 +75,36 @@ JS = r"""() => {
     if (r.width === 0 || r.height === 0 || r.bottom < 0) continue;
     if (seenText.has(own.slice(0, 80))) continue;
     seenText.add(own.slice(0, 80));
-    // TRUE line-box geometry: range over ALL contents (inline children
-    // included), rects grouped by line top — a line's width is the span
-    // from its leftmost fragment to its rightmost. Per-text-node rects
-    // false-positive on any paragraph carrying <em>/<strong>/<a>.
-    const range = document.createRange();
-    range.selectNodeContents(el);
+    // Content inside a CLOSED <details> still reports geometry in WebKit —
+    // skip it; only rendered text can wrap wrong.
+    if (el.closest("details:not([open])")) continue;
+    // TRUE line-box geometry: rects of the element's VISIBLE text nodes,
+    // grouped by line top — a line's width is the span from its leftmost
+    // fragment to its rightmost. Two false-positive sources excluded:
+    // per-text-node measurement (paragraphs carrying <em>/<strong>/<a>
+    // split into short fragments) and hidden descendants (the
+    // visibility:hidden citation popovers still return range rects).
     const byTop = new Map();
-    for (const rr of range.getClientRects()) {
-      if (rr.width < 4 || rr.height < 4) continue;
-      const k = Math.round(rr.top / 6);
-      const g = byTop.get(k) || { l: rr.left, r: rr.right };
-      g.l = Math.min(g.l, rr.left); g.r = Math.max(g.r, rr.right);
-      byTop.set(k, g);
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let tn;
+    while ((tn = tw.nextNode())) {
+      if (!tn.textContent.trim()) continue;
+      let hid = false, a = tn.parentElement;
+      while (a && a !== el.parentElement) {
+        const acs2 = getComputedStyle(a);
+        if (acs2.visibility === "hidden" || acs2.display === "none" || Number(acs2.opacity) === 0) { hid = true; break; }
+        a = a.parentElement;
+      }
+      if (hid) continue;
+      const range = document.createRange();
+      range.selectNodeContents(tn);
+      for (const rr of range.getClientRects()) {
+        if (rr.width < 4 || rr.height < 4) continue;
+        const k = Math.round(rr.top / 6);
+        const g = byTop.get(k) || { l: rr.left, r: rr.right };
+        g.l = Math.min(g.l, rr.left); g.r = Math.max(g.r, rr.right);
+        byTop.set(k, g);
+      }
     }
     const lines = byTop.size;
     if (lines < 2) continue;

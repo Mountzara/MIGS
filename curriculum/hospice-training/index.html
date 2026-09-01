@@ -75,7 +75,10 @@ a:hover { color: var(--fg-strong); }
 
 section.block { margin: clamp(36px, 6vw, 56px) 0; animation: mzRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 section.block h2 { font-weight: 300; font-size: clamp(22px, 3.2vw, 30px); letter-spacing: -0.014em; line-height: 1.18; color: var(--fg-strong); margin: 0 0 12px 0; }
-section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 24px 0; line-height: 1.6; }
+/* 2026-09-01 — 64ch → 75ch to match the curriculum-family sub measure (the
+   64ch cap sat at ~63% of the column at 1440px, a hair above the text-width
+   audit's dead-space threshold; siblings were flagged outright). */
+section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 75ch; margin: 0 0 24px 0; line-height: 1.6; }
 section.block p { font-size: 15px; line-height: 1.65; color: var(--fg-mid); max-width: 70ch; margin: 0 0 14px 0; }
 
 .principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; align-items: start; }

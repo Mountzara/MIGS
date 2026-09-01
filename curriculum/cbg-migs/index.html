@@ -105,7 +105,11 @@ a:hover { color: var(--fg-strong); }
 section.block { margin: clamp(56px, 9vw, 96px) 0; }
 section.block .eyebrow { margin-bottom: 14px; }
 section.block h2 { font-weight: 300; font-size: clamp(24px, 3.4vw, 34px); letter-spacing: -0.018em; line-height: 1.15; color: var(--fg-strong); margin: 0 0 14px 0; max-width: 28ch; }
-section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 36px 0; line-height: 1.6; }
+/* 2026-09-01 — sub measure widened 64ch → 75ch: at 1440px the old cap used
+   ~57% of the 1116px column and stranded ~480px of dead space beside a
+   flush-left paragraph (text-width audit); 75ch stays readable while
+   relating to the full-width panels below. */
+section.block .sub { font-size: 16.5px; color: var(--fg-soft); max-width: 75ch; margin: 0 0 36px 0; line-height: 1.6; }
 
 .synthesis { padding: 32px clamp(20px, 4vw, 36px); background: rgba(var(--glow-purple), 0.05); border: 1px solid rgba(var(--glow-purple), 0.22); border-radius: 18px; }
 .synthesis p { font-size: 16.5px; line-height: 1.72; color: var(--fg-mid); margin: 0 0 16px 0; max-width: 70ch; }

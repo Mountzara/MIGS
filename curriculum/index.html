@@ -114,8 +114,10 @@ a:hover { color: var(--fg-strong); }
     max-width: 22ch;
     /* 2026-05-27 — match evidence-page gradient signature on the hero
        headline. Was solid white; reads as "just a black and white page"
-       per user feedback. */
-    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%) 100%);
+       per user feedback. 2026-09-01 — dropped a stray trailing "100%)"
+       that invalidated the whole background declaration; with text-fill
+       transparent still applied, the headline rendered INVISIBLE. */
+    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -145,15 +147,21 @@ section.block h2 {
     color: var(--fg-strong); margin: 0 0 8px 0;
     /* 2026-05-27 — section H2s also carry the evidence-page gradient
        signature so the page reads as themed, not "just black and
-       white" (user feedback). */
-    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%) 100%);
+       white" (user feedback). 2026-09-01 — dropped a stray trailing
+       "100%)" that invalidated the declaration and left every section
+       heading invisible (transparent text over no gradient). */
+    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
     section.block h2 { background: transparent; -webkit-text-fill-color: var(--fg-strong); color: var(--fg-strong); }
 }
-section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 64ch; margin: 0 0 28px 0; line-height: 1.55; }
+/* 2026-09-01 — sub measure widened 64ch → 75ch: at 1440px the old cap used
+   barely 60% of the column and left ~400px of dead space beside a flush-left
+   paragraph (text-width audit); 75ch stays inside the readable band while
+   relating to the full-width grids below. */
+section.block .sub { font-size: 16px; color: var(--fg-soft); max-width: 75ch; margin: 0 0 28px 0; line-height: 1.55; }
 
 /* ===== Methodology grid (Knowles / Kolb / Gagné / Dick & Carey) ===== */
 .framework-grid {
