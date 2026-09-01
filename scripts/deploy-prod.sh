@@ -1361,6 +1361,33 @@ if [ -f scripts/audit_dark_surfaces.py ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# REF-POPOVER GATE (2026-09-01) — every citation popover carries its content.
+# ---------------------------------------------------------------------------
+# The owner's standing rule: hovering an inline citation shows the paper's
+# title, PMID and the curated plain-language summary — on education guides,
+# evidence briefs, trending posts, and every modal they open. 826 education
+# popovers shipped as bare one-liners and no gate noticed. This one derives
+# its surfaces (education pages from the tree, posts from the live API — a
+# scan that covers zero posts FAILS, it does not pass) and blocks on any
+# popover whose structure is broken or whose curated summary exists on the
+# same surface but is not wired through. Summaries that don't exist yet are
+# advisory: writing "what a paper shows" is clinical content for the owner,
+# not something a gate may author to silence itself.
+if [ -f scripts/audit_ref_popovers.py ]; then
+    echo ""
+    echo "🔍 Ref-popover gate — every citation hover carries title, PMID, summary..."
+    if python3 scripts/audit_ref_popovers.py > /tmp/_ref_popovers.log 2>&1; then
+        tail -2 /tmp/_ref_popovers.log
+        echo "   ✅ ref-popover gate passed"
+    else
+        cat /tmp/_ref_popovers.log
+        echo ""
+        echo "   Full log: /tmp/_ref_popovers.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # LIGHT-TEXT GATE (2026-08-25) — no text the same brightness as its ground.
 # ---------------------------------------------------------------------------
 # Runtime companion to the dark-surface gate, and the one that covers BREADTH.
