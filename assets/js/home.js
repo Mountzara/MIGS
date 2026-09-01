@@ -571,6 +571,10 @@
                 if (v.classList.contains('video-preview')) {
                     const r = v.getBoundingClientRect();
                     if (r.bottom < -window.innerHeight || r.top > window.innerHeight * 2) return;
+                    // horizontal too — see nearViewport: waking a reel that is
+                    // scrolled out of its carousel steals the decoder from the
+                    // one on screen
+                    if (r.right < -80 || r.left > window.innerWidth + 80) return;
                 }
                 // Never RESTART the hero once it has played: if it finished
                 // (flagged in the 'ended' handler) or already advanced past
@@ -3231,7 +3235,17 @@
             // pauses again when it leaves.
             const nearViewport = (v) => {
                 const r = v.getBoundingClientRect();
-                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
+                // BOTH axes. The research reels live in a horizontal carousel
+                // now, so all four cards share one vertical position; a
+                // vertical-only test woke all four at once and they fought
+                // for the phone's decoder budget — the two losers sat
+                // "playing" with a frozen clock, and one of them could be the
+                // card actually on screen (owner: "thumbnail surgery videos
+                // don't autoplay when it is scrolled to"). 80px of horizontal
+                // margin still warms the peeking next card; a card further
+                // out has no claim on a decoder.
+                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2 &&
+                       r.right > -80 && r.left < window.innerWidth + 80;
             };
             const tryPlay = (v) => {
                 if (!v || !v.paused) return;
@@ -3314,7 +3328,11 @@
                 setInterval(() => {
                     if (document.hidden) return;
                     document.querySelectorAll('.video-preview').forEach((v) => {
-                        if (!nearViewport(v)) return;
+                        if (!nearViewport(v)) {
+                            // free the decoder for the card that IS on screen
+                            if (!v.paused) { try { v.pause(); } catch (e) {} }
+                            return;
+                        }
                         if (!v.loop) v.loop = true;
                         if (!v.muted) v.muted = true;
                         const prev = lastT.get(v);
@@ -3322,7 +3340,14 @@
                         lastT.set(v, now);
                         const stalled = prev !== undefined && now === prev;
                         if (v.paused || stalled) {
+                            // A stalled reel reports paused === false, so a bare
+                            // play() is a no-op on it — which is why the two
+                            // decoder-losers used to sit frozen at 0:00 forever
+                            // while this watchdog "restarted" them every 2s.
+                            // Genuinely cycle it: pause, nudge, play.
+                            if (stalled && !v.paused) { try { v.pause(); } catch (e) {} }
                             if (v.readyState < 2) { try { v.load(); } catch (e) {} }
+                            else if (stalled) { try { v.currentTime = now + 0.001; } catch (e) {} }
                             const p = v.play();
                             if (p && typeof p.then === 'function') p.catch(() => {});
                         }

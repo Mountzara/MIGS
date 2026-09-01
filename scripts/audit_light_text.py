@@ -26,9 +26,41 @@ ROUTES = None
 for a in sys.argv[1:]:
     if a.startswith("--routes="):
         ROUTES = [r for r in a.split("=", 1)[1].split(",") if r]
+
+
+def derive_routes():
+    """Every route, derived from the filesystem — never from a list.
+
+    This is the determinism rule this whole conversion finally taught: every
+    surface family that was missed was missed because some check enumerated
+    surfaces from a hand-maintained list (a default of nine routes, a memory
+    of which pages exist) instead of from the system itself. The site-wide
+    theme sweep ran over 92 routes exactly once, by hand, from a temp file;
+    the gate then went back to sampling nine. A sample can only prove the
+    sample.
+
+    One glob, one rule: every index.html is a route, plus 404.html. A page
+    added tomorrow is audited tomorrow, with nobody remembering anything.
+    """
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    routes = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames
+                       if d not in ("node_modules", ".git", "docs", "scripts",
+                                    "functions", "assets", "schema", "cron-worker",
+                                    "companion-app")]
+        if "index.html" in filenames:
+            rel = os.path.relpath(dirpath, root)
+            routes.append("/" if rel == "." else "/" + rel.replace(os.sep, "/") + "/")
+    if os.path.exists(os.path.join(root, "404.html")):
+        routes.append("/404.html")
+    return sorted(routes)
+
+
 if ROUTES is None:
-    ROUTES = ["/", "/about/", "/evidence/", "/trending/", "/curriculum/", "/cv/",
-              "/education/", "/portal/", "/admin/"]
+    ROUTES = derive_routes()
+    n_files = len(ROUTES)
+    print(f"  auditing every route derived from the tree: {n_files}")
 
 JS = r"""() => {
   // force every modal-ish container visible: a modal only paints once opened,

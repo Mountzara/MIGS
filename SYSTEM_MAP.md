@@ -1639,6 +1639,32 @@ on a violet button/badge (`#2e1065`, `#6d28d9`, `#7c3aed`, `#4c1d95`) or on
 the `/about/` cover photo, where white is correct. Convert grounds, then let
 the rendered contrast gate name the exceptions.
 
+**THE DETERMINISM RULE — derive, never enumerate.** Every family above was
+missed for the same underlying reason: a check enumerated its surfaces from a
+hand-maintained list — a default of nine routes, a glob that covered only
+`functions/`, a memory of which pages exist — instead of deriving them from
+the system. A sample can only prove the sample, and a list maintained from
+memory drifts the moment the person maintaining it does.
+
+So every audit's surface list is now derived, and adding a surface adds its
+coverage with nobody remembering anything:
+
+* `audit_light_text.py` with no `--routes=` walks the tree: every
+  `index.html` is a route, plus `404.html` — 92 today, N tomorrow. The deploy
+  chain passes no route list, so it always audits everything. (Full-tree runs
+  cost minutes, not seconds; that is the price of a guarantee over a sample,
+  and it is paid on deploy, not on patients.)
+* `audit_dark_surfaces.py` globs `**/*.html` and `**/*.js`, and pulls every
+  published post from the API — failing LOUD if the posts cannot be fetched,
+  because a scan that covered zero posts would report clean.
+* `audit_route_render.py` already carries a discovery contract: a repo route
+  absent from its manifest fails the deploy.
+* `cite_verify_pubmed.mjs` derives its PMIDs from the pages and fails on any
+  PMID missing from the committed corpus.
+
+When adding an audit, this is the acceptance test: delete its list and it
+should still know what to check, or fail loudly that it cannot.
+
 **Enforcement — three gates, all in the deploy chain.**
 
 * `scripts/audit_dark_surfaces.py` — static, and checks by COLOUR rather than
