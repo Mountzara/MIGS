@@ -1951,7 +1951,15 @@
             domainModalTag.textContent = d.tag || '';
             domainModalTitle.textContent = d.title;
             domainModalTagline.textContent = d.tagline || '';
-            domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('');
+            // Standing medico-legal disclaimer (owner directive 2026-09-01):
+            // every educational surface carries it, and the modals render from
+            // ONE place — here — so it can never be forgotten per-entry. The
+            // marker class mz-eddisclaimer is what audit_no_dosing.py checks.
+            domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('')
+                + '<div class="mz-eddisclaimer" role="note" style="margin:28px 0 8px;padding:14px 18px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:13.5px;line-height:1.6;">'
+                + '<strong style="color:#1A1726;">Educational information — not medical advice.</strong> '
+                + 'This is general education about how the condition is approached. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.'
+                + '</div>';
         }
 
         function openDomainModal(slug) {

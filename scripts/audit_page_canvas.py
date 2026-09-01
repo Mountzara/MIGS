@@ -7,9 +7,9 @@ became the visitor's browser canvas — grey in dark-mode Safari. A static
 check can't prove the rendered result (a later `background:` shorthand
 resets the color), so this drives a real browser over EVERY route (derived
 from the tree, same rule as audit_light_text.py) and asserts the effective
-document ground: html or body must compute an OPAQUE color, and the
-top-of-page ground pixel-equivalent must be the approved paper family
-(luminance ≥ 240 and warm — not a browser default showing through).
+document ground by RENDERED PIXELS: three corner samples per route must
+all be light (paper or the design's violet tint washes) — never the
+grey/dark canvas a transparent document exposes in dark-mode browsers.
 
   python3 scripts/audit_page_canvas.py https://mountzara.com
   python3 scripts/audit_page_canvas.py http://127.0.0.1:8099
@@ -37,18 +37,29 @@ def derive_routes():
         routes.append("/404.html")
     return sorted(routes)
 
-JS = """() => {
-    const parse = (c) => {
-        const m = String(c || "").match(/rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*(?:,\\s*([0-9.]+))?\\)/);
-        if (!m) return null;
-        return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] };
-    };
-    const html = parse(getComputedStyle(document.documentElement).backgroundColor);
-    const body = parse(getComputedStyle(document.body).backgroundColor);
-    // effective ground = first opaque of body-over-html
-    const ground = (body && body.a >= 0.99) ? body : (html && html.a >= 0.99 ? html : null);
-    return { html, body, ground };
-}"""
+def corner_means(page):
+    """Mean RGB of three rendered ground samples — pixels are the truth.
+
+    A computed-style check false-positives on pages whose ground is an
+    OPAQUE background-image gradient (backgroundColor stays transparent
+    while the render is solid paper), so the gate measures what a visitor
+    actually sees: an 8x8 clip at the top-left corner, the top-right
+    corner, and mid-left. All three must be LIGHT — paper or the design's
+    own violet tint washes (lum >= 200). What this catches is the actual
+    regression class: a transparent document over the visitor's browser
+    canvas, which renders grey/near-black in dark-mode browsers.
+    """
+    from io import BytesIO
+    from PIL import Image
+    vw, vh = 1280, 900
+    out = []
+    for (x, y) in ((0, 0), (vw - 8, 0), (0, vh // 2)):
+        png = page.screenshot(clip={"x": x, "y": y, "width": 8, "height": 8})
+        img = Image.open(BytesIO(png)).convert("RGB")
+        px = list(img.getdata())
+        n = len(px)
+        out.append(tuple(sum(c[i] for c in px) / n for i in range(3)))
+    return out
 
 def main():
     routes = derive_routes()
@@ -65,17 +76,17 @@ def main():
                 page.goto(f"{BASE}{route}?cb={int(time.time())}", wait_until="domcontentloaded", timeout=45000)
                 page.wait_for_timeout(600)
                 page.evaluate("document.querySelectorAll('video').forEach(v=>{try{v.pause()}catch(e){}})")
-                r = page.evaluate(JS)
+                samples = corner_means(page)
             except Exception as e:
                 failures.append((route, f"could not measure: {str(e)[:80]}"))
                 continue
-            g = r.get("ground")
-            if not g:
-                failures.append((route, f"document ground is TRANSPARENT (html={r.get('html')}, body={r.get('body')}) — the browser canvas shows through"))
-                continue
-            lum = (g["r"] * 299 + g["g"] * 587 + g["b"] * 114) / 1000
-            if lum < 240:
-                failures.append((route, f"ground rgb({g['r']},{g['g']},{g['b']}) lum {round(lum)} — not the approved paper family"))
+            bad = []
+            for (r_, g_, b_) in samples:
+                lum = (r_ * 299 + g_ * 587 + b_ * 114) / 1000
+                if lum < 200:
+                    bad.append(f"rgb({round(r_)},{round(g_)},{round(b_)}) lum {round(lum)}")
+            if bad:
+                failures.append((route, f"rendered ground is not paper-family: {', '.join(bad)}"))
         browser.close()
     if failures:
         for route, why in failures:

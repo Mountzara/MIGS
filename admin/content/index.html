@@ -733,7 +733,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         <h1>${esc(post.title || '')}</h1>
                         <p class="summary">${esc(post.summary || '')}</p>
                         ${post.body_html || ''}
-                    </div></body></html>
+                    </div><style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+</body></html>
                 `;
                 // SECURITY (2026-06-12): allow-scripts WITHOUT allow-same-origin.
                 // This preview renders not-yet-approved draft body_html, so it must

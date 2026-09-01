@@ -1683,6 +1683,47 @@ something opens it — which is exactly how the 25 education modals shipped
 inverted and unnoticed. Scrims (containers ≥95% of the viewport) are excluded
 from the ground check; a dark scrim is correct on a light theme.
 
+### 8.0.0.0 Medico-legal constitution: no dosing, disclaimers, paper grounds (2026-09-01)
+
+**Owner directives, verbatim and standing:** "I always need this to be
+medico-legally sound with CLEAR disclaimers that I am not OFFERING MEDICAL
+ADVICE, this is just an educational platform." And: "I NEVER want you to
+post actual dosing and things that really should be reserved for private
+patient-doctor decisions about management… This applies to all the other
+condition-specific cards and everywhere else in the website."
+
+* **No dosing in counseling prose — anywhere.** Doses (mg/mcg/µg/IU),
+  frequencies (q6-8h, BID/TID/QID), titration/regimen specifics. Text
+  ATTRIBUTED to a specific paper — verbatim abstracts, journal-club
+  deep-dive analyses, cite cards, citation popovers, reference-list
+  entries — is research reporting and keeps the study's own facts (an
+  analysis that cannot say what dose a trial tested is not an analysis).
+  Concentration units (mg/dL, IU/L…) are lab values, not dosing. HTML
+  comments and JSON provenance manifests are non-rendered and exempt.
+  Gates: `scripts/audit_no_dosing.py` (deploy; derived surfaces incl.
+  posts API, fail-loud) + `auditDosingLanguage` in
+  `functions/_lib/post_format.js` (publish choke point). The 2026-09-01
+  backfill stripped doses from 16 education pages, the homepage condition
+  modals (`assets/js/domain-modals.js`), and three posts' narrative
+  paragraphs — removal/generalization only, nothing authored.
+* **The disclaimer block (`mz-eddisclaimer`)** on every educational
+  surface: all education + portal education pages, the /evidence/ and
+  /trending/ shells (covers every post they render), and every homepage
+  condition modal — appended by the ONE renderer in `assets/js/home.js`
+  (`domainModalBody`), never per-entry. `scripts/fix_disclaimers.py`
+  injects; `audit_no_dosing.py` enforces presence.
+* **Every route grounds on opaque paper.** The light conversion left
+  html/body TRANSPARENT on most routes (only tint gradients painted), so
+  the ground became the visitor's browser canvas — grey in dark-mode
+  Safari ("you turned my website into an ugly grey").
+  `scripts/fix_page_canvas.py` appends
+  `<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>`
+  before the LAST `</body>` of every derived route;
+  `scripts/audit_page_canvas.py` (deploy gate) proves the RENDERED result
+  by pixels — three corner samples per route, all light (≥200 lum; the
+  violet tint washes are the design's own and pass) — because a
+  computed-style check false-positives on opaque gradient grounds.
+
 ### 8.0.0.1 Citation popovers — ONE rulebook, enforced everywhere (2026-09-01)
 
 **The requirement (owner, standing):** hovering ANY inline citation shows the

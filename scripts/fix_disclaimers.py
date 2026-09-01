@@ -64,8 +64,8 @@ def main():
         print(f"  + {os.path.relpath(f, ROOT)}")
         if APPLY:
             open(f, "w", encoding="utf-8").write(out)
-    dm = open(os.path.join(ROOT, "assets", "js", "domain-modals.js"), encoding="utf-8").read()
-    print("  domain-modals.js carries the disclaimer:", "YES" if "mz-eddisclaimer" in dm else "NO — add it there directly")
+    hj = open(os.path.join(ROOT, "assets", "js", "home.js"), encoding="utf-8").read()
+    print("  modal renderer (home.js) appends the disclaimer:", "YES" if "mz-eddisclaimer" in hj else "NO — add it to the domainModalBody renderer")
     print(f"\n{added} surface(s) injected, {present} already present"
           + ("" if APPLY else " (dry run — pass --apply)"))
 

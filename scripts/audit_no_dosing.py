@@ -32,12 +32,16 @@ import glob, json, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Concentration units (mg/dL, IU/L, µg/mL …) are LAB VALUES — diagnostic
+# education, not dosing (e.g. the beta-hCG discriminatory zone "3500 IU/L").
+# The lookahead excludes unit-per-volume; "mg/d" (per day) is still dosing.
 DOSE_RE = re.compile(
-    r"\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b"
+    r"\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b(?!\s*/\s*(?:d?L|mL)\b)"
     r"|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b"
     r"|\b(?:BID|TID|QID)\b", re.I)
 
 ABSTRACTS = [
+    re.compile(r"<!--[\s\S]*?-->"),   # non-rendered (KB-anchor manifests etc.)
     re.compile(r'<div class="mz-jc-abstract-body">[\s\S]*?</div>', re.I),
     re.compile(r'<details class="mz-abstract">[\s\S]*?</details>', re.I),
     re.compile(r'<div class="abstract-body">[\s\S]*?</div>', re.I),
@@ -90,8 +94,11 @@ def main():
     found = hits(re.sub(r"//[^\n]*", " ", dm))
     if found:
         problems.append(f"assets/js/domain-modals.js: dosing in the condition modals: {', '.join(found[:6])}")
-    if "mz-eddisclaimer" not in dm:
-        problems.append("assets/js/domain-modals.js: missing the mz-eddisclaimer block")
+    # The modals render from ONE place — the renderer in home.js appends the
+    # disclaimer to every modal body, so it can never be forgotten per-entry.
+    hj = open(os.path.join(ROOT, "assets", "js", "home.js"), encoding="utf-8").read()
+    if "mz-eddisclaimer" not in hj and "mz-eddisclaimer" not in dm:
+        problems.append("assets/js/home.js: the domain-modal renderer no longer appends the mz-eddisclaimer block")
     # -- shells
     for shell in ("evidence/index.html", "trending/index.html"):
         p = os.path.join(ROOT, shell)

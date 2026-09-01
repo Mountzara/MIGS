@@ -631,12 +631,16 @@ export function groundedSummarySources(html) {
 // trial tested is not an analysis). Deterministic + offline. The deploy-
 // side twin over the static surfaces is scripts/audit_no_dosing.py.
 // ---------------------------------------------------------------------
-const DOSING_RE = /\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b|\b(?:BID|TID|QID)\b/gi;
+// Concentration units (mg/dL, IU/L, µg/mL …) are lab values — diagnostic
+// education, not dosing — hence the unit-per-volume lookahead ("mg/d",
+// per day, is still dosing).
+const DOSING_RE = /\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b(?!\s*\/\s*(?:d?L|mL)\b)|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b|\b(?:BID|TID|QID)\b/gi;
 export function auditDosingLanguage(post) {
     const problems = [];
     if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
     let h = typeof post.body_html === "string" ? post.body_html : "";
-    h = h.replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/gi, " ")
+    h = h.replace(/<!--[\s\S]*?-->/g, " ")
+        .replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/gi, " ")
         .replace(/<details class="mz-abstract">[\s\S]*?<\/details>/gi, " ")
         .replace(/<div class="abstract-body">[\s\S]*?<\/div>/gi, " ")
         .replace(/<dialog\b[\s\S]*?<\/dialog>/gi, " ")
