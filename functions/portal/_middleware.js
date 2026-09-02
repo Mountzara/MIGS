@@ -135,7 +135,10 @@ const COMING_SOON_HTML = `<!doctype html>
             --card: rgba(255, 255, 255, 0.035);
             --card-hi: rgba(167, 139, 250, 0.07);
             --w-page: 1080px;
-            --w-prose: 68ch;
+            /* 82ch (2026-09-02): 68ch left the prose blocks at ~54% of the
+               panel with a dead right half — same finding-class the admin
+               ledes had. 82ch ≈ 65-75% at these font sizes. */
+            --w-prose: 82ch;
             --gap: clamp(16px, 2.2vw, 22px);
             --sec: clamp(56px, 7vw, 96px);
         }

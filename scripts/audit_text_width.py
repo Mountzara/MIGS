@@ -78,6 +78,11 @@ JS = r"""() => {
     // Content inside a CLOSED <details> still reports geometry in WebKit —
     // skip it; only rendered text can wrap wrong.
     if (el.closest("details:not([open])")) continue;
+    // A table CELL's available width is its own column, decided by the
+    // table's layout algorithm — measuring it against a page-level ancestor
+    // false-positives every comparison table (found on the production
+    // portal gate page: 348 td findings).
+    if (el.closest("td, th")) continue;
     // Explicit design opt-out: an element (or ancestor) carrying
     // data-widthok documents that its placement is deliberate (e.g. the
     // /about/ cover deck anchored bottom-left to stay off the photographed
