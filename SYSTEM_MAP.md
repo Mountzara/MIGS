@@ -1819,8 +1819,19 @@ per-surface script; change the module and every gate changes together.**
 **The spec markup** (single schema, everywhere):
 `<span class="mz-ref-pop"><span class="mz-ref-pop-title">PubMed title</span>
 <span class="mz-ref-pop-meta">journal · year (education adds · PMID N)</span>
-<span class="mz-ref-pop-finding">curated summary</span></span>`
+<span class="mz-ref-pop-finding">curated summary</span>
+<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/N/">Read the study on PubMed →</a></span>`
 inside `<sup class="mz-ref">`.
+
+**The finding's editorial contract** (owner directive 2026-09-02): takeaway
+FIRST — the concrete clinical conclusion leads, never a document-type opener
+("Review of…", "Study of…"); then 1-3 sentences of substance (numbers,
+population, comparison) and the honest caveat; 250-600 chars; dose-free.
+The src link is mandatory on every popover — `healPopoverSummaries()` step 4
+appends it when missing, and the popover CSS must keep the open popover
+clickable: `pointer-events: auto` in the open state plus a `::after` hover
+bridge spanning the lift gap (education/portal pages, course BASE_CSS, and
+each post's embedded style block all carry this; posts are self-contained).
 
 **The rulebook checks** (codes): `unstructured`, `missing-sourced` (summary
 absent though grounded text exists on the surface), `raw-dump` (finding

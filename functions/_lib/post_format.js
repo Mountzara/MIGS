@@ -1171,6 +1171,12 @@ export function healPopoverSummaries(bodyHtml) {
                 const src = bl[pmid] || lens[pmid];
                 if (src) out += `<span class="mz-ref-pop-finding">${escapeHtml(src)}</span>`;
             }
+            // 4) every popover carries a direct source link (owner directive,
+            //    2026-09-02): a reader hovering the citation must be able to
+            //    click straight through to the paper.
+            if (pmid && !out.includes("mz-ref-pop-src")) {
+                out += `<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>`;
+            }
             if (out !== inner) changed++;
             return pre + out + post;
         }));

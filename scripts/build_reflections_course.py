@@ -156,10 +156,14 @@ sup.mz-ref .mz-ref-pop { position:absolute; bottom:130%; left:50%; transform:tra
     border:1px solid var(--glass-edge); border-radius:12px; box-shadow:0 16px 44px rgba(26,23,38,.16);
     padding:13px 15px; visibility:hidden; opacity:0; transition:opacity .18s ease; z-index:20;
     font-size:12.5px; line-height:1.5; text-align:left; }
+sup.mz-ref .mz-ref-pop::after { content:""; position:absolute; top:100%; left:0; right:0; height:18px; }
 sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:visible; opacity:1; }
 .mz-ref-pop-title { display:block; font-weight:600; color:var(--ink); margin-bottom:3px; }
 .mz-ref-pop-meta { display:block; color:var(--mute); margin-bottom:6px; }
 .mz-ref-pop-finding { display:block; color:var(--ink-2); border-top:1px solid var(--hair); padding-top:6px; }
+.mz-ref-pop-src { display:inline-block; margin-top:8px; font-size:11.5px; font-weight:600;
+    letter-spacing:0.01em; color:var(--vio, #6d28d9); text-decoration:none; }
+.mz-ref-pop-src:hover, .mz-ref-pop-src:focus-visible { text-decoration:underline; color:#4c1d95; }
 /* ---- scroll reveals (JS adds .rv; no-JS stays fully visible) ---- */
 @media (prefers-reduced-motion: no-preference) {
     .rv { opacity:0; transform:translateY(16px);
