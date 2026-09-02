@@ -237,6 +237,15 @@ def render_lesson(course, mod, lesson, prev_url, next_url):
                  'Dr. Mabini is writing this lesson’s guidance in his own words. '
                  'The sourced material below is the starting point; his voice is coming.</div>')
     for t in lesson.get("teaching", []):
+        # Lifted citation markers point at the LIBRARY page's reference list —
+        # lesson pages carry the hover popovers (self-contained) but not the
+        # reference apparatus, so the tap-through lands on the full citation.
+        t = re.sub(r'href="#(ref-\d+|mz-ref-\d+)"',
+                   f'href="/education/{course["topic"]}/#\\1"', t)
+        # data-r drives the LIBRARY page's tap-toggle JS against its own
+        # reference list; lesson pages have neither, and the citation-
+        # integrity gate rightly requires any data-r to resolve on-page.
+        t = re.sub(r'\s+data-r="ref-\d+"', "", t)
         b.append(f'<div class="teach">{t}</div>')
     if lesson.get("reflection"):
         b.append('<div class="reflect"><span class="r-tag">Just for you — never sent anywhere</span>'
