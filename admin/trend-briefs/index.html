@@ -157,6 +157,33 @@ a:hover { color: var(--fg-strong); }
     overflow-y: auto;
     padding-right: 4px;
 }
+/* 2026-09-02 review-flow overhaul: decide first, details collapsed,
+   and everything you type paints straight into the live preview. */
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button {
+    font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    padding: 8px 12px; border-radius: 999px; border: 1.5px solid var(--hairline);
+    background: rgba(255,255,255,0.7); color: var(--fg-mid);
+}
+.seg button.on { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.10); }
+.live-badge {
+    display: none; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; color: #92400E;
+    background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 999px; padding: 6px 12px; margin-bottom: 10px;
+}
+.live-badge.show { display: inline-flex; }
+.live-badge button { font: inherit; font-size: 11.5px; border: none; background: none; color: #92400E; text-decoration: underline; cursor: pointer; }
+details.rail-acc { border: 1px solid var(--hairline); border-radius: 14px; background: var(--glass); }
+details.rail-acc > summary {
+    cursor: pointer; list-style: none; padding: 12px 16px;
+    font-size: 13px; font-weight: 700; color: var(--fg-mid);
+}
+details.rail-acc > summary::before { content: "▸ "; color: var(--accent); }
+details.rail-acc[open] > summary::before { content: "▾ "; }
+details.rail-acc > .rail-card { border: 0; border-top: 1px solid var(--hairline); border-radius: 0 0 14px 14px; margin: 0; }
+.decision-card { border: 1.5px solid rgba(109,40,217,0.45) !important; }
+.btn.approve-cta { font-size: 14px; padding: 12px 18px; width: 100%; }
 .rail-card {
     background: var(--glass);
     border: 1px solid var(--hairline);
@@ -560,7 +587,7 @@ async function renderQueue() {
             el("span", { class: "eyebrow" }, "Phase QF · Peer Review Queue"),
             el("h1", null, "Trend Brief Peer Review"),
             el("p", { class: "lede" },
-                "Briefs that passed every §3.8 row except the verdict gate. Approve with a verdict to ship a clinician-authored override; the Mac orchestrator picks up the override on its next run, re-renders, and queues the brief as a draft in ",
+                "Investigated claims waiting for your ruling. Approve with your verdict and the producer renders the final post as a DRAFT for your publish sign-off in ",
                 el("a", { href: "/admin/content/" }, "/admin/content/"),
                 "."
             )
@@ -600,7 +627,7 @@ async function renderQueue() {
     const cards = el("div", { class: "cards" });
     if (!data.briefs || data.briefs.length === 0) {
         app.appendChild(el("div", { class: "empty" },
-            "When a trending claim fails only the clinical-verdict gate, the brief comes here for your ruling. Nothing queued — and note that approving a brief writes an override rather than publishing, so the Mac puller still has to run."
+            "Investigated claims land here for your ruling. Nothing is waiting right now."
         ));
         return;
     }
@@ -630,8 +657,11 @@ function queueCard(b) {
                 el("span", null, el("b", null, b.kb_entries_retrieved.length), " KB"),
                 el("span", null, el("b", null, b.topics_covered.length), " topics"),
                 el("span", { class: "audit-state " + auditState.cls }, auditState.text),
+                b.influencer
+                    ? el("span", { style: "color: #92400E; background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.3); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; font-weight: 700;" }, "@" + b.influencer)
+                    : null,
                 b.suggestions_text
-                    ? el("span", { style: "color: rgba(167, 139, 250, 0.9)" }, "✎ suggestions queued")
+                    ? el("span", { style: "color: rgba(167, 139, 250, 0.9)" }, "✎ change request sent")
                     : null,
                 b.draft_post_id
                     ? el("span", null, "→ ", el("b", null, b.draft_post_id))
@@ -682,25 +712,76 @@ async function renderBrief(id) {
     // Right: sticky rail
     const rail = el("div", { class: "detail-rail" });
 
-    rail.appendChild(buildMetaCard(b));
-    rail.appendChild(buildAuditCard(b));
-    // Phase QG — per-PMID deep-dive authoring panel.  Async-fetched so
-    // the panel renders into a placeholder card and updates in place.
-    const ddCard = el("div", { class: "rail-card", id: "dd-card" },
-        el("h3", null, "Deep-dive authoring · loading…"));
-    rail.appendChild(ddCard);
-    loadDeepDivePanel(b.id, ddCard);
+    // DECIDE FIRST (2026-09-02 overhaul): the verdict form leads, wired
+    // live into the preview; everything informational collapses below it.
+    const acc = (title, node, open) => {
+        const d = el("details", { class: "rail-acc" }, el("summary", null, title), node);
+        if (open) d.setAttribute("open", "");
+        return d;
+    };
     if (b.status === "pending" || b.status === "approved") {
         rail.appendChild(buildApproveForm(b));
-        rail.appendChild(buildSuggestForm(b));
-        rail.appendChild(buildRejectForm(b));
+        rail.appendChild(acc("Request changes", buildSuggestForm(b)));
+        rail.appendChild(acc("Decline this brief", buildRejectForm(b)));
     } else if (b.status === "rejected") {
         rail.appendChild(buildRejectedCard(b));
     }
-    rail.appendChild(buildTimelineCard(events));
+    const ddCard = el("div", { class: "rail-card", id: "dd-card" },
+        el("h3", null, "Deep-dive authoring · loading…"));
+    loadDeepDivePanel(b.id, ddCard);
+    rail.appendChild(acc("Brief details & checks", el("div", null, buildMetaCard(b), buildAuditCard(b))));
+    rail.appendChild(acc("Deep-dive authoring", ddCard));
+    rail.appendChild(acc("History", buildTimelineCard(events)));
 
     grid.appendChild(rail);
     app.appendChild(grid);
+}
+
+// ---- live preview injection: what you type paints into the render ----
+function liveTargets() {
+    const f = document.querySelector(".detail-preview iframe");
+    try { return f && f.contentDocument ? f.contentDocument : null; } catch (e) { return null; }
+}
+function setPlaceholder(doc, findText, htmlValue) {
+    if (!htmlValue) return false;
+    const marks = [...doc.querySelectorAll(".mz-placeholder")];
+    const hit = marks.find((m) => m.textContent.toLowerCase().includes(findText));
+    if (hit) { const s = doc.createElement("span"); s.innerHTML = htmlValue; s.setAttribute("data-live", "1"); hit.replaceWith(s); return true; }
+    const prev = [...doc.querySelectorAll('[data-live="1"]')];
+    return false;
+}
+function applyLive() {
+    const doc = liveTargets();
+    if (!doc) return;
+    try {
+        let touched = false;
+        const val = (id) => { const n = document.getElementById(id); return n ? n.value.trim() : ""; };
+        const title = val("approve-title");
+        if (title) { const t = doc.querySelector("h1.mz-post-title"); if (t && t.textContent !== title) { t.textContent = title; touched = true; } }
+        touched = setPlaceholder(doc, "lede", val("approve-lede")) || touched;
+        touched = setPlaceholder(doc, "framing paragraph", val("approve-tagline-body")) || touched;
+        touched = setPlaceholder(doc, "bottom-line", val("approve-bottom")) || touched;
+        const tag = val("approve-tagline");
+        if (tag) {
+            const h2 = [...doc.querySelectorAll("h2.mz-section-title")].find((x) => x.textContent.includes("Awaiting clinician authorship"));
+            if (h2) { h2.textContent = tag; touched = true; }
+        }
+        const lbl = val("approve-label");
+        const von = document.querySelector(".seg button.on");
+        const vl = doc.querySelector(".mz-verdict-label");
+        if (vl && (lbl || von)) {
+            vl.textContent = (von ? von.textContent.toUpperCase() + " — " : "") + (lbl || "");
+            touched = true;
+        }
+        const badge = document.getElementById("live-badge");
+        if (badge && touched) badge.classList.add("show");
+    } catch (e) { /* live preview must never break the form */ }
+}
+function resetLive() {
+    const f = document.querySelector(".detail-preview iframe");
+    if (f) { f.src = f.src; }
+    const badge = document.getElementById("live-badge");
+    if (badge) badge.classList.remove("show");
 }
 
 function buildMetaCard(b) {
@@ -743,11 +824,25 @@ function buildApproveForm(b) {
     card.appendChild(el("h3", null, b.status === "approved" ? "Edit approved override" : "Approve · author override"));
 
     const ov = b.override || {};
-    const verdictSel = el("select", { id: "approve-verdict" });
+    // hidden select keeps submitApprove working; the segmented control drives it
+    const verdictSel = el("select", { id: "approve-verdict", style: "display:none" });
     for (const v of VERDICTS) {
         const opt = el("option", { value: v.value }, v.label);
         if (v.value === (ov.verdict || "")) opt.setAttribute("selected", "");
         verdictSel.appendChild(opt);
+    }
+    const seg = el("div", { class: "seg", role: "radiogroup", "aria-label": "Verdict" });
+    for (const v of VERDICTS.slice(1)) {
+        const btn = el("button", { type: "button" }, v.label);
+        if (v.value === (ov.verdict || "")) btn.classList.add("on");
+        btn.addEventListener("click", () => {
+            seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+            btn.classList.add("on");
+            verdictSel.value = v.value;
+            labelOnChange();
+            applyLive();
+        });
+        seg.appendChild(btn);
     }
     const labelIn = el("input", {
         id: "approve-label", type: "text",
@@ -776,10 +871,17 @@ function buildApproveForm(b) {
         id: "approve-tagline-body", rows: 3,
         placeholder: "Framing paragraph under the tagline H2. HTML allowed.",
     }, ov.tagline_body || "");
+    const bottomTa = el("textarea", {
+        id: "approve-bottom", rows: 3,
+        placeholder: "The reader-facing verdict paragraph for \u201cBottom line, up front\u201d \u2014 your words, in your voice.",
+    }, ov.bottom_line || "");
     const rationaleTa = el("textarea", {
         id: "approve-rationale", rows: 3,
-        placeholder: "Why this verdict?  This text isn't rendered to the public brief — it's an audit trail.",
+        placeholder: "Why this verdict? Never shown to readers \u2014 it is your private audit note.",
     }, ov.rationale || "");
+    for (const n of [titleIn, labelIn, ledeTa, taglineIn, taglineBodyTa, bottomTa]) {
+        n.addEventListener("input", applyLive);
+    }
     const labelOnChange = () => {
         const v = verdictSel.value;
         if (v && !labelIn.value) {
@@ -789,12 +891,32 @@ function buildApproveForm(b) {
     };
     verdictSel.addEventListener("change", labelOnChange);
 
+    card.classList.add("decision-card");
+    card.appendChild(el("div", { class: "live-badge", id: "live-badge" },
+        "Previewing with your edits (not saved yet)",
+        el("button", { type: "button", onclick: resetLive }, "reset preview")));
     card.appendChild(el("div", { class: "form-section" },
+        // ----- Verdict first: it is the decision -----
+        el("div", { class: "field" },
+            el("label", null, "Your verdict"),
+            seg, verdictSel,
+            el("div", { class: "hint" }, "Sets the gauge and the published verdict tag. Pick one \u2014 everything you type below shows up instantly in the preview on the left.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Verdict label (under the gauge)"),
+            labelIn,
+            el("div", { class: "hint" }, "One reader-facing sentence under the gauge.")
+        ),
+        el("div", { class: "field" },
+            el("label", null, "Bottom line, up front (reader-facing)"),
+            bottomTa,
+            el("div", { class: "hint" }, "The paragraph readers get first. Plain words, your voice.")
+        ),
         // ----- Editorial framing -----
         el("div", { class: "field" },
             el("label", null, "Editorial title"),
             titleIn,
-            el("div", { class: "hint" }, "Optional. Replaces the raw watchlist claim on the H1 + post title. Drives /admin/content/ card text and the public surface.")
+            el("div", { class: "hint" }, "Optional \u2014 replaces the raw claim as the headline.")
         ),
         el("div", { class: "field" },
             el("label", null, "Summary (card / search snippet)"),
@@ -816,27 +938,16 @@ function buildApproveForm(b) {
             taglineBodyTa,
             el("div", { class: "hint" }, "Optional. HTML allowed.")
         ),
-        // ----- Verdict -----
         el("div", { class: "field" },
-            el("label", null, "Verdict"),
-            verdictSel,
-            el("div", { class: "hint" }, "Required. Renders as the verdict gauge angle + post-level verdict tag.")
-        ),
-        el("div", { class: "field" },
-            el("label", null, "Verdict label (gauge prose)"),
-            labelIn,
-            el("div", { class: "hint" }, "Required. ≤ 400 chars. Visible to readers under the verdict gauge.")
-        ),
-        el("div", { class: "field" },
-            el("label", null, "Rationale (internal)"),
+            el("label", null, "Private note (why this verdict)"),
             rationaleTa,
-            el("div", { class: "hint" }, "Required. ≤ 4000 chars. Audit trail; never rendered to the public brief.")
+            el("div", { class: "hint" }, "Never shown to readers.")
         ),
         el("div", { class: "btn-row" },
-            el("button", { class: "btn primary", onclick: (e) => submitApprove(b.id, e) },
-                b.status === "approved" ? "Update override" : "Approve & queue override"),
+            el("button", { class: "btn primary approve-cta", onclick: (e) => submitApprove(b.id, e) },
+                b.status === "approved" ? "Update my approval" : "Approve \u2014 send to publishing"),
             el("button", { class: "btn", onclick: () => window.open("/api/v1/admin/trend-briefs/" + encodeURIComponent(b.id), "_blank") },
-                "View raw JSON")
+                "Raw JSON")
         )
     ));
     return card;
@@ -844,20 +955,20 @@ function buildApproveForm(b) {
 
 function buildSuggestForm(b) {
     const card = el("div", { class: "rail-card" });
-    card.appendChild(el("h3", null, "Refine in Cowork · free-text suggestions"));
+    card.appendChild(el("h3", null, "Request changes"));
     const ta = el("textarea", {
         id: "suggest-text",
-        placeholder: "Type corrections, changes, or refinement notes. The Mac orchestrator will materialize a Cowork peer-review bundle on its next run; a clipboard-ready trigger string + macOS notification will surface so you can paste into Cowork.",
+        placeholder: "Say what to fix \u2014 the producer revises the brief and it comes back here for another look.",
         rows: 4,
     }, b.suggestions_text || "");
     card.appendChild(el("div", { class: "form-section" },
         el("div", { class: "field" },
             el("label", null, "Suggestions"),
             ta,
-            el("div", { class: "hint" }, "≤ 12 KB. NO Anthropic API call from this endpoint — inference happens in your Cowork session per §12.1.")
+            el("div", { class: "hint" }, "Your notes go straight to the producer run.")
         ),
         el("div", { class: "btn-row" },
-            el("button", { class: "btn", onclick: (e) => submitSuggest(b.id, e) }, "Send to Cowork")
+            el("button", { class: "btn", onclick: (e) => submitSuggest(b.id, e) }, "Send change request")
         )
     ));
     return card;
@@ -875,7 +986,7 @@ function buildRejectForm(b) {
         el("div", { class: "field" },
             el("label", null, "Rejection reason"),
             ta,
-            el("div", { class: "hint" }, "Required. ≤ 1000 chars. Rejected briefs persist for audit; the Mac orchestrator ignores them.")
+            el("div", { class: "hint" }, "Required. A short note on why \u2014 kept for the record.")
         ),
         el("div", { class: "btn-row" },
             el("button", { class: "btn danger", onclick: (e) => submitReject(b.id, e) }, "Reject")
@@ -962,24 +1073,24 @@ function buildDeepDiveRow(briefId, cardEl, r) {
         actions.appendChild(el("button", {
             class: "dd-btn primary",
             onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
-        }, "Materialize Cowork bundle"));
+        }, "Prepare revision bundle"));
     } else if (r.status === "bundle_requested") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
-            "Awaiting Mac puller…"));
+            "Waiting for the producer\u2019s next run\u2026"));
         actions.appendChild(el("button", {
             class: "dd-btn",
             onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
         }, "Re-request"));
     } else if (r.status === "bundle_ready") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
-            "Open Cowork, paste trigger from clipboard."));
+            "Revision bundle ready for the producer."));
         actions.appendChild(el("button", {
             class: "dd-btn",
             onclick: (e) => triggerDeepDivePrep(briefId, cardEl, r.id, e),
         }, "Re-materialize"));
     } else if (r.status === "patch_uploaded") {
         actions.appendChild(el("span", { class: "dd-empty", style: "font-size:10.5px" },
-            "Awaiting Mac apply…"));
+            "Waiting for the producer to apply\u2026"));
     } else if (r.status === "authored") {
         actions.appendChild(el("button", {
             class: "dd-btn",
@@ -1071,6 +1182,8 @@ async function submitApprove(id, ev) {
     if (lede)        override.lede = lede;
     if (tagline)     override.tagline = tagline;
     if (taglineBody) override.tagline_body = taglineBody;
+    const bottom = $("#approve-bottom").value.trim();
+    if (bottom) override.bottom_line = bottom;
 
     const btn = ev && ev.currentTarget;
     if (btn) btn.disabled = true;
@@ -1079,7 +1192,7 @@ async function submitApprove(id, ev) {
             method: "POST",
             body: { override },
         });
-        toast("Approved · override queued for Mac pull");
+        toast("Approved \u2014 the producer will render the final post as a draft for your publish sign-off");
         setTimeout(render, 300);
     } catch (e) {
         toast("Approve failed: " + e.message, "err");
@@ -1097,7 +1210,7 @@ async function submitSuggest(id, ev) {
             method: "POST",
             body: { suggestions: txt },
         });
-        toast("Suggestions queued for Cowork");
+        toast("Change request sent to the producer");
         setTimeout(render, 300);
     } catch (e) {
         toast("Suggest failed: " + e.message, "err");

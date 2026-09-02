@@ -160,9 +160,13 @@ JS = r"""() => {
     // An INLINE element that starts mid-line wraps "early" by normal flow —
     // only block-level boxes can genuinely wrap prematurely. And in a box
     // under ~320px (grid cards, pills) word length dictates where lines
-    // break — that granularity is not a wrap defect.
+    // break — that granularity is not a wrap defect. A HEADING with
+    // text-wrap:balance is intentional typography — equalized short lines
+    // are balance's entire purpose; the defect class this check exists for
+    // is balance (or constraints) on PROSE.
     const isBlockish = !cs.display.startsWith("inline");
-    if (isBlockish && elW >= 320 && maxLine > 0 && maxLine < 0.72 * elW) { rec.kind = "premature-wrap"; out.push(rec); continue; }
+    const balancedHeading = /^H[1-4]$/.test(tag) && (cs.textWrap || "").includes("balance");
+    if (isBlockish && !balancedHeading && elW >= 320 && maxLine > 0 && maxLine < 0.72 * elW) { rec.kind = "premature-wrap"; out.push(rec); continue; }
     if (avail > 900 && elW < 420) { rec.kind = "tiny-measure"; out.push(rec); continue; }
   }
   return out;
