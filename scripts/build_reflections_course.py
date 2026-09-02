@@ -218,6 +218,11 @@ def page(title, crumb, body, course="", lesson=""):
 </html>
 """
 
+def public_source(s):
+    """Reader-facing source line: strip internal file paths, keep the citation."""
+    s = re.sub(r"\S*index\.html\s*(?:·|—|-)?\s*", "", str(s or "")).strip(" ·—-")
+    return s or "the practice's reviewed endometriosis library"
+
 def esc(s):
     return html_mod.escape(str(s or ""), quote=True)
 
@@ -245,7 +250,7 @@ def render_lesson(course, mod, lesson, prev_url, next_url):
         b.append('<div class="check"><div class="q">Check your understanding</div>'
                  + opts +
                  f'<div class="why">{esc(chk["explanation"])}'
-                 f'<span class="src">Source: {esc(chk["source"])}</span></div></div>')
+                 f'<span class="src">Source: {esc(public_source(chk["source"]))}</span></div></div>')
     act = lesson.get("action")
     if act:
         b.append('<div class="action"><div class="a-text"><strong>Bring this to your visit.</strong> '

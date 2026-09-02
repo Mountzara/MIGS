@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staying connected: the long-term partnership · Mount Zara's Reflections</title>
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,530;9..144,600&display=swap">
+<style>
+:root {
+    --paper:#FBFAF8; --card:#FFFFFF; --ink:#1A1726; --ink-2:#4A4658; --mute:#6E6A7C;
+    --hair:#E9E5EE; --violet:#6d28d9; --violet-deep:#3d1478; --wash:#F4F0FB;
+    --good:#047857; --radius:14px;
+}
+* { box-sizing:border-box; margin:0; }
+html { background-color:#FBFAF8; }
+body { background:var(--paper); color:var(--ink);
+    font-family:'Avenir Next','Nunito Sans',-apple-system,system-ui,sans-serif;
+    font-size:16.5px; line-height:1.65; }
+a { color:var(--violet); }
+.wrap { max-width:880px; margin:0 auto; padding:28px 22px 90px; }
+.topbar { display:flex; align-items:center; gap:14px; padding:14px 22px; border-bottom:1px solid var(--hair);
+    background:rgba(251,250,248,.92); position:sticky; top:0; backdrop-filter:blur(10px); z-index:5; }
+.topbar a.home { font-weight:700; letter-spacing:.08em; color:var(--ink); text-decoration:none; font-size:14px; }
+.topbar .crumb { color:var(--mute); font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eyebrow { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--violet); margin:26px 0 8px; }
+h1 { font-family:'Fraunces','Avenir Next',Georgia,serif; font-weight:600;
+    font-size:clamp(28px,5vw,40px); line-height:1.14; padding-bottom:.08em;
+    background:linear-gradient(118deg,#3d1478 0%,#6d28d9 55%,#8b5cf6 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    color:var(--violet-deep); text-wrap:balance; margin-bottom:10px; }
+h2 { font-family:'Fraunces','Avenir Next',Georgia,serif; font-weight:600; font-size:24px;
+    line-height:1.2; margin:34px 0 10px; text-wrap:balance; }
+p { margin:0 0 14px; }
+.dek { font-size:18px; color:var(--ink-2); max-width:64ch; }
+.mz-eddisclaimer { max-width:72ch; margin:40px auto 8px; padding:15px 19px; background:var(--wash);
+    border:1px solid var(--hair); border-radius:12px; color:var(--ink-2); font-size:13.5px; line-height:1.6; }
+.mz-eddisclaimer strong { color:var(--ink); }
+.mod-list { list-style:none; padding:0; margin:22px 0; counter-reset:m; display:flex; flex-direction:column; gap:10px; }
+.mod-list li { counter-increment:m; }
+.mod-list a { position:relative; display:block; padding:15px 16px 15px 60px; border:1px solid var(--hair);
+    background:var(--card); border-radius:var(--radius); text-decoration:none; color:var(--ink); }
+.mod-list a::before { content:counter(m,decimal-leading-zero); position:absolute; left:16px; top:16px;
+    font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:19px; color:var(--violet); }
+.mod-list .m-name { font-weight:700; display:block; }
+.mod-list .m-what { color:var(--ink-2); font-size:14.5px; display:block; margin-top:2px; }
+.mod-list .m-done { position:absolute; right:14px; top:16px; font-size:12.5px; color:var(--good); font-weight:700; }
+.opening { font-family:'Fraunces','Avenir Next',Georgia,serif; font-size:18px; color:var(--ink);
+    background:var(--wash); border:1px solid var(--hair); border-left:3px solid var(--violet);
+    border-radius:12px; padding:16px 18px; margin:20px 0 22px; }
+.teach { margin:0 0 8px; }
+.teach h3 { font-size:17px; font-weight:700; margin:22px 0 8px; }
+.teach ul, .teach ol { margin:0 0 14px; padding-left:22px; }
+.teach li { margin-bottom:7px; }
+.reflect { border:1.5px dashed var(--violet); border-radius:12px; padding:13px 17px; margin:24px 0; color:var(--ink-2); }
+.reflect .r-tag { display:block; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--violet); margin-bottom:4px; }
+.check { border:1px solid var(--hair); border-radius:12px; padding:16px 18px; margin:24px 0; background:var(--card); }
+.check .q { font-weight:700; margin-bottom:10px; }
+.check button.opt { display:block; width:100%; text-align:left; font:inherit; color:var(--ink-2);
+    background:var(--paper); border:1px solid var(--hair); border-radius:10px; padding:10px 13px;
+    margin-bottom:8px; cursor:pointer; }
+.check button.opt[data-state="right"] { border-color:var(--good); color:var(--good); font-weight:700; }
+.check button.opt[data-state="wrong"] { border-color:#B91C1C; color:#B91C1C; }
+.check .why { display:none; margin-top:10px; padding:12px 14px; background:var(--wash);
+    border-radius:10px; color:var(--ink-2); font-size:14.5px; }
+.check .why .src { display:block; margin-top:8px; font-size:12.5px; color:var(--mute); }
+.action { display:flex; flex-wrap:wrap; gap:12px; align-items:center; border:1px solid var(--hair);
+    background:var(--card); border-radius:12px; padding:14px 16px; margin:24px 0; }
+.action .a-text { flex:1 1 260px; color:var(--ink-2); }
+.action .a-text strong { color:var(--ink); }
+.action button { font:inherit; font-weight:600; font-size:14px; color:var(--violet);
+    background:#fff; border:1.5px solid var(--violet); border-radius:999px; padding:8px 16px; cursor:pointer; }
+.action button[disabled] { color:var(--good); border-color:var(--good); cursor:default; }
+.lesson-nav { display:flex; justify-content:space-between; gap:12px; margin:34px 0 0; }
+.lesson-nav a { text-decoration:none; font-weight:600; font-size:14.5px; padding:10px 16px;
+    border:1px solid var(--hair); border-radius:999px; background:var(--card); color:var(--ink); }
+.side-note { color:var(--mute); font-size:13px; margin-top:6px; }
+.qlist { list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:8px; }
+.qlist li { border:1px solid var(--hair); background:var(--card); border-radius:10px; padding:11px 14px;
+    display:flex; gap:10px; align-items:baseline; }
+.qlist li button { margin-left:auto; font:inherit; font-size:12.5px; color:var(--mute); background:none; border:none; cursor:pointer; }
+.progress-line { color:var(--mute); font-size:13.5px; margin:6px 0 0; }
+.pending-owner { border:1px dashed #D97706; background:rgba(245,158,11,.07); color:#92400E;
+    border-radius:12px; padding:13px 16px; margin:20px 0; font-size:14.5px; }
+sup.mz-ref { position:relative; font-size:11px; }
+sup.mz-ref a { text-decoration:none; font-weight:700; }
+sup.mz-ref .mz-ref-pop { position:absolute; bottom:130%; left:50%; transform:translateX(-50%);
+    width:min(330px,80vw); background:rgba(255,255,255,0.98); border:1px solid var(--hair);
+    border-radius:10px; box-shadow:0 10px 30px rgba(26,23,38,.14); padding:12px 14px;
+    visibility:hidden; opacity:0; transition:opacity .15s ease; z-index:20; font-size:12.5px; line-height:1.5; text-align:left; }
+sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:visible; opacity:1; }
+.mz-ref-pop-title { display:block; font-weight:600; color:var(--ink); margin-bottom:3px; }
+.mz-ref-pop-meta { display:block; color:var(--mute); margin-bottom:6px; }
+.mz-ref-pop-finding { display:block; color:var(--ink-2); border-top:1px solid var(--hair); padding-top:6px; }
+@media (max-width:560px){ .wrap { padding:20px 16px 80px; } }
+</style>
+</head>
+<body data-course="endometriosis" data-lesson="6-your-next-step">
+<nav class="topbar"><a class="home" href="/">MOUNT ZARA</a><span class="crumb"><a href="/learn/">Reflections</a> · <a href="/learn/endometriosis/">Endometriosis</a> · Module 6</span></nav>
+<main class="wrap">
+<p class="eyebrow">Module 6 of 6 · The Long Game: Recurrence, Fertility, and the Years Ahead</p>
+<h1>Staying connected: the long-term partnership</h1>
+<div class="opening">You've read the modules, filled the margins with questions, and now there's just the phone call you've been putting off. Somewhere along the way you stopped expecting to be believed — and that's a hard habit to unlearn.</div>
+<div class="teach"><h3>Take the next step</h3><p>Whether you have been newly diagnosed, are years into pain that hasn&rsquo;t been controlled, or simply want a second opinion before committing to a treatment plan, endometriosis care is a core part of this practice.</p></div>
+<div class="reflect"><span class="r-tag">Just for you — never sent anywhere</span>What would you want your next appointment to feel like — and what is one thing you&#x27;d bring to it that you&#x27;ve left at home before?</div>
+<div class="action"><div class="a-text"><strong>Bring this to your visit.</strong> Schedule the visit with your symptom diary, your questions checklist, and your goals in hand — the appointment works harder when you arrive with all three.</div><button type="button" data-q="Given my symptom diary, my questions, and my goals, what should the next step in my plan be?">Add to my questions</button></div>
+<div class="lesson-nav"><a href="../../6/if-pain-returns/">← Previous</a><a href="../../your-questions/">Your questions →</a></div>
+<div class="mz-eddisclaimer" role="note"><strong>Educational information — not medical advice.</strong> Everything in this course is general education, drawn from this practice’s reviewed patient library. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
+</main>
+<script>
+(function () {
+    'use strict';
+    var COURSE = document.body.getAttribute('data-course');
+    var LESSON = document.body.getAttribute('data-lesson');
+    function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+    function load(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+    // ---- progress: mark this lesson seen ----
+    if (COURSE && LESSON) {
+        var seen = load('mzr-seen-' + COURSE, {});
+        seen[LESSON] = Date.now();
+        store('mzr-seen-' + COURSE, seen);
+    }
+    // ---- knowledge check ----
+    document.querySelectorAll('.check').forEach(function (c) {
+        var why = c.querySelector('.why');
+        c.querySelectorAll('button.opt').forEach(function (b) {
+            b.addEventListener('click', function () {
+                c.querySelectorAll('button.opt').forEach(function (x) {
+                    x.dataset.state = (x.dataset.right === '1') ? 'right' : (x === b ? 'wrong' : '');
+                });
+                if (why) why.style.display = 'block';
+            });
+        });
+    });
+    // ---- questions-for-your-visit builder ----
+    document.querySelectorAll('.action button[data-q]').forEach(function (b) {
+        var list = load('mzr-questions-' + COURSE, []);
+        if (list.indexOf(b.dataset.q) !== -1) { b.disabled = true; b.textContent = 'Added \u2713'; }
+        b.addEventListener('click', function () {
+            var l = load('mzr-questions-' + COURSE, []);
+            if (l.indexOf(b.dataset.q) === -1) { l.push(b.dataset.q); store('mzr-questions-' + COURSE, l); }
+            b.disabled = true; b.textContent = 'Added \u2713';
+        });
+    });
+    // ---- questions page ----
+    var qhost = document.getElementById('mzr-qlist');
+    if (qhost) {
+        var render = function () {
+            var l = load('mzr-questions-' + COURSE, []);
+            qhost.innerHTML = '';
+            if (!l.length) { qhost.innerHTML = '<li>No questions saved yet \u2014 add them from any lesson\u2019s \u201cbring this to your visit\u201d row.</li>'; return; }
+            l.forEach(function (q, i) {
+                var li = document.createElement('li');
+                var s = document.createElement('span'); s.textContent = (i + 1) + '. ' + q; li.appendChild(s);
+                var rm = document.createElement('button'); rm.textContent = 'remove';
+                rm.addEventListener('click', function () { l.splice(i, 1); store('mzr-questions-' + COURSE, l); render(); });
+                li.appendChild(rm); qhost.appendChild(li);
+            });
+        };
+        render();
+        var pr = document.getElementById('mzr-print'); if (pr) pr.addEventListener('click', function () { window.print(); });
+    }
+    // ---- course-home progress marks ----
+    document.querySelectorAll('[data-module-lessons]').forEach(function (el) {
+        var lessons = el.getAttribute('data-module-lessons').split(',');
+        var seen2 = load('mzr-seen-' + COURSE, {});
+        var done = lessons.filter(function (s) { return seen2[s]; }).length;
+        if (done > 0) {
+            var mark = el.querySelector('.m-done');
+            if (mark) mark.textContent = done + '/' + lessons.length;
+        }
+    });
+})();
+</script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+</body>
+</html>
