@@ -1345,13 +1345,22 @@ fi
 declare -A POOL_PID=()
 pool_launch() {
     local name="$1"; shift
-    ( "$@" > "/tmp/_${name}.log" 2>&1; echo $? > "/tmp/_${name}.exit" ) &
+    # set +e inside the subshell: with -e inherited, a failing audit would
+    # abort the subshell BEFORE the exit file is written.
+    ( set +e; "$@" > "/tmp/_${name}.log" 2>&1; echo $? > "/tmp/_${name}.exit" ) &
     POOL_PID[$name]=$!
 }
-pool_rc() {
+# pool_wait MUST run in the main shell, never inside $(...): a command
+# substitution is a subshell, and a subshell cannot `wait` on the parent's
+# children — the wait returns instantly and the exit file is read before
+# the gate finished (found by reproduction 2026-09-02: every gate
+# false-failed). Wait first, then read the recorded status.
+pool_wait() {
     local name="$1"
     if [ -n "${POOL_PID[$name]:-}" ]; then wait "${POOL_PID[$name]}" 2>/dev/null || true; fi
-    cat "/tmp/_${name}.exit" 2>/dev/null || echo 1
+}
+pool_rc() {
+    cat "/tmp/_${1}.exit" 2>/dev/null || echo 1
 }
 if [ -f scripts/audit_patient_journey.py ]; then
     pool_launch patient_journey python3 scripts/audit_patient_journey.py https://mountzara.com
@@ -1380,6 +1389,7 @@ echo "⏱  Runtime gate pool launched: ${!POOL_PID[*]}"
 if [ -n "${POOL_PID[patient_journey]:-}" ]; then
     echo ""
     echo "🔍 Patient-journey gate — the path a patient is invited onto, walked..."
+    pool_wait patient_journey
     if [ "$(pool_rc patient_journey)" = "0" ]; then
         tail -1 /tmp/_patient_journey.log
         echo "   ✅ patient-journey gate passed"
@@ -1473,6 +1483,7 @@ fi
 if [ -n "${POOL_PID[page_canvas]:-}" ]; then
     echo ""
     echo "🔍 Page-canvas gate — every route grounds on opaque paper..."
+    pool_wait page_canvas
     if [ "$(pool_rc page_canvas)" = "0" ]; then
         tail -1 /tmp/_page_canvas.log
         echo "   ✅ page-canvas gate passed"
@@ -1496,6 +1507,7 @@ fi
 if [ -n "${POOL_PID[light_text]:-}" ]; then
     echo ""
     echo "🔍 Light-text gate — no text matching its own ground, incl. modals..."
+    pool_wait light_text
     if [ "$(pool_rc light_text)" = "0" ]; then
         tail -1 /tmp/_light_text.log
         echo "   ✅ light-text gate passed"
@@ -1520,6 +1532,7 @@ fi
 if [ -n "${POOL_PID[text_width]:-}" ]; then
     echo ""
     echo "🔍 Text-width gate — no mid-page wraps, no dead-width columns..."
+    pool_wait text_width
     if [ "$(pool_rc text_width)" = "0" ]; then
         tail -1 /tmp/_text_width.log
         echo "   ✅ text-width gate passed"
@@ -1542,6 +1555,7 @@ fi
 if [ -n "${POOL_PID[hero_motion]:-}" ]; then
     echo ""
     echo "🔍 Hero-motion gate — the opening animation runs and completes..."
+    pool_wait hero_motion
     if [ "$(pool_rc hero_motion)" = "0" ]; then
         tail -1 /tmp/_hero_motion.log
         echo "   ✅ hero-motion gate passed"
@@ -1556,6 +1570,7 @@ fi
 if [ -n "${POOL_PID[contrast_audit]:-}" ]; then
     echo ""
     echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."
+    pool_wait contrast_audit
     if [ "$(pool_rc contrast_audit)" = "0" ]; then
         tail -1 /tmp/_contrast_audit.log
         echo "   ✅ contrast gate passed"
@@ -1612,6 +1627,7 @@ fi
 if [ -n "${POOL_PID[nav_read]:-}" ]; then
     echo ""
     echo "🔍 Nav + reading-sheet gate — menu reachable, sheet typography intact..."
+    pool_wait nav_read
     if [ "$(pool_rc nav_read)" = "0" ]; then
         tail -2 /tmp/_nav_read.log
         echo "   ✅ nav + reading-sheet gate passed"
