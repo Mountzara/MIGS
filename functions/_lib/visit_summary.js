@@ -215,7 +215,7 @@ export async function generateSummary(env, { noteText, visitDate, visitType, chi
             patient_id: patientId,
         });
         return { ok: true, queued: true, job_id: job.id, route,
-                 message: "Queued for your Claude CLI bridge. The note is de-identified before it leaves, and the real names and dates are restored here before you read it." };
+                 message: "This draft can't be written automatically right now. Nothing is lost — it will draft when AI drafting is reconnected. The note is de-identified before it leaves, and the real names and dates are restored here before you read it." };
     }
     if (route === "blocked") return { ok: false, error: "No AI route is configured for visit summaries." };
 

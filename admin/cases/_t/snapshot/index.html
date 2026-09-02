@@ -158,7 +158,7 @@
         .problem-status[data-status="Active"]      { color: var(--accent-soft); border-color: #6d28d9; }
         .problem-status[data-status="Resolving"]   { color: #92400E; border-color: rgba(245, 158, 11, 0.45); }
         .problem-status[data-status="Resolved"]    { color: #047857; border-color: rgba(16, 185, 129, 0.45); }
-        .problem-status[data-status="Monitoring"]  { color: var(--fg-soft); border-color: rgba(255,255,255,0.20); }
+        .problem-status[data-status="Monitoring"]  { color: var(--fg-soft); border-color: #E9E5EE; }
         .problem-name { font-size: 14px; font-weight: 500; color: var(--fg-strong); }
         .problem-plan { font-size: 12.5px; color: var(--fg-soft); line-height: 1.5; margin-top: 3px; }
 
@@ -415,7 +415,7 @@
             padding: 6px 14px; border-radius: 999px; cursor: pointer;
             transition: all 0.18s;
         }
-        .modal-close:hover { color: #fff; border-color: #6d28d9; }
+        .modal-close:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 8px; border-top: 1px solid #E9E5EE; margin-top: 14px; }
 
         /* SUPPLEMENTARY: summary cards in right column */
@@ -582,7 +582,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const h = opts.height || 36;
             const pad = 2;
             if (!values || values.length === 0) {
-                return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><text x="${w/2}" y="${h/2 + 4}" text-anchor="middle" fill="rgba(245,245,247,0.42)" font-size="10">no data</text></svg>`;
+                return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><text x="${w/2}" y="${h/2 + 4}" text-anchor="middle" fill="#8B8698" font-size="10">no data</text></svg>`;
             }
             const min = Math.min.apply(null, values);
             const max = Math.max.apply(null, values);
@@ -606,7 +606,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </defs>
                     <path d="${areaD}" fill="url(#spark-grad)"/>
                     <path d="${pathD}" fill="none" stroke="rgba(${'167, 139, 250'}, 0.95)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="rgba(255,255,255,0.95)"/>
+                    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="#6d28d9"/>
                 </svg>
             `;
         }
@@ -678,15 +678,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!snap) {
                 root.innerHTML = heroHtml + `
                     <div class="empty snapshot-empty">
-                        <div class="empty-title">No AI snapshot on file yet.</div>
-                        <div class="empty-sub">When the MountZara Transcription app pushes a <code>PatientProgressSummary</code> for this patient — typically after the first encounter post-intake — it will appear here as an interactive EMR-style snapshot with problem list, diagnostic trends, imaging, timeline, AI recommendations, and action items, fused with website-side data (symptom diary trends, education, appointment summary).</div>
+                        <div class="empty-title">No clinical snapshot yet.</div>
+                        <div class="empty-sub">One is generated after your first visit note is filed for this patient. It will appear here with their problem list, diagnostic trends, imaging, treatment timeline and action items — alongside the symptom diary and appointment history the site already tracks.</div>
                     </div>
                 `;
                 return;
             }
 
             // Meta strip.
-            const lastSync = (sup.sync_state || []).find(s => s.app === 'transcription');
             const metaStrip = `
                 <div class="meta-strip">
                     <div class="meta-card">
@@ -710,9 +709,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         <div class="sub">structures tracked</div>
                     </div>
                     <div class="meta-card">
-                        <div class="lbl">Source</div>
-                        <div class="val" style="font-size:13px;">${escapeHtml(snap.source_app)}</div>
-                        <div class="sub">${snap.ai_model ? escapeHtml(snap.ai_model) : 'no model recorded'}</div>
+                        <div class="lbl">Focus area</div>
+                        <div class="val" style="font-size:13px;">${escapeHtml(snap.dominant_category || 'general')}</div>
+                        <div class="sub">most active problem category</div>
                     </div>
                 </div>
             `;
@@ -965,13 +964,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         <div style="text-align:right;margin-top:8px;font-size:12px;"><a href="/admin/billing/?patient_id=${encodeURIComponent(p.id)}">Open billing →</a></div>
                     </section>
                 ` : ''}
-                ${lastSync ? `
-                    <section class="panel">
-                        <h2>Sync state · ${escapeHtml(lastSync.app)}</h2>
-                        ${lastSync.last_pulled_at ? `<div class="summary-row"><span class="k">App last pulled</span><span class="v">${fmtDate(lastSync.last_pulled_at)}</span></div>` : ''}
-                        ${lastSync.last_pushed_at ? `<div class="summary-row"><span class="k">App last pushed</span><span class="v">${fmtDate(lastSync.last_pushed_at)}</span></div>` : ''}
-                    </section>
-                ` : ''}
             `;
 
             // Compose. Apply stagger by setting --i custom prop on each panel for animation-delay.
@@ -996,7 +988,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             root.innerHTML = `
                 <div class="empty snapshot-empty">
                     <div class="empty-title">${escapeHtml(msg)}</div>
-                    <div class="empty-sub">If the patient was just created, this is expected — snapshots arrive after the first encounter synced from the Transcription app. Use the Full case button to inspect what's already on file.</div>
+                    <div class="empty-sub">If this patient is new, that's expected — a clinical snapshot is generated after your first visit note is filed. The Case link above opens everything already on file.</div>
                 </div>
             `;
         }
@@ -1060,9 +1052,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${sorted.map(v => `<option value="${v.version_number}" ${v.version_number === currentVersion ? 'selected' : ''}>v${v.version_number} · ${new Date(v.generated_at).toLocaleDateString()}</option>`).join('')}
                         </select>
                     </div>
-                    <button class="compare-btn" id="diff-run">Compute diff</button>
+                    <button class="compare-btn" id="diff-run">Compare</button>
                 </div>
-                <div id="diff-result"><div class="diff-empty">Pick two versions and click Compute diff.</div></div>
+                <div id="diff-result"><div class="diff-empty">Pick two versions and click Compare.</div></div>
                 <div class="modal-actions">
                     <button class="modal-close" id="diff-close">Close</button>
                 </div>
@@ -1074,8 +1066,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const fromV = parseInt(document.getElementById('diff-from').value, 10);
                 const toV   = parseInt(document.getElementById('diff-to').value, 10);
                 const $r = document.getElementById('diff-result');
-                $r.innerHTML = '<div class="diff-empty">Computing…</div>';
-                if (fromV === toV) { $r.innerHTML = '<div class="diff-empty">Pick two DIFFERENT versions.</div>'; return; }
+                $r.innerHTML = '<div class="diff-empty">Comparing…</div>';
+                if (fromV === toV) { $r.innerHTML = '<div class="diff-empty">Choose two different versions to compare.</div>'; return; }
                 try {
                     const diff = await fetchDiff(patientId, fromV, toV);
                     if (!diff.ok) { $r.innerHTML = `<div class="diff-empty">Error: ${escapeHtml(diff.error || 'unknown')}.</div>`; return; }
@@ -1144,6 +1136,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             renderError('Missing patient id in URL.');
             return;
         }
+        document.getElementById('case-link').href = '/admin/cases/' + encodeURIComponent(patientId) + '/';
         fetchSnapshot(patientId)
             .then(data => {
                 render(data);

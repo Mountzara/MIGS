@@ -208,7 +208,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Patients</span>
-            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);">/admin/patients</span>
         </header>
         <h1 class="page-title">Patients</h1>
         <p class="lede">Click into a patient for the unified case view: intake, triage, appointments, messages, symptoms, education, and the audit timeline in one place.</p>
@@ -217,7 +216,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <input type="search" id="q" placeholder="Search by last name, first name, or email…">
             <button class="primary" id="btn-add">+ Add patient</button>
             <button class="ghost" id="btn-invite">Send portal invite</button>
-            <button class="ghost" id="btn-refresh">Refresh</button>
             <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="count">—</span>
         </div>
 
@@ -234,7 +232,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </div>
         <label for="a-email">Email</label><input id="a-email" type="email" autocomplete="off">
         <div class="grid2">
-            <div><label for="a-dob">Date of birth (YYYY-MM-DD)</label><input id="a-dob" placeholder="1984-03-22" autocomplete="off"></div>
+            <div><label for="a-dob">Date of birth</label><input id="a-dob" type="date" autocomplete="off"></div>
             <div><label for="a-phone">Phone (optional)</label><input id="a-phone" autocomplete="off"></div>
         </div>
         <div class="msg" id="a-msg"></div>
@@ -246,14 +244,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
     <dialog id="dlg-invite">
         <h2>Send portal invite</h2>
-        <p class="hint">This mints a signed sign-up link. Nothing is emailed &mdash; copy the link below
-        and send it to the patient yourself.</p>
+        <p class="hint">This creates a sign-up link for the patient. Nothing is emailed &mdash; copy the link below
+        and send it to them yourself.</p>
         <label for="i-email">Email</label><input id="i-email" type="email" autocomplete="off">
         <label for="i-name">Full name (optional)</label><input id="i-name" autocomplete="off">
-        <label for="i-url">Invite link</label><input id="i-url" readonly placeholder="Appears here once minted">
+        <label for="i-url">Invite link</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <input id="i-url" readonly placeholder="Appears here once created" style="flex:1;">
+            <button class="ghost" id="i-copy" type="button">Copy</button>
+        </div>
         <div class="msg" id="i-msg"></div>
         <div class="acts">
-            <button class="primary" id="i-save">Mint invite</button>
+            <button class="primary" id="i-save">Create invite link</button>
             <button class="ghost" id="i-cancel">Close</button>
         </div>
     </dialog>
@@ -267,6 +269,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 credentials: 'include', cache: 'no-store',
                 headers: { 'content-type': 'application/json' },
             });
+            if (res.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
             const ct = res.headers.get('content-type') || '';
             const body = ct.includes('json') ? await res.json() : await res.text();
             if (!res.ok) {
@@ -282,6 +285,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify(body),
             });
+            if (res.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
             const ct = res.headers.get('content-type') || '';
             const data = ct.includes('json') ? await res.json() : await res.text();
             if (!res.ok) {
@@ -296,7 +300,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             invalid_email: 'That email address is not valid.',
             invalid_first_name: 'Enter a first name.',
             invalid_last_name: 'Enter a last name.',
-            invalid_dob: 'Enter the date of birth as YYYY-MM-DD.',
+            invalid_dob: 'Pick the patient’s date of birth.',
             email_already_registered: 'A patient with that email is already on the roster.',
         };
         function humanError(e) { return ERRORS[e.code] || e.message || 'Something went wrong.'; }
@@ -331,7 +335,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 state.patients = data.patients || [];
                 render();
             } catch (e) {
-                $('list').innerHTML = `<div class="empty-state">Could not load the roster: ${escapeHtml(e.message)}. Press Refresh to try again.</div>`;
+                $('list').innerHTML = `<div class="empty-state">Could not load the roster: ${escapeHtml(e.message)}. Reload the page to try again.</div>`;
             }
         }
 
@@ -365,6 +369,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </a>
                 `;
             }).join('');
+            if (state.patients.length === 100) {
+                $('list').innerHTML += '<div class="empty-state" style="padding: 16px;">Showing the first 100 &mdash; search to narrow.</div>';
+            }
         }
 
         $('q').addEventListener('input', () => {
@@ -374,7 +381,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 load();
             }, 220);
         });
-        $('btn-refresh').addEventListener('click', load);
+        // The Refresh button is gone — searching reloads, and returning to
+        // the tab picks up anything added elsewhere.
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 
         // ---- add patient (POST /api/v1/admin/patients) ----
         $('btn-add').addEventListener('click', () => {
@@ -430,16 +439,28 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const full_name = $('i-name').value.trim();
             if (full_name) body.full_name = full_name;
             btn.disabled = true;
-            setMsg('i-msg', 'Minting…', '');
+            setMsg('i-msg', 'Creating…', '');
             try {
                 const data = await postJson('/api/v1/admin/preview-invite', body);
                 $('i-url').value = data.grant_url || '';
                 $('i-url').select();
-                setMsg('i-msg', 'Invite minted. Copy the link above and send it to the patient — nothing is emailed automatically.', 'good');
+                const exp = data.expires_at ? ` It works until ${fmtDate(data.expires_at)}.` : '';
+                setMsg('i-msg', `Invite link created.${exp} Copy it and send it to the patient — nothing is emailed automatically.`, 'good');
             } catch (e) {
                 setMsg('i-msg', humanError(e), 'bad');
             } finally {
                 btn.disabled = false;
+            }
+        });
+        $('i-copy').addEventListener('click', async () => {
+            const url = $('i-url').value;
+            if (!url) { setMsg('i-msg', 'Create the invite link first.', 'bad'); return; }
+            try {
+                await navigator.clipboard.writeText(url);
+                setMsg('i-msg', 'Link copied. Send it to the patient — nothing is emailed automatically.', 'good');
+            } catch (e) {
+                $('i-url').select();
+                setMsg('i-msg', 'The browser blocked the copy — the link is selected, copy it manually.', 'bad');
             }
         });
 

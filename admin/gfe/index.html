@@ -52,7 +52,6 @@
                      background:rgba(var(--glow-purple),.16); border:1px solid rgba(var(--glow-purple),.5); color:var(--accent-soft); }
         button.act.ghost { background:rgba(255,255,255,0.72); border-color:var(--border); color:var(--fg-soft); }
         button.act:disabled { opacity:.5; cursor:default; }
-        .tab:disabled { opacity:.45; cursor:not-allowed; }
         .empty { opacity:.6; font-size:13.5px; padding:24px 0; }
         dialog { background:#FFFFFF; color:#1A1726; border:1px solid var(--border); border-radius:14px;
                  padding:20px; max-width:560px; width:92vw; }
@@ -81,12 +80,12 @@
         </p>
 
         <div class="kpis">
-            <div class="kpi warn"><div class="l">Overdue drafts</div><div class="v" id="k-over">—</div></div>
+            <div class="kpi" id="k-over-card"><div class="l">Overdue drafts</div><div class="v" id="k-over">—</div></div>
             <div class="kpi"><div class="l">Drafts</div><div class="v" id="k-draft">—</div></div>
             <div class="kpi"><div class="l">Total</div><div class="v" id="k-total">—</div></div>
         </div>
 
-        <div class="tabs"><button class="tab" id="btn-new" disabled>+ New estimate</button></div>
+        <div class="acts" style="margin:0 0 18px;"><button class="act" id="btn-new" disabled>+ New estimate</button></div>
         <div id="list"><div class="empty">Loading…</div></div>
     </div>
 
@@ -158,6 +157,7 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
             state.rows = r.data.estimates || [];
             const c = r.data.counts || {};
             $('k-over').textContent = c.overdue || 0; $('k-draft').textContent = c.drafts || 0; $('k-total').textContent = c.total || 0;
+            $('k-over-card').classList.toggle('warn', (c.overdue || 0) > 0);
             render();
         }
         function render() {
@@ -177,8 +177,9 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
                     <div class="meta">${esc(g.primary_service || '')} · service ${esc(g.service_date || '—')}
                         · due to the patient by ${esc(g.due_by || '—')} · practice total ${money(g.practice_total_cents)}</div>
                     <div class="acts">
-                        <button class="act ghost" data-view="${esc(g.id)}">Review / validate</button>
-                        ${g.status === 'draft' ? `<button class="act" data-issue="${esc(g.id)}">Issue to patient</button>` : ''}
+                        <button class="act ghost" data-view="${esc(g.id)}">Check it's complete</button>
+                        ${g.status === 'draft' ? `<button class="act" data-issue="${esc(g.id)}">Issue to patient (via portal)</button>` : ''}
+                        ${g.status === 'draft' || g.status === 'issued' ? `<button class="act ghost" data-void="${esc(g.id)}">Void</button>` : ''}
                     </div>
                     <div class="meta" id="det-${esc(g.id)}"></div>
                 </div>`;
@@ -198,12 +199,34 @@ outside | Pelvic ultrasound | 76856 | 300 | Evanston Imaging (bills you directly
                                : '<span class="pill red">incomplete</span> missing: ' + esc(v.missing.join(', '))}
                         <div style="margin-top:6px;">Practice ${money(d.totals.practice_cents)} · outside ${money(d.totals.outside_cents)} (${d.totals.outside_count} item(s) billed by others) · total ${money(d.totals.total_cents)}</div>
                         <div style="margin-top:6px;">Deadline: ${esc(d.deadline.reason)}</div>
-                        ${d.lines.map(l => `<div>• [${esc(l.kind)}] ${esc(l.description)} — ${esc(l.service_code || 'no code')} — ${money(l.total_cents)} — ${esc(l.provider_name || 'no provider')}</div>`).join('')}
+                        ${d.lines.map(l => {
+                            const who = l.kind === 'outside'
+                                ? 'billed separately by ' + (l.provider_name || 'an outside provider')
+                                : 'billed by the practice';
+                            return `<div>• ${esc(l.description)} — ${esc(l.service_code || 'no code')} — ${money(l.total_cents)} — ${esc(who)}</div>`;
+                        }).join('')}
                         </div>`;
                 } else if (b.dataset.issue) {
                     const r = await api('/api/v1/admin/gfe/' + b.dataset.issue, 'PATCH', { issue: true, delivery_method: 'portal' });
                     if (!r.ok) { toast(r.data.missing ? 'Cannot issue — missing: ' + r.data.missing.join(', ') : (r.data.error || 'Failed')); return; }
                     toast('Issued to the patient'); load();
+                } else if (b.dataset.void) {
+                    // Inline reason field instead of a prompt() — the reason is kept on the record.
+                    const det = document.getElementById('det-' + b.dataset.void);
+                    det.innerHTML = `<div class="acts" style="align-items:center;">
+                        <input id="void-why-${esc(b.dataset.void)}" placeholder="Why void this estimate? (kept on record)" style="max-width:320px;">
+                        <button class="act" data-voidgo="${esc(b.dataset.void)}">Void estimate</button>
+                        <button class="act ghost" data-voidcancel="${esc(b.dataset.void)}">Keep it</button>
+                    </div>`;
+                    det.querySelector('input').focus();
+                } else if (b.dataset.voidgo) {
+                    const why = ($('void-why-' + b.dataset.voidgo).value || '').trim();
+                    if (!why) { toast('Give a short reason first — it goes on the record'); return; }
+                    const r = await api('/api/v1/admin/gfe/' + b.dataset.voidgo, 'PATCH', { void_reason: why });
+                    if (!r.ok) { toast(r.data.error || 'Failed'); return; }
+                    toast('Estimate voided'); load();
+                } else if (b.dataset.voidcancel) {
+                    document.getElementById('det-' + b.dataset.voidcancel).innerHTML = '';
                 }
             } finally { b.disabled = false; }
         });

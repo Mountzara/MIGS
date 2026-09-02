@@ -64,7 +64,7 @@
             { label: 'Analytics',       href: '/admin/analytics/',  desc: 'Volume, NPS, outcomes' },
             { label: 'Compliance',      href: '/admin/compliance/', desc: 'Signatures and attestations' },
             { label: 'Feedback',        href: '/admin/feedback/',   desc: 'What patients said' },
-            { label: 'Sessions & debug',href: '/admin/debug/sessions/', desc: 'Technical traces' },
+            { label: 'Sessions & debug',href: '/admin/debug/sessions/', desc: 'Tester invites & technical traces' },
         ]},
     ];
 
@@ -188,7 +188,7 @@
                 font-size: 10px;
                 padding: 5px 10px;
             }
-            .mz-admin-section-nav .mz-asn-right { display: none; }
+            .mz-admin-section-nav .mz-asn-portal-link { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
             .mz-admin-section-nav * { transition: none !important; }
@@ -207,8 +207,11 @@
 
         const linksHtml = GROUPS.map((g) => {
             const active = g.match.test(path);
-            if (!g.items.length) {
-                return `<a class="mz-asn-link${active ? ' active' : ''}" href="${g.href}">${g.label}</a>`;
+            if (g.items.length <= 1) {
+                // A dropdown with one entry is a click tax — render the
+                // single-page groups (Schedule, Messages) as plain links.
+                const href = g.items.length ? g.items[0].href : g.href;
+                return `<a class="mz-asn-link${active ? ' active' : ''}" href="${href}">${g.label}</a>`;
             }
             const menu = g.items.map((it) => {
                 const cur = path.indexOf(it.href) === 0;
@@ -224,12 +227,12 @@
 
         nav.innerHTML = `
             <div class="mz-asn-inner">
-                <a class="mz-asn-brand" href="/admin/" aria-label="Admin home">⌥ Mount Zara · Admin</a>
+                <a class="mz-asn-brand" href="/admin/" aria-label="Admin home">Mount Zara · Admin</a>
                 ${linksHtml}
                 <span class="mz-asn-spacer"></span>
                 <span class="mz-asn-right">
-                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener" title="Opens the patient-facing portal. While the public launch flag is off, your admin session is what lets you through the pre-launch gate.">Preview patient portal →</a>
-                    <a class="mz-asn-signout" href="/admin/_signout" title="Drop the cached admin credentials. Use when leaving an unattended Mac.">Sign out</a>
+                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener" title="See the portal exactly as a patient will.">Preview patient portal →</a>
+                    <a class="mz-asn-signout" href="/admin/_signout" title="Sign out of the admin on this device.">Sign out</a>
                 </span>
             </div>
         `;
@@ -335,23 +338,23 @@
         if (!data || !data.problems || !data.problems.length) return;
         var bar = document.createElement('div');
         bar.setAttribute('role', 'alert');
-        bar.style.cssText = 'position:sticky;top:0;z-index:400;background:rgba(120,53,15,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(251,146,60,0.5);color: #92400E;font:600 12.5px/1.45 "Avenir Next","Avenir",system-ui,sans-serif;padding:9px 16px;display:flex;gap:12px;align-items:flex-start;';
+        bar.style.cssText = 'position:sticky;top:0;z-index:400;background:rgba(120,53,15,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(251,146,60,0.5);color: #FEF3C7;font:600 12.5px/1.45 "Avenir Next","Avenir",system-ui,sans-serif;padding:9px 16px;display:flex;gap:12px;align-items:flex-start;';
         var n = data.problems.length;
         var newest = data.kinds && data.kinds.evidence && data.kinds.evidence.newest_published;
         var head = document.createElement('div');
         head.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
-        head.innerHTML = '&#9888;&#65039; Content pipeline: ' + n + ' issue' + (n === 1 ? '' : 's') +
+        head.innerHTML = '&#9888;&#65039; Site content: ' + n + ' thing' + (n === 1 ? ' needs' : 's need') + ' a look' +
             (newest ? ' &mdash; newest weekly post is ' + newest.age_days + ' days old' : '') +
             '. <u>Details</u>';
         var list = document.createElement('div');
-        list.style.cssText = 'display:none;margin-top:7px;font-weight:400;color: #92400E;white-space:pre-line;';
+        list.style.cssText = 'display:none;margin-top:7px;font-weight:400;color: #FEF3C7;white-space:pre-line;';
         list.textContent = data.problems.map(function (p) { return '• ' + p; }).join('\n');
         head.appendChild(list);
         head.addEventListener('click', function () { list.style.display = list.style.display === 'none' ? 'block' : 'none'; });
         var x = document.createElement('button');
         x.textContent = '×';
         x.setAttribute('aria-label', 'Dismiss for this session');
-        x.style.cssText = 'background:none;border:none;color: #92400E;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;';
+        x.style.cssText = 'background:none;border:none;color: #FEF3C7;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;';
         x.addEventListener('click', function () {
             try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
             bar.remove();
@@ -363,7 +366,8 @@
         try { if (sessionStorage.getItem(DISMISS_KEY)) return; } catch (e) {}
         var creds = (typeof window.mzAdminCachedCreds === 'function') ? window.mzAdminCachedCreds() : null;
         if (!creds) return;   // not signed in this session — stay silent, never prompt
-        fetch('/api/posts/_admin/freshness', { headers: { Authorization: 'Basic ' + creds } })
+        // The admin session cookie authenticates this call — no header.
+        fetch('/api/posts/_admin/freshness', { credentials: 'include' })
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(show)
             .catch(function () { /* banner is best-effort */ });

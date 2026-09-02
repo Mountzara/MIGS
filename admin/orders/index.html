@@ -26,9 +26,11 @@
         h1 { font-weight:200; font-size:clamp(26px,3.4vw,36px); letter-spacing:-.02em; margin:0 0 6px; }
         .lede { font-size:14.5px; line-height:1.55; max-width:96ch; margin:0 0 20px; opacity:.85; }
         .kpis { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); margin-bottom:22px; }
-        .kpi { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
-        .kpi .l { font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; opacity:.6; }
-        .kpi .v { font-size:28px; font-weight:200; margin-top:6px; }
+        .kpi { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+               font:inherit; color:inherit; text-align:left; cursor:pointer; }
+        .kpi:hover { border-color:#6d28d9; }
+        .kpi .l { display:block; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; opacity:.6; }
+        .kpi .v { display:block; font-size:28px; font-weight:200; margin-top:6px; }
         .kpi.danger { border-color:rgba(239,68,68,.5); } .kpi.danger .v { color:#B91C1C; }
         .kpi.warn { border-color:rgba(245,158,11,.45); } .kpi.warn .v { color:#92400E; }
         .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
@@ -80,10 +82,10 @@
         </p>
 
         <div class="kpis">
-            <div class="kpi danger"><div class="l">Critical unacknowledged</div><div class="v" id="k-crit">—</div></div>
-            <div class="kpi warn"><div class="l">Overdue — no result</div><div class="v" id="k-over">—</div></div>
-            <div class="kpi"><div class="l">Awaiting review</div><div class="v" id="k-rev">—</div></div>
-            <div class="kpi"><div class="l">Open orders</div><div class="v" id="k-open">—</div></div>
+            <button class="kpi danger" data-goto="critical" title="Show critical results"><span class="l">Critical unacknowledged</span><span class="v" id="k-crit">—</span></button>
+            <button class="kpi warn" data-goto="overdue" title="Show overdue orders"><span class="l">Overdue — no result</span><span class="v" id="k-over">—</span></button>
+            <button class="kpi" data-goto="open" title="Show open orders"><span class="l">Awaiting review</span><span class="v" id="k-rev">—</span></button>
+            <button class="kpi" data-goto="open" title="Show open orders"><span class="l">Open orders</span><span class="v" id="k-open">—</span></button>
         </div>
 
         <div class="tabs" id="tabs">
@@ -91,11 +93,13 @@
             <button class="tab" data-view="overdue">Overdue</button>
             <button class="tab" data-view="critical">Critical</button>
             <button class="tab" data-view="all">All</button>
-            <button class="tab" id="btn-sweep" style="margin-left:auto;" title="Check for overdue orders and unacknowledged critical results now">Run check now</button>
-            <button class="tab" id="btn-new" disabled title="Checking the roster…">+ New order</button>
+            <button class="tab" id="btn-new" disabled style="margin-left:auto;" title="Checking the roster…">+ New order</button>
         </div>
 
         <div id="list"><div class="empty">Loading…</div></div>
+        <div style="margin-top:14px;">
+            <button class="act ghost" id="btn-sweep" title="Check for overdue orders and unacknowledged critical results now">Run check now</button>
+        </div>
     </div>
 
     <dialog id="dlg-new">
@@ -125,6 +129,22 @@
         </div>
     </dialog>
 
+    <dialog id="dlg-told">
+        <h3 style="margin:0 0 4px;font-weight:300;">How was the patient told?</h3>
+        <label for="t-method">Method</label>
+        <select id="t-method">
+            <option value="portal message">Portal message</option>
+            <option value="phone call">Phone call</option>
+            <option value="in person">In person</option>
+        </select>
+        <label for="t-note">Note (optional)</label>
+        <textarea id="t-note" placeholder="Anything worth recording about the conversation"></textarea>
+        <div class="acts" style="margin-top:16px;">
+            <button class="act" id="t-save">Record</button>
+            <button class="act ghost" id="t-cancel">Cancel</button>
+        </div>
+    </dialog>
+
     <dialog id="dlg-result">
         <h3 style="margin:0 0 4px;font-weight:300;">Record a result</h3>
         <label for="r-status">Result status</label>
@@ -148,7 +168,7 @@
     (function () {
         'use strict';
         const $ = (id) => document.getElementById(id);
-        const state = { view: 'open', orders: [], patients: [], hasPatients: null, resultOrderId: null };
+        const state = { view: 'open', orders: [], patients: [], hasPatients: null, resultOrderId: null, toldOrderId: null, toldResultId: null };
 
         function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
@@ -175,6 +195,15 @@
             render();
         }
 
+        // Plain-word labels for the raw status/result values the API returns.
+        const STATUS_LABELS = { draft: 'Draft', placed: 'Placed', in_transit: 'Sent to facility',
+                                resulted: 'Result received', reviewed: 'Reviewed', cancelled: 'Cancelled',
+                                overdue: 'Overdue' };
+        const RESULT_LABELS = { normal: 'Normal', abnormal: 'Abnormal', critical: 'Critical',
+                                incomplete: 'Incomplete / cancelled by facility' };
+        function statusLabel(s) { return STATUS_LABELS[s] || String(s || '—').replace(/_/g, ' '); }
+        function resultLabel(s) { return RESULT_LABELS[s] || String(s || '—').replace(/_/g, ' '); }
+
         function what(o) {
             if (o.order_type === 'referral') return esc(o.specialty || 'Referral') + (o.consult_question ? ' — ' + esc(o.consult_question) : '');
             if (o.order_type === 'imaging') return esc(o.modality || 'Imaging') + (o.body_site ? ' (' + esc(o.body_site) + ')' : '');
@@ -198,7 +227,7 @@
                 const results = (o.results || []).map(r => {
                     const need = r.acknowledged_at && !r.patient_communicated_at && (r.result_status === 'abnormal' || r.result_status === 'critical');
                     return `<div class="meta" style="margin-top:8px;border-top:1px solid #E9E5EE;padding-top:8px;">
-                        <span class="pill ${r.result_status === 'critical' ? 'red' : r.result_status === 'abnormal' ? 'amber' : 'green'}">${esc(r.result_status)}</span>
+                        <span class="pill ${r.result_status === 'critical' ? 'red' : r.result_status === 'abnormal' ? 'amber' : 'green'}">${esc(resultLabel(r.result_status))}</span>
                         ${esc(r.summary || '')} · received ${fmtDate(r.received_at)}
                         ${r.acknowledged_at ? ' · acknowledged' : ' · <strong>not acknowledged</strong>'}
                         ${r.patient_communicated_at ? ' · patient told' : (need ? ' · <strong>patient NOT told</strong>' : '')}
@@ -209,7 +238,7 @@
                 }).join('');
                 return `<div class="card lvl${lvl}">
                     <div class="row1">
-                        <span class="who">${esc(name)}</span>
+                        <span class="who">${o.patient_id ? `<a href="/admin/cases/${encodeURIComponent(o.patient_id)}/" style="color:inherit;border-bottom:1px dashed rgba(var(--glow-purple),.45);">${esc(name)}</a>` : esc(name)}</span>
                         <span class="pill">${esc(o.order_type)}</span>
                         ${o.priority !== 'routine' ? `<span class="pill amber">${esc(o.priority)}</span>` : ''}
                         ${escPill}
@@ -219,7 +248,7 @@
                         ${o.facility_name ? esc(o.facility_name) + ' · ' : ''}placed ${fmtDate(o.placed_at)}
                         · expected by ${fmtDate(o.result_due_at)}
                         ${o.overdue ? ` · <strong>${o.days_overdue} day(s) overdue</strong>` : ''}
-                        · status ${esc(o.status)}
+                        · ${esc(statusLabel(o.status))}
                     </div>
                     ${results}
                     <div class="acts">
@@ -237,6 +266,12 @@
             state.view = b.dataset.view; load();
         });
 
+        // KPI tiles jump to their matching tab.
+        document.querySelectorAll('.kpi[data-goto]').forEach(k => k.addEventListener('click', () => {
+            const t = document.querySelector('.tab[data-view="' + k.dataset.goto + '"]');
+            if (t) t.click();
+        }));
+
         document.getElementById('list').addEventListener('click', async (e) => {
             const b = e.target.closest('button'); if (!b) return;
             b.disabled = true;
@@ -253,10 +288,8 @@
                     const r = await api('/api/v1/admin/orders/' + b.dataset.order + '/results', 'PATCH', { result_id: b.dataset.ack, acknowledge: true });
                     toast(r.ok ? 'Acknowledged' : 'Failed'); if (r.ok) load();
                 } else if (b.dataset.told) {
-                    const note = prompt('How was the patient told? (e.g. portal message, phone call)') || 'portal';
-                    const r = await api('/api/v1/admin/orders/' + b.dataset.order + '/results', 'PATCH',
-                        { result_id: b.dataset.told, patient_communicated: true, communication_method: note.slice(0, 40), communication_note: note });
-                    toast(r.ok ? 'Recorded — patient told' : 'Failed'); if (r.ok) load();
+                    state.toldOrderId = b.dataset.order; state.toldResultId = b.dataset.told;
+                    $('t-note').value = ''; $('dlg-told').showModal();
                 }
             } finally { b.disabled = false; }
         });
@@ -273,7 +306,7 @@
                 if (d.newly_overdue) bits.push(d.newly_overdue + ' newly overdue');
                 if (d.still_overdue) bits.push(d.still_overdue + ' still waiting');
                 if (d.awaiting_patient_communication) bits.push(d.awaiting_patient_communication + ' patient not told');
-                toast(bits.length ? bits.join(' · ') + (d.emailed ? ' — alert sent' : '') : 'Checked ' + d.scanned + ' open order(s) — nothing needs attention');
+                toast(bits.length ? bits.join(' · ') + (d.emailed ? ' — email alert sent to you' : '') : 'Checked ' + d.scanned + ' open order(s) — nothing needs attention');
                 load();
             } finally { b.disabled = false; }
         });
@@ -349,6 +382,17 @@
             const r = await api('/api/v1/admin/orders', 'POST', body);
             if (!r.ok) { toast(r.data.missing ? 'Missing: ' + r.data.missing.join(', ') : (r.data.error || 'Failed')); return; }
             $('dlg-new').close(); toast('Order placed'); load();
+        });
+
+        // ---- mark patient told ----
+        $('t-cancel').addEventListener('click', () => $('dlg-told').close());
+        $('t-save').addEventListener('click', async () => {
+            const method = $('t-method').value;
+            const note = $('t-note').value.trim();
+            const r = await api('/api/v1/admin/orders/' + state.toldOrderId + '/results', 'PATCH',
+                { result_id: state.toldResultId, patient_communicated: true, communication_method: method, communication_note: note || method });
+            if (!r.ok) { toast(r.data.error || 'Failed'); return; }
+            $('dlg-told').close(); toast('Recorded — patient told'); load();
         });
 
         // ---- record result ----

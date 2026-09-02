@@ -31,6 +31,8 @@
         .search { width:100%; max-width:420px; background:rgba(255,255,255,0.72); border:1px solid var(--border);
             border-radius:10px; padding:10px 13px; color: #4A4658; font:inherit; font-size:14px; margin-bottom:16px; }
         .search:focus { outline:none; border-color: #6d28d9; }
+        .roster-count { font-size:12px; opacity:.7; margin-left:10px; white-space:nowrap; }
+        .roster-count .warn { color:#92400E; opacity:1; }
         .row { display:flex; align-items:center; gap:12px; padding:13px 15px; border:1px solid var(--border);
             border-radius:11px; background:rgba(255,255,255,0.72); margin-bottom:8px; text-decoration:none; color: #4A4658; }
         .row:hover { border-color: #6d28d9; background:rgba(var(--glow-purple),.07); }
@@ -50,7 +52,7 @@
             A chart is everything about one patient on a single page — their health history, triage decision, visits,
             messages, symptom diary and audit trail. Pick someone to open theirs.
         </p>
-        <input class="search" id="q" type="search" placeholder="Search by name or email" autocomplete="off">
+        <input class="search" id="q" type="search" placeholder="Search by name or email" autocomplete="off" autofocus><span class="roster-count" id="roster-count"></span>
         <div id="list"><div class="empty">Loading the roster…</div></div>
     </div>
     <script>
@@ -76,7 +78,7 @@
                     + '<span class="go">Open chart →</span></a>';
             }).join('');
         }
-        fetch('/api/v1/admin/patients?limit=200', { credentials: 'include', cache: 'no-store' })
+        fetch('/api/v1/admin/patients?limit=100', { credentials: 'include', cache: 'no-store' })
             .then(function (r) {
                 if (r.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return null; }
                 return r.ok ? r.json() : null;
@@ -85,12 +87,20 @@
                 if (!d) { document.getElementById('list').innerHTML =
                     '<div class="empty">Could not load the roster. Reload the page, or open the <a href="/admin/patients/">roster</a> directly.</div>'; return; }
                 all = d.patients || [];
+                var countEl = document.getElementById('roster-count');
+                countEl.textContent = all.length === 1 ? '1 patient' : all.length + ' patients';
+                if (all.length >= 100) countEl.innerHTML += ' <span class="warn">— only the first 100 are shown; search the full <a href="/admin/patients/">roster</a> to find anyone else</span>';
                 render(all, '');
             })
             .catch(function () {
                 document.getElementById('list').innerHTML =
                     '<div class="empty">Could not load the roster. Reload the page, or open the <a href="/admin/patients/">roster</a> directly.</div>';
             });
+        document.getElementById('q').addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            var top = document.querySelector('#list a.row');
+            if (top) location.href = top.getAttribute('href');
+        });
         document.getElementById('q').addEventListener('input', function (e) {
             var q = e.target.value.trim().toLowerCase();
             if (!q) { render(all, ''); return; }

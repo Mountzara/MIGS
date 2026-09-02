@@ -80,6 +80,7 @@
         </p>
 
         <div class="card" style="margin-bottom:18px;">
+            <div class="tabs" id="payer-chips" style="margin:0 0 10px; display:none;"></div>
             <div class="grid2">
                 <div><label for="f-payer">Patient's payer</label><input id="f-payer" placeholder="Aetna, BCBS IL…"></div>
                 <div><label for="f-plan">Plan type</label>
@@ -90,7 +91,7 @@
                         <option value="self_pay">Self-pay</option>
                     </select></div>
             </div>
-            <div class="acts"><button class="act" id="btn-check">Check coverage</button>
+            <div class="acts"><button class="act ghost" id="btn-check">Check coverage</button>
                 <button class="act ghost" id="btn-add">+ Add destination</button></div>
         </div>
 
@@ -104,7 +105,7 @@
     </div>
 
     <dialog id="dlg">
-        <h3 style="margin:0 0 10px;font-weight:300;">Add a destination</h3>
+        <h3 style="margin:0 0 10px;font-weight:300;" id="dlg-title">Add a destination</h3>
         <label for="d-name">Name</label><input id="d-name" placeholder="Dr. Jane Roe / Quest Diagnostics">
         <div class="grid2">
             <div><label for="d-kind">Kind</label><select id="d-kind">
@@ -129,7 +130,7 @@
     (function () {
         'use strict';
         const $ = (id) => document.getElementById(id);
-        const state = { kind: '', rows: [] };
+        const state = { kind: '', rows: [], editId: null };
         function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
         async function api(url, method, body) {
@@ -168,32 +169,100 @@
                         ${pill}</div>
                     <div class="meta">${(d.networks || []).length ? 'Networks: ' + esc((d.networks || []).join(', ')) : '<em>No networks recorded — call to confirm before sending.</em>'}
                         ${d.networks_verified_at ? ' · verified ' + esc(d.networks_verified_at) : ''}</div>
-                    ${d.phone || d.fax ? `<div class="meta">${d.phone ? 'Tel ' + esc(d.phone) : ''}${d.fax ? ' · Fax ' + esc(d.fax) : ''}</div>` : ''}
+                    ${d.phone || d.fax ? `<div class="meta">${d.phone ? `Tel <a href="tel:${esc(String(d.phone).replace(/[^+\d]/g, ''))}">${esc(d.phone)}</a>` : ''}${d.fax ? (d.phone ? ' · ' : '') + `Fax <span style="user-select:all;" title="Click to select the number, then copy it">${esc(d.fax)}</span>` : ''}</div>` : ''}
                     ${d.cash_price_note ? `<div class="meta">Cash: ${esc(d.cash_price_note)}</div>` : ''}
                     ${ranked ? reasons : ''}
+                    <div class="acts">
+                        <button class="act ghost" data-edit="${esc(d.id)}">Edit</button>
+                        ${(d.networks || []).length ? `<button class="act ghost" data-verify="${esc(d.id)}">Networks confirmed today</button>` : ''}
+                    </div>
                 </div>`;
             }).join('');
         }
+        // Contracted payers as one-tap chips — tapping fills the payer box and
+        // runs the coverage check immediately.
+        async function loadPayerChips() {
+            const r = await api('/api/v1/admin/billing/payers');
+            const payers = (r.ok && r.data && r.data.payers) || [];
+            const contracted = payers.filter(p => p.contract_status === 'active' || p.contract_status === 'signed');
+            if (!contracted.length) return;
+            const box = $('payer-chips');
+            box.innerHTML = contracted.map(p => `<button class="tab" data-payer="${esc(p.payer_name)}">${esc(p.payer_name)}</button>`).join('');
+            box.style.display = 'flex';
+            box.addEventListener('click', (e) => {
+                const b = e.target.closest('[data-payer]'); if (!b) return;
+                $('f-payer').value = b.dataset.payer;
+                box.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === b));
+                load();
+            });
+        }
         $('tabs').addEventListener('click', (e) => {
             const b = e.target.closest('.tab'); if (!b) return;
-            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === b));
+            document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('active', t === b));
             state.kind = b.dataset.kind || ''; load();
         });
+        // Live ranking — retype or switch plan type and the check re-runs on its own.
+        let payerT;
+        $('f-payer').addEventListener('input', () => {
+            clearTimeout(payerT);
+            const v = $('f-payer').value.trim().toLowerCase();
+            document.querySelectorAll('#payer-chips .tab').forEach(t => t.classList.toggle('active', t.dataset.payer.toLowerCase() === v));
+            payerT = setTimeout(load, 350);
+        });
+        $('f-plan').addEventListener('change', load);
+        $('list').addEventListener('click', async (e) => {
+            const b = e.target.closest('button'); if (!b) return;
+            if (b.dataset.edit) {
+                const d = state.rows.find(x => x.id === b.dataset.edit); if (!d) return;
+                state.editId = d.id;
+                fillDialog(d);
+                $('dlg').showModal();
+            } else if (b.dataset.verify) {
+                // Re-verify in one tap: PATCH the networks unchanged — the server
+                // stamps networks_verified_at with today's date.
+                const d = state.rows.find(x => x.id === b.dataset.verify); if (!d) return;
+                b.disabled = true;
+                try {
+                    const r = await api('/api/v1/admin/referral-directory', 'PATCH', { id: d.id, networks: d.networks || [] });
+                    if (!r.ok) { toast(r.data.error || 'Failed'); return; }
+                    toast('Networks marked confirmed today'); load();
+                } finally { b.disabled = false; }
+            }
+        });
+        function fillDialog(d) {
+            $('dlg-title').textContent = d ? 'Edit ' + d.name : 'Add a destination';
+            $('d-name').value = d ? (d.name || '') : '';
+            $('d-kind').value = d ? (d.kind || 'specialist') : 'specialist';
+            // The API doesn't allow changing a destination's kind after creation.
+            $('d-kind').disabled = !!d;
+            $('d-kind').title = d ? "Kind can't be changed once created" : '';
+            $('d-specialty').value = d ? (d.specialty || '') : '';
+            $('d-phone').value = d ? (d.phone || '') : '';
+            $('d-fax').value = d ? (d.fax || '') : '';
+            $('d-networks').value = d ? (d.networks || []).join(', ') : '';
+            $('d-cash').checked = !!(d && d.accepts_cash);
+            $('d-cashnote').value = d ? (d.cash_price_note || '') : '';
+        }
         $('btn-check').addEventListener('click', load);
-        $('btn-add').addEventListener('click', () => $('dlg').showModal());
+        $('btn-add').addEventListener('click', () => { state.editId = null; fillDialog(null); $('dlg').showModal(); });
         $('d-cancel').addEventListener('click', () => $('dlg').close());
         $('d-save').addEventListener('click', async () => {
-            const r = await api('/api/v1/admin/referral-directory', 'POST', {
+            const body = {
                 name: $('d-name').value.trim(), kind: $('d-kind').value, specialty: $('d-specialty').value.trim(),
                 phone: $('d-phone').value.trim(), fax: $('d-fax').value.trim(),
                 networks: $('d-networks').value.split(',').map(s => s.trim()).filter(Boolean),
                 networks_verified_at: $('d-networks').value.trim() ? new Date().toISOString().slice(0, 10) : null,
                 accepts_cash: $('d-cash').checked, cash_price_note: $('d-cashnote').value.trim(),
-            });
+            };
+            const r = state.editId
+                ? await api('/api/v1/admin/referral-directory', 'PATCH', { id: state.editId, ...body })
+                : await api('/api/v1/admin/referral-directory', 'POST', body);
             if (!r.ok) { toast(r.data.error || 'Failed'); return; }
-            $('dlg').close(); toast('Destination added'); load();
+            $('dlg').close(); toast(state.editId ? 'Destination updated' : 'Destination added');
+            state.editId = null; load();
         });
         load();
+        loadPayerChips().catch(() => {});
     })();
     </script>
 <style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>

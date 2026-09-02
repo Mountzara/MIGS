@@ -82,18 +82,18 @@ a:hover { color: var(--fg-strong); }
   display: grid; place-items: center; font-size: 11px; font-weight: 700;
   border: 1px solid rgba(255,255,255,.20); }
 .setup-step.done .setup-mark { background: rgba(16,185,129,.22); border-color: rgba(16,185,129,.55); color: #047857; }
-.setup-step.todo .setup-mark { color: rgba(255,255,255,.45); }
+.setup-step.todo .setup-mark { color: var(--fg-soft); }
 .setup-step.attention .setup-mark { background: rgba(245,158,11,.18); border-color: rgba(245,158,11,.5); color: #92400E; }
 .setup-body { flex: 1; min-width: 0; }
 .setup-name { font-size: 13.5px; font-weight: 600; }
 .setup-name .req { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
   color: #92400E; border: 1px solid rgba(245,158,11,.45); border-radius: 999px; padding: 1px 7px; margin-left: 8px; }
-.setup-why { font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,.62); margin-top: 3px; }
-.setup-detail { font-size: 12px; margin-top: 4px; color: rgba(255,255,255,.48); }
+.setup-why { font-size: 12.5px; line-height: 1.55; color: var(--fg-mid); margin-top: 3px; }
+.setup-detail { font-size: 12px; margin-top: 4px; color: var(--fg-soft); }
 .setup-go { flex: 0 0 auto; font-size: 12px; text-decoration: none; padding: 6px 13px; border-radius: 999px;
   background: rgba(167,139,250,.16); border: 1px solid rgba(167,139,250,.45); color: #6d28d9; align-self: center; }
 .setup-toggle { font: inherit; font-size: 11.5px; cursor: pointer; padding: 4px 11px; border-radius: 999px;
-  background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; color: rgba(255,255,255,.7); }
+  background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; color: var(--fg-soft); }
 
 .attn-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE; border-radius: 10px; transition: all 0.18s ease; }
 .attn-item:hover { background: rgba(255,255,255,0.72); border-color: #6d28d9; }
@@ -116,7 +116,7 @@ a:hover { color: var(--fg-strong); }
 .ai-list li { font-size: 13.5px; line-height: 1.55; color: var(--fg-mid); padding: 10px 12px; background: #FFFFFF; border-radius: 8px; border-left: 2px solid rgba(var(--glow-purple), 0.4); }
 .ai-list li strong { color: var(--fg-strong); font-weight: 500; }
 .ai-list li .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 8px; }
-.ai-list li .badge.high { background: rgba(239, 68, 68, 0.18); color: #fda4a4; border: 1px solid rgba(239, 68, 68, 0.32); }
+.ai-list li .badge.high { background: rgba(239, 68, 68, 0.18); color: #B91C1C; border: 1px solid rgba(239, 68, 68, 0.32); }
 .ai-list li .badge.medium { background: rgba(245, 158, 11, 0.15); color: #92400E; border: 1px solid rgba(245, 158, 11, 0.32); }
 .ai-list li .badge.low { background: rgba(255,255,255,0.72); color: var(--fg-soft); border: 1px solid #E9E5EE; }
 .ai-disclaimer { margin-top: 16px; padding: 10px 14px; background: #FFFFFF; border-radius: 8px; font-size: 11.5px; color: var(--fg-dim); line-height: 1.5; }
@@ -285,7 +285,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <!-- AI Insights -->
                 <section class="panel ai-panel" aria-labelledby="ai-h">
                     <div class="panel-head">
-                        <h2 id="ai-h"><span class="eb">AI Advisor</span> Accountant-level insights</h2>
+                        <h2 id="ai-h"><span class="eb">Money</span> This month at a glance</h2>
                         <div class="head-actions">
                             <select id="ai-window" aria-label="Insights window">
                                 <option value="mtd" selected>Month-to-date</option>
@@ -433,9 +433,9 @@ function renderAI(payload) {
 
     const statusEl = $("ai-status");
     if (n.ai_used) {
-        statusEl.innerHTML = `<span class="pulse"></span>Claude Sonnet · ${payload.cached ? "cached" : "fresh"}`;
+        statusEl.innerHTML = `<span class="pulse"></span>${payload.cached ? "Updated (from cache)" : "Updated just now"}`;
     } else {
-        statusEl.innerHTML = `<span class="pulse rule-only" style="background:var(--amber)"></span>Rule-based (${n.reason || "no AI"})`;
+        statusEl.innerHTML = `<span class="pulse rule-only" style="background:var(--amber)"></span>Basic analysis only right now`;
     }
 }
 
@@ -579,12 +579,17 @@ function renderAttention(payload) {
     if (triageOpen > 0) items.push({ sev: "urgent", html: `<strong>${triageOpen} triage decision${triageOpen > 1 ? "s" : ""} awaiting clinician review</strong>`, meta: "TRIAGE", go: "/admin/triage/" });
     if (msgs > 0) items.push({ sev: "warning", html: `<strong>${msgs} unread patient message thread${msgs > 1 ? "s" : ""}</strong>`, meta: "MESSAGES", go: "/admin/messages/" });
 
+    const briefs = (window.__mzTrendBriefs || {}).pending || 0;
+    if (briefs > 0) items.push({ sev: "info", html: `<strong>${briefs} evidence brief${briefs > 1 ? "s" : ""} waiting for your verdict</strong>`, meta: "TREND BRIEFS", go: "/admin/trend-briefs/" });
+
     for (const a of (i.anomalies || [])) {
         items.push({
             sev: a.severity === "warning" ? "warning" : "info",
             html: a.message,
-            meta: a.kind.replace(/_/g, " ").toUpperCase().slice(0, 14),
-            go: a.kind.includes("aged_ar") ? "/admin/billing/" : a.kind.includes("uninvoiced") ? "/admin/billing/" : a.kind.includes("payment") ? "/admin/billing/" : "/admin/billing/",
+            meta: a.kind.replace(/_/g, " ").toUpperCase(),
+            // Every anomaly here comes from the billing insights payload
+            // (aged A/R, uninvoiced, payment issues) — Billing is its home.
+            go: "/admin/billing/",
         });
     }
 
@@ -634,7 +639,7 @@ async function refresh(window, fresh) {
         renderAttention(payload);
     } catch (e) {
         $("ai-status").innerHTML = `<span class="pulse rule-only" style="background:var(--red)"></span>${escapeHtml(String(e.message || e))}`;
-        $("ai-headline").textContent = "Could not load insights — check Stripe configuration in admin billing.";
+        $("ai-headline").textContent = "Couldn't load the money summary — payments may not be connected yet. Open Billing to check.";
     }
 }
 
@@ -651,6 +656,7 @@ async function refreshTrendBriefsBadge() {
         if (!r.ok) return;
         const j = await r.json();
         const pending = (j && j.summary && j.summary.pending) || 0;
+        window.__mzTrendBriefs = { pending };  // picked up by renderAttention
         const badge = $("qa-trend-briefs-count");
         if (!badge) return;
         if (pending > 0) {

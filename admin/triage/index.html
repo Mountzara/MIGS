@@ -267,7 +267,7 @@
             color: var(--fg-mid);
             line-height: 1.55;
             margin: 0 0 12px 0;
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(var(--glow-purple), 0.06);
             padding: 10px 12px;
             border-radius: 8px;
             border-left: 2px solid rgba(var(--glow-purple), 0.55);
@@ -403,10 +403,10 @@
             font-size: 13px;
             color: var(--fg-mid);
             line-height: 1.5;
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(26, 23, 38, 0.04);
             border-radius: 8px;
             padding: 10px 12px;
-            border-left: 2px solid rgba(255, 255, 255, 0.10);
+            border-left: 2px solid var(--border);
         }
         .chief-complaint .label {
             display: block;
@@ -533,7 +533,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <h1 class="page-title">Triage Review</h1>
         <p class="lede">
-            Every submitted patient intake runs through the AI triage assistant, which categorizes the visit and surfaces perioperative flags. Review each pending row below, adjust any field that needs an override, then release the categorization so the patient sees only the matching booking slots. Rows auto-release to the patient four hours after AI categorization if not reviewed.
+            <strong>Each intake below releases to the patient automatically four hours after it arrives — confirm or change the suggested visit type before then.</strong>
         </p>
 
         <div class="filter-bar">
@@ -645,13 +645,20 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (isReleased) cardClass.push('released');
             if (state.expandedId === row.id) cardClass.push('expanded');
 
+            // Countdown to the 4-hour auto-release; red inside the last hour.
+            const hrsLeft = Math.max(0, 4 - (Number(row.hours_pending) || 0));
+            const hLeft = Math.floor(hrsLeft);
+            const mLeft = Math.floor((hrsLeft - hLeft) * 60);
+            const countdown = hrsLeft > 0
+                ? `auto-releases in ${hLeft > 0 ? hLeft + 'h ' : ''}${mLeft}m`
+                : 'auto-release imminent';
             const statePill = isReleased
                 ? `<span class="pill released">released</span>`
                 : isManual
                     ? `<span class="pill manual">manual review required</span>`
                     : row.is_overdue
                         ? `<span class="pill overdue">${row.hours_pending}h pending</span>`
-                        : `<span class="pill pending">${row.hours_pending}h pending</span>`;
+                        : `<span class="pill ${hrsLeft < 1 ? 'urgent' : 'pending'}">${countdown}</span>`;
 
             const urgPill = row.ai_urgency === 'urgent'
                 ? `<span class="pill urgent">urgent</span>`
@@ -718,6 +725,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="header-right">
                   ${statePill}
                   ${!isReleased ? urgPill : ''}
+                  ${!isReleased && !isManual ? `<button class="primary" data-action="release" data-id="${row.id}" style="font-size: 12px; padding: 6px 12px;" title="Release the suggested categorization as-is">Confirm &amp; release</button>` : ''}
                   <span class="chevron">▾</span>
                 </div>
               </div>
@@ -737,7 +745,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     ${concerns ? `<div class="secondary-concerns">${concerns}</div>` : ''}
                     ${chiefBlock}
                     <div class="ai-meta">
-                      <span><strong>Prompt:</strong> ${escapeHtml(row.ai_prompt_version || '—')}</span>
                       <span><strong>Triaged:</strong> ${fmtTimestamp(row.triage_created_at)}</span>
                     </div>
                     ${releasedMeta}
@@ -782,7 +789,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </div>
 
                     <label class="field-label">Override reason (optional, ≤500 chars)</label>
-                    <textarea data-field="override_reason" maxlength="500" placeholder="${isManual ? 'Required: explain why AI fell back to manual review (e.g. ANTHROPIC_API_KEY pending) or what clinical context to use instead.' : 'Why are you overriding the AI? Brief note for the audit log.'}" ${formDisabled}>${escapeHtml(row.clinician_override_reason || '')}</textarea>
+                    <textarea data-field="override_reason" maxlength="500" placeholder="Why are you changing or confirming this manually? Brief note for the record." ${formDisabled}>${escapeHtml(row.clinician_override_reason || '')}</textarea>
 
                     ${isReleased ? '' : `
                     <div class="actions">

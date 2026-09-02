@@ -36,7 +36,7 @@ export function summaryState(enc, sum) {
         // Distinguishing this from "no summary yet" matters: one is work
         // waiting for him, the other is data that cannot be recovered.
         return { state: "note_unreadable", label: "Note cannot be decrypted",
-                 hint: "This note was saved before its encryption key was being stored (schema 0038). Re-sync the encounter from the Transcription app to replace it." };
+                 hint: "This note was saved before its encryption key was being stored, so it can't be opened. Re-sync the encounter from the Transcription app to replace it." };
     }
     if (!sum) {
         return { state: "not_drafted", label: "Not drafted",

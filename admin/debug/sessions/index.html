@@ -19,13 +19,13 @@
     --accent: #6d28d9;
     --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
-    --hairline: rgba(255, 255, 255, 0.08);
-    --glass: rgba(255, 255, 255, 0.04);
-    --glass-strong: rgba(255, 255, 255, 0.07);
-    --ok: rgba(74, 222, 128, 0.95);
-    --warn: rgba(251, 191, 36, 0.95);
-    --err: rgba(248, 113, 113, 0.95);
-    --blocked: rgba(244, 114, 182, 0.92);
+    --hairline: #E9E5EE;
+    --glass: rgba(255, 255, 255, 0.72);
+    --glass-strong: rgba(255, 255, 255, 0.85);
+    --ok: #047857;
+    --warn: #92400E;
+    --err: #B91C1C;
+    --blocked: #BE185D;
 }
 * { box-sizing: border-box; }
 html, body {
@@ -298,6 +298,18 @@ table.trace .detail {
 }
 .invite-card h2.later { margin-top: 20px; }
 
+details.trace-details > summary {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-soft);
+    margin: 0 0 14px;
+    user-select: none;
+}
+details.trace-details > summary:hover { color: var(--fg-strong); }
+
 .mint-form {
     display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
     margin-bottom: 14px;
@@ -366,7 +378,7 @@ table.trace .detail {
     color: var(--fg-mid);
     padding: 8px 14px;
 }
-.mint-result button.copy:hover { border-color: #6d28d9; color: #fff; }
+.mint-result button.copy:hover { border-color: #6d28d9; color: var(--fg-strong); }
 .mint-result .meta { margin-top: 8px; font-size: 11.5px; color: var(--fg-faint); }
 
 @keyframes mzPulse {
@@ -453,9 +465,33 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div>
             <span class="eyebrow">Debug · Live Sessions</span>
             <h1>Real-time member-flow trace</h1>
-            <p class="lede">Streams the most recent events from <code style="font-family:'JetBrains Mono', monospace; font-size:12px;">session_trace</code> so an in-flight member's signup → intake → portal flow can be watched event-by-event. Auto-refreshes every 5 seconds when enabled. PHI-free per §4.4.4 — sizes, statuses, and step numbers only.</p>
+            <p class="lede">A live, privacy-safe feed of what portal testers are doing &mdash; no names or medical details, just steps and outcomes. Refreshes every 5 seconds.</p>
         </div>
     </header>
+
+    <section class="invite-card">
+        <h2>Invite a tester</h2>
+        <p class="note">Creates one single-use invitation link that lets an external tester through the pre-launch gate and into the signup &rarr; history &rarr; booking path. Copy the link and send it to them yourself.</p>
+        <div class="mint-form">
+            <label for="inv-email">Email</label>
+            <input id="inv-email" type="email" placeholder="tester@example.com" autocomplete="off" style="width:230px;">
+            <label for="inv-name">Full name</label>
+            <input id="inv-name" type="text" placeholder="Ally O&#39;Flinn" autocomplete="off" style="width:180px;">
+            <label for="inv-label">Label</label>
+            <input id="inv-label" type="text" placeholder="ally" autocomplete="off" style="width:110px;">
+            <button id="mintBtn" type="button">Invite a tester</button>
+            <span id="mintStatus" class="status" role="status" aria-live="polite"></span>
+        </div>
+        <div id="mintResult" class="mint-result" hidden></div>
+
+        <h2 class="later">Active invitations</h2>
+        <div class="invites" id="invites">
+            <div style="color:var(--fg-soft); font-size:13px;">Loading&hellip;</div>
+        </div>
+    </section>
+
+    <details class="trace-details">
+        <summary>Technical trace</summary>
 
     <div class="bar" role="region" aria-label="Filters">
         <label for="f-label">Label</label>
@@ -487,27 +523,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <span id="lastUpdate" style="font-size:11.5px; color:var(--fg-soft); font-family:'JetBrains Mono', monospace;"></span>
     </div>
 
-    <section class="invite-card">
-        <h2>Mint preview invite</h2>
-        <p class="note">Creates one single-use grant URL that lets an external tester through the pre-launch gate and into the signup &rarr; history &rarr; booking path. Nothing is emailed from here &mdash; copy the URL below and send it to the recipient yourself.</p>
-        <div class="mint-form">
-            <label for="inv-email">Email</label>
-            <input id="inv-email" type="email" placeholder="tester@example.com" autocomplete="off" style="width:230px;">
-            <label for="inv-name">Full name</label>
-            <input id="inv-name" type="text" placeholder="Ally O&#39;Flinn" autocomplete="off" style="width:180px;">
-            <label for="inv-label">Label</label>
-            <input id="inv-label" type="text" placeholder="ally" autocomplete="off" style="width:110px;">
-            <button id="mintBtn" type="button">Mint preview invite</button>
-            <span id="mintStatus" class="status" role="status" aria-live="polite"></span>
-        </div>
-        <div id="mintResult" class="mint-result" hidden></div>
-
-        <h2 class="later">Active invitations</h2>
-        <div class="invites" id="invites">
-            <div style="color:var(--fg-soft); font-size:13px;">Loading&hellip;</div>
-        </div>
-    </section>
-
     <section class="summary" id="summary"></section>
 
     <section class="table-wrap">
@@ -532,6 +547,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <p>A PHI-free live trace of portal requests, for watching a signup or intake happen step by step. Nothing yet — open /portal/ in another tab and rows appear within five seconds.</p>
         </div>
     </section>
+    </details>
 </main>
 
 <script>
@@ -648,7 +664,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
             const data = await r.json();
             if (!data.invites || data.invites.length === 0) {
-                invitesEl.innerHTML = `<div style="color:var(--fg-soft); font-size:13px;">No invitations issued yet. Use Mint preview invite above to create one.</div>`;
+                invitesEl.innerHTML = `<div style="color:var(--fg-soft); font-size:13px;">No invitations issued yet. Use Invite a tester above to create one.</div>`;
                 return;
             }
             invitesEl.innerHTML = data.invites.slice(0, 8).map((inv) => `
@@ -684,14 +700,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             ? new Date(data.expires_at_iso).toLocaleString()
             : 'unknown';
         mintResult.innerHTML = `
-            <div>Invitation minted for <strong style="color:var(--fg-strong);">${escHtml(data.email_prefix || '')}</strong>
+            <div>Invitation created for <strong style="color:var(--fg-strong);">${escHtml(data.email_prefix || '')}</strong>
                  (label <span class="label">${escHtml(data.label || '—')}</span>).
-                 Single-use, expires ${escHtml(expires)}. Send it to the recipient out-of-band.</div>
+                 Single-use, expires ${escHtml(expires)}.</div>
             <div class="grant-row">
-                <input class="grant" type="text" readonly value="${escHtml(url)}" aria-label="Grant URL">
-                <button class="copy" type="button">Copy URL</button>
+                <input class="grant" type="text" readonly value="${escHtml(url)}" aria-label="Invitation link">
+                <button class="copy" type="button">Copy link</button>
             </div>
-            <div class="meta">Nothing was emailed. This URL is the invitation.</div>
+            <div class="meta">Copy this link and send it to them yourself.</div>
         `;
         mintResult.hidden = false;
         const field = mintResult.querySelector('input.grant');
@@ -704,10 +720,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 copyBtn.textContent = 'Copied';
             } catch {
                 // Clipboard API can be refused; the field is selected, so
-                // the operator can still press Cmd-C.
-                copyBtn.textContent = 'Press Cmd-C';
+                // a manual copy still works.
+                copyBtn.textContent = 'Link selected — copy it manually';
             }
-            setTimeout(() => { copyBtn.textContent = 'Copy URL'; }, 2500);
+            setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 2500);
         });
     }
 
@@ -719,7 +735,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             return;
         }
         mintBtn.disabled = true;
-        setMintStatus('Minting…', false);
+        setMintStatus('Creating…', false);
         try {
             const body = { email: email };
             if (invName.value.trim()) body.full_name = invName.value.trim();
@@ -733,7 +749,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             let data = {};
             try { data = await r.json(); } catch { data = {}; }
             if (!r.ok) {
-                setMintStatus('Could not mint: ' + (data.error || ('HTTP ' + r.status)), true);
+                setMintStatus('Could not create the invite: ' + (data.error || ('HTTP ' + r.status)), true);
                 return;
             }
             showGrant(data);
@@ -743,7 +759,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             invLabel.value = '';
             loadInvites();
         } catch (e) {
-            setMintStatus('Could not mint: ' + String(e), true);
+            setMintStatus('Could not create the invite: ' + String(e), true);
         } finally {
             mintBtn.disabled = false;
         }

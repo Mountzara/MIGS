@@ -495,9 +495,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div class="titles">
                 <p class="eyebrow">Mount Zara · Admin</p>
                 <h1>Pre-visit briefings</h1>
-                <p class="lede">AI-synthesized day-of-clinic briefings — one per patient on the
-                    schedule. Pulls from intake, encounters, PROMs, snapshot, personal notes,
-                    medications + openFDA AE matches. Click a name on the left to load.</p>
+                <p class="lede">Everything you need before walking into the room — one page per
+                    patient on today's schedule. Click a name on the left to load.</p>
             </div>
             <div class="toolbar">
                 <label for="date">Date</label>
@@ -506,7 +505,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <button class="range-pill active" data-range="day" type="button">Day</button>
                     <button class="range-pill" data-range="week" type="button">Week</button>
                 </div>
-                <button id="refresh" type="button" title="Refresh">↻</button>
+                <button id="refresh" type="button" title="Refresh">↻ Refresh</button>
             </div>
         </header>
 
@@ -540,8 +539,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
         function todayISO() {
-            const d = new Date();
-            return d.toISOString().slice(0, 10);
+            // Clinic-local "today", not UTC — toISOString() flips to the wrong
+            // day every evening for a viewer behind UTC. en-CA formats YYYY-MM-DD.
+            return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" })
+                .format(new Date());
         }
         function fmtTime(ms) {
             if (!ms) return "";
@@ -554,7 +555,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function fmtDate(ms) {
             if (!ms) return "";
             const d = new Date(ms);
-            return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+            return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric",
+                timeZone: "America/Chicago" });
         }
         function esc(s) {
             if (s == null) return "";
@@ -911,7 +913,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     let status = "clear", statusLabel = "No symptom overlap";
                     if (m.not_found) { status = "notfound"; statusLabel = "Drug not found"; }
                     else if ((m.high_confidence_count || 0) > 0) { status = "match"; statusLabel = `${m.high_confidence_count} match${m.high_confidence_count === 1 ? "" : "es"}`; }
-                    else if (m.matches && m.matches.length) { statusLabel = `${m.matches.length} low-conf`; }
+                    else if (m.matches && m.matches.length) { statusLabel = `${m.matches.length} low-confidence`; }
                     const matches = (m.matches || []).slice(0, 4).map((mm) => {
                         const toks = (mm.matched_tokens || []).map((t) => `<span class="tok-chip">${esc(t)}</span>`).join("");
                         return `<div class="med-match ${esc(mm.confidence)}">
@@ -929,14 +931,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </div>
                         ${m.advisory ? `<div class="med-advisory">${esc(m.advisory)}</div>` : ""}
                         ${matches}
-                        ${m.set_id ? `<div class="med-card-source">openFDA · set ${esc(m.set_id)} · fetched ${esc(fetchedDate)} · matched on ${esc(m.matched_on || "")}</div>` : ""}
+                        ${m.set_id ? `<details class="med-card-source"><summary style="cursor: pointer;">Data source</summary>openFDA · set ${esc(m.set_id)} · fetched ${esc(fetchedDate)} · matched on ${esc(m.matched_on || "")}</details>` : ""}
                     </div>`;
                 }).join("");
 
                 out.push(`<div class="card briefing-section">
                     <h2>Current medications + AE watch</h2>
                     ${rawBands.join("")}
-                    ${watchCards || `<div class="empty-note">No openFDA results loaded. The engine runs on briefing render and writes to drug_label_cache (30-day TTL).</div>`}
+                    ${watchCards || `<div class="empty-note">Medication safety check hasn't finished for this patient yet — it runs automatically when the briefing loads.</div>`}
                 </div>`);
             }
 
@@ -1014,8 +1016,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </div>`
                 ).join("");
                 out.push(`<div class="card briefing-section">
-                    <h2>openFDA call log (§3.6 provenance)</h2>
-                    ${calls}
+                    <details>
+                        <summary style="cursor: pointer;"><h2 style="display: inline; text-transform: none; letter-spacing: 0.04em;">Data sources</h2></summary>
+                        ${calls}
+                    </details>
                 </div>`);
             }
 

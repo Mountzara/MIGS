@@ -26,7 +26,7 @@
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; background: var(--bg-base); color: var(--fg-mid); font-family: 'Nunito Sans', 'Avenir Next', 'Avenir', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
         a { color: var(--accent-soft); text-decoration: none; }
-        a:hover { color: rgba(196, 181, 253, 1); }
+        a:hover { color: var(--accent); }
         .wrap { max-width: 1180px; margin: 0 auto; padding: 70px 28px 80px; }
         .crumbs { font-size: 12.5px; color: var(--fg-dim); margin-bottom: 18px; }
         .crumbs a { color: var(--accent-soft); }
@@ -45,7 +45,7 @@
         .stat-pill .label { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); }
         .stat-pill .value { font-size: 22px; font-weight: 200; color: var(--fg-strong); margin-top: 4px; }
         .stat-pill[data-tone="urgent"] .value { color: #B91C1C; }
-        .stat-pill[data-tone="warning"] .value { color: rgba(253, 224, 71, 0.95); }
+        .stat-pill[data-tone="warning"] .value { color: #92400E; }
         .stat-pill[data-tone="purple"] .value { color: var(--accent-soft); }
         .section { margin-bottom: 36px; }
         .section h2 { font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-soft); margin: 0 0 12px; }
@@ -189,6 +189,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
         function fmtDate(iso){try{return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}catch{return iso||'';}}
         function severityBadge(s){const c=s==='urgent'?'b-red':s==='warning'?'b-amber':'b-gray';return `<span class="badge ${c}">${escapeHtml((s||'info').toUpperCase())}</span>`;}
+        // Flag types are stored as "<instrument>_<descriptor>" enums; the instrument
+        // is already shown alongside, so strip it and space the rest into plain words.
+        function fmtFlagType(t, slug){
+            let s = String(t || '');
+            const sl = String(slug || '').toLowerCase();
+            // Flag prefixes drop the slug's hyphens (pfiq-7 → pfiq7_) or abbreviate it entirely.
+            const alias = {'bpi-sf':'bpi','iciq-ui-sf':'iciq','pgi-i':'pgi','ufs-qol-ss':'ufsqol','pfdi-20':'pfdi'};
+            const candidates = sl ? [sl, sl.replace(/-/g,''), alias[sl] || ''] : [];
+            for (const c of candidates) {
+                if (c && s.toLowerCase().indexOf(c + '_') === 0) { s = s.slice(c.length + 1); break; }
+            }
+            return s.replace(/_/g, ' ');
+        }
         function statusBadge(s){const c=s==='completed'?'b-green':s==='pending'?'b-purple':s==='in_progress'?'b-amber':'b-gray';return `<span class="badge ${c}">${escapeHtml(s||'')}</span>`;}
 
         // Pull patient_id from /admin/cases/<patient_id>/proms[/]
@@ -213,7 +226,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function render(d) {
             // Header
             $('header-name').textContent = `${d.patient.name || '—'} · PROM history`;
-            $('header-sub').textContent = `Email ${d.patient.email || '—'} · status ${d.patient.status || '—'}`;
+            $('header-sub').textContent = `Email ${d.patient.email || '—'}` + (d.patient.status && d.patient.status !== 'active' ? ` · ${d.patient.status}` : '');
             $('link-case').textContent = d.patient.name || 'Case';
 
             // Stat pills
@@ -237,10 +250,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     html += openFlags.map(f => `
                         <div class="row">
                             <div class="hd">
-                                <h3 class="title">${escapeHtml(f.message || f.flag_type)}</h3>
+                                <h3 class="title">${escapeHtml(f.message || fmtFlagType(f.flag_type, f.prom_slug))}</h3>
                                 <div>${severityBadge(f.severity)}</div>
                             </div>
-                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(f.flag_type)} · fired ${fmtDate(f.created_at)}</div>
+                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(fmtFlagType(f.flag_type, f.prom_slug))} · fired ${fmtDate(f.created_at)}</div>
                         </div>`).join('');
                 }
                 if (ackFlags.length) {
@@ -248,10 +261,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     html += ackFlags.map(f => `
                         <div class="row" style="opacity:0.62;">
                             <div class="hd">
-                                <h3 class="title">${escapeHtml(f.message || f.flag_type)}</h3>
-                                <div>${severityBadge(f.severity)} <span class="badge b-green">ack'd</span></div>
+                                <h3 class="title">${escapeHtml(f.message || fmtFlagType(f.flag_type, f.prom_slug))}</h3>
+                                <div>${severityBadge(f.severity)} <span class="badge b-green">reviewed</span></div>
                             </div>
-                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(f.flag_type)} · fired ${fmtDate(f.created_at)} · ack ${fmtDate(f.acknowledged_at)}</div>
+                            <div class="meta">${escapeHtml((f.prom_slug||'').toUpperCase())} · ${escapeHtml(fmtFlagType(f.flag_type, f.prom_slug))} · fired ${fmtDate(f.created_at)} · reviewed ${fmtDate(f.acknowledged_at)}</div>
                             ${f.acknowledged_note ? `<div class="body">${escapeHtml(f.acknowledged_note)}</div>` : ''}
                         </div>`).join('');
                     html += `</details>`;
@@ -277,10 +290,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     const path = pts.map((_, i) => (i===0?'M':'L') + xs[i].toFixed(1) + ',' + ys[i].toFixed(1)).join(' ');
                     const circles = pts.map((_, i) => `<circle cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="2.5"/>`).join('');
                     const latest = pts[pts.length - 1];
+                    const first = pts[0];
+                    const fmtScore = v => v.toFixed(v % 1 ? 1 : 0);
+                    const fmtMonth = iso => {try{return new Date(iso).toLocaleDateString(undefined,{month:'short'});}catch{return '';}};
+                    const mFirst = fmtMonth(first.submitted_at), mLast = fmtMonth(latest.submitted_at);
+                    const rangeLine = pts.length > 1
+                        ? `<div class="t-points" style="margin-top:4px;">${fmtScore(first.total)} → ${fmtScore(latest.total)} over ${pts.length} responses, ${mFirst === mLast ? mFirst : mFirst + '–' + mLast}</div>`
+                        : '';
                     return `<div class="trend">
                         <div class="t-slug">${escapeHtml(slug.toUpperCase())}</div>
-                        <div class="t-points">${pts.length} response${pts.length===1?'':'s'} · latest ${latest.total.toFixed(latest.total % 1 ? 1 : 0)} on ${fmtDate(latest.submitted_at)}</div>
+                        <div class="t-points">${pts.length} response${pts.length===1?'':'s'} · latest ${fmtScore(latest.total)} on ${fmtDate(latest.submitted_at)}</div>
                         <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="${escapeHtml(slug)} score trend"><path d="${path}"/>${circles}</svg>
+                        ${rangeLine}
                     </div>`;
                 }).join('');
             }
@@ -318,7 +339,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         ? `<div class="body">${escapeHtml(cs.interpretation.patient_label)}</div>`
                         : '';
                     const flagsHtml = tf.length
-                        ? `<div class="body" style="margin-top:6px;">${tf.map(f => severityBadge(f.severity)+' '+escapeHtml(f.message||f.flag_type)).join('<br>')}</div>`
+                        ? `<div class="body" style="margin-top:6px;">${tf.map(f => severityBadge(f.severity)+' '+escapeHtml(f.message||fmtFlagType(f.flag_type, r.prom_slug))).join('<br>')}</div>`
                         : '';
                     return `
                         <div class="row">

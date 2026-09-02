@@ -301,11 +301,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Analytics</span>
-            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);">/admin/analytics</span>
         </header>
 
         <h1 class="page-title">Practice analytics</h1>
-        <p class="lede">A live cross-patient panorama. Window controls the time horizon for messaging-activity, symptom signals, and audit counts; lifetime counts are unaffected.</p>
+        <p class="lede">What&rsquo;s moving in your practice &mdash; pick a time window; patient and document totals are all-time, and symptom signals always show the last 7 days.</p>
 
         <div class="filter-bar">
             <button class="filter-chip" data-window="14">Last 14 d</button>
@@ -356,8 +355,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div class="panel">
                 <h2>Messaging + audit activity</h2>
                 <div id="msg-summary" style="font-size: 13px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 16px;"></div>
-                <h3 style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 8px 0 8px 0;">Audit events by action</h3>
-                <div id="audit-by-action"></div>
+                <details>
+                    <summary style="font-size: 10.5px; color: var(--fg-dim); letter-spacing: 0.14em; text-transform: uppercase; margin: 8px 0; cursor: pointer;">Technical activity log</summary>
+                    <div id="audit-by-action" style="margin-top: 8px;"></div>
+                </details>
             </div>
         </div>
 
@@ -424,6 +425,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             manual_review_required: "Manual review required",
         };
         const fmtVT = (k) => VISIT_LABELS[k] || k;
+        // Appointment statuses arrive as enum slugs; the owner reads words.
+        const STATUS_LABELS = {
+            scheduled: 'Booked',
+            completed: 'Completed',
+            no_show: 'No-show',
+            cancelled: 'Cancelled',
+            cancelled_by_patient: 'Cancelled by patient',
+            cancelled_by_clinic: 'Cancelled by clinic',
+            rescheduled: 'Rescheduled',
+        };
+        const fmtStatus = (k) => STATUS_LABELS[k] || String(k || '').replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
 
         async function load() {
             try {
@@ -455,7 +467,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 };
                 $('nps-scores').innerHTML =
                     `<div style="display:flex;gap:10px;flex-wrap:wrap;">${cell(w.d30, '30 day')}${cell(w.d90, '90 day')}${cell(w.d365, '365 day')}</div>
-                     <p style="font-size:11.5px;color:var(--fg-dim);margin:12px 0 0;">NPS = % promoters (9–10) − % detractors (0–6). Healthcare benchmarks run 27 (commercial insurance) to 58 (concierge). A response rate under 30% is a survey-design tripwire.</p>`;
+                     <p style="font-size:11.5px;color:var(--fg-dim);margin:12px 0 0;">NPS = % promoters (9–10) − % detractors (0–6). Healthcare benchmarks run 27 (commercial insurance) to 58 (concierge).</p>`;
                 const r = await fetchJson('/api/v1/admin/nps/responses?days=90&limit=25');
                 if (!r.responses || r.responses.length === 0) {
                     $('nps-why').innerHTML = '<div class="empty-state">No responses yet. Surveys go out the morning after each completed visit.</div>';
@@ -465,7 +477,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     const col = x.score >= 9 ? '#047857' : x.score <= 6 ? '#B91C1C' : 'var(--accent-soft, rgba(167,139,250,0.95))';
                     return `<div style="padding:10px 0;border-bottom:1px solid #E9E5EE;">
                         <span style="display:inline-block;min-width:28px;font-weight:700;color:${col};">${x.score}</span>
-                        <span style="color:var(--fg-dim);font-size:11px;">· ${escapeHtml(String(x.responded_at).slice(0, 10))} · ${escapeHtml(x.patient_hash)}</span>
+                        <span style="color:var(--fg-dim);font-size:11px;">· ${escapeHtml(String(x.responded_at).slice(0, 10))}</span>
                         ${x.why ? `<div style="margin-top:4px;color:var(--fg-mid);line-height:1.5;">${escapeHtml(x.why)}</div>` : ''}
                     </div>`;
                 }).join('');
@@ -486,14 +498,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             // missing/undefined count is a different problem and must not
             // render as "nothing to measure yet".
             $('zero-board').hidden = !(Number(t.patients) === 0);
+            // Tiles that can need action (triage, unread) lead the grid.
             const kpis = [
+                { label: 'Triage pending', value: d.triage.pending, sub: `${d.triage.released} released · ${d.triage.booked} booked`, cls: d.triage.pending > 0 ? 'alert' : 'good' },
+                { label: 'Unread messages', value: t.messages_unread_for_clinician, sub: `${t.messages_threads} thread${t.messages_threads === 1 ? '' : 's'}`, cls: t.messages_unread_for_clinician > 0 ? 'alert' : '' },
                 { label: 'Patients', value: t.patients, sub: 'on file' },
                 { label: 'Upcoming visits', value: t.appointments_upcoming, sub: `${t.appointments_total} all time`, cls: 'good' },
                 { label: 'Intakes in progress', value: t.intakes_in_progress, sub: `${t.intakes_submitted} submitted`, cls: 'purple' },
-                { label: 'Triage pending', value: d.triage.pending, sub: `${d.triage.released} released · ${d.triage.booked} booked`, cls: d.triage.pending > 0 ? 'alert' : 'good' },
-                { label: 'Unread messages', value: t.messages_unread_for_clinician, sub: `${t.messages_threads} thread${t.messages_threads === 1 ? '' : 's'}`, cls: t.messages_unread_for_clinician > 0 ? 'alert' : '' },
                 { label: 'Symptom entries', value: t.symptom_entries_window, sub: `last ${d.window.days} d` },
-                { label: 'Documents', value: t.documents, sub: 'envelope-encrypted in R2' },
+                { label: 'Documents', value: t.documents, sub: 'on file, encrypted' },
                 { label: 'Education', value: t.education_published, sub: `${t.education_assigned} assigned` },
             ];
             $('kpis').innerHTML = kpis.map(k => `
@@ -529,7 +542,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('triage-by-visit').innerHTML = renderBarChart(tt.by_visit_type.map(r => ({ label: fmtVT(r.visit_type), count: r.count })));
 
             // Appointments
-            $('appt-status').innerHTML = renderBarChart((d.appointments.by_status || []).map(r => ({ label: r.status, count: r.count })));
+            $('appt-status').innerHTML = renderBarChart((d.appointments.by_status || []).map(r => ({ label: fmtStatus(r.status), count: r.count })));
             $('appt-visit-type').innerHTML = renderBarChart((d.appointments.by_visit_type || []).map(r => ({ label: fmtVT(r.visit_type), count: r.count })));
 
             // Next 5

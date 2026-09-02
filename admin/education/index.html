@@ -224,7 +224,7 @@
             padding: 12px 18px; border-radius: 10px;
             background: rgba(16, 185, 129, 0.18);
             border: 1px solid rgba(16, 185, 129, 0.55);
-            color: rgba(167, 243, 208, 0.98);
+            color: #047857;
             font-size: 13px;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -329,8 +329,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </div>
 
         <div class="filter-bar" id="status-filter">
-            <button class="filter-chip" data-status="all">All</button>
-            <button class="filter-chip active" data-status="draft">Drafts</button>
+            <button class="filter-chip active" data-status="all">All</button>
+            <button class="filter-chip" data-status="draft">Drafts</button>
             <button class="filter-chip" data-status="published">Published</button>
             <button class="filter-chip" data-status="archived">Archived</button>
         </div>
@@ -347,10 +347,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 </div>
 
                 <div class="row-form two">
-                    <div>
-                        <label class="label" for="f-slug">Slug</label>
-                        <input id="f-slug" type="text" maxlength="80" placeholder="endometriosis-101">
-                    </div>
                     <div>
                         <label class="label" for="f-audience">Target audience</label>
                         <select id="f-audience">
@@ -391,6 +387,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="preview" id="preview"></div>
                 </div>
 
+                <div style="margin-top: 12px;">
+                    <label class="label" for="f-slug">Web address (slug) — filled in from the title; edit if you like</label>
+                    <input id="f-slug" type="text" maxlength="80" placeholder="endometriosis-101">
+                </div>
+
                 <div class="row-actions">
                     <div class="left">
                         <button class="danger" id="btn-archive" style="display:none;">Archive</button>
@@ -410,7 +411,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const $ = (id) => document.getElementById(id);
         const state = {
             materials: [],
-            filter: 'draft',
+            filter: 'all',
             editing: null, // null = creating new
         };
 
@@ -504,7 +505,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
         function render() {
             if (state.materials.length === 0) {
-                $('list').innerHTML = `<div class="empty-state">The condition primers you write here are exactly what patients read in their portal. Click + New material to write your first — this page works on a brand-new install with no patients and no schedule.</div>`;
+                $('list').innerHTML = `<div class="empty-state">Nothing here yet — click + New material to write the first guide your patients will read in their portal.</div>`;
                 return;
             }
             $('list').innerHTML = state.materials.map(m => `
@@ -522,7 +523,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </div>
                     </div>
                     <div style="text-align:right; color: var(--fg-dim); font-size: 11px;">
-                        ${m.has_inline_body ? 'inline' : (m.has_r2_body ? 'R2' : 'empty')}
+                        ${m.has_inline_body ? 'written here' : (m.has_r2_body ? 'full site page' : 'no content yet')}
                     </div>
                 </div>
             `).join('');
@@ -541,11 +542,27 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         $('btn-refresh').addEventListener('click', loadList);
 
         // ---- modal ----
+        // ---- slug is derived from the title, editable if wanted ----
+        function slugify(s) {
+            return String(s || '').toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 80);
+        }
+        let slugTouched = false;
+        $('f-slug').addEventListener('input', () => { slugTouched = true; });
+        $('f-title').addEventListener('input', () => {
+            if (state.editing || slugTouched) return;
+            $('f-slug').value = slugify($('f-title').value);
+        });
+
         function openCreate() {
             state.editing = null;
+            slugTouched = false;
             $('modal-title').textContent = 'New material';
             $('f-slug').value = '';
             $('f-slug').disabled = false;
+            $('f-slug').title = '';
             $('f-audience').value = 'all';
             $('f-title').value = '';
             $('f-summary').value = '';
@@ -554,7 +571,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('preview').classList.remove('open');
             $('btn-archive').style.display = 'none';
             $('modal').classList.add('open');
-            setTimeout(() => $('f-slug').focus(), 50);
+            setTimeout(() => $('f-title').focus(), 50);
         }
         async function openEdit(slug) {
             try {
@@ -563,6 +580,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('modal-title').textContent = `Edit · ${data.material.title}`;
                 $('f-slug').value = data.material.slug;
                 $('f-slug').disabled = true;     // slug immutable post-create
+                $('f-slug').title = 'The web address is fixed once created so patient links keep working';
                 $('f-audience').value = data.material.target_audience || 'all';
                 $('f-title').value = data.material.title;
                 $('f-summary').value = data.material.summary || '';
@@ -585,7 +603,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 state.editingIsStatic = isStatic;
                 $('f-body').readOnly = isStatic;
                 $('f-body').placeholder = isStatic
-                    ? 'This guide is a full static page, KB-anchored and deployed with the site. Its body is not editable here — edit the page in the repo, where the KB gate can verify it. Title, summary, tags and audience above ARE editable.'
+                    ? 'This guide is a fully designed site page, so its text can\'t be edited in this box — ask for the page itself to be changed. Title, summary, tags and audience above are yours to edit here.'
                     : '';
                 $('f-body').style.opacity = isStatic ? '0.55' : '';
                 $('preview').classList.remove('open');
@@ -604,6 +622,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const isOpen = $('preview').classList.toggle('open');
             $('btn-preview').textContent = isOpen ? 'Edit' : 'Preview';
             if (isOpen) {
+                $('preview').innerHTML = renderMarkdown($('f-body').value);
+            }
+        });
+        // Keep the preview live while it is open.
+        $('f-body').addEventListener('input', () => {
+            if ($('preview').classList.contains('open')) {
                 $('preview').innerHTML = renderMarkdown($('f-body').value);
             }
         });

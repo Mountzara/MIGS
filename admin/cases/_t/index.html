@@ -50,6 +50,17 @@
             color: var(--fg-strong); margin: 0 0 6px 0; letter-spacing: -0.015em;
         }
         .patient-meta { font-size: 13px; color: var(--fg-soft); display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+        .case-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .case-action {
+            display: inline-flex; align-items: center;
+            font-size: 12.5px; font-weight: 600;
+            padding: 7px 14px; border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.12);
+            border: 1px solid rgba(var(--glow-purple), 0.40);
+            color: var(--accent-soft);
+            transition: all 0.2s;
+        }
+        .case-action:hover { background: rgba(var(--glow-purple), 0.22); color: var(--fg-strong); }
         .patient-meta .k { color: var(--fg-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10.5px; margin-right: 4px; }
         .summary-chips { display: flex; gap: 10px; flex-wrap: wrap; }
         .chip {
@@ -300,21 +311,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; <a href="/admin/patients/">Patients</a> &rsaquo; <span id="crumb-name">…</span></span>
-            <a id="proms-link" href="#"
-               style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.08); border: 1px solid rgba(var(--glow-purple), 0.32);
-                      color: var(--accent-soft); text-decoration: none; transition: all 0.2s;">PROMs →</a>
-            <a id="snapshot-link" href="#"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
-                      color: var(--accent-soft); text-decoration: none; transition: all 0.2s;">AI snapshot →</a>
-            <span style="font-size:12px; color: var(--fg-dim); margin-left: 8px;" id="patient-id">—</span>
+            <span style="font-size:12px; color: var(--fg-dim); margin-left: auto;" id="patient-id">—</span>
         </header>
 
         <section class="patient-card">
             <h1 id="p-name">Loading…</h1>
             <div class="patient-meta" id="p-meta"></div>
             <div class="summary-chips" id="summary-chips"></div>
+            <div class="case-actions">
+                <a id="proms-link" class="case-action" href="#">PROMs →</a>
+                <a id="snapshot-link" class="case-action" href="#">AI snapshot →</a>
+                <a id="orders-link" class="case-action" href="/admin/orders/">Orders →</a>
+            </div>
             <div id="id-verify-banner"></div>
         </section>
 
@@ -440,6 +448,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             return new Date(ms).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
         }
         function fmtVisitType(k) { return VISIT_LABELS[k] || k || '—'; }
+        const DOC_KIND_LABELS = {
+            patient_upload: 'Uploaded by patient',
+            intake_attachment: 'Intake attachment',
+            message_attachment: 'Message attachment',
+            surgical_workflow_doc: 'Surgical workflow document',
+            clinical_ai_analysis: 'Clinical analysis report',
+            aagl_report: 'AAGL report',
+            fmigs_report: 'FMIGS report',
+            gold_standard_report: 'Gold-standard report',
+        };
+        function fmtDocKind(k) { return DOC_KIND_LABELS[k] || String(k || '—').replace(/_/g, ' '); }
         function fmtDur(min) { return min ? (min >= 60 ? `${Math.floor(min/60)}h ${min%60 ? min%60+'m' : ''}`.trim() : `${min} min`) : '—'; }
 
         // ---- bootstrap ----
@@ -470,7 +489,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const cs = c.by_severity || {};
             const parts = [];
             if (cs.urgent)  parts.push(`<span style="color: #B91C1C;">${cs.urgent} urgent</span>`);
-            if (cs.warning) parts.push(`<span style="color: rgba(253,224,71,0.95);">${cs.warning} warning</span>`);
+            if (cs.warning) parts.push(`<span style="color: #92400E;">${cs.warning} warning</span>`);
             if (cs.info)    parts.push(`<span style="color: var(--fg-soft);">${cs.info} info</span>`);
             const sinceLabel = data.first_visit
                 ? 'showing the last 30 days (first time you\'re viewing this patient)'
@@ -777,7 +796,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             <div class="row-meta">
                                 <span><span class="k">Triaged</span> ${fmtDateTime(t.created_at)}</span>
                                 ${t.clinician_reviewed_at ? `<span><span class="k">Released</span> ${fmtDateTime(t.clinician_reviewed_at)} by ${escapeHtml(t.clinician_reviewer_id || '—')}</span>` : ''}
-                                <span><span class="k">Prompt</span> ${escapeHtml(t.ai_prompt_version || '—')}</span>
                             </div>
                         </div>
                         <span class="badge ${cls}">${label}</span>
@@ -805,7 +823,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const base = 'display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap;';
             const dc = a.device_check;
             if (!dc) {
-                return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.72);color:rgba(235,235,240,0.62);border:1px solid #E9E5EE;">Device check not yet run</span>`;
+                return `<span title="The patient has not yet run the pre-visit device & connection check." style="${base}background:rgba(255,255,255,0.72);color:var(--fg-soft);border:1px solid #E9E5EE;">Device check not yet run</span>`;
             }
             if (dc.status === 'passed') {
                 return `<span title="Camera, microphone, speaker, and network all passed." style="${base}background:rgba(16,185,129,0.12);color:#047857;border:1px solid rgba(16,185,129,0.45);">Device check passed · ${escapeHtml(fmtCheckTime(dc.checked_at))}</span>`;
@@ -849,7 +867,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function renderMessages(d) {
             const rows = (d.messages.threads || []).map(t => {
                 const unread = (t.clinician_unread_count || 0) > 0 ? `<span class="badge badge-urgent">${t.clinician_unread_count} unread</span>` : '<span class="badge badge-neutral">read</span>';
-                return `<a class="row" style="text-decoration:none; color:inherit;" href="/admin/messages/">
+                return `<a class="row" style="text-decoration:none; color:inherit;" href="/admin/messages/#${encodeURIComponent(t.id)}">
                     <div>
                         <h3>${escapeHtml(t.subject)}</h3>
                         <div class="row-meta">
@@ -921,10 +939,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <h3>${escapeHtml(key.replace(/_/g, ' '))}</h3>
                     <div class="trend-sub">${nonNull.length} day${nonNull.length === 1 ? '' : 's'} logged · range ${minY}–${maxY}</div>
                     <svg class="trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="${escapeHtml(key)} trend">
-                        <line x1="${PAD_L}" y1="${y(maxY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(maxY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>
-                        <line x1="${PAD_L}" y1="${y(minY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(minY).toFixed(1)}" stroke="rgba(255,255,255,0.06)"/>
-                        <text x="${PAD_L - 4}" y="${(y(maxY) + 3).toFixed(1)}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${maxY}</text>
-                        <text x="${PAD_L - 4}" y="${(y(minY) + 3).toFixed(1)}" font-size="9" fill="rgba(245,245,247,0.55)" text-anchor="end">${minY}</text>
+                        <line x1="${PAD_L}" y1="${y(maxY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(maxY).toFixed(1)}" stroke="#E9E5EE"/>
+                        <line x1="${PAD_L}" y1="${y(minY).toFixed(1)}" x2="${PAD_L + innerW}" y2="${y(minY).toFixed(1)}" stroke="#E9E5EE"/>
+                        <text x="${PAD_L - 4}" y="${(y(maxY) + 3).toFixed(1)}" font-size="9" fill="#8B8698" text-anchor="end">${maxY}</text>
+                        <text x="${PAD_L - 4}" y="${(y(minY) + 3).toFixed(1)}" font-size="9" fill="#8B8698" text-anchor="end">${minY}</text>
                         <path d="${lines}" fill="none" stroke="rgba(167,139,250,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         ${dots}
                     </svg>
@@ -963,8 +981,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             <h3><a href="/api/v1/admin/documents/${encodeURIComponent(doc.id)}"
                                    title="Download and open">${escapeHtml(doc.filename)}</a></h3>
                             <div class="row-meta">
-                                <span><span class="k">Kind</span> ${escapeHtml(doc.kind)}</span>
-                                <span><span class="k">MIME</span> ${escapeHtml(doc.mime_type || '—')}</span>
+                                <span><span class="k">Kind</span> ${escapeHtml(fmtDocKind(doc.kind))}</span>
                                 <span><span class="k">Size</span> ${doc.size_bytes ? (doc.size_bytes/1024).toFixed(0) + ' KB' : '—'}</span>
                                 <span><span class="k">From</span> ${escapeHtml(doc.uploaded_by_role)} ${doc.source_app ? '· ' + escapeHtml(doc.source_app) : ''}</span>
                                 <span><span class="k">Uploaded</span> ${fmtDateTime(doc.uploaded_at)}</span>

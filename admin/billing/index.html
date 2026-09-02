@@ -81,12 +81,23 @@
             outline: none; border-color: #6d28d9;
         }
         /* The visit-date window select shares the search-input skin but must
-           not flex-grow — it is a fixed control, and its popup list needs a
-           dark background or the OS default renders white-on-white. */
+           not flex-grow — it is a fixed control. */
         .days-select {
             flex: 0 0 auto; min-width: 0; max-width: none; width: auto;
-            cursor: pointer; color-scheme: dark;
+            cursor: pointer;
         }
+
+        /* Header quick links — one shared skin, color per destination. */
+        .hdr-pill {
+            font-size: 12px; padding: 5px 12px; border-radius: 999px;
+            border: 1px solid var(--border); text-decoration: none;
+        }
+        .hdr-pill.lead   { margin-left: auto; }
+        .hdr-pill.green  { background: rgba(16,185,129,0.16); border-color: rgba(16,185,129,0.50); color: #047857; }
+        .hdr-pill.orange { background: rgba(251,146,60,0.16); border-color: rgba(251,146,60,0.50); color: #92400E; }
+        .hdr-pill.blue   { background: rgba(96,165,250,0.16); border-color: rgba(96,165,250,0.50); color: #1d4ed8; }
+        .hdr-pill.purple      { background: rgba(var(--glow-purple), 0.18); border-color: rgba(var(--glow-purple), 0.55); color: var(--accent-soft); }
+        .hdr-pill.purple-soft { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); color: var(--accent-soft); }
 
         /* ERA (835) posting panel */
         .era-panel {
@@ -542,38 +553,21 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> · Billing</span>
-            <a href="/admin/billing/clearinghouse/"
-               style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.50);
-                      color: #047857; text-decoration: none;">Clearinghouse / Go-Live →</a>
-            <a href="/admin/billing/coach/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.18); border: 1px solid rgba(var(--glow-purple), 0.55);
-                      color: var(--accent-soft); text-decoration: none;">Coding Coach →</a>
-            <a href="/admin/billing/preflight/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(96,165,250,0.16); border: 1px solid rgba(96,165,250,0.50);
-                      color: #93c5fd; text-decoration: none;">AI Pre-flight →</a>
-            <a href="/admin/billing/appeals/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(251,146,60,0.16); border: 1px solid rgba(251,146,60,0.50);
-                      color: #92400E; text-decoration: none;">Denials / Appeals →</a>
-            <a href="/admin/billing/insurance/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
-                      color: var(--accent-soft); text-decoration: none;">Insurance →</a>
-            <a href="/admin/billing/payers/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
-                      color: var(--accent-soft); text-decoration: none;">Manage payers →</a>
+            <a href="/admin/billing/appeals/" class="hdr-pill orange lead">Denials / Appeals →</a>
+            <a href="/admin/billing/clearinghouse/" class="hdr-pill green">Clearinghouse / Go-Live →</a>
+            <a href="/admin/billing/coach/" class="hdr-pill purple">Coding Coach →</a>
+            <a href="/admin/billing/preflight/" class="hdr-pill blue">AI Pre-flight →</a>
+            <a href="/admin/billing/insurance/" class="hdr-pill purple-soft">Insurance →</a>
+            <a href="/admin/billing/payers/" class="hdr-pill purple-soft">Manage payers →</a>
         </header>
 
         <h1 class="page-title">Insurance billing review</h1>
         <p class="lede">
-            Claims arrive here from the MountZara Transcription app's coding analysis — E/M code, ICD-10 / CPT lines,
-            wRVU, compliance flags, upcoding opportunities, and documentation suggestions. Review each claim, accept
-            or edit the AI's recommendations, then approve for clearinghouse submission. Until insurance contracts
-            are signed and a clearinghouse is connected, approved claims remain at <em>ready_to_submit</em>.
+            Each documented visit's coding analysis lands here as a draft claim — E/M code, ICD-10 / CPT lines,
+            wRVU, compliance flags, and places where your documentation supports billing more. Review each claim,
+            accept or edit the AI's recommendations, then approve it for submission.<span id="golive-note" hidden>
+            Nothing can be submitted yet — approved claims wait here until the clearinghouse connection goes
+            live.</span>
         </p>
 
         <!-- Filters -->
@@ -745,6 +739,21 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 : 'awaiting review';
         }
 
+        // The "nothing can be submitted yet" warnings are only true while the
+        // clearinghouse connection is not live, so ask the API once instead
+        // of asserting it forever.
+        let goLiveBlocked = false;
+        (async function checkGoLive() {
+            try {
+                const resp = await fetch('/api/v1/admin/billing/clearinghouse', { credentials: 'include' });
+                if (!resp.ok) return;
+                const d = await resp.json();
+                goLiveBlocked = !d.ready_to_go_live;
+                const note = document.getElementById('golive-note');
+                if (note) note.hidden = !goLiveBlocked;
+            } catch (e) { /* keep the calm default */ }
+        })();
+
         // There are two zero states here and they need different sentences:
         // no claim has ever arrived, versus this filter matched nothing. Only
         // a probe across every status over the widest window can tell them
@@ -775,7 +784,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $empty.style.display = 'block';
                 anyClaimsExist().then((exists) => {
                     if (exists === false && state.claims.length === 0) {
-                        $empty.textContent = "Claims arrive here from the Transcription app's coding pass for you to correct and approve. None yet — and nothing you approve can be submitted until the clearinghouse setup is finished.";
+                        $empty.textContent = 'A draft claim appears here automatically each time a visit is coded — none yet.'
+                            + (goLiveBlocked ? ' Nothing you approve can be submitted until the clearinghouse connection goes live.' : '');
                     }
                 });
                 $pagi.style.display = 'none';
@@ -875,8 +885,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <path d="M 13 60 A 42 42 0 0 1 97 60"
                           fill="none" stroke="url(#gauge-grad)" stroke-width="6" stroke-linecap="round"/>
                     <line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"
-                          stroke="rgba(245,245,247,0.84)" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="${cx}" cy="${cy}" r="3" fill="rgba(245,245,247,0.84)"/>
+                          style="stroke:var(--fg-strong)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="${cx}" cy="${cy}" r="3" style="fill:var(--fg-strong)"/>
                 </svg>
             `;
         }
@@ -956,7 +966,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
             const upHtml = upcoding.length === 0 ? '' : `
                 <div class="section">
-                    <h2>Upcoding opportunities · ${upcoding.length}</h2>
+                    <h2>Under-coded — documentation supports more · ${upcoding.length}</h2>
                     ${upcoding.map(u => `
                         <div class="upcode">
                             <div class="upcode-head">
@@ -977,7 +987,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                                 ${u.accepted
                                     ? `<span style="font-size:11px;color:#047857;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
                                        <button class="btn-action mini" style="margin-left:10px;" data-action="upcode-revert" data-id="${escapeHtml(u.id)}">Revert</button>`
-                                    : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Accept upcode + apply to line</button>`
+                                    : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Use the higher code</button>`
                                 }
                             </div>
                         </div>
@@ -1087,7 +1097,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         Created ${new Date(c.created_at).toLocaleString()}
                         ${c.payer_name ? ` · payer ${escapeHtml(c.payer_name)}` : ' · no payer assigned'}
                         ${c.clearinghouse_vendor ? ` · clearinghouse ${escapeHtml(c.clearinghouse_vendor)}` : ''}
-                        · source <code style="color:var(--accent-soft)">${escapeHtml(c.source_app)}/${escapeHtml(c.source_session_id || '—')}</code>
                     </div>
                 </div>
             `;
@@ -1169,22 +1178,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (!force) return;
                 const r2 = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/approve`, 'POST', { force: true });
                 if (!r2.ok) { toast('Approve failed: ' + (r2.data.error || r2.status), 'danger'); return; }
-                toast('Claim approved (force) → ready_to_submit', 'success');
+                toast('Approved despite unresolved flags — queued for submission', 'success');
             } else if (!r.ok) {
                 toast('Approve failed: ' + (r.data.error || r.status), 'danger');
                 return;
             } else {
-                toast('Claim approved → ready_to_submit', 'success');
+                toast('Approved — queued for submission', 'success');
             }
             await selectClaim(claimId);
             await fetchClaims();
         }
 
         async function rejectClaim(claimId) {
-            const reason = prompt(
-                'Why is this claim being rejected?\n\n' +
-                'Short code (e.g., miscoded, not_billable, duplicate_session):'
-            );
+            const reason = prompt('Why are you rejecting this claim?');
             if (!reason || !reason.trim()) return;
             const notes = prompt('Additional notes (optional):') || '';
             const r = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/reject`, 'POST',
@@ -1228,7 +1234,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/upcoding/${encodeURIComponent(btn.dataset.id)}`,
                         { accepted: action === 'upcode-accept' }
                     );
-                    if (ok) { toast(action === 'upcode-accept' ? 'Upcode accepted + line updated' : 'Upcode reverted', 'success'); await selectClaim(claimId); await fetchClaims(); }
+                    if (ok) { toast(action === 'upcode-accept' ? 'Higher code applied to the line' : 'Reverted to the original code', 'success'); await selectClaim(claimId); await fetchClaims(); }
                 } else if (action === 'docsugg-apply' || action === 'docsugg-unapply') {
                     const ok = await patchChild(
                         `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/doc-suggestions/${encodeURIComponent(btn.dataset.id)}`,

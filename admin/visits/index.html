@@ -116,11 +116,7 @@
     </header>
     <h1 class="page-title">Visit summaries</h1>
     <p class="lede">
-        The portal tells every member: &ldquo;an AI-generated summary of what was discussed, the plan,
-        the medications, and the next steps &mdash; reviewed and signed off by Dr.&nbsp;Mabini.&rdquo;
-        That sign-off is a gate, not a description: a patient can only ever read a summary whose status
-        is <em>approved</em>, enforced in the query rather than in the page. Nothing here reaches anyone
-        until you approve it.
+        A patient can only read a summary after you approve it &mdash; everything below is waiting on you.
     </p>
 
     <div class="counts" id="counts"></div>
@@ -142,6 +138,7 @@
 
     async function api(url, opts) {
         var r = await fetch(url, Object.assign({ headers: { "Content-Type": "application/json" } }, opts || {}));
+        if (r.status === 401) { location.href = "/admin/_login?next=" + encodeURIComponent(location.pathname); return new Promise(function () {}); }
         var t = await r.text();
         var j; try { j = JSON.parse(t); } catch (e) { throw new Error(t.slice(0, 200)); }
         if (!r.ok && !j.refused) throw new Error(j.error || j.message || ("HTTP " + r.status));
@@ -156,6 +153,26 @@
         no_note: "No note",
         note_unreadable: "Note unreadable",
     };
+
+    // Same labels as /admin/analytics/ — the enum values never reach the owner.
+    var VISIT_LABELS = {
+        new_patient_complex: "New Patient — Complex",
+        new_patient_standard: "New Patient — Standard",
+        endo_pain_evaluation: "Endo Eval",
+        endo_pain_followup: "Endo Follow-up",
+        omt_treatment: "OMT Treatment",
+        aub_eval: "AUB Eval",
+        pre_op: "Pre-Op",
+        post_op_early: "Post-Op (1-2 wk)",
+        post_op_late: "Post-Op (6 wk)",
+        routine_followup: "Routine Follow-up",
+        office_procedure: "Office Procedure",
+        quick_concern: "Quick Concern",
+        annual_exam: "Annual Exam",
+        telehealth_consult: "Telehealth Consult",
+        manual_review_required: "Manual review required",
+    };
+    function fmtVT(k) { return VISIT_LABELS[k] || k; }
 
     function renderCounts(d) {
         var order = ["pending_review", "not_drafted", "approved", "rejected", "note_unreadable", "no_note"];
@@ -179,7 +196,7 @@
         h += '<div class="row-head"><div>';
         h += '<div class="who">' + esc(r.patient_name) + '</div>';
         h += '<div class="meta">' + esc(r.visit_date || "no date") +
-             (r.visit_type ? " &middot; " + esc(r.visit_type) : "") +
+             (r.visit_type ? " &middot; " + esc(fmtVT(r.visit_type)) : "") +
              (r.note_source ? " &middot; " + esc(r.note_source) : "") + "</div>";
         if (r.chief_complaint) h += '<div class="meta">' + esc(r.chief_complaint) + "</div>";
         h += "</div>";
@@ -201,9 +218,13 @@
     function render() {
         var rows = STATE.rows;
         if (!rows.length) {
-            $("list").innerHTML = '<div class="empty">After-visit summaries wait here for your signature &mdash; ' +
-                'a patient cannot read one until you approve it. Encounters arrive automatically from the ' +
-                'Transcription app, so there is nothing to do here until your first visit is recorded.</div>';
+            if (STATE.filter !== "all") {
+                $("list").innerHTML = '<div class="empty">Nothing left under this filter. Choose All to see every visit.</div>';
+                return;
+            }
+            $("list").innerHTML = '<div class="empty">After-visit summaries wait here for your sign-off &mdash; ' +
+                'a patient cannot read one until you approve it. Visits appear here automatically once their ' +
+                'notes are filed, so there is nothing to do until your first visit is recorded.</div>';
             return;
         }
         $("list").innerHTML = rows.map(rowHtml).join("");
@@ -249,8 +270,7 @@
              '<textarea class="ro" id="cl-' + id + '" readonly>' + esc(s ? s.clinician_text : "") + "</textarea></div>";
         h += "</div>";
         h += '<div class="actions">';
-        h += '<button class="good" data-a="approved_as_is" data-id="' + id + '">Approve as written</button>';
-        h += '<button class="primary" data-a="edited_and_approved" data-id="' + id + '">Approve with my edits</button>';
+        h += '<button class="good" data-a="approve" data-id="' + id + '">Approve</button>';
         h += '<button class="bad" data-a="rejected" data-id="' + id + '">Reject &mdash; do not show</button>';
         h += '<button data-a="regenerate" data-id="' + id + '">Re-draft</button>';
         h += "</div>";
@@ -283,14 +303,20 @@
                     return;
                 }
                 if (g.queued) {
-                    p.innerHTML = '<div class="flag"><b>Queued for your Claude CLI bridge.</b> ' +
-                        esc(g.message || "") + " Re-open this row once the bridge has run.</div>";
+                    p.innerHTML = '<div class="flag"><b>This draft can&rsquo;t be written automatically right now.</b> ' +
+                        "Nothing is lost &mdash; it will draft when AI drafting is reconnected.</div>";
                     p.classList.add("open");
                     return;
                 }
                 d = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary?cb=" + Date.now());
             }
             p.innerHTML = panelHtml(id, d);
+            // Remember what the draft said and where it stands, so Approve can
+            // tell "as written" from "with my edits" and Re-draft can warn.
+            STATE.open[id] = {
+                orig: (d.summary && d.summary.patient_text) || "",
+                status: d.summary ? d.summary.status : null,
+            };
             p.classList.add("open");
             wirePanel(id);
         } catch (e) {
@@ -308,12 +334,22 @@
         try {
             var body;
             if (action === "regenerate") {
+                var info = STATE.open[id] || {};
+                if (info.status === "approved" &&
+                    !confirm("This summary is already approved and visible to the patient. Re-draft it? Approval is reset until you approve the new draft.")) {
+                    return;
+                }
                 body = { action: "generate" };
+            } else if (action === "approve") {
+                // One Approve. It always sends what is in the textarea —
+                // untouched text approves as written, edited text approves
+                // with the edits, and nothing typed is silently lost.
+                var cur = $("pt-" + id).value;
+                var orig = (STATE.open[id] || {}).orig || "";
+                body = { action: "review", review_action: cur === orig ? "approved_as_is" : "edited_and_approved" };
+                if (cur !== orig) body.patient_text = cur;
             } else {
                 body = { action: "review", review_action: action };
-                if (action === "edited_and_approved") {
-                    body.patient_text = $("pt-" + id).value;
-                }
             }
             var r = await api("/api/v1/admin/encounters/" + encodeURIComponent(id) + "/summary",
                 { method: "POST", body: JSON.stringify(body) });
@@ -334,9 +370,19 @@
         }
     }
 
+    var firstLoad = true;
     async function load() {
         try {
             var d = await api("/api/v1/admin/encounters?status=" + encodeURIComponent(STATE.filter) + "&cb=" + Date.now());
+            // Open on what needs the owner: if anything is waiting for
+            // review, the first load lands on that filter, not "All".
+            if (firstLoad) {
+                firstLoad = false;
+                if (STATE.filter === "all" && d.counts && d.counts.pending_review > 0) {
+                    STATE.filter = "pending_review";
+                    return load();
+                }
+            }
             STATE.rows = d.rows || [];
             renderCounts(d);
             render();

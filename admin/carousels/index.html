@@ -287,17 +287,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <p class="eyebrow">Mount Zara · Admin</p>
         <h1>Carousel queue</h1>
         <p class="lede">
-            Generated social-media carousels (Instagram + LinkedIn) waiting for editorial review.
-            Each tile shows the cover slide + handle + deploy-gate verdict. Approve releases the
-            bundle for publish; reject removes it from the queue.
+            Instagram and LinkedIn slide decks waiting for your OK. Approve publishes the deck;
+            reject archives it under the Rejected filter.
         </p>
 
         <div class="toolbar">
-            <div class="filter-pill active" data-filter="">All</div>
-            <div class="filter-pill" data-filter="draft">Draft</div>
-            <div class="filter-pill" data-filter="approved">Approved</div>
-            <div class="filter-pill" data-filter="rejected">Rejected</div>
-            <div class="filter-pill" data-filter="published">Published</div>
+            <div class="filter-pill active" data-filter="" data-label="All">All</div>
+            <div class="filter-pill" data-filter="draft" data-label="Draft">Draft</div>
+            <div class="filter-pill" data-filter="approved" data-label="Approved">Approved</div>
+            <div class="filter-pill" data-filter="rejected" data-label="Rejected">Rejected</div>
+            <div class="filter-pill" data-filter="published" data-label="Published">Published</div>
         </div>
 
         <div class="grid" id="grid">
@@ -323,10 +322,32 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 }
                 const body = await resp.json();
                 allCarousels = body.carousels || [];
+                updateFilterCounts();
                 renderGrid();
             } catch (e) {
                 grid.innerHTML = `<div class="err">Network error: ${e.message || e}.</div>`;
             }
+        }
+
+        function updateFilterCounts() {
+            document.querySelectorAll(".filter-pill").forEach((pill) => {
+                const f = pill.dataset.filter;
+                const n = f
+                    ? allCarousels.filter((c) => (c.status || "draft") === f).length
+                    : allCarousels.length;
+                pill.textContent = n ? `${pill.dataset.label} ${n}` : pill.dataset.label;
+            });
+        }
+
+        function showActionError(msg) {
+            let el = grid.querySelector(".err[data-action-error]");
+            if (!el) {
+                el = document.createElement("div");
+                el.className = "err";
+                el.setAttribute("data-action-error", "");
+                grid.prepend(el);
+            }
+            el.textContent = msg;
         }
 
         function renderGrid() {
@@ -334,7 +355,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 ? allCarousels.filter((c) => c.status === activeFilter)
                 : allCarousels;
             if (!list.length) {
-                grid.innerHTML = '<div class="empty">Generated social slide decks wait here for your approval before anything publishes. None queued — run the carousel generator and publisher, then approve any card badged READY.</div>';
+                grid.innerHTML = '<div class="empty">Nothing waiting for review. New carousels appear here automatically when a batch is produced.</div>';
                 return;
             }
             grid.innerHTML = list.map(carouselCard).join("\n");
@@ -343,11 +364,33 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             });
         }
 
+        // Escape for the CSS url('…') string context. The result still goes
+        // through escapeHtml before landing in the style attribute, so quotes
+        // survive HTML entity decoding as harmless backslash-escaped literals.
+        function cssUrl(u) {
+            return String(u).replace(/\\/g, "\\\\").replace(/['"()]/g, (ch) => "\\" + ch);
+        }
+
+        // The list API doesn't ship a reason today, but honor one if a row
+        // ever carries it (block_reason, or failed verification checks).
+        function blockReason(c) {
+            if (c.block_reason || c.blocked_reason) return c.block_reason || c.blocked_reason;
+            const checks = (c.verification && c.verification.checks) || [];
+            const failed = checks.filter((k) => k && (k.ok === false || k.passed === false || k.pass === false));
+            if (failed.length) {
+                return failed.map((k) => k.name || k.label || k.reason || "pre-publish check").join(", ");
+            }
+            return "";
+        }
+
         function carouselCard(c) {
             const status = c.status || "draft";
             const ready = c.ready_to_publish;
+            const reason = ready ? "" : blockReason(c);
             const cover = c.cover_png_url
-                ? `<div class="card-cover" style="background-image: url('${c.cover_png_url}');"></div>`
+                ? `<a class="card-cover" href="${escapeHtml(c.cover_png_url)}" target="_blank" rel="noopener"
+                        title="Open the cover slide full size"
+                        style="background-image: url('${escapeHtml(cssUrl(c.cover_png_url))}');"></a>`
                 : `<div class="card-cover"></div>`;
             const week = c.week_label ? ` · ${escapeHtml(c.week_label)}` : "";
             const createdAt = c.created_at
@@ -362,7 +405,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="card-meta">${c.slide_count || 0} slides · created ${createdAt}</div>
                     <div class="badges">
                         <span class="badge status-${status}">${status.toUpperCase()}</span>
-                        <span class="badge ${ready ? "gate-ready" : "gate-blocked"}">${ready ? "READY" : "BLOCKED"}</span>
+                        <span class="badge ${ready ? "gate-ready" : "gate-blocked"}"${ready ? "" : ` title="${escapeHtml(reason || "Not ready to publish — a pre-publish check failed")}"`}>${ready ? "READY" : "BLOCKED"}</span>
+                        ${reason ? `<span class="card-meta" style="color: var(--red); flex-basis: 100%;">${escapeHtml(reason)}</span>` : ""}
                     </div>
                     <div class="actions">
                         <button class="btn btn-approve" data-action="approve" data-slug="${escapeHtml(c.slug)}"
@@ -378,6 +422,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const btn = ev.currentTarget;
             const slug = btn.dataset.slug;
             const action = btn.dataset.action;
+            if (action === "reject" &&
+                !confirm("Reject this deck? It moves to the Rejected filter.")) {
+                return;
+            }
             btn.disabled = true;
             try {
                 const resp = await fetch(`/api/v1/admin/carousels/${slug}`, {
@@ -388,10 +436,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 });
                 if (!resp.ok) {
                     const e = await resp.json().catch(() => ({}));
-                    alert(`${action} failed: ${e.error || resp.status}`);
+                    showActionError(`Couldn't ${action} this deck — ${e.error || "the server returned error " + resp.status}. Try again.`);
                     return;
                 }
                 await fetchCarousels();
+            } catch (e) {
+                showActionError(`Couldn't ${action} this deck — ${e.message || e}. Check your connection and try again.`);
             } finally {
                 btn.disabled = false;
             }
