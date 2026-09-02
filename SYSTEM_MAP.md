@@ -1746,6 +1746,20 @@ this from breaking after every revision."
   judged intentional and annotated `data-widthok`; bonus: /about/
   scene-2 headline was invisible from a malformed gradient — fixed).
   Now CLEAN on all 92 routes.
+* **RUNTIME GATE POOL (2026-09-02):** the seven browser gates
+  (patient-journey, page-canvas, light-text, contrast, text-width,
+  hero-motion, nav+reading) launch CONCURRENTLY in `deploy-prod.sh`
+  (`pool_launch`/`pool_rc`) and each result block waits on its own gate
+  with unchanged messaging and ordering — wall time is the slowest
+  single gate, not the sum. The serial chain had reached ~1 hour per
+  deploy, which turned a one-line fix into an hour of the owner staring
+  at the broken live version. Skip flags unchanged
+  (`DEPLOY_SKIP_CONTRAST_AUDIT`, `DEPLOY_SKIP_NAV_AUDIT` gate the
+  launches). NOTE for operators: never test "is a deploy running" with
+  `pgrep -f deploy-prod.sh` from a wrapper whose own command line
+  contains that string — three such waiters detected each other and
+  deadlocked all deploys for 3 hours on 2026-09-02; match
+  `[s]cripts/deploy-prod.sh` or check a PID you saved.
 * **`scripts/audit_hero_motion.py`** (deploy gate) — the fingerprint lock
   protects the animation CODE; this proves the RENDERED lifecycle on
   desktop + iPhone emulation: hero media decoded, visible motion between

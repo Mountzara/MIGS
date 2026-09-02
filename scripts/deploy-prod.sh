@@ -1332,10 +1332,55 @@ if [ -f scripts/cite_verify_pubmed.mjs ]; then
     fi
 fi
 
+# ---------------------------------------------------------------------------
+# RUNTIME GATE POOL (2026-09-02) — the browser gates run CONCURRENTLY.
+# ---------------------------------------------------------------------------
+# The serial chain had grown to ~1 hour per deploy (each runtime gate walks
+# up to 92 routes in its own browser, one after another) — which turned a
+# one-line CSS fix into an hour of the owner staring at the broken live
+# version. Every gate here is an independent, read-only audit of the SAME
+# live site, so they launch together and each result block below waits for
+# its own gate and reports with exactly the messaging it always had, in the
+# same order. Wall time becomes the slowest single gate, not the sum.
+declare -A POOL_PID=()
+pool_launch() {
+    local name="$1"; shift
+    ( "$@" > "/tmp/_${name}.log" 2>&1; echo $? > "/tmp/_${name}.exit" ) &
+    POOL_PID[$name]=$!
+}
+pool_rc() {
+    local name="$1"
+    if [ -n "${POOL_PID[$name]:-}" ]; then wait "${POOL_PID[$name]}" 2>/dev/null || true; fi
+    cat "/tmp/_${name}.exit" 2>/dev/null || echo 1
+}
 if [ -f scripts/audit_patient_journey.py ]; then
+    pool_launch patient_journey python3 scripts/audit_patient_journey.py https://mountzara.com
+fi
+if [ -f scripts/audit_page_canvas.py ]; then
+    pool_launch page_canvas python3 scripts/audit_page_canvas.py https://mountzara.com
+fi
+if [ -f scripts/audit_light_text.py ]; then
+    pool_launch light_text python3 scripts/audit_light_text.py https://mountzara.com
+fi
+if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
+    pool_launch contrast_audit python3 scripts/audit_contrast_pixels.py https://mountzara.com --open-modals
+fi
+if [ -f scripts/audit_text_width.py ]; then
+    pool_launch text_width python3 scripts/audit_text_width.py https://mountzara.com
+fi
+if [ -f scripts/audit_hero_motion.py ]; then
+    pool_launch hero_motion python3 scripts/audit_hero_motion.py https://mountzara.com
+fi
+if [ -z "${DEPLOY_SKIP_NAV_AUDIT:-}" ] && command -v python3 >/dev/null 2>&1 && [ -f scripts/audit_nav_and_reading.py ]; then
+    pool_launch nav_read python3 scripts/audit_nav_and_reading.py "https://mountzara.com/"
+fi
+echo ""
+echo "⏱  Runtime gate pool launched: ${!POOL_PID[*]}"
+
+if [ -n "${POOL_PID[patient_journey]:-}" ]; then
     echo ""
     echo "🔍 Patient-journey gate — the path a patient is invited onto, walked..."
-    if python3 scripts/audit_patient_journey.py https://mountzara.com > /tmp/_patient_journey.log 2>&1; then
+    if [ "$(pool_rc patient_journey)" = "0" ]; then
         tail -1 /tmp/_patient_journey.log
         echo "   ✅ patient-journey gate passed"
     else
@@ -1425,10 +1470,10 @@ fi
 # every derived route: the document must compute an OPAQUE paper-family
 # ground. fix_page_canvas.py appends the guard style; this proves the
 # rendered result.
-if [ -f scripts/audit_page_canvas.py ]; then
+if [ -n "${POOL_PID[page_canvas]:-}" ]; then
     echo ""
     echo "🔍 Page-canvas gate — every route grounds on opaque paper..."
-    if python3 scripts/audit_page_canvas.py https://mountzara.com > /tmp/_page_canvas.log 2>&1; then
+    if [ "$(pool_rc page_canvas)" = "0" ]; then
         tail -1 /tmp/_page_canvas.log
         echo "   ✅ page-canvas gate passed"
     else
@@ -1448,10 +1493,10 @@ fi
 # one paint per route with modals forced open, so "is any text invisible
 # anywhere on the site" is answerable on every deploy. It skips text over a
 # photograph (the /about/ cover) and text on violet buttons.
-if [ -f scripts/audit_light_text.py ]; then
+if [ -n "${POOL_PID[light_text]:-}" ]; then
     echo ""
     echo "🔍 Light-text gate — no text matching its own ground, incl. modals..."
-    if python3 scripts/audit_light_text.py https://mountzara.com > /tmp/_light_text.log 2>&1; then
+    if [ "$(pool_rc light_text)" = "0" ]; then
         tail -1 /tmp/_light_text.log
         echo "   ✅ light-text gate passed"
     else
@@ -1462,10 +1507,56 @@ if [ -f scripts/audit_light_text.py ]; then
     fi
 fi
 
-if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
+# ---------------------------------------------------------------------------
+# TEXT-WIDTH GATE (2026-09-02) — text uses the width it is given.
+# ---------------------------------------------------------------------------
+# Owner report: "text wraps to next line in middle of page, doesn't use the
+# entire width where it should — widespread." Measures true line-box
+# geometry on every derived route at 1440px; flags off-center dead-width
+# columns, premature mid-box wraps, tiny measures. The 2026-09-02 sweep's
+# headline cause: 20 education pages said class="key-facts" while the CSS
+# styles .facts — the stat grid never applied. data-widthok annotates
+# deliberate placements.
+if [ -n "${POOL_PID[text_width]:-}" ]; then
+    echo ""
+    echo "🔍 Text-width gate — no mid-page wraps, no dead-width columns..."
+    if [ "$(pool_rc text_width)" = "0" ]; then
+        tail -1 /tmp/_text_width.log
+        echo "   ✅ text-width gate passed"
+    else
+        cat /tmp/_text_width.log
+        echo ""
+        echo "   Full log: /tmp/_text_width.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# HERO-MOTION GATE (2026-09-02) — the opening animation runs and completes.
+# ---------------------------------------------------------------------------
+# The fingerprint lock protects the animation CODE; this proves the RENDERED
+# lifecycle on desktop + iPhone emulation: media decoded, visible motion,
+# last-frame handoff within 16s, no stuck intro overlay, no page errors.
+# Owner: "the opening page animation is stalling AGAIN — prevent this from
+# breaking after every revision."
+if [ -n "${POOL_PID[hero_motion]:-}" ]; then
+    echo ""
+    echo "🔍 Hero-motion gate — the opening animation runs and completes..."
+    if [ "$(pool_rc hero_motion)" = "0" ]; then
+        tail -1 /tmp/_hero_motion.log
+        echo "   ✅ hero-motion gate passed"
+    else
+        cat /tmp/_hero_motion.log
+        echo ""
+        echo "   Full log: /tmp/_hero_motion.log"
+        exit 1
+    fi
+fi
+
+if [ -n "${POOL_PID[contrast_audit]:-}" ]; then
     echo ""
     echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."
-    if python3 scripts/audit_contrast_pixels.py https://mountzara.com --open-modals > /tmp/_contrast_audit.log 2>&1; then
+    if [ "$(pool_rc contrast_audit)" = "0" ]; then
         tail -1 /tmp/_contrast_audit.log
         echo "   ✅ contrast gate passed"
     else
@@ -1518,10 +1609,10 @@ fi
 # job, and blocking every deploy on a proxy quirk would make this useless.
 # Skip with DEPLOY_SKIP_NAV_AUDIT=1.
 # ---------------------------------------------------------------------------
-if [ -z "${DEPLOY_SKIP_NAV_AUDIT:-}" ] && command -v python3 >/dev/null 2>&1 && [ -f scripts/audit_nav_and_reading.py ]; then
+if [ -n "${POOL_PID[nav_read]:-}" ]; then
     echo ""
     echo "🔍 Nav + reading-sheet gate — menu reachable, sheet typography intact..."
-    if python3 scripts/audit_nav_and_reading.py "https://mountzara.com/" > /tmp/_nav_read.log 2>&1; then
+    if [ "$(pool_rc nav_read)" = "0" ]; then
         tail -2 /tmp/_nav_read.log
         echo "   ✅ nav + reading-sheet gate passed"
     else
