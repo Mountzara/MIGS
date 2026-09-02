@@ -1724,6 +1724,37 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+### 8.0.0.0c Mount Zara's Reflections — the /learn/ course platform (2026-09-02)
+
+**What it is:** free, open, guided patient courses on the conditions the
+practice treats (design doc: the "Mount Zara's Reflections" artifact,
+rev 3; owner decisions baked in). Phase 1 ships the engine + the
+endometriosis pilot.
+
+**The pedagogy IS the schema** (owner's MSAEd, enforced not remembered):
+every lesson = lived-experience `opening` → `teaching` blocks LIFTED from
+the approved library (education pages + condition modals — citations and
+popovers ride along; the generator NEVER authors clinical prose) →
+private `reflection` (client-side only, never transmitted) → optional
+`check` (wrong answers are real myths; corrections open with the belief's
+plausibility and trace to a published source) → one `action` feeding the
+questions-for-your-visit builder (localStorage; printable at
+`/learn/<topic>/your-questions/`).
+
+**Pieces:** `education/<topic>/course.json` (the manifest, one per topic
+that has a course) → `scripts/build_reflections_course.py` (generator →
+`learn/` catalog + course home + per-lesson routes; disclaimer + canvas
+guard baked into every page) → `scripts/audit_course_schema.py` (deploy
+gate: modules exactly 1..6, every lesson complete, checks well-formed,
+counseling prose dose-free and CPG-free, regeneration is a no-op so
+manifest and pages cannot drift). Generated pages are ordinary routes —
+every site-wide runtime gate (canvas, light-text, text-width, contrast,
+no-dosing) covers them automatically.
+
+**Module 4's voice** ("questions to ask any surgeon") renders with the
+amber owner-pending note until Dr. Mabini sets its tone personally —
+lessons carry `tone_owner_pending: true` in the manifest until then.
+
 ### 8.0.0.0b Text width + hero motion are MEASURED, not eyeballed (2026-09-02)
 
 **Owner reports:** "text wraps to next line in middle of page, doesn't use

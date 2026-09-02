@@ -1333,6 +1333,29 @@ if [ -f scripts/cite_verify_pubmed.mjs ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# COURSE-SCHEMA GATE (2026-09-02) — Mount Zara's Reflections pedagogy contract.
+# ---------------------------------------------------------------------------
+# The owner's MSAEd principles are the ARCHITECTURE of the /learn/ courses:
+# every lesson opens in lived experience, carries teaching lifted from the
+# approved library, a private reflection, and an addable visit question;
+# checks correct real myths with grounded sources; counseling prose stays
+# dose-free and jargon-free; manifests and rendered pages cannot drift
+# (regeneration must be a no-op). Hermetic + offline.
+if [ -f scripts/audit_course_schema.py ]; then
+    echo ""
+    echo "🔍 Course-schema gate — the Reflections pedagogy contract..."
+    if python3 scripts/audit_course_schema.py > /tmp/_course_schema.log 2>&1; then
+        tail -1 /tmp/_course_schema.log
+        echo "   ✅ course-schema gate passed"
+    else
+        cat /tmp/_course_schema.log
+        echo ""
+        echo "   Full log: /tmp/_course_schema.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # RUNTIME GATE POOL (2026-09-02) — the browser gates run CONCURRENTLY.
 # ---------------------------------------------------------------------------
 # The serial chain had grown to ~1 hour per deploy (each runtime gate walks
