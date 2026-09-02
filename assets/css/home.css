@@ -8779,12 +8779,15 @@ img.hero-video {
    the contract for how it must render.
    ============================================================ */
 .main-nav .nav-links a.nav-cta {
-    color: #ffffff;
+    /* Owner spec 2026-09-02: purple OUTLINE, white fill, purple text —
+       the readable inverse of the old solid-violet pill. */
+    color: #6d28d9;
     font-size: 13px;
     font-weight: 600;
     line-height: normal;
-    padding: 9px 16px;
-    background: var(--violet-600);
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1.5px solid #6d28d9;
     border-radius: var(--radius-pill);
     display: inline-flex;
     align-items: center;
@@ -8793,8 +8796,9 @@ img.hero-video {
     white-space: nowrap;
 }
 .main-nav .nav-links a.nav-cta:hover {
-    color: #ffffff;
-    background: var(--violet-700);
+    color: #4c1d95;
+    background: #F4F0FB;
+    border-color: #4c1d95;
     transform: translateY(-1px);
 }
 @media (max-width: 1180px) {
