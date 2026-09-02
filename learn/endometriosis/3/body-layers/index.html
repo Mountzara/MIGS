@@ -11,100 +11,140 @@
 :root {
     --paper:#FBFAF8; --card:#FFFFFF; --ink:#1A1726; --ink-2:#4A4658; --mute:#6E6A7C;
     --hair:#E9E5EE; --violet:#6d28d9; --violet-deep:#3d1478; --wash:#F4F0FB;
-    --good:#047857; --radius:14px;
+    --good:#047857; --radius:16px;
+    --glass: rgba(255,255,255,0.66);
+    --glass-edge: rgba(255,255,255,0.78);
+    --glass-shadow: 0 18px 50px rgba(61,20,120,0.08);
 }
 * { box-sizing:border-box; margin:0; }
 html { background-color:#FBFAF8; }
-body { background:var(--paper); color:var(--ink);
+body { color:var(--ink);
+    background:
+        radial-gradient(1200px 900px at 84% -8%, rgba(139,92,246,0.10), transparent 62%),
+        radial-gradient(1000px 800px at 2% 108%, rgba(109,40,217,0.07), transparent 58%),
+        var(--paper);
     font-family:'Avenir Next','Nunito Sans',-apple-system,system-ui,sans-serif;
-    font-size:16.5px; line-height:1.65; }
+    font-size:16.5px; line-height:1.66; min-height:100vh; }
 a { color:var(--violet); }
-.wrap { max-width:880px; margin:0 auto; padding:28px 22px 90px; }
-.topbar { display:flex; align-items:center; gap:14px; padding:14px 22px; border-bottom:1px solid var(--hair);
-    background:rgba(251,250,248,.92); position:sticky; top:0; backdrop-filter:blur(10px); z-index:5; }
-.topbar a.home { font-weight:700; letter-spacing:.08em; color:var(--ink); text-decoration:none; font-size:14px; }
+.wrap { max-width:820px; margin:0 auto; padding:34px 22px 100px; }
+/* ---- glass top bar, like the main nav ---- */
+.topbar { display:flex; align-items:center; gap:14px; padding:14px 22px;
+    background:rgba(251,250,248,0.82); border-bottom:1px solid rgba(233,229,238,0.9);
+    position:sticky; top:0; z-index:6;
+    backdrop-filter:blur(16px) saturate(1.35); -webkit-backdrop-filter:blur(16px) saturate(1.35); }
+.topbar a.home { font-weight:700; letter-spacing:.08em; color:var(--ink); text-decoration:none; font-size:14px; white-space:nowrap; }
 .topbar .crumb { color:var(--mute); font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.eyebrow { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--violet); margin:26px 0 8px; }
+.course-progress { position:sticky; top:53px; z-index:6; height:3px; background:rgba(233,229,238,0.6); }
+.course-progress i { display:block; height:100%; width:0;
+    background:linear-gradient(90deg,#3d1478,#6d28d9 55%,#8b5cf6); transition:width .5s ease; }
+/* ---- editorial hero ---- */
+.eyebrow { font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--violet); margin:34px 0 12px; }
 h1 { font-family:'Fraunces','Avenir Next',Georgia,serif; font-weight:600;
-    font-size:clamp(28px,5vw,40px); line-height:1.14; padding-bottom:.08em;
+    font-size:clamp(30px,5.4vw,44px); line-height:1.12; padding-bottom:.08em;
     background:linear-gradient(118deg,#3d1478 0%,#6d28d9 55%,#8b5cf6 100%);
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-    color:var(--violet-deep); text-wrap:balance; margin-bottom:10px; }
+    color:var(--violet-deep); text-wrap:balance; margin-bottom:14px; }
 h2 { font-family:'Fraunces','Avenir Next',Georgia,serif; font-weight:600; font-size:24px;
-    line-height:1.2; margin:34px 0 10px; text-wrap:balance; }
+    line-height:1.2; margin:36px 0 12px; text-wrap:balance; }
 p { margin:0 0 14px; }
-.dek { font-size:18px; color:var(--ink-2); max-width:64ch; }
-.mz-eddisclaimer { max-width:72ch; margin:40px auto 8px; padding:15px 19px; background:var(--wash);
-    border:1px solid var(--hair); border-radius:12px; color:var(--ink-2); font-size:13.5px; line-height:1.6; }
-.mz-eddisclaimer strong { color:var(--ink); }
-.mod-list { list-style:none; padding:0; margin:22px 0; counter-reset:m; display:flex; flex-direction:column; gap:10px; }
-.mod-list li { counter-increment:m; }
-.mod-list a { position:relative; display:block; padding:15px 16px 15px 60px; border:1px solid var(--hair);
-    background:var(--card); border-radius:var(--radius); text-decoration:none; color:var(--ink); }
-.mod-list a::before { content:counter(m,decimal-leading-zero); position:absolute; left:16px; top:16px;
-    font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:19px; color:var(--violet); }
-.mod-list .m-name { font-weight:700; display:block; }
-.mod-list .m-what { color:var(--ink-2); font-size:14.5px; display:block; margin-top:2px; }
-.mod-list .m-done { position:absolute; right:14px; top:16px; font-size:12.5px; color:var(--good); font-weight:700; }
-.opening { font-family:'Fraunces','Avenir Next',Georgia,serif; font-size:18px; color:var(--ink);
-    background:var(--wash); border:1px solid var(--hair); border-left:3px solid var(--violet);
-    border-radius:12px; padding:16px 18px; margin:20px 0 22px; }
-.teach { margin:0 0 8px; }
-.teach h3 { font-size:17px; font-weight:700; margin:22px 0 8px; }
+.dek { font-size:18.5px; color:var(--ink-2); max-width:62ch; }
+/* the lived-experience opening: an editorial pull-quote, not a box */
+.opening { font-family:'Fraunces','Avenir Next',Georgia,serif; font-size:clamp(19px,2.6vw,23px);
+    font-style:italic; line-height:1.45; color:var(--ink);
+    border-left:3px solid var(--violet); padding:6px 0 6px 22px; margin:26px 0 30px; max-width:60ch; }
+/* ---- glass surfaces ---- */
+.sheet, .check, .action, .mod-list a, .qlist li {
+    background:var(--glass);
+    backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--glass-edge); border-radius:var(--radius);
+    box-shadow:var(--glass-shadow); }
+.sheet { padding:26px 28px; margin:0 0 20px; }
+.sheet .teach { max-width:66ch; }
+.teach h3 { font-size:12.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--violet); margin:24px 0 10px; }
 .teach ul, .teach ol { margin:0 0 14px; padding-left:22px; }
-.teach li { margin-bottom:7px; }
-.reflect { border:1.5px dashed var(--violet); border-radius:12px; padding:13px 17px; margin:24px 0; color:var(--ink-2); }
-.reflect .r-tag { display:block; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--violet); margin-bottom:4px; }
-.check { border:1px solid var(--hair); border-radius:12px; padding:16px 18px; margin:24px 0; background:var(--card); }
-.check .q { font-weight:700; margin-bottom:10px; }
+.teach li { margin-bottom:8px; }
+.reflect { border:1.5px dashed rgba(109,40,217,0.55); border-radius:var(--radius);
+    background:rgba(244,240,251,0.6);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    padding:16px 20px; margin:26px 0; color:var(--ink-2); max-width:66ch; }
+.reflect .r-tag { display:block; font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--violet); margin-bottom:5px; }
+.check { padding:20px 22px; margin:26px 0; }
+.check .q { font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:18px; margin-bottom:12px; }
 .check button.opt { display:block; width:100%; text-align:left; font:inherit; color:var(--ink-2);
-    background:var(--paper); border:1px solid var(--hair); border-radius:10px; padding:10px 13px;
-    margin-bottom:8px; cursor:pointer; }
-.check button.opt[data-state="right"] { border-color:var(--good); color:var(--good); font-weight:700; }
-.check button.opt[data-state="wrong"] { border-color:#B91C1C; color:#B91C1C; }
-.check .why { display:none; margin-top:10px; padding:12px 14px; background:var(--wash);
-    border-radius:10px; color:var(--ink-2); font-size:14.5px; }
+    background:rgba(255,255,255,0.55); border:1px solid var(--hair); border-radius:12px; padding:12px 15px;
+    margin-bottom:9px; cursor:pointer; transition:border-color .18s ease, transform .18s ease; }
+.check button.opt:hover { border-color:var(--violet); transform:translateY(-1px); }
+.check button.opt[data-state="right"] { border-color:var(--good); color:var(--good); font-weight:700; background:rgba(4,120,87,0.06); }
+.check button.opt[data-state="wrong"] { border-color:#B91C1C; color:#B91C1C; background:rgba(185,28,28,0.05); }
+.check .why { display:none; margin-top:12px; padding:14px 16px; background:rgba(244,240,251,0.8);
+    border-radius:12px; color:var(--ink-2); font-size:14.5px; }
 .check .why .src { display:block; margin-top:8px; font-size:12.5px; color:var(--mute); }
-.action { display:flex; flex-wrap:wrap; gap:12px; align-items:center; border:1px solid var(--hair);
-    background:var(--card); border-radius:12px; padding:14px 16px; margin:24px 0; }
+.action { display:flex; flex-wrap:wrap; gap:14px; align-items:center; padding:17px 20px; margin:26px 0; }
 .action .a-text { flex:1 1 260px; color:var(--ink-2); }
 .action .a-text strong { color:var(--ink); }
 .action button { font:inherit; font-weight:600; font-size:14px; color:var(--violet);
-    background:#fff; border:1.5px solid var(--violet); border-radius:999px; padding:8px 16px; cursor:pointer; }
-.action button[disabled] { color:var(--good); border-color:var(--good); cursor:default; }
-.lesson-nav { display:flex; justify-content:space-between; gap:12px; margin:34px 0 0; }
-.lesson-nav a { text-decoration:none; font-weight:600; font-size:14.5px; padding:10px 16px;
-    border:1px solid var(--hair); border-radius:999px; background:var(--card); color:var(--ink); }
-.side-note { color:var(--mute); font-size:13px; margin-top:6px; }
-.qlist { list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:8px; }
-.qlist li { border:1px solid var(--hair); background:var(--card); border-radius:10px; padding:11px 14px;
-    display:flex; gap:10px; align-items:baseline; }
+    background:#fff; border:1.5px solid var(--violet); border-radius:999px; padding:9px 18px; cursor:pointer;
+    transition:transform .18s ease, background .18s ease; }
+.action button:hover { transform:translateY(-1px); background:var(--wash); }
+.action button[disabled] { color:var(--good); border-color:var(--good); cursor:default; transform:none; }
+.lesson-nav { display:flex; justify-content:space-between; gap:12px; margin:38px 0 0; }
+.lesson-nav a { text-decoration:none; font-weight:600; font-size:14.5px; padding:11px 18px;
+    border:1.5px solid var(--violet); border-radius:999px; background:#fff; color:var(--violet);
+    transition:transform .18s ease, background .18s ease; }
+.lesson-nav a:hover { transform:translateY(-1px); background:var(--wash); }
+.side-note { color:var(--mute); font-size:13px; margin-top:10px; }
+/* ---- module + catalog cards ---- */
+.mod-list { list-style:none; padding:0; margin:26px 0; counter-reset:m; display:flex; flex-direction:column; gap:12px; }
+.mod-list li { counter-increment:m; }
+.mod-list a { position:relative; display:block; padding:18px 18px 18px 64px;
+    text-decoration:none; color:var(--ink);
+    transition:transform .22s ease, box-shadow .22s ease; }
+.mod-list a:hover { transform:translateY(-2px); box-shadow:0 24px 60px rgba(61,20,120,0.12); }
+.mod-list a::before { content:counter(m,decimal-leading-zero); position:absolute; left:18px; top:19px;
+    font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:20px; color:var(--violet); }
+.mod-list .m-name { font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:17.5px; display:block; }
+.mod-list .m-what { color:var(--ink-2); font-size:14.5px; display:block; margin-top:3px; }
+.mod-list .m-done { position:absolute; right:16px; top:19px; font-size:12.5px; color:var(--good); font-weight:700; }
+.mz-eddisclaimer { max-width:72ch; margin:44px auto 8px; padding:15px 19px; background:rgba(244,240,251,0.65);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border:1px solid var(--hair); border-radius:12px; color:var(--ink-2); font-size:13.5px; line-height:1.6; }
+.mz-eddisclaimer strong { color:var(--ink); }
+.qlist { list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:9px; }
+.qlist li { padding:13px 16px; display:flex; gap:10px; align-items:baseline; }
 .qlist li button { margin-left:auto; font:inherit; font-size:12.5px; color:var(--mute); background:none; border:none; cursor:pointer; }
-.progress-line { color:var(--mute); font-size:13.5px; margin:6px 0 0; }
-.pending-owner { border:1px dashed #D97706; background:rgba(245,158,11,.07); color:#92400E;
-    border-radius:12px; padding:13px 16px; margin:20px 0; font-size:14.5px; }
+.progress-line { color:var(--mute); font-size:13.5px; margin:8px 0 0; }
+.pending-owner { border:1px dashed #D97706; background:rgba(245,158,11,0.07); color:#92400E;
+    border-radius:12px; padding:13px 16px; margin:20px 0; font-size:14.5px; max-width:66ch; }
+/* ---- citation popovers: glass ---- */
 sup.mz-ref { position:relative; font-size:11px; }
 sup.mz-ref a { text-decoration:none; font-weight:700; }
 sup.mz-ref .mz-ref-pop { position:absolute; bottom:130%; left:50%; transform:translateX(-50%);
-    width:min(330px,80vw); background:rgba(255,255,255,0.98); border:1px solid var(--hair);
-    border-radius:10px; box-shadow:0 10px 30px rgba(26,23,38,.14); padding:12px 14px;
-    visibility:hidden; opacity:0; transition:opacity .15s ease; z-index:20; font-size:12.5px; line-height:1.5; text-align:left; }
+    width:min(340px,82vw); background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(20px) saturate(1.5); -webkit-backdrop-filter:blur(20px) saturate(1.5);
+    border:1px solid var(--glass-edge); border-radius:12px; box-shadow:0 16px 44px rgba(26,23,38,.16);
+    padding:13px 15px; visibility:hidden; opacity:0; transition:opacity .18s ease; z-index:20;
+    font-size:12.5px; line-height:1.5; text-align:left; }
 sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:visible; opacity:1; }
 .mz-ref-pop-title { display:block; font-weight:600; color:var(--ink); margin-bottom:3px; }
 .mz-ref-pop-meta { display:block; color:var(--mute); margin-bottom:6px; }
 .mz-ref-pop-finding { display:block; color:var(--ink-2); border-top:1px solid var(--hair); padding-top:6px; }
-@media (max-width:560px){ .wrap { padding:20px 16px 80px; } }
+/* ---- scroll reveals (JS adds .rv; no-JS stays fully visible) ---- */
+@media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(16px);
+        transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+    .rv.in { opacity:1; transform:none; }
+}
+@media (max-width:560px){ .wrap { padding:24px 16px 84px; } .sheet { padding:20px 18px; } }
 </style>
 </head>
-<body data-course="endometriosis" data-lesson="3-body-layers">
+<body data-course="endometriosis" data-lesson="3-body-layers" data-pos="15" data-total="30">
 <nav class="topbar"><a class="home" href="/">MOUNT ZARA</a><span class="crumb"><a href="/learn/">Reflections</a> · <a href="/learn/endometriosis/">Endometriosis</a> · Module 3</span></nav>
+<div class="course-progress"><i id="course-bar"></i></div>
 <main class="wrap">
 <p class="eyebrow">Module 3 of 6 · Your Treatment Options: The Honest Menu</p>
 <h1>Pelvic-floor PT and OMT: the adjuncts with trial evidence</h1>
 <div class="opening">For years you may have been improvising — the heating pad, the stretching routine, the particular way of sitting — working around a layer of the pain that no prescription seemed to reach.</div>
-<div class="teach"><h3>Two adjuncts, in parallel</h3><p><strong>In parallel with the medical ladder, two adjuncts are added when indicated:</strong> pelvic-floor physical therapy when there&rsquo;s a muscle component (which is most patients)<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>, and osteopathic manipulative treatment, which addresses the structural and neurological layer that hormones and even surgery don&rsquo;t directly reach<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">Muñoz-Gómez et al., J Clin Med 2023 — 8-week manual-therapy / osteopathic protocol significantly reduced pelvic pain and improved EHP-30 quality-of-life scores in women with endometriosis.</span></span></sup><sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-11">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2024 · PMID 37997320</span><span class="mz-ref-pop-finding">Alboni et al., Minerva Obstet Gynecol 2024 — osteopathic visceral-fascial protocol reduced recurrent pelvic pain and dyspareunia after endometriosis surgery.</span></span></sup>.</p><p><strong>50&ndash;80%</strong> also have a <strong>pelvic-floor muscle component</strong> driving the pain<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2020 · PMID 32080045</span><span class="mz-ref-pop-finding">ACOG Practice Bulletin 218 (summary) — Chronic Pelvic Pain: multidisciplinary framework integrating medical, surgical, physical-therapy, behavioral, and procedural layers.</span></span></sup><sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>.</p></div>
-<div class="teach"><h3>The osteopathic layer &mdash; the published trials</h3><p>This is a DO-led CBG/MIGS practice &mdash; a fully licensed gynecologic surgeon with additional training in osteopathic manipulative treatment. For pelvic pain, OMT addresses the structural and neurological contributors that hormones and surgery don&rsquo;t directly reach, layered on top of standard care rather than instead of it.</p><ul><li><strong>Muñoz-Gómez 2023</strong> &mdash; <strong>RCT, n=41</strong> &middot; 8-week OMT protocol vs usual care in endometriosis-related pelvic pain. Significant improvements in pain and EHP-30 quality of life sustained at one-month follow-up<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">Muñoz-Gómez et al., J Clin Med 2023 — 8-week manual-therapy / osteopathic protocol significantly reduced pelvic pain and improved EHP-30 quality-of-life scores in women with endometriosis.</span></span></sup>.</li><li><strong>Molins-Cubero 2014</strong> &mdash; <strong>Double-blind RCT, n=40</strong> &middot; A single sacroiliac manipulation produced immediate pain reduction with measurable increase in circulating serotonin and catecholamines<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-9">[9]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial.</span><span class="mz-ref-pop-meta">Pain Med 2014 · PMID 24666560</span><span class="mz-ref-pop-finding">Molins-Cubero et al., Pain Med — single sacroiliac manipulation produced immediate analgesia with measurable serotonin/catecholamine modulation in primary-dysmenorrhea pelvic pain.</span></span></sup>.</li><li><strong>Ruffini 2018</strong> &mdash; <strong>RCT, n=31</strong> &middot; Five OMT sessions reduced average menstrual pain by <strong>63%</strong> (5.4 &rarr; 2.0/10); SF-12 physical +58%, mental +36%. Control group: no change<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-10">[10]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 · PMID 27261985</span><span class="mz-ref-pop-finding">Ruffini et al., Complement Ther Med — systematic review of osteopathic manipulative treatment in gynecology and obstetrics, including dysmenorrhea and pelvic pain populations.</span></span></sup>.</li><li><strong>Alboni 2024</strong> &mdash; Osteopathic visceral-fascial protocol after endometriosis surgery: significant improvements in recurrent pelvic pain and painful intercourse vs usual post-op care<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-11">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2024 · PMID 37997320</span><span class="mz-ref-pop-finding">Alboni et al., Minerva Obstet Gynecol 2024 — osteopathic visceral-fascial protocol reduced recurrent pelvic pain and dyspareunia after endometriosis surgery.</span></span></sup>.</li></ul></div>
-<div class="teach"><h3>FitzGerald 2012 &mdash; the NIH multicenter pelvic-floor PT RCT</h3><p>Level&nbsp;I evidence from 11 NIH/NIDDK research centers that a specialized internal pelvic-floor myofascial physical therapy is substantively more effective than general massage in pelvic-floor pain &mdash; which is why the &ldquo;PT&rdquo; you receive matters enormously. Cited above as the evidence base for the pelvic-floor PT layer of every endometriosis treatment plan<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>.</p><p><strong>59%</strong> myofascial PT response &middot; <strong>26%</strong> general massage response</p></div>
+<div class="sheet"><div class="teach"><h3>Two adjuncts, in parallel</h3><p><strong>In parallel with the medical ladder, two adjuncts are added when indicated:</strong> pelvic-floor physical therapy when there&rsquo;s a muscle component (which is most patients)<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>, and osteopathic manipulative treatment, which addresses the structural and neurological layer that hormones and even surgery don&rsquo;t directly reach<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">Muñoz-Gómez et al., J Clin Med 2023 — 8-week manual-therapy / osteopathic protocol significantly reduced pelvic pain and improved EHP-30 quality-of-life scores in women with endometriosis.</span></span></sup><sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-11">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2024 · PMID 37997320</span><span class="mz-ref-pop-finding">Alboni et al., Minerva Obstet Gynecol 2024 — osteopathic visceral-fascial protocol reduced recurrent pelvic pain and dyspareunia after endometriosis surgery.</span></span></sup>.</p><p><strong>50&ndash;80%</strong> also have a <strong>pelvic-floor muscle component</strong> driving the pain<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2020 · PMID 32080045</span><span class="mz-ref-pop-finding">ACOG Practice Bulletin 218 (summary) — Chronic Pelvic Pain: multidisciplinary framework integrating medical, surgical, physical-therapy, behavioral, and procedural layers.</span></span></sup><sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>.</p></div><div class="teach"><h3>The osteopathic layer &mdash; the published trials</h3><p>This is a DO-led CBG/MIGS practice &mdash; a fully licensed gynecologic surgeon with additional training in osteopathic manipulative treatment. For pelvic pain, OMT addresses the structural and neurological contributors that hormones and surgery don&rsquo;t directly reach, layered on top of standard care rather than instead of it.</p><ul><li><strong>Muñoz-Gómez 2023</strong> &mdash; <strong>RCT, n=41</strong> &middot; 8-week OMT protocol vs usual care in endometriosis-related pelvic pain. Significant improvements in pain and EHP-30 quality of life sustained at one-month follow-up<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-8">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 · PMID 37176750</span><span class="mz-ref-pop-finding">Muñoz-Gómez et al., J Clin Med 2023 — 8-week manual-therapy / osteopathic protocol significantly reduced pelvic pain and improved EHP-30 quality-of-life scores in women with endometriosis.</span></span></sup>.</li><li><strong>Molins-Cubero 2014</strong> &mdash; <strong>Double-blind RCT, n=40</strong> &middot; A single sacroiliac manipulation produced immediate pain reduction with measurable increase in circulating serotonin and catecholamines<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-9">[9]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial.</span><span class="mz-ref-pop-meta">Pain Med 2014 · PMID 24666560</span><span class="mz-ref-pop-finding">Molins-Cubero et al., Pain Med — single sacroiliac manipulation produced immediate analgesia with measurable serotonin/catecholamine modulation in primary-dysmenorrhea pelvic pain.</span></span></sup>.</li><li><strong>Ruffini 2018</strong> &mdash; <strong>RCT, n=31</strong> &middot; Five OMT sessions reduced average menstrual pain by <strong>63%</strong> (5.4 &rarr; 2.0/10); SF-12 physical +58%, mental +36%. Control group: no change<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-10">[10]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 · PMID 27261985</span><span class="mz-ref-pop-finding">Ruffini et al., Complement Ther Med — systematic review of osteopathic manipulative treatment in gynecology and obstetrics, including dysmenorrhea and pelvic pain populations.</span></span></sup>.</li><li><strong>Alboni 2024</strong> &mdash; Osteopathic visceral-fascial protocol after endometriosis surgery: significant improvements in recurrent pelvic pain and painful intercourse vs usual post-op care<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-11">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2024 · PMID 37997320</span><span class="mz-ref-pop-finding">Alboni et al., Minerva Obstet Gynecol 2024 — osteopathic visceral-fascial protocol reduced recurrent pelvic pain and dyspareunia after endometriosis surgery.</span></span></sup>.</li></ul></div><div class="teach"><h3>FitzGerald 2012 &mdash; the NIH multicenter pelvic-floor PT RCT</h3><p>Level&nbsp;I evidence from 11 NIH/NIDDK research centers that a specialized internal pelvic-floor myofascial physical therapy is substantively more effective than general massage in pelvic-floor pain &mdash; which is why the &ldquo;PT&rdquo; you receive matters enormously. Cited above as the evidence base for the pelvic-floor PT layer of every endometriosis treatment plan<sup class="mz-ref" tabindex="0"><a href="/education/endometriosis/#ref-12">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 · PMID 22503015</span><span class="mz-ref-pop-finding">FitzGerald et al., J Urol — NIH multicenter RCT: specialized pelvic-floor myofascial physical therapy 59% response vs 26% with general therapeutic massage for urological CPP.</span></span></sup>.</p><p><strong>59%</strong> myofascial PT response &middot; <strong>26%</strong> general massage response</p></div></div>
 <div class="reflect"><span class="r-tag">Just for you — never sent anywhere</span>Where in your body do you notice yourself guarding — and what would it mean to hand that part of the work to someone trained for it?</div>
 <div class="action"><div class="a-text"><strong>Bring this to your visit.</strong> Check your insurance coverage for osteopathic manipulative treatment before your visit, so a yes can become an appointment on the spot.</div><button type="button" data-q="Can I have a referral to a pelvic-floor physical therapist trained in internal myofascial work, and should an osteopathic layer be added to my plan?">Add to my questions</button></div>
 <div class="lesson-nav"><a href="../../3/evidence-levels/">← Previous</a><a href="../../4/excision-not-ablation/">Next →</a></div>
@@ -162,6 +202,31 @@ sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:v
         };
         render();
         var pr = document.getElementById('mzr-print'); if (pr) pr.addEventListener('click', function () { window.print(); });
+    }
+    // ---- scroll reveals: applied by JS so no-JS renders everything ----
+    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var els = document.querySelectorAll('.sheet, .check, .action, .reflect, .mod-list li, .opening, .qlist li');
+        var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function (es) {
+            es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }) : null;
+        els.forEach(function (el, i) {
+            el.classList.add('rv');
+            el.style.transitionDelay = Math.min(i % 5, 3) * 60 + 'ms';
+            if (io) io.observe(el); else el.classList.add('in');
+        });
+        requestAnimationFrame(function () {
+            document.querySelectorAll('.rv').forEach(function (el) {
+                var r = el.getBoundingClientRect();
+                if (r.top < innerHeight * 0.9) el.classList.add('in');
+            });
+        });
+    }
+    // ---- course progress bar on lesson pages ----
+    var bar = document.getElementById('course-bar');
+    if (bar) {
+        var pos = Number(document.body.getAttribute('data-pos') || 0);
+        var total = Number(document.body.getAttribute('data-total') || 1);
+        requestAnimationFrame(function () { bar.style.width = Math.round(100 * pos / total) + '%'; });
     }
     // ---- course-home progress marks ----
     document.querySelectorAll('[data-module-lessons]').forEach(function (el) {
