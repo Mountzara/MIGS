@@ -13,7 +13,7 @@
           3) Run scripts/regression_audit.py --file education/<slug>/index.html
           4) Fix any flagged violations BEFORE first commit
           5) Mirror to portal/education/<slug>/ via `cp` after audit passes
-        Per CLAUDE.md §0.4.1: a new page is not shippable until comprehensive
+        A new page is not shippable until comprehensive
         audit passes. §3.7 / §1.2 / §3.10 / §3.12 are all enforced here at
         the template level — DO NOT REMOVE the scaffolding lines marked
         "[required: §X.Y]".
@@ -21,7 +21,7 @@
         Per §3.7 — DO NOT add the following phrases anywhere in this file:
           - "KB-anchored, peer-reviewed"  (in meta description or body)
           - "retrieved via NCBI E-Utilities"  (in ref-intro)
-          - "MountZara KB" / "clinical knowledge base" / "§0.8" / "RAG"
+          - internal tooling names, knowledge-base or retrieval jargon
           - "in this session"
         Use plain replacements: "Evidence-based, peer-reviewed.";
         "Click any abstract to expand the verbatim PubMed record."
@@ -150,7 +150,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <!-- ============================================================
          CONTENT SECTIONS START HERE
          Add fact cards, narrative sections, modals, references.
-         Source every clinical claim from the §0.8 KB (do NOT use
+         Source every clinical claim from the reviewed clinical library (do NOT use
          training memory). Cite inline as <sup class="mz-ref">[N]</sup>.
 
          For the references section's intro paragraph, use exactly:
@@ -177,17 +177,3 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </body>
 </html>
 
-<!-- §0.8 KB-anchor manifest — [required: §0.8.1] fill in after authoring content. Format:
-{
-  "spec": "§0.8.1 KB-anchor manifest (CLAUDE.md)",
-  "surface": "/education/{{SLUG}}/index.html",
-  "topic": "{{TOPIC_LABEL}}",
-  "topic_synthesis_id": "<UUID from kb_chunks/02_topicSyntheses.json>",
-  "kb_documents_loaded": ["<uuid1>", "<uuid2>"],
-  "kb_documents_quoted": [...],
-  "pmids_efetched_in_session": [],
-  "user_docx_sources": [],
-  "not_in_kb_claims": [],
-  "generated_at_utc": "{{ISO_DATETIME_UTC}}"
-}
--->

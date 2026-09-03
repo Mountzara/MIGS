@@ -449,7 +449,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         async function loadList() {
             // 2026-05-20 resilience fix: the FEATURED static deep guides
-            // (the 12 §0.8.1-anchored patient education pages) must always
+            // (the 12 evidence-anchored patient education pages) must always
             // render so the patient can navigate to them — independent of
             // whether the /api/v1/patient/education endpoint succeeds.
             // The endpoint is intermittently 503-flaky under Workers CPU
@@ -520,12 +520,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const matches = state.filterTag
                 ? state.materials.filter(m => (m.topic_tags || []).includes(state.filterTag))
                 : state.materials;
-            // NOTE: FEATURED deep guides (the 12 §0.8.1 KB-anchored static
+            // NOTE: FEATURED deep guides (the 12 evidence-anchored static
             // pages at /portal/education/<slug>/) always render. The D1
             // matches list appends below — empty is fine, that just means
             // there are no clinician-published custom primers yet.
             // Featured static "deep guide" pages — full peer-reviewed
-            // patient education, KB-anchored per §0.8.1. These live as
+            // patient education, anchored to the reviewed library. These live as
             // standalone routes alongside the API-driven materials list.
             const FEATURED = [
                 {
@@ -676,7 +676,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const data = await fetchJson(`/api/v1/patient/education/${encodeURIComponent(slug)}`);
                 // 2026-05-20 patient-portal "I only see html view" fix:
                 // some D1 education_materials rows reference a complete
-                // static HTML file via r2_key (e.g. the 12 §0.8.1-anchored
+                // static HTML file via r2_key (e.g. the 12 evidence-anchored
                 // patient education guides). The API surfaces those via
                 // a `static_path` hint. When present, route the browser
                 // straight to the canonical static URL rather than trying

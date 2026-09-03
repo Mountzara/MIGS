@@ -1871,7 +1871,7 @@
 
         // ==========================================================
         // Domain Modal — Surgical Excellence card deep-dives.
-        // KB-anchored patient-centered content per §0.8.1.
+        // Patient-centered content anchored to the reviewed library.
         // Content lives in window.DOMAIN_MODAL_DATA (set below).
         // ==========================================================
         const domainModalEl    = document.getElementById('domainModal');

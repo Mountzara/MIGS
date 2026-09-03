@@ -477,17 +477,18 @@ def audit_education_page(page, slug: str) -> list[dict[str, Any]]:
 
     results: list[dict[str, Any]] = []
 
-    # AI disclaimer must be visible
+    # Medical-advice disclaimer must be visible (the AI-provenance aside was
+    # removed site-wide by owner directive 2026-09-02).
     disc = page.evaluate("""() => {
-        const d = document.querySelector('.mz-ai-disclaimer');
+        const d = document.querySelector('.mz-eddisclaimer');
         if (!d) return null;
         const cs = getComputedStyle(d);
         return {display: cs.display, visibility: cs.visibility, opacity: cs.opacity};
     }""")
     if disc is None:
         results.append(make_check(
-            "§3.12 AI disclaimer element present", False,
-            "no .mz-ai-disclaimer found"
+            "not-medical-advice disclaimer present", False,
+            "no .mz-eddisclaimer found"
         ))
     else:
         ok = disc["display"] != "none" and disc["visibility"] != "hidden"

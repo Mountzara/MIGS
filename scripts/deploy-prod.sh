@@ -1480,6 +1480,22 @@ fi
 # standing medico-legal disclaimer (mz-eddisclaimer) on every educational
 # surface. Surfaces derived (tree + posts API, fails loud). Worker twin:
 # auditDosingLanguage in functions/_lib/post_format.js.
+# No internal machinery on public surfaces (2026-09-02). The owner found an
+# AI-provenance aside and build manifests carrying his local filesystem paths
+# and private .docx filenames on the live site; both had to be stripped by
+# hand from 24 pages and 15 posts. This gate stops either from returning.
+if [ -f scripts/audit_no_internal_leakage.py ]; then
+    echo ""
+    echo "🔍 Internal-leakage gate — no AI notice, no local paths, no build manifests..."
+    if python3 scripts/audit_no_internal_leakage.py; then
+        echo "   ✅ internal-leakage gate passed"
+    else
+        echo ""
+        echo "🛑 INTERNAL-LEAKAGE GATE FAILED — see the list above."
+        exit 1
+    fi
+fi
+
 if [ -f scripts/audit_no_dosing.py ]; then
     echo ""
     echo "🔍 No-dosing gate — counseling prose dose-free, disclaimers present..."

@@ -1,13 +1,13 @@
 /* Domain Modal Data — 9 entries powering the patient-centered modals
  * for the "Surgical practice areas" cards in #excellence on the homepage.
  *
- * Content authored from /Users/beans/Developer/MountZara/MIGS/cite_audit/domain_modals/<slug>.json
+ * Content authored from the repo's citation-audit records for each domain.
  * which was extracted from the v10 KB chunks at
- * /Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/
+ * the reviewed clinical library.
  * (topic syntheses + ACOG documents + supportingStudies PMIDs).
  *
- * Per CLAUDE.md §0.8.1: every clinical claim is anchored to a loaded KB document
- * field, and the §0.8 manifest at the bottom of index.html lists the KB doc IDs
+ * Every clinical claim is anchored to a reviewed source document
+ * field; the sourcing record for each page is kept in the repo, not shipped
  * and PMIDs used here. Patient voice; no first-person; honest about uncertainty.
  *
  * §0.6 compliance: every modal entry was authored by hand from the KB extract,
