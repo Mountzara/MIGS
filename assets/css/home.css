@@ -8864,3 +8864,119 @@ img.hero-video {
 @media (prefers-reduced-motion: reduce) {
     .mz-clinical-detail { transition: none; }
 }
+
+/* ===================================================================
+   INLINE CITATIONS — the gold standard, brought to the homepage
+   (2026-09-02, owner directive). The osteopathic section previously
+   dumped its sources in a bibliography line at the foot of each
+   pillar. Every clinical claim now carries its citation AT the claim,
+   with a hover modal holding the paper's title, journal/year/PMID, a
+   plain-language summary of what it found, and a direct PubMed link —
+   matching the education pages and the evidence briefs exactly.
+   =================================================================== */
+sup.mz-ref {
+    display: inline-block;
+    font-size: 0.7em;
+    line-height: 1;
+    vertical-align: super;
+    position: relative;
+    margin-left: 1px;
+    cursor: pointer;
+}
+sup.mz-ref > a {
+    color: #6d28d9;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+}
+sup.mz-ref:hover > a,
+sup.mz-ref.mz-open > a,
+sup.mz-ref:focus-visible > a {
+    background: #6d28d9;
+    color: #fff;
+    outline: none;
+}
+sup.mz-ref .mz-ref-pop {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, -6px);
+    width: min(380px, 92vw);
+    max-height: min(52vh, 440px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(167, 139, 250, 0.55);
+    border-radius: 12px;
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    color: #4A4658;
+    font-size: 12.5px;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    z-index: 3000;
+    text-align: left;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    box-shadow: 0 18px 50px rgba(26, 23, 38, 0.28);
+    white-space: normal;
+}
+/* hover bridge across the lift gap, so the cursor can reach the link */
+sup.mz-ref .mz-ref-pop::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 16px;
+}
+sup.mz-ref:hover .mz-ref-pop,
+sup.mz-ref:focus-within .mz-ref-pop,
+sup.mz-ref.mz-open .mz-ref-pop {
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+/* opens downward when the citation sits too high for the popover to fit */
+sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
+sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
+sup.mz-ref:hover .mz-ref-pop.mz-flip,
+sup.mz-ref:focus-within .mz-ref-pop.mz-flip,
+sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
+.mz-ref-pop-title { display: block; font-weight: 600; color: #1A1726; line-height: 1.35; }
+.mz-ref-pop-meta { display: block; font-size: 11px; color: #6E6A7C; margin-top: 3px; letter-spacing: 0.02em; }
+.mz-ref-pop-finding { display: block; margin-top: 7px; padding-top: 7px; border-top: 1px solid #E9E5EE; color: #4A4658; }
+.mz-ref-pop-src { display: inline-block; margin-top: 8px; font-size: 11.5px; font-weight: 600; color: #6d28d9; text-decoration: none; }
+.mz-ref-pop-src:hover, .mz-ref-pop-src:focus-visible { text-decoration: underline; color: #4c1d95; }
+/* the citation-number pill styling must not swallow the source link */
+sup.mz-ref:hover a.mz-ref-pop-src,
+sup.mz-ref.mz-open a.mz-ref-pop-src,
+sup.mz-ref:focus-within a.mz-ref-pop-src {
+    background: transparent;
+    color: #6d28d9;
+    padding: 0;
+    border-radius: 0;
+}
+/* numbered source list at the foot of a modal */
+.mz-srclist { margin: 26px 0 0; padding: 18px 0 0; border-top: 1px solid #E9E5EE; }
+.mz-srclist h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #6E6A7C; margin: 0 0 10px; }
+.mz-srclist ol { margin: 0; padding-left: 20px; }
+.mz-srclist li { font-size: 12.5px; line-height: 1.55; color: #4A4658; margin-bottom: 8px; }
+.mz-srclist li a { color: #6d28d9; text-decoration: none; }
+.mz-srclist li a:hover { text-decoration: underline; }
+/* Inside a scrolling modal an absolutely-positioned popover is clipped by
+   the card's own overflow. There the popover switches to viewport-fixed
+   positioning, placed by JS, so it can never be cut off. */
+sup.mz-ref .mz-ref-pop.mz-fixed { position: fixed; bottom: auto; }
+sup.mz-ref:hover .mz-ref-pop.mz-fixed,
+sup.mz-ref:focus-within .mz-ref-pop.mz-fixed,
+sup.mz-ref.mz-open .mz-ref-pop.mz-fixed { transform: none; }
+sup.mz-ref .mz-ref-pop.mz-fixed::after { display: none; }
