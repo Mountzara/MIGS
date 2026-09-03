@@ -8810,3 +8810,57 @@ img.hero-video {
         text-align: center;
     }
 }
+
+
+/* ==========================================================
+   CLINICAL DETAIL TOGGLE (2026-09-02)
+   The condition modals now lead with plain language a patient can
+   read; the owner's provider-level phrasing, technique names and
+   citations live behind this collapsed toggle so referring
+   physicians still see the rigor. Closed by default — the patient
+   never has to step over it.
+   ========================================================== */
+.mz-clinical-detail {
+    margin: 18px 0 4px;
+    border: 1px solid rgba(109, 40, 217, 0.22);
+    border-radius: 12px;
+    background: rgba(244, 240, 251, 0.55);
+    backdrop-filter: blur(10px) saturate(1.2);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+}
+.mz-clinical-detail > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 11px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: #6d28d9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mz-clinical-detail > summary::-webkit-details-marker { display: none; }
+.mz-clinical-detail > summary::after {
+    content: '+';
+    margin-left: auto;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+}
+.mz-clinical-detail[open] > summary::after { content: '\2013'; }
+.mz-clinical-detail > summary:hover,
+.mz-clinical-detail > summary:focus-visible { color: #4c1d95; }
+.mz-cd-body {
+    padding: 2px 16px 15px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #4A4658;
+}
+.mz-cd-body p { margin: 0 0 9px; }
+.mz-cd-body p:last-child { margin-bottom: 0; }
+.mz-cd-body strong { color: #1A1726; }
+@media (prefers-reduced-motion: reduce) {
+    .mz-clinical-detail { transition: none; }
+}

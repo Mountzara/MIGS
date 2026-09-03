@@ -35,10 +35,42 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Concentration units (mg/dL, IU/L, µg/mL …) are LAB VALUES — diagnostic
 # education, not dosing (e.g. the beta-hCG discriminatory zone "3500 IU/L").
 # The lookahead excludes unit-per-volume; "mg/d" (per day) is still dosing.
+# 2026-09-02 — three evasions found live on the homepage, all of which this
+# gate had passed:
+#   * "norethindrone acetate 5&thinsp;mg"      entity between number and unit
+#   * "onabotulinumtoxinA 100&ndash;300 units" entity in the range, and "units"
+#                                              was not even in the unit list
+#   * "lidocaine 5%", "bupivacaine 0.25%"      concentration, no unit token
+# Entities are now decoded before matching (see decode_entities), "unit(s)" is
+# a unit, and a concentration attached to a named drug counts as a dose. Plain
+# outcome percentages ("59% improved") are deliberately NOT matched.
+CONC_DRUGS = (
+    "lidocaine|bupivacaine|ropivacaine|marcaine|prilocaine|benzocaine"
+    "|triamcinolone|betamethasone|hydrocortisone|clobetasol|estradiol"
+    "|progesterone|testosterone|diclofenac|ketamine|amitriptyline|gabapentin"
+    "|baclofen|diazepam|misoprostol|oxybutynin|nitroglycerin|capsaicin"
+)
+
 DOSE_RE = re.compile(
-    r"\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b(?!\s*/\s*(?:d?L|mL)\b)"
+    r"\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*"
+    r"(?:mg|mcg|µg|IU|units?)\b(?!\s*/\s*(?:d?L|mL)\b)"
     r"|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b"
-    r"|\b(?:BID|TID|QID)\b", re.I)
+    r"|\b(?:BID|TID|QID)\b"
+    r"|\b(?:" + CONC_DRUGS + r")\s+\d+(?:[.,]\d+)?\s?%"
+    r"|\b\d+(?:[.,]\d+)?\s?%\s+(?:" + CONC_DRUGS + r")\b", re.I)
+
+_ENTITIES = {
+    "&thinsp;": " ", "&nbsp;": " ", "&ensp;": " ", "&emsp;": " ", "&hairsp;": " ",
+    "&ndash;": "-", "&mdash;": "-", "&minus;": "-", "&#8211;": "-", "&#8212;": "-",
+    "&#160;": " ", "&#8201;": " ", "&#37;": "%", "&percnt;": "%",
+}
+
+
+def decode_entities(text):
+    """Doses hidden behind HTML entities are still doses."""
+    for ent, ch in _ENTITIES.items():
+        text = text.replace(ent, ch)
+    return re.sub(r"&#x?[0-9a-fA-F]+;", " ", text)
 
 ABSTRACTS = [
     re.compile(r"<!--[\s\S]*?-->"),   # non-rendered (KB-anchor manifests etc.)
@@ -61,6 +93,7 @@ def prose_of(html, protect_research=False):
     return re.sub(r"<[^>]+>", " ", html)
 
 def hits(text):
+    text = decode_entities(text)
     return sorted(set(m.group(0).strip() for m in DOSE_RE.finditer(text)))
 
 def fetch(path):
@@ -94,9 +127,16 @@ def main():
     found = hits(re.sub(r"//[^\n]*", " ", dm))
     if found:
         problems.append(f"assets/js/domain-modals.js: dosing in the condition modals: {', '.join(found[:6])}")
-    # The modals render from ONE place — the renderer in home.js appends the
-    # disclaimer to every modal body, so it can never be forgotten per-entry.
+    # 2026-09-02 — home.js was scanned ONLY for the disclaimer, never for
+    # dosing, and the OMT six-pillar framework lives here. That blind spot let
+    # "norethindrone acetate 5 mg", "the 52 mg LNG-IUD", "lidocaine 5%",
+    # "bupivacaine 0.25%" and "onabotulinumtoxinA 100-300 units" sit on the
+    # live homepage against the owner's standing rule that dosing belongs in a
+    # private conversation with his patient. Scan its prose too.
     hj = open(os.path.join(ROOT, "assets", "js", "home.js"), encoding="utf-8").read()
+    hj_found = hits(re.sub(r"//[^\n]*", " ", hj))
+    if hj_found:
+        problems.append(f"assets/js/home.js: dosing in the homepage modals: {', '.join(hj_found[:6])}")
     if "mz-eddisclaimer" not in hj and "mz-eddisclaimer" not in dm:
         problems.append("assets/js/home.js: the domain-modal renderer no longer appends the mz-eddisclaimer block")
     # -- shells
