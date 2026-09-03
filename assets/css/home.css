@@ -9048,3 +9048,28 @@ sup.mz-ref .mz-ref-pop.mz-fixed::after { display: none; }
     color: #4A4658;
     margin: 0;
 }
+
+/* ===================================================================
+   Gradient headline fixes (2026-09-02).
+   1. The hero splits into per-word spans for the reveal animation, and
+      each span painted its OWN gradient — so the ramp restarted at
+      every word instead of running across the phrase. The spans already
+      carry --w-x (the word's offset) and --w-total (the phrase width)
+      for precisely this; the rule now uses them, so each word paints
+      its slice of one continuous phrase-wide gradient.
+   2. .apps-section stripped the gradient outright, leaving "Six apps.
+      One mission." solid black while every other section headline was
+      purple.
+   =================================================================== */
+.word-reveal .w {
+    background-size: var(--w-total, 100%) 100%;
+    background-position: calc(-1 * var(--w-x, 0px)) 0;
+    background-repeat: no-repeat;
+}
+.apps-section .section-headline {
+    background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #4c1d95;
+}
