@@ -52,8 +52,24 @@ def main():
         try:
             for w, h, label in [(1512, 950, "desktop"), (1100, 900, "tablet"), (390, 844, "phone")]:
                 page = browser.new_page(viewport={"width": w, "height": h}, ignore_https_errors=True)
+                # Same flake the contrast gate hit: the homepage's video,
+                # animated hero and deferred media probes can push
+                # "networkidle" past its budget when this runs inside the
+                # parallel deploy pool, which then reads as a broken nav.
+                # Retry with a progressively more forgiving wait first.
+                nav_err = None
+                for wait_until, timeout_ms in (("networkidle", 45000),
+                                               ("load", 60000),
+                                               ("domcontentloaded", 60000)):
+                    try:
+                        page.goto(url, wait_until=wait_until, timeout=timeout_ms)
+                        nav_err = None
+                        break
+                    except Exception as exc:
+                        nav_err = exc
                 try:
-                    page.goto(url, wait_until="networkidle", timeout=45000)
+                    if nav_err is not None:
+                        raise nav_err
                 except Exception as e:
                     msg = str(e)
                     if any(t in msg for t in ("ERR_CONNECTION", "ERR_PROXY", "ERR_TUNNEL",
