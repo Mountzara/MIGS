@@ -3536,39 +3536,76 @@
             // Flip the popover below its marker when there isn't room above.
             var SCROLLERS = '.omt-modal-card, .app-modal-scroll, .app-modal-body,'
                 + ' .mz-sheet-content, .evidence-modal-card, .contact-modal-card';
+            var portaled = null;   // the popover currently living on <body>
+
+            // Return a portaled popover to the citation it belongs to.
+            function unportal() {
+                if (!portaled) { return; }
+                var pop = portaled.pop;
+                pop.classList.remove('mz-portal');
+                pop.style.left = ''; pop.style.top = '';
+                if (portaled.next && portaled.next.parentNode === portaled.parent) {
+                    portaled.parent.insertBefore(pop, portaled.next);
+                } else {
+                    portaled.parent.appendChild(pop);
+                }
+                portaled = null;
+            }
+
             function place(sup) {
                 var pop = sup.querySelector('.mz-ref-pop');
-                if (!pop) { return; }
-                pop.classList.remove('mz-flip', 'mz-fixed');
-                pop.style.left = ''; pop.style.top = '';
-                var r = sup.getBoundingClientRect();
-                // Inside a scrolling modal the card's overflow would clip an
-                // absolutely-positioned popover, so pin it to the viewport.
-                if (sup.closest(SCROLLERS)) {
-                    pop.classList.add('mz-fixed');
-                    var vh = window.innerHeight, vw = window.innerWidth;
-                    var h = pop.offsetHeight, w = pop.offsetWidth;
-                    var left = r.left + (r.width / 2) - (w / 2);
-                    left = Math.max(8, Math.min(left, vw - w - 8));
-                    // Put it wherever there is more room, then clamp so it can
-                    // never run past the top or bottom of the window.
-                    var roomAbove = r.top - 8;
-                    var roomBelow = vh - r.bottom - 8;
-                    var top = (roomAbove >= h || roomAbove >= roomBelow)
-                        ? r.top - h - 10
-                        : r.bottom + 10;
-                    top = Math.max(8, Math.min(top, vh - h - 8));
-                    pop.style.left = Math.round(left) + 'px';
-                    pop.style.top = Math.round(top) + 'px';
+                if (!pop) {
+                    // already portaled for this marker?
+                    if (portaled && portaled.sup === sup) { position(portaled.pop, sup); }
                     return;
                 }
-                if (r.top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
+                pop.classList.remove('mz-flip');
+                pop.style.left = ''; pop.style.top = ''; pop.style.transform = '';
+                // Inside a scrolling, backdrop-filtered modal card the popover
+                // would be clipped by the card AND resolve position:fixed
+                // against it rather than the viewport. Move it to <body> for
+                // the duration, where neither is true.
+                if (sup.closest(SCROLLERS)) {
+                    unportal();
+                    portaled = { pop: pop, sup: sup, parent: pop.parentNode, next: pop.nextSibling };
+                    document.body.appendChild(pop);
+                    pop.classList.add('mz-portal');
+                    position(pop, sup);
+                    return;
+                }
+                if (sup.getBoundingClientRect().top - pop.offsetHeight < 12) {
+                    pop.classList.add('mz-flip');
+                }
             }
+
+            // Viewport placement for a portaled popover: open on whichever
+            // side has more room, then clamp inside the window.
+            function position(pop, sup) {
+                var r = sup.getBoundingClientRect();
+                var vw = window.innerWidth, vh = window.innerHeight;
+                var w = pop.offsetWidth, h = pop.offsetHeight;
+                var left = r.left + (r.width / 2) - (w / 2);
+                left = Math.max(8, Math.min(left, vw - w - 8));
+                var roomAbove = r.top - 8, roomBelow = vh - r.bottom - 8;
+                var top = (roomAbove >= h || roomAbove >= roomBelow) ? r.top - h - 10 : r.bottom + 10;
+                top = Math.max(8, Math.min(top, vh - h - 8));
+                pop.style.left = Math.round(left) + 'px';
+                pop.style.top = Math.round(top) + 'px';
+            }
+
             function onHover(ev) {
                 var t = ev.target;
                 var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
                 if (sup) { place(sup); }
             }
+            document.addEventListener('pointerover', function (ev) {
+                var t = ev.target;
+                var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+                var inPop = t && t.closest ? t.closest('.mz-ref-pop.mz-portal') : null;
+                if (!sup && !inPop && portaled && !portaled.sup.classList.contains('mz-open')) {
+                    unportal();
+                }
+            }, true);
             document.addEventListener('pointerover', onHover, true);
             document.addEventListener('focusin', onHover, true);
 
@@ -3580,6 +3617,7 @@
                     document.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) {
                         s.classList.remove('mz-open');
                     });
+                    unportal();
                     return;
                 }
                 var a = t.closest('a');
@@ -3599,5 +3637,6 @@
                 document.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) {
                     s.classList.remove('mz-open');
                 });
+                unportal();
             });
         })();
