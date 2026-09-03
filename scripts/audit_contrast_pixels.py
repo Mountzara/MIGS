@@ -436,10 +436,25 @@ def main():
             page = ctx.new_page()
             for path in pages:
                 url = f"{base}{path}" + ("index.html" if local else "") + f"?cb={int(time.time()*1000)}"
-                try:
-                    page.goto(url, wait_until="networkidle", timeout=45000)
-                except Exception as e:
-                    report.setdefault(path, {})[label] = {"error": str(e)[:90]}
+                # The homepage carries video, an animated hero and deferred
+                # media probes, so "networkidle" can exceed the budget when
+                # this gate runs inside the parallel deploy pool — which
+                # surfaced as "COULD NOT MEASURE" on two clean deploys while
+                # standalone runs measured 0 failures. Retry with a
+                # progressively more forgiving wait before giving up, so a
+                # slow load never masquerades as an unmeasurable page.
+                load_err = None
+                for wait_until, timeout_ms in (("networkidle", 45000),
+                                               ("load", 60000),
+                                               ("domcontentloaded", 60000)):
+                    try:
+                        page.goto(url, wait_until=wait_until, timeout=timeout_ms)
+                        load_err = None
+                        break
+                    except Exception as e:
+                        load_err = e
+                if load_err is not None:
+                    report.setdefault(path, {})[label] = {"error": str(load_err)[:90]}
                     continue
                 page.wait_for_timeout(1400)
                 # FREEZE TIME-ROTATING CONTENT. The homepage app-demo scenes
