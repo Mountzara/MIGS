@@ -11,7 +11,7 @@
 // near the top of the <body>. The script handles its own styling +
 // injection point.
 //
-// §3.10 Apple-glass purple, sticky to top, mobile-friendly horizontal
+// Apple-glass purple, sticky to top, mobile-friendly horizontal
 // scroll on narrow viewports, prefers-reduced-motion override.
 // =====================================================================
 

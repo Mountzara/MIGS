@@ -1852,7 +1852,7 @@
         }
 
         .section-headline.gradient {
-            /* 2026-05-27 (v2) — MEDIUM-intensity purple gradient per §3.10.
+            /* 2026-05-27 (v2) — MEDIUM-intensity purple gradient per .
                v1 (#fff → #c4b5fd → #a78bfa) was too pale to read as purple
                on a real reader's screen. v2 pushes the violet stop earlier
                and saturates the end stop so the back half of each headline
@@ -2171,7 +2171,7 @@
             }
         }
 
-        /* 2026-05-21 — §3.10 fix. Stat cards were rendering as solid-white
+        /* 2026-05-21 — fix. Stat cards were rendering as solid-white
            panels (background: var(--white) with dark text) inside the dark
            site, which broke the Apple-glass purple treatment site-wide.
            On iPhone Pro Max this read as an out-of-place light theme injected
@@ -6174,7 +6174,7 @@
            Public visitors see this in both the main nav and footer; the
            link target /portal/ is gated by functions/portal/_middleware.js
            which serves a designed Coming Soon page until launch.
-           Per CLAUDE.md §3.10 Principle 4 — purple accent, no blue tokens.
+           Per the design guide Principle 4 — purple accent, no blue tokens.
            ============================================================ */
         .nav-portal-link {
             display: inline-flex !important;
@@ -6634,7 +6634,7 @@
         }
 
         /* ============================================================
-           SITE-WIDE APPLE-GLASS TREATMENT (task #51 / §3.10 Principle 4)
+           SITE-WIDE APPLE-GLASS TREATMENT (task #51 / Principle 4)
            Single override block ensuring every card-like surface on the
            homepage shares the same glass + purple-accent visual grammar
            — backdrop-filter blur(28px) saturate(165%), rgba(255,255,255,
@@ -6855,7 +6855,7 @@
            Pillar cards reuse the glass + hover pattern from carepath-card
            but carry a numbered eyebrow + mechanism + components + citation
            anatomy that's heavier and clinically denser.
-           Per CLAUDE.md §3.10 Principle 1 (visualization first), Principle 4
+           Per the design guide Principle 1 (visualization first), Principle 4
            (Apple-glass + purple, NO BLUE), Principle 7 (long-form reading).
            ============================================================ */
         .omt-pillars { margin-top: clamp(40px, 5vw, 64px); }
@@ -7075,7 +7075,7 @@
            This override block ensures consistent treatment regardless
            of the specific card class (.app-card-v2, .research-card,
            .award-card, .feature-card, .frame, .timeline-card, etc.).
-           Per CLAUDE.md §3.10 Principle 4. DO NOT REMOVE OR REVERT.
+           Per the design guide Principle 4. DO NOT REMOVE OR REVERT.
            ============================================================ */
         /* 2026-06-24 — honest opaque surfaces (see note above). app-card-v2 is
            re-overridden to its light surface later in the cascade. */
@@ -7271,7 +7271,7 @@
 
         /* ============================================================
            Identity Map — 5-card horizontal swipe navigator (2026-05-25)
-           Per §3.10 Principles 1+8 — visualization-first + interactive
+           Per Principles 1+8 — visualization-first + interactive
            primitives. Apple-glass purple cards. Pure CSS scroll-snap
            (no JS for the swipe itself; JS only for the scroll-spy
            below). Mobile is the primary surface (the navigator wins its
@@ -7649,7 +7649,7 @@
            This block compresses section padding to a tighter clamp
            (~50% reduction at mobile floor) without touching content.
            Confined to max-width: 640px so desktop is unaffected.
-           §0.6 manual targeted edits; §3.10 design tokens unchanged
+           manual targeted edits; design tokens unchanged
            (purple-accent + Apple-glass cards stay identical, only the
            wrapping section padding shrinks).
            ============================================================ */
@@ -7750,7 +7750,7 @@
            Running prose only — flush both edges so text fills the
            column. Centered intros excluded via :not(.center); headings,
            eyebrows, labels, metadata, and badges are NOT listed so they
-           stay as-is. hyphens kept MANUAL per CLAUDE.md (auto-hyphenation
+           stay as-is. hyphens kept MANUAL per the project guide (auto-hyphenation
            once broke "AAGL-presented" mid-word).
            ========================================================== */
         /* WIDE running prose only. Justify in a NARROW column (<~45ch: card

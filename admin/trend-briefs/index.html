@@ -814,7 +814,7 @@ function buildAuditCard(b) {
         ));
     }
     return el("div", { class: "rail-card" },
-        el("h3", null, `§3.8 audit · ${b.audit_pass_count} / ${b.audit_pass_count + b.audit_fail_count} pass`),
+        el("h3", null, `Audit · ${b.audit_pass_count} / ${b.audit_pass_count + b.audit_fail_count} pass`),
         rows
     );
 }
@@ -931,7 +931,7 @@ function buildApproveForm(b) {
         el("div", { class: "field" },
             el("label", null, "Tagline (article-specific H2)"),
             taglineIn,
-            el("div", { class: "hint" }, "Optional. The §3.8 gold-standard \"article-specific H2\" replacement.")
+            el("div", { class: "hint" }, "Optional. The gold-standard \"article-specific H2\" replacement.")
         ),
         el("div", { class: "field" },
             el("label", null, "Tagline body paragraph"),

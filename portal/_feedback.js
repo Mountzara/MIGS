@@ -14,7 +14,7 @@
 //   * Auto-captured PHI-free context: route, viewport, document.referrer,
 //     page-load timing, scroll percentage at submit time.
 //
-// §3.10 design — Apple-glass purple, mzRise animation, prefers-reduced-motion
+// design — Apple-glass purple, mzRise animation, prefers-reduced-motion
 // respected, focus-visible ring, Escape closes modal, outside-click closes,
 // scroll-locked body, accessible aria.
 // =====================================================================

@@ -15,7 +15,7 @@
 // On restore: replay each row by table into a fresh D1 via a small
 // restore script that walks the NDJSON, creates the tables from the
 // versioned schema files, and INSERTs the rows. See docs/compliance/
-// disaster-recovery-plan.md §3.1 for the operator procedure.
+// disaster-recovery-plan.md for the operator procedure.
 // =====================================================================
 
 // Tables to back up. Update when schema migrations land new tables.

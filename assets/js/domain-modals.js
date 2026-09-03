@@ -10,7 +10,7 @@
  * field; the sourcing record for each page is kept in the repo, not shipped
  * and PMIDs used here. Patient voice; no first-person; honest about uncertainty.
  *
- * §0.6 compliance: every modal entry was authored by hand from the KB extract,
+ * compliance: every modal entry was authored by hand from the KB extract,
  * not scripted. Future edits should be one entry at a time with explicit context.
  */
 (function () {

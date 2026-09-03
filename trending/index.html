@@ -316,7 +316,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             .post-detail-body h2 { font-size: 21px; margin: 28px 0 10px; }
             .post-detail-body h3 { font-size: 17px; margin: 22px 0 8px; }
         }
-        /* §3.8 belt-and-suspenders dialog hide. Mirrors /evidence/ shell.
+        /* belt-and-suspenders dialog hide. Mirrors /evidence/ shell.
            Browser UA stylesheet hides closed <dialog> natively but per user
            directive 2026-05-26 the modal content (TL;DR / PICO / Methods /
            "Pending review" placeholders) has leaked visible after the AI
@@ -545,7 +545,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         .post-detail-pubdate::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(var(--glow-purple), 0.92); }
         .post-detail-pubdate-label { font-weight: 600; letter-spacing: 0.18em; }
         .post-detail-pubdate-date { font-weight: 500; color: #6E6A7C; letter-spacing: 0.06em; }
-        /* legacy .post-detail-manifest removed 2026-05-25 — leaked §3.7 infra-language onto user-facing surface */
+        /* legacy .post-detail-manifest removed 2026-05-25 — leaked infra-language onto user-facing surface */
         .post-detail-manifest_REMOVED {
             margin-top: 56px;
             padding: 22px 24px;
@@ -831,7 +831,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const post = await res.json();
                 document.title = `${post.title || 'Brief'} — Trend Briefs`;
                 // Per user directive 2026-05-25: Evidence manifest card removed
-                // (leaked §3.7 infra-language like "§ 0.8 compliant" onto a
+                // (leaked infra-language like "compliant" onto a
                 // user-facing surface); prominent Published date moved to top
                 // of post via the new .post-detail-pubdate styling.
                 const pubDateStr = fmtDate(post.published_at || post.created_at);

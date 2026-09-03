@@ -14,7 +14,7 @@
 //      lets the patient open the wizard's "all-steps" panel whenever
 //      they want (also gives them the on/off toggle)
 //
-// §3.10 Apple-glass purple, mzRise animation, prefers-reduced-motion
+// Apple-glass purple, mzRise animation, prefers-reduced-motion
 // override, focus-trap, Escape closes, body scroll-lock while modal open.
 // =====================================================================
 (function () {

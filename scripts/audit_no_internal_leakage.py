@@ -38,7 +38,13 @@ BANNED = [
     ("internal CLI invocation", re.compile(r"--start-[a-z-]*run\b")),
     ("KB-anchor manifest",      re.compile(r"kb-anchor-manifest|KB-anchor manifest")),
     ("KB manifest field",       re.compile(r"kb_chunks_path|kb_documents_loaded|user_docx_sources|topic_synthesis_id")),
-    ("internal spec reference", re.compile(r"CLAUDE\.md|§0\.8")),
+    # Widened 2026-09-02 after a full-site sweep: the first version matched
+    # only "CLAUDE.md" and "§0.8" with no space, and missed 39 references
+    # (§3.10, §3.7, §1.2, SYSTEM_MAP, "§ 0.8") sitting in HTML/CSS/JS comments
+    # on 13 visitor-facing files, readable by anyone in view-source.
+    # Genuine legal and standards citations (CCR, ILCS, CFR, U.S.C., RFC,
+    # Bus. & Prof. Code) are deliberately exempt.
+    ("internal spec reference", re.compile(r"CLAUDE\.md|SYSTEM_MAP|§\s?\d+\.\d+")),
 ]
 
 
@@ -53,6 +59,24 @@ def deployable_html():
 # Server code under functions/ is never shown to a visitor, so ordinary
 # engineering comments referencing an internal spec are fine there. What is
 # never acceptable anywhere is a leak that can be RENDERED to a visitor.
+# A section mark inside a genuine legal or standards citation is legitimate
+# content (California Bus. & Prof. Code §2290.5, 16 CCR §1606, RFC 7617 §2.2)
+# and must never be stripped. Anything else is internal spec jargon.
+CITATION_CONTEXT = re.compile(
+    r"(CCR|CFR|ILCS|U\.S\.C|RFC|Prof\.\s*Code|Bus\.|Code|HSC|Health & Safety)"
+    r"[^.;]{0,24}$")
+
+
+def spec_hits(src, pat):
+    """Matches of the internal-spec pattern, minus real citations."""
+    out = []
+    for m in pat.finditer(src):
+        if m.group(0).startswith("\u00a7") and CITATION_CONTEXT.search(src[max(0, m.start() - 40):m.start()]):
+            continue
+        out.append(m.group(0))
+    return out
+
+
 SERVER_EXEMPT = {"internal spec reference"}
 
 
@@ -70,7 +94,10 @@ def main():
         for label, pat in BANNED:
             if server_side and label in SERVER_EXEMPT:
                 continue
-            hits = pat.findall(src)
+            if label == "internal spec reference":
+                hits = spec_hits(src, pat)
+            else:
+                hits = pat.findall(src)
             if hits:
                 problems.append(f"{rel}: {label} ({len(hits)} occurrence(s))")
     if problems:

@@ -14,11 +14,11 @@
           4) Fix any flagged violations BEFORE first commit
           5) Mirror to portal/education/<slug>/ via `cp` after audit passes
         A new page is not shippable until comprehensive
-        audit passes. §3.7 / §1.2 / §3.10 / §3.12 are all enforced here at
+        audit passes. / / / are all enforced here at
         the template level — DO NOT REMOVE the scaffolding lines marked
         "[required: §X.Y]".
 
-        Per §3.7 — DO NOT add the following phrases anywhere in this file:
+        Per — DO NOT add the following phrases anywhere in this file:
           - "KB-anchored, peer-reviewed"  (in meta description or body)
           - "retrieved via NCBI E-Utilities"  (in ref-intro)
           - internal tooling names, knowledge-base or retrieval jargon
@@ -26,9 +26,9 @@
         Use plain replacements: "Evidence-based, peer-reviewed.";
         "Click any abstract to expand the verbatim PubMed record."
 
-        Per §1.2 — Use "CBG/MIGS" not bare "MIGS" everywhere in user-facing prose.
+        Per — Use "CBG/MIGS" not bare "MIGS" everywhere in user-facing prose.
     -->
-    <!-- [required: §3.7] meta description — Evidence-based, peer-reviewed (NEVER 'KB-anchored, peer-reviewed') -->
+    <!-- [required] meta description — Evidence-based, peer-reviewed (NEVER 'KB-anchored, peer-reviewed') -->
     <meta name="description" content="A patient guide to {{TOPIC_LABEL}}: {{ONE_LINE_DESCRIPTION}}. Evidence-based, peer-reviewed.">
     <meta name="robots" content="index, follow">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -64,18 +64,18 @@
         a:hover { color: var(--fg-strong); }
         .wrap { max-width: 920px; margin: 0 auto; padding: clamp(36px, 6vw, 72px) clamp(20px, 5vw, 40px); }
         .hero { margin-bottom: 56px; }
-        /* [required: §1.2 + pub-date] eyebrow includes "Patient Education · <Topic> · Published <Date>" */
+        /* [required] eyebrow includes "Patient Education · <Topic> · Published <Date>" */
         .hero .eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #6d28d9; margin-bottom: 22px; }
         .hero h1 { font-family: inherit; font-weight: 200; font-size: clamp(30px, 4.6vw, 50px); letter-spacing: -0.022em; line-height: 1.1; color: var(--fg-strong); margin: 0 0 18px 0; }
         .hero .lede { font-size: clamp(16px, 2.1vw, 19px); line-height: 1.55; color: var(--fg-mid); max-width: 64ch; margin-bottom: 18px; }
         .hero .byline { font-size: 13px; color: var(--fg-soft); display: inline-flex; align-items: center; gap: 8px; }
         .hero .byline strong { color: var(--fg-strong); font-weight: 500; }
-        /* @media (prefers-reduced-motion) — [required: §3.10] */
+        /* @media (prefers-reduced-motion) — [required] */
         @media (prefers-reduced-motion: reduce) {
             * { animation: none !important; transition: none !important; }
         }
 
-        /* [required: §3.12] Medicolegal AI disclaimer — canonical CSS (do not modify wording) */
+        /* [required] Medicolegal AI disclaimer — canonical CSS (do not modify wording) */
         .mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid #E9E5EE; font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #6E6A7C; text-align: center; }
         .mz-page-note p { margin: 0; }
         .mz-page-note a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
@@ -138,7 +138,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
 
     <header class="hero">
-        <!-- [required: §1.2 + pub-date] keep "Patient Education · <Topic> · Published <Month Day, Year>" pattern -->
+        <!-- [required] keep "Patient Education · <Topic> · Published <Month Day, Year>" pattern -->
         <div class="eyebrow">Patient Education &middot; {{TOPIC_LABEL}} &middot; Published {{PUBLICATION_DATE}}</div>
         <h1>{{HEADLINE_SENTENCE}}</h1>
         <p class="lede">
@@ -157,13 +157,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             "<p class="ref-intro">Every clinical claim above ties to
             one of these peer-reviewed sources. Click any abstract to
             expand the verbatim PubMed record.</p>"
-         (NEVER add "retrieved via NCBI E-Utilities" — §3.7 violation)
+         (NEVER add "retrieved via NCBI E-Utilities" — violation)
          ============================================================ -->
     {{CONTENT}}
 
     </div>
 
-    <!-- [required: §3.12] Medicolegal disclosure — canonical text (verbatim — do not reword).
+    <!-- [required] Medicolegal disclosure — canonical text (verbatim — do not reword).
          2026-08-11: the AI-provenance sentence was REMOVED at the owner's
          instruction ("remove those AI indicators"), as was any authorship
          line ("No do not put my authorship on there. remove it. just leave
