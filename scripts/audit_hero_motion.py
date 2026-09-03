@@ -73,7 +73,18 @@ def run_factor(browser, label, ctx_args, clip):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:160]))
     page.goto(f"{BASE}/?cb={int(time.time())}{label}", wait_until="domcontentloaded", timeout=60000)
-    page.wait_for_timeout(1800)
+    # Sample the "before" frame as soon as the hero element exists rather than
+    # at a blind 1.8s. Under load the wall-clock wait could land AFTER the
+    # animation had already settled, making early and late identical and
+    # reading as "the drawing never drew" on a homepage that drew fine.
+    for _ in range(24):
+        try:
+            if page.evaluate(STATE_JS).get("present"):
+                break
+        except Exception:
+            pass
+        page.wait_for_timeout(100)
+    page.wait_for_timeout(400)
     early = page.screenshot(clip=clip)
     first_video_time = None
     settled = None
@@ -125,6 +136,13 @@ def main():
         ):
             name = "desktop" if label == "d" else "iphone"
             probs, motion = run_factor(browser, label, ctx_args, clip)
+            # Structural failures (missing element, never decoded, stuck
+            # overlay, page errors) stand immediately. A motion-floor failure
+            # is a sampled quantity and the one thing contention can fake, so
+            # re-measure once on a fresh context before condemning a deploy.
+            if probs and all("no visible motion" in pr for pr in probs):
+                print(f"  … {name}: motion floor missed ({motion:.2f}) — re-measuring once")
+                probs, motion = run_factor(browser, label + "r", ctx_args, clip)
             if probs:
                 for pr in probs:
                     print(f"  ✗ {name}: {pr}")

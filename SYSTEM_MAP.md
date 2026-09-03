@@ -1823,6 +1823,25 @@ per-surface script; change the module and every gate changes together.**
 <a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/N/">Read the study on PubMed →</a></span>`
 inside `<sup class="mz-ref">`.
 
+**Runtime gates vs. pool contention (2026-09-02).** The post-upload runtime
+gates run seven browsers in parallel, and three of them condemned clean
+deploys because a timing-sensitive measurement was taken under that load:
+`audit_contrast_pixels.py` and `audit_nav_and_reading.py` each timed out a
+single 45s `networkidle` load of the homepage (video + animated hero +
+deferred media probes) and reported "could not measure" / "navigation is
+broken", while standalone runs against the identical live build returned 0
+contrast failures and 35/35 nav checks; `audit_hero_motion.py` sampled its
+"before" frame at a blind 1.8s that could land AFTER the animation settled,
+so early == late read as "the drawing never drew" on a homepage that drew
+fine. Fixes, all of which keep the checks themselves unchanged: the two
+loaders retry with a progressively more forgiving wait (networkidle 45s →
+load 60s → domcontentloaded 60s); hero-motion samples its early frame as
+soon as the hero element exists, and re-measures once on a fresh context
+when the ONLY failure is the motion floor — structural failures (missing
+element, never decoded, stuck overlay, page errors) still fail on the spot.
+Rule for new runtime gates: never let a sampled quantity fail a deploy on a
+single observation, and never widen a threshold to fix a flake.
+
 **The finding's editorial contract** (owner directive 2026-09-02): takeaway
 FIRST — the concrete clinical conclusion leads, never a document-type opener
 ("Review of…", "Study of…"); then 1-3 sentences of substance (numbers,
