@@ -86,5 +86,59 @@ def main():
     return 0
 
 
+def check_r2_posts():
+    """Post-deploy: the same ban list, applied to the live R2-served posts.
+
+    Replaces the old §0.8 R2-post gate, which REQUIRED a KB-anchor manifest
+    inside every clinical post. That manifest carried the owner's local
+    filesystem paths and private .docx filenames, so it was removed from all
+    15 posts on 2026-09-02 and must not return. Claim-level provenance is
+    still enforced by check_citation_integrity.mjs and audit_ref_popovers.mjs.
+    """
+    import json
+    import urllib.request
+
+    base = "https://mountzara.com"
+    ua = "mz-operator-tools/1.0 (internal-leakage gate)"
+
+    def get(path):
+        req = urllib.request.Request(base + path)
+        req.add_header("User-Agent", ua)
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read())
+
+    try:
+        listing = get("/api/posts?limit=100")
+    except Exception as exc:
+        print(f"\U0001f6d1 R2-POST LEAKAGE GATE — could not list posts: {exc}")
+        return 1
+    posts = listing if isinstance(listing, list) else listing.get("posts", [])
+    problems = []
+    for meta in posts:
+        pid = meta.get("id")
+        try:
+            body = get(f"/api/posts/{pid}").get("body_html") or ""
+        except Exception as exc:
+            problems.append(f"{pid}: could not fetch ({exc})")
+            continue
+        for label, pat in BANNED:
+            if label == "internal spec reference":
+                continue  # post bodies legitimately cite society guideline sections
+            if pat.search(body):
+                problems.append(f"{pid}: {label}")
+        if "not medical advice" not in body.lower():
+            problems.append(f"{pid}: missing the not-medical-advice disclaimer")
+    if problems:
+        print("\n\U0001f6d1 R2-POST LEAKAGE GATE FAILED:")
+        for pr in problems[:30]:
+            print(f"  \u2717 {pr}")
+        return 1
+    print(f"r2-post leakage gate: CLEAN — {len(posts)} live post(s); no build "
+          "manifests, no AI notice, disclaimer present on each")
+    return 0
+
+
 if __name__ == "__main__":
+    if "--r2-posts" in sys.argv:
+        sys.exit(check_r2_posts())
     sys.exit(main())

@@ -957,15 +957,20 @@ echo "   mountzara.com → HTTP $HTTP"
 # the Pages deploy lands, since their content lives in R2 and is served
 # by /api/posts. A failure here is a hard error — clinical content that
 # has lost its §0.8 manifest must be re-anchored immediately.
+# 2026-09-02 — this gate used to REQUIRE a KB-anchor manifest inside every
+# R2-served post. That manifest carried the owner's local filesystem paths and
+# private .docx filenames and was stripped from all 15 posts by his directive,
+# so the gate now enforces the opposite: R2 posts must be free of build
+# manifests and AI notices, and must each carry the medical disclaimer.
+# Claim-level provenance stays enforced by the citation-integrity and
+# ref-popover gates.
 if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ]; then
     echo ""
-    echo "🔒 §0.8.1 R2-post gate — verifying R2-served clinical posts..."
-    if ! python3 scripts/verify_kb_anchoring.py --r2-posts ; then
+    echo "🔒 R2-post leakage gate — live posts free of internals, disclaimer present..."
+    if ! python3 scripts/audit_no_internal_leakage.py --r2-posts ; then
         echo ""
-        echo "🛑 R2-POST GATE FAILED — at least one R2-served clinical post"
-        echo "   is missing its §0.8 KB-anchor manifest. Re-anchor with"
-        echo "   scripts/_anchor_all_clinical_posts.py (and _anchor_w20_post.py)"
-        echo "   then re-run this deploy."
+        echo "🛑 R2-POST LEAKAGE GATE FAILED — a live post carries build"
+        echo "   internals or an AI notice, or lost its medical disclaimer."
         exit 1
     fi
 fi
