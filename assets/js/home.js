@@ -3546,11 +3546,18 @@
                 // absolutely-positioned popover, so pin it to the viewport.
                 if (sup.closest(SCROLLERS)) {
                     pop.classList.add('mz-fixed');
+                    var vh = window.innerHeight, vw = window.innerWidth;
                     var h = pop.offsetHeight, w = pop.offsetWidth;
                     var left = r.left + (r.width / 2) - (w / 2);
-                    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
-                    var top = r.top - h - 10;
-                    if (top < 8) { top = r.bottom + 10; }
+                    left = Math.max(8, Math.min(left, vw - w - 8));
+                    // Put it wherever there is more room, then clamp so it can
+                    // never run past the top or bottom of the window.
+                    var roomAbove = r.top - 8;
+                    var roomBelow = vh - r.bottom - 8;
+                    var top = (roomAbove >= h || roomAbove >= roomBelow)
+                        ? r.top - h - 10
+                        : r.bottom + 10;
+                    top = Math.max(8, Math.min(top, vh - h - 8));
                     pop.style.left = Math.round(left) + 'px';
                     pop.style.top = Math.round(top) + 'px';
                     return;
