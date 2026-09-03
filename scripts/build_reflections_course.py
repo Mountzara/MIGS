@@ -171,6 +171,9 @@ sup.mz-ref .mz-ref-pop { width:min(380px,92vw); max-height:min(52vh,440px);
     overflow-y:auto; overscroll-behavior:contain; }
 sup.mz-ref .mz-ref-pop.mz-flip { top:calc(100% + 8px); bottom:auto; }
 sup.mz-ref .mz-ref-pop.mz-flip::after { top:auto; bottom:100%; }
+/* the citation-number styling must not swallow the popover's source link */
+sup.mz-ref a.mz-ref-pop-src, sup.mz-ref:hover a.mz-ref-pop-src,
+sup.mz-ref:focus-within a.mz-ref-pop-src { font-weight:600; background:transparent; }
 /* ---- scroll reveals (JS adds .rv; no-JS stays fully visible) ---- */
 @media (prefers-reduced-motion: no-preference) {
     .rv { opacity:0; transform:translateY(16px);
