@@ -1560,6 +1560,7 @@
                 title: 'Evidence-based care, tailored to each patient.',
                 intro: 'Whole-person osteopathic care — structure and function as one — matched to the patient in front of me and grounded in peer-reviewed evidence. Each population below opens its own literature review: what the published studies actually show, and what it means for your care.',
                 body: `
+                    <div class="mz-evidence-synthesis"><h4>Where the evidence stands, in one place</h4><p>The strongest support is in <strong>endometriosis pain</strong>: pooling six randomised trials, hands-on and physical therapy beat a placebo treatment on pain with a large effect, and improved physical functioning<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Benefits of physical therapy in improving quality of life and pain associated with endometriosis: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics 2022 &middot; PMID 36571475</span><span class="mz-ref-pop-finding">Pooling six randomised trials, women with endometriosis who received non-drug conservative care - physical therapy and hands-on manual therapy - reported clearly less pain than those given a placebo treatment, a large effect (standardised difference -0.89). Physical functioning also improved significantly, while other quality-of-life measures showed no clear difference. The evidence was formally graded, but it rests on only six trials and the results varied a good deal between them.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A 2024 review reached the same conclusion for pelvic pain and pain with sex, at moderate certainty<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of physical therapy techniques and methods in the management of endometriosis symptoms: A systematic review with meta-analysis.</span><span class="mz-ref-pop-meta">Brazilian journal of physical therapy 2024 &middot; PMID 42308873</span><span class="mz-ref-pop-finding">Across the studies pooled here, physical therapy approaches significantly reduced pelvic pain and pain with sex and significantly improved quality of life in women with endometriosis. The treatments included hands-on manual therapy and stretching, exercise, electrical stimulation, relaxation techniques, acupuncture and patient education, often combined rather than used alone. Reviewers rated the overall certainty of the evidence as moderate. Findings differed widely between individual studies, so what helps most is still judged case by case.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p><p>For <strong>period pain</strong>, the largest analysis — 32 randomised trials in 2,566 women — found manual therapy outperformed anti-inflammatory painkillers, though it did not beat a placebo treatment and the underlying trials were rated low quality<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Manual Therapy in Primary Dysmenorrhea: A Systematic Review and Meta-Analysis.</span><span class="mz-ref-pop-meta">Journal of pain research 2024 &middot; PMID 38736680</span><span class="mz-ref-pop-finding">A 2024 review pooled 32 randomised trials in 2,566 women with period pain. Short term, manual therapy eased pain more than no treatment (about 1.3 points more on the trials' pain scales) and more than anti-inflammatory painkillers, the class that includes ibuprofen (about 3.0 points, 95% CI 1.1-4.9), with close to five times the odds of a meaningful improvement. No serious side effects were reported. Against a placebo treatment, though, there was no significant difference, and the pooled trials were rated low or very low quality.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. In <strong>pregnancy</strong>, pooled trials show a meaningful reduction in back and pelvic girdle pain on moderate-quality evidence<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment for low back and pelvic girdle pain during and after pregnancy: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Journal of bodywork and movement therapies 2017 &middot; PMID 29037623</span><span class="mz-ref-pop-finding">Hands-on osteopathic treatment eased back and pelvic girdle pain in pregnancy. This 2017 review pooled randomised trials — five in pregnant women, three in postpartum women — against control groups. Moderate-quality evidence showed a meaningful fall in pain (mean difference about 17 points) and better day-to-day function during pregnancy; postpartum improvements looked larger but rested on low-quality evidence. Only eight small trials with varied comparison groups, so the size of the benefit may shift as stronger trials report.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p><p>Two broad reviews of osteopathic care across gynecology and obstetrics reach the same honest verdict: benefit is reported consistently and safety is good, but the studies differ too much in technique and outcome to be pooled into a single number<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 &middot; PMID 27261985</span><span class="mz-ref-pop-finding">Across 24 studies with 1,840 women in total, this review concluded that osteopathic manual treatment is effective for back pain in pregnancy. For the other gynaecologic and obstetric problems covered - period pain, pelvic pain, menopausal symptoms, labour pain and fertility - individual studies reported positive effects, but the trials were few, varied widely in design and carried a high risk of bias, so the reviewers could not draw firm conclusions. Only three of the 24 reported whether side effects occurred.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">The Role of Osteopathic Care in Gynaecology and Obstetrics: An Updated Systematic Review.</span><span class="mz-ref-pop-meta">Healthcare (Basel, Switzerland) 2022 &middot; PMID 36011223</span><span class="mz-ref-pop-finding">This 2022 review found osteopathic care helpful across a range of gynecologic and obstetric conditions, and safe as an addition to standard care. It updated an earlier review with 21 studies published between 2014 and 2021, covering 2,632 participants of average age about 29, ranging from randomised trials to small observational reports. The studies differed too much in technique, condition and outcome measures to be pooled into a single figure, so the authors stopped short of firm clinical recommendations.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. That is why this is offered as one layer of a plan rather than a stand-alone treatment — and why each population below opens its own literature review rather than a claim.</p></div>
                     <div class="populations-grid">
                       <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health hands-on osteopathic treatment evidence">
                         <div class="pop-tag">Foundational Care</div>
@@ -3336,7 +3337,8 @@
                 // wholesale (the video modal does, to free the decoder). Without
                 // this the reels stayed paused FOREVER after a modal was opened
                 // and closed — closeVideoModal never restarted them.
-                window.__mzWakePreviews = () => {
+                window.__mzWakeOne = (v) => wake(v);
+            window.__mzWakePreviews = () => {
                     document.querySelectorAll('.video-preview').forEach((v) => {
                         if (nearViewport(v)) wake(v);
                     });
@@ -3389,16 +3391,34 @@
                     }, { once: true, passive: true }));
             }
 
-            // Fallback: one-time user interaction unblocks autoplay everywhere
-            const onFirstInteract = () => {
-                playAll();
-                document.removeEventListener('touchstart', onFirstInteract, true);
-                document.removeEventListener('click', onFirstInteract, true);
-                document.removeEventListener('scroll', onFirstInteract, true);
+            // Fallback for policy-blocked autoplay. This used to be ONE-SHOT: it
+            // removed its listeners after the first touch/click/scroll. That first
+            // gesture normally happens while the reels are still far down the page,
+            // so the retry was spent on nothing — and a reel whose play() the
+            // browser had refused (iOS Low Power Mode, Safari's per-site auto-play
+            // setting) then sat on its poster for the rest of the visit with
+            // nothing left to revive it. The listeners now persist and retry
+            // whatever is in view and paused, throttled so scrolling stays cheap.
+            let lastNudge = 0;
+            const nudgeVisiblePreviews = () => {
+                const now = Date.now();
+                if (now - lastNudge < 400) { return; }
+                lastNudge = now;
+                document.querySelectorAll('.video-preview').forEach((v) => {
+                    if (v.paused && nearViewport(v)) {
+                        if (typeof window.__mzWakeOne === 'function') { window.__mzWakeOne(v); }
+                        else { tryPlay(v); }
+                    }
+                });
             };
-            document.addEventListener('touchstart', onFirstInteract, { capture: true, passive: true });
-            document.addEventListener('click', onFirstInteract, { capture: true });
-            document.addEventListener('scroll', onFirstInteract, { capture: true, passive: true });
+            document.addEventListener('touchstart', nudgeVisiblePreviews, { capture: true, passive: true });
+            document.addEventListener('pointerdown', nudgeVisiblePreviews, { capture: true, passive: true });
+            document.addEventListener('click', nudgeVisiblePreviews, { capture: true });
+            document.addEventListener('scroll', nudgeVisiblePreviews, { capture: true, passive: true });
+            window.addEventListener('pageshow', nudgeVisiblePreviews);
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) { nudgeVisiblePreviews(); }
+            });
         })();
 
         function openVideoModal(videoSrc, element) {

@@ -9073,3 +9073,23 @@ sup.mz-ref .mz-ref-pop.mz-fixed::after { display: none; }
     -webkit-text-fill-color: transparent;
     color: #4c1d95;
 }
+
+/* The Evidence & Literature section now opens with a cited synthesis of the
+   whole evidence base, above the population cards (owner: the section
+   "should have a better writeup of these studies as an overall summary"). */
+.mz-evidence-synthesis {
+    background: #FBFAF8;
+    border: 1px solid #E9E5EE;
+    border-left: 3px solid #6d28d9;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin: 0 0 28px;
+    max-width: 74ch;
+}
+.mz-evidence-synthesis h4 {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #6d28d9; margin: 0 0 12px;
+}
+.mz-evidence-synthesis p { margin: 0 0 12px; color: #4A4658; line-height: 1.7; }
+.mz-evidence-synthesis p:last-child { margin-bottom: 0; }
+.mz-evidence-synthesis strong { color: #1A1726; }
