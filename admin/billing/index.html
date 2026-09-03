@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -44,7 +44,7 @@
             font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
             letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 6px 0;
         }
-        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 76ch; margin: 0 0 18px 0; }
+        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 96ch; margin: 0 0 18px 0; }
 
         /* Filter bar */
         .filter-bar {
@@ -52,16 +52,16 @@
             align-items: center;
         }
         .filter-chip {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 6px 14px;
             color: var(--fg-soft); font-size: 12px;
             cursor: pointer; font: inherit;
             transition: all 0.18s;
         }
-        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
         .filter-chip .badge {
@@ -70,7 +70,7 @@
         }
         .search-input {
             flex: 1; min-width: 220px; max-width: 320px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 9px; padding: 7px 12px;
             font: inherit; font-size: 13px;
             color: var(--fg-strong);
@@ -78,8 +78,78 @@
         }
         .search-input::placeholder { color: var(--fg-dim); }
         .search-input:focus {
-            outline: none; border-color: rgba(var(--glow-purple), 0.55);
+            outline: none; border-color: #6d28d9;
         }
+        /* The visit-date window select shares the search-input skin but must
+           not flex-grow — it is a fixed control. */
+        .days-select {
+            flex: 0 0 auto; min-width: 0; max-width: none; width: auto;
+            cursor: pointer;
+        }
+
+        /* Header quick links — one shared skin, color per destination. */
+        .hdr-pill {
+            font-size: 12px; padding: 5px 12px; border-radius: 999px;
+            border: 1px solid var(--border); text-decoration: none;
+        }
+        .hdr-pill.lead   { margin-left: auto; }
+        .hdr-pill.green  { background: rgba(16,185,129,0.16); border-color: rgba(16,185,129,0.50); color: #047857; }
+        .hdr-pill.orange { background: rgba(251,146,60,0.16); border-color: rgba(251,146,60,0.50); color: #92400E; }
+        .hdr-pill.blue   { background: rgba(96,165,250,0.16); border-color: rgba(96,165,250,0.50); color: #1d4ed8; }
+        .hdr-pill.purple      { background: rgba(var(--glow-purple), 0.18); border-color: rgba(var(--glow-purple), 0.55); color: var(--accent-soft); }
+        .hdr-pill.purple-soft { background: rgba(var(--glow-purple), 0.12); border-color: rgba(var(--glow-purple), 0.40); color: var(--accent-soft); }
+
+        /* ERA (835) posting panel */
+        .era-panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px; margin-top: 22px;
+            backdrop-filter: blur(28px) saturate(165%);
+            -webkit-backdrop-filter: blur(28px) saturate(165%);
+        }
+        .era-panel summary {
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            color: var(--fg-strong); user-select: none;
+        }
+        .era-panel[open] summary { margin-bottom: 10px; }
+        .era-help { font-size: 12.5px; color: var(--fg-soft); line-height: 1.5; margin: 0 0 10px; max-width: 108ch; }
+        .era-help code { color: var(--accent-soft); font-size: 11.5px; }
+        #era-edi {
+            width: 100%; min-height: 140px; resize: vertical;
+            background: #FFFFFF; border: 1px solid var(--border);
+            border-radius: 9px; padding: 10px 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12px; line-height: 1.5; color: var(--fg-strong);
+        }
+        #era-edi:focus { outline: none; border-color: #6d28d9; }
+        .era-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+        .era-post-btn {
+            font: inherit; font-size: 12.5px; cursor: pointer;
+            padding: 7px 18px; border-radius: 999px;
+            background: rgba(var(--glow-purple), 0.18);
+            border: 1px solid rgba(var(--glow-purple), 0.55);
+            color: var(--accent-soft); transition: all 0.18s;
+        }
+        .era-post-btn:hover:not(:disabled) { background: rgba(var(--glow-purple), 0.28); }
+        .era-post-btn:disabled { opacity: 0.5; cursor: default; }
+        .era-status { font-size: 12px; color: var(--fg-soft); }
+        .era-status.err { color: #B91C1C; }
+        .era-summary {
+            display: flex; flex-wrap: wrap; gap: 8px 18px;
+            font-size: 12.5px; color: var(--fg-mid); margin: 12px 0 8px;
+        }
+        .era-summary strong { color: var(--fg-strong); font-weight: 600; }
+        .era-claim-row {
+            display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline;
+            font-size: 12px; padding: 7px 10px; border-top: 1px solid var(--border);
+        }
+        .era-claim-row code { color: var(--fg-soft); font-size: 11px; }
+        .era-claim-row .why { color: var(--fg-dim); }
+        .era-pill {
+            display: inline-block; font-size: 10.5px; padding: 2px 9px;
+            border-radius: 999px; border: 1px solid var(--border); color: var(--fg-soft);
+        }
+        .era-pill.ok { border-color: rgba(16,185,129,0.5); color: #047857; }
+        .era-pill.miss { border-color: rgba(245,158,11,0.5); color: #92400E; }
 
         /* KPI grid */
         .kpi-grid {
@@ -95,13 +165,13 @@
             transition: transform 0.22s, border-color 0.22s, background 0.22s;
             animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .kpi:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.30); }
+        .kpi:hover { transform: translateY(-2px); border-color: #6d28d9; }
         @keyframes mzRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .kpi .label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 6px; }
         .kpi .value { font-size: 28px; font-weight: 200; color: var(--fg-strong); letter-spacing: -0.02em; line-height: 1; }
         .kpi .sub { font-size: 11.5px; color: var(--fg-soft); margin-top: 4px; }
         .kpi.alert { border-color: rgba(245, 158, 11, 0.45); }
-        .kpi.alert .value { color: rgba(252, 211, 77, 0.95); }
+        .kpi.alert .value { color: #92400E; }
         .kpi.good { border-color: rgba(16, 185, 129, 0.45); }
         .kpi.purple .value { color: var(--accent-soft); }
 
@@ -127,7 +197,7 @@
             grid-template-columns: minmax(0, 1fr) 70px 90px;
             gap: 10px;
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid #E9E5EE;
             cursor: pointer;
             transition: background 0.18s;
             animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -144,13 +214,13 @@
             font-size: 11.5px; color: var(--fg-soft); display: flex; gap: 8px; flex-wrap: wrap;
         }
         .claim-list .meta-line .pill {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 999px; padding: 1px 8px; font-size: 10.5px;
         }
-        .claim-list .meta-line .pill.em { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
-        .claim-list .meta-line .pill.error { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.40); }
-        .claim-list .meta-line .pill.warn  { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.40); }
-        .claim-list .meta-line .pill.upcode { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.40); }
+        .claim-list .meta-line .pill.em { color: var(--accent-soft); border-color: #6d28d9; }
+        .claim-list .meta-line .pill.error { color: #B91C1C; border-color: rgba(239, 68, 68, 0.40); }
+        .claim-list .meta-line .pill.warn  { color: #92400E; border-color: rgba(245, 158, 11, 0.40); }
+        .claim-list .meta-line .pill.upcode { color: #047857; border-color: rgba(16, 185, 129, 0.40); }
         .claim-list .col-amount {
             font-size: 13px; font-weight: 500; color: var(--fg-strong);
             text-align: right;
@@ -163,21 +233,21 @@
             display: inline-block; font-size: 10px; font-weight: 700;
             letter-spacing: 0.08em; text-transform: uppercase;
             padding: 3px 9px; border-radius: 999px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             color: var(--fg-soft);
         }
-        .status-chip.pending_review { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
-        .status-chip.edited         { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
-        .status-chip.rejected       { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.45); }
-        .status-chip.ready_to_submit{ color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.55); }
+        .status-chip.pending_review { color: var(--accent-soft); border-color: #6d28d9; }
+        .status-chip.edited         { color: #047857; border-color: rgba(16, 185, 129, 0.45); }
+        .status-chip.rejected       { color: #B91C1C; border-color: rgba(239, 68, 68, 0.45); }
+        .status-chip.ready_to_submit{ color: var(--accent-soft); border-color: #6d28d9; }
         .status-chip.submitted, .status-chip.accepted_by_clearinghouse {
-            color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45);
+            color: #92400E; border-color: rgba(245, 158, 11, 0.45);
         }
         .status-chip.paid, .status-chip.partially_paid {
-            color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.55);
+            color: #047857; border-color: rgba(16, 185, 129, 0.55);
         }
         .status-chip.denied, .status-chip.appealed, .status-chip.rebilled {
-            color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.55);
+            color: #B91C1C; border-color: rgba(239, 68, 68, 0.55);
         }
         .status-chip.written_off { color: var(--fg-dim); }
 
@@ -208,7 +278,7 @@
             gap: 10px;
         }
         .detail-panel .stat {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 10px; padding: 10px 12px;
         }
         .detail-panel .stat .lbl {
@@ -235,7 +305,7 @@
             width: 100%; border-collapse: collapse; font-size: 12.5px;
         }
         .lines-table th, .lines-table td {
-            padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 10px; border-bottom: 1px solid #E9E5EE;
             text-align: left; vertical-align: top;
         }
         .lines-table th {
@@ -257,11 +327,11 @@
         .flag {
             border-radius: 10px; padding: 12px 14px;
             border: 1px solid var(--border);
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.72);
         }
         .flag.error   { border-color: rgba(239, 68, 68, 0.45);  background: rgba(239, 68, 68, 0.05); }
         .flag.warning { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.05); }
-        .flag.info    { border-color: rgba(var(--glow-purple), 0.35); }
+        .flag.info    { border-color: #6d28d9; }
         .flag.resolved { opacity: 0.55; }
         .flag-head {
             display: flex; justify-content: space-between; align-items: baseline;
@@ -271,8 +341,8 @@
         .flag-sev {
             font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
         }
-        .flag.error .flag-sev   { color: rgba(252, 165, 165, 0.95); }
-        .flag.warning .flag-sev { color: rgba(252, 211, 77, 0.95); }
+        .flag.error .flag-sev   { color: #B91C1C; }
+        .flag.warning .flag-sev { color: #92400E; }
         .flag.info .flag-sev    { color: var(--accent-soft); }
         .flag-body { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
         .flag-fix { font-size: 12px; color: var(--fg-soft); margin-top: 6px; }
@@ -289,10 +359,10 @@
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 10px; margin-bottom: 6px; flex-wrap: wrap;
         }
-        .upcode-codes { font-size: 14px; font-weight: 500; color: rgba(110, 231, 183, 0.95); }
+        .upcode-codes { font-size: 14px; font-weight: 500; color: #047857; }
         .upcode-codes .arrow { color: var(--fg-dim); margin: 0 6px; }
         .upcode-stats { font-size: 11.5px; color: var(--fg-soft); }
-        .upcode-stats strong { color: rgba(110, 231, 183, 0.95); font-weight: 600; }
+        .upcode-stats strong { color: #047857; font-weight: 600; }
         .upcode-required { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
         .upcode-rationale { font-size: 11.5px; color: var(--fg-soft); margin-top: 6px; font-style: italic; }
 
@@ -305,16 +375,16 @@
         }
         .docsugg.high   { border-color: rgba(245, 158, 11, 0.55); }
         .docsugg.medium { border-color: rgba(245, 158, 11, 0.30); background: rgba(245, 158, 11, 0.03); }
-        .docsugg.low    { border-color: rgba(255, 255, 255, 0.10); background: rgba(255, 255, 255, 0.02); }
+        .docsugg.low    { border-color: #E9E5EE; background: rgba(255,255,255,0.72); }
         .docsugg-head {
             display: flex; justify-content: space-between; align-items: baseline;
             gap: 10px; margin-bottom: 6px;
         }
-        .docsugg-section { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(252, 211, 77, 0.95); }
+        .docsugg-section { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #92400E; }
         .docsugg-priority { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-dim); }
         .docsugg-issue { font-size: 13px; color: var(--fg-strong); margin-bottom: 4px; }
         .docsugg-suggestion { font-size: 12.5px; color: var(--fg-mid); line-height: 1.5; }
-        .docsugg-revimpact { font-size: 11px; color: rgba(110, 231, 183, 0.85); margin-top: 6px; }
+        .docsugg-revimpact { font-size: 11px; color: #047857; margin-top: 6px; }
 
         .empty-state {
             text-align: center; padding: 60px 20px; color: var(--fg-soft);
@@ -326,26 +396,26 @@
             display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
             margin-top: 12px;
             padding-top: 14px;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid #E9E5EE;
         }
         .btn-action {
             font: inherit; font-size: 12.5px; font-weight: 500;
             padding: 7px 14px; border-radius: 999px;
             cursor: pointer; transition: all 0.2s;
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             color: var(--fg-mid);
             white-space: nowrap;
         }
         .btn-action:hover:not(:disabled) {
             color: var(--fg-strong);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             transform: translateY(-1px);
         }
         .btn-action:disabled { opacity: 0.45; cursor: not-allowed; }
         .btn-action.primary {
             background: rgba(var(--glow-purple), 0.14);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
             font-weight: 500;
         }
@@ -354,7 +424,7 @@
             color: var(--fg-strong);
         }
         .btn-action.danger {
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
             border-color: rgba(239, 68, 68, 0.40);
         }
         .btn-action.danger:hover:not(:disabled) {
@@ -363,7 +433,7 @@
             border-color: rgba(239, 68, 68, 0.65);
         }
         .btn-action.success {
-            color: rgba(110, 231, 183, 0.95);
+            color: #047857;
             border-color: rgba(16, 185, 129, 0.45);
         }
         .btn-action.success:hover:not(:disabled) {
@@ -373,7 +443,7 @@
         .btn-action.mini { font-size: 11px; padding: 4px 10px; }
         .action-toast {
             position: fixed; right: 22px; bottom: 22px;
-            background: rgba(7, 7, 10, 0.92);
+            background: rgba(255,255,255,0.96);
             border: 1px solid rgba(var(--glow-purple), 0.45);
             border-radius: 10px; padding: 10px 16px;
             color: var(--fg-strong); font-size: 13px;
@@ -389,17 +459,17 @@
         .pagination {
             display: flex; gap: 8px; align-items: center; justify-content: center;
             padding: 14px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid #E9E5EE;
             font-size: 12.5px; color: var(--fg-soft);
         }
         .pagination button {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 8px; padding: 5px 12px;
             color: var(--fg-soft); cursor: pointer; font: inherit; font-size: 12.5px;
             transition: all 0.18s;
         }
         .pagination button:hover:not(:disabled) {
-            color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45);
+            color: var(--fg-strong); border-color: #6d28d9;
         }
         .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -415,9 +485,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -448,7 +518,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -456,7 +526,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -483,38 +553,21 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> · Billing</span>
-            <a href="/admin/billing/clearinghouse/"
-               style="margin-left:auto; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.50);
-                      color: #6ee7b7; text-decoration: none;">Clearinghouse / Go-Live →</a>
-            <a href="/admin/billing/coach/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.18); border: 1px solid rgba(var(--glow-purple), 0.55);
-                      color: var(--accent-soft); text-decoration: none;">Coding Coach →</a>
-            <a href="/admin/billing/preflight/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(96,165,250,0.16); border: 1px solid rgba(96,165,250,0.50);
-                      color: #93c5fd; text-decoration: none;">AI Pre-flight →</a>
-            <a href="/admin/billing/appeals/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(251,146,60,0.16); border: 1px solid rgba(251,146,60,0.50);
-                      color: #fdba74; text-decoration: none;">Denials / Appeals →</a>
-            <a href="/admin/billing/insurance/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
-                      color: var(--accent-soft); text-decoration: none;">Insurance →</a>
-            <a href="/admin/billing/payers/"
-               style="margin-left:8px; font-size:12px; padding: 5px 12px; border-radius: 999px;
-                      background: rgba(var(--glow-purple), 0.12); border: 1px solid rgba(var(--glow-purple), 0.40);
-                      color: var(--accent-soft); text-decoration: none;">Manage payers →</a>
+            <a href="/admin/billing/appeals/" class="hdr-pill orange lead">Denials / Appeals →</a>
+            <a href="/admin/billing/clearinghouse/" class="hdr-pill green">Clearinghouse / Go-Live →</a>
+            <a href="/admin/billing/coach/" class="hdr-pill purple">Coding Coach →</a>
+            <a href="/admin/billing/preflight/" class="hdr-pill blue">AI Pre-flight →</a>
+            <a href="/admin/billing/insurance/" class="hdr-pill purple-soft">Insurance →</a>
+            <a href="/admin/billing/payers/" class="hdr-pill purple-soft">Manage payers →</a>
         </header>
 
         <h1 class="page-title">Insurance billing review</h1>
         <p class="lede">
-            Claims arrive here from the MountZara Transcription app's coding analysis — E/M code, ICD-10 / CPT lines,
-            wRVU, compliance flags, upcoding opportunities, and documentation suggestions. Review each claim, accept
-            or edit the AI's recommendations, then approve for clearinghouse submission. Until insurance contracts
-            are signed and a clearinghouse is connected, approved claims remain at <em>ready_to_submit</em>.
+            Each documented visit's coding analysis lands here as a draft claim — E/M code, ICD-10 / CPT lines,
+            wRVU, compliance flags, and places where your documentation supports billing more. Review each claim,
+            accept or edit the AI's recommendations, then approve it for submission.<span id="golive-note" hidden>
+            Nothing can be submitted yet — approved claims wait here until the clearinghouse connection goes
+            live.</span>
         </p>
 
         <!-- Filters -->
@@ -526,6 +579,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <button class="filter-chip"        data-status="denied,appealed,rebilled">Denied / appealed</button>
             <button class="filter-chip"        data-status="rejected,written_off">Closed</button>
             <input type="search" class="search-input" id="search" placeholder="Search patient / code / visit type" autocomplete="off">
+            <select class="search-input days-select" id="days-filter" title="Visit-date window"
+                    aria-label="Visit-date window">
+                <option value="60" selected>Last 60 days</option>
+                <option value="180">Last 180 days</option>
+                <option value="365">Last 365 days</option>
+            </select>
         </div>
 
         <!-- KPI summary -->
@@ -549,6 +608,27 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </div>
             <div id="detail-panel-host"></div>
         </div>
+
+        <!-- ERA (835) posting — manual paste rail for POST /api/v1/admin/billing/era.
+             The endpoint has existed since the billing build-out, but nothing in
+             the UI could reach it: a payer PDF-portal download or emailed 835 had
+             no way in until a clearinghouse webhook exists. This panel is that way in. -->
+        <details class="era-panel" id="era-panel">
+            <summary>Post an ERA (835 remittance)</summary>
+            <p class="era-help">
+                Paste the raw X12 835 file exactly as the payer or clearinghouse provided it
+                (starts with <code>ISA*</code>, contains <code>CLP</code> segments). Payments post
+                against claims by patient control number; claims never submitted are reported,
+                not modified.
+            </p>
+            <textarea id="era-edi" spellcheck="false" autocomplete="off"
+                      placeholder="ISA*00*...~GS*HP*...~ST*835*...~CLP*..."></textarea>
+            <div class="era-actions">
+                <button class="era-post-btn" id="era-post">Post ERA</button>
+                <span class="era-status" id="era-status"></span>
+            </div>
+            <div id="era-result"></div>
+        </details>
     </div>
 
     <script>
@@ -558,6 +638,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const state = {
             filterStatus: ['pending_review', 'edited'],
             q: '',
+            days: 60,
             limit: 25,
             offset: 0,
             total: 0,
@@ -603,6 +684,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const params = new URLSearchParams();
             params.set('status', state.filterStatus.join(','));
             if (state.q) params.set('q', state.q);
+            // Always sent explicitly — the API defaults to 60 days, and an
+            // implicit default silently hides older claims from the list.
+            params.set('days', String(state.days));
             params.set('limit', String(state.limit));
             params.set('offset', String(state.offset));
             try {
@@ -655,10 +739,55 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 : 'awaiting review';
         }
 
+        // The "nothing can be submitted yet" warnings are only true while the
+        // clearinghouse connection is not live, so ask the API once instead
+        // of asserting it forever.
+        let goLiveBlocked = false;
+        (async function checkGoLive() {
+            try {
+                const resp = await fetch('/api/v1/admin/billing/clearinghouse', { credentials: 'include' });
+                if (!resp.ok) return;
+                const d = await resp.json();
+                goLiveBlocked = !d.ready_to_go_live;
+                const note = document.getElementById('golive-note');
+                if (note) note.hidden = !goLiveBlocked;
+            } catch (e) { /* keep the calm default */ }
+        })();
+
+        // There are two zero states here and they need different sentences:
+        // no claim has ever arrived, versus this filter matched nothing. Only
+        // a probe across every status over the widest window can tell them
+        // apart, so it runs once, and only when the list came back empty.
+        const ALL_CLAIM_STATUSES = 'pending_review,edited,rejected,ready_to_submit,submitting,' +
+            'submitted,accepted_by_clearinghouse,paid,partially_paid,denied,appealed,rebilled,written_off';
+        let anyClaimsEver = null;
+        async function anyClaimsExist() {
+            if (anyClaimsEver !== null) return anyClaimsEver;
+            try {
+                const resp = await fetch(
+                    '/api/v1/admin/billing/claims?status=' + ALL_CLAIM_STATUSES + '&days=365&limit=1',
+                    { credentials: 'include' });
+                if (!resp.ok) return null;
+                const d = await resp.json();
+                anyClaimsEver = ((d.claims || []).length > 0) || ((d.total || 0) > 0);
+                return anyClaimsEver;
+            } catch (e) {
+                return null;
+            }
+        }
+
         function renderList() {
             if (state.claims.length === 0) {
-                $empty.textContent = 'No claims match the current filter.';
+                $empty.textContent = state.days < 365
+                    ? `No claims match the current filter in the last ${state.days} days — try a wider date window.`
+                    : 'No claims match the current filter.';
                 $empty.style.display = 'block';
+                anyClaimsExist().then((exists) => {
+                    if (exists === false && state.claims.length === 0) {
+                        $empty.textContent = 'A draft claim appears here automatically each time a visit is coded — none yet.'
+                            + (goLiveBlocked ? ' Nothing you approve can be submitted until the clearinghouse connection goes live.' : '');
+                    }
+                });
                 $pagi.style.display = 'none';
                 // Clear any rendered rows.
                 Array.from($list.querySelectorAll('.row')).forEach(r => r.remove());
@@ -756,8 +885,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <path d="M 13 60 A 42 42 0 0 1 97 60"
                           fill="none" stroke="url(#gauge-grad)" stroke-width="6" stroke-linecap="round"/>
                     <line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"
-                          stroke="rgba(245,245,247,0.84)" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="${cx}" cy="${cy}" r="3" fill="rgba(245,245,247,0.84)"/>
+                          style="stroke:var(--fg-strong)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="${cx}" cy="${cy}" r="3" style="fill:var(--fg-strong)"/>
                 </svg>
             `;
         }
@@ -837,7 +966,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
             const upHtml = upcoding.length === 0 ? '' : `
                 <div class="section">
-                    <h2>Upcoding opportunities · ${upcoding.length}</h2>
+                    <h2>Under-coded — documentation supports more · ${upcoding.length}</h2>
                     ${upcoding.map(u => `
                         <div class="upcode">
                             <div class="upcode-head">
@@ -856,9 +985,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${u.rationale ? `<div class="upcode-rationale">${escapeHtml(u.rationale)}</div>` : ''}
                             <div style="margin-top:8px;">
                                 ${u.accepted
-                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
+                                    ? `<span style="font-size:11px;color:#047857;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Accepted</span>
                                        <button class="btn-action mini" style="margin-left:10px;" data-action="upcode-revert" data-id="${escapeHtml(u.id)}">Revert</button>`
-                                    : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Accept upcode + apply to line</button>`
+                                    : `<button class="btn-action mini success" data-action="upcode-accept" data-id="${escapeHtml(u.id)}">Use the higher code</button>`
                                 }
                             </div>
                         </div>
@@ -880,7 +1009,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${d.revenue_impact ? `<div class="docsugg-revimpact">Revenue impact: ${escapeHtml(d.revenue_impact)}</div>` : ''}
                             <div style="margin-top:8px;">
                                 ${d.applied
-                                    ? `<span style="font-size:11px;color:rgba(110, 231, 183, 0.95);font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Applied</span>
+                                    ? `<span style="font-size:11px;color:#047857;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;">✓ Applied</span>
                                        <button class="btn-action mini" style="margin-left:10px;" data-action="docsugg-unapply" data-id="${escapeHtml(d.id)}">Mark not applied</button>`
                                     : `<button class="btn-action mini" data-action="docsugg-apply" data-id="${escapeHtml(d.id)}">Mark applied</button>`
                                 }
@@ -896,7 +1025,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                        <button class="btn-action primary" data-action="claim-approve">Approve for submission</button>
                        <button class="btn-action danger" data-action="claim-reject">Reject claim</button>
                        <a class="btn-action" href="/admin/cases/${encodeURIComponent(c.patient_id)}/snapshot/" target="_blank" style="text-decoration:none;">Open patient snapshot ↗</a>
-                       ${tally.errors > 0 ? `<span style="font-size:11.5px;color:rgba(252,165,165,0.95);margin-left:auto;">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'} — resolve first or force-approve.</span>` : ''}
+                       ${tally.errors > 0 ? `<span style="font-size:11.5px;color:#B91C1C;margin-left:auto;">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'} — resolve first or force-approve.</span>` : ''}
                    </div>`
                 : `<div class="action-bar">
                        <span style="font-size:11.5px;color:var(--fg-soft);">Claim is <strong style="color:var(--fg-mid)">${escapeHtml(c.status.replace(/_/g, ' '))}</strong>${c.status_reason ? ` — ${escapeHtml(c.status_reason)}` : ''}. Approve/reject actions are unavailable in this state.</span>
@@ -939,7 +1068,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                                 </div>
                                 <div class="mzlegal-caption">
                                     AI estimate of how well the documentation defends each billed code in the event of an audit.
-                                    ${tally.errors > 0 ? `<strong style="color:rgba(252,165,165,0.95)">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'}</strong> pulling this down. ` : ''}
+                                    ${tally.errors > 0 ? `<strong style="color:#B91C1C">${tally.errors} unresolved error${tally.errors === 1 ? '' : 's'}</strong> pulling this down. ` : ''}
                                     ${tally.warnings > 0 ? `${tally.warnings} warning${tally.warnings === 1 ? '' : 's'} to review.` : ''}
                                 </div>
                             </div>
@@ -968,7 +1097,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         Created ${new Date(c.created_at).toLocaleString()}
                         ${c.payer_name ? ` · payer ${escapeHtml(c.payer_name)}` : ' · no payer assigned'}
                         ${c.clearinghouse_vendor ? ` · clearinghouse ${escapeHtml(c.clearinghouse_vendor)}` : ''}
-                        · source <code style="color:var(--accent-soft)">${escapeHtml(c.source_app)}/${escapeHtml(c.source_session_id || '—')}</code>
                     </div>
                 </div>
             `;
@@ -987,6 +1115,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             state.selectedClaimId = null;
             $detailHost.innerHTML = '';
             $layout.classList.remove('with-detail');
+            fetchClaims();
+        });
+
+        document.getElementById('days-filter').addEventListener('change', (ev) => {
+            state.days = Math.max(1, Math.min(365, parseInt(ev.target.value, 10) || 60));
+            state.offset = 0;
             fetchClaims();
         });
 
@@ -1044,22 +1178,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (!force) return;
                 const r2 = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/approve`, 'POST', { force: true });
                 if (!r2.ok) { toast('Approve failed: ' + (r2.data.error || r2.status), 'danger'); return; }
-                toast('Claim approved (force) → ready_to_submit', 'success');
+                toast('Approved despite unresolved flags — queued for submission', 'success');
             } else if (!r.ok) {
                 toast('Approve failed: ' + (r.data.error || r.status), 'danger');
                 return;
             } else {
-                toast('Claim approved → ready_to_submit', 'success');
+                toast('Approved — queued for submission', 'success');
             }
             await selectClaim(claimId);
             await fetchClaims();
         }
 
         async function rejectClaim(claimId) {
-            const reason = prompt(
-                'Why is this claim being rejected?\n\n' +
-                'Short code (e.g., miscoded, not_billable, duplicate_session):'
-            );
+            const reason = prompt('Why are you rejecting this claim?');
             if (!reason || !reason.trim()) return;
             const notes = prompt('Additional notes (optional):') || '';
             const r = await mutate(`/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/reject`, 'POST',
@@ -1103,7 +1234,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/upcoding/${encodeURIComponent(btn.dataset.id)}`,
                         { accepted: action === 'upcode-accept' }
                     );
-                    if (ok) { toast(action === 'upcode-accept' ? 'Upcode accepted + line updated' : 'Upcode reverted', 'success'); await selectClaim(claimId); await fetchClaims(); }
+                    if (ok) { toast(action === 'upcode-accept' ? 'Higher code applied to the line' : 'Reverted to the original code', 'success'); await selectClaim(claimId); await fetchClaims(); }
                 } else if (action === 'docsugg-apply' || action === 'docsugg-unapply') {
                     const ok = await patchChild(
                         `/api/v1/admin/billing/claims/${encodeURIComponent(claimId)}/doc-suggestions/${encodeURIComponent(btn.dataset.id)}`,
@@ -1116,9 +1247,81 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         });
 
+        // ---- ERA (835) posting ----
+        const $eraEdi = document.getElementById('era-edi');
+        const $eraPost = document.getElementById('era-post');
+        const $eraStatus = document.getElementById('era-status');
+        const $eraResult = document.getElementById('era-result');
+
+        function renderEraResult(data) {
+            const rows = (data.results || []).map((r) => {
+                const pill = r.matched
+                    ? '<span class="era-pill ok">posted</span>'
+                    : (r.skipped ? '<span class="era-pill miss">skipped</span>'
+                                 : '<span class="era-pill miss">unmatched</span>');
+                const status = r.mappedStatus ? `<span>${escapeHtml(String(r.mappedStatus).replace(/_/g, ' '))}</span>` : '';
+                const paid = r.matched && r.paid_cents != null ? `<span>${fmtMoney(r.paid_cents)} paid</span>` : '';
+                const carc = (r.reason_codes && r.reason_codes.length)
+                    ? `<span class="why">CARC ${escapeHtml(r.reason_codes.join(','))}</span>` : '';
+                const why = (!r.matched && r.reason) ? `<span class="why">${escapeHtml(r.reason)}</span>`
+                    : (!r.matched && !r.skipped ? '<span class="why">no claim with this control number</span>' : '');
+                return `<div class="era-claim-row">${pill}<code>${escapeHtml(r.patientControlNumber || '(no control number)')}</code>${status}${paid}${carc}${why}</div>`;
+            }).join('');
+            $eraResult.innerHTML = `
+                <div class="era-summary">
+                    <span>Payer <strong>${escapeHtml(data.payer || '—')}</strong></span>
+                    <span>Trace <strong>${escapeHtml((data.payment && data.payment.trace) || '—')}</strong></span>
+                    <span>Payment <strong>${fmtMoney(data.payment && data.payment.amount_cents)}</strong></span>
+                    <span>Claims in ERA <strong>${data.claims_in_era || 0}</strong></span>
+                    <span>Posted <strong>${data.claims_matched || 0}</strong> (${fmtMoney(data.posted_cents)})</span>
+                    <span>Unmatched <strong>${data.claims_unmatched || 0}</strong></span>
+                    <span>Skipped <strong>${data.claims_skipped || 0}</strong></span>
+                </div>
+                ${rows}
+            `;
+        }
+
+        $eraPost.addEventListener('click', async () => {
+            const edi = $eraEdi.value.trim();
+            $eraStatus.className = 'era-status';
+            $eraResult.innerHTML = '';
+            if (!edi) {
+                $eraStatus.classList.add('err');
+                $eraStatus.textContent = 'Paste the 835 text first.';
+                return;
+            }
+            $eraPost.disabled = true;
+            $eraStatus.textContent = 'Posting…';
+            try {
+                const resp = await fetch('/api/v1/admin/billing/era', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: edi,
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    $eraStatus.classList.add('err');
+                    $eraStatus.textContent = 'Failed (' + resp.status + '): ' + (data.error || 'unknown error');
+                    return;
+                }
+                $eraStatus.textContent = '';
+                renderEraResult(data);
+                toast('ERA posted: ' + (data.claims_matched || 0) + ' claim(s) updated',
+                      (data.claims_matched || 0) > 0 ? 'success' : '');
+                await fetchClaims();
+            } catch (e) {
+                $eraStatus.classList.add('err');
+                $eraStatus.textContent = 'Network error posting ERA.';
+            } finally {
+                $eraPost.disabled = false;
+            }
+        });
+
         // Initial fetch.
         fetchClaims();
     })();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

@@ -15,7 +15,7 @@
 // On restore: replay each row by table into a fresh D1 via a small
 // restore script that walks the NDJSON, creates the tables from the
 // versioned schema files, and INSERTs the rows. See docs/compliance/
-// disaster-recovery-plan.md §3.1 for the operator procedure.
+// disaster-recovery-plan.md for the operator procedure.
 // =====================================================================
 
 // Tables to back up. Update when schema migrations land new tables.
@@ -223,6 +223,141 @@ async function runContentFreshnessCheck(env) {
     }
 }
 
+
+// =====================================================================
+// Content-pipeline stale-alert EMAIL (daily, piggybacks the 09:00 backup)
+// =====================================================================
+// 2026-09-01 — closes the "KNOWN GAP: no mailer exists yet" above. The
+// freshness check writes its audit row; this delegates the actual
+// alerting (posts stale > 8d, trend briefs pending > 7d, one email per
+// week max) to the Pages endpoint, because email delivery lives in the
+// Pages runtime. The endpoint throttles itself, so firing daily is safe.
+// The W29 stall sat unnoticed for SEVEN WEEKS with 15 briefs pending in
+// review — the audit row existed the whole time; nothing told a human.
+async function runContentStaleAlert(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("content stale-alert: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/content/stale-alert", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`content stale-alert: HTTP ${r.status} alert=${j.alert ?? "?"} emailed=${j.emailed ?? "?"} ` +
+                    `throttled=${j.throttled ?? false} newest_age=${j.newest_post_age_days ?? "?"}d pending=${j.pending_briefs ?? "?"}`);
+    } catch (e) {
+        console.error("content stale-alert failed", { error: String(e?.message || e) });
+    }
+}
+
+// =====================================================================
+// Triage auto-release (hourly)
+// =====================================================================
+// admin/triage/index.html promises, in the panel he works from: "Rows
+// auto-release to the patient four hours after AI categorization if not
+// reviewed." Nothing did that. AUTO_RELEASE_THRESHOLD_HOURS existed only
+// to paint a row `is_overdue` — a badge, not a behaviour — so a patient
+// who submitted an intake on a Friday evening waited until he next opened
+// the panel, with no slots offered and nothing on screen explaining why.
+//
+// Delegates to the Pages endpoint because the release path needs the
+// audit and notification libs that only exist in the Pages runtime. This
+// Worker fires the trigger and logs the outcome. Requires PIPELINE_TOKEN:
+//   cd cron-worker && npx wrangler secret put PIPELINE_TOKEN
+//
+// Hourly, not every 15 minutes: the promise is "four hours", and a row
+// released at 4h00 versus 4h59 is indistinguishable to the patient, while
+// four times the requests buys nothing.
+async function runTriageAutoRelease(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("triage auto-release: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/triage/auto-release", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`triage auto-release: scanned=${j.scanned ?? "?"} released=${j.released ?? "?"} ` +
+                    `held=${j.held ?? "?"} urgent_awaiting_review=${j.urgent_awaiting_review ?? "?"}`);
+        // Urgent rows past four hours are a real backlog, not an exception
+        // the job absorbs. Say so loudly enough to find in the logs.
+        if (j.urgent_awaiting_review > 0) {
+            console.error(`triage auto-release: ${j.urgent_awaiting_review} URGENT triage row(s) past ${j.threshold_hours}h and still unreviewed — these are never auto-released`);
+        }
+    } catch (e) {
+        console.error("triage auto-release failed", String(e?.message || e));
+    }
+}
+
+
+// =====================================================================
+// Order / result sweep (hourly, with triage auto-release)
+// =====================================================================
+// The missed-result safety net. Delegates to the Pages endpoint, which
+// holds the logic and the DB binding; this just wakes it up and makes
+// the outcome findable in the logs. An unacknowledged critical result is
+// the most dangerous state the system can be in, so it is logged as an
+// error rather than an info line.
+async function runOrderSweep(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("order sweep: PIPELINE_TOKEN secret not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/orders/sweep", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`order sweep: scanned=${j.scanned ?? "?"} newly_overdue=${j.newly_overdue ?? "?"} ` +
+                    `still_overdue=${j.still_overdue ?? "?"} critical_unacked=${j.critical_unacknowledged ?? "?"} ` +
+                    `awaiting_patient_comm=${j.awaiting_patient_communication ?? "?"} emailed=${j.emailed ?? "?"}`);
+        if (j.critical_unacknowledged > 0) {
+            console.error(`order sweep: ${j.critical_unacknowledged} CRITICAL result(s) unacknowledged`);
+        }
+    } catch (e) {
+        console.error("order sweep failed", String(e?.message || e));
+    }
+}
+
+// =====================================================================
+// Notification outbox flush (every 15 minutes, with the SLA sweep)
+// =====================================================================
+// notify.js queues every failed send and its own comment said "a later run
+// can retry". No later run existed — the outbox was write-only. Six real
+// notifications sat in it, three of them magic-link SIGN-IN emails, every
+// one at attempts=1, none ever tried again.
+//
+// The recorded failure is the SES sandbox refusing unverified recipients,
+// which is transient at the account level: the moment production access is
+// granted these all succeed unchanged. Without a retry they stay dead and
+// the patients they were for are simply never told.
+async function runNotificationFlush(env) {
+    if (!env.PIPELINE_TOKEN) {
+        console.error("notification flush: PIPELINE_TOKEN not set on mountzara-cron — skipping");
+        return;
+    }
+    try {
+        const r = await fetch("https://mountzara.com/api/v1/internal/notifications/flush", {
+            method: "POST",
+            headers: { "X-Pipeline-Token": env.PIPELINE_TOKEN, "content-type": "application/json" },
+        });
+        const j = await r.json().catch(() => ({}));
+        console.log(`notification flush: pending=${j.pending ?? "?"} sent=${j.sent ?? "?"} ` +
+                    `still_failing=${j.still_failing ?? "?"} abandoned=${j.abandoned ?? "?"}`);
+        if (j.still_failing > 0) {
+            console.error(`notification flush: ${j.still_failing} notification(s) STILL undelivered — ` +
+                          `check /api/v1/admin/notifications/health for the cause`);
+        }
+    } catch (e) {
+        console.error("notification flush failed", String(e?.message || e));
+    }
+}
+
 export default {
     /**
      * Cron handler — invoked by Cloudflare on the [triggers] crons schedule.
@@ -231,14 +366,21 @@ export default {
     async scheduled(event, env, ctx) {
         if (event.cron === "*/15 * * * *") {
             ctx.waitUntil(runSlaSweep(env, { source: "cron", scheduledTime: event.scheduledTime }));
+            ctx.waitUntil(runNotificationFlush(env));
             return;
         }
         if (event.cron === "0 11 * * *") {
             ctx.waitUntil(runNpsDispatch(env));
             return;
         }
+        if (event.cron === "0 * * * *") {
+            ctx.waitUntil(runTriageAutoRelease(env));
+            ctx.waitUntil(runOrderSweep(env));
+            return;
+        }
         ctx.waitUntil(runBackup(env, { source: "cron", scheduledTime: event.scheduledTime }));
         ctx.waitUntil(runContentFreshnessCheck(env));
+        ctx.waitUntil(runContentStaleAlert(env));
     },
 
     /**

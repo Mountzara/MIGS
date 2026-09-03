@@ -103,6 +103,11 @@ export async function onRequestPost(ctx) {
         // Build the click-once invitation URL.
         const url = new URL(request.url);
         const grant_url = `${url.protocol}//${url.host}/portal/preview-grant/?t=${encodeURIComponent(grant.token)}`;
+        // The SAME signed grant also unlocks the by-request CV, because
+        // functions/cv/_middleware.js honors the mz_preview_access cookie.
+        // Hand the admin a CV-specific link too, so a colleague who asked
+        // for the CV (not the portal preview) lands straight on it.
+        const cv_grant_url = `${url.protocol}//${url.host}/cv/grant?t=${encodeURIComponent(grant.token)}`;
 
         await logAudit(env, {
             user_id: admin.user,
@@ -131,6 +136,7 @@ export async function onRequestPost(ctx) {
         console.log("preview_invite issued (DEV / pre-launch)", {
             invite_id, label, email_prefix,
             grant_url,
+            cv_grant_url,
             expires_at: new Date(grant.exp_ms).toISOString(),
         });
 
@@ -145,6 +151,7 @@ export async function onRequestPost(ctx) {
             cookie_exp,
             cookie_exp_iso: new Date(cookie_exp).toISOString(),
             grant_url,
+            cv_grant_url,
             message: "Send the grant_url to the recipient out-of-band. The URL is single-use and expires at expires_at_iso.",
         }, { status: 201 });
     });

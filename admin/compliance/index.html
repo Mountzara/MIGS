@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap">
 <style>
     :root {
-        --bg: #120f1b;
+        --bg: #FBFAF8;
         --bg-soft: #150b1f;
-        --ink: #f5f2ec;
-        --ink-mute: rgba(245, 242, 236, 0.66);
-        --ink-soft: rgba(245, 242, 236, 0.46);
+        --ink: #1A1726;
+        --ink-mute: #6E6A7C;
+        --ink-soft: #4A4658;
         --accent: #6d28d9;
         --accent-light: #a78bfa;
         --accent-soft: rgba(167, 139, 250, 0.18);
@@ -24,7 +24,7 @@
         --red-bg: rgba(185, 28, 28, 0.18);
         --hairline: rgba(245, 242, 236, 0.10);
         --glass-bg: rgba(255, 255, 255, 0.04);
-        --glass-border: rgba(255, 255, 255, 0.10);
+        --glass-border: #E9E5EE;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -38,7 +38,7 @@
         font-feature-settings: "ss01", "cv11";
     }
     a { color: var(--accent-light); text-decoration: none; }
-    a:hover { color: #c4b5fd; text-decoration: underline; }
+    a:hover { color: #6d28d9; text-decoration: underline; }
     .wrap { max-width: 1080px; margin: 0 auto; padding: clamp(20px, 4vw, 48px); }
     h1, h2, h3 { font-weight: 200; letter-spacing: -0.012em; margin: 0 0 12px; }
     h1 { font-size: clamp(28px, 4vw, 38px); }
@@ -76,8 +76,8 @@
         margin-left: 8px;
     }
     .badge.signed { background: var(--green-bg); color: #86efac; border: 1px solid rgba(134, 239, 172, 0.30); }
-    .badge.unsigned { background: var(--amber-bg); color: #fcd34d; border: 1px solid rgba(252, 211, 77, 0.30); }
-    .badge.review { background: var(--red-bg); color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.30); }
+    .badge.unsigned { background: var(--amber-bg); color: #92400E; border: 1px solid #92400E; }
+    .badge.review { background: var(--red-bg); color: #B91C1C; border: 1px solid #B91C1C; }
     .badge.retired { background: rgba(245,242,236,0.06); color: var(--ink-soft); }
     .btn {
         display: inline-block;
@@ -96,10 +96,10 @@
     .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
     .btn.primary:hover { background: #7c3aed; }
     .btn.muted { background: transparent; color: var(--ink-mute); border-color: var(--hairline); }
-    .btn.danger { background: var(--red-bg); color: #fca5a5; border-color: rgba(252, 165, 165, 0.30); }
+    .btn.danger { background: var(--red-bg); color: #B91C1C; border-color: #B91C1C; }
     .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
     input[type="text"], input[type="file"], textarea, select, input[type="date"] {
-        background: rgba(0, 0, 0, 0.30);
+        background: #FFFFFF;
         border: 1px solid var(--hairline);
         border-radius: 8px;
         padding: 9px 12px;
@@ -154,7 +154,7 @@
         width: 92%;
         font-family: inherit;
     }
-    dialog::backdrop { background: rgba(10, 6, 16, 0.78); backdrop-filter: blur(6px); }
+    dialog::backdrop { background: rgba(26,23,38,0.45); backdrop-filter: blur(6px); }
     .nav-bar {
         font-size: 12px; color: var(--ink-mute);
         margin-bottom: 18px;
@@ -171,14 +171,14 @@
         padding: 14px 18px;
         font-size: 13px;
         max-width: 360px;
-        box-shadow: 0 10px 32px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 32px rgba(26,23,38,0.14);
         z-index: 999;
     }
-    .toast.error { border-color: rgba(252, 165, 165, 0.55); }
+    .toast.error { border-color: #B91C1C; }
     .empty { color: var(--ink-soft); font-style: italic; padding: 14px 0; }
     code, .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: rgba(167, 139, 250, 0.92); }
     .attest-text {
-        background: rgba(0, 0, 0, 0.30);
+        background: #FFFFFF;
         border-radius: 8px;
         padding: 12px;
         font-size: 13px;
@@ -197,9 +197,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -230,7 +230,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -238,7 +238,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -382,7 +382,7 @@ async function loadSignatures() {
 
 function renderSignatures() {
     if (!currentSignatures.length) {
-        return '<div class="empty">No signatures stored yet. Upload one below.</div>';
+        return '<div class="empty">No signature stored yet. Upload a transparent-background PNG at least 400×100 — every policy you sign and every after-visit summary a patient reads uses this image.</div>';
     }
     return currentSignatures.map(s => {
         const retired = !!s.retired_at;
@@ -489,8 +489,16 @@ async function loadDocs() {
 }
 
 function renderDocs() {
-    if (!currentDocs.length) return '<div class="empty">No compliance docs registered.</div>';
-    return currentDocs.map(d => {
+    // 2026-08-19 — the five policies are compiled into
+    // functions/_lib/signatures.js (COMPLIANCE_DOCS) and the endpoint always
+    // returns all of them, so the old "No compliance docs registered." branch
+    // was unreachable. Removed. What IS reachable is the zero-signed state,
+    // which had no copy at all.
+    const signedCount = currentDocs.filter(d => d.status && d.status !== 'unsigned').length;
+    const summary = signedCount === 0
+        ? `<div class="empty">Five practice policies ship with the platform and none are signed yet. Start with the Controlled Substances Prescribing Policy — signing records the document's hash, so a later edit forces a re-sign.</div>`
+        : `<div class="empty">${signedCount} of 5 policies signed.</div>`;
+    return summary + currentDocs.map(d => {
         // 2026-06-12: read the ACTUAL backend shape (docs/index.js) — flat fields
         // + a `status` enum — not a nested `active_signature` object (which the
         // endpoint never returned, so every doc rendered "Unsigned" with a dead
@@ -587,5 +595,6 @@ document.getElementById('sign-confirm').addEventListener('click', async () => {
 loadSignatures();
 loadDocs();
 </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

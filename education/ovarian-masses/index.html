@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Ovarian cysts &amp; adnexal masses &mdash; what to know &middot; Mount Zara</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap">
     <meta name="description" content="A patient guide to ovarian cysts and adnexal masses: types, the modern workup (TVUS + IOTA + selective CA-125), when to watch vs operate, cystectomy vs oophorectomy, BRCA / hereditary risk. Evidence-based, peer-reviewed.">
     <meta name="robots" content="index, follow">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -12,15 +13,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
 :root {
-    --bg-base: #120f1b;
-    --bg-card: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.10);
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
-    --fg-dim: #ffffff;
+    --bg-base: #FBFAF8;
+    --bg-card: rgba(255,255,255,0.72);
+    --border: #E9E5EE;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
+    --fg-dim: #8B8698;
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
     --green: #10b981; --amber: #f59e0b; --red: #ef4444;
 }
@@ -43,17 +44,17 @@ a:hover { color: var(--fg-strong); }
 /* Site nav */
 .site-nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10, 7, 20, 0.96);
+    background: rgba(251, 250, 248, 0.86);
     backdrop-filter: blur(22px) saturate(165%);
     -webkit-backdrop-filter: blur(22px) saturate(165%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #E9E5EE;
     padding: 10px clamp(16px, 4vw, 32px);
 }
 .site-nav .inner { display: flex; align-items: center; gap: 14px; max-width: 1100px; margin: 0 auto; }
 .site-nav .brand {
     font-size: 13px; font-weight: 700;
     letter-spacing: 0.20em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    color: #6d28d9;
     text-decoration: none;
 }
 .site-nav .crumb { font-size: 12.5px; color: var(--fg-dim); }
@@ -67,7 +68,7 @@ a:hover { color: var(--fg-strong); }
     padding: 5px 14px; border-radius: 999px;
     font-weight: 500; transition: all 0.2s;
 }
-.site-nav .cta:hover { background: rgba(var(--glow-purple), 0.26); color: #fff !important; transform: translateY(-1px); }
+.site-nav .cta:hover { background: rgba(109, 40, 217, 0.9); color: #fff !important; transform: translateY(-1px); }
 
 .wrap { max-width: 1040px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) clamp(18px, 5vw, 32px) 80px; }
 
@@ -82,7 +83,7 @@ a:hover { color: var(--fg-strong); }
 .hero .eyebrow {
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.24em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    color: #6d28d9;
     margin-bottom: 14px;
 }
 .hero h1 {
@@ -111,7 +112,7 @@ a:hover { color: var(--fg-strong); }
     transition: transform 0.22s, border-color 0.22s, background 0.22s;
     animation: mzRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.fact:hover { transform: translateY(-3px); border-color: rgba(var(--glow-purple), 0.45); }
+.fact:hover { transform: translateY(-3px); border-color: #6d28d9; }
 .fact .stat { font-size: 36px; font-weight: 200; letter-spacing: -0.02em; color: var(--fg-strong); line-height: 1; font-feature-settings: "tnum"; }
 .fact .stat .unit { font-size: 18px; color: var(--accent-soft); margin-left: 2px; }
 .fact .label { font-size: 12px; color: var(--fg-soft); margin-top: 8px; line-height: 1.4; }
@@ -127,11 +128,11 @@ section.panel {
     transition: border-color 0.25s;
     animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-section.panel:hover { border-color: rgba(var(--glow-purple), 0.22); }
+section.panel:hover { border-color: #6d28d9; }
 section.panel .section-eyebrow {
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.24em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.95);
+    color: #6d28d9;
     margin-bottom: 10px;
 }
 section.panel h2 {
@@ -169,7 +170,7 @@ sup.mz-ref a {
 sup.mz-ref:hover a,
 sup.mz-ref.mz-open a,
 sup.mz-ref:focus a {
-    background: rgba(var(--glow-purple), 0.20);
+    background: #6d28d9;
     color: #fff;
     outline: none;
 }
@@ -180,7 +181,7 @@ sup.mz-ref .mz-ref-pop {
     transform: translate(-50%, -6px);
     width: 320px; max-width: 92vw;
     padding: 10px 14px;
-    background: rgba(7,7,10,0.96);
+    background: rgba(255,255,255,0.96);
     border: 1px solid rgba(var(--glow-purple), 0.55);
     border-radius: 10px;
     backdrop-filter: blur(18px);
@@ -196,9 +197,11 @@ sup.mz-ref .mz-ref-pop {
     box-shadow: 0 12px 36px rgba(0,0,0,0.5);
     white-space: normal;
 }
+sup.mz-ref .mz-ref-pop::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 16px; }
 sup.mz-ref:hover .mz-ref-pop,
 sup.mz-ref:focus-within .mz-ref-pop,
 sup.mz-ref.mz-open .mz-ref-pop {
+    pointer-events: auto;
     visibility: visible;
     opacity: 1;
     transform: translate(-50%, -10px);
@@ -243,7 +246,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
     position: relative;
 }
 .featured-card:hover, .featured-card:focus {
-    border-color: rgba(var(--glow-purple), 0.65);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.12);
     transform: translateY(-1px);
     outline: none;
@@ -256,7 +259,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 .featured-card p { font-size: 14px !important; line-height: 1.6; color: var(--fg-mid); margin: 0; }
 .featured-card .open-hint {
     position: absolute; top: 18px; right: 22px;
-    font-size: 11px; color: rgba(var(--glow-purple), 0.85);
+    font-size: 11px; color: #6d28d9;
     letter-spacing: 0.08em;
 }
 .featured-card .stat-badge {
@@ -270,12 +273,12 @@ sup.mz-ref.mz-open .mz-ref-pop {
     margin-top: 6px;
     margin-right: 8px;
 }
-.featured-card .stat-badge strong { color: #fff; font-weight: 600; font-size: 13.5px; }
+.featured-card .stat-badge strong { color: #1A1726; font-weight: 600; font-size: 13.5px; }
 @media (min-width: 720px) {
     .featured-card { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
 }
 .card {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
@@ -286,7 +289,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 }
 .card:hover, .card:focus {
     transform: translateY(-2px);
-    border-color: rgba(var(--glow-purple), 0.50);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.06);
     box-shadow: 0 8px 24px rgba(0,0,0,0.18);
     outline: none;
@@ -297,11 +300,11 @@ sup.mz-ref.mz-open .mz-ref-pop {
 .card .card-corner {
     position: absolute; top: 12px; right: 14px;
     font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-    color: rgba(var(--glow-purple), 0.85);
+    color: #6d28d9;
 }
 .card .open-hint {
     position: absolute; bottom: 12px; right: 14px;
-    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    font-size: 11px; color: #6d28d9;
     opacity: 0.7;
     letter-spacing: 0.08em;
 }
@@ -309,7 +312,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 
 /* SYMPTOMS card item style (grid columns defined above with the .card-grid family) */
 .symptom {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 11px;
     padding: 12px 14px 12px 44px;
@@ -317,7 +320,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
     font-size: 14px; color: var(--fg-mid);
     transition: border-color 0.2s, background 0.2s, transform 0.2s;
 }
-.symptom:hover { border-color: rgba(var(--glow-purple), 0.40); background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
+.symptom:hover { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.06); transform: translateY(-1px); }
 .symptom::before {
     content: ""; position: absolute; left: 14px; top: 50%;
     transform: translateY(-50%);
@@ -339,14 +342,14 @@ sup.mz-ref.mz-open .mz-ref-pop {
     position: relative; margin-bottom: 16px;
     animation: mzRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     cursor: pointer;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #E9E5EE;
     border-radius: 11px;
     padding: 12px 14px;
     transition: border-color 0.22s, background 0.22s;
 }
 .timeline-item:hover, .timeline-item:focus {
-    border-color: rgba(var(--glow-purple), 0.40);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.06);
     outline: none;
 }
@@ -361,7 +364,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
 .timeline-item p { font-size: 14px !important; line-height: 1.55; color: var(--fg-soft); margin: 0; }
 .timeline-item .open-hint {
     position: absolute; top: 14px; right: 16px;
-    font-size: 11px; color: rgba(var(--glow-purple), 0.75);
+    font-size: 11px; color: #6d28d9;
     letter-spacing: 0.08em;
 }
 
@@ -371,7 +374,7 @@ sup.mz-ref.mz-open .mz-ref-pop {
     display: grid;
     grid-template-columns: 56px 1fr auto;
     gap: 16px; align-items: start;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
@@ -379,12 +382,12 @@ sup.mz-ref.mz-open .mz-ref-pop {
     transition: border-color 0.22s, background 0.22s, transform 0.22s;
 }
 .rung:hover, .rung:focus {
-    border-color: rgba(var(--glow-purple), 0.45);
+    border-color: #6d28d9;
     background: rgba(var(--glow-purple), 0.06);
     transform: translateY(-1px);
     outline: none;
 }
-.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: rgba(var(--glow-purple), 0.95); line-height: 1; font-variant-numeric: tabular-nums; }
+.rung .step-num { font-size: 28px; font-weight: 200; letter-spacing: -0.02em; color: #6d28d9; line-height: 1; font-variant-numeric: tabular-nums; }
 .rung h3 { font-size: 15.5px; font-weight: 500; color: var(--fg-strong); margin: 0 0 4px 0; }
 .rung p { font-size: 13.5px !important; line-height: 1.55; color: var(--fg-mid); margin: 0; }
 .rung .meds { font-size: 12px; color: var(--accent-soft); margin-top: 6px; line-height: 1.55; font-family: "SF Mono", "Menlo", monospace; }
@@ -419,21 +422,21 @@ sup.mz-ref.mz-open .mz-ref-pop {
     position: absolute;
     left: 6px; top: -4px;
     font-family: Georgia, serif;
-    color: rgba(var(--glow-purple), 0.40);
+    color: #6d28d9;
     font-size: 26px; line-height: 1;
 }
 
 /* Q&A accordion */
 .qa-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 details.qa {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 11px;
     transition: border-color 0.22s, background 0.22s;
     animation: mzRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-details.qa:hover { border-color: rgba(var(--glow-purple), 0.35); }
-details.qa[open] { border-color: rgba(var(--glow-purple), 0.55); background: rgba(var(--glow-purple), 0.05); }
+details.qa:hover { border-color: #6d28d9; }
+details.qa[open] { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.05); }
 details.qa summary {
     list-style: none; cursor: pointer;
     padding: 14px 50px 14px 18px;
@@ -479,7 +482,7 @@ details.qa .qa-answer p:last-child { margin: 0; }
 .cta-strip p { font-size: 15px; color: var(--fg-mid); margin: 0 0 18px 0; max-width: 56ch; margin-left: auto; margin-right: auto; }
 .cta-strip a.btn {
     display: inline-block;
-    background: rgba(var(--glow-purple), 0.20);
+    background: #6d28d9;
     border: 1px solid rgba(var(--glow-purple), 0.65);
     color: #fff;
     padding: 10px 24px; border-radius: 999px;
@@ -488,13 +491,13 @@ details.qa .qa-answer p:last-child { margin: 0; }
 }
 .cta-strip a.btn:hover { background: rgba(var(--glow-purple), 0.32); transform: translateY(-2px); }
 .cta-strip a.btn.ghost { background: transparent; border-color: var(--border); color: var(--fg-mid); }
-.cta-strip a.btn.ghost:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.55); }
+.cta-strip a.btn.ghost:hover { color: #fff; border-color: #6d28d9; }
 
 /* REFERENCES (inline-journal style at the bottom — full citations + abstract details) */
 .refs-list { margin-top: 18px; list-style: none; padding: 0; counter-reset: ref; }
 .refs-list li {
     padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid #E9E5EE;
     counter-increment: ref;
 }
 .refs-list li:last-child { border-bottom: none; }
@@ -520,13 +523,13 @@ details.qa .qa-answer p:last-child { margin: 0; }
     padding: 1px 6px; border-radius: 4px;
     white-space: nowrap;
 }
-.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.04); }
+.refs-list .pmid.no-pmid { color: var(--fg-dim); background: rgba(255,255,255,0.7); }
 .refs-list .pmid:hover { color: #fff; background: rgba(var(--glow-purple), 0.25); }
 details.mz-abstract {
     margin-top: 10px;
     margin-left: 40px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #E9E5EE;
     border-radius: 8px;
 }
 details.mz-abstract summary {
@@ -540,7 +543,7 @@ details.mz-abstract summary {
 details.mz-abstract summary::-webkit-details-marker { display: none; }
 details.mz-abstract summary::before { content: '+ '; color: var(--fg-dim); }
 details.mz-abstract[open] summary::before { content: '\2212 '; }
-details.mz-abstract[open] { border-color: rgba(var(--glow-purple), 0.30); background: rgba(var(--glow-purple), 0.04); }
+details.mz-abstract[open] { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.04); }
 details.mz-abstract .abstract-body {
     padding: 4px 16px 14px 28px;
     font-size: 12.5px;
@@ -555,7 +558,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 /* MODAL system */
 .mz-modal-bg {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.66);
+    background: rgba(244,241,236,0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     z-index: 999;
@@ -568,7 +571,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 .mz-modal {
     width: 100%; max-width: 700px;
     max-height: 88vh; overflow-y: auto;
-    background: rgba(12,12,16,0.96);
+    background: rgba(255,255,255,0.96);
     border: 1px solid rgba(var(--glow-purple), 0.50);
     border-radius: 18px;
     padding: clamp(24px, 4vw, 40px);
@@ -582,7 +585,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
     position: absolute; top: 16px; right: 16px;
     width: 36px; height: 36px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     color: var(--fg-soft);
     font-size: 20px; line-height: 1;
@@ -590,7 +593,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
 }
-.mz-modal-close:hover { color: #fff; border-color: rgba(var(--glow-purple), 0.65); background: rgba(var(--glow-purple), 0.14); }
+.mz-modal-close:hover { color: #fff; border-color: #6d28d9; background: rgba(var(--glow-purple), 0.14); }
 .mz-modal h2 {
     font-weight: 200; font-size: clamp(22px, 3vw, 30px);
     letter-spacing: -0.015em; color: var(--fg-strong);
@@ -603,7 +606,7 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 /* Footer note */
 .footer-note {
     margin-top: 40px; padding: 20px 24px;
-    background: rgba(255,255,255,0.02);
+    background: rgba(255,255,255,0.7);
     border: 1px solid var(--border);
     border-radius: 12px;
     font-size: 12.5px; color: var(--fg-dim);
@@ -626,8 +629,8 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
 
     .palm-coein-grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 22px 0; }
     @media (min-width: 720px) { .palm-coein-grid { grid-template-columns: 1fr 1fr; } }
-    .cause-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
-    .cause-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.45); background: rgba(var(--glow-purple), 0.06); }
+    .cause-card { background: rgba(255,255,255,0.7); border: 1px solid #E9E5EE; border-radius: 14px; backdrop-filter: blur(28px) saturate(165%); -webkit-backdrop-filter: blur(28px) saturate(165%); padding: 22px 22px 18px; transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease; }
+    .cause-card:hover { transform: translateY(-2px); border-color: #6d28d9; background: rgba(var(--glow-purple), 0.06); }
     .cause-card h3 { font-size: 16px; font-weight: 500; color: var(--fg-strong); margin: 0 0 12px 0; }
     .cause-card ul { padding-left: 20px; margin: 0; }
     .cause-card li { font-size: 14px; line-height: 1.55; color: var(--fg-mid); margin-bottom: 8px; }
@@ -642,14 +645,14 @@ details.mz-abstract .abstract-body p:last-child { margin-bottom: 0; }
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FBFAF8 0%, #F6F3EF 55%, #FBFAF8 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         section.panel p, details.qa .qa-answer p, .rung p, .mz-modal p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -698,10 +701,59 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* Structured citation popovers (2026-09-01) — title / meta / finding, the
+   same anatomy the journal-club posts use. The finding is the page's own
+   curated "what it shows" line, surfaced at the citation instead of only
+   at the bottom of the page. */
+.mz-ref-pop { text-align: left; }
+.mz-ref-pop-title { display: block; font-weight: 600; color: #1A1726; line-height: 1.35; }
+.mz-ref-pop-meta { display: block; font-size: 11px; color: #6E6A7C; margin-top: 3px; letter-spacing: 0.02em; }
+.mz-ref-pop-finding { display: block; margin-top: 7px; padding-top: 7px; border-top: 1px solid #E9E5EE;
+    font-size: 12px; line-height: 1.5; color: #4A4658; }
+.mz-ref-pop-src { display: inline-block; margin-top: 8px; font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.01em; color: #6d28d9; text-decoration: none; }
+.mz-ref-pop-src:hover, .mz-ref-pop-src:focus-visible { text-decoration: underline; color: #4c1d95; }
+/* --- mz-pop-geometry (2026-09-02) -----------------------------------------
+   The evidence line is now a real synthesis, not a one-liner, so the popover
+   has to hold 250-600 characters without running off the screen. It gets a
+   capped height with internal scroll, and flips BELOW the citation whenever
+   there isn't room above (JS adds .mz-flip). */
+sup.mz-ref .mz-ref-pop {
+    width: min(380px, 92vw);
+    max-height: min(52vh, 440px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
+sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
+/* mz-src-link-guard — the citation-number pill styling must not swallow the
+   source link that lives inside the popover. */
+sup.mz-ref:hover a.mz-ref-pop-src,
+sup.mz-ref.mz-open a.mz-ref-pop-src,
+sup.mz-ref:focus a.mz-ref-pop-src,
+sup.mz-ref:focus-within a.mz-ref-pop-src {
+    background: transparent;
+    color: #6d28d9;
+    padding: 0;
+    border-radius: 0;
+}
+sup.mz-ref:hover a.mz-ref-pop-src:hover,
+sup.mz-ref.mz-open a.mz-ref-pop-src:hover,
+sup.mz-ref:focus-within a.mz-ref-pop-src:hover {
+    color: #4c1d95;
+    text-decoration: underline;
+}
+
+sup.mz-ref:hover .mz-ref-pop.mz-flip,
+sup.mz-ref:focus-within .mz-ref-pop.mz-flip,
+sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
+
 </style>
+<style>h1,h2{font-family:'Fraunces',Georgia,serif}</style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
 <nav class="site-nav" aria-label="Site navigation">
     <div class="inner">
         <a class="brand" href="/">Mount Zara</a>
@@ -721,16 +773,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             Ovarian cysts are common &mdash; most women develop them at some point, and the great majority are benign and self-resolving.
             But when a cyst is found on imaging, the right next steps depend on age, the cyst&rsquo;s features on ultrasound, whether
             you have symptoms, and any family history that raises hereditary cancer risk. This guide walks through the modern adnexal-mass
-            workup<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip">American College of Obstetricians and Gynecologists’ Committee on Practice Bulletins—Gynecology, Practice Bulletin No. 174: Evaluation and Management of Adnexal Masses, Obstet Gynecol 2016 &middot; PMID 27776072</span></sup><!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=1 --> &mdash; transvaginal ultrasound first, IOTA risk stratification<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Van Calster et al., Practical guidance for applying the ADNEX model from the IOTA group..., Facts Views Vis Obgyn 2015 &middot; PMID 25897370</span></sup>,
-            CA-125 only in the right settings<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=3 --><!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=4 --> &mdash; the criteria that distinguish watch-and-wait from
-            surgery, the procedures themselves (cystectomy vs oophorectomy, laparoscopic vs open)<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Liu et al., Meta-analysis comparing the safety of laparoscopic and open surgica..., Int J Gynaecol Obstet 2017 &middot; PMID 28099685</span></sup>, and the
-            hereditary-risk considerations that change the calculus for some patients<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Huber et al., Hormone replacement therapy in BRCA mutation carriers and risk of o..., J Cancer Res Clin Oncol 2021 &middot; PMID 33885953</span></sup><!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=6 --><!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=7 -->.
+            workup<sup class="mz-ref" data-r="ref-1" tabindex="0"><a href="#ref-1">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Practice Bulletin No. 174: Evaluation and Management of Adnexal Masses.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2016 · PMID 27776072</span><span class="mz-ref-pop-finding">Most masses of the ovary or fallopian tube turn out to be benign, so the point of the workup is to rule out cancer and to recognize which masses warrant referral to, or a conversation with, a gynecologic oncologist. Most are found by chance on a pelvic exam or a scan; a minority announce themselves with sudden or intermittent pain. Age and family history strongly shape what to do next, and separate recommendations apply to adolescents, pregnant women and non-pregnant adults (ACOG Practice Bulletin 174).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27776072/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>&mdash; transvaginal ultrasound first, IOTA risk stratification<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Practical guidance for applying the ADNEX model from the IOTA group to discriminate between different subtypes of adnexal tumors.</span><span class="mz-ref-pop-meta">Facts Views Vis Obgyn 2015 · PMID 25897370</span><span class="mz-ref-pop-finding">An ovarian mass can be sorted before surgery into five categories rather than simply benign or malignant — benign, borderline, stage I cancer, stage II-IV cancer, and cancer that has spread from elsewhere — using the validated ADNEX risk model from the International Ovarian Tumor Analysis group. This practical guidance explains the ultrasound and clinical predictors the model uses, how to choose and interpret risk cut-offs for triage and referral, and works through example patients. No single universal cut-off is proposed, because the right threshold depends on the setting.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/25897370/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>,
+            CA-125 only in the right settings&mdash; the criteria that distinguish watch-and-wait from
+            surgery, the procedures themselves (cystectomy vs oophorectomy, laparoscopic vs open)<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Meta-analysis comparing the safety of laparoscopic and open surgical approaches for suspected adnexal mass during the second trimester.</span><span class="mz-ref-pop-meta">Int J Gynaecol Obstet 2017 · PMID 28099685</span><span class="mz-ref-pop-finding">When an ovarian or tubal mass must be operated on during the second trimester of pregnancy, laparoscopy is preferable to an open incision: post-operative adverse events were about 80% lower with the keyhole approach (relative risk 0.20), with no difference in miscarriage or threatened miscarriage afterward. Laparoscopy in mid-pregnancy has long been considered controversial, and the reassurance rests on only four comparative studies totaling 240 patients, so the evidence base is thin.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28099685/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, and the
+            hereditary-risk considerations that change the calculus for some patients<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Hormone replacement therapy in BRCA mutation carriers and risk of ovarian, endometrial, and breast cancer: a systematic review.</span><span class="mz-ref-pop-meta">J Cancer Res Clin Oncol 2021 · PMID 33885953</span><span class="mz-ref-pop-finding">Hormone replacement therapy does not appear to meaningfully raise cancer risk in women carrying a BRCA mutation, so risk-reducing removal of the tubes and ovaries should not be postponed merely to avoid needing hormones afterward - and replacement should be offered after that surgery to prevent the chronic consequences of early estrogen loss. Most studies found no adverse breast cancer effect; ovarian cancer results were ambiguous, some studies suggested differences by formulation and duration of use, and the overall evidence base is small.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33885953/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.
         </p>
     </header>
-    <section class="key-facts" aria-label="At a glance">
+    <section class="facts" aria-label="At a glance">
         <div class="fact"><div class="stat">~80<span class="unit">%</span></div><div class="label">of adnexal masses are benign across all ages.</div></div>
-        <div class="fact"><div class="stat">9&ndash;24<span class="unit">%</span></div><div class="label">of epithelial ovarian cancers are linked to BRCA1/2 mutations<!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=6 -->.</div></div>
-        <div class="fact"><div class="stat">50<span class="unit">%</span></div><div class="label">of Stage&nbsp;I ovarian cancers do NOT raise CA-125<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=3 --> &mdash; the marker is imperfect, especially in premenopause.</div></div>
+        <div class="fact"><div class="stat">9&ndash;24<span class="unit">%</span></div><div class="label">of epithelial ovarian cancers are linked to BRCA1/2 mutations.</div></div>
+        <div class="fact"><div class="stat">50<span class="unit">%</span></div><div class="label">of Stage&nbsp;I ovarian cancers do NOT raise CA-125&mdash; the marker is imperfect, especially in premenopause.</div></div>
     </section>
     
 
@@ -766,11 +818,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h2>The workup</h2>
         <p>The standard pathway is designed to maximize sensitivity for malignancy while avoiding unnecessary surgery on benign disease.</p>
         <ol class="ladder">
-            <li><strong>History.</strong> Pain (acute or chronic), pressure symptoms, abnormal bleeding, weight changes, GI symptoms (bloating, early satiety, change in bowel habits &mdash; the suspicious ones for ovarian cancer that persist over &gt;12 days/month)<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">?, Committee Opinion No. 716: The Role of the Obstetrician-Gynecologis..., Obstet Gynecol 2017 &middot; PMID 28832487</span></sup>, family history of ovarian / breast / colorectal cancer, age, menopausal status, prior surgery, fertility plans.</li>
-            <li><strong>Exam.</strong> Bimanual to characterize the mass &mdash; size, mobility, tenderness, consistency, bilaterality, ascites<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=5 -->. <strong>Irregular, firm, fixed, nodular, bilateral, or associated with ascites</strong> raises malignancy concern.</li>
-            <li><strong>Transvaginal ultrasound</strong> is first-line<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=1 -->. Characterize the mass: simple vs complex (septations, solid components, papillary projections), vascularity on Doppler, free fluid in the cul-de-sac. The IOTA Simple Rules<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Van Calster et al., Practical guidance for applying the ADNEX model from the IOTA group..., Facts Views Vis Obgyn 2015 &middot; PMID 25897370</span></sup> use 10 ultrasound features (5 benign, 5 malignant) to risk-stratify the mass.</li>
-            <li><strong>Tumor markers, when appropriate.</strong> CA-125 in <strong>postmenopausal women</strong> with a suspicious mass<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=4 -->; less reliable in premenopausal women because it&rsquo;s also elevated by endometriosis, fibroids, pelvic inflammatory disease, pregnancy, and even menstruation. CA-125 misses 50% of Stage I disease<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=3 --> &mdash; a normal value doesn&rsquo;t exclude cancer. Other markers (HE4, ROMA, AFP, beta-hCG, LDH, inhibin) used selectively based on the imaging and clinical suspicion.</li>
-            <li><strong>CT or MRI</strong> are NOT first-line<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=2 -->. CT is useful for staging if cancer is suspected (assesses peritoneal disease, lymph nodes, distant spread). MRI sometimes helps distinguish dermoid vs endometrioma vs solid tumor when ultrasound is equivocal.</li>
+            <li><strong>History.</strong> Pain (acute or chronic), pressure symptoms, abnormal bleeding, weight changes, GI symptoms (bloating, early satiety, change in bowel habits &mdash; the suspicious ones for ovarian cancer that persist over &gt;12 days/month)<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Committee Opinion No. 716: The Role of the Obstetrician-Gynecologist in the Early Detection of Epithelial Ovarian Cancer in Women at Average Risk.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2017 · PMID 28832487</span><span class="mz-ref-pop-finding">Ovarian cancer screening should not be offered to women at average risk: neither transvaginal ultrasound nor the CA 125 blood test, alone or together, has been shown to lower deaths from the disease, while false alarms lead to surgery and other invasive testing that carries real harm. What does help is a careful personal and family history of breast, gynecologic and colon cancer, which identifies the women who may carry a BRCA mutation or Lynch syndrome and should be referred for genetic counseling — plus staying alert to suggestive symptoms (ACOG committee opinion).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28832487/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, family history of ovarian / breast / colorectal cancer, age, menopausal status, prior surgery, fertility plans.</li>
+            <li><strong>Exam.</strong> Bimanual to characterize the mass &mdash; size, mobility, tenderness, consistency, bilaterality, ascites. <strong>Irregular, firm, fixed, nodular, bilateral, or associated with ascites</strong> raises malignancy concern.</li>
+            <li><strong>Transvaginal ultrasound</strong> is first-line. Characterize the mass: simple vs complex (septations, solid components, papillary projections), vascularity on Doppler, free fluid in the cul-de-sac. The IOTA Simple Rules<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Practical guidance for applying the ADNEX model from the IOTA group to discriminate between different subtypes of adnexal tumors.</span><span class="mz-ref-pop-meta">Facts Views Vis Obgyn 2015 · PMID 25897370</span><span class="mz-ref-pop-finding">An ovarian mass can be sorted before surgery into five categories rather than simply benign or malignant — benign, borderline, stage I cancer, stage II-IV cancer, and cancer that has spread from elsewhere — using the validated ADNEX risk model from the International Ovarian Tumor Analysis group. This practical guidance explains the ultrasound and clinical predictors the model uses, how to choose and interpret risk cut-offs for triage and referral, and works through example patients. No single universal cut-off is proposed, because the right threshold depends on the setting.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/25897370/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup> use 10 ultrasound features (5 benign, 5 malignant) to risk-stratify the mass.</li>
+            <li><strong>Tumor markers, when appropriate.</strong> CA-125 in <strong>postmenopausal women</strong> with a suspicious mass; less reliable in premenopausal women because it&rsquo;s also elevated by endometriosis, fibroids, pelvic inflammatory disease, pregnancy, and even menstruation. CA-125 misses 50% of Stage I disease&mdash; a normal value doesn&rsquo;t exclude cancer. Other markers (HE4, ROMA, AFP, beta-hCG, LDH, inhibin) used selectively based on the imaging and clinical suspicion.</li>
+            <li><strong>CT or MRI</strong> are NOT first-line. CT is useful for staging if cancer is suspected (assesses peritoneal disease, lymph nodes, distant spread). MRI sometimes helps distinguish dermoid vs endometrioma vs solid tumor when ultrasound is equivocal.</li>
             <li><strong>Gynecologic-oncology referral</strong> for any high-risk imaging features, elevated CA-125 (or RMI/ROMA score) in a postmenopausal woman, suspicious clinical findings, or strong family history. Outcomes are better when ovarian cancer surgery is performed by a gynecologic oncologist.</li>
         </ol>
     </section>
@@ -783,7 +835,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <article class="ladder-card" data-modal="manage-deep">
                 <div class="rung-num">0</div>
                 <h3>No follow-up</h3>
-                <p>Simple cysts &le;3&nbsp;cm in premenopausal women, or simple cysts &le;1&nbsp;cm in postmenopausal women, with classic features &mdash; no action needed<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Levine et al., Management of asymptomatic ovarian and other adnexal cysts imaged a..., Radiology 2010 &middot; PMID 20505067</span></sup>.</p>
+                <p>Simple cysts &le;3&nbsp;cm in premenopausal women, or simple cysts &le;1&nbsp;cm in postmenopausal women, with classic features &mdash; no action needed<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Management of asymptomatic ovarian and other adnexal cysts imaged at US: Society of Radiologists in Ultrasound Consensus Conference Statement.</span><span class="mz-ref-pop-meta">Radiology 2010 · PMID 20505067</span><span class="mz-ref-pop-finding">Ovarian and other adnexal cysts found by chance on ultrasound in women without symptoms generally warrant scheduled follow-up keyed to their size and appearance rather than reflex surgery. A cross-specialty panel of gynecologists, radiologists, and pathologists convened by the Society of Radiologists in Ultrasound built the recommendations from the existing literature and prevailing practice. This is expert consensus, not new trial evidence.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/20505067/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
             </article>
             <article class="ladder-card" data-modal="manage-deep">
                 <div class="rung-num">1</div>
@@ -798,7 +850,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <article class="ladder-card" data-modal="surgery-deep">
                 <div class="rung-num">3</div>
                 <h3>Surgery</h3>
-                <p>Symptomatic (pain, pressure), growing rapidly, suspicious features on imaging, persistent cysts &gt;5&ndash;10&nbsp;cm, or fertility-impacting endometriomas. Laparoscopic when feasible<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Liu et al., Meta-analysis comparing the safety of laparoscopic and open surgica..., Int J Gynaecol Obstet 2017 &middot; PMID 28099685</span></sup>.</p>
+                <p>Symptomatic (pain, pressure), growing rapidly, suspicious features on imaging, persistent cysts &gt;5&ndash;10&nbsp;cm, or fertility-impacting endometriomas. Laparoscopic when feasible<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Meta-analysis comparing the safety of laparoscopic and open surgical approaches for suspected adnexal mass during the second trimester.</span><span class="mz-ref-pop-meta">Int J Gynaecol Obstet 2017 · PMID 28099685</span><span class="mz-ref-pop-finding">When an ovarian or tubal mass must be operated on during the second trimester of pregnancy, laparoscopy is preferable to an open incision: post-operative adverse events were about 80% lower with the keyhole approach (relative risk 0.20), with no difference in miscarriage or threatened miscarriage afterward. Laparoscopy in mid-pregnancy has long been considered controversial, and the reassurance rests on only four comparative studies totaling 240 patients, so the evidence base is thin.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28099685/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
             </article>
             <article class="ladder-card" data-modal="malignancy-deep">
                 <div class="rung-num">!</div>
@@ -808,7 +860,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <article class="ladder-card" data-modal="brca-deep">
                 <div class="rung-num">B</div>
                 <h3>Hereditary risk</h3>
-                <p>Strong family history or known BRCA mutation changes management <sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Huber et al., Hormone replacement therapy in BRCA mutation carriers and risk of o..., J Cancer Res Clin Oncol 2021 &middot; PMID 33885953</span></sup><!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=7 -->. Risk-reducing salpingo-oophorectomy is the most effective single intervention.</p>
+                <p>Strong family history or known BRCA mutation changes management <sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Hormone replacement therapy in BRCA mutation carriers and risk of ovarian, endometrial, and breast cancer: a systematic review.</span><span class="mz-ref-pop-meta">J Cancer Res Clin Oncol 2021 · PMID 33885953</span><span class="mz-ref-pop-finding">Hormone replacement therapy does not appear to meaningfully raise cancer risk in women carrying a BRCA mutation, so risk-reducing removal of the tubes and ovaries should not be postponed merely to avoid needing hormones afterward - and replacement should be offered after that surgery to prevent the chronic consequences of early estrogen loss. Most studies found no adverse breast cancer effect; ovarian cancer results were ambiguous, some studies suggested differences by formulation and duration of use, and the overall evidence base is small.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33885953/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Risk-reducing salpingo-oophorectomy is the most effective single intervention.</p>
             </article>
         </div>
     </section>
@@ -818,22 +870,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h2>Most common patient questions</h2>
         <div class="qa-grid">
             <details class="qa"><summary>Is my cyst cancer?</summary>
-                <div class="qa-answer"><p>Almost certainly not. Across all ages, about <strong>80%</strong> of adnexal masses are benign &mdash; and in premenopausal women that rises to over 90%. The workup is designed to pick out the small fraction that need cancer evaluation. The most reassuring features on ultrasound: simple appearance (thin-walled, anechoic interior), &lt;5&nbsp;cm, no septations, no solid components, no abnormal Doppler signal<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Van Calster et al., Practical guidance for applying the ADNEX model from the IOTA group..., Facts Views Vis Obgyn 2015 &middot; PMID 25897370</span></sup>.</p></div>
+                <div class="qa-answer"><p>Almost certainly not. Across all ages, about <strong>80%</strong> of adnexal masses are benign &mdash; and in premenopausal women that rises to over 90%. The workup is designed to pick out the small fraction that need cancer evaluation. The most reassuring features on ultrasound: simple appearance (thin-walled, anechoic interior), &lt;5&nbsp;cm, no septations, no solid components, no abnormal Doppler signal<sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Practical guidance for applying the ADNEX model from the IOTA group to discriminate between different subtypes of adnexal tumors.</span><span class="mz-ref-pop-meta">Facts Views Vis Obgyn 2015 · PMID 25897370</span><span class="mz-ref-pop-finding">An ovarian mass can be sorted before surgery into five categories rather than simply benign or malignant — benign, borderline, stage I cancer, stage II-IV cancer, and cancer that has spread from elsewhere — using the validated ADNEX risk model from the International Ovarian Tumor Analysis group. This practical guidance explains the ultrasound and clinical predictors the model uses, how to choose and interpret risk cut-offs for triage and referral, and works through example patients. No single universal cut-off is proposed, because the right threshold depends on the setting.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/25897370/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p></div>
             </details>
             <details class="qa"><summary>Why didn&rsquo;t we just send a CA-125?</summary>
-                <div class="qa-answer"><p>CA-125 is useful in some settings but unhelpful in others. It&rsquo;s elevated in 80% of epithelial ovarian cancers overall but misses 50% of Stage&nbsp;I disease<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=3 -->. In premenopausal women it&rsquo;s also elevated by endometriosis, fibroids, PID, pregnancy, even menstruation &mdash; producing false positives that lead to unnecessary anxiety and surgery. The marker is most useful in <strong>postmenopausal women</strong> with a suspicious mass<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=4 -->, not as a general screening tool.</p></div>
+                <div class="qa-answer"><p>CA-125 is useful in some settings but unhelpful in others. It&rsquo;s elevated in 80% of epithelial ovarian cancers overall but misses 50% of Stage&nbsp;I disease. In premenopausal women it&rsquo;s also elevated by endometriosis, fibroids, PID, pregnancy, even menstruation &mdash; producing false positives that lead to unnecessary anxiety and surgery. The marker is most useful in <strong>postmenopausal women</strong> with a suspicious mass, not as a general screening tool.</p></div>
             </details>
             <details class="qa"><summary>Why don&rsquo;t we screen all women for ovarian cancer?</summary>
-                <div class="qa-answer"><p>Because no validated screening tool reduces ovarian cancer mortality in average-risk women<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">?, Committee Opinion No. 716: The Role of the Obstetrician-Gynecologis..., Obstet Gynecol 2017 &middot; PMID 28832487</span></sup><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Kahn et al., Salpingectomy for the Primary Prevention of Ovarian Cancer: A Syste..., JAMA Surg 2023 &middot; PMID 37672283</span></sup>. Combinations of TVUS and CA-125 in large randomized trials have failed to show survival benefit. Symptom recognition (persistent bloating, early satiety, pelvic or abdominal pain, urinary urgency for more than ~12 days a month) is the current best alerting system, alongside individual evaluation when a mass is identified for any other reason.</p></div>
+                <div class="qa-answer"><p>Because no validated screening tool reduces ovarian cancer mortality in average-risk women<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Committee Opinion No. 716: The Role of the Obstetrician-Gynecologist in the Early Detection of Epithelial Ovarian Cancer in Women at Average Risk.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2017 · PMID 28832487</span><span class="mz-ref-pop-finding">Ovarian cancer screening should not be offered to women at average risk: neither transvaginal ultrasound nor the CA 125 blood test, alone or together, has been shown to lower deaths from the disease, while false alarms lead to surgery and other invasive testing that carries real harm. What does help is a careful personal and family history of breast, gynecologic and colon cancer, which identifies the women who may carry a BRCA mutation or Lynch syndrome and should be referred for genetic counseling — plus staying alert to suggestive symptoms (ACOG committee opinion).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28832487/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Salpingectomy for the Primary Prevention of Ovarian Cancer: A Systematic Review.</span><span class="mz-ref-pop-meta">JAMA Surg 2023 · PMID 37672283</span><span class="mz-ref-pop-finding">Removing the fallopian tubes during another pelvic operation - opportunistic salpingectomy - is associated with roughly 80% lower ovarian cancer risk, and has been shown to be safe, cost-effective, and not to bring menopause on earlier. Because most ovarian cancers begin in the fimbriated end of the tube, widespread adoption could cut US ovarian cancer deaths by an estimated 15%. Drawn from 158 publications; prospective studies confirming long-term survival benefit are still awaited.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37672283/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Combinations of TVUS and CA-125 in large randomized trials have failed to show survival benefit. Symptom recognition (persistent bloating, early satiety, pelvic or abdominal pain, urinary urgency for more than ~12 days a month) is the current best alerting system, alongside individual evaluation when a mass is identified for any other reason.</p></div>
             </details>
             <details class="qa"><summary>Will I lose my ovary?</summary>
                 <div class="qa-answer"><p>When surgery is needed, the question is whether to do an <em>ovarian cystectomy</em> (remove the cyst, preserve the ovary) or an <em>oophorectomy</em> (remove the ovary). The answer depends on age, fertility plans, the size and nature of the lesion, and whether there&rsquo;s suspicion for malignancy. In premenopausal women with benign lesions, cystectomy is preferred whenever feasible to preserve ovarian function. In postmenopausal women, oophorectomy may be appropriate, particularly with suspicious features.</p></div>
             </details>
             <details class="qa"><summary>Open or laparoscopic?</summary>
-                <div class="qa-answer"><p>For benign-appearing masses, <strong>laparoscopy is the standard</strong><sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Liu et al., Meta-analysis comparing the safety of laparoscopic and open surgica..., Int J Gynaecol Obstet 2017 &middot; PMID 28099685</span></sup> &mdash; less blood loss, less pain, shorter stay, faster recovery, smaller scars. Open surgery is reserved for very large masses, strong suspicion of malignancy (where intact removal in a bag matters to avoid spread), or when the patient has anatomy that makes laparoscopy unsafe. Robotic-assisted laparoscopy is an option for complex cases.</p></div>
+                <div class="qa-answer"><p>For benign-appearing masses, <strong>laparoscopy is the standard</strong><sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Meta-analysis comparing the safety of laparoscopic and open surgical approaches for suspected adnexal mass during the second trimester.</span><span class="mz-ref-pop-meta">Int J Gynaecol Obstet 2017 · PMID 28099685</span><span class="mz-ref-pop-finding">When an ovarian or tubal mass must be operated on during the second trimester of pregnancy, laparoscopy is preferable to an open incision: post-operative adverse events were about 80% lower with the keyhole approach (relative risk 0.20), with no difference in miscarriage or threatened miscarriage afterward. Laparoscopy in mid-pregnancy has long been considered controversial, and the reassurance rests on only four comparative studies totaling 240 patients, so the evidence base is thin.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28099685/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup> &mdash; less blood loss, less pain, shorter stay, faster recovery, smaller scars. Open surgery is reserved for very large masses, strong suspicion of malignancy (where intact removal in a bag matters to avoid spread), or when the patient has anatomy that makes laparoscopy unsafe. Robotic-assisted laparoscopy is an option for complex cases.</p></div>
             </details>
             <details class="qa"><summary>Should I get BRCA tested?</summary>
-                <div class="qa-answer"><p>If your family history includes ovarian, fallopian-tube, or peritoneal cancer at any age, or breast cancer (especially under 50, bilateral, triple-negative, or male breast cancer), or if you&rsquo;re of Ashkenazi Jewish ancestry (founder mutation frequency ~1 in 40)<!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=6 --> &mdash; yes, BRCA testing should be discussed<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip">Huber et al., Hormone replacement therapy in BRCA mutation carriers and risk of o..., J Cancer Res Clin Oncol 2021 &middot; PMID 33885953</span></sup>. The result changes management of any current adnexal mass, informs prophylactic risk-reduction options (risk-reducing salpingo-oophorectomy, intensified breast screening), and matters for your relatives.</p></div>
+                <div class="qa-answer"><p>If your family history includes ovarian, fallopian-tube, or peritoneal cancer at any age, or breast cancer (especially under 50, bilateral, triple-negative, or male breast cancer), or if you&rsquo;re of Ashkenazi Jewish ancestry (founder mutation frequency ~1 in 40)&mdash; yes, BRCA testing should be discussed<sup class="mz-ref" data-r="ref-7" tabindex="0"><a href="#ref-7">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Hormone replacement therapy in BRCA mutation carriers and risk of ovarian, endometrial, and breast cancer: a systematic review.</span><span class="mz-ref-pop-meta">J Cancer Res Clin Oncol 2021 · PMID 33885953</span><span class="mz-ref-pop-finding">Hormone replacement therapy does not appear to meaningfully raise cancer risk in women carrying a BRCA mutation, so risk-reducing removal of the tubes and ovaries should not be postponed merely to avoid needing hormones afterward - and replacement should be offered after that surgery to prevent the chronic consequences of early estrogen loss. Most studies found no adverse breast cancer effect; ovarian cancer results were ambiguous, some studies suggested differences by formulation and duration of use, and the overall evidence base is small.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33885953/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The result changes management of any current adnexal mass, informs prophylactic risk-reduction options (risk-reducing salpingo-oophorectomy, intensified breast screening), and matters for your relatives.</p></div>
             </details>
             <details class="qa"><summary>What if the cyst has gotten larger?</summary>
                 <div class="qa-answer"><p>Growth raises the threshold for surgery. Functional cysts should resolve, not grow. Stable benign cystadenomas or dermoids that increase in size, new solid or septated components, or rising tumor markers all push toward surgical evaluation. Imaging at a defined interval (3&ndash;6 months) is how growth is documented.</p></div>
@@ -847,166 +899,70 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 <ol class="ref-list">
 <li id="ref-1">
 <div class="ref-label"><strong>American College of Obstetricians and Gynecologists’ Committee on Practice Bulletins—Gynecology, Practice Bulletin No. 174: Evaluation and Management of Adnexal Masses, <em>Obstet Gynecol</em> 2016</strong></div>
-<div class="ref-what">ACOG Practice Bulletin 174 — Evaluation and Management of Adnexal Masses: triage of simple vs complex, role of TVUS and CA-125, indications for surgical vs conservative management.</div>
+<div class="ref-what">Most masses of the ovary or fallopian tube turn out to be benign, so the point of the workup is to rule out cancer and to recognize which masses warrant referral to, or a conversation with, a gynecologic oncologist. Most are found by chance on a pelvic exam or a scan; a minority announce themselves with sudden or intermittent pain. Age and family history strongly shape what to do next, and separate recommendations apply to adolescents, pregnant women and non-pregnant adults (ACOG Practice Bulletin 174).</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/27776072/" target="_blank" rel="noopener">27776072</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Adnexal masses (ie, masses of the ovary, fallopian tube, or surrounding tissues) commonly are encountered by obstetrician-gynecologists and often present diagnostic and management dilemmas. Most adnexal masses are detected incidentally on physical examination or at the time of pelvic imaging. Less commonly, a mass may present with symptoms of acute or intermittent pain. Management decisions often are influenced by the age and family history of the patient. Although most adnexal masses are benign, the main goal of the diagnostic evaluation is to exclude malignancy. The purpose of this document is to provide guidelines for the evaluation and management of adnexal masses in adolescents, pregnant women, and nonpregnant women and to outline criteria for the identification of adnexal masses that are likely to be malignant and may warrant referral to or consultation with a gynecologic oncologist.</div></details>
 </li>
 <li id="ref-2">
 <div class="ref-label"><strong>Van Calster et al., Practical guidance for applying the ADNEX model from the IOTA group to discriminate between different subtypes of adnexal tumors, <em>Facts Views Vis Obgyn</em> 2015</strong></div>
-<div class="ref-what">Van Calster et al., 2015 — practical guidance for applying the ADNEX model from the IOTA group: validated risk-stratification of adnexal masses into 5 categories (benign, borderline, stage I cancer, stage II–IV cancer, metastatic).</div>
+<div class="ref-what">An ovarian mass can be sorted before surgery into five categories rather than simply benign or malignant — benign, borderline, stage I cancer, stage II-IV cancer, and cancer that has spread from elsewhere — using the validated ADNEX risk model from the International Ovarian Tumor Analysis group. This practical guidance explains the ultrasound and clinical predictors the model uses, how to choose and interpret risk cut-offs for triage and referral, and works through example patients. No single universal cut-off is proposed, because the right threshold depends on the setting.</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/25897370/" target="_blank" rel="noopener">25897370</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">All gynecologists are faced with ovarian tumors on a regular basis, and the accurate preoperative diagnosis of these masses is important because appropriate management depends on the type of tumor. Recently, the International Ovarian Tumor Analysis (IOTA) consortium published the Assessment of Different NEoplasias in the adneXa (ADNEX) model, the first risk model that differentiates between benign and four types of malignant ovarian tumors: borderline, stage I cancer, stage II-IV cancer, and secondary metastatic cancer. This approach is novel compared to existing tools that only differentiate between benign and malignant tumors, and therefore questions may arise on how ADNEX can be used in clinical practice. In the present paper, we first provide an in-depth discussion about the predictors used in ADNEX and the ability for risk prediction with different tumor histologies. Furthermore, we formulate suggestions about the selection and interpretation of risk cut-offs for patient stratification and choice of appropriate clinical management. This is illustrated with a few example patients. We cannot propose a generally applicable algorithm with fixed cut-offs, because (as with any risk model) this depends on the specific clinical setting in which the model will be used. Nevertheless, this paper provides a guidance on how the ADNEX model may be adopted into clinical practice.</div></details>
 </li>
 <li id="ref-3">
 <div class="ref-label"><strong>Levine et al., Management of asymptomatic ovarian and other adnexal cysts imaged at US: Society of Radiologists in Ultrasound Consensus Conference Statement, <em>Radiology</em> 2010</strong></div>
-<div class="ref-what">Levine et al., Society of Radiologists in Ultrasound consensus (Radiology 2010) — management of asymptomatic ovarian and other adnexal cysts on ultrasound: surveillance intervals by size and morphology.</div>
+<div class="ref-what">Ovarian and other adnexal cysts found by chance on ultrasound in women without symptoms generally warrant scheduled follow-up keyed to their size and appearance rather than reflex surgery. A cross-specialty panel of gynecologists, radiologists, and pathologists convened by the Society of Radiologists in Ultrasound built the recommendations from the existing literature and prevailing practice. This is expert consensus, not new trial evidence.</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/20505067/" target="_blank" rel="noopener">20505067</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The Society of Radiologists in Ultrasound convened a panel of specialists from gynecology, radiology, and pathology to arrive at a consensus regarding the management of ovarian and other adnexal cysts imaged sonographically in asymptomatic women. The panel met in Chicago, Ill, on October 27-28, 2009, and drafted this consensus statement. The recommendations in this statement are based on analysis of current literature and common practice strategies, and are thought to represent a reasonable approach to asymptomatic ovarian and other adnexal cysts imaged at ultrasonography.</div></details>
 </li>
 <li id="ref-4">
-<div class="ref-label"><strong>?, Committee Opinion No. 716: The Role of the Obstetrician-Gynecologist in the Early Detection of Epithelial Ovarian Cancer in Women at Average Risk, <em>Obstet Gynecol</em> 2017</strong></div>
-<div class="ref-what">ACOG Committee Opinion 716 — Role of the obstetrician-gynecologist in the early detection of epithelial ovarian cancer: screening is not recommended for average-risk women; risk-reducing salpingectomy at time of other gyn surgery is appropriate.</div>
+<div class="ref-label"><strong>Committee Opinion No. 716: The Role of the Obstetrician-Gynecologist in the Early Detection of Epithelial Ovarian Cancer in Women at Average Risk, <em>Obstet Gynecol</em> 2017</strong></div>
+<div class="ref-what">Ovarian cancer screening should not be offered to women at average risk: neither transvaginal ultrasound nor the CA 125 blood test, alone or together, has been shown to lower deaths from the disease, while false alarms lead to surgery and other invasive testing that carries real harm. What does help is a careful personal and family history of breast, gynecologic and colon cancer, which identifies the women who may carry a BRCA mutation or Lynch syndrome and should be referred for genetic counseling — plus staying alert to suggestive symptoms (ACOG committee opinion).</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28832487/" target="_blank" rel="noopener">28832487</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Ovarian cancer is the second most common type of female reproductive cancer, and more women die from ovarian cancer than from cervical cancer and uterine cancer combined. Currently, there is no strategy for early detection of ovarian cancer that reduces ovarian cancer mortality. Taking a detailed personal and family history for breast, gynecologic, and colon cancer facilitates categorizing women based on their risk (average risk or high risk) of developing epithelial ovarian cancer. Women with a strong family history of ovarian, breast, or colon cancer may have hereditary breast and ovarian cancer syndrome (BRCA mutation) or hereditary nonpolyposis colorectal cancer (Lynch syndrome), and these women are at increased risk of developing ovarian cancer. Women with these conditions should be referred for formal genetic counseling to better assess their cancer risk, including their risk of ovarian cancer. If appropriate, these women may be offered additional testing for early detection of ovarian cancer. The use of transvaginal ultrasonography and tumor markers (such as cancer antigen 125), alone or in combination, for the early detection of ovarian cancer in average-risk women have not been proved to reduce mortality, and harms exist from invasive diagnostic testing (eg, surgery) resulting from false-positive test results. The patient and her obstetrician-gynecologist should maintain an appropriate level of suspicion when potentially relevant signs and symptoms of ovarian cancer are present.</div></details>
 </li>
 <li id="ref-5">
 <div class="ref-label"><strong>Kahn et al., Salpingectomy for the Primary Prevention of Ovarian Cancer: A Systematic Review, <em>JAMA Surg</em> 2023</strong></div>
-<div class="ref-what">Kahn et al., 2023 systematic review — opportunistic salpingectomy at time of benign gynecologic surgery is associated with significant reduction in ovarian-cancer incidence; supports the salpingectomy-for-prevention strategy in average and elevated-risk women.</div>
+<div class="ref-what">Removing the fallopian tubes during another pelvic operation - opportunistic salpingectomy - is associated with roughly 80% lower ovarian cancer risk, and has been shown to be safe, cost-effective, and not to bring menopause on earlier. Because most ovarian cancers begin in the fimbriated end of the tube, widespread adoption could cut US ovarian cancer deaths by an estimated 15%. Drawn from 158 publications; prospective studies confirming long-term survival benefit are still awaited.</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37672283/" target="_blank" rel="noopener">37672283</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">IMPORTANCE: Most ovarian cancers originate in the fimbriated end of the fallopian tube. This has led to the hypothesis that surgical resection of the fallopian tubes at the time of gynecologic and nongynecologic surgical procedures-referred to as an opportunistic salpingectomy-may prevent the development of epithelial ovarian cancer for women at an average risk of developing the disease.<br><br>OBJECTIVE: To compile a comprehensive, state-of-the-science review examining the current landscape of performing bilateral salpingectomy for ovarian cancer prevention.<br><br>EVIDENCE REVIEW: A systematic review of the literature was performed on March 4, 2022, to identify studies examining salpingectomy for ovarian cancer prevention. This review was performed according to the Preferred Reporting Items for Systematic Reviews and Meta-analyses (PRISMA) 2020 statement. Four databases were selected: PubMed via the National Library of Medicine&#x27;s PubMed.gov, Embase via Elsevier&#x27;s Embase.com, Cochrane Central Register of Controlled Trials (CENTRAL) via Wiley&#x27;s Cochrane Library, and Northern Light Life Sciences Conference Abstracts via Ovid. A total of 20 gray literature sources, including 1 database, 2 registers, 1 repository, 1 index, 1 archive, 1 preprint server, 1 agency, and 12 organizations, were also searched.<br><br>FINDINGS: The initial search produced 1089 results; a total of 158 publications were included in the final review. Salpingectomy has been associated with ovarian cancer risk reduction of approximately 80%. Studies have demonstrated that salpingectomy was safe, cost-effective, and was not associated with an earlier age of menopause onset. With widespread implementation, salpingectomy has the potential to reduce ovarian cancer mortality in the US by an estimated 15%. Both physician and patient awareness regarding the adnexa as the origin for most ovarian cancers, as well as the existence of salpingectomy and its potential benefits in reducing ovarian cancer risk, has increased during the past decade. Raising awareness and developing effective implementation strategies are essential.<br><br>CONCLUSIONS AND RELEVANCE: The results of this systematic review suggest that bilateral salpingectomy for ovarian cancer prevention was safe and feasible and has the potential to be a cost-effective and cost-saving strategy across the population. Prospective studies to demonstrate long-term survival outcomes and feasibility in nongynecologic surgical procedures are warranted.</div></details>
 </li>
 <li id="ref-6">
 <div class="ref-label"><strong>Liu et al., Meta-analysis comparing the safety of laparoscopic and open surgical approaches for suspected adnexal mass during the second trimester, <em>Int J Gynaecol Obstet</em> 2017</strong></div>
-<div class="ref-what">Liu et al., 2017 meta-analysis — laparoscopic vs open surgical approaches for adnexal masses: laparoscopy is associated with shorter hospital stay and faster recovery with equivalent oncologic outcomes for benign and borderline lesions.</div>
+<div class="ref-what">When an ovarian or tubal mass must be operated on during the second trimester of pregnancy, laparoscopy is preferable to an open incision: post-operative adverse events were about 80% lower with the keyhole approach (relative risk 0.20), with no difference in miscarriage or threatened miscarriage afterward. Laparoscopy in mid-pregnancy has long been considered controversial, and the reassurance rests on only four comparative studies totaling 240 patients, so the evidence base is thin.</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28099685/" target="_blank" rel="noopener">28099685</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The safety of laparoscopic surgery during the second trimester of pregnancy remains a controversial subject.<br><br>OBJECTIVES: To compare the safety of laparoscopic surgery and laparotomy for suspected adnexal mass during the second trimester.<br><br>SEARCH STRATEGY: Articles published in any language prior to April 31, 2016, were retrieved from PubMed, Scopus, EMBSCO, and the Cochrane Library using keywords including pregnant, adnexal mass, laparoscopy, laparotomy, pregnancy outcomes, and surgical outcomes.<br><br>SELECTION CRITERIA: Randomized and non-randomized controlled trials reporting at least one obstetric or surgical outcome were included if they compared laparoscopic surgery and laparotomy for adnexal masses during the second trimester.<br><br>DATA COLLECTION AND ANALYSIS: Data were independently extracted by two reviewers. Homogeneous data were pooled using a fixed effects model and heterogeneous data were qualitatively analyzed.<br><br>MAIN RESULTS: Four comparative effectiveness studies including a total of 240 patients were identified. Laparoscopic surgery was associated with a reduced risk of post-operative adverse events (relative risk 0.20, 95% confidence interval 0.06-0.72); no difference was recorded in the risk of post-operative spontaneous abortion (P=0.26) or threatened spontaneous abortion (P=0.13).<br><br>CONCLUSIONS: Laparoscopic surgery could be preferable to laparotomy for suspected adnexal mass during the second trimester of pregnancy.</div></details>
 </li>
 <li id="ref-7">
 <div class="ref-label"><strong>Huber et al., Hormone replacement therapy in BRCA mutation carriers and risk of ovarian, endometrial, and breast cancer: a systematic review, <em>J Cancer Res Clin Oncol</em> 2021</strong></div>
-<div class="ref-what">Huber et al., 2021 — hormone-replacement therapy in BRCA mutation carriers and risk of ovarian, breast, and endometrial cancer: framework for hormone use after risk-reducing salpingo-oophorectomy in hereditary breast-ovarian cancer syndrome.</div>
+<div class="ref-what">Hormone replacement therapy does not appear to meaningfully raise cancer risk in women carrying a BRCA mutation, so risk-reducing removal of the tubes and ovaries should not be postponed merely to avoid needing hormones afterward - and replacement should be offered after that surgery to prevent the chronic consequences of early estrogen loss. Most studies found no adverse breast cancer effect; ovarian cancer results were ambiguous, some studies suggested differences by formulation and duration of use, and the overall evidence base is small.</div>
 <div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33885953/" target="_blank" rel="noopener">33885953</a></div>
 <details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: BRCA mutation carriers have an increased risk of developing breast or ovarian cancer. Risk-reducing bilateral salpingo-oophorectomy (RRBSO) is associated with a decrease in risk for tubal and ovarian cancer. Hormone replacement therapy (HRT) may increase breast, ovarian, and endometrial cancer risk in the general population. This review analyses the published data on HRT and risk of cancer in BRCA mutation carriers with and without RRBSO.<br><br>METHODS: We included all relevant articles published in English from 1995 to October 2020. Sources were identified through a search on PubMed and Cochrane Library.<br><br>RESULTS: We included one case-control and one retrospective cohort study on ovarian and one case-control study on endometrial cancer risk and HRT in BRCA mutation carriers. Regarding breast cancer risk, one case-control study on BRCA mutation carriers with and without RRBSO and one case-control study, one Markov chain decision model, two prospective cohort studies, and one metaanalysis on carriers after RRBSO were included. For ovarian cancer, results were ambiguous. For breast cancer, most studies did not find an adverse effect associated with HRT. However, some of the studies found a risk modification associated with different formulations and duration of use.<br><br>CONCLUSION: Although data are limited, HRT does not seem to have a relevant effect on cancer risk in BRCA mutation carriers. RRBSO should not be postponed to avoid subsequent HRT in this population. Adequate HRT after RRBSO should be offered to avoid chronic diseases resulting from low estrogen levels. However, further data on the safety of different formulations are needed.</div></details>
 </li>
-<li id="ref-8">
-<div class="ref-label"><strong>Askary et al., Impact of non-medical treatments of endometrioma on pregnancy outcome: a systematic review and meta-analysis, <em>Reprod Biomed Online</em> 2025</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/40907337/" target="_blank" rel="noopener">40907337</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">This meta-analysis assesses the impact of non-medical endometrioma treatments on pregnancy rates in infertile women with endometriosis. Based on a search of PubMed, Scopus, EMBASE and Web of Science, 24 prospective English-language studies (2000-2022, participant age 15-45 years, n = 2458) were identified that reported treatment and pregnancy rates based on the 2020 PRISMA checklist. Random effects modelling minimized bias; heterogeneity (I²) and publication bias were assessed using MedCalc. The results showed 95% confidence intervals, and statistical comparisons were performed using the Kruskal-Wallis, analysis of variance or chi-squared test. It was found that cystectomy and ablation yielded similar pregnancy rates: 39.28% and 42.94% for ART, and 40.25% and 34.08% for natural pregnancies (P &gt; 0.05). Sclerotherapy and no treatment also resulted in acceptable pregnancy rates while coagulation and fenestration were associated with lower success rates and higher recurrence (up to 38.79%). Overall, cystectomy and ablation were considered as effective alternatives for improving fertility outcomes in this population. Future research on endometriomas and infertility should involve well-designed randomized controlled trials with larger and more diverse populations, additional fertility factors and standardized follow-up periods.</div></details>
-</li>
-<li id="ref-9">
-<div class="ref-label"><strong>Grigalashvili et al., INTEGRATED MANAGEMENT OF OVARIAN ENDOMETRIOMAS: PRE- AND POST-SURGICAL USE OF DIENOGEST, <em>Georgian Med News</em> 2024</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/39724904/" target="_blank" rel="noopener">39724904</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">AIM: to evaluate the efficacy of an integrated management approach for ovarian endometriomas using Dienogest administered both before and after laparoscopic cyst enucleation in women with infertility.<br><br>MATERIALS AND METHODS: The prospective, comparative clinical trial included 44 patients aged 18-35 years with ovarian endometriomas and infertility. Patients were randomly divided into two groups: the study group (20 participants) received Dienogest for six months before and after laparoscopic cyst enucleation, while the control group (24 participants) underwent laparoscopic cyst enucleation without additional hormonal treatment. Outcomes measured included: cyst size (before treatment and after six months of Dienogest administration in the study group), serum levels of anti-Müllerian hormone (AMH), antral follicle count (AFC) in both groups (before and six months after surgery), pregnancy rates, and recurrence rates of endometriomas within a 1-year follow-up.<br><br>RESULTS: Study Group: Dienogest treatment resulted in a significant reduction in cyst size before surgery. AFC and AMH levels remained stable before and after surgery. At the 1-year follow-up, 13 participants (65%) achieved pregnancy, and endometrioma recurrence was observed in 3 participants (15%).<br><br>CONTROL GROUP: Six months post-surgery, AFC and AMH levels were significantly lower than pre-surgery levels. During the follow-up, 7 participants (29.2%) achieved pregnancy, and endometrioma recurrence was noted in 19 participants (79.2%).<br><br>CONCLUSION: The integrated management approach using Dienogest administered both before and after laparoscopic cyst enucleation has proven to be effective in improving reproductive outcomes and reducing recurrence rates of ovarian endometriomas in women with infertility.</div></details>
-</li>
-<li id="ref-10">
-<div class="ref-label"><strong>Didar et al., Adnexal torsion in pregnancy: A systematic review of case reports and case series, <em>Am J Emerg Med</em> 2023</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/36584539/" target="_blank" rel="noopener">36584539</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVES: This study aimed to investigate clinical presentations, surgical procedures and findings, complications, and predisposing factors of adnexal torsion in pregnant women.<br><br>METHODS: We searched PubMed/Medline, Embase, and Web of Science from January 2000 to March 2022. All case reports and case series with full-text English language reporting adnexal torsion in pregnant women were included. Medical history, clinical presentations, surgical procedures and findings, complications related to adnexal torsion, and predisposing factors were independently extracted by two investigators.<br><br>RESULTS: A total of 182 articles reporting 662 pregnant women with adnexal torsion were included. Most of the adnexal torsions occurred during the first trimester (54.63%), while others occurred during the second (26.36%) and third (19.00%) trimesters. The most common symptom of adnexal torsion was sudden-onset pain (80.60%). Enlargement of the adnexa was the most prevalent ultrasound finding in a twisted adnexa (95.20%). Additionally, about half of the patients had decreased blood flow in Doppler ultrasound (53.80%). Laparoscopic surgery was the favorite option (56.88%), while cystectomy and detorsion were the most commonly performed procedure (29.06%). Expectant management was reported in only 2.99% of the patients. In addition, the most common complications were preterm labor (27.58%) and emergent cesarean sections (25.28%).<br><br>CONCLUSIONS: Clinicians should think of adnexal torsion when pregnant women complain of sudden-onset pain. Then, using ultrasound, adnexal enlargement or masses should be explored seriously. They should take invasive and urgent therapy to preserve ovaries and prevent complications.</div></details>
-</li>
-<li id="ref-11">
-<div class="ref-label"><strong>Farkas et al., Perioperative hormone treatment of endometriosis, <em>Curr Opin Obstet Gynecol</em> 2023</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37610988/" target="_blank" rel="noopener">37610988</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE OF REVIEW: The use of hormonally suppressive medication to reduce levels of reproductive hormones around the time of surgery is widely used in the management of endometriosis. This review summarizes the current evidence concerning the perioperative use of hormonal treatment in the management of endometriosis.<br><br>RECENT FINDINGS: European Society of Human Reproduction and Embryology (ESHRE) guidanceSurgical Outcomes and Complications of Laparoscopic Hysterectomy for Endometriosis: A Multicentre Cohort StudyPre and postsurgical medical therapy for endometriosis surgery. Cochrane 2020Postoperative hormonal treatment for prevention of endometrioma recurrence after ovarian cystectomy: a systematic review and network meta-analysis. BJOG 2021.<br><br>SUMMARY: The literature highlights the importance of hormonal treatment for symptom relief, reduced surgical complications and postoperative benefits, including a reduction in pain, disease recurrence and improved pregnancy rates. The treatment of endometriosis can be broadly categorized into medical, commonly using hormonal suppression medications and surgical, in which endometriosis tissue is excised or ablated. This review aims to outline current management strategies and examines the relationship between the two treatment modalities.</div></details>
-</li>
-<li id="ref-12">
-<div class="ref-label"><strong>Garde et al., Diagnostic accuracy of ultrasound signs for detecting adnexal torsion: systematic review and meta-analysis, <em>Ultrasound Obstet Gynecol</em> 2023</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35751902/" target="_blank" rel="noopener">35751902</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the diagnostic accuracy of different ultrasound signs for diagnosing adnexal torsion, using surgery as the reference standard.<br><br>METHODS: This was a systematic review and meta-analysis of studies published between January 1990 and November 2021 evaluating ovarian edema, adnexal mass, ovarian Doppler flow findings, the whirlpool sign and pelvic fluid as ultrasound signs (index tests) for detecting adnexal torsion, using surgical findings as the reference standard. The search for studies was performed in PubMed/MEDLINE, CINAHL, Scopus, The Cochrane Library, ClinicalTrials.gov and Web of Science databases. The Quality Assessment of Diagnostic Accuracy Studies-2 (QUADAS-2) tool was used to evaluate the quality of the studies. Pooled sensitivity, specificity, and positive and negative likelihood ratios were calculated separately, and the post-test probability of adnexal torsion following a positive or negative test was also determined.<br><br>RESULTS: The search identified 1267 citations after excluding duplicates. Eighteen studies were ultimately included in the qualitative and quantitative syntheses. Eight studies (809 patients) analyzed the presence of ovarian edema, eight studies (1044 patients) analyzed the presence of an adnexal mass, 14 studies (1742 patients) analyzed ovarian Doppler flow, six studies (545 patients) analyzed the whirlpool sign and seven studies (981 patients) analyzed the presence of pelvic fluid as ultrasound signs of adnexal torsion. Overall, the quality of most studies was considered to be moderate or good. However, there was a high risk of bias in the patient-selection and index-text domains (with the exception of the whirlpool sign) in a significant proportion of studies. Pooled sensitivity, specificity, and positive and negative likelihood ratios of each ultrasound sign were 58%, 86%, 4.0 and 0.49 for ovarian edema, 69%, 46%, 1.3 and 0.67 for adnexal mass, 65%, 91%, 7.6 and 0.38 for the whirlpool sign, 53%, 95%, 11.0 and 0.49 for ovarian Doppler findings and 55%, 69%, 1.7 and 0.66 for pelvic fluid. Heterogeneity was high for all analyses.<br><br>CONCLUSIONS: The presence of an adnexal mass or pelvic fluid have poor diagnostic accuracy as ultrasound signs of adnexal torsion, while the presence of ovarian edema, the whirlpool sign and decreased or absent ovarian Doppler flow have good specificity but moderate sensitivity for detecting adnexal torsion. © 2022 The Authors. Ultrasound in Obstetrics &amp; Gynecology published by John Wiley &amp; Sons Ltd on behalf of International Society of Ultrasound in Obstetrics and Gynecology.</div></details>
-</li>
-<li id="ref-13">
-<div class="ref-label"><strong>Stolarova et al., ENIGMA CHEK2gether Project: A Comprehensive Study Identifies Functionally Impaired CHEK2 Germline Missense Variants Associated with Increased Breast Cancer Risk, <em>Clin Cancer Res</em> 2023</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/37449874/" target="_blank" rel="noopener">37449874</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Germline pathogenic variants in CHEK2 confer moderately elevated breast cancer risk (odds ratio, OR ∼ 2.5), qualifying carriers for enhanced breast cancer screening. Besides pathogenic variants, dozens of missense CHEK2 variants of uncertain significance (VUS) have been identified, hampering the clinical utility of germline genetic testing (GGT).<br><br>EXPERIMENTAL DESIGN: We collected 460 CHEK2 missense VUS identified by the ENIGMA consortium in 15 countries. Their functional characterization was performed using CHEK2-complementation assays quantifying KAP1 phosphorylation and CHK2 autophosphorylation in human RPE1-CHEK2-knockout cells. Concordant results in both functional assays were used to categorize CHEK2 VUS from 12 ENIGMA case-control datasets, including 73,048 female patients with breast cancer and 88,658 ethnicity-matched controls.<br><br>RESULTS: A total of 430/460 VUS were successfully analyzed, of which 340 (79.1%) were concordant in both functional assays and categorized as functionally impaired (N = 102), functionally intermediate (N = 12), or functionally wild-type (WT)-like (N = 226). We then examined their association with breast cancer risk in the case-control analysis. The OR and 95% CI (confidence intervals) for carriers of functionally impaired, intermediate, and WT-like variants were 2.83 (95% CI, 2.35-3.41), 1.57 (95% CI, 1.41-1.75), and 1.19 (95% CI, 1.08-1.31), respectively. The meta-analysis of population-specific datasets showed similar results.<br><br>CONCLUSIONS: We determined the functional consequences for the majority of CHEK2 missense VUS found in patients with breast cancer (3,660/4,436; 82.5%). Carriers of functionally impaired missense variants accounted for 0.5% of patients with breast cancer and were associated with a moderate risk similar to that of truncating CHEK2 variants. In contrast, 2.2% of all patients with breast cancer carried functionally wild-type/intermediate missense variants with no clinically relevant breast cancer risk in heterozygous carriers.</div></details>
-</li>
-<li id="ref-14">
-<div class="ref-label"><strong>Arecco et al., Safety of fertility preservation techniques before and after anticancer treatments in young women with breast cancer: a systematic review and meta-analysis, <em>Hum Reprod</em> 2022</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35220429/" target="_blank" rel="noopener">35220429</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">STUDY QUESTION: Is it safe to perform controlled ovarian stimulation (COS) for fertility preservation before starting anticancer therapies or ART after treatments in young breast cancer patients?<br><br>SUMMARY ANSWER: Performing COS before, or ART following anticancer treatment in young women with breast cancer does not seem to be associated with detrimental prognostic effect in terms of breast cancer recurrence, mortality or event-free survival (EFS).<br><br>WHAT IS KNOWN ALREADY: COS for oocyte/embryo cryopreservation before starting chemotherapy is standard of care for young women with breast cancer wishing to preserve fertility. However, some oncologists remain concerned on the safety of COS, particularly in patients with hormone-sensitive tumors, even when associated with aromatase inhibitors. Moreover, limited evidence exists on the safety of ART in breast cancer survivors for achieving pregnancy after the completion of anticancer treatments.<br><br>STUDY DESIGN, SIZE, DURATION: The present systematic review and meta-analysis was carried out by three blinded investigators using the keywords &#x27;breast cancer&#x27; and &#x27;fertility preservation&#x27;; keywords were combined with Boolean operators. Eligible studies were identified by a systematic literature search of Medline, Web of Science, Embase and Cochrane library with no language or date restriction up to 30 June 2021.<br><br>PARTICIPANTS/MATERIALS, SETTING, METHODS: To be included in this meta-analysis, eligible studies had to be case-control or cohort studies comparing survival outcomes of women who underwent COS or ART before or after breast cancer treatments compared to breast cancer patients not exposed to these strategies. Survival outcomes of interest were cancer recurrence rate, relapse rate, overall survival and number of deaths. Adjusted relative risk (RR) and hazard ratio (HR) with 95% CI were extracted. When the number of events for each group were available but the above measures were not reported, HRs were estimated using the Watkins and Bennett method. We excluded case reports or case series with &lt;10 patients and studies without a control group of breast cancer patients who did not pursue COS or ART. Quality of data and risk of bias were assessed using the Newcastle-Ottawa Assessment Scale.<br><br>MAIN RESULTS AND THE ROLE OF CHANCE: A total of 1835 records were retrieved. After excluding ineligible publications, 15 studies were finally included in the present meta-analysis (n = 4643). Among them, 11 reported the outcomes of breast cancer patients who underwent COS for fertility preservation before starting chemotherapy, and 4 the safety of ART following anticancer treatment completion. Compared to women who did not receive fertility preservation at diagnosis (n = 2386), those who underwent COS (n = 1594) had reduced risk of recurrence (RR 0.58, 95% CI 0.46-0.73) and mortality (RR 0.54, 95% CI 0.38-0.76). No detrimental effect of COS on EFS was observed (HR 0.76, 95% CI 0.55-1.06). A similar trend of better outcomes in terms of EFS was observed in women with hormone-receptor-positive disease who underwent COS (HR 0.36, 95% CI 0.20-0.65). A reduced risk of recurrence was also observed in patients undergoing COS before neoadjuvant chemotherapy (RR 0.22, 95% CI 0.06-0.80). Compared to women not exposed to ART following completion of anticancer treatments (n = 540), those exposed to ART (n = 123) showed a tendency for better outcomes in terms of recurrence ratio (RR 0.34, 95% CI 0.17-0.70) and EFS (HR 0.43, 95% CI 0.17-1.11).<br><br>LIMITATIONS, REASONS FOR CAUTION: This meta-analysis is based on abstracted data and most of the studies included are retrospective cohort studies. Not all studies had matching criteria between the study population and the controls, and these criteria often differed between the studies. Moreover, rate of recurrence is reported as a punctual event and it is not possible to establish when recurrences occurred and whether follow-up, which was shorter than 5 years in some of the included studies, is adequate to capture late recurrences.<br><br>WIDER IMPLICATIONS OF THE FINDINGS: Our results demonstrate that performing COS at diagnosis or ART following treatment completion does not seem to be associated with detrimental prognostic effect in young women with breast cancer, including among patients with hormone receptor-positive disease and those receiving neoadjuvant chemotherapy.<br><br>STUDY FUNDING/COMPETING INTEREST(S): Partially supported by the Associazione Italiana per la Ricerca sul Cancro (AIRC; grant number MFAG 2020 ID 24698) and the Italian Ministry of Health-5 × 1000 funds 2017 (no grant number). M.L. acted as consultant for Roche, Pfizer, Novartis, Lilly, AstraZeneca, MSD, Exact Sciences, Gilead, Seagen and received speaker honoraria from Roche, Pfizer, Novartis, Lilly, Ipsen, Takeda, Libbs, Knight, Sandoz outside the submitted work. F.S. acted as consultant for Novartis, MSD, Sun Pharma, Philogen and Pierre Fabre and received speaker honoraria from Roche, Novartis, BMS, MSD, Merck, Sun Pharma, Sanofi and Pierre Fabre outside the submitted work. I.D. has acted as a consultant for Roche, has received research grants from Roche and Ferring, has received reagents for academic clinical trial from Roche diagnostics, speaker&#x27;s fees from Novartis, and support for congresses from Theramex and Ferring outside the submitted work. L.D.M. reported honoraria from Roche, Novartis, Eli Lilly, MSD, Pfizer, Ipsen, Novartis and had an advisory role for Roche, Eli Lilly, Novartis, MSD, Genomic Health, Pierre Fabre, Daiichi Sankyo, Seagen, AstraZeneca, Eisai outside the submitted work. The other authors declare no conflict of interest. The funding organizations had no role in the design and conduct of the study; collection, management, analysis, and interpretation of the data; preparation, review, or approval of the manuscript and decision to submit the manuscript for publication.<br><br>REGISTRATION NUMBER: N/A.</div></details>
-</li>
-<li id="ref-15">
-<div class="ref-label"><strong>Kim et al., Ultrasound-guided sclerotherapy for the treatment of ovarian endometrioma: an updated systematic review and meta-analysis, <em>Eur Radiol</em> 2022</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34580747/" target="_blank" rel="noopener">34580747</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To determine the efficacy and safety of ultrasound (US)-guided sclerotherapy for the treatment of ovarian endometrioma through a systematic review and meta-analysis.<br><br>METHODS: MEDLINE and EMBASE databases were searched for studies reporting outcomes in patients with endometrioma who were treated with US-guided sclerotherapy. Meta-analyses of recurrence, pain resolution, pregnancy, technical success, and complication rates were analyzed. Subgroup analyses were conducted regarding the indwelling time of sclerotherapy (≤ 10 min vs &gt; 10 min).<br><br>RESULTS: Twenty-eight studies (1301 patients) were included. The pooled technical efficacy was 98.3%. The pooled estimates of recurrence, pain resolution, and pregnancy rate were 13.8%, 85.9%, and 37.6%, respectively. The pooled major complication rate was 1.7%. A sclerotherapy time &gt; 10 min had a lower pooled recurrence rate than a time ≤ 10 min (11.2% vs 20.9%; p = 0.106). Direct comparisons showed that the recurrence rate was significantly lower with sclerotherapy &gt; 10 min than with sclerotherapy ≤ 10 min (OR, 0.2; p = 0.015). Regarding pregnancy rates, sclerotherapy of &gt; 10 min showed no significant difference compared with sclerotherapy of ≤ 10 min (35.9% vs 38.8%; p = 0.664). Direct comparisons with surgery showed that sclerotherapy increased the pregnancy rate compared with surgery (OR, 2.0; p = 0.042). There was no significant difference in AMH level before and after sclerotherapy (p = 0.951). There was no significant difference in major complication rates between sclerotherapy &gt; 10 min and ≤ 10 min (p = 0.837).<br><br>CONCLUSION: US-guided sclerotherapy seems to be an effective and safe therapeutic option regarding recurrence, pain resolution, and pregnancy for patients with ovarian endometrioma.<br><br>KEY POINTS: • US-guided sclerotherapy seems to be an effective and safe therapeutic option regarding recurrence, pain resolution, and pregnancy for patients with ovarian endometrioma. • Sclerotherapy of more than 10 min had a lower recurrence rate than sclerotherapy less than or equal to 10 min. There was no significant difference in major complication rates between sclerotherapy of &gt; 10 min and ≤ 10 min. • Future randomized controlled trials are warranted to compare the outcomes of US-guided sclerotherapy with surgery.</div></details>
-</li>
-<li id="ref-16">
-<div class="ref-label"><strong>Loibl et al., Neoadjuvant durvalumab improves survival in early triple-negative breast cancer independent of pathological complete response, <em>Ann Oncol</em> 2022</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/35961599/" target="_blank" rel="noopener">35961599</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Addition of immune checkpoint inhibitors to neoadjuvant chemotherapy (NACT) is a promising strategy in early breast cancer, but the optimal duration of therapy is currently unknown. In the GeparNuevo (NCT02685059) trial, addition of durvalumab to NACT as previously reported led to a moderate increase in pathological complete response (pCR) rate by an absolute 9% (P = 0.287).<br><br>PATIENTS AND METHODS: Patients with cT1b-cT4a-d triple-negative breast cancer (TNBC) received durvalumab 1.5 g or placebo every 4 weeks added to nab-paclitaxel 125 mg/m2 weekly for 12 weeks, followed by durvalumab/placebo every 4 weeks plus epirubicin/cyclophosphamide every 2 weeks followed by surgery. Durvalumab was not continued after surgery. The primary objective was pCR. Secondary endpoints included invasive disease-free survival (iDFS), distant disease-free survival (DDFS) and overall survival (OS).<br><br>RESULTS: A total of 174 patients were randomised between June 2016 and October 2017. After a median follow-up of 43.7 months, 34 events had occurred. Despite a non-significant increase in the pCR rate, significant differences were observed for 3-year iDFS, DDFS and OS: iDFS was 85.6% with durvalumab versus 77.2% with placebo [hazard ratio (HR) 0.48, 95% confidence interval (CI) 0.24-0.97, stratified log-rank P = 0.036]; DDFS 91.7% versus 78.4% (HR 0.31, 95% CI 0.13-0.74, P = 0.005); OS 95.2% versus 83.5% (HR 0.24, 95% CI 0.08-0.72, P = 0.006). pCR patients had 3-year iDFS of 95.5% with durvalumab and 86.1% without (HR 0.22, 95% CI 0.05-1.06). In the non-pCR cohort 3-year iDFS was 76.3% versus 69.7% (HR 0.67, 95% CI 0.29-1.54). Multivariable analysis confirmed a durvalumab effect independent of the pCR effect. No new safety signals occurred.<br><br>CONCLUSIONS: Durvalumab added to NACT in TNBC significantly improved survival despite a modest pCR increase and no adjuvant component of durvalumab. Additional studies are needed to clarify the optimal duration and sequence of checkpoint inhibitors in the treatment of early TNBC.</div></details>
-</li>
-<li id="ref-17">
-<div class="ref-label"><strong>Cagino et al., Surgical Management of Adnexal Masses in Pregnancy: A Systematic Review and Meta-analysis, <em>J Minim Invasive Gynecol</em> 2021</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33515746/" target="_blank" rel="noopener">33515746</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: The incidence of adnexal masses in pregnancy is 1% to 6%. Although surgery is often indicated, there are no definitive management guidelines. We aimed to investigate the optimal approach to surgical management of adnexal masses in pregnancy on the basis of a meta-analysis of previous studies.<br><br>DATA SOURCES: We performed a systematic review using MEDLINE, Embase, Cochrane Library, and Clinicaltrials.gov from inception to July 17, 2020.<br><br>METHODS OF STUDY SELECTION: There were no restrictions on study type, language, or publication date. Comparative and noncomparative retrospective studies that reviewed operative techniques used in surgery of adnexal masses in pregnancy were included. Meta-analyses were performed to assess outcomes. This study was registered in the International Prospective Register of Systematic Reviews (CRD42019129709).<br><br>TABULATION, INTEGRATION, AND RESULTS: Comparative studies were identified for laparoscopy vs laparotomy and elective vs emergent surgery (11 and 4, respectively). Elective surgery is defined as a scheduled antepartum procedure. For laparoscopy vs laparotomy, the mean maternal ages and gestational ages at time of surgery were similar (27.8 years vs 27.7 years, p = .85; 16.2 weeks in laparoscopy vs 15.4 weeks in laparotomy, p = .59). Mass size was larger in those undergoing laparotomy (mean 8.8 cm vs 7.8 cm, p = .03). The most common pathologic condition was dermoid cyst (36%), and the risk of discovering a malignant tumor was 1%. Laparoscopy was not associated with a statistically increased risk of spontaneous abortion (SAB) or preterm delivery (PTD) (odds ratio [OR] 1.53; 95% confidence interval [CI], 0.67-3.52; p = .31 and OR 0.95; 95% CI, 0.47-1.89; p = .88, respectively). The mean length of hospital stay was 2.5 days after laparoscopy vs 5.3 days after laparotomy (p &lt;.001). The decrease in estimated blood loss in laparoscopy was not statistically significant (94.0 mL in laparotomy vs 54.0 mL in laparoscopy, p = .06). Operative times were similar in laparoscopy and laparotomy (80.0 minutes vs 72.5 minutes, p = .09). Elective surgery was associated with a decreased risk of PTD (OR 0.13; 95% CI, 0.04-0.48; p = .05). Noncomparative studies were identified for laparoscopy and laparotomy. Laparotomy had more SABs and PTDs than laparoscopy (pooled proportion = 0.02 vs 0.07 and pooled proportion = 0.02 vs 0.14, respectively).<br><br>CONCLUSION: Laparoscopy for the surgical management of adnexal masses in pregnancy is associated with shorter length of hospital stay and similar risk of SAB or PTD. Elective surgery is associated with a decreased risk of PTD.</div></details>
-</li>
-<li id="ref-18">
-<div class="ref-label"><strong>Grigore et al., Large ovarian tumors in adolescents, a systematic review of reported cases, diagnostic findings and surgical management, <em>Taiwan J Obstet Gynecol</em> 2021</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34247795/" target="_blank" rel="noopener">34247795</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">The purpose of this study was to analyze the published cases regarding large ovarian masses in adolescents, in order to find useful clinical implications for the diagnosis and management of the condition. The methodology employed a systematic review of reported cases of large/giant ovarian tumor in adolescence. The main objective was to assess the imagery findings, histology of the tumor, and the type of surgery performed. Our study included 58 patients with the tumor diameters ranged between 11 and 42 cm, with a median value of 22.75 cm and a mean diameter of 24.66 ± 8.50 cm. The lesions were benign in 47 cases (81%), borderline in 2 cases (3.4%), and malign in 9 cases (15.6%). We found no statistically significant difference (p &gt; 0.05) between the size of the tumors and the ovarian markers levels. At the same time, a statistically significant difference was identified (p=&lt;0,001) between elevated levels of the serum markers and the malignant tumor type (OR = 12.45; CI95 = 2.55-94.77). The main types of surgery performed were cystectomy (35 cases), oophorectomy (4 cases), salpingo-oophorectomy (18 cases). Open laparotomy was performed in 46 cases on tumors with a median diameter of 25 ± 8.8 cm, while laparoscopy was done in 12 cases on tumors with a median diameter of 23.7 ± 7.6 cm. For optimal surgical management, it is advisable to assess first the imagery findings and tumor markers. Then, the laparoscopic approach should be considered as a feasible option, especially in cases where there are no predictive factors for a malign disease.</div></details>
-</li>
-<li id="ref-19">
-<div class="ref-label"><strong>Jiang et al., Risk factors for ovarian endometrioma recurrence following surgical excision: a systematic review and meta‑analysis, <em>Arch Gynecol Obstet</em> 2021</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/34148122/" target="_blank" rel="noopener">34148122</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Exploring potential risk factors for OMA recurrence, thereby contributing to the individual management of the disease and improving the patients&#x27; prognosis.<br><br>METHODS: Data sources PubMed, Embase, the Cochrane Library, CNKI, and Wanfang data were searched systematically before October 2020. We computed the pooled odd ratios or the standard mean difference with their corresponding 95% confidence interval to investigate the impact of involved risk factors on endometrioma recurrence.<br><br>RESULTS: The pooled findings of this meta-analysis demonstrated that endometrioma relapse was closely related to age at surgery [SMD (95% CI):  - 0.28 (- - 0.38 to  - 0.17), P &lt; 0.00001], CA125 level [SMD (95% CI): 0.51 (0.14-0.88), P = 0.007], cyst size [SMD (95% CI): 0.35 (0.08-0.62), P = 0.01], dysmenorrhea [OR (95% CI): 1.47 (1.07-2.02), P = 0.02], endometriosis-related surgery history [OR (95% CI): 2.60 (1.84-3.67), P &lt; 0.00001], pre-operative medication [OR (95% CI): 2.13 (1.41-3.22), P = 0.0003], rASRM score [SMD (95% CI): 0.33 (0.20-0.46), P &lt; 0.00001]. Furthermore, post-operative pregnancy was indicated a protective factor for preventing the OMA recurrence after surgery [OR (95% CI): 0.22 (0.09-0.56), P = 0.001] CONCLUSION: Age at surgery, CA125 level, cyst size, dysmenorrhea, endometriosis-related surgery history, pre-operative medication, rASRM score were risk factors for endometrioma relapse. In addition, post-operative pregnancy was a protective factor for preventing recurrence after surgery. However, the effect of bilateral involvement, combination with adenomyosis, or post-operative medication on endometrioma relapse need further investigations.</div></details>
-</li>
-<li id="ref-20">
-<div class="ref-label"><strong>Wang et al., Salpingo-oophorectomy versus cystectomy in patients with borderline ovarian tumors: a systemic review and meta-analysis on postoperative recurrence and fertility, <em>World J Surg Oncol</em> 2021</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/33882931/" target="_blank" rel="noopener">33882931</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: To compare the postoperative recurrence and fertility in patients with borderline ovarian tumors (BOTs) who underwent different surgical procedures: salpingo-oophorectomy versus cystectomy.<br><br>METHODS: Potentially relevant literature from inception to Nov. 06, 2020, were retrieved in databases including Cochrane Library, EMBASE (Ovid), and MEDLINE (Pubmed). We applied the keywords &quot;fertility-sparing surgery,&quot; or &quot;conservative surgery,&quot; or &quot;cystectomy,&quot; or &quot;salpingo-oophorectomy,&quot; or &quot;oophorectomy,&quot; or &quot;adnexectomy,&quot; or &quot;borderline ovarian tumor&quot; for literate searching. Systemic reviews and meta-analyses were performed on the postoperative recurrence rates and pregnancy rates between patients receiving the two different surgical methods. Begger&#x27;s methods, Egger&#x27;s methods, and funnel plot were used to evaluate the publication bias.<br><br>RESULT: Among the sixteen eligible studies, the risk of recurrence was evaluated in all studies, and eight studies assessed the postoperative pregnancy rates in the BOT patients. A total of 1839 cases with borderline ovarian tumors were included, in which 697 patients (37.9%) received unilateral salpingo-oophorectomy and 1142 patients (62.1%) underwent unilateral/bilateral cystectomy. Meta-analyses showed that BOT patients with unilateral/bilateral cystectomy had significantly higher recurrence risk (OR=2.02, 95% CI: 1.59-2.57) compared with those receiving unilateral salpingo-oophorectomy. Pooled analysis of four studies further confirmed the higher risk of recurrence in patients with cystectomy (HR=2.00, 95% CI: 1.11-3.58). In addition, no significant difference in postoperative pregnancy rate was found between patients with the two different surgical procedures (OR=0.92, 95% CI: 0.60-1.42).<br><br>CONCLUSION: Compared with the unilateral/bilateral cystectomy, the unilateral salpingo-oophorectomy significantly reduces the risk of postoperative recurrence in patients with BOT, and it does not reduce the pregnancy of patients after surgery.<br><br>TRIAL REGISTRATION: PROSPERO CRD42021238177.</div></details>
-</li>
-<li id="ref-21">
-<div class="ref-label"><strong>Wattanayingcharoenchai et al., Postoperative hormonal treatment for prevention of endometrioma recurrence after ovarian cystectomy: a systematic review and network meta-analysis, <em>BJOG</em> 2021</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32558987/" target="_blank" rel="noopener">32558987</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: The efficacy of hormonal regimens for the prevention of endometrioma recurrence in women who have undergone conservative surgery is still controversial.<br><br>OBJECTIVE: To compare the efficacy of different hormonal regimens in this context and to rank them.<br><br>SEARCH STRATEGY: MEDLINE and Scopus databases were searched through January 2020.<br><br>SELECTION CRITERIA: Randomised controlled trials (RCTs) or cohorts, comparing the effect of any pair of interventions (i.e. cyclic oral contraceptives [OC], continuous OC, gonadotropin-releasing hormone agonist [GnRHa], dienogest [DNG], levonorgestrel-releasing intrauterine system [LNG-IUS] and expectant management) on endometrioma recurrence were selected.<br><br>DATA COLLECTION AND ANALYSIS: Data were independently extracted by two reviewers. Relative treatment effects were estimated using network meta-analysis (NMA) and ranked in descending order.<br><br>MAIN RESULTS: Six RCTs (675 patients) and 16 cohorts (3089 patients) were included. NMA of the RCTs involving expectant management, cyclic OC, continuous OC, GnRHa and GnRHa + LNG-IUS, showed that all hormonal regimens had a nonsignificant lower risk of endometrioma recurrence compared with expectant management. NMA of the cohorts involving expectant, cyclic OC, continuous OC, GnRHa, DNG, LNG-IUS, GnRHa + OC, and GnRHa + LNG-IUS indicated that LNG-IUS, DNG, continuous OC, GnRHa + OC and cyclic OC had a significantly lower risk of endometrioma recurrence than expectant management. LNG-IUS was ranked highest, followed by DNG and GnRHa + LNG-IUS. Long-term use of hormonal treatment either OC or progestin had a significantly lower risk of endometrioma recurrence than expectant treatment.<br><br>CONCLUSION: In the NMA of RCTs, there was no evidence supporting hormonal treatment for postoperative prevention of endometrioma recurrence. This was at odds with the cohort evidence, which found the protective effect of OC and progestin regimens, especially long-term treatment. Large-scale RCTs of these agents are still required.<br><br>TWEETABLE ABSTRACT: Hormonal regimens given as long-term treatment tend to reduce risk of endometrioma recurrence after conservative surgery.</div></details>
-</li>
-<li id="ref-22">
-<div class="ref-label"><strong>Li et al., Unilateral cystectomy and serous histology are associated with relapse in borderline ovarian tumor patients with fertility-sparing surgery: a systematic review and meta-analysis, <em>Arch Gynecol Obstet</em> 2020</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32748055/" target="_blank" rel="noopener">32748055</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Surgical procedures, histological subtypes, and surgical approaches are involved in the recurrence of borderline ovarian tumors (BOTs), but whether those three factors affect relapse remains controversial. This study aimed to explore the effects of surgical procedures, histological subtypes, and surgical approaches on the relapse and pregnancy rates of BOT after fertility-preserving surgery (FPS) according to the patients&#x27; characteristics.<br><br>METHODS: A systematic search of PubMed, Embase, and the Cochrane library was conducted from their inception to November 2018. Studies that investigated the impact of surgical procedures, histological subtypes, and surgical approaches on the relapse and pregnancy rates in patients with BOT after FPS were eligible. The pooled odds ratios (ORs) with the corresponding 95% confidence intervals (CIs) were calculated using the random-effects model.<br><br>RESULTS: Thirty-five studies involving a total of 2921 patients with BOT after FPS were included. The pooled ORs indicated that the risk of relapse was significantly increased in patients who underwent unilateral cystectomy or with serous BOT. There was no significant difference between laparoscopy and laparotomy on the risk of relapse. Surgical procedures, histological subtypes, and surgical approaches did not influence pregnancy rates.<br><br>CONCLUSIONS: Patients who underwent unilateral cystectomy or with serous BOT presented an excess risk of relapse after FPS, but the surgical approach did not affect the risk of relapse. The pregnancy rate is not affected by surgical procedures, histological subtypes, and surgical approaches.</div></details>
-</li>
-<li id="ref-23">
-<div class="ref-label"><strong>Zhang et al., Genome-wide association study identifies 32 novel breast cancer susceptibility loci from overall and subtype-specific analyses, <em>Nat Genet</em> 2020</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/32424353/" target="_blank" rel="noopener">32424353</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">Breast cancer susceptibility variants frequently show heterogeneity in associations by tumor subtype1-3. To identify novel loci, we performed a genome-wide association study including 133,384 breast cancer cases and 113,789 controls, plus 18,908 BRCA1 mutation carriers (9,414 with breast cancer) of European ancestry, using both standard and novel methodologies that account for underlying tumor heterogeneity by estrogen receptor, progesterone receptor and human epidermal growth factor receptor 2 status and tumor grade. We identified 32 novel susceptibility loci (P &lt; 5.0 × 10-8), 15 of which showed evidence for associations with at least one tumor feature (false discovery rate &lt; 0.05). Five loci showed associations (P &lt; 0.05) in opposite directions between luminal and non-luminal subtypes. In silico analyses showed that these five loci contained cell-specific enhancers that differed between normal luminal and basal mammary cells. The genetic correlations between five intrinsic-like subtypes ranged from 0.35 to 0.80. The proportion of genome-wide chip heritability explained by all known susceptibility loci was 54.2% for luminal A-like disease and 37.6% for triple-negative disease. The odds ratios of polygenic risk scores, which included 330 variants, for the highest 1% of quantiles compared with middle quantiles were 5.63 and 3.02 for luminal A-like and triple-negative disease, respectively. These findings provide an improved understanding of genetic predisposition to breast cancer subtypes and will inform the development of subtype-specific polygenic risk scores.</div></details>
-</li>
-<li id="ref-24">
-<div class="ref-label"><strong>González-Martín et al., Niraparib in Patients with Newly Diagnosed Advanced Ovarian Cancer, <em>N Engl J Med</em> 2019</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/31562799/" target="_blank" rel="noopener">31562799</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Niraparib, an inhibitor of poly(adenosine diphosphate [ADP]-ribose) polymerase (PARP), has been associated with significantly increased progression-free survival among patients with recurrent ovarian cancer after platinum-based chemotherapy, regardless of the presence or absence of BRCA mutations. The efficacy of niraparib in patients with newly diagnosed advanced ovarian cancer after a response to first-line platinum-based chemotherapy is unknown.<br><br>METHODS: In this randomized, double-blind, phase 3 trial, we randomly assigned patients with newly diagnosed advanced ovarian cancer in a 2:1 ratio to receive niraparib or placebo once daily after a response to platinum-based chemotherapy. The primary end point was progression-free survival in patients who had tumors with homologous-recombination deficiency and in those in the overall population, as determined on hierarchical testing. A prespecified interim analysis for overall survival was conducted at the time of the primary analysis of progression-free survival.<br><br>RESULTS: Of the 733 patients who underwent randomization, 373 (50.9%) had tumors with homologous-recombination deficiency. Among the patients in this category, the median progression-free survival was significantly longer in the niraparib group than in the placebo group (21.9 months vs. 10.4 months; hazard ratio for disease progression or death, 0.43; 95% confidence interval [CI], 0.31 to 0.59; P&lt;0.001). In the overall population, the corresponding progression-free survival was 13.8 months and 8.2 months (hazard ratio, 0.62; 95% CI, 0.50 to 0.76; P&lt;0.001). At the 24-month interim analysis, the rate of overall survival was 84% in the niraparib group and 77% in the placebo group (hazard ratio, 0.70; 95% CI, 0.44 to 1.11). The most common adverse events of grade 3 or higher were anemia (in 31.0% of the patients), thrombocytopenia (in 28.7%), and neutropenia (in 12.8%). No treatment-related deaths occurred.<br><br>CONCLUSIONS: Among patients with newly diagnosed advanced ovarian cancer who had a response to platinum-based chemotherapy, those who received niraparib had significantly longer progression-free survival than those who received placebo, regardless of the presence or absence of homologous-recombination deficiency. (Funded by GlaxoSmithKline; PRIMA/ENGOT-OV26/GOG-3012 ClinicalTrials.gov number, NCT02655016.).</div></details>
-</li>
-<li id="ref-25">
-<div class="ref-label"><strong>Moore et al., Maintenance Olaparib in Patients with Newly Diagnosed Advanced Ovarian Cancer, <em>N Engl J Med</em> 2018</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/30345884/" target="_blank" rel="noopener">30345884</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Most women with newly diagnosed advanced ovarian cancer have a relapse within 3 years after standard treatment with surgery and platinum-based chemotherapy. The benefit of the oral poly(adenosine diphosphate-ribose) polymerase inhibitor olaparib in relapsed disease has been well established, but the benefit of olaparib as maintenance therapy in newly diagnosed disease is uncertain.<br><br>METHODS: We conducted an international, randomized, double-blind, phase 3 trial to evaluate the efficacy of olaparib as maintenance therapy in patients with newly diagnosed advanced (International Federation of Gynecology and Obstetrics stage III or IV) high-grade serous or endometrioid ovarian cancer, primary peritoneal cancer, or fallopian-tube cancer (or a combination thereof) with a mutation in BRCA1, BRCA2, or both ( BRCA1/2) who had a complete or partial clinical response after platinum-based chemotherapy. The patients were randomly assigned, in a 2:1 ratio, to receive olaparib tablets (300 mg twice daily) or placebo. The primary end point was progression-free survival.<br><br>RESULTS: Of the 391 patients who underwent randomization, 260 were assigned to receive olaparib and 131 to receive placebo. A total of 388 patients had a centrally confirmed germline BRCA1/2 mutation, and 2 patients had a centrally confirmed somatic BRCA1/2 mutation. After a median follow-up of 41 months, the risk of disease progression or death was 70% lower with olaparib than with placebo (Kaplan-Meier estimate of the rate of freedom from disease progression and from death at 3 years, 60% vs. 27%; hazard ratio for disease progression or death, 0.30; 95% confidence interval, 0.23 to 0.41; P&lt;0.001). Adverse events were consistent with the known toxic effects of olaparib.<br><br>CONCLUSIONS: The use of maintenance therapy with olaparib provided a substantial benefit with regard to progression-free survival among women with newly diagnosed advanced ovarian cancer and a BRCA1/2 mutation, with a 70% lower risk of disease progression or death with olaparib than with placebo. (Funded by AstraZeneca and Merck; SOLO1 ClinicalTrials.gov number, NCT01844986 .).</div></details>
-</li>
-<li id="ref-26">
-<div class="ref-label"><strong>Bascietto et al., Outcome of fetal ovarian cysts diagnosed on prenatal ultrasound examination: systematic review and meta-analysis, <em>Ultrasound Obstet Gynecol</em> 2017</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/27325566/" target="_blank" rel="noopener">27325566</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To explore the outcome of fetuses with a prenatal diagnosis of ovarian cyst.<br><br>METHODS: The electronic databases MEDLINE and EMBASE were searched using keywords and word variants for &#x27;ovarian cysts&#x27;, &#x27;ultrasound&#x27; and &#x27;outcome&#x27;. The following outcomes in fetuses with a prenatal diagnosis of ovarian cyst were explored: resolution of the cyst, change of ultrasound pattern of the cyst, occurrence of ovarian torsion and intracystic hemorrhage, need for postnatal surgery, need for oophorectomy, accuracy of prenatal ultrasound examination in correctly identifying ovarian cyst, type of ovarian cyst at histopathological analysis and intrauterine treatment. Meta-analyses using individual data random-effects logistic regression and meta-analyses of proportions were performed. Quality assessment of the included studies was performed using the Newcastle-Ottawa Scale.<br><br>RESULTS: Thirty-four studies (954 fetuses) were included. In 53.8% (95% CI, 46.0-61.5%) of cases for which resolution of the cyst was evaluated (784 fetuses), the cyst regressed either during pregnancy or after birth. The likelihood of resolution was significantly lower in complex vs simple cysts (odds ratio (OR), 0.15 (95% CI, 0.10-0.23)) and in cysts measuring ≥ 40 mm vs &lt; 40 mm (OR, 0.03 (95% CI, 0.01-0.06)). Change in ultrasound pattern of the cyst was associated with an increased risk of ovarian loss (surgical removal or autoamputation) (pooled proportion, 57.7% (95% CI, 42.9-71.8%)). The risk of ovarian torsion was significantly higher for cysts measuring ≥ 40 mm compared with &lt; 40 mm (OR, 30.8 (95% CI, 8.6-110.0)). The likelihood of having postnatal surgery was higher in patients with cysts ≥ 40 mm compared with &lt; 40 mm (OR, 64.4 (95% CI, 23.6-175.0)) and in complex compared with simple cysts, irrespective of cyst size (OR, 14.6 (95% CI, 8.5-24.8)). In cases undergoing prenatal aspiration of the cyst, rate of recurrence was 37.9% (95% CI, 14.8-64.3%), ovarian torsion and intracystic hemorrhage were diagnosed after birth in 10.8% (95% CI, 4.4-19.7%) and 12.8% (95% CI, 3.8-26.0%), respectively, and 21.8% (95% CI, 0.9-40.0%) had surgery after birth.<br><br>CONCLUSION: Size and ultrasound appearance are the major determinants of perinatal outcome in fetuses with ovarian cysts. Copyright © 2016 ISUOG. Published by John Wiley &amp; Sons Ltd.</div></details>
-</li>
-<li id="ref-27">
-<div class="ref-label"><strong>Cohen et al., Sclerotherapy in the management of ovarian endometrioma: systematic review and meta-analysis, <em>Fertil Steril</em> 2017</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28579409/" target="_blank" rel="noopener">28579409</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: To evaluate the efficacy of sclerotherapy for ovarian endometrioma on the risk of recurrence, clinical symptoms, and reproductive function.<br><br>DESIGN: Systematic review and meta-analysis.<br><br>SETTING: Not applicable.<br><br>PATIENT(S): Patients who underwent sclerotherapy of ovarian endometrioma.<br><br>INTERVENTION(S): An electronic-based search with the use of Pubmed, Embase, Ovid Medline, Google Scholar, Clinicaltrials.gov, and the Cochrane Central Register of Controlled Trials.<br><br>MAIN OUTCOME MEASURE(S): Recurrence rate, symptoms relief, fertility outcome, and adverse events.<br><br>RESULT(S): Eighteen studies were included in our review. The overall recurrence rates of endometrioma after sclerotherapy ranged from 0 to 62.5%. The risk of recurrence was significantly higher in women who were treated by means of ethanol washing than by means of ethanol retention. The number of oocytes retrieved was higher after endometrioma sclerotherapy compared with laparoscopic cystectomy, but clinical pregnancy rates were similar. There was no difference in the number of oocytes retrieved and the clinical pregnancy rates between the sclerotherapy-treated group with and the untreated group.<br><br>CONCLUSION(S): Sclerotherapy for ovarian endometrioma may be considered in symptomatic women who plan to conceive.</div></details>
-</li>
-<li id="ref-28">
-<div class="ref-label"><strong>Pujade-Lauraine et al., Olaparib tablets as maintenance therapy in patients with platinum-sensitive, relapsed ovarian cancer and a BRCA1/2 mutation (SOLO2/ENGOT-Ov21): a double-blind, randomised, placebo-controlled, phase 3 trial, <em>Lancet Oncol</em> 2017</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28754483/" target="_blank" rel="noopener">28754483</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">BACKGROUND: Olaparib, a poly(ADP-ribose) polymerase (PARP) inhibitor, has previously shown efficacy in a phase 2 study when given in capsule formulation to all-comer patients with platinum-sensitive, relapsed high-grade serous ovarian cancer. We aimed to confirm these findings in patients with a BRCA1 or BRCA2 (BRCA1/2) mutation using a tablet formulation of olaparib.<br><br>METHODS: This international, multicentre, double-blind, randomised, placebo-controlled, phase 3 trial evaluated olaparib tablet maintenance treatment in platinum-sensitive, relapsed ovarian cancer patients with a BRCA1/2 mutation who had received at least two lines of previous chemotherapy. Eligible patients were aged 18 years or older with an Eastern Cooperative Oncology Group performance status at baseline of 0-1 and histologically confirmed, relapsed, high-grade serous ovarian cancer or high-grade endometrioid cancer, including primary peritoneal or fallopian tube cancer. Patients were randomly assigned 2:1 to olaparib (300 mg in two 150 mg tablets, twice daily) or matching placebo tablets using an interactive voice and web response system. Randomisation was stratified by response to previous platinum chemotherapy (complete vs partial) and length of platinum-free interval (6-12 months vs ≥12 months) and treatment assignment was masked for patients, those giving the interventions, data collectors, and data analysers. The primary endpoint was investigator-assessed progression-free survival and we report the primary analysis from this ongoing study. The efficacy analyses were done on the intention-to-treat population; safety analyses included patients who received at least one dose of study treatment. This trial is registered with ClinicalTrials.gov, number NCT01874353, and is ongoing and no longer recruiting patients.<br><br>FINDINGS: Between Sept 3, 2013, and Nov 21, 2014, we enrolled 295 eligible patients who were randomly assigned to receive olaparib (n=196) or placebo (n=99). One patient in the olaparib group was randomised in error and did not receive study treatment. Investigator-assessed median progression-free survival was significantly longer with olaparib (19·1 months [95% CI 16·3-25·7]) than with placebo (5·5 months [5·2-5·8]; hazard ratio [HR] 0·30 [95% CI 0·22-0·41], p&lt;0·0001). The most common adverse events of grade 3 or worse severity were anaemia (38 [19%] of 195 patients in the olaparib group vs two [2%] of 99 patients in the placebo group), fatigue or asthenia (eight [4%] vs two [2%]), and neutropenia (ten [5%] vs four [4%]). Serious adverse events were experienced by 35 (18%) patients in the olaparib group and eight (8%) patients in the placebo group. The most common in the olaparib group were anaemia (seven [4%] patients), abdominal pain (three [2%] patients), and intestinal obstruction (three [2%] patients). The most common in the placebo group were constipation (two [2%] patients) and intestinal obstruction (two [2%] patients). One (1%) patient in the olaparib group had a treatment-related adverse event (acute myeloid leukaemia) with an outcome of death.<br><br>INTERPRETATION: Olaparib tablet maintenance treatment provided a significant progression-free survival improvement with no detrimental effect on quality of life in patients with platinum-sensitive, relapsed ovarian cancer and a BRCA1/2 mutation. Apart from anaemia, toxicities with olaparib were low grade and manageable.<br><br>FUNDING: AstraZeneca.</div></details>
-</li>
-<li id="ref-29">
-<div class="ref-label"><strong>Tyraskis et al., A systematic review and meta-analysis on fetal ovarian cysts: impact of size, appearance and prenatal aspiration, <em>Prenat Diagn</em> 2017</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/28886226/" target="_blank" rel="noopener">28886226</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">OBJECTIVE: The objective of the study is to compare outcomes of ultrasound-guided aspiration of fetal ovarian cysts with conservative management.<br><br>METHOD: A systematic review of MEDLINE and Web of Science included studies reporting outcomes (prenatal and postnatal torsion, spontaneous resolution and surgery) of fetuses with ovarian cysts. Subgroup analysis was performed according to cyst diameter at diagnosis and cysts ≥40 mm.<br><br>RESULTS: Ninety-two non-randomised studies reported on 380 cysts (324 observed and 56 aspirated in utero) in 365 fetuses. All studies were case reports or series with high heterogeneity and risk of bias. The overall spontaneous resolution rate of conservatively managed cysts was 46%, yet decreased with increasing cyst size. Risk of prenatal ovarian torsion in conservatively managed cases depended on cyst size and was particularly important in the range 30 to 59 mm (15-34%). The rate of prenatal torsion in simple cysts ≥40 mm was lower in aspirated than conservatively managed cysts (0% vs 10%, p = 0.03). Aspirated cysts had lower rates of postnatal surgery (7%) compared with conservatively managed cysts (49%, p &lt; 0.001).<br><br>CONCLUSION: Cysts 30 to 59 mm were at highest risk of torsion. Simple cysts &gt;40 mm had lower rates of torsion when aspirated prenatally. Randomised studies and safety data are needed prior to routine prenatal ovarian cyst aspiration. © 2017 John Wiley &amp; Sons, Ltd.</div></details>
-</li>
-<li id="ref-30">
-<div class="ref-label"><strong>Kodama et al., Feto-maternal outcomes of pregnancy complicated by Krukenberg tumor: a systematic review of literature, <em>Arch Gynecol Obstet</em> 2016</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/26897498/" target="_blank" rel="noopener">26897498</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: Krukenberg tumor is a rare type of ovarian cancer with a poor prognosis, and little is known about its behavior during pregnancy.<br><br>METHODS: A systematic review was conducted to identify pregnancies complicated by Krukenberg tumor, correlated to oncologic and neonatal outcomes (n = 35).<br><br>RESULTS: Mean age of cases was 30.4 years, and the most common origin of primary cancer was the stomach (68.6 %) followed by the colon (14.3 %). The two most common presenting symptoms were abdominal/pelvic pain (51.4 %) and nausea/vomiting (48.6 %). Two-thirds of tumors were bilateral (65.7 %) and the average size was 16.7 cm. Ascites (45.7 %), carcinomatosis (25.7 %) and non-ovarian distant metastases (14.3 %) were found at the time of surgery. Chemotherapy was administered in 20 cases, with fetal exposure in two of these. The ovarian tumor was identified prior to the primary cancer diagnosis in all 28 cases. The overall number of live births was 27 (81.8 %). The median survival was 6 months after Krukenberg tumor diagnosis. In univariate analysis, decreased overall survival was associated with dyspnea, ascites, carcinomatosis, non-radical surgery for the primary cancer, and residual disease at surgery (all, p &lt; 0.05). On multivariate analysis, dyspnea and carcinomatosis remained independent prognostic factors for decreased overall survival after Krukenberg tumor diagnosis (2-year overall survival rates, dyspnea 0 vs. 56.6 %, adjusted-hazard ratio [HR] 9.74, 95 % confidence interval [CI] 2.04-46.2, p &lt; 0.01; and carcinomatosis, 0 vs. 58.1 %, adjusted-HR 7.95, 95 % CI 1.76-36.0, p &lt; 0.01).<br><br>CONCLUSIONS: Our results showed that prognosis of Krukenberg tumor complicated pregnancies is extremely poor, however it may be improved if radical surgery is achievable.</div></details>
-</li>
-<li id="ref-31">
-<div class="ref-label"><strong>Schüler et al., Ovarian epithelial tumors and reproductive factors: a systematic review, <em>Arch Gynecol Obstet</em> 2013</strong></div>
-<div class="ref-meta">PMID&nbsp;<a href="https://pubmed.ncbi.nlm.nih.gov/23503972/" target="_blank" rel="noopener">23503972</a></div>
-<details class="abstract-toggle"><summary>Read the abstract</summary><div class="abstract-body">PURPOSE: The aim of this systematic review is to summarize the current knowledge about the etiology and pathogenesis of borderline tumors ovarian cancer with special emphasis on the role of endocrine treatments and reproductive factors to establish a foundation for future studies.<br><br>METHODS: We performed a systematic review on the relation between ovarian epithelial tumors (OET) and reproductive factors using the keywords: ovarian cancer, ovarian tumor, ovarian borderline tumor, age at menarche, age at menopause, parity, infertility, PCO syndrome, oral contraception, menopausal hormone therapy, fertility treatment. Totally, 3,290 abstracts were scanned for their relevance in this publication and 127 were finally included.<br><br>RESULTS: The incidence of ovarian epithelial cancer and ovarian borderline tumors is influenced by certain reproductive factors. The strongest protective effects are conferred by parity and use of oral contraceptive pills. Recent molecular biologic and histopathologic studies prove that OET represent a diverse group of tumors, each histologic type with a different genetic background. This is at least partly reflected in epidemiologic and clinical studies showing different risk modulating effects of reproductive factors and endocrine therapies on OET.<br><br>CONCLUSIONS: The etiology and pathogenesis of ovarian cancer are still not fully understood. None of the so far proposed hypothesis on the development of OET can fully account for the epidemiologic and clinical findings in the context of reproductive factors and OET development. Further research approaches are warranted and need to put more weight on the clinical and genetical diversity of OET to yield a more detailed insight into their pathogenesis.</div></details>
-</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </ol>
 </section>
 </div>
@@ -1031,13 +987,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <p>The modern adnexal-mass workup is a layered framework designed to maximize cancer-detection sensitivity while avoiding unnecessary surgery.</p>
         <p><strong>Imaging:</strong></p>
         <ul class="bullets">
-            <li><strong>Transvaginal ultrasound</strong> is first-line<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=1 -->. The reader characterizes size, contents (simple vs complex), wall thickness, septations, solid components, papillary projections, vascular flow on Doppler, free fluid, contralateral ovary, ascites.</li>
-            <li><strong>IOTA Simple Rules / ADNEX model</strong><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip">Van Calster et al., Practical guidance for applying the ADNEX model from the IOTA group..., Facts Views Vis Obgyn 2015 &middot; PMID 25897370</span></sup> use 10 ultrasound features (5 benign, 5 malignant) to assign each mass as benign, malignant, or inconclusive. Inconclusive cases are referred to GYN-Onc.</li>
-            <li><strong>CT or MRI</strong> are not initial tools<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=2 -->. CT is used for staging if cancer suspected; MRI sometimes helps when ultrasound is equivocal.</li>
+            <li><strong>Transvaginal ultrasound</strong> is first-line. The reader characterizes size, contents (simple vs complex), wall thickness, septations, solid components, papillary projections, vascular flow on Doppler, free fluid, contralateral ovary, ascites.</li>
+            <li><strong>IOTA Simple Rules / ADNEX model</strong><sup class="mz-ref" data-r="ref-2" tabindex="0"><a href="#ref-2">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Practical guidance for applying the ADNEX model from the IOTA group to discriminate between different subtypes of adnexal tumors.</span><span class="mz-ref-pop-meta">Facts Views Vis Obgyn 2015 · PMID 25897370</span><span class="mz-ref-pop-finding">An ovarian mass can be sorted before surgery into five categories rather than simply benign or malignant — benign, borderline, stage I cancer, stage II-IV cancer, and cancer that has spread from elsewhere — using the validated ADNEX risk model from the International Ovarian Tumor Analysis group. This practical guidance explains the ultrasound and clinical predictors the model uses, how to choose and interpret risk cut-offs for triage and referral, and works through example patients. No single universal cut-off is proposed, because the right threshold depends on the setting.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/25897370/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup> use 10 ultrasound features (5 benign, 5 malignant) to assign each mass as benign, malignant, or inconclusive. Inconclusive cases are referred to GYN-Onc.</li>
+            <li><strong>CT or MRI</strong> are not initial tools. CT is used for staging if cancer suspected; MRI sometimes helps when ultrasound is equivocal.</li>
         </ul>
         <p><strong>Tumor markers (selectively):</strong></p>
         <ul class="bullets">
-            <li>CA-125 in postmenopausal women with a suspicious mass<!-- §0.8 anchor: kb_doc_id=B9774AD5-1457-4634-8296-7C122FA768A5; field=keyPoints; idx=4 -->.</li>
+            <li>CA-125 in postmenopausal women with a suspicious mass.</li>
             <li>CA-125 in premenopausal women is rarely useful as a stand-alone &mdash; too many false positives.</li>
             <li>HE4 + CA-125 combined in the ROMA score adds incremental specificity in selected cases.</li>
             <li>Beta-hCG, AFP, LDH, inhibin if germ cell or sex-cord stromal tumor is in the differential (younger women, atypical masses).</li>
@@ -1054,7 +1010,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <p>Once characterized, the path forward depends on size, features, age, and symptoms.</p>
         <p><strong>No follow-up needed:</strong></p>
         <ul class="bullets">
-            <li>Simple cyst &le;3&nbsp;cm in premenopausal woman, asymptomatic, classic features<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip">Levine et al., Management of asymptomatic ovarian and other adnexal cysts imaged a..., Radiology 2010 &middot; PMID 20505067</span></sup>.</li>
+            <li>Simple cyst &le;3&nbsp;cm in premenopausal woman, asymptomatic, classic features<sup class="mz-ref" data-r="ref-3" tabindex="0"><a href="#ref-3">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Management of asymptomatic ovarian and other adnexal cysts imaged at US: Society of Radiologists in Ultrasound Consensus Conference Statement.</span><span class="mz-ref-pop-meta">Radiology 2010 · PMID 20505067</span><span class="mz-ref-pop-finding">Ovarian and other adnexal cysts found by chance on ultrasound in women without symptoms generally warrant scheduled follow-up keyed to their size and appearance rather than reflex surgery. A cross-specialty panel of gynecologists, radiologists, and pathologists convened by the Society of Radiologists in Ultrasound built the recommendations from the existing literature and prevailing practice. This is expert consensus, not new trial evidence.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/20505067/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</li>
             <li>Simple cyst &le;1&nbsp;cm in postmenopausal woman with classic features.</li>
             <li>Small hemorrhagic cyst with typical appearance and no growth.</li>
         </ul>
@@ -1098,7 +1054,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <li>Torsion with non-viable ovary.</li>
             <li>BRCA-positive women undergoing risk-reducing surgery.</li>
         </ul>
-        <p><strong>Laparoscopy vs laparotomy:</strong> for benign-appearing masses, laparoscopy is the standard<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip">Liu et al., Meta-analysis comparing the safety of laparoscopic and open surgica..., Int J Gynaecol Obstet 2017 &middot; PMID 28099685</span></sup>. The mass is removed in a containment bag if there&rsquo;s any chance of malignancy, to prevent spillage. Open surgery (laparotomy) is reserved for very large masses (&gt;10&ndash;15&nbsp;cm), strong suspicion of malignancy where intact extraction matters, or when laparoscopy is unsafe (extensive adhesions, severe medical contraindications to pneumoperitoneum).</p>
+        <p><strong>Laparoscopy vs laparotomy:</strong> for benign-appearing masses, laparoscopy is the standard<sup class="mz-ref" data-r="ref-6" tabindex="0"><a href="#ref-6">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Meta-analysis comparing the safety of laparoscopic and open surgical approaches for suspected adnexal mass during the second trimester.</span><span class="mz-ref-pop-meta">Int J Gynaecol Obstet 2017 · PMID 28099685</span><span class="mz-ref-pop-finding">When an ovarian or tubal mass must be operated on during the second trimester of pregnancy, laparoscopy is preferable to an open incision: post-operative adverse events were about 80% lower with the keyhole approach (relative risk 0.20), with no difference in miscarriage or threatened miscarriage afterward. Laparoscopy in mid-pregnancy has long been considered controversial, and the reassurance rests on only four comparative studies totaling 240 patients, so the evidence base is thin.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28099685/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The mass is removed in a containment bag if there&rsquo;s any chance of malignancy, to prevent spillage. Open surgery (laparotomy) is reserved for very large masses (&gt;10&ndash;15&nbsp;cm), strong suspicion of malignancy where intact extraction matters, or when laparoscopy is unsafe (extensive adhesions, severe medical contraindications to pneumoperitoneum).</p>
         <p><strong>Salpingectomy &mdash; opportunistic.</strong> Modern practice routinely removes the fallopian tubes (bilateral salpingectomy) at the time of benign hysterectomy or oophorectomy, even when not removing both ovaries, because the fimbriated end of the tube appears to be where many epithelial ovarian cancers originate.</p>
     </template>
 <template id="tpl-malignancy-deep" data-title="When malignancy is the concern">
@@ -1110,11 +1066,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <li><strong>Frozen section</strong> intraoperatively can guide the extent of surgery if the diagnosis is uncertain.</li>
             <li><strong>Post-operative chemotherapy</strong> for most epithelial ovarian cancers; tumor genomic testing (BRCA1/2, HRD) increasingly guides adjuvant therapy (PARP inhibitors).</li>
         </ul>
-        <p><strong>Symptom recognition</strong> matters for catching cancers earlier<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip">?, Committee Opinion No. 716: The Role of the Obstetrician-Gynecologis..., Obstet Gynecol 2017 &middot; PMID 28832487</span></sup>. The classic alerting symptoms &mdash; bloating, early satiety, pelvic or abdominal pain, urinary urgency &mdash; are non-specific individually but, when they persist for more than ~12 days a month, deserve evaluation. There is no validated routine ovarian cancer screening tool in average-risk women<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip">Kahn et al., Salpingectomy for the Primary Prevention of Ovarian Cancer: A Syste..., JAMA Surg 2023 &middot; PMID 37672283</span></sup>.</p>
+        <p><strong>Symptom recognition</strong> matters for catching cancers earlier<sup class="mz-ref" data-r="ref-4" tabindex="0"><a href="#ref-4">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Committee Opinion No. 716: The Role of the Obstetrician-Gynecologist in the Early Detection of Epithelial Ovarian Cancer in Women at Average Risk.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2017 · PMID 28832487</span><span class="mz-ref-pop-finding">Ovarian cancer screening should not be offered to women at average risk: neither transvaginal ultrasound nor the CA 125 blood test, alone or together, has been shown to lower deaths from the disease, while false alarms lead to surgery and other invasive testing that carries real harm. What does help is a careful personal and family history of breast, gynecologic and colon cancer, which identifies the women who may carry a BRCA mutation or Lynch syndrome and should be referred for genetic counseling — plus staying alert to suggestive symptoms (ACOG committee opinion).</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28832487/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The classic alerting symptoms &mdash; bloating, early satiety, pelvic or abdominal pain, urinary urgency &mdash; are non-specific individually but, when they persist for more than ~12 days a month, deserve evaluation. There is no validated routine ovarian cancer screening tool in average-risk women<sup class="mz-ref" data-r="ref-5" tabindex="0"><a href="#ref-5">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Salpingectomy for the Primary Prevention of Ovarian Cancer: A Systematic Review.</span><span class="mz-ref-pop-meta">JAMA Surg 2023 · PMID 37672283</span><span class="mz-ref-pop-finding">Removing the fallopian tubes during another pelvic operation - opportunistic salpingectomy - is associated with roughly 80% lower ovarian cancer risk, and has been shown to be safe, cost-effective, and not to bring menopause on earlier. Because most ovarian cancers begin in the fimbriated end of the tube, widespread adoption could cut US ovarian cancer deaths by an estimated 15%. Drawn from 158 publications; prospective studies confirming long-term survival benefit are still awaited.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37672283/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
         <p><strong>Borderline tumors</strong> are a less aggressive intermediate category &mdash; they can be locally extensive but rarely metastasize; conservative surgery is appropriate in many premenopausal patients wanting fertility preservation.</p>
     </template>
 <template id="tpl-brca-deep" data-title="Hereditary risk &amp;amp; BRCA testing">
-        <p>Hereditary breast and ovarian cancer (HBOC) syndromes &mdash; particularly BRCA1 and BRCA2 mutations &mdash; dramatically increase lifetime risk of ovarian, fallopian tube, and breast cancer. The numbers from the KB<!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=6 --><!-- §0.8 anchor: kb_doc_id=225A5940-BDFC-401E-BE3D-0069D3413B10; field=keyPoints; idx=7 -->:</p>
+        <p>Hereditary breast and ovarian cancer (HBOC) syndromes &mdash; particularly BRCA1 and BRCA2 mutations &mdash; dramatically increase lifetime risk of ovarian, fallopian tube, and breast cancer. The numbers from the KB:</p>
         <ul class="bullets">
             <li>BRCA mutations account for <strong>9&ndash;24%</strong> of epithelial ovarian cancers.</li>
             <li>Lifetime breast cancer risk: 57% for BRCA1, 49% for BRCA2 (by age 70).</li>
@@ -1186,133 +1142,51 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </script>
 
 <style>
-.mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid rgba(255,255,255,0.07); font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #ffffff; text-align: center; }
+.mz-page-note { max-width: 760px; margin: 32px auto 12px; padding: 14px 18px 0; border-top: 1px solid #E9E5EE; font-family: 'Nunito Sans','Avenir Next',system-ui,sans-serif; font-size: 11px; line-height: 1.6; font-style: italic; font-weight: 300; letter-spacing: 0.005em; color: #6E6A7C; text-align: center; }
 .mz-page-note p { margin: 0; }
 .mz-page-note a { color: rgba(184,90,71,0.85); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .mz-page-note a:hover, .mz-page-note a:focus-visible { color: rgba(201,119,89,0.95); }
 
         /* 2026-07-22 polish: no grey text in glass modals */
-        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #ffffff !important; }
+        .mz-modal :is(p, li, td, th, dd, dt, blockquote):not(a):not(a *) { color: #1A1726 !important; }
 </style>
 <aside class="mz-page-note" aria-label="Disclosure">
 <p>This page is provided strictly for educational purposes and is not medical advice. Treatment decisions should be made with your own physician, based on your individual evaluation. If you spot an error, please email <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
 </aside>
 
+
+<div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+
+<script>
+/* mz-pop-geometry — open the citation popover downward when the citation
+   sits too high on screen for the popover to fit above it. Delegated, so it
+   also covers post bodies injected into the reader shells after load. */
+(function () {
+    if (window.__mzPopFlip) { return; }
+    window.__mzPopFlip = true;
+    function place(sup) {
+        var pop = sup.querySelector('.mz-ref-pop');
+        if (!pop) { return; }
+        pop.classList.remove('mz-flip');
+        var top = sup.getBoundingClientRect().top;
+        if (top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
+    }
+    function onEvent(ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { place(sup); }
+    }
+    document.addEventListener('pointerover', onEvent, true);
+    document.addEventListener('focusin', onEvent, true);
+    document.addEventListener('click', function (ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { setTimeout(function () { place(sup); }, 0); }
+    }, true);
+})();
+</script>
 </body>
 </html>
 
-<!-- §0.8 KB-anchor manifest
-{
-  "spec": "\u00a70.8.1 KB-anchor manifest (CLAUDE.md)",
-  "surface": "/education/ovarian-masses/index.html",
-  "topic": "Ovarian Masses / Adnexal Masses",
-  "topic_synthesis_id": "6a26ae53-ef20-49fe-a361-d685f0574eeb",
-  "kb_chunks_path": "/Users/beans/Developer/MountZara/MountZaraMedicalTranscription/kb_chunks/",
-  "kb_documents_loaded": [
-    "225A5940-BDFC-401E-BE3D-0069D3413B10",
-    "B9774AD5-1457-4634-8296-7C122FA768A5"
-  ],
-  "kb_documents_quoted": [
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "Age is the most important independent risk factor for ovarian malignancy in adnexal masses",
-      "excerpt_first_words": "Age is the most important independent risk factor for ovarian malignancy in adnexal masses",
-      "page_anchor_id": "age-risk"
-    },
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "TVUS is the primary imaging for initial adnexal mass evaluation",
-      "excerpt_first_words": "Transvaginal ultrasonography is the primary imaging modality for initial adnexal mass evaluation",
-      "page_anchor_id": "tvus"
-    },
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "CT and MRI are not recommended for initial evaluation; CT for staging if cancer suspected",
-      "excerpt_first_words": "CT and MRI are not recommended for initial evaluation; CT is useful for staging if cancer suspected",
-      "page_anchor_id": "no-ct-mri"
-    },
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "CA 125 elevated in 80% of epithelial ovarian cancers but only 50% of stage I disease",
-      "excerpt_first_words": "CA 125 is elevated in 80% of epithelial ovarian cancers but only 50% of stage I disease",
-      "page_anchor_id": "ca125"
-    },
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "CA 125 most useful in postmenopausal women; less specific in premenopausal",
-      "excerpt_first_words": "CA 125 is most useful in postmenopausal women; less specific in premenopausal women",
-      "page_anchor_id": "ca125-meno"
-    },
-    {
-      "kb_doc_id": "B9774AD5-1457-4634-8296-7C122FA768A5",
-      "title": "Evaluation and Management of Adnexal Masses",
-      "field": "keyPoints",
-      "claim": "Concerning exam findings: irregular, firm, fixed, nodular, bilateral or with ascites",
-      "excerpt_first_words": "Concerning exam findings: irregular, firm, fixed, nodular, bilateral masses or associated ascites",
-      "page_anchor_id": "exam-red"
-    },
-    {
-      "kb_doc_id": "225A5940-BDFC-401E-BE3D-0069D3413B10",
-      "title": "Hereditary Breast and Ovarian Cancer Syndrome",
-      "field": "keyPoints",
-      "claim": "BRCA1/2 account for 9-24% of epithelial ovarian cancers",
-      "excerpt_first_words": "BRCA mutations account for 9-24% of epithelial ovarian cancers and 4.5% of breast cancers",
-      "page_anchor_id": "brca-prev"
-    },
-    {
-      "kb_doc_id": "225A5940-BDFC-401E-BE3D-0069D3413B10",
-      "title": "Hereditary Breast and Ovarian Cancer Syndrome",
-      "field": "keyPoints",
-      "claim": "Ovarian cancer risk by age 70: BRCA1 39-46%, BRCA2 10-27%",
-      "excerpt_first_words": "Ovarian cancer risk by age 70: BRCA1 39-46%, BRCA2 10-27%",
-      "page_anchor_id": "brca-risk"
-    }
-  ],
-  "pmids_efetched_in_session": [
-    "27776072",
-    "25897370",
-    "20505067",
-    "28832487",
-    "37672283",
-    "28099685",
-    "33885953",
-    "40907337",
-    "39724904",
-    "36584539",
-    "37610988",
-    "35751902",
-    "37449874",
-    "35220429",
-    "34580747",
-    "35961599",
-    "33515746",
-    "34247795",
-    "34148122",
-    "33882931",
-    "32558987",
-    "32748055",
-    "32424353",
-    "31562799",
-    "30345884",
-    "27325566",
-    "28579409",
-    "28754483",
-    "28886226",
-    "26897498",
-    "23503972"
-  ],
-  "user_docx_sources": [],
-  "not_in_kb_claims": [],
-  "generated_at_utc": "2026-05-17T17:02:25.085429+00:00"
-}
--->
+

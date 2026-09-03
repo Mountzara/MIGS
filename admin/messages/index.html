@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981;
             --red: #ef4444;
@@ -51,7 +51,7 @@
         }
         .lede {
             font-size: 14.5px; line-height: 1.55;
-            color: var(--fg-mid); max-width: 76ch;
+            color: var(--fg-mid); max-width: 96ch;
             margin: 0 0 22px 0;
         }
         .top-actions {
@@ -69,11 +69,11 @@
         button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
         button.primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         button.ghost {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             color: var(--fg-soft);
         }
-        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.ghost:hover { color: var(--fg-strong); border-color: #6d28d9; }
 
         .layout {
             display: grid;
@@ -100,13 +100,13 @@
         section.panel h2 {
             font-size: 12px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 14px 0;
         }
 
         .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
         .filter-chip {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 5px 12px;
@@ -116,10 +116,10 @@
             cursor: pointer;
             transition: all 0.18s;
         }
-        .filter-chip:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        .filter-chip:hover { color: var(--fg-strong); border-color: #6d28d9; }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
 
@@ -131,7 +131,7 @@
         .thread-list::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 3px; }
 
         .thread-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 11px 13px;
@@ -140,12 +140,12 @@
         }
         .thread-item:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.04);
         }
         .thread-item.active {
             background: rgba(var(--glow-purple), 0.12);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
         }
         .thread-item.unread {
             border-left: 3px solid rgba(var(--glow-purple), 0.85);
@@ -208,14 +208,14 @@
         .messages::-webkit-scrollbar { width: 6px; }
         .messages::-webkit-scrollbar-thumb { background: rgba(var(--glow-purple), 0.4); border-radius: 3px; }
         .msg {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 11px;
             padding: 11px 13px;
         }
         .msg.from-clinician, .msg.from-staff {
             background: rgba(var(--glow-purple), 0.06);
-            border-color: rgba(var(--glow-purple), 0.30);
+            border-color: #6d28d9;
         }
         .msg-meta {
             font-size: 11px; color: var(--fg-dim);
@@ -228,7 +228,7 @@
             white-space: pre-wrap; word-wrap: break-word;
         }
         .compose {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px dashed rgba(var(--glow-purple), 0.40);
             border-radius: 11px;
             padding: 12px;
@@ -237,7 +237,7 @@
         textarea, input {
             font: inherit; width: 100%;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 9px;
             color: var(--fg-strong);
@@ -246,7 +246,7 @@
             outline: none;
         }
         textarea:focus, input:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
         }
         textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
@@ -261,7 +261,7 @@
         .modal-backdrop {
             display: none;
             position: fixed; inset: 0; z-index: 90;
-            background: rgba(7, 7, 10, 0.7);
+            background: rgba(26,23,38,0.45);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             align-items: center; justify-content: center;
@@ -284,7 +284,7 @@
         }
         .patient-result {
             padding: 8px 10px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 13px;
@@ -293,11 +293,11 @@
         }
         .patient-result:hover {
             background: rgba(var(--glow-purple), 0.10);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
         }
         .patient-result.selected {
             background: rgba(var(--glow-purple), 0.18);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
 
@@ -315,7 +315,7 @@
             transition: opacity 0.22s, transform 0.22s;
             pointer-events: none; z-index: 1000;
         }
-        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: #B91C1C; }
         .toast.show { opacity: 1; transform: translateY(0); }
 
         @media (prefers-reduced-motion: reduce) {
@@ -332,9 +332,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -365,7 +365,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -373,7 +373,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -383,6 +383,31 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* ===== Message attachments (2026-08-18) ===== */
+.attach-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.attach-row input[type="file"] { display: none; }
+.attach-pick {
+    font: inherit; font-size: 12px; cursor: pointer;
+    padding: 5px 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.72); border: 1px solid var(--border);
+    color: var(--fg-soft);
+}
+.attach-pick:hover { border-color: #6d28d9; color: var(--fg-strong); }
+.attach-name { font-size: 12px; color: var(--fg-soft); word-break: break-all; }
+.attach-clear {
+    font: inherit; font-size: 11.5px; cursor: pointer; border: none;
+    background: none; color: #B91C1C; padding: 2px 6px;
+}
+.msg-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.msg-attachments a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; text-decoration: none;
+    padding: 4px 11px; border-radius: 999px;
+    background: rgba(var(--glow-purple), 0.14); border: 1px solid rgba(var(--glow-purple), 0.45);
+    color: var(--accent-soft); max-width: 100%; word-break: break-all;
+}
+.msg-attachments a:hover { background: rgba(var(--glow-purple), 0.24); }
 </style>
 </head>
 <body>
@@ -404,7 +429,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </header>
 
         <h1 class="page-title">Patient messages</h1>
-        <p class="lede">Threads from patients sit here. Bodies are envelope-encrypted in <code>mountzara-phi</code> R2; opening a thread decrypts in the worker and marks it read.</p>
+        <p class="lede">Secure messages from your patients. Unanswered messages show how long you have left to reply.</p>
 
         <div class="top-actions">
             <button class="primary" id="btn-new">+ New message to a patient</button>
@@ -417,6 +442,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="filter-bar">
                     <button class="filter-chip active" data-status="all">All</button>
                     <button class="filter-chip" data-status="unread">Unread</button>
+                    <button class="filter-chip" data-status="needs_reply">Needs reply</button>
                 </div>
                 <div id="thread-list" class="thread-list">
                     <div class="empty-state">Loading…</div>
@@ -424,10 +450,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </section>
 
             <section id="reader-panel" class="panel">
-                <div id="reader-empty" class="empty-state">Select a thread to read.</div>
+                <div id="reader-empty" class="empty-state">Select a thread to read it.</div>
                 <div id="reader" class="reader">
                     <div class="reader-header">
                         <h3 id="reader-subject">—</h3>
+                        <span id="reader-sla"></span>
                         <span id="reader-status" class="unread-dot" style="display:none;">unread</span>
                     </div>
                     <div class="reader-meta">
@@ -440,6 +467,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="compose">
                         <label for="reply-body">Reply to patient</label>
                         <textarea id="reply-body" placeholder="Type a reply…"></textarea>
+                        <div class="attach-row">
+                            <label class="attach-pick" for="reply-file">📎 Attach a file</label>
+                            <input type="file" id="reply-file"
+                                   accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                            <span class="attach-name" id="reply-file-name"></span>
+                            <button type="button" class="attach-clear" id="reply-file-clear" style="display:none;">remove</button>
+                        </div>
                         <div class="actions">
                             <button class="primary" id="btn-send-reply">Send reply</button>
                         </div>
@@ -458,6 +492,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <input id="new-subject" maxlength="140" placeholder="Subject of the conversation">
                 <label for="new-body">Message</label>
                 <textarea id="new-body" placeholder="Type your message…"></textarea>
+                <div class="attach-row">
+                    <label class="attach-pick" for="new-file">📎 Attach a file</label>
+                    <input type="file" id="new-file"
+                           accept="image/*,.pdf,.doc,.docx,.xlsx,.txt,.csv,.dcm">
+                    <span class="attach-name" id="new-file-name"></span>
+                    <button type="button" class="attach-clear" id="new-file-clear" style="display:none;">remove</button>
+                </div>
                 <div class="actions">
                     <button class="primary" id="btn-send-new">Send</button>
                     <button class="ghost" id="btn-cancel-new">Cancel</button>
@@ -540,9 +581,30 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (seq !== threadsSeq) return;   // a newer request superseded this one
                 state.threads = data.threads || [];
                 renderList();
+                maybeOpenDeepLink();
             } catch (e) {
                 if (seq !== threadsSeq) return;
                 $('thread-list').innerHTML = `<div class="empty-state">Could not load threads: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        // Deep links from the case chart and snapshot pages:
+        //   /admin/messages/#<thread_id>   opens that thread directly
+        //   /admin/messages/?patient=<id>  opens that patient's latest thread
+        // Runs once, after the first thread-list render.
+        let deepLinkTried = false;
+        function maybeOpenDeepLink() {
+            if (deepLinkTried || state.threads.length === 0) return;
+            deepLinkTried = true;
+            const hashId = decodeURIComponent(location.hash.replace(/^#/, ''));
+            if (hashId) {
+                const byId = state.threads.find(t => String(t.id) === hashId);
+                if (byId) { openThread(byId.id); return; }
+            }
+            const pid = new URLSearchParams(location.search).get('patient');
+            if (pid) {
+                const byPatient = state.threads.find(t => String(t.patient_id) === pid);
+                if (byPatient) openThread(byPatient.id);
             }
         }
 
@@ -560,17 +622,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
         function slaBadge(t) {
             const base = 'display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;';
-            const red = base + 'background:rgba(239,68,68,0.12);color:rgba(252,165,165,0.95);border:1px solid rgba(239,68,68,0.45);';
-            const amber = base + 'background:rgba(245,158,11,0.12);color:rgba(252,211,77,0.95);border:1px solid rgba(245,158,11,0.45);';
+            const red = base + 'background:rgba(239,68,68,0.12);color:#B91C1C;border:1px solid rgba(239,68,68,0.45);';
+            const amber = base + 'background:rgba(245,158,11,0.12);color:#92400E;border:1px solid rgba(245,158,11,0.45);';
             const purple = base + 'background:rgba(var(--glow-purple),0.12);color:var(--accent-soft, rgba(167,139,250,0.95));border:1px solid rgba(var(--glow-purple),0.45);';
             const urgentTag = t.urgency === 'urgent' ? 'URGENT · ' : '';
             if (t.sla_breached) {
-                return `<span style="${red}" title="The committed response window has passed.">${urgentTag}SLA BREACHED</span>`;
+                return `<span style="${red}" title="The response window has passed.">${urgentTag}REPLY OVERDUE</span>`;
             }
             if (t.sla_due_at == null) return '';
             const remaining = Number(t.sla_due_at) - Date.now();
             if (remaining <= 0) {
-                return `<span style="${red}" title="Response window passed — sweep will flag shortly.">${urgentTag}SLA OVERDUE</span>`;
+                return `<span style="${red}" title="The response window has passed.">${urgentTag}REPLY OVERDUE</span>`;
             }
             const style = (t.urgency === 'urgent' || remaining < 2 * 3600 * 1000) ? red
                         : (remaining < 24 * 3600 * 1000) ? amber : purple;
@@ -580,9 +642,16 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function renderList() {
             const filtered = state.filter === 'unread'
                 ? state.threads.filter(t => t.unread_count > 0)
-                : state.threads;
+                : state.filter === 'needs_reply'
+                    ? state.threads.filter(t => t.last_message_from_role === 'patient')
+                        .sort((a, b) => (a.sla_due_at == null ? 9e15 : Number(a.sla_due_at)) - (b.sla_due_at == null ? 9e15 : Number(b.sla_due_at)))
+                    : state.threads;
             if (filtered.length === 0) {
-                $('thread-list').innerHTML = '<div class="empty-state">No threads.</div>';
+                $('thread-list').innerHTML = state.threads.length === 0
+                    ? '<div class="empty-state">Patients&rsquo; secure messages arrive here. Nothing yet — the inbox fills the first time someone writes to you.</div>'
+                    : state.filter === 'needs_reply'
+                        ? '<div class="empty-state">No one is waiting on a reply from you.</div>'
+                        : '<div class="empty-state">Nothing unread. Switch the filter to All to see every thread.</div>';
                 return;
             }
             $('thread-list').innerHTML = filtered.map(t => {
@@ -621,6 +690,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('reader-empty').style.display = 'none';
                 $('reader').classList.add('open');
                 $('reader-subject').textContent = data.thread.subject;
+                // Echo the reply-window badge (and urgency) next to the subject.
+                // The list payload is the reliable carrier of the SLA fields.
+                const slaSrc = state.threads.find(x => String(x.id) === String(thread_id)) || data.thread;
+                $('reader-sla').innerHTML = slaBadge(slaSrc) || (slaSrc.urgency === 'urgent'
+                    ? '<span style="display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;background:rgba(239,68,68,0.12);color:#B91C1C;border:1px solid rgba(239,68,68,0.45);">URGENT</span>'
+                    : '');
                 const name = [data.thread.patient_first_name, data.thread.patient_last_name].filter(Boolean).join(' ') || data.thread.patient_email || '—';
                 // Wrap the reader-header patient name in a link to /admin/cases for cross-navigation.
                 const namelink = `<a href="/admin/cases/${encodeURIComponent(data.thread.patient_id)}/" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(var(--glow-purple), 0.45);">${escapeHtml(name)}</a>`;
@@ -637,6 +712,22 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         }
 
+        function fmtBytes(n) {
+            if (n == null || isNaN(n)) return '';
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+            return (n / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function attachmentChips(m) {
+            if (!m.attachments || m.attachments.length === 0) return '';
+            return `<div class="msg-attachments">${m.attachments.map(a => `
+                <a href="/api/v1/admin/messages/attachments/${encodeURIComponent(a.id)}"
+                   target="_blank" rel="noopener">📎 ${escapeHtml(a.filename)}
+                   <span style="opacity:.65">${fmtBytes(a.size_bytes)}</span></a>
+            `).join('')}</div>`;
+        }
+
         function renderMessages() {
             $('messages').innerHTML = state.messages.map(m => {
                 const who = m.from_role === 'patient' ? 'Patient'
@@ -650,10 +741,56 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                             ${m.read_at && m.from_role === 'clinician' ? '<span>read by patient</span>' : ''}
                         </div>
                         <div class="msg-body">${escapeHtml(m.body)}</div>
+                        ${attachmentChips(m)}
                     </div>
                 `;
             }).join('');
             $('messages').scrollTop = $('messages').scrollHeight;
+        }
+
+        // ---- Attachment picker + upload ----
+        const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
+        function wirePicker(inputId, nameId, clearId) {
+            const input = $(inputId), name = $(nameId), clear = $(clearId);
+            input.addEventListener('change', () => {
+                const f = input.files && input.files[0];
+                if (f && f.size > MAX_ATTACHMENT_BYTES) {
+                    showToast('That file is larger than 25 MB.', true);
+                    input.value = ''; name.textContent = ''; clear.style.display = 'none';
+                    return;
+                }
+                name.textContent = f ? `${f.name} (${fmtBytes(f.size)})` : '';
+                clear.style.display = f ? 'inline' : 'none';
+            });
+            clear.addEventListener('click', () => {
+                input.value = ''; name.textContent = ''; clear.style.display = 'none';
+            });
+        }
+        wirePicker('reply-file', 'reply-file-name', 'reply-file-clear');
+        wirePicker('new-file', 'new-file-name', 'new-file-clear');
+
+        function clearPicker(inputId, nameId, clearId) {
+            $(inputId).value = '';
+            $(nameId).textContent = '';
+            $(clearId).style.display = 'none';
+        }
+
+        // Raw fetch, NOT fetchJson — multipart must not carry the JSON header.
+        async function uploadAttachment(thread_id, message_id, file) {
+            const fd = new FormData();
+            fd.append('file', file, file.name);
+            const res = await fetch(
+                `/api/v1/admin/messages/${encodeURIComponent(thread_id)}/${encodeURIComponent(message_id)}/attachments`,
+                { method: 'POST', credentials: 'include', body: fd }
+            );
+            if (!res.ok) {
+                const b = await res.json().catch(() => ({}));
+                const why = b.error === 'file_too_large' ? 'the file is larger than 25 MB'
+                    : b.error === 'unsupported_mime' ? 'that file type is not supported'
+                    : (b.error || ('upload failed (' + res.status + ')'));
+                throw new Error(why);
+            }
         }
 
         $('btn-refresh').addEventListener('click', () => loadThreads());
@@ -667,12 +804,23 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (!tid) return;
             $('btn-send-reply').disabled = true;
             try {
-                await fetchJson(`/api/v1/admin/messages/${tid}`, {
+                const data = await fetchJson(`/api/v1/admin/messages/${tid}`, {
                     method: 'POST',
                     body: JSON.stringify({ body }),
                 });
                 if (state.currentThreadId === tid) $('reply-body').value = '';
-                showToast('Reply sent to patient.');
+                const replyFile = $('reply-file').files && $('reply-file').files[0];
+                if (replyFile) {
+                    try {
+                        await uploadAttachment(tid, data.message_id, replyFile);
+                        showToast('Reply sent to patient with attachment.');
+                    } catch (ue) {
+                        showToast('Reply sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast('Reply sent to patient.');
+                }
+                clearPicker('reply-file', 'reply-file-name', 'reply-file-clear');
                 openThread(tid);
             } catch (e) {
                 showToast('Reply failed: ' + e.message, true);
@@ -695,6 +843,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('search-patient').value = '';
             $('new-subject').value = '';
             $('new-body').value = '';
+            clearPicker('new-file', 'new-file-name', 'new-file-clear');
             $('patient-results').innerHTML = '';
             state.selectedPatient = null;
             $('new-modal').classList.add('open');
@@ -714,7 +863,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     const d = await fetchJson(`/api/v1/admin/patients?q=${encodeURIComponent(q)}&limit=8`);
                     const list = d.patients || [];
                     if (list.length === 0) {
-                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No matches.</div>';
+                        $('patient-results').innerHTML = '<div class="patient-result" style="opacity:0.6;">No patient matches that. Type at least two letters of a first or last name.</div>';
                         return;
                     }
                     $('patient-results').innerHTML = list.map(p => {
@@ -751,7 +900,18 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         subject, body: bodyText,
                     }),
                 });
-                showToast(`Sent to ${state.selectedPatient.name}.`);
+                const newFile = $('new-file').files && $('new-file').files[0];
+                if (newFile) {
+                    try {
+                        await uploadAttachment(data.thread_id, data.message_id, newFile);
+                        showToast(`Sent to ${state.selectedPatient.name} with attachment.`);
+                    } catch (ue) {
+                        showToast('Message sent, but the attachment failed: ' + ue.message, true);
+                    }
+                } else {
+                    showToast(`Sent to ${state.selectedPatient.name}.`);
+                }
+                clearPicker('new-file', 'new-file-name', 'new-file-clear');
                 $('new-modal').classList.remove('open');
                 await loadThreads();
                 openThread(data.thread_id);
@@ -766,5 +926,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         // auto-refresh inbox every 90s
         setInterval(() => { if (state.filter && !document.hidden) loadThreads(); }, 90000);
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

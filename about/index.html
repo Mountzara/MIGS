@@ -2,13 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
-    <link rel="apple-touch-icon" href="/assets/images/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="canonical" href="https://mountzara.com/about/">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
-    <meta name="description" content="The story — a surgeon, educator, AI builder, and Filipino American leader in women's health.">
-    <title>The Story — Mount Zara</title>
+    <meta name="theme-color" content="#FBFAF8">
+    <meta name="description" content="Meet Dr. Christopher Mabini, DO, MSAEd — a fellowship-trained complex benign and minimally invasive gynecologic surgeon and osteopathic physician bringing whole-person care to women's health.">
+    <meta property="og:type" content="profile">
+    <meta property="og:site_name" content="Mount Zara">
+    <meta property="og:title" content="About Dr. Christopher Mabini, DO, MSAEd">
+    <meta property="og:description" content="A fellowship-trained complex benign and minimally invasive gynecologic surgeon and osteopathic physician bringing whole-person care to women's health.">
+    <meta property="og:url" content="https://mountzara.com/about/">
+    <meta property="og:image" content="https://mountzara.com/assets/images/og-default.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About Dr. Christopher Mabini, DO, MSAEd">
+    <meta name="twitter:description" content="A fellowship-trained complex benign and minimally invasive gynecologic surgeon and osteopathic physician bringing whole-person care to women's health.">
+    <meta name="twitter:image" content="https://mountzara.com/assets/images/og-default.png">
+    <title>About Dr. Christopher Mabini, DO, MSAEd — Mount Zara</title>
     <!-- self-hosted variable font (2026-08-11): replaces a render-blocking
          Google load. Same family as every other page, so the site no longer
          changes typeface between documents. -->
@@ -27,7 +42,7 @@
     </style>
     <style>
         :root {
-            --black: #120b22;  /* plum page-black (2026-07-22): must match rgba(18,11,34,…) vignette stops */
+            --black: #FBFAF8;  /* plum page-black (2026-07-22): must match rgba(18,11,34,…) vignette stops */
             --near-black: #0b0b0b;
             --dark: #1d1d1f;
             --gray-1: #424245;
@@ -36,13 +51,12 @@
             --gray-4: #a1a1a6;
             --gray-5: #d2d2d7;
             --gray-6: #f5f5f7;
-            --white: #ffffff;
+            --white: #1A1726;
             /* 2026-05-27 — was Apple system blue #2997ff (stale, never
-               swept during purple migration). Now matches homepage §3.10
-               purple token family. --accent-deep is the brand purple
+               swept during purple migration). Now matches homepage                purple token family. --accent-deep is the brand purple
                (#6d28d9 = purple-700) for primary CTAs; --accent is the
                glow-purple for hovers and highlights (#a78bfa = purple-400). */
-            --accent: #a78bfa;
+            --accent: #6d28d9;
             --accent-deep: #6d28d9;
             --glow-purple: 139, 92, 246;
             --glow-purple-deep: 109, 40, 217;
@@ -75,10 +89,10 @@
             left: 0;
             right: 0;
             z-index: 9999;
-            background: rgba(18, 11, 34, 0.72);
-            backdrop-filter: saturate(180%) blur(20px);
+            background: rgba(251, 250, 248, 0.90);
+            backdrop-filter: saturate(180%) blur(24px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid #E9E5EE;
             height: 48px;
             display: flex;
             align-items: center;
@@ -98,19 +112,19 @@
             font-size: 14px;
             font-weight: 600;
             letter-spacing: 0.06em;
-            color: var(--white);
+            color: var(--fg-strong, #1A1726);
         }
 
         .nav-back {
             font-size: 12px;
-            color: #ffffff;
+            color: #4A4658;
             transition: color 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
-        .nav-back:hover { color: var(--white); }
+        .nav-back:hover { color: #6d28d9; }
 
         .nav-back .arrow-left {
             width: 6px;
@@ -143,7 +157,7 @@
             border-radius: clamp(20px, 2vw, 28px);
             overflow: hidden;
             isolation: isolate;
-            background: #0c0c10;
+            background: #FBFAF8;
             box-shadow: 0 30px 80px rgba(18, 11, 34, 0.45);
         }
 
@@ -341,7 +355,7 @@
             line-height: 1.18;
             letter-spacing: -0.028em;
             color: var(--white);
-            background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.55) 100%);
+            background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -444,7 +458,7 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
         }
 
@@ -525,7 +539,7 @@
             gap: 24px;
             flex-wrap: wrap;
             padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            border-top: 1px solid #E9E5EE;
         }
 
         .cover-credit,
@@ -664,7 +678,7 @@
 
         .chapter {
             padding: 96px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid #E9E5EE;
         }
 
         .chapter:first-of-type {
@@ -681,9 +695,9 @@
             margin-bottom: 26px;
             display: inline-block;
             padding: 8px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -700,7 +714,7 @@
             letter-spacing: -0.028em;
             line-height: 1.08;
             margin-bottom: 36px;
-            color: var(--white);
+            color: #1A1726;
             text-wrap: pretty;   /* fill each line to full width (was balance) */
             -webkit-hyphens: manual;
             hyphens: manual;
@@ -715,18 +729,18 @@
         .chapter p {
             font-size: 21px;
             line-height: 1.6;
-            color: #ffffff;
+            color: #4A4658;
             margin-bottom: 28px;
             letter-spacing: -0.008em;
         }
 
         .chapter p strong {
-            color: var(--white);
+            color: #1A1726;
             font-weight: 500;
         }
 
         .chapter p em {
-            color: #ffffff;
+            color: #4A4658;
             font-style: italic;
         }
 
@@ -735,7 +749,7 @@
             margin: 60px 0;
             padding: 40px 32px;
             background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #E9E5EE;
             border-radius: 18px;
             text-align: left;
             position: relative;
@@ -751,7 +765,7 @@
             font-size: clamp(18px, 2.2vw, 24px);
             font-weight: 400;
             line-height: 1.55;
-            color: #ffffff;
+            color: #1A1726;
             letter-spacing: -0.008em;
             font-style: normal;
             margin: 0;
@@ -804,6 +818,10 @@
             -webkit-hyphens: manual;
             hyphens: manual;
         }
+        .interlude-lede {
+            max-width: 640px; margin: 18px auto 0; font-size: 17px;
+            line-height: 1.7; color: #52504f; letter-spacing: -0.005em;
+        }
 
         .interlude-grid {
             display: grid;
@@ -830,7 +848,7 @@
 
         .interlude-stat .lbl {
             font-size: 12px;
-            color: #ffffff;
+            color: #6E6A7C;
             letter-spacing: 0.02em;
         }
 
@@ -845,7 +863,7 @@
         .closing {
             text-align: center;
             padding: 96px 22px 120px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid #E9E5EE;
             margin-top: 40px;
         }
 
@@ -855,7 +873,7 @@
             letter-spacing: -0.025em;
             line-height: 1.15;
             margin-bottom: 16px;
-            color: var(--white);
+            color: #1A1726;
             text-wrap: balance;
             -webkit-hyphens: manual;
             hyphens: manual;
@@ -864,7 +882,7 @@
         .closing p {
             font-size: 19px;
             line-height: 1.55;
-            color: #ffffff;
+            color: #4A4658;
             /* Space the CTA buttons well clear of this line (was a cramped 32px). */
             margin-bottom: clamp(72px, 9vw, 104px);
             max-width: 560px;
@@ -943,8 +961,8 @@
             gap: 16px;
             padding: 20px 22px;
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             color: var(--white);
             text-decoration: none;
             font-family: inherit;
@@ -955,8 +973,8 @@
             -webkit-backdrop-filter: blur(20px);
         }
         .cv-badge:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255,255,255,0.72);
+            border-color: #E9E5EE;
             transform: translateY(-2px);
             box-shadow: 0 16px 40px rgba(18, 11, 34, 0.4);
         }
@@ -976,7 +994,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.72);
         }
         .cv-badge-primary .cv-badge-icon {
             background: rgba(139, 92, 246, 0.16);
@@ -1001,7 +1019,7 @@
         }
         .cv-badge-meta {
             font-size: 12px;
-            color: #ffffff;
+            color: #6E6A7C;
             letter-spacing: 0.01em;
         }
         .cv-badge-arrow {
@@ -1042,7 +1060,7 @@
             background:
                 radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.04), transparent 60%),
                 var(--black);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid #E9E5EE;
             position: relative;
         }
 
@@ -1071,7 +1089,7 @@
             color: var(--white);
             margin-bottom: 12px;
             text-align: center;
-            background: linear-gradient(180deg, #fff 0%, #c5c5c7 100%);
+            background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1079,7 +1097,7 @@
 
         .credentials-sub {
             font-size: clamp(16px, 1.6vw, 18px);
-            color: #ffffff;
+            color: #6E6A7C;
             text-align: center;
             margin-bottom: 56px;
             font-weight: 300;
@@ -1103,7 +1121,7 @@
 
         .cred-card {
             background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #E9E5EE;
             border-radius: 20px;
             padding: 28px clamp(20px, 2.5vw, 32px) 32px;
             transition: border-color 0.32s ease, transform 0.32s ease;
@@ -1123,7 +1141,7 @@
             line-height: 1.2;
             margin-bottom: 16px;
             padding-bottom: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid #E9E5EE;
             display: flex;
             align-items: baseline;
             justify-content: space-between;
@@ -1149,9 +1167,9 @@
         .cred-list li {
             font-size: 13.5px;
             line-height: 1.55;
-            color: #ffffff;
+            color: #4A4658;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid #E9E5EE;
             letter-spacing: -0.005em;
         }
 
@@ -1161,7 +1179,7 @@
         }
 
         .cred-list li strong {
-            color: var(--white);
+            color: #1A1726;
             font-weight: 600;
         }
 
@@ -1179,9 +1197,9 @@
             background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(18,11,34,0.16) 100%);
             backdrop-filter: saturate(180%) blur(28px);
             -webkit-backdrop-filter: saturate(180%) blur(28px);
-            color: #ffffff;
+            color: #6E6A7C;
             padding: 48px 22px 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.14);
+            border-top: 1px solid #E9E5EE;
             box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
             font-size: 12px;
         }
@@ -1216,9 +1234,9 @@
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #ffffff;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
+            color: #4A4658;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .footer-social a:hover {
@@ -1254,7 +1272,7 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(18, 11, 34, 0.72);
+            background: rgba(26, 23, 38, 0.42);
             backdrop-filter: saturate(140%) blur(12px);
             -webkit-backdrop-filter: saturate(140%) blur(12px);
             opacity: 0;
@@ -1266,8 +1284,8 @@
             position: relative;
             width: 100%;
             max-width: 480px;
-            background: linear-gradient(180deg, #1c1c1f 0%, #131315 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(180deg, #F4F1EC 0%, #FBFAF8 100%);
+            border: 1px solid #E9E5EE;
             border-radius: 22px;
             padding: 40px 36px 36px;
             box-shadow: 0 30px 80px -20px rgba(18, 11, 34, 0.7);
@@ -1278,8 +1296,8 @@
         .contact-modal-close {
             position: absolute; top: 16px; right: 16px;
             width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
+            background: rgba(255,255,255,0.72);
+            color: #4A4658;
             display: inline-flex; align-items: center; justify-content: center;
             cursor: pointer; border: none;
             transition: background 0.2s ease, color 0.2s ease;
@@ -1287,64 +1305,64 @@
         .contact-modal-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--white); }
         .contact-modal-close svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; }
         .contact-modal h3 {
-            font-size: 24px; font-weight: 600; color: var(--white);
+            font-size: 24px; font-weight: 600; color: #1A1726;
             letter-spacing: -0.02em; margin-bottom: 6px;
         }
         .contact-modal p.modal-sub {
-            font-size: 14px; color: #ffffff;
+            font-size: 14px; color: #6E6A7C;
             margin-bottom: 24px; letter-spacing: -0.005em;
         }
         .email-row {
             display: flex; align-items: center; gap: 8px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 12px; padding: 12px 14px; margin-bottom: 20px;
         }
         .email-text {
             flex: 1; font-family: 'Avenir Next', 'Nunito Sans', sans-serif; font-size: 14px;
-            color: var(--white); font-weight: 500; letter-spacing: -0.005em;
+            color: #1A1726; font-weight: 500; letter-spacing: -0.005em;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .copy-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 6px 12px; font-size: 12px; font-weight: 500;
-            color: var(--white); background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--white); background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 8px; cursor: pointer; font-family: inherit;
             letter-spacing: -0.005em;
             transition: background 0.2s ease, border-color 0.2s ease;
         }
-        .copy-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.18); }
+        .copy-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: #E9E5EE; }
         .copy-btn.copied { background: rgba(48, 209, 88, 0.18); border-color: rgba(48, 209, 88, 0.4); color: #30d158; }
         .copy-btn svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
         .modal-divider {
             display: flex; align-items: center; gap: 12px;
             margin: 4px 0 16px; font-size: 11px; font-weight: 500;
-            color: #ffffff; letter-spacing: 0.12em; text-transform: uppercase;
+            color: #4A4658; letter-spacing: 0.12em; text-transform: uppercase;
         }
         .modal-divider::before, .modal-divider::after {
             content: ''; flex: 1; height: 1px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
         }
         .modal-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .modal-action {
             display: inline-flex; align-items: center; justify-content: space-between;
-            padding: 14px 16px; background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 16px; background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 12px; color: var(--white);
             font-size: 14px; font-weight: 500; text-decoration: none;
             letter-spacing: -0.005em;
             transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
         }
-        .modal-action:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.16); transform: translateY(-1px); }
+        .modal-action:hover { background: rgba(255,255,255,0.72); border-color: #E9E5EE; transform: translateY(-1px); }
         .modal-action .modal-action-label { display: inline-flex; align-items: center; gap: 10px; }
         .modal-action .modal-action-icon {
             width: 22px; height: 22px; display: inline-flex;
-            align-items: center; justify-content: center; color: #ffffff;
+            align-items: center; justify-content: center; color: #4A4658;
         }
         .modal-action svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
         .modal-action .modal-action-arrow {
-            color: #ffffff; font-size: 16px; line-height: 1;
+            color: #4A4658; font-size: 16px; line-height: 1;
             transition: transform 0.2s ease, color 0.2s ease;
         }
         .modal-action:hover .modal-action-arrow { color: var(--white); transform: translateX(2px); }
@@ -1358,14 +1376,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
         /* magazine-justify-2026-06-29 */
         .chapter p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -1401,7 +1419,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -1409,7 +1427,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -1441,11 +1459,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
    #a78bfa measured 2.46:1. Deep violet on that ground is 9:1. */
 .interlude-eyebrow { color: #4c1d95 !important; }
 /* stat labels in the dark stats band were #3a3a3c on near-black (1.75:1) */
-.stats-band .lbl, .stat-block .lbl, .lbl { color: #ffffff; }
+.stats-band .lbl, .stat-block .lbl, .lbl { color: #6E6A7C; }
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
@@ -1458,7 +1476,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <header class="cover-hero" id="coverHero">
         <div class="cover-pin">
             <div class="cover-frame">
-                <img src="../assets/images/headshot.jpg" alt="Christopher Z. Mabini, DO" class="cover-image" id="coverImage" loading="eager">
+                <img src="../assets/images/headshot.jpg" alt="Christopher Z. Mabini, DO, MSAEd" class="cover-image" id="coverImage" loading="eager">
                 <div class="cover-grain"></div>
                 <div class="cover-vignette"></div>
                 <div class="cover-gradient"></div>
@@ -1490,15 +1508,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
                     <!-- Scene 2: Identity statement -->
                     <div class="cover-scene cover-scene--2">
-                        <p class="cover-statement-sub">Three roles · One practice</p>
+                        <p class="cover-statement-sub">Many disciplines · One practice</p>
                         <h2 class="cover-statement">Surgeon.<br>Educator.<br><em>Builder.</em></h2>
                     </div>
 
                     <!-- Scene 3: The journey -->
                     <div class="cover-scene cover-scene--3">
                         <p class="cover-statement-sub">A journey shaped by purpose</p>
-                        <p class="cover-quote">From a hospice in California to the operating rooms of Chicago.</p>
-                        <p class="cover-quote-sub">Built on osteopathic principles, surgical excellence, and applied AI — refined across four hospital sites in the Chicagoland area and every required CBG/MIGS milestone.</p>
+                        <p class="cover-quote" data-widthok="bottom-left anchor keeps the deck off the photographed face — deliberate placement, see the CSS note">From a hospice in California to the operating rooms of Chicago.</p>
+                        <p class="cover-quote-sub" data-widthok="same deliberate bottom-left cover placement">Built on osteopathic principles, surgical excellence, and applied AI — refined across four hospital sites in the Chicagoland area and every required CBG/MIGS milestone.</p>
                     </div>
                 </div>
 
@@ -1550,26 +1568,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </section>
 
         <div class="interlude">
-            <span class="interlude-eyebrow">By the numbers</span>
-            <h3>A record in research and national recognition.</h3>
-            <div class="interlude-grid">
-                <div class="interlude-stat">
-                    <span class="num">11</span>
-                    <span class="lbl">Peer-Reviewed Presentations</span>
-                </div>
-                <div class="interlude-stat">
-                    <span class="num">2</span>
-                    <span class="lbl">National Peer-Reviewed Awards</span>
-                </div>
-                <div class="interlude-stat">
-                    <span class="num">4×</span>
-                    <span class="lbl">AAGL Global Congress</span>
-                </div>
-                <div class="interlude-stat">
-                    <span class="num">2</span>
-                    <span class="lbl">Active IRB Studies</span>
-                </div>
-            </div>
+            <span class="interlude-eyebrow">Research &amp; recognition</span>
+            <h3>His work on making endometriosis visible during surgery has been recognized nationally.</h3>
+            <p class="interlude-lede">Presented at the field&rsquo;s international meetings and honored with peer-reviewed awards &mdash; research that exists for one reason: so the disease is easier to find, and easier to treat, for the woman on the table.</p>
         </div>
 
         <section class="chapter">
@@ -1612,8 +1613,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 14l2 2 4-4"/></svg>
                 </span>
                 <span class="cv-badge-text">
-                    <span class="cv-badge-label">View interactive CV</span>
-                    <span class="cv-badge-meta">Animated · full career record</span>
+                    <span class="cv-badge-label">Curriculum vitae &amp; outcomes</span>
+                    <span class="cv-badge-meta">Available to colleagues on request</span>
                 </span>
                 <span class="cv-badge-arrow" aria-hidden="true">↗</span>
             </a>
@@ -1636,7 +1637,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h3>Want to work together?</h3>
         <p>Open to research collaborations, AI consulting, locum opportunities, and speaking engagements.</p>
         <div class="closing-buttons">
-            <button type="button" class="btn btn-primary" onclick="openContactModal()">Contact Me <span class="arrow"></span></button>
+            <button type="button" class="btn btn-primary" onclick="openContactModal()">Let’s connect <span class="arrow"></span></button>
             <a href="/" class="btn btn-secondary">Back to home <span class="arrow"></span></a>
         </div>
     </section>
@@ -1887,5 +1888,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             update();
         })();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

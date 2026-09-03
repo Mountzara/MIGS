@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --amber: #f59e0b;
             --green: #10b981;
@@ -59,7 +59,7 @@
             margin: 0 0 24px 0;
         }
         .filter-chip {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 7px 14px;
@@ -71,12 +71,12 @@
         }
         .filter-chip:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         .filter-chip.active {
             background: rgba(var(--glow-purple), 0.16);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
         .count-badge {
@@ -116,7 +116,7 @@
             overflow: hidden;
         }
         article.triage-card:hover {
-            border-color: rgba(var(--glow-purple), 0.30);
+            border-color: #6d28d9;
             transform: translateY(-1px);
         }
         article.triage-card.overdue {
@@ -197,26 +197,26 @@
         }
         .pill.overdue {
             background: rgba(245, 158, 11, 0.12);
-            color: rgba(252, 211, 77, 0.95);
+            color: #92400E;
             border: 1px solid rgba(245, 158, 11, 0.45);
         }
         .pill.released {
             background: rgba(16, 185, 129, 0.12);
-            color: rgba(110, 231, 183, 0.95);
+            color: #047857;
             border: 1px solid rgba(16, 185, 129, 0.45);
         }
         .pill.manual {
             background: rgba(239, 68, 68, 0.12);
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
             border: 1px solid rgba(239, 68, 68, 0.45);
         }
         .pill.urgent {
             background: rgba(239, 68, 68, 0.10);
-            color: rgba(252, 165, 165, 0.92);
+            color: #B91C1C;
             border: 1px solid rgba(239, 68, 68, 0.40);
         }
         .pill.routine {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             color: var(--fg-soft);
             border: 1px solid var(--border);
         }
@@ -249,7 +249,7 @@
             .detail-grid { grid-template-columns: 1fr 1fr; }
         }
         .ai-block, .clinician-block {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px 18px;
@@ -267,7 +267,7 @@
             color: var(--fg-mid);
             line-height: 1.55;
             margin: 0 0 12px 0;
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(var(--glow-purple), 0.06);
             padding: 10px 12px;
             border-radius: 8px;
             border-left: 2px solid rgba(var(--glow-purple), 0.55);
@@ -296,7 +296,7 @@
         .concern-chip {
             background: rgba(245, 158, 11, 0.10);
             border: 1px solid rgba(245, 158, 11, 0.35);
-            color: rgba(252, 211, 77, 0.95);
+            color: #92400E;
             font-size: 11px;
             padding: 3px 8px;
             border-radius: 6px;
@@ -314,7 +314,7 @@
         select, input, textarea {
             font: inherit;
             color: var(--fg-strong);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 8px 10px;
@@ -323,7 +323,7 @@
             transition: border-color 0.18s ease, background 0.18s ease;
         }
         select:focus, input:focus, textarea:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.06);
         }
         textarea { min-height: 70px; resize: vertical; }
@@ -368,7 +368,7 @@
         button:hover {
             transform: translateY(-1px);
             background: rgba(var(--glow-purple), 0.20);
-            border-color: rgba(var(--glow-purple), 0.65);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         button:disabled {
@@ -378,16 +378,16 @@
         }
         button.primary {
             background: rgba(var(--glow-purple), 0.25);
-            border-color: rgba(var(--glow-purple), 0.75);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         button.ghost {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border-color: var(--border);
             color: var(--fg-soft);
         }
         button.ghost:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72);
             color: var(--fg-strong);
         }
         .ai-meta {
@@ -403,10 +403,10 @@
             font-size: 13px;
             color: var(--fg-mid);
             line-height: 1.5;
-            background: rgba(255, 255, 255, 0.025);
+            background: rgba(26, 23, 38, 0.04);
             border-radius: 8px;
             padding: 10px 12px;
-            border-left: 2px solid rgba(255, 255, 255, 0.10);
+            border-left: 2px solid var(--border);
         }
         .chief-complaint .label {
             display: block;
@@ -439,7 +439,7 @@
         .toast.error {
             background: rgba(239, 68, 68, 0.18);
             border-color: rgba(239, 68, 68, 0.55);
-            color: rgba(252, 165, 165, 0.98);
+            color: #B91C1C;
         }
         .toast.show {
             opacity: 1;
@@ -460,9 +460,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -493,7 +493,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -501,7 +501,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -533,7 +533,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <h1 class="page-title">Triage Review</h1>
         <p class="lede">
-            Every submitted patient intake runs through the AI triage assistant, which categorizes the visit and surfaces perioperative flags. Review each pending row below, adjust any field that needs an override, then release the categorization so the patient sees only the matching booking slots. Rows auto-release to the patient four hours after AI categorization if not reviewed.
+            <strong>Each intake below releases to the patient automatically four hours after it arrives — confirm or change the suggested visit type before then.</strong>
         </p>
 
         <div class="filter-bar">
@@ -645,13 +645,20 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (isReleased) cardClass.push('released');
             if (state.expandedId === row.id) cardClass.push('expanded');
 
+            // Countdown to the 4-hour auto-release; red inside the last hour.
+            const hrsLeft = Math.max(0, 4 - (Number(row.hours_pending) || 0));
+            const hLeft = Math.floor(hrsLeft);
+            const mLeft = Math.floor((hrsLeft - hLeft) * 60);
+            const countdown = hrsLeft > 0
+                ? `auto-releases in ${hLeft > 0 ? hLeft + 'h ' : ''}${mLeft}m`
+                : 'auto-release imminent';
             const statePill = isReleased
                 ? `<span class="pill released">released</span>`
                 : isManual
                     ? `<span class="pill manual">manual review required</span>`
                     : row.is_overdue
                         ? `<span class="pill overdue">${row.hours_pending}h pending</span>`
-                        : `<span class="pill pending">${row.hours_pending}h pending</span>`;
+                        : `<span class="pill ${hrsLeft < 1 ? 'urgent' : 'pending'}">${countdown}</span>`;
 
             const urgPill = row.ai_urgency === 'urgent'
                 ? `<span class="pill urgent">urgent</span>`
@@ -718,6 +725,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <div class="header-right">
                   ${statePill}
                   ${!isReleased ? urgPill : ''}
+                  ${!isReleased && !isManual ? `<button class="primary" data-action="release" data-id="${row.id}" style="font-size: 12px; padding: 6px 12px;" title="Release the suggested categorization as-is">Confirm &amp; release</button>` : ''}
                   <span class="chevron">▾</span>
                 </div>
               </div>
@@ -737,7 +745,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     ${concerns ? `<div class="secondary-concerns">${concerns}</div>` : ''}
                     ${chiefBlock}
                     <div class="ai-meta">
-                      <span><strong>Prompt:</strong> ${escapeHtml(row.ai_prompt_version || '—')}</span>
                       <span><strong>Triaged:</strong> ${fmtTimestamp(row.triage_created_at)}</span>
                     </div>
                     ${releasedMeta}
@@ -759,8 +766,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                       <div>
                         <label class="field-label">Urgency</label>
                         <select data-field="urgency" ${formDisabled}>
-                          <option value="routine" ${row.ai_urgency === 'routine' ? 'selected' : ''}>routine</option>
-                          <option value="urgent"  ${row.ai_urgency === 'urgent' ? 'selected' : ''}>urgent</option>
+                          <option value="routine" ${(row.clinician_override_urgency ?? row.ai_urgency) === 'routine' ? 'selected' : ''}>routine</option>
+                          <option value="soon"    ${(row.clinician_override_urgency ?? row.ai_urgency) === 'soon' ? 'selected' : ''}>soon</option>
+                          <option value="urgent"  ${(row.clinician_override_urgency ?? row.ai_urgency) === 'urgent' ? 'selected' : ''}>urgent</option>
                         </select>
                       </div>
                     </div>
@@ -769,19 +777,19 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                       <div>
                         <label class="field-label">Preferred time</label>
                         <select data-field="preferred_time_of_day" ${formDisabled}>
-                          <option value="any"       ${row.ai_preferred_time_of_day === 'any' ? 'selected' : ''}>any</option>
-                          <option value="morning"   ${row.ai_preferred_time_of_day === 'morning' ? 'selected' : ''}>morning</option>
-                          <option value="afternoon" ${row.ai_preferred_time_of_day === 'afternoon' ? 'selected' : ''}>afternoon</option>
+                          <option value="any"       ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'any' ? 'selected' : ''}>any</option>
+                          <option value="morning"   ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'morning' ? 'selected' : ''}>morning</option>
+                          <option value="afternoon" ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'afternoon' ? 'selected' : ''}>afternoon</option>
                         </select>
                       </div>
                       <div class="toggle-row" style="margin-top: 26px;">
-                        <input type="checkbox" data-field="in_person_required" ${row.ai_in_person_required ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
+                        <input type="checkbox" data-field="in_person_required" ${(row.clinician_override_in_person_required ?? row.ai_in_person_required) ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
                         <label for="ipr-${row.id}">In-person required</label>
                       </div>
                     </div>
 
                     <label class="field-label">Override reason (optional, ≤500 chars)</label>
-                    <textarea data-field="override_reason" maxlength="500" placeholder="${isManual ? 'Required: explain why AI fell back to manual review (e.g. ANTHROPIC_API_KEY pending) or what clinical context to use instead.' : 'Why are you overriding the AI? Brief note for the audit log.'}" ${formDisabled}>${escapeHtml(row.clinician_override_reason || '')}</textarea>
+                    <textarea data-field="override_reason" maxlength="500" placeholder="Why are you changing or confirming this manually? Brief note for the record." ${formDisabled}>${escapeHtml(row.clinician_override_reason || '')}</textarea>
 
                     ${isReleased ? '' : `
                     <div class="actions">
@@ -808,10 +816,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         function render() {
             if (state.rows.length === 0) {
                 const msg = state.statusFilter === 'pending'
-                    ? 'No triage rows pending review.'
+                    ? 'New intakes land here for you to confirm or override the visit type before booking slots are released. Nothing is waiting — a row appears within seconds of a patient submitting their intake.'
                     : state.statusFilter === 'released'
-                        ? 'No released triage rows yet.'
-                        : 'No triage rows.';
+                        ? 'Nothing released yet. Rows appear here once you confirm one, or automatically four hours after the AI categorises it if you have not.'
+                        : 'No intake has been submitted yet. Invite a patient to the portal and their completed intake arrives here.';
                 $list.innerHTML = `<div class="empty-state"><span class="emoji">✓</span>${msg}</div>`;
                 return;
             }
@@ -923,5 +931,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }, 60000);
         })();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

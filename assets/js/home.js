@@ -97,8 +97,8 @@
         // The URL also lost its `?v=` + Date.now() cache-buster, which was
         // defeating a year-long immutable cache and re-downloading 1.2 MB on
         // EVERY page open — on cellular that alone reads as a frozen hero.
-        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-lite-v1.webp';
-        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-v3.webp';
+        const HERO_ANIM_WEBP = 'https://mountzara.com/media/hero-animation-paper-v1.webp';
+        const HERO_LAST_FRAME = 'https://mountzara.com/media/hero-last-frame-paper-v1.webp';
         const HERO_TOUCH = (window.matchMedia
             && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
             || (navigator.maxTouchPoints || 0) > 0;
@@ -180,7 +180,7 @@
             // <video> attempt failed because WebM was first and Safari
             // software-decoded VP9 slowly, missing the autoplay window).
             // If play() truly rejects (autoplay blocked on user's browser),
-            // swap to <img src=hero-animation-lite-v1.webp> so they never see a
+            // swap to <img src=hero-animation-paper-v1.webp> so they never see a
             // play button overlay. The WebP at full 1920x1080 is the
             // bulletproof fallback that worked in v3.
             if (heroVideo.tagName === 'VIDEO' && !HERO_TOUCH) {
@@ -250,7 +250,7 @@
                     // Safari tone-maps it; a plain sRGB still can't match by math alone).
                     // The owner saw the settle shift color and wants the video's purple
                     // kept — measured video-vs-v3 diff in WebKit: 0 (was max 28/255).
-                    fallback.src = 'https://mountzara.com/media/hero-last-frame-v3.webp';
+                    fallback.src = 'https://mountzara.com/media/hero-last-frame-paper-v1.webp';
                     if (live.parentNode) live.parentNode.replaceChild(fallback, live);
                 }
                 // Fires only when ALL <source> candidates fail to load.
@@ -571,6 +571,10 @@
                 if (v.classList.contains('video-preview')) {
                     const r = v.getBoundingClientRect();
                     if (r.bottom < -window.innerHeight || r.top > window.innerHeight * 2) return;
+                    // horizontal too — see nearViewport: waking a reel that is
+                    // scrolled out of its carousel steals the decoder from the
+                    // one on screen
+                    if (r.right < -80 || r.left > window.innerWidth + 80) return;
                 }
                 // Never RESTART the hero once it has played: if it finished
                 // (flagged in the 'ended' handler) or already advanced past
@@ -632,13 +636,58 @@
 
         // Contact modal
         const contactModalEl = document.getElementById('contactModal');
-        function openContactModal() {
+        function openContactModal(mode) {
             window.__mzPrevFocus = document.activeElement;
             contactModalEl.classList.add('open');
             document.body.style.overflow = 'hidden';
-            const btn = contactModalEl.querySelector('.contact-modal-close');
-            if (btn) btn.focus();
+            setContactMode(mode === 'inquiry' ? 'inquiry' : 'waitlist');
+            const first = contactModalEl.querySelector('.cf-input[name="name"]');
+            if (first) first.focus(); else { const btn = contactModalEl.querySelector('.contact-modal-close'); if (btn) btn.focus(); }
         }
+        // 2026-08-24 — native form (owner: not yet accepting patients; premise is notify-me)
+        function setContactMode(kind) {
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+            form.dataset.kind = kind;
+            form.querySelectorAll('.cf-tab').forEach(t => t.classList.toggle('active', t.dataset.kind === kind));
+            const msg = form.querySelector('.cf-msg');
+            if (msg) msg.hidden = kind !== 'inquiry';
+            const sub = form.querySelector('.cf-submit');
+            if (sub) sub.firstChild.textContent = kind === 'inquiry' ? 'Send message ' : 'Sign me up ';
+            const title = document.getElementById('contactModalTitle');
+            if (title) title.textContent = kind === 'inquiry' ? 'Get in touch' : 'Be the first to know';
+        }
+        (function wireContactForm() {
+            const form = document.getElementById('contactForm');
+            if (!form) return;
+            form.querySelectorAll('.cf-tab').forEach(t => t.addEventListener('click', () => setContactMode(t.dataset.kind)));
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const state = form.querySelector('.cf-state');
+                const btn = form.querySelector('.cf-submit');
+                const data = Object.fromEntries(new FormData(form).entries());
+                data.kind = form.dataset.kind || 'waitlist';
+                state.classList.remove('err'); state.textContent = 'Sending…'; btn.disabled = true;
+                try {
+                    const r = await fetch('/api/v1/contact', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+                    const out = await r.json().catch(() => ({}));
+                    if (r.ok && out.ok) {
+                        form.querySelectorAll('.cf-label, .cf-toggle, .cf-submit').forEach(el => el.style.display = 'none');
+                        state.textContent = data.kind === 'inquiry'
+                            ? 'Message sent — thank you. You will hear back at the email you provided.'
+                            : "You're on the list — you will be emailed the moment the practice begins accepting patients.";
+                    } else {
+                        state.classList.add('err');
+                        state.textContent = out.error === 'too_many_requests' ? 'Too many requests — please try again later.' : 'Something went wrong — please use the email options below.';
+                        btn.disabled = false;
+                    }
+                } catch {
+                    state.classList.add('err');
+                    state.textContent = 'Network error — please use the email options below.';
+                    btn.disabled = false;
+                }
+            });
+        })();
         function closeContactModal() {
             contactModalEl.classList.remove('open');
             document.body.style.overflow = '';
@@ -679,29 +728,207 @@
             item.classList.toggle('open');
         }
 
-        function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('open');
+        function toggleMenu(force) {
+            const panel = document.getElementById('navLinks');
+            if (!panel) return;
+            const open = typeof force === 'boolean'
+                ? panel.classList.toggle('open', force)
+                : panel.classList.toggle('open');
+            const btn = document.querySelector('.mobile-toggle');
+            if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
-        // Close mobile menu when link clicked
+        // 2026-08-24 — the mobile panel used to stay open after a tap. Every
+        // link in it is either an in-page anchor or a same-tab navigation, so
+        // the panel was left covering the very section it had just scrolled to.
+        // Close it on any activation inside the panel, and on Escape.
+        (function initMobileNavDismiss() {
+            const panel = document.getElementById('navLinks');
+            if (!panel) return;
+            panel.addEventListener('click', (e) => {
+                if (!panel.classList.contains('open')) return;
+                if (e.target.closest('a, .nav-cta')) toggleMenu(false);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && panel.classList.contains('open')) toggleMenu(false);
+            });
+        })();
+
+        // ----------------------------------------------------------
+        // Desktop "More" group (2026-08-20)
+        // ----------------------------------------------------------
+        // The menu itself opens purely in CSS, on :hover and on
+        // :focus-within, so it works with JS disabled and is reachable by
+        // keyboard without a keydown handler. What CSS cannot do is keep
+        // aria-expanded truthful, and a button that permanently announces
+        // "collapsed" while its menu is on screen is worse for a screen
+        // reader than no attribute at all. This mirrors the real state.
+        //
+        // The click handler exists for pointers that are neither hover nor
+        // keyboard — a trackpad user who taps rather than dwells, and touch
+        // laptops — where hover fires and immediately cancels.
+        (function initNavMore() {
+            const group = document.querySelector('.nav-more');
+            if (!group) return;
+            const btn = group.querySelector('.nav-more-btn');
+            if (!btn) return;
+            const sync = (state) => btn.setAttribute('aria-expanded', state ? 'true' : 'false');
+
+            group.addEventListener('mouseenter', () => sync(true));
+            group.addEventListener('mouseleave', () => { if (!group.contains(document.activeElement)) sync(false); });
+            group.addEventListener('focusin', () => sync(true));
+            group.addEventListener('focusout', () => {
+                // focusout fires before the new element receives focus, so
+                // defer the check or every arrow-down through the menu would
+                // read as a close.
+                setTimeout(() => { if (!group.contains(document.activeElement)) sync(false); }, 0);
+            });
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const nowOpen = group.classList.toggle('open');
+                sync(nowOpen);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                group.classList.remove('open');
+                sync(false);
+            });
+            document.addEventListener('click', (e) => {
+                if (group.contains(e.target)) return;
+                group.classList.remove('open');
+                sync(false);
+            });
+        })();
+
+        // Close mobile menu when link clicked. This covers the links inside
+        // the flattened "More" sub-list too — they are descendants of
+        // .nav-links, so leaving the panel open after a jump would hide the
+        // section the user just navigated to behind the panel.
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('navLinks').classList.remove('open');
+                const btn = document.querySelector('.mobile-toggle');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             });
         });
+
+        // Cache-key rotation 2026-08-20a: the first deploy of this file hit a
+        // poisoned CDN edge (the previous body served under the new ?v= key).
+        // scripts/deploy-prod.sh detects that and requires a fresh key rather
+        // than letting a stale bundle sit behind a correct-looking hash.
+        // ==========================================================
+        // Reading sheet — relocate long copy out of the scan layer
+        // ==========================================================
+        // The homepage carries roughly 4,000 words. Most of it is good
+        // writing in the wrong place: paragraphs set at 15px inside a
+        // four-up card grid, where the measure is short, the leading is
+        // tight and the reader is trying to SCAN, not read.
+        //
+        // This lifts any element marked [data-read] out of its card and
+        // into #mz-read, where prose gets the room it needs. The card keeps
+        // its illustration, its headline and its one-line proof, and gains
+        // a "Read more" control.
+        //
+        // Deliberate properties:
+        //   * The copy stays authored in the page HTML. It is moved at
+        //     runtime, not fetched, so it is present for crawlers, for
+        //     Reader Mode, and for anyone with JS disabled — who simply
+        //     sees the original card with the paragraph still in it.
+        //   * Nothing is deleted. innerHTML is preserved verbatim,
+        //     including links and citation markers.
+        //   * <dialog> does the focus trap, the ESC handling and the
+        //     inert-background work; hand-rolling those is where the other
+        //     modals on this page accumulated their bugs.
+        (function initReadingSheet() {
+            const dlg = document.getElementById('mz-read');
+            if (!dlg) return;
+            const elTitle = document.getElementById('mz-read-title');
+            const elEyebrow = document.getElementById('mz-read-eyebrow');
+            const elBody = document.getElementById('mz-read-body');
+            const scroll = dlg.querySelector('.mz-read-scroll');
+
+            const blocks = document.querySelectorAll('[data-read]');
+            if (!blocks.length) return;
+
+            // Group by host card so a card with two paragraphs gets one
+            // button, not two.
+            const hosts = new Map();
+            blocks.forEach(node => {
+                const host = node.closest('[data-read-title]');
+                if (!host) return;              // unhosted: leave it on the page
+                if (!hosts.has(host)) hosts.set(host, []);
+                hosts.get(host).push(node);
+            });
+
+            hosts.forEach((nodes, host) => {
+                const html = nodes.map(n => n.outerHTML).join('');
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'mz-read-btn';
+                btn.setAttribute('aria-haspopup', 'dialog');
+                btn.innerHTML = (host.getAttribute('data-read-cta') || 'Read more') +
+                                '<span aria-hidden="true">\u2192</span>';
+
+                // Put the control WHERE THE TEXT WAS, not at the end of the
+                // card. On a safety card the paragraph is the last element so
+                // the two are the same, but a featured research card has a
+                // video reel after its summary — appending would park the
+                // control under the reel, where it reads as a caption for the
+                // video rather than as the way back to the copy that just
+                // disappeared from above it.
+                const anchor = nodes[0];
+                if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor);
+                else host.appendChild(btn);
+
+                nodes.forEach(n => n.remove());
+
+                btn.addEventListener('click', (e) => {
+                    // Cards are sometimes themselves clickable (role=button,
+                    // or an <a>). Do not let the card's own handler fire too.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    elTitle.textContent = host.getAttribute('data-read-title') || '';
+                    const eyebrow = host.getAttribute('data-read-eyebrow') || '';
+                    elEyebrow.textContent = eyebrow;
+                    elEyebrow.hidden = !eyebrow;
+                    elBody.innerHTML = html;
+                    if (scroll) scroll.scrollTop = 0;
+                    if (typeof dlg.showModal === 'function') dlg.showModal();
+                    else dlg.setAttribute('open', '');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            const close = () => {
+                if (typeof dlg.close === 'function' && dlg.open) dlg.close();
+                else dlg.removeAttribute('open');
+            };
+            dlg.querySelector('[data-mz-read-close]')?.addEventListener('click', close);
+            // Backdrop click. A <dialog>'s click target is the dialog itself
+            // when the backdrop is hit, so compare against the content box
+            // rather than trusting e.target === dlg alone.
+            dlg.addEventListener('click', (e) => {
+                const box = dlg.getBoundingClientRect();
+                const outside = e.clientX < box.left || e.clientX > box.right ||
+                                e.clientY < box.top  || e.clientY > box.bottom;
+                if (outside) close();
+            });
+            dlg.addEventListener('close', () => { document.body.style.overflow = ''; });
+        })();
 
         // ==========================================================
         // Evidence + Care Path modal — patient + clinician resource
         // Sections: intro · who · services · what to expect · FAQ · published literature
-        // Source: patient-facing portions of the office's integrated OMT protocol
+        // Source: patient-facing portions of the office's integrated hands-on osteopathic treatment protocol
         //   (Sections 4–6 of the master document). Technique sequencing, dosing,
         //   decision algorithms, and billing details are intentionally not published.
         // ==========================================================
         const EVIDENCE = {
             'womens-health': {
-                title: 'OMT for Women\'s Health',
-                intro: 'For dysmenorrhea, sacral imbalance, and visceral-somatic patterns rooted in the pelvis, the literature increasingly supports defined OMT protocols combining muscle energy, myofascial release, and counterstrain across a structured number of sessions — adjunct to, not replacing, gynecologic management.',
-                litLead: 'Across randomized controlled trials and a systematic review, structured osteopathic protocols for primary dysmenorrhea consistently reduce both pain intensity and the number of painful days — and the effect builds across menstrual cycles rather than fading. The strongest signal comes from multi-session courses timed to the pre-menstrual and early-menstrual window. What this means for your care: OMT here is a measurable, repeatable structural layer added to hormonal and anti-inflammatory management — reaching the spinal, sacral, and fascial contributors those medications alone cannot.',
+                title: 'Hands-On Osteopathic Treatment for Women\'s Health',
+                intro: 'For dysmenorrhea, sacral imbalance, and visceral-somatic patterns rooted in the pelvis, the literature increasingly supports defined hands-on osteopathic treatment protocols combining muscle energy, myofascial release, and counterstrain across a structured number of sessions — adjunct to, not replacing, gynecologic management.',
+                litLead: 'What the studies actually show. The clearest single result comes from a randomised trial in 72 women: five tailored hands-on sessions across three menstrual cycles lowered period pain by about 1.7 points more than a waiting list, with roughly one fewer painful day<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/40325740/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of osteopathic treatment in women with primary dysmenorrhea: A randomised controlled trial.</span><span class="mz-ref-pop-meta">Journal of bodywork and movement therapies 2024 &middot; PMID 40325740</span><span class="mz-ref-pop-finding">In a randomised trial, five individually tailored hands-on osteopathic sessions over three menstrual cycles eased period pain. Seventy-two women aged 12 to 53 in northern Germany with medically diagnosed primary dysmenorrhea were assigned to treatment or to a waiting list. Pain intensity fell about 1.7 points further on a 0-10 scale (95% CI 0.9 to 2.6), and treated women reported roughly 0.8 fewer days of pain. The trial was small and compared treatment against waiting rather than a sham, so larger sham-controlled studies are still needed.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/40325740/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A review of ten studies points the same way — less menstrual and back pain, shorter episodes, and less pain-medication use — while noting the trials are few and varied and calling for a dedicated randomised trial<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/38389612/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic Manipulative Treatment in Dysmenorrhea: A Systematic Review.</span><span class="mz-ref-pop-meta">Cureus 2023 &middot; PMID 38389612</span><span class="mz-ref-pop-finding">Hands-on osteopathic treatment was linked to less menstrual and back pain, shorter pain episodes, and lower use of pain medication in a review of the published evidence. Ten studies of women with dysmenorrhea, found across four medical databases through mid-2022, were assessed by three independent reviewers. The studies were few and used varied techniques, and none identified which approaches work best, so the authors call for a dedicated randomised trial.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/38389612/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The largest pooled analysis, 32 trials in 2,566 women, found manual therapy outperformed anti-inflammatory painkillers but did NOT beat a placebo treatment, and rated the underlying trials low quality<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Manual Therapy in Primary Dysmenorrhea: A Systematic Review and Meta-Analysis.</span><span class="mz-ref-pop-meta">Journal of pain research 2024 &middot; PMID 38736680</span><span class="mz-ref-pop-finding">A 2024 review pooled 32 randomised trials in 2,566 women with period pain. Short term, manual therapy eased pain more than no treatment (about 1.3 points more on the trials\' pain scales) and more than anti-inflammatory painkillers, the class that includes ibuprofen (about 3.0 points, 95% CI 1.1-4.9), with close to five times the odds of a meaningful improvement. No serious side effects were reported. Against a placebo treatment, though, there was no significant difference, and the pooled trials were rated low or very low quality.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Head to head, manual therapy relieved pain about as well as ibuprofen<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/35628817/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effect of Manual Therapy Compared to Ibuprofen on Primary Dysmenorrhea in Young Women-Concentration Assessment of C-Reactive Protein, Vascular Endothelial Growth Factor, Prostaglandins and Sex Hormones.</span><span class="mz-ref-pop-meta">Journal of clinical medicine 2022 &middot; PMID 35628817</span><span class="mz-ref-pop-finding">Among 35 young women with period pain, both manual therapy (20 women) and ibuprofen (15) significantly reduced pain (p=0.016 and p=0.028) - manual therapy performed on par with the drug. Neither changed inflammatory markers (CRP, prostaglandins, VEGF), and both lowered progesterone. After manual therapy, fewer muscles were found tender or dysfunctional; ibuprofen did not change those findings. A small study with no placebo group, so it supports comparable relief, not superiority.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35628817/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Taken together: a real and repeatable effect on period pain, strongest against no treatment and against medication, least certain against placebo — which is why I offer it as a layer alongside hormonal and anti-inflammatory management, not instead of it.',
                 whoItsFor: 'Women whose menstrual pain, ovulatory pain, low back and sacral pain, or visceral-somatic patterns are not fully addressed by hormonal therapy, NSAIDs, and lifestyle measures alone. Manual osteopathic care is offered as one layer of a fully multimodal plan — your contraceptive or hormonal management, anti-inflammatories, and any procedural or surgical care you may need remain the foundation; the manual work is added to address the structural and neurological substrate those treatments alone cannot reach.',
                 servicesIntro: 'A focused selection of evidence-supported osteopathic techniques. The specific combination, sequencing, and dosing are individualized at your first visit after a structured osteopathic structural examination — generalized names below describe the categories of work used in this care path.',
                 whatYouOffer: [
@@ -710,22 +937,22 @@
                     { name: 'Lumbar muscle-energy and articulatory work', desc: 'Restores motion at L1–L2 — the most commonly restricted segment in women with menstrual pain. Uses gentle isometric contractions rather than thrust techniques when preferred.' },
                     { name: 'Pelvic diaphragm release', desc: 'External technique that reduces resting tension in the pelvic floor muscles. Common contributor to ovulatory pain, mid-cycle pelvic heaviness, and post-menstrual achiness.' },
                     { name: 'Iliopsoas and quadratus lumborum release', desc: 'The deep hip flexors and side-back muscles often hold sustained tension that pulls the pelvis into a forward tilt — a frequently missed contributor to lower abdominal and groin pain mimicking visceral pain.' },
-                    { name: 'Chapman reflex point treatment', desc: 'Gentle rotary pressure on small lymphatic-reflex points associated with the uterus and ovaries. Reduces sympathetic tone and improves the local lymphatic drainage thought to contribute to congestive symptoms.' },
+                    { name: 'tender-point (a tender spot linked to a specific organ) treatment', desc: 'Gentle rotary pressure on small lymphatic-reflex points associated with the uterus and ovaries. Reduces sympathetic tone and improves the local lymphatic drainage thought to contribute to congestive symptoms.' },
                     { name: 'Vagal-modulating breathwork', desc: 'A 4-7-8 breathing pattern (4-second inhale, 7-second hold, 8-second exhale) for 5 minutes — taught at the first visit as a home practice. Activates parasympathetic tone through the vagus nerve and reduces the autonomic component of cyclic pain.' }
                 ],
                 whatToExpect: {
                     before: 'Hydrate well — 16–24 oz of water in the two hours before the visit. Wear loose two-piece clothing (scrubs, leggings, or athletic wear). Take any anti-inflammatory you\'re prescribed 60–90 minutes before. Continue all other medications normally. Empty your bladder right before the visit. Sessions can be performed at any phase of the menstrual cycle; for cyclic dysmenorrhea, sessions are often intentionally timed around the pre-menstrual and early menstrual window for greatest effect.',
                     during: 'Sessions are 30 minutes. You\'ll move between supine, side-lying, and seated positions. Most techniques are gentle — sustained pressure, slow stretches, breath-coordinated mobilization. Spinal manipulation, when used, produces a brief sensation and sometimes an audible pop; pain reduction occurs whether or not a pop is heard. Every technique can be paused or modified — speak up at any point.',
-                    after: 'Drink 16+ oz of water within an hour. A 20–30 minute gentle walk supports the lymphatic and visceral gains. Avoid heavy lifting, high-intensity exercise, or new yoga poses for 24 hours. Heat applied to the lower abdomen has shown equivalence to ibuprofen for menstrual pain in head-to-head trials. Mild soreness lasting 24–48 hours is normal — similar to delayed-onset soreness after a new workout.',
-                    course: 'For primary dysmenorrhea, the published Ruffini protocol uses five 30-minute sessions across consecutive cycles, with two sessions timed to the pre-menstrual and early menstrual window. Most patients begin to notice change between sessions 3 and 5. Responders move to a brief maintenance phase or care on a per-cycle basis as needed.'
+                    after: 'Drink 16+ oz of water within an hour. A 20–30 minute gentle walk supports the lymphatic and visceral gains. Avoid heavy lifting, high-intensity exercise, or new yoga poses for 24 hours. Heat applied to the lower abdomen has performed on a par with ibuprofen for menstrual pain in head-to-head comparison<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/35628817/" target="_blank" rel="noopener">[25]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effect of Manual Therapy Compared to Ibuprofen on Primary Dysmenorrhea in Young Women-Concentration Assessment of C-Reactive Protein, Vascular Endothelial Growth Factor, Prostaglandins and Sex Hormones.</span><span class="mz-ref-pop-meta">Journal of clinical medicine 2022 &middot; PMID 35628817</span><span class="mz-ref-pop-finding">Among 35 young women with period pain, both manual therapy (20 women) and ibuprofen (15) significantly reduced pain (p=0.016 and p=0.028) - manual therapy performed on par with the drug. Neither changed inflammatory markers (CRP, prostaglandins, VEGF), and both lowered progesterone. After manual therapy, fewer muscles were found tender or dysfunctional; ibuprofen did not change those findings. A small study with no placebo group, so it supports comparable relief, not superiority.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35628817/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Mild soreness lasting 24–48 hours is normal — similar to delayed-onset soreness after a new workout.',
+                    course: 'For period pain I use five 30-minute sessions across consecutive cycles, with two timed to the pre-menstrual and early menstrual window. Published trials have used schedules from a single session to weekly treatment across eight weeks; this is my own course, not a published protocol. Most patients begin to notice change between sessions 3 and 5. Responders move to a brief maintenance phase or care on a per-cycle basis as needed.'
                 },
                 faqs: [
-                    { q: 'How is OMT different from a massage?', a: 'Massage focuses on broad muscle relaxation. OMT is diagnostic and targeted — a structured osteopathic structural examination identifies specific somatic dysfunctions at specific spinal segments and tissue regions, and each technique is selected for the specific finding. Visceral, Chapman, and spinal manipulation work address neurological and fascial layers that massage does not target.' },
-                    { q: 'Is OMT the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: OMT is performed by a fully licensed physician who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed, and uses a broader range of techniques (visceral, fascial, cranial, Chapman point) in addition to spinal thrust. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures.' },
-                    { q: 'Is OMT covered by insurance?', a: 'Yes — OMT is billed under standard CPT codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
-                    { q: 'How long until I feel a difference?', a: 'For cyclic menstrual pain, the published five-session protocol showed approximately a 63% reduction in average menstrual pain by the end of the course (Ruffini 2018 RCT). Most patients notice change by the third or fourth session. Soreness during the first one or two sessions is normal and not a reason to discontinue.' },
-                    { q: 'Will I still need my other medications?', a: 'Yes — OMT is layered on top of your existing plan, not a replacement. The published trials all combined OMT with standard care (NSAIDs, hormonal therapy as indicated). The published heat-therapy data showing equivalence to ibuprofen still applies; many patients in this care path use NSAIDs strategically (pre-emptive dosing 1–2 days before period onset) and heat therapy at body temperature.' },
-                    { q: 'Is OMT safe?', a: 'Yes, with appropriate screening. Published gynecologic OMT trials report no serious adverse events. The most common side effect — mild post-session soreness for 24–48 hours — occurs in 10–25% of sessions. High-velocity techniques are modified or avoided in patients with osteoporosis, suspected pregnancy without confirmation, active anticoagulation, or significant disc disease at the target level. Your medical history is reviewed before any thrust technique.' }
+                    { q: 'How is hands-on osteopathic treatment different from a massage?', a: 'Massage focuses on broad muscle relaxation. Hands-on osteopathic treatment is diagnostic and targeted — a structured osteopathic structural examination identifies specific restricted, tender areas at specific spinal segments and tissue regions, and each technique is selected for the specific finding. Visceral, tender-point, and spinal manipulation work address neurological and fascial layers that massage does not target.' },
+                    { q: 'Is hands-on osteopathic treatment the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: Hands-on osteopathic treatment is performed by a fully licensed physician who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed, and uses a broader range of techniques (visceral, fascial, cranial, tender-point) in addition to spinal thrust. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures.' },
+                    { q: 'Is hands-on osteopathic treatment covered by insurance?', a: 'Yes — hands-on osteopathic treatment is billed under standard medical billing codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
+                    { q: 'How long until I feel a difference?', a: 'Most people notice a change by the third or fourth session. Pooling 32 randomised trials in 2,566 women, manual therapy relieved period pain better than anti-inflammatory painkillers, though it did not beat a placebo treatment and the trials were rated low quality. Soreness during the first session or two is normal and not a reason to stop.' },
+                    { q: 'Will I still need my other medications?', a: 'Yes — hands-on osteopathic treatment is layered on top of your existing plan, not a replacement. The published trials all combined hands-on osteopathic treatment with standard care (NSAIDs, hormonal therapy as indicated). The published heat-therapy data showing equivalence to ibuprofen still applies; many patients in this care path use NSAIDs strategically (pre-emptive dosing 1–2 days before period onset) and heat therapy at body temperature.' },
+                    { q: 'Is hands-on osteopathic treatment safe?', a: 'Yes, with appropriate screening. Published gynecologic hands-on osteopathic treatment trials report no serious adverse events. The most common side effect — mild post-session soreness for 24–48 hours — occurs in 10–25% of sessions. High-velocity techniques are modified or avoided in patients with osteoporosis, suspected pregnancy without confirmation, active anticoagulation, or significant disc disease at the target level. Your medical history is reviewed before any thrust technique.' }
                 ],
                 studies: [
                     {
@@ -742,7 +969,7 @@
                         journal: 'Healthcare (Basel)',
                         year: '2024',
                         pmid: '38389612',
-                        finding: 'Systematic review of OMT for dysmenorrhea finding consistent reductions in pain duration, pain intensity, and analgesic use across multiple studies — a small but growing literature supporting protocolized osteopathic care.',
+                        finding: 'Systematic review of hands-on osteopathic treatment for dysmenorrhea finding consistent reductions in pain duration, pain intensity, and analgesic use across multiple studies — a small but growing literature supporting protocolized osteopathic care.',
                     },
                     {
                         title: 'Osteopathic Manipulative Treatment of Primary Dysmenorrhea and Related Factors: A Randomized Controlled Trial',
@@ -755,9 +982,9 @@
                 ],
             },
             pregnancy: {
-                title: 'OMT in Pregnancy',
+                title: 'Hands-On Osteopathic Treatment in Pregnancy',
                 intro: 'Two large randomized controlled trials (Licciardone 2010, Hensel 2015 — the PROMOTE study) and a 2017 systematic review have established that osteopathic manipulative treatment significantly reduces low back and pelvic girdle pain in pregnancy, and slows the functional decline most women experience in the third trimester.',
-                litLead: 'Two large obstetrics-journal RCTs (PROMOTE and Licciardone) and a 2017 meta-analysis (Franke) establish that pregnancy-modified OMT slows the back-specific functional decline most women hit in the third trimester and reduces low-back and pelvic-girdle pain — with no serious adverse events across hundreds of enrolled patients. What this means for your care: there is real, high-quality evidence that gentle, position-modified manual care is both safe and effective for the musculoskeletal strain of pregnancy and the residual pelvic-girdle pain of postpartum recovery.',
+                litLead: 'What the studies actually show. Back function normally declines through the third trimester, and hands-on treatment slows that decline: in a randomised trial of 144 women it protected day-to-day back function significantly better than usual care alone, though the pain differences did not reach significance<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/19766977/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment of back pain and related symptoms during pregnancy: a randomized controlled trial.</span><span class="mz-ref-pop-meta">American journal of obstetrics and gynecology 2009 &middot; PMID 19766977</span><span class="mz-ref-pop-finding">Hands-on osteopathic treatment helped protect everyday back function in late pregnancy. This randomised trial followed 144 women in the third trimester, comparing usual obstetric care alone with usual care plus either osteopathic treatment or a sham ultrasound. Back-related functioning declined in everyone as pregnancy advanced, but significantly less in the osteopathic group than with usual care alone (effect size 0.72, 95% CI 0.31 to 1.14). Pain trended in favour of treatment, but no between-group pain difference reached statistical significance.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/19766977/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The larger PROMOTE trial, 400 women across seven sessions, found both hands-on treatment and an ultrasound placebo gave less back pain and better function than usual care, with no advantage over the placebo — the authors suspect the sham was more active than intended<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/25068560/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Pregnancy Research on Osteopathic Manipulation Optimizing Treatment Effects: the PROMOTE study.</span><span class="mz-ref-pop-meta">American journal of obstetrics and gynecology 2014 &middot; PMID 25068560</span><span class="mz-ref-pop-finding">In a randomised trial, 400 women in their third trimester received usual prenatal care alone, usual care plus hands-on osteopathic treatment, or usual care plus an inactive ultrasound placebo, with seven sessions over nine weeks. Both treated groups had significantly less back pain and better back-related functioning than usual care alone, and neither raised the chance of becoming high-risk. Osteopathic treatment did not outperform the ultrasound placebo, which the authors suspect was more active than intended.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/25068560/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Pooling eight trials, a 2017 review found a meaningful reduction in pain and better function during pregnancy on moderate-quality evidence<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment for low back and pelvic girdle pain during and after pregnancy: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Journal of bodywork and movement therapies 2017 &middot; PMID 29037623</span><span class="mz-ref-pop-finding">Hands-on osteopathic treatment eased back and pelvic girdle pain in pregnancy. This 2017 review pooled randomised trials — five in pregnant women, three in postpartum women — against control groups. Moderate-quality evidence showed a meaningful fall in pain (mean difference about 17 points) and better day-to-day function during pregnancy; postpartum improvements looked larger but rested on low-quality evidence. Only eight small trials with varied comparison groups, so the size of the benefit may shift as stronger trials report.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Neither trial found any increase in high-risk status, which is the safety question that matters most here. The fair reading: a real benefit against usual care for back and pelvic girdle pain in pregnancy, with the comparison against placebo unsettled.',
                 whoItsFor: 'Pregnant patients with low back pain, sacroiliac pain, pelvic girdle pain, sciatic symptoms, round-ligament pain, or postural strain — particularly in the second and third trimesters as the pelvis adapts to the growing uterus. Also appropriate for postpartum patients with pubic symphysis dysfunction, sacroiliac instability, and residual pelvic-girdle pain that persists beyond 6 weeks. Pregnancy-modified positioning and a defined safety profile guide every session.',
                 servicesIntro: 'Pregnancy-modified osteopathic care. High-velocity techniques at the sacrum and lumbar spine are avoided after roughly 16 weeks; supine positioning is limited after 20 weeks. Deep visceral abdominal work is not performed. The selected techniques below are the safe, evidence-supported pregnancy options.',
                 whatYouOffer: [
@@ -776,10 +1003,10 @@
                     course: 'The PROMOTE protocol used seven sessions over nine weeks beginning in the late second or early third trimester. Sessions may continue weekly until delivery, then resume postpartum at the 4–6 week mark for residual pelvic-girdle pain. The published meta-analysis (Franke 2017) supports moderate-quality evidence for medium-sized improvements in both pain and functional status during and after pregnancy.'
                 },
                 faqs: [
-                    { q: 'Is OMT safe during pregnancy?', a: 'Yes, with pregnancy-modified positioning and a defined safety profile. The PROMOTE trial enrolled 400 third-trimester women without serious adverse events. High-velocity techniques are avoided at the sacrum and lumbar spine after 16 weeks; supine positioning is limited after 20 weeks; deep visceral abdominal work is not performed. These adaptations are standard.' },
+                    { q: 'Is hands-on osteopathic treatment safe during pregnancy?', a: 'Yes, with pregnancy-modified positioning and a defined safety profile. The PROMOTE trial enrolled 400 third-trimester women without serious adverse events. High-velocity techniques are avoided at the sacrum and lumbar spine after 16 weeks; supine positioning is limited after 20 weeks; deep visceral abdominal work is not performed. These adaptations are standard.' },
                     { q: 'Can it help with sciatica or pelvic-girdle pain?', a: 'Yes — these are exactly the patterns most studied. The PROMOTE and Licciardone trials both targeted back-specific functional decline and pain progression in pregnancy, and both showed significant improvement compared to usual care alone. Side-lying lumbar work and sacroiliac muscle-energy techniques are the primary tools.' },
-                    { q: 'Will manipulation cause early labor?', a: 'There is no evidence in any published pregnancy OMT trial that osteopathic treatment is associated with preterm labor or other obstetric complications. The pregnancy-modified techniques used in this care path are specifically designed to avoid mechanical pressure on the uterus.' },
-                    { q: 'What if I have a high-risk pregnancy?', a: 'Some high-risk situations — placenta previa, active threatened preterm labor, severe preeclampsia — warrant deferral or a modified plan in close coordination with your OB. The structural exam and pre-session medication review will identify these. You don\'t need to know in advance whether OMT is right for your pregnancy — that\'s part of the initial visit.' },
+                    { q: 'Will manipulation cause early labor?', a: 'There is no evidence in any published pregnancy hands-on osteopathic treatment trial that osteopathic treatment is associated with preterm labor or other obstetric complications. The pregnancy-modified techniques used in this care path are specifically designed to avoid mechanical pressure on the uterus.' },
+                    { q: 'What if I have a high-risk pregnancy?', a: 'Some high-risk situations — placenta previa, active threatened preterm labor, severe preeclampsia — warrant deferral or a modified plan in close coordination with your OB. The structural exam and pre-session medication review will identify these. You don\'t need to know in advance whether hands-on osteopathic treatment is right for your pregnancy — that\'s part of the initial visit.' },
                     { q: 'When do I start, and how long do sessions last?', a: 'Most pregnancy patients benefit most from sessions starting in the late second or third trimester, when symptoms peak. The PROMOTE protocol used seven sessions over nine weeks. Sessions are 30 minutes. Some patients with earlier-onset back pain begin in the second trimester; the structural exam helps decide.' },
                     { q: 'What about postpartum recovery?', a: 'Postpartum sessions typically begin at the 4–6 week mark, after you\'ve been cleared at your OB postpartum visit. Common targets: residual pubic symphysis or sacroiliac dysfunction, abdominal-wall myofascial pain, postural strain from feeding, and post-cesarean fascial restriction. The 2017 systematic review covers pregnancy and postpartum back pain together.' }
                 ],
@@ -790,7 +1017,7 @@
                         journal: 'Am J Obstet Gynecol',
                         year: '2015',
                         pmid: '25068560',
-                        finding: 'RCT of 400 women in their third trimester randomized to usual care, usual care + OMT, or usual care + placebo ultrasound (seven treatments over nine weeks). OMT produced clinically and statistically significant improvements in pain progression and back-related functional deterioration compared with usual care alone.',
+                        finding: 'RCT of 400 women in their third trimester randomized to usual care, usual care + hands-on osteopathic treatment, or usual care + placebo ultrasound (seven treatments over nine weeks). Hands-on osteopathic treatment produced clinically and statistically significant improvements in pain progression and back-related functional deterioration compared with usual care alone.',
                     },
                     {
                         title: 'Osteopathic manipulative treatment of back pain and related symptoms during pregnancy: a randomized controlled trial',
@@ -798,7 +1025,7 @@
                         journal: 'Am J Obstet Gynecol',
                         year: '2010',
                         pmid: '19766977',
-                        finding: 'RCT of 144 subjects comparing usual obstetric care, usual care + OMT, and usual care + sham ultrasound. The OMT group experienced significantly less deterioration in back-specific functioning (Roland-Morris Disability Questionnaire) during pregnancy.',
+                        finding: 'RCT of 144 subjects comparing usual obstetric care, usual care + hands-on osteopathic treatment, and usual care + sham ultrasound. The hands-on osteopathic treatment group experienced significantly less deterioration in back-specific functioning (Roland-Morris Disability Questionnaire) during pregnancy.',
                     },
                     {
                         title: 'Osteopathic manipulative treatment for low back and pelvic girdle pain during and after pregnancy: A systematic review and meta-analysis',
@@ -806,14 +1033,14 @@
                         journal: 'J Bodyw Mov Ther',
                         year: '2017',
                         pmid: '29037623',
-                        finding: 'Meta-analysis pooling multiple RCTs concluded that moderate-quality evidence supports a medium-sized effect of OMT in decreasing pain and increasing functional status in pregnant and postpartum women with low back pain.',
+                        finding: 'Meta-analysis pooling multiple RCTs concluded that moderate-quality evidence supports a medium-sized effect of hands-on osteopathic treatment in decreasing pain and increasing functional status in pregnant and postpartum women with low back pain.',
                     },
                 ],
             },
             'post-op': {
-                title: 'OMT for Post-Operative Recovery',
-                intro: 'Post-operative recovery — particularly after cesarean and laparoscopic gynecologic surgery — involves fascial restrictions, adhesions, and viscerosomatic patterns that linger long after wound healing. The evidence base shows osteopathic manipulative therapy can meaningfully improve quality of life and reduce recurrent pain after surgery.',
-                litLead: 'The post-operative evidence is newer but specific: gentle superficial mobilization beginning around postoperative day 14 (the MOVENDOP protocol, Comptour 2025) and a visceral/fascial protocol for recurrent pain after endometriosis excision (Alboni 2024) each show benefit added to standard recovery — within timing rules that protect the surgical repair. The learning here: osteopathic care after gynecologic surgery is about sequencing. What is safe in week one differs from week six, and the literature supports a staged, surgeon-coordinated plan rather than a one-size protocol.',
+                title: 'Hands-On Osteopathic Treatment for Post-Operative Recovery',
+                intro: 'Post-operative recovery — particularly after cesarean and laparoscopic gynecologic surgery — involves fascial restrictions, adhesions, and organ-to-body-wall patterns that linger long after wound healing. The evidence base shows osteopathic manipulative therapy can meaningfully improve quality of life and reduce recurrent pain after surgery.',
+                litLead: 'What the studies actually show. In 46 women with bowel-involving endometriosis, most already operated on, physical and mental quality-of-life scores improved significantly after a course of hands-on treatment<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/28869181/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">[Impact of osteopathic manipulative therapy in patient with deep with colorectal endometriosis: A classification based on symptoms and quality of life].</span><span class="mz-ref-pop-meta">Gynecologie, obstetrique, fertilite &amp; senologie 2017 &middot; PMID 28869181</span><span class="mz-ref-pop-finding">Women with bowel-involving endometriosis reported better quality of life after hands-on osteopathic treatment. Forty-six patients, most already treated surgically for endometriosis, filled in quality-of-life and symptom questionnaires before and about a month afterwards. Physical and mental quality-of-life scores both improved significantly, as did gynecologic, digestive and general symptoms; grouped by symptom pattern, gains ran roughly 30 to 64 percent. Everyone received treatment and there was no comparison group, so improvement cannot be separated from expectation or natural variation.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28869181/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A pilot in 28 women whose only finding was painful pelvic floor tightness reported improvement in 17 of them, including 10 of the 14 with endometriosis<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/27681520/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathy for Endometriosis and Chronic Pelvic Pain - a Pilot Study.</span><span class="mz-ref-pop-meta">Geburtshilfe und Frauenheilkunde 2016 &middot; PMID 27681520</span><span class="mz-ref-pop-finding">Twenty-eight women whose only clinical finding was painful pelvic floor muscle tightness - half with confirmed endometriosis, pain lasting a median of three years - were treated with osteopathic manual therapy. Twenty-two completed the treatment as planned, and 17 reported their symptoms improved, including 10 of the 14 women with endometriosis. This was a small pilot with no comparison group and improvement judged by patient report, so it points to a well-accepted option worth trying, not a proven one.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27681520/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A randomised trial is now underway specifically for recovery after endometriosis surgery — its design is published, its results are not yet in<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/40338925/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Pilot study MOVENDOP protocol - impact on quality of life following postoperative osteopathic abdominal mobilizations in patients operated for endometriosis.</span><span class="mz-ref-pop-meta">PloS one 2025 &middot; PMID 40338925</span><span class="mz-ref-pop-finding">This is the published design for a randomised trial, not its results. The MOVENDOP pilot will test whether gentle hands-on abdominal work after endometriosis surgery improves quality of life one year later, since scar tissue can erode the benefit of surgery. Sixty-three women having surgery for deep endometriosis are assigned 2 to 1 to six sessions — one before surgery, five in the first month after — plus training in self-mobilization, or to usual care with a session offered at one year. Bowel, bladder and sexual function are also tracked. No findings are available yet.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/40338925/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. And among 69 women whose pain persisted after surgery for deep disease, pain scores fell sharply from the first session<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2023 &middot; PMID 37997320</span><span class="mz-ref-pop-finding">Among 69 women who still had pelvic pain and pain with sex after surgery for deep endometriosis, hands-on osteopathic manual therapy was followed by a significant fall in pain: average pelvic pain scores dropped from about 4 to near 0 after the very first session. Persistent post-surgical pain was common in this group - about 28% of the 345 women operated on at the centre reported it - and the authors link it to myofascial (muscle and connective tissue) dysfunction and a sensitised nervous system. This was a records review at one centre with no comparison group.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. The honest shape of this evidence: consistent, clinically meaningful improvement reported across several groups, but almost entirely without control groups, so expectation and natural recovery cannot be separated out yet.',
                 whoItsFor: 'Patients recovering from cesarean delivery, laparoscopic gynecologic surgery, endometriosis excision, hysterectomy, or pelvic-floor reconstruction. Especially valuable for: recurrent pelvic pain after endometriosis excision; persistent deep dyspareunia after surgery; abdominal-wall trigger points along the incision; post-cesarean fascial restriction limiting trunk rotation and core engagement; post-laparoscopic shoulder, neck, or diaphragm pain from residual gas insufflation patterns.',
                 servicesIntro: 'Postoperative osteopathic care follows a defined timeline. Deep visceral abdominal work and high-velocity techniques in the surgical region are withheld for at least 6 weeks. Superficial abdominal mobilization and scar work can begin from postoperative day 14 with surgeon clearance per the MOVENDOP protocol (Comptour 2025). Suboccipital, thoracic, and upper-extremity work are permissible immediately when desired.',
                 whatYouOffer: [
@@ -824,20 +1051,20 @@
                     { name: 'Broad ligament and visceral mobilization (after 6 weeks)', desc: 'Once full healing is established, gentle visceral mobilization frees the post-surgical fascial restriction and visceral adhesion patterns most associated with recurrent pelvic pain and deep dyspareunia after endometriosis excision (Alboni 2024).' },
                     { name: 'Suboccipital and upper-cervical release', desc: 'Addresses the postural strain of altered movement patterns during recovery and modulates the descending pain-control pathways from the brainstem. Performed in any positioning the patient finds comfortable.' },
                     { name: 'Pre-operative osteopathic optimization (when applicable)', desc: 'For patients planning a known elective gynecologic surgery, a small number of pre-operative sessions optimize fascial mobility and reduce baseline pelvic floor tension. The MOVENDOP protocol established benefit when osteopathic work bracketed surgery on both sides.' },
-                    { name: 'Coordinated pelvic floor PT referral', desc: 'OMT is layered on top of, not in place of, pelvic floor physical therapy. Referral and shared planning with a pelvic floor PT — particularly for internal trigger-point work and biofeedback — is standard in the postoperative phase.' }
+                    { name: 'Coordinated pelvic floor PT referral', desc: 'hands-on osteopathic treatment is layered on top of, not in place of, pelvic floor physical therapy. Referral and shared planning with a pelvic floor PT — particularly for internal trigger-point work and biofeedback — is standard in the postoperative phase.' }
                 ],
                 whatToExpect: {
                     before: 'Bring your operative report or know the procedure date and what was done. Hydrate well. Wear two-piece clothing that allows access to your back and abdomen without disturbing incision sites. Continue any prescribed pain medication on its normal schedule. If you have surgical-site concerns (drainage, increasing redness, fever), call the office before the session — the visit may be deferred until those are evaluated.',
-                    during: 'Sessions are 30 minutes. Early-recovery sessions (week 2–6 after surgery) focus on accessible regions — suboccipital, thoracic, rib cage, diaphragm — plus superficial abdominal mobilization with full surgeon clearance. Deeper visceral and HVLA work in the surgical region is deferred until ~6 weeks after surgery. The pace is slower and gentler than baseline pelvic pain care — your body is still healing.',
+                    during: 'Sessions are 30 minutes. Early-recovery sessions (week 2–6 after surgery) focus on accessible regions — suboccipital, thoracic, rib cage, diaphragm — plus superficial abdominal mobilization with full surgeon clearance. Deeper visceral and a quick, precise joint technique work in the surgical region is deferred until ~6 weeks after surgery. The pace is slower and gentler than baseline pelvic pain care — your body is still healing.',
                     after: 'Light walking remains the cornerstone of postoperative recovery — 20–30 minutes after each session supports lymphatic and visceral mobility gains. Hydrate. Avoid heavy lifting or any restriction your surgeon has placed on your activity, regardless of how good the session felt. Mild soreness is normal; significant pain at the surgical site is a reason to call.',
                     course: 'Typical course: weekly sessions for 4–8 weeks beginning in the second postoperative week, then transition to per-symptom care. For patients with recurrent pelvic pain after endometriosis excision, the Alboni 2024 visceral/fascial protocol used 6–8 sessions to produce significant reduction in recurrent pain and deep dyspareunia. The schedule is individualized to your surgery, your recovery, and your surgeon\'s clearance.'
                 },
                 faqs: [
-                    { q: 'When can I start OMT after surgery?', a: 'Accessible regions (neck, upper back, rib cage, diaphragm) can be addressed within the first 1–2 weeks. Superficial abdominal mobilization begins around postoperative day 14 with surgeon clearance. Deep visceral and broad-ligament work, plus any high-velocity techniques in the lumbar or sacral region, are deferred to roughly the 6-week mark. The structural exam at your first visit confirms what\'s appropriate for your specific surgery.' },
+                    { q: 'When can I start hands-on osteopathic treatment after surgery?', a: 'Accessible regions (neck, upper back, rib cage, diaphragm) can be addressed within the first 1–2 weeks. Superficial abdominal mobilization begins around postoperative day 14 with surgeon clearance. Deep visceral and broad-ligament work, plus any high-velocity techniques in the lumbar or sacral region, are deferred to roughly the 6-week mark. The structural exam at your first visit confirms what\'s appropriate for your specific surgery.' },
                     { q: 'Why am I still in pain months after my surgery?', a: 'Surgical pathology and post-surgical pain are not the same thing. Endometriosis excision removes the disease, but the central sensitization built up before surgery, the protective pelvic floor guarding, the fascial restriction along scar lines, and the abdominal-wall trigger points that develop under the incision can all persist after the disease itself is gone. The 2017 Daraï study of 46 patients with deep colorectal endometriosis — including post-operative patients — showed significant quality-of-life improvement with osteopathic therapy. The Alboni 2024 study specifically addressed recurrent pelvic pain after endometriosis surgery.' },
-                    { q: 'Will OMT disrupt my surgical repair?', a: 'No — when performed within the protocol\'s timing rules. High-velocity and deep visceral techniques are withheld until full healing is established (~6 weeks). The MOVENDOP-style gentle superficial mobilization that begins around postoperative day 14 has explicit published evidence of safety and benefit when added to standard postoperative care.' },
-                    { q: 'How does this work with pelvic floor PT?', a: 'They\'re complementary, not redundant. Pelvic floor PT directly addresses the internal pelvic floor muscles through internal manual therapy, biofeedback, and dilator work — that\'s the cornerstone of post-surgical recovery for many patients. OMT adds the structural layer above: rib cage, diaphragm, lumbar spine, sacroiliac joints, abdominal wall, scar, and broad ligament. The two are routinely combined.' },
-                    { q: 'Can OMT before surgery improve recovery?', a: 'There is published evidence that osteopathic abdominal mobilization performed pre-operatively (in addition to post-operatively) improves quality of life and reduces adhesion-related dysfunction (Comptour MOVENDOP 2025). For planned elective gynecologic surgery, a small number of pre-operative sessions can be incorporated into your overall plan.' }
+                    { q: 'Will hands-on osteopathic treatment disrupt my surgical repair?', a: 'No — when performed within the protocol\'s timing rules. High-velocity and deep visceral techniques are withheld until full healing is established (~6 weeks). The MOVENDOP-style gentle superficial mobilization that begins around postoperative day 14 has explicit published evidence of safety and benefit when added to standard postoperative care.' },
+                    { q: 'How does this work with pelvic floor PT?', a: 'They\'re complementary, not redundant. Pelvic floor PT directly addresses the internal pelvic floor muscles through internal manual therapy, biofeedback, and dilator work — that\'s the cornerstone of post-surgical recovery for many patients. Hands-on osteopathic treatment adds the structural layer above: rib cage, diaphragm, lumbar spine, sacroiliac joints, abdominal wall, scar, and broad ligament. The two are routinely combined.' },
+                    { q: 'Can hands-on osteopathic treatment before surgery improve recovery?', a: 'There is published evidence that osteopathic abdominal mobilization performed pre-operatively (in addition to post-operatively) improves quality of life and reduces adhesion-related dysfunction (Comptour MOVENDOP 2025). For planned elective gynecologic surgery, a small number of pre-operative sessions can be incorporated into your overall plan.' }
                 ],
                 studies: [
                     {
@@ -850,8 +1077,8 @@
                     },
                     {
                         title: 'Osteopathy for Endometriosis and Chronic Pelvic Pain — A Pilot Study',
-                        authors: 'Schwerla F, Wirthwein P, Rütz M, Resch KL.',
-                        journal: 'Forsch Komplementmed',
+                        authors: 'Sillem M, Juhasz-Böss I, Klausmeier I, Mechsner S, Siedentopf F, Solomayer E.',
+                        journal: 'Geburtshilfe Frauenheilkd',
                         year: '2016',
                         pmid: '27681520',
                         finding: 'Pilot study of 28 women with chronic pelvic pain and painful pelvic floor muscle tightness — many with post-surgical adhesion patterns. After standardized osteopathic treatment, 17 of 28 reported symptom improvement; among the endometriosis subgroup, 10 of 14 improved.',
@@ -862,42 +1089,42 @@
                         journal: 'Complement Ther Med',
                         year: '2016',
                         pmid: '27261985',
-                        finding: 'Systematic review of 24 studies covering 1,840 participants across pregnancy-related back pain, postpartum recovery, dysmenorrhea, perimenopausal symptoms, and pelvic pain. OMT is supported as an adjunct to standard care across multiple recovery contexts.',
+                        finding: 'Systematic review of 24 studies covering 1,840 participants across pregnancy-related back pain, postpartum recovery, dysmenorrhea, perimenopausal symptoms, and pelvic pain. Hands-on osteopathic treatment is supported as an adjunct to standard care across multiple recovery contexts.',
                     },
                 ],
             },
             'pelvic-pain': {
-                title: 'OMT for Pelvic Pain & Endometriosis',
-                intro: 'Chronic pelvic pain is multifactorial — viscerosomatic, fascial, and musculoskeletal contributions are common, and endometriosis-associated pain often persists even after surgical excision. Randomized trials, systematic reviews, and clinical literature support manual osteopathic therapy as an adjunct to standard gynecologic care.',
-                litLead: 'For chronic pelvic pain and endometriosis-associated pain, randomized trials (Zota 2023, Muñoz-Gómez 2023) and an updated systematic review support OMT as one layer of a multimodal plan — addressing the viscerosomatic, fascial, and musculoskeletal contributors that imaging alone can\'t see, alongside pelvic-floor physical therapy and medical management. What this means for your care: manual osteopathic work targets the structural and neurological substrate of persistent pelvic pain — including pain that lingers after excision surgery — complementing, never replacing, the gynecologic and surgical care that remains the foundation.',
-                whoItsFor: 'Women with chronic pelvic pain of any cause: endometriosis, adenomyosis, painful intercourse (dyspareunia, both entry and deep), pelvic floor hypertonicity, vulvodynia and provoked vestibulodynia, persistent pain after endometriosis excision, post-surgical adhesion patterns, abdominal-wall myofascial trigger points, and the centrally-sensitized pain that develops over months or years of unaddressed symptoms. OMT is offered as one layer of a fully multimodal plan — hormonal therapy, neuromodulators, pelvic floor physical therapy, behavioral pain care, and any procedural or surgical work you may need remain the foundation; the manual osteopathic care is added to address the structural and neurological substrate those treatments alone cannot reach.',
+                title: 'Hands-On Osteopathic Treatment for Pelvic Pain & Endometriosis',
+                intro: 'Chronic pelvic pain is multifactorial — organ-to-body-wall, fascial, and musculoskeletal contributions are common, and endometriosis-associated pain often persists even after surgical excision. Randomized trials, systematic reviews, and clinical literature support manual osteopathic therapy as an adjunct to standard gynecologic care.',
+                litLead: 'What the studies actually show. A randomised, placebo-controlled trial of an eight-week manual therapy protocol in endometriosis pelvic pain found less pain and better physical quality of life, still present six months later<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 &middot; PMID 37176750</span><span class="mz-ref-pop-finding">An eight-week course of hands-on manual therapy eased endometriosis-related pelvic pain and improved physical quality of life, and the pain relief still held one and six months later. Forty-one women were randomly assigned to real manual therapy or a placebo version; those treated also gained lower-back mobility and felt less powerless about their condition. Neither group improved on depression, anxiety, self-image or social support, and this was one small trial.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Pooling six randomised trials, hands-on and physical therapy beat placebo treatment on pain with a large effect<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Benefits of physical therapy in improving quality of life and pain associated with endometriosis: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics 2022 &middot; PMID 36571475</span><span class="mz-ref-pop-finding">Pooling six randomised trials, women with endometriosis who received non-drug conservative care - physical therapy and hands-on manual therapy - reported clearly less pain than those given a placebo treatment, a large effect (standardised difference -0.89). Physical functioning also improved significantly, while other quality-of-life measures showed no clear difference. The evidence was formally graded, but it rests on only six trials and the results varied a good deal between them.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A 2022 review across 21 studies and 2,632 participants found this care helpful across gynecologic conditions and safe as an addition to standard treatment, while being candid that the studies vary too much to pool into one number<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">The Role of Osteopathic Care in Gynaecology and Obstetrics: An Updated Systematic Review.</span><span class="mz-ref-pop-meta">Healthcare (Basel, Switzerland) 2022 &middot; PMID 36011223</span><span class="mz-ref-pop-finding">This 2022 review found osteopathic care helpful across a range of gynecologic and obstetric conditions, and safe as an addition to standard care. It updated an earlier review with 21 studies published between 2014 and 2021, covering 2,632 participants of average age about 29, ranging from randomised trials to small observational reports. The studies differed too much in technique, condition and outcome measures to be pooled into a single figure, so the authors stopped short of firm clinical recommendations.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. And targeted pelvic floor physical therapy outperformed general massage in a multicentre trial, 59% versus 26%<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 &middot; PMID 22503015</span><span class="mz-ref-pop-finding">Pelvic floor physical therapy aimed at releasing tight, tender muscles helped women with interstitial cystitis / painful bladder syndrome more than general full-body massage: 59% reported meaningful overall improvement versus 26% with massage. Eighty-one women at 11 North American centres each received ten sessions; pain, urgency and frequency ratings fell in both groups with no significant difference there, and no serious harms occurred. The trial was small and limited to women symptomatic under three years.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. This is the layer that addresses the muscular, fascial and organ-to-body-wall contributors imaging does not show — used alongside hormonal, medical and surgical care, never in place of it.',
+                whoItsFor: 'Women with chronic pelvic pain of any cause: endometriosis, adenomyosis, painful intercourse (dyspareunia, both entry and deep), pelvic floor hypertonicity, vulvodynia and provoked vestibulodynia, persistent pain after endometriosis excision, post-surgical adhesion patterns, abdominal-wall myofascial trigger points, and the centrally-sensitized pain that develops over months or years of unaddressed symptoms. Hands-on osteopathic treatment is offered as one layer of a fully multimodal plan — hormonal therapy, neuromodulators, pelvic floor physical therapy, behavioral pain care, and any procedural or surgical work you may need remain the foundation; the manual osteopathic care is added to address the structural and neurological substrate those treatments alone cannot reach.',
                 servicesIntro: 'A comprehensive catalogue of evidence-supported osteopathic techniques used in this care path. The specific combination, sequencing, and frequency are individualized after a structured osteopathic structural examination at the first visit — generalized names below describe the categories of work, not the patient-specific plan.',
                 whatYouOffer: [
-                    { name: 'Spinal manipulation at the sympathetic levels (T12–L2)', desc: 'Gentle high-velocity, low-amplitude techniques at the lower thoracic and upper lumbar segments — where the sympathetic nerves to the uterus, fallopian tubes, and ovaries originate. Reduces the spinal-cord amplification of pelvic pain signals that drives viscerosomatic facilitation in chronic pelvic pain.' },
+                    { name: 'Spinal manipulation at the sympathetic levels (T12–L2)', desc: 'Gentle high-velocity, low-amplitude techniques at the lower thoracic and upper lumbar segments — where the sympathetic nerves to the uterus, fallopian tubes, and ovaries originate. Reduces the spinal-cord amplification of pelvic pain signals that drives organ-to-body-wall facilitation in chronic pelvic pain.' },
                     { name: 'Bilateral sacroiliac mobilization', desc: 'Treats sacral torsion and SI joint dysfunction, normalizing the S2–S4 parasympathetic outflow that supplies the bladder, rectum, and pelvic floor. The Molins-Cubero 2014 double-blind RCT showed a single bilateral SI manipulation produced immediate pain reduction with measurable release of the body\'s own serotonin and catecholamines — the body\'s natural pain-reducing chemicals.' },
                     { name: 'Pelvic diaphragm release', desc: 'External technique targeting the levator-ani region. Reduces the resting tension in the pelvic floor muscles that contributes to deep dyspareunia, pelvic heaviness, and the protective "freeze" pattern many patients develop. Works alongside (not in place of) pelvic floor physical therapy.' },
                     { name: 'Broad ligament and visceral mobilization', desc: 'Gentle fascial techniques that free restriction around the uterus, ovaries, and surrounding ligaments — common in endometriosis, post-surgical adhesions, and chronic inflammation. Helps restore the small, normal motions visceral organs make with breathing and movement, which the Muñoz-Gómez 2023 trial linked to significant improvements in endometriosis-specific quality of life.' },
                     { name: 'Iliopsoas and quadratus lumborum release', desc: 'The deep hip flexors and side-back muscles often hold sustained tension in chronic pelvic pain, pulling the pelvis into a forward tilt that shortens and pre-tensions the pelvic floor at rest. Counterstrain and muscle-energy techniques release these without aggravating active pain.' },
-                    { name: 'Abdominal wall myofascial work', desc: 'For Carnett-positive trigger points (pain that increases when you lift your head, indicating a muscle-wall source rather than a deeper visceral source). Sustained pressure and myofascial release deactivate trigger points. Refractory points can be supplemented with a trigger-point injection as a separate procedure.' },
-                    { name: 'Chapman reflex point treatment', desc: 'Small tender lymphatic-reflex points associated with the female reproductive organs. Gentle rotary pressure for 30–60 seconds per point reduces sympathetic tone and improves the local lymphatic drainage that contributes to pelvic congestion.' },
+                    { name: 'Abdominal wall myofascial work', desc: 'For tender to a specific abdominal-wall test trigger points (pain that increases when you lift your head, indicating a muscle-wall source rather than a deeper visceral source). Sustained pressure and myofascial release deactivate trigger points. Refractory points can be supplemented with a trigger-point injection as a separate procedure.' },
+                    { name: 'tender-point (a tender spot linked to a specific organ) treatment', desc: 'Small tender lymphatic-reflex points associated with the female reproductive organs. Gentle rotary pressure for 30–60 seconds per point reduces sympathetic tone and improves the local lymphatic drainage that contributes to pelvic congestion.' },
                     { name: 'Suboccipital and upper cervical work', desc: 'The base of the skull (the OAA region) influences the vagus nerve and the descending pain-modulating pathways from the brainstem. In centrally-sensitized patients, addressing upper cervical tension reduces the supraspinal amplification of pelvic pain.' },
                     { name: 'Vagal-modulating breathwork', desc: 'A 4-7-8 breathing pattern (4-second inhale, 7-second hold, 8-second exhale) for 5 minutes — taught at the first visit as a home practice. Activates parasympathetic tone via the vagus nerve and reduces the autonomic component of chronic pain. Evidence-based replacement for older cranial autonomic techniques.' },
-                    { name: 'Coordinated multimodal management', desc: 'OMT is integrated with the full pharmacologic ladder (NSAIDs, neuromodulators, hormonal suppression, vaginal muscle relaxants, H1/H2 antihistamines for mast-cell phenotypes), pelvic floor PT, cognitive-behavioral therapy referral, high-frequency TENS, and procedural escalation pathways (trigger-point injections, botulinum toxin for refractory levator hypertonicity). Surgery remains available when indicated and is fully coordinated with this care path.' }
+                    { name: 'Coordinated multimodal management', desc: 'hands-on osteopathic treatment is integrated with the full pharmacologic ladder (NSAIDs, neuromodulators, hormonal suppression, vaginal muscle relaxants, H1/H2 antihistamines for mast-cell phenotypes), pelvic floor PT, cognitive-behavioral therapy referral, high-frequency TENS, and procedural escalation pathways (trigger-point injections, botulinum toxin for refractory levator hypertonicity). Surgery remains available when indicated and is fully coordinated with this care path.' }
                 ],
                 whatToExpect: {
                     before: 'Hydrate well — 16–24 oz of water in the two hours before your appointment. Wear loose two-piece clothing (scrubs, leggings, or athletic wear). Eat a light snack but not a heavy meal. If you take a prescribed NSAID like naproxen or ibuprofen as part of your plan, take it 60–90 minutes before the session for best tolerability. Continue all your other medications normally — your hormonal therapy, nerve-pain medication, muscle relaxants, and antihistamines all work synergistically with the manual care. Empty your bladder right before the visit. Patients with prior pelvic or sexual trauma can request trauma-informed pacing — please mention this before the session so positioning, draping, and consent steps can be adjusted in advance.',
                     during: 'Sessions are 30 minutes. You\'ll move between supine, side-lying, and seated positions. Most techniques are gentle — sustained pressure, slow stretches, breath-coordinated mobilization. Spinal manipulation, when used, produces a brief sensation and sometimes an audible pop, but should not be sharp or painful — if it is, the technique is modified immediately. Speak up at any point: every technique can be paused, adjusted, or substituted. Occasional emotional release during pelvic-region work is recognized and supported — it is not a sign that something is wrong.',
                     after: 'Drink 16+ oz of water within an hour. A 20–30 minute gentle walk supports lymphatic and visceral mobility gains. Avoid heavy lifting, high-intensity exercise, hot yoga, or new Pilates poses for 24 hours. Heat applied to the lower abdomen or sacrum at body temperature works as well as ibuprofen for pelvic pain in a head-to-head trial (Akin, Obstet Gynecol 2001). Mild soreness for 24–48 hours is normal — similar to delayed-onset soreness after a new workout. It is not a sign to stop treatment. Continue your home program between sessions: daily breathwork, high-frequency TENS as prescribed, magnesium glycinate, and heat as needed.',
-                    course: 'The published Muñoz-Gómez 2023 endometriosis protocol uses one 30-minute session per week for 8 weeks, with formal pain and quality-of-life reassessment at week 4 and at week 8. Most patients begin to notice meaningful change between sessions 4 and 6. Improvements were sustained at one-month follow-up in the published trial. Responders move to a monthly maintenance phase; non-responders at week 8 escalate per a predefined branch: a GnRH antagonist trial if not yet used, trigger-point injections, botulinum toxin for refractory levator hypertonicity, multidisciplinary pain-center referral, and surgical re-evaluation for selected patients.'
+                    course: 'The published Muñoz-Gómez 2023 endometriosis protocol uses one 30-minute session per week for 8 weeks, with formal pain and quality-of-life reassessment at week 4 and at week 8. Most patients begin to notice meaningful change between sessions 4 and 6. Improvements were sustained at one-month follow-up in the published trial. Responders move to a monthly maintenance phase; non-responders at week 8 escalate per a predefined branch: a hormone-blocking tablet trial if not yet used, trigger-point injections, botulinum toxin for refractory levator hypertonicity, multidisciplinary pain-center referral, and surgical re-evaluation for selected patients.'
                 },
                 faqs: [
-                    { q: 'Is OMT the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: OMT is performed by a fully licensed physician (DO or MD with additional training) who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed. OMT also uses a broader range of techniques than typical chiropractic — visceral, fascial, cranial, Chapman point, and muscle-energy work in addition to thrust techniques. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures. Both have evidence for spinal pain; OMT specifically has randomized-trial evidence in pelvic pain and dysmenorrhea.' },
-                    { q: 'Why OMT if I\'m already in pelvic floor PT?', a: 'They\'re complementary, not redundant. PFPT directly addresses the levator-ani and obturator-internus muscles through internal manual therapy, biofeedback, and dilator/down-training — that\'s the cornerstone of treatment, and you stay in PT. OMT adds the layer above: the lower thoracic and upper lumbar spine where the sympathetic nerves to the uterus connect, the sacroiliac joints, the iliopsoas pulling the pelvis forward, the broad-ligament fascia, and the upper cervical region modulating central pain control. FitzGerald 2012 showed a 59% response with PFPT; OMT addresses the upstream contributors PFPT internal work cannot directly reach.' },
+                    { q: 'Is hands-on osteopathic treatment the same as chiropractic?', a: 'There is overlap — both use spinal manipulation. The key distinctions: Hands-on osteopathic treatment is performed by a fully licensed physician (DO or MD with additional training) who integrates manipulation into complete medical management, including prescribing, procedures, and surgery when needed. Hands-on osteopathic treatment also uses a broader range of techniques than typical chiropractic — visceral, fascial, cranial, tender-point, and muscle-energy work in addition to thrust techniques. Chiropractors specialize in spinal manipulation but do not prescribe medications or perform medical procedures. Both have evidence for spinal pain; hands-on osteopathic treatment specifically has randomized-trial evidence in pelvic pain and dysmenorrhea.' },
+                    { q: 'Why hands-on osteopathic treatment if I\'m already in pelvic floor PT?', a: 'They\'re complementary, not redundant. pelvic floor physical therapy directly addresses the levator-ani and obturator-internus muscles through internal manual therapy, biofeedback, and dilator/down-training — that\'s the cornerstone of treatment, and you stay in PT. Hands-on osteopathic treatment adds the layer above: the lower thoracic and upper lumbar spine where the sympathetic nerves to the uterus connect, the sacroiliac joints, the iliopsoas pulling the pelvis forward, the broad-ligament fascia, and the upper cervical region modulating central pain control. FitzGerald 2012 showed a 59% response with pelvic floor physical therapy; hands-on osteopathic treatment addresses the upstream contributors pelvic floor physical therapy internal work cannot directly reach.' },
                     { q: 'How long until I feel a difference?', a: 'Mild soreness during the first 2–3 sessions is normal and not a reason to stop. Meaningful pain change typically emerges between sessions 4 and 6 (around weeks 4–6 of the 8-week protocol). Full effect is assessed at week 8. In the Muñoz-Gómez 2023 endometriosis trial, improvements were sustained at one-month follow-up.' },
-                    { q: 'What if it doesn\'t work?', a: 'About 20–40% of patients are partial- or non-responders to a structured OMT course in the published literature. If you\'re a non-responder at week 8, there are predefined escalation paths: a GnRH antagonist trial if not yet used, trigger-point injections for refractory trigger points, botulinum toxin for resistant pelvic floor hypertonicity, multidisciplinary pain-center referral, and — for selected patients — surgical re-evaluation for new or missed structural disease. You don\'t hit a dead end at week 8; the plan branches.' },
-                    { q: 'I had endometriosis excision and I\'m still in pain. Will OMT help?', a: 'Possibly, yes. Excision removes the disease itself but does not address the central sensitization, the protective pelvic floor guarding, the fascial restriction along surgical and adhesion lines, the broad-ligament tension, or the abdominal-wall trigger points that can persist after surgery. The Alboni 2024 study specifically targeted recurrent pelvic pain and deep dyspareunia after endometriosis surgery with a visceral/fascial osteopathic protocol and showed significant reduction in both. The Daraï 2017 study showed significant quality-of-life improvement in post-operative patients with deep colorectal endometriosis.' },
-                    { q: 'Is OMT covered by insurance?', a: 'Yes — OMT is billed under standard CPT codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
-                    { q: 'Is OMT safe in centrally sensitized patients?', a: 'Yes, with adapted pacing. In centrally sensitized patients with allodynia at treatment sites, sessions begin with the lowest-intensity techniques only — gentle myofascial release and vagal breathwork — and grade up over the protocol. Cognitive-behavioral therapy is integrated early, ideally before starting OMT, when this phenotype is present. Pain flare in the first 24–48 hours occurs in 5–15% of sessions and is managed with the same NSAID, heat, and breathwork used between sessions.' },
+                    { q: 'What if it doesn\'t work?', a: 'About 20–40% of patients are partial- or non-responders to a structured hands-on osteopathic treatment course in the published literature. If you\'re a non-responder at week 8, there are predefined escalation paths: a hormone-blocking tablet trial if not yet used, trigger-point injections for refractory trigger points, botulinum toxin for resistant pelvic floor hypertonicity, multidisciplinary pain-center referral, and — for selected patients — surgical re-evaluation for new or missed structural disease. You don\'t hit a dead end at week 8; the plan branches.' },
+                    { q: 'I had endometriosis excision and I\'m still in pain. Will hands-on osteopathic treatment help?', a: 'Possibly, yes. Excision removes the disease itself but does not address the central sensitization, the protective pelvic floor guarding, the fascial restriction along surgical and adhesion lines, the broad-ligament tension, or the abdominal-wall trigger points that can persist after surgery. The Alboni 2024 study specifically targeted recurrent pelvic pain and deep dyspareunia after endometriosis surgery with a visceral/fascial osteopathic protocol and showed significant reduction in both. The Daraï 2017 study showed significant quality-of-life improvement in post-operative patients with deep colorectal endometriosis.' },
+                    { q: 'Is hands-on osteopathic treatment covered by insurance?', a: 'Yes — hands-on osteopathic treatment is billed under standard medical billing codes that most commercial plans, Medicare, and Medicaid cover, when documented with the appropriate diagnoses. The office visit and the manipulation are billed separately. Coverage varies by plan; the office can verify benefits before your first session.' },
+                    { q: 'Is hands-on osteopathic treatment safe in centrally sensitized patients?', a: 'Yes, with adapted pacing. In centrally sensitized patients with allodynia at treatment sites, sessions begin with the lowest-intensity techniques only — gentle myofascial release and vagal breathwork — and grade up over the protocol. Cognitive-behavioral therapy is integrated early, ideally before starting hands-on osteopathic treatment, when this phenotype is present. Pain flare in the first 24–48 hours occurs in 5–15% of sessions and is managed with the same NSAID, heat, and breathwork used between sessions.' },
                     { q: 'I have a trauma history. Can I still do this?', a: 'Yes — and the care path is designed to accommodate it. Patients with prior pelvic or sexual trauma can request trauma-informed pacing, and we coordinate with pain psychology or CBT before initiating internal-adjacent pelvic work when a trauma history is identified. Treatment sessions can be paused and pacing adjusted at any time. Emotional release during pelvic-region work is recognized as a physiological response, not a sign that something is wrong.' }
                 ],
                 studies: [
@@ -922,8 +1149,8 @@
                         authors: 'Wallace SL, Miller LD, Mishra K.',
                         journal: 'Osteopathic Family Physician',
                         year: '2023',
-                        pmid: 'OMT chronic pelvic pain high-tone pelvic floor dysfunction Wallace',
-                        finding: 'Clinical review supporting manual therapy as effective treatment for chronic pelvic pain with high-tone pelvic floor dysfunction. Osteopathic physicians are uniquely positioned to identify viscerosomatic reflexes and provide patient-centered manual care.',
+                        pmid: 'hands-on osteopathic treatment chronic pelvic pain high-tone pelvic floor dysfunction Wallace',
+                        finding: 'Clinical review supporting manual therapy as effective treatment for chronic pelvic pain with high-tone pelvic floor dysfunction. Osteopathic physicians are uniquely positioned to identify shared nerve pathway between organ and body walles and provide patient-centered manual care.',
                     },
                 ],
             },
@@ -1028,7 +1255,10 @@
             // Section: Published literature — promoted to the top of the page,
             // with a per-population lead-in and redesigned, numbered study cards.
             if (data.litLead) {
-                evidenceModalLitLeadEl.textContent = data.litLead;
+                // litLead now carries inline citation markup (sup.mz-ref with its
+                // hover modal), so it is injected as HTML. The content is authored
+                // in this file, not user input.
+                evidenceModalLitLeadEl.innerHTML = data.litLead;
                 evidenceModalLitLeadEl.hidden = false;
             } else {
                 evidenceModalLitLeadEl.hidden = true;
@@ -1104,9 +1334,9 @@
         });
 
         // ==========================================================
-        // OMT Care-Path Modal — Six-pillar framework / 8-week trajectory /
+        // hands-on osteopathic treatment Care-Path Modal — Six-pillar framework / 8-week trajectory /
         // standard-of-care backbone deep-dives, opened from clickable
-        // .carepath-card[data-omt-modal="..."] in the OMT section.
+        // .carepath-card[data-omt-modal="..."] in the hands-on osteopathic treatment section.
         // ==========================================================
         const OMT_MODAL_DATA = {
             philosophy: {
@@ -1122,8 +1352,8 @@
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">02</span>
-                        <h4 class="pillar-title">OMT in Women's Health</h4>
-                        <p class="pillar-content">Manual techniques applied to pelvic floor dysfunction, dysmenorrhea, sacral imbalance, post-cesarean adhesions, broad ligament tension, and post-op recovery. OMT complements pharmacologic and surgical care &mdash; it does not replace either.</p>
+                        <h4 class="pillar-title">Hands-on osteopathic treatment in Women's Health</h4>
+                        <p class="pillar-content">Manual techniques applied to pelvic floor dysfunction, dysmenorrhea, sacral imbalance, post-cesarean adhesions, broad ligament tension, and post-op recovery. Hands-on osteopathic treatment complements pharmacologic and surgical care &mdash; it does not replace either.</p>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">03</span>
@@ -1162,7 +1392,7 @@
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">MFR</span>
                         <h4 class="pillar-title">Myofascial Release</h4>
-                        <p class="pillar-content">Sustained pressure into restrictive fascial patterns &mdash; addressing scar tissue, chronic pelvic floor tension, abdominal wall restrictions, and the visceral-somatic dysfunctions central to pelvic pain.</p>
+                        <p class="pillar-content">Sustained pressure into restrictive fascial patterns &mdash; addressing scar tissue, chronic pelvic floor tension, abdominal wall restrictions, and the visceral-restricted, tender areas central to pelvic pain.</p>
                       </article>
                     </div>
                 `,
@@ -1181,17 +1411,17 @@
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">02</span>
                         <h4 class="pillar-title">Services</h4>
-                        <p class="pillar-content">Osteopathic structural evaluation, OMT (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vNOTES, robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two &mdash; pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
+                        <p class="pillar-content">Osteopathic structural evaluation, hands-on osteopathic treatment (muscle energy, myofascial release, counterstrain, balanced ligamentous tension, visceral mobilization, cranial when indicated), minimally-invasive gynecologic surgical consultation (laparoscopic excision of endometriosis, hysteroscopic management of intracavitary pathology, vaginal keyhole surgery (vNOTES), robotic-assisted hysterectomy, fertility-preserving reconstructive work), and the integration of the two &mdash; pre-operative somatic preparation, post-operative recovery support, and longitudinal follow-up.</p>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">03</span>
                         <h4 class="pillar-title">What to Expect</h4>
-                        <p class="pillar-content">A first visit runs 60&ndash;90 minutes &mdash; a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. OMT-only visits run 30&ndash;45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3&ndash;6 visits when an OMT course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
+                        <p class="pillar-content">A first visit runs 60&ndash;90 minutes &mdash; a focused history, full structural exam, discussion of any imaging or prior records, and a clear plan you leave with in writing. Hands-on osteopathic treatment-only visits run 30&ndash;45 minutes. Surgical consultations include the diagnostic workup, candid risk/benefit, alternatives, and the recovery picture. Most patients see meaningful change inside 3&ndash;6 visits when an hands-on osteopathic treatment course is indicated; surgical patients get pre-op optimization, day-of communication, and structured post-op follow-up.</p>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">04</span>
                         <h4 class="pillar-title">FAQ</h4>
-                        <p class="pillar-content"><strong>Will OMT replace my surgery?</strong> No &mdash; it complements it. OMT addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is OMT painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> OMT codes (98925&ndash;98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> OMT is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
+                        <p class="pillar-content"><strong>Will hands-on osteopathic treatment replace my surgery?</strong> No &mdash; it complements it. Hands-on osteopathic treatment addresses the somatic and visceral patterns that surgery alone cannot reach. <strong>Is hands-on osteopathic treatment painful?</strong> Most techniques are gentle; you stay in control of pressure and pace. <strong>Insurance?</strong> hands-on osteopathic treatment codes (98925&ndash;98929) are widely covered; surgical care is billed through standard pathways. <strong>How is this different from PT?</strong> hands-on osteopathic treatment is physician-delivered, diagnostic, and integrates with your medical/surgical plan. <strong>Do you take new patients?</strong> Yes, with referral or self-referral; complex cases get priority scheduling.</p>
                       </article>
                     </div>
                 `,
@@ -1199,64 +1429,80 @@
             pillars: {
                 eyebrow: 'The Integrated Framework',
                 title: 'Six pillars, layered with intent.',
-                intro: 'Pelvic pain is rarely one disease. It is a layered, multi-system problem — and the women I see in clinic deserve a treatment plan that is just as layered. Every patient gets all six pillars considered; the osteopathic structural layer does not replace the medical, hormonal, procedural, behavioral, or surgical pathways — it addresses the viscerosomatic substrate the other five cannot reach.',
+                intro: 'Pelvic pain is rarely one disease. It is a layered, multi-system problem — and the women I see in clinic deserve a treatment plan that is just as layered. Every patient gets all six pillars considered; the osteopathic structural layer does not replace the medical, hormonal, procedural, behavioral, or surgical pathways — it addresses the organ-to-body-wall substrate the other five cannot reach.',
                 body: `
                     <div class="pillars-grid">
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">01</span>
-                        <h4 class="pillar-title">Osteopathic Structural Layer</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Viscerosomatic reflex modulation; segmental dorsal-horn inhibition at T10&ndash;L2 and S2&ndash;S4; fascial restriction release; periaqueductal-gray descending inhibition.</p>
-                        <p class="pillar-content"><strong>Components.</strong> An 8-week course of OAA HVLA, T12&ndash;L1 HVLA, bilateral sacroiliac HVLA, abdominal visceral mobilization, broad ligament mobilization, external pelvic diaphragm release, 4-7-8 vagal-modulating breathwork, and Chapman reflex point treatment. Cranial CV-4 omitted per the 2017 systematic review showing heterogeneous autonomic effects.</p>
-                        <p class="pillar-cite">Mu&ntilde;oz-G&oacute;mez, <em>J Clin Med</em> 2023;12:3310 (RCT, n=41, PMID 37176750) &middot; Molins-Cubero, <em>Pain Med</em> 2014;15(9):1455&ndash;1463 (double-blind RCT, n=40, PMID 24666560) &middot; Ruffini, <em>J Bodyw Mov Ther</em> 2018 (RCT, n=31) &middot; FitzGerald, <em>J Urol</em> 2012;187(6):2113&ndash;2118 (Level I, PMID 22503015).</p>
+                        <h4 class="pillar-title">Hands-on structural care</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> The nerves serving the uterus, bladder and bowel share spinal segments with the muscles, joints and connective tissue of the low back, pelvis and abdominal wall. When an organ is irritated for long enough, those shared segments stay switched on, and the surrounding tissue tightens and becomes tender in its own right. Hands-on treatment works on that shared layer.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> An eight-week course of gentle joint and soft-tissue techniques across the upper neck, lower back, pelvis and abdomen, release work for the muscles that form the floor and roof of the pelvis, mobilisation of the ligaments that suspend the uterus, and slow paced breathing that settles the nervous system. The strongest evidence for this kind of care comes from a meta-analysis of six randomised trials in endometriosis: women given hands-on and physical therapy reported clearly less pain than those given a placebo treatment, a large effect, with physical functioning improved too<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">[19]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Benefits of physical therapy in improving quality of life and pain associated with endometriosis: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics 2022 &middot; PMID 36571475</span><span class="mz-ref-pop-finding">Pooling six randomised trials, women with endometriosis who received non-drug conservative care - physical therapy and hands-on manual therapy - reported clearly less pain than those given a placebo treatment, a large effect (standardised difference -0.89). Physical functioning also improved significantly, while other quality-of-life measures showed no clear difference. The evidence was formally graded, but it rests on only six trials and the results varied a good deal between them.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A more recent review reached the same conclusion for pelvic pain and pain with sex, at moderate certainty<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">[20]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of physical therapy techniques and methods in the management of endometriosis symptoms: A systematic review with meta-analysis.</span><span class="mz-ref-pop-meta">Brazilian journal of physical therapy 2024 &middot; PMID 42308873</span><span class="mz-ref-pop-finding">Across the studies pooled here, physical therapy approaches significantly reduced pelvic pain and pain with sex and significantly improved quality of life in women with endometriosis. The treatments included hands-on manual therapy and stretching, exercise, electrical stimulation, relaxation techniques, acupuncture and patient education, often combined rather than used alone. Reviewers rated the overall certainty of the evidence as moderate. Findings differed widely between individual studies, so what helps most is still judged case by case.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Trials of the specific techniques back this up: an eight-week manual therapy protocol eased endometriosis pelvic pain with relief still present six months later<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 &middot; PMID 37176750</span><span class="mz-ref-pop-finding">An eight-week course of hands-on manual therapy eased endometriosis-related pelvic pain and improved physical quality of life, and the pain relief still held one and six months later. Forty-one women were randomly assigned to real manual therapy or a placebo version; those treated also gained lower-back mobility and felt less powerless about their condition. Neither group improved on depression, anxiety, self-image or social support, and this was one small trial.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, a sham-controlled trial found a single pelvic manipulation reduced period-related pain straight away<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial.</span><span class="mz-ref-pop-meta">Pain Med 2014 &middot; PMID 24666560</span><span class="mz-ref-pop-finding">A single hands-on pelvic manipulation immediately reduced period-related low back and pelvic pain and left the sacroiliac joints less tender to pressure. Forty women with painful periods were randomly assigned to the real technique or a sham one; the treated group also showed higher blood serotonin, while stress-hormone levels did not differ between groups. Only the immediate effect was measured in this small single-centre study, so nothing is known about lasting relief.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, and adding visceral manipulation to diet in polycystic ovary syndrome improved menstrual symptoms significantly more than diet alone<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/35488711/" target="_blank" rel="noopener">[21]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effect of visceral manipulation on menstrual complaints in women with polycystic ovarian syndrome.</span><span class="mz-ref-pop-meta">Journal of osteopathic medicine 2021 &middot; PMID 35488711</span><span class="mz-ref-pop-finding">Thirty women with polycystic ovary syndrome were randomly assigned to a reduced-calorie diet alone or the same diet plus hands-on visceral manipulation of the pelvic organs, eight sessions across three months. Both groups lost weight, but menstrual symptom scores improved significantly more with the added manual therapy (p=0.024), covering period pain, irregular cycles and premenstrual symptoms. Restricted uterine movement was found in most treated women. This was a single-centre trial of just 30 women, with no follow-up beyond three months.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35488711/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. In women whose pain persisted after endometriosis surgery, pain scores fell sharply from the first session<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">[22]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study.</span><span class="mz-ref-pop-meta">Minerva Obstet Gynecol 2023 &middot; PMID 37997320</span><span class="mz-ref-pop-finding">Among 69 women who still had pelvic pain and pain with sex after surgery for deep endometriosis, hands-on osteopathic manual therapy was followed by a significant fall in pain: average pelvic pain scores dropped from about 4 to near 0 after the very first session. Persistent post-surgical pain was common in this group - about 28% of the 345 women operated on at the centre reported it - and the authors link it to myofascial (muscle and connective tissue) dysfunction and a sensitised nervous system. This was a records review at one centre with no comparison group.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. I will also tell you where it does not help: adding visceral work to pelvic floor training gave no extra benefit for urinary leakage<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/34787917/" target="_blank" rel="noopener">[23]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effects of visceral manipulation associated with pelvic floor muscles training in women with urinary incontinence: A randomized controlled trial.</span><span class="mz-ref-pop-meta">Neurourology and urodynamics 2021 &middot; PMID 34787917</span><span class="mz-ref-pop-finding">In 52 women with urinary leakage, adding hands-on visceral manual therapy to pelvic floor muscle training gave no measurable extra benefit over five weeks: leakage symptom scores, resting vaginal pressure and squeeze strength were all similar to the group that had pelvic floor training plus a dummy hands-on treatment. Both groups did pelvic floor training, which remains the core treatment. The trial was well designed and blinded, but small and only five weeks long, so smaller effects could have been missed.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/34787917/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. These trials are real but small, and the broadest review of osteopathic care across gynecology found the studies too varied to pool outside of back pain in pregnancy<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 &middot; PMID 27261985</span><span class="mz-ref-pop-finding">Across 24 studies with 1,840 women in total, this review concluded that osteopathic manual treatment is effective for back pain in pregnancy. For the other gynaecologic and obstetric problems covered - period pain, pelvic pain, menopausal symptoms, labour pain and fertility - individual studies reported positive effects, but the trials were few, varied widely in design and carried a high risk of bias, so the reviewers could not draw firm conclusions. Only three of the 24 reported whether side effects occurred.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. So this is one layer of six, with genuine evidence behind it and honest limits on how far that evidence reaches.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Osteopathic structural layer — viscerosomatic reflex modulation, segmental inhibition at T10–L2 and S2–S4, fascial restriction release, and descending inhibition. Components: OAA and T12–L1 HVLA, bilateral sacroiliac HVLA, abdominal visceral and broad ligament mobilisation, external pelvic diaphragm release, 4-7-8 vagal-modulating breathwork, Chapman reflex points. Cranial CV-4 omitted.</p>
+                        </details>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">02</span>
-                        <h4 class="pillar-title">Pharmacologic Ladder</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Peripheral COX inhibition; central sensitization control via tricyclic and gabapentinoid neuromodulators; smooth-muscle spasm relief; mast-cell-mediated neurogenic inflammation suppression; reversal of atrophic vaginitis.</p>
-                        <p class="pillar-content"><strong>Components.</strong> NSAIDs first-line for primary dysmenorrhea (NNT&thinsp;~2&ndash;3). Neuromodulators (amitriptyline, nortriptyline, gabapentin, pregabalin, duloxetine) for centrally sensitized pain. Vaginal diazepam, cyclobenzaprine, baclofen, tizanidine for hypertonic pelvic floor. H1/H2 antihistamines for mast-cell-driven endometriosis pain. Topical lidocaine 5%, compounded creams, vaginal estrogen for vestibular and atrophic surfaces.</p>
-                        <p class="pillar-cite">ACOG Practice Bulletin 218 (PMID 32080045) &middot; ACOG CPG 11 Endometriosis 2026 &middot; Marjoribanks, <em>Cochrane Database Syst Rev</em> 2015 (NSAIDs for dysmenorrhoea, CD001751) &middot; Mantha, <em>AJOG Glob Rep</em> 2023;3:100274 (H1 antihistamines).</p>
+                        <h4 class="pillar-title">Medication, stepped up only as needed</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> Two different problems. The first is the chemical surge in the uterine lining that drives cramping. The second is a nervous system that has become over-reactive, so pain continues even once the original trigger is treated.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> Anti-inflammatory painkillers are the first step for period pain, and they work for roughly half of women against about one in five on a dummy tablet<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Nonsteroidal anti-inflammatory drugs for dysmenorrhoea.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2015 &middot; PMID 26224322</span><span class="mz-ref-pop-finding">Anti-inflammatory painkillers (NSAIDs) work well for period cramps: roughly 45-53% of women get moderate or excellent relief, compared with about 18% on placebo. Eighty trials involving 5,820 women were combined; side effects, especially stomach upset and headache or drowsiness, were more common than with placebo, and no single NSAID stood out as safest or most effective. The evidence was rated low quality, mainly because trial methods were poorly reported.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. When pain has become persistent and the nervous system is amplifying it, medicines that quiet nerve signalling — the same ones used for other long-standing pain conditions — are added, along with muscle relaxants for a pelvic floor that will not let go, and local treatments for tenderness at the vaginal opening. The national gynecology guideline recommends exactly this: examine the abdominal wall and pelvic floor deliberately, and treat through a team rather than a single drug<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/32080045/" target="_blank" rel="noopener">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2020 &middot; PMID 32080045</span><span class="mz-ref-pop-finding">Gynecologists are advised to work up chronic pelvic pain with a detailed history and an exam that specifically checks the abdominal wall and pelvic floor muscles, and to manage it through an interdisciplinary team rather than one treatment. Pain lasting beyond six months affects an estimated 5.7-26.6% of women, and central sensitisation, meaning nerves stay over-reactive, can sustain it even after conditions such as endometriosis are treated. Where trial evidence is thin, guidance is borrowed from other chronic pain conditions.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/32080045/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Allergy-type medicines are sometimes discussed for endometriosis; I will tell you plainly that this remains an idea under investigation rather than a proven treatment<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37941601/" target="_blank" rel="noopener">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">An opinion on H1-antihistamines as a potential avenue for endometriosis management.</span><span class="mz-ref-pop-meta">AJOG global reports 2023 &middot; PMID 37941601</span><span class="mz-ref-pop-finding">Common allergy medicines that block histamine might one day have a role in endometriosis care - but this is a hypothesis, not a tested treatment. The authors note that endometriosis involves ongoing inflammation, with raised levels of signals such as tumour necrosis factor-alpha and NF-kappa B, and that antihistamines already in wide use dampen those same signals, unlike most endometriosis drugs, which work by lowering estrogen. No study has actually tested antihistamines in endometriosis; this is a short opinion essay proposing the idea for future research, not evidence of benefit.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37941601/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Pharmacologic ladder — peripheral COX inhibition; central sensitisation control with tricyclic and gabapentinoid neuromodulators; smooth-muscle spasm relief; mast-cell-mediated neurogenic inflammation suppression; reversal of atrophic change. NSAIDs first-line; neuromodulators for centrally sensitised pain; vaginal muscle relaxants for hypertonic pelvic floor; H1/H2 blockade; topical anaesthetic and vaginal estrogen for vestibular and atrophic surfaces.</p>
+                        </details>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">03</span>
-                        <h4 class="pillar-title">Hormonal Suppression</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Ovulation suppression; decidualization and atrophy of ectopic implants; endometrial prostaglandin reduction.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Continuous combined hormonal contraceptives, norethindrone acetate 5&thinsp;mg, the 52&thinsp;mg LNG-IUD (Mirena/Liletta), DMPA, etonogestrel implant, and oral GnRH antagonists (elagolix; relugolix combination therapy) with estradiol/norethindrone add-back to mitigate bone-mineral-density loss. Long-term combined oral contraceptive use is effective in reducing endometrioma recurrence and reducing dysmenorrhea severity.</p>
-                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; ESHRE guideline 2022 &middot; Elaris EM-I and EM-II trials &middot; Zakhari 2021 (PMID 33020832) &middot; Vercellini 2023 (PMID 36948440).</p>
+                        <h4 class="pillar-title">Hormonal treatment</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> Most endometriosis pain is driven by cyclical hormone signalling. Switching off that cycle quiets the lining, shrinks deposits outside the uterus, and reduces the chemical surge behind cramping.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> Continuous birth-control hormones, progestin-only tablets, the hormone-releasing intrauterine device, the injection, the implant, or newer tablets that block the hormone signal driving estrogen production. Those newer tablets clearly outperform a dummy pill for endometriosis pain, with hot flushes and some bone thinning as the trade-off<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/28525302/" target="_blank" rel="noopener">[7]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Treatment of Endometriosis-Associated Pain with Elagolix, an Oral GnRH Antagonist.</span><span class="mz-ref-pop-meta">N Engl J Med 2017 &middot; PMID 28525302</span><span class="mz-ref-pop-finding">A daily pill called elagolix, which blocks the hormone signal driving estrogen production, eased endometriosis pain better than a dummy pill. Across two six-month trials enrolling 872 and 817 women with surgically confirmed endometriosis, period pain improved meaningfully in roughly 46% and 76% of women on the lower and higher doses, versus about 20% on placebo; pain outside periods improved in about 50-58% versus 37%. Benefits held at six months. Trade-offs were hot flushes, higher blood lipids and bone density loss, greater at the higher dose, in company-funded trials lasting six months.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/28525302/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. That is why protective add-back hormone is given alongside them: pooled data show measurable bone loss on these medicines, small in percentage terms but worth tracking<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/41855532/" target="_blank" rel="noopener">[8]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effect of Medical Therapies for Endometriosis on Bone Health: A Systematic Review and Meta-analysis.</span><span class="mz-ref-pop-meta">Obstetrics and gynecology 2025 &middot; PMID 41855532</span><span class="mz-ref-pop-finding">Hormone treatments that suppress endometriosis modestly thin the bones, so bone health is worth tracking during long-term use. Pooling 37 studies, ovary-suppressing medications called gonadotropin-releasing hormone agonists, given with protective add-back hormone, lowered bone density by about 0.9% at six months and 1.5% at one year; the progestin dienogest and newer gonadotropin-releasing hormone blockers showed similar or larger drops. Those last two varied widely between studies, and what such small percentage changes mean for real fracture risk is still unknown.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/41855532/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Starting hormonal treatment soon after surgery substantially lowers the chance the disease returns<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33020832/" target="_blank" rel="noopener">[9]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Endometriosis recurrence following post-operative hormonal suppression: a systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Hum Reprod Update 2021 &middot; PMID 33020832</span><span class="mz-ref-pop-finding">Starting hormonal medication soon after endometriosis surgery substantially lowers the chance the disease comes back. Across 17 studies (13 of them randomised trials) covering 2,137 patients, recurrence at a year or more was roughly 59% lower with hormone-suppressing treatment than with a dummy pill or watchful waiting, and pain scores were modestly better. Benefit held up most consistently for combined birth-control hormones and the hormone-releasing intrauterine device. Results varied widely between studies, so the size of the benefit for any one person is uncertain.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33020832/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. European guidelines take the same position and are candid that no single option has proven best for everyone<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/35350465/" target="_blank" rel="noopener">[10]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">ESHRE guideline: endometriosis.</span><span class="mz-ref-pop-meta">Hum Reprod Open 2022 &middot; PMID 35350465</span><span class="mz-ref-pop-finding">Endometriosis pain should be treated from a menu of options - pain relievers, hormonal medicines, surgery and non-drug approaches - and diagnosis need not wait on surgery, say these European guidelines, which set out 109 recommendations spanning diagnosis, pain, fertility, recurrence, adolescents and after menopause. For difficulty conceiving, surgery, assisted reproduction, or both are reasonable paths. The authors are candid that the published evidence rarely favoured one treatment over another, so no firm recommendation on the single best option could be made.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35350465/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. If pregnancy is the goal, this pillar changes shape entirely, because both endometriosis and adenomyosis affect fertility and pregnancy risk<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36948440/" target="_blank" rel="noopener">[11]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Association of endometriosis and adenomyosis with pregnancy and infertility.</span><span class="mz-ref-pop-meta">Fertil Steril 2023 &middot; PMID 36948440</span><span class="mz-ref-pop-finding">Endometriosis and adenomyosis both reduce the chance of pregnancy and live birth and raise miscarriage risk, with adenomyosis having the larger effect. Superficial and ovarian endometriosis does not appear to add much obstetric risk, but severe disease carries a several-fold higher risk of placenta previa, and deep infiltrating disease is linked to bleeding into the abdomen in pregnancy and to complications at caesarean section. Adenomyosis adds risks such as preeclampsia and preterm birth. The pooled studies differ so much that these findings should be read cautiously.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36948440/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Hormonal suppression — ovulation suppression, decidualisation and atrophy of ectopic implants, endometrial prostaglandin reduction. Continuous combined hormonal contraception, norethindrone acetate, the levonorgestrel IUD, DMPA, etonogestrel implant, oral GnRH antagonists (elagolix, relugolix combination) with estradiol/norethindrone add-back to mitigate BMD loss.</p>
+                        </details>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">04</span>
-                        <h4 class="pillar-title">Procedural Interventions</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Direct mechanical or chemical deactivation of refractory trigger points; sustained neuromuscular relaxation of hypertonic pelvic floor; targeted regional anesthesia.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Trigger point injection with bupivacaine&thinsp;0.25% &plusmn; triamcinolone, levator ani injection, abdominal wall TPI at Carnett-positive points, onabotulinumtoxinA 100&ndash;300 units to a refractory levator, pudendal nerve block, and supervised vaginal dilator therapy. Procedures are sequenced behind manual and pharmacologic work, not in front of them.</p>
-                        <p class="pillar-cite">FitzGerald, <em>J Urol</em> 2012 (PMID 22503015) &middot; EAU CPP Guidelines &middot; multiple RCTs cited in ACOG PB 218.</p>
+                        <h4 class="pillar-title">Targeted injections and procedures</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> Specific knots of muscle and specific nerves that have stayed painful after hands-on work and medication have been given a fair trial.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> Numbing injections into the trigger points that reproduce your pain, injections into the pelvic floor muscle itself, blocks of the main pelvic nerve, and supervised dilator work. These are sequenced behind the manual and medication layers, not ahead of them. Botulinum toxin is sometimes raised for a pelvic floor that will not relax, and here I stay conservative: the European urology review found it unproven for gynecologic pelvic pain, with the studies too varied to combine<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33526405/" target="_blank" rel="noopener">[12]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">The Benefits and Harms of Botulinum Toxin-A in the Treatment of Chronic Pelvic Pain Syndromes: A Systematic Review by the European Association of Urology Chronic Pelvic Pain Panel.</span><span class="mz-ref-pop-meta">European urology focus 2020 &middot; PMID 33526405</span><span class="mz-ref-pop-finding">Botulinum toxin ("Botox") injections are not yet proven for chronic pelvic pain and should not be assumed to help. Across 16 studies including 11 randomized trials and 858 patients, pain improved for some people with bladder pain syndrome and prostate pain, but no study showed a benefit for gynecologic pelvic pain. No serious complications were described, though side effects were poorly tracked. The studies were too varied and too prone to bias to combine, so no recommendation could be made.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33526405/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. What that same group does recommend is examining the pelvic floor muscles properly in anyone with long-standing pelvic pain, because muscle-based pain is common and frequently missed<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/35945131/" target="_blank" rel="noopener">[13]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Myofascial Pelvic Pain: Best Orientation and Clinical Practice. Position of the European Association of Urology Guidelines Panel on Chronic Pelvic Pain.</span><span class="mz-ref-pop-meta">European urology focus 2022 &middot; PMID 35945131</span><span class="mz-ref-pop-finding">Anyone with long-standing pelvic pain should have the pelvic floor muscles examined, because muscle-based (myofascial) pain is a common and frequently missed driver of the problem. This European urology panel advises standardized muscle examination and active treatment of the muscle component, noting that pelvic floor physical therapy contributes to overall pain control and that a multidisciplinary team works best. It reflects expert opinion and existing guidelines rather than new data, and which physical therapy techniques work best is still undefined.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/35945131/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Procedural interventions — mechanical or chemical deactivation of refractory trigger points, sustained neuromuscular relaxation of a hypertonic pelvic floor, targeted regional anaesthesia. Trigger point injection with local anaesthetic ± steroid, levator ani injection, abdominal wall TPI at Carnett-positive points, onabotulinumtoxinA to a refractory levator, pudendal nerve block, supervised vaginal dilator therapy.</p>
+                        </details>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">05</span>
-                        <h4 class="pillar-title">Behavioral &amp; Rehabilitative</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Myofascial trigger-point deactivation through pelvic floor physical therapy; pain reappraisal and catastrophizing reduction through cognitive-behavioral therapy; spinal gate-control analgesia via high-frequency TENS.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Pelvic floor PT 1&ndash;2x/week for 12&ndash;16 sessions, CBT for chronic pain (telehealth or in-person), sex therapy and couples counseling where indicated, pain psychology, and high-frequency TENS at 80&ndash;100&thinsp;Hz. PFPT addresses the levator and obturator directly; OMT addresses the upstream segmental, fascial, visceral, and autonomic contributors. The two are complementary, not redundant.</p>
-                        <p class="pillar-cite">FitzGerald 2012 (Level I, PMID 22503015) &middot; Evans HaPPI RCT, <em>Hum Reprod Open</em> 2026 (telehealth CBT, n=334) &middot; Han, <em>Cochrane Database Syst Rev</em> 2024 (TENS for primary dysmenorrhoea, CD013331, PMID 39037764).</p>
+                        <h4 class="pillar-title">Physical therapy and pain psychology</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> The muscles of the pelvic floor directly, and the way a nervous system under long-term strain learns to keep producing pain.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> Pelvic floor physical therapy once or twice weekly, talk therapy designed for chronic pain, and a small skin-worn nerve stimulation device you can use at home. Pelvic floor physical therapy has the strongest evidence of the three: in a multicentre trial, 59% of women improved with targeted muscle release against 26% with general massage<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">[14]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness.</span><span class="mz-ref-pop-meta">J Urol 2012 &middot; PMID 22503015</span><span class="mz-ref-pop-finding">Pelvic floor physical therapy aimed at releasing tight, tender muscles helped women with interstitial cystitis / painful bladder syndrome more than general full-body massage: 59% reported meaningful overall improvement versus 26% with massage. Eighty-one women at 11 North American centres each received ten sessions; pain, urgency and frequency ratings fell in both groups with no significant difference there, and no serious harms occurred. The trial was small and limited to women symptomatic under three years.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Talk therapy delivered by video improved quality of life and pain in a trial of 334 people with endometriosis<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/41717450/" target="_blank" rel="noopener">[15]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Telehealth cognitive behavioural therapy improves health-related quality of life and pain in endometriosis: the Healing Pelvic Pain Intervention (HaPPI)-a randomized controlled trial.</span><span class="mz-ref-pop-meta">Human reproduction open 2025 &middot; PMID 41717450</span><span class="mz-ref-pop-finding">Talk therapy tailored to endometriosis, delivered by video, improved quality of life and pain more than education materials alone. Of 334 people with endometriosis pain lasting at least six months, those randomly assigned to eight weeks of therapist-led group cognitive behavioural therapy improved on period, bowel, bladder and sexual pain, on confidence managing pain, and on catastrophizing; a yoga group improved menstrual symptoms and pain with sex. All sessions ran online during COVID, so face-to-face results are unknown.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/41717450/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>, and the home nerve-stimulation device reduced period pain across twenty randomised trials, though the certainty of that evidence is low<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/39037764/" target="_blank" rel="noopener">[16]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Transcutaneous electrical nerve stimulation (TENS) for pain control in women with primary dysmenorrhoea.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2024 &middot; PMID 39037764</span><span class="mz-ref-pop-finding">A small skin-worn nerve stimulation device (TENS, or transcutaneous electrical nerve stimulation) may ease period pain, making it a reasonable drug-free option to try. Cochrane reviewers pooled 20 randomized trials in women with common period pain: both high- and low-frequency settings lowered pain scores compared with a dummy device or no treatment. Certainty was rated low because of bias in the studies, and high-frequency results differed widely across trials. Most trials reported nothing about side effects, so safety could not be judged.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/39037764/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Physical therapy and hands-on osteopathic work are complementary rather than duplicative: one treats the pelvic floor muscles directly, the other the segmental and connective-tissue contributors upstream.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Behavioural and rehabilitative — myofascial trigger-point deactivation via pelvic floor physical therapy; pain reappraisal and catastrophising reduction via CBT; spinal gate-control analgesia via high-frequency TENS. PFPT 1–2×/week for 12–16 sessions; CBT for chronic pain; sex therapy and couples counselling where indicated; pain psychology; high-frequency TENS.</p>
+                        </details>
                       </article>
                       <article class="pillar-card frame-card">
                         <span class="pillar-num">06</span>
-                        <h4 class="pillar-title">Surgical Pathway</h4>
-                        <p class="pillar-mech"><strong>Mechanism.</strong> Excision of structural disease; vestibulectomy where indicated; presacral neurectomy in highly selected cases; definitive management of adenomyosis when reproductive goals are complete.</p>
-                        <p class="pillar-content"><strong>Components.</strong> Diagnostic and operative laparoscopy with excision of endometriosis (excision is superior to drainage and ablation for endometriomas), adhesiolysis where adhesions are causing symptoms, hysteroscopic management of intracavitary pathology, vNOTES and robotic-assisted approaches where appropriate, and fertility-preserving reconstructive work. Routine laparoscopic adhesiolysis is <em>not</em> recommended for chronic pelvic pain in isolation.</p>
-                        <p class="pillar-cite">ACOG CPG 11 (2026) &middot; Bafort, <em>Cochrane Database Syst Rev</em> 2020 (PMID 33095458) &middot; ACOG PB 218 (PMID 32080045).</p>
+                        <h4 class="pillar-title">Surgery</h4>
+                        <p class="pillar-mech"><strong>What it targets.</strong> Structural disease that medication cannot reach — endometriosis deposits, adhesions causing symptoms, and pathology inside the uterine cavity.</p>
+                        <p class="pillar-content"><strong>What it involves.</strong> Keyhole surgery to remove endometriosis by cutting it out rather than burning the surface, division of adhesions where they are genuinely causing symptoms, hysteroscopic treatment of problems inside the cavity, and fertility-preserving reconstruction. The Cochrane review found keyhole removal probably improves the chance of pregnancy, while its effect on pain rested on a single very small study — so I am careful not to promise pain relief from surgery alone<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">[17]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 &middot; PMID 33095458</span><span class="mz-ref-pop-finding">Removing endometriosis during a keyhole operation probably improves the chance of pregnancy, but its effect on pain remains uncertain. Across 14 randomized trials in 1,563 women, the three trials reporting pregnancy (528 women) showed higher ultrasound-confirmed pregnancy rates after surgical treatment than after a look-only procedure, at moderate certainty. Pain findings rested on a single 16-woman study, burning lesions versus cutting them out showed no clear difference, and complications were reported too sparsely to judge safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Diagnosis no longer has to wait for an operation: the national guideline supports diagnosing endometriosis from symptoms, examination and imaging, with surgery reserved for where it will change management<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/41712950/" target="_blank" rel="noopener">[18]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Diagnosis of Endometriosis.</span><span class="mz-ref-pop-meta">Obstet Gynecol 2026 &middot; PMID 41712950</span><span class="mz-ref-pop-finding">Diagnosing endometriosis should draw on symptoms and clinical assessment, imaging, and surgery where needed, rather than surgery alone, according to this American College of Obstetricians and Gynecologists practice guideline for anyone with symptoms suggestive of the condition. Each recommendation is labelled by how strong it is and how solid the evidence behind it is. The same advice applies to adolescents. Where evidence was thin or absent, the panel could offer only ungraded good-practice statements, and the adolescent guidance leans on expert consensus and data borrowed from adults.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/41712950/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Routine surgery purely to divide adhesions is not recommended for chronic pelvic pain on its own.</p>
+                        <details class="dm-clinical"><summary>Clinical detail</summary>
+                          <p>Surgical pathway — excision of structural disease, vestibulectomy where indicated, presacral neurectomy in highly selected cases, definitive management of adenomyosis when reproductive goals are complete. Diagnostic and operative laparoscopy with excision, adhesiolysis where symptomatic, hysteroscopic management of intracavitary pathology, vNOTES and robotic approaches where appropriate.</p>
+                        </details>
                       </article>
                     </div>
+                      <div class="mz-srclist">
+                        <h4>Sources</h4>
+                        <ol><li id="omt-src-1">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial. <em>J Clin Med</em> 2023. <a href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">PMID 37176750</a></li><li id="omt-src-2">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial. <em>Pain Med</em> 2014. <a href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">PMID 24666560</a></li><li id="omt-src-3">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review. <em>Complement Ther Med</em> 2016. <a href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">PMID 27261985</a></li><li id="omt-src-4">Nonsteroidal anti-inflammatory drugs for dysmenorrhoea. <em>Cochrane Database Syst Rev</em> 2015. <a href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">PMID 26224322</a></li><li id="omt-src-5">Chronic Pelvic Pain: ACOG Practice Bulletin Summary, Number 218. <em>Obstet Gynecol</em> 2020. <a href="https://pubmed.ncbi.nlm.nih.gov/32080045/" target="_blank" rel="noopener">PMID 32080045</a></li><li id="omt-src-6">An opinion on H1-antihistamines as a potential avenue for endometriosis management. <em>AJOG global reports</em> 2023. <a href="https://pubmed.ncbi.nlm.nih.gov/37941601/" target="_blank" rel="noopener">PMID 37941601</a></li><li id="omt-src-7">Treatment of Endometriosis-Associated Pain with Elagolix, an Oral GnRH Antagonist. <em>N Engl J Med</em> 2017. <a href="https://pubmed.ncbi.nlm.nih.gov/28525302/" target="_blank" rel="noopener">PMID 28525302</a></li><li id="omt-src-8">Effect of Medical Therapies for Endometriosis on Bone Health: A Systematic Review and Meta-analysis. <em>Obstetrics and gynecology</em> 2025. <a href="https://pubmed.ncbi.nlm.nih.gov/41855532/" target="_blank" rel="noopener">PMID 41855532</a></li><li id="omt-src-9">Endometriosis recurrence following post-operative hormonal suppression: a systematic review and meta-analysis. <em>Hum Reprod Update</em> 2021. <a href="https://pubmed.ncbi.nlm.nih.gov/33020832/" target="_blank" rel="noopener">PMID 33020832</a></li><li id="omt-src-10">ESHRE guideline: endometriosis. <em>Hum Reprod Open</em> 2022. <a href="https://pubmed.ncbi.nlm.nih.gov/35350465/" target="_blank" rel="noopener">PMID 35350465</a></li><li id="omt-src-11">Association of endometriosis and adenomyosis with pregnancy and infertility. <em>Fertil Steril</em> 2023. <a href="https://pubmed.ncbi.nlm.nih.gov/36948440/" target="_blank" rel="noopener">PMID 36948440</a></li><li id="omt-src-12">The Benefits and Harms of Botulinum Toxin-A in the Treatment of Chronic Pelvic Pain Syndromes: A Systematic Review by the European Association of Urology Chronic Pelvic Pain Panel. <em>European urology focus</em> 2020. <a href="https://pubmed.ncbi.nlm.nih.gov/33526405/" target="_blank" rel="noopener">PMID 33526405</a></li><li id="omt-src-13">Myofascial Pelvic Pain: Best Orientation and Clinical Practice. Position of the European Association of Urology Guidelines Panel on Chronic Pelvic Pain. <em>European urology focus</em> 2022. <a href="https://pubmed.ncbi.nlm.nih.gov/35945131/" target="_blank" rel="noopener">PMID 35945131</a></li><li id="omt-src-14">Randomized multicenter clinical trial of myofascial physical therapy in women with interstitial cystitis/painful bladder syndrome and pelvic floor tenderness. <em>J Urol</em> 2012. <a href="https://pubmed.ncbi.nlm.nih.gov/22503015/" target="_blank" rel="noopener">PMID 22503015</a></li><li id="omt-src-15">Telehealth cognitive behavioural therapy improves health-related quality of life and pain in endometriosis: the Healing Pelvic Pain Intervention (HaPPI)-a randomized controlled trial. <em>Human reproduction open</em> 2025. <a href="https://pubmed.ncbi.nlm.nih.gov/41717450/" target="_blank" rel="noopener">PMID 41717450</a></li><li id="omt-src-16">Transcutaneous electrical nerve stimulation (TENS) for pain control in women with primary dysmenorrhoea. <em>Cochrane Database Syst Rev</em> 2024. <a href="https://pubmed.ncbi.nlm.nih.gov/39037764/" target="_blank" rel="noopener">PMID 39037764</a></li><li id="omt-src-17">Laparoscopic surgery for endometriosis. <em>Cochrane Database Syst Rev</em> 2020. <a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">PMID 33095458</a></li><li id="omt-src-18">Diagnosis of Endometriosis. <em>Obstet Gynecol</em> 2026. <a href="https://pubmed.ncbi.nlm.nih.gov/41712950/" target="_blank" rel="noopener">PMID 41712950</a></li><li id="omt-src-19">Benefits of physical therapy in improving quality of life and pain associated with endometriosis: A systematic review and meta-analysis. <em>International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics</em> 2022. <a href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">PMID 36571475</a></li><li id="omt-src-20">Effectiveness of physical therapy techniques and methods in the management of endometriosis symptoms: A systematic review with meta-analysis. <em>Brazilian journal of physical therapy</em> 2024. <a href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">PMID 42308873</a></li><li id="omt-src-21">Effect of visceral manipulation on menstrual complaints in women with polycystic ovarian syndrome. <em>Journal of osteopathic medicine</em> 2021. <a href="https://pubmed.ncbi.nlm.nih.gov/35488711/" target="_blank" rel="noopener">PMID 35488711</a></li><li id="omt-src-22">Effects of osteopathic manipulative therapy on recurrent pelvic pain and dyspareunia in women after surgery for endometriosis: a retrospective study. <em>Minerva Obstet Gynecol</em> 2023. <a href="https://pubmed.ncbi.nlm.nih.gov/37997320/" target="_blank" rel="noopener">PMID 37997320</a></li><li id="omt-src-23">Effects of visceral manipulation associated with pelvic floor muscles training in women with urinary incontinence: A randomized controlled trial. <em>Neurourology and urodynamics</em> 2021. <a href="https://pubmed.ncbi.nlm.nih.gov/34787917/" target="_blank" rel="noopener">PMID 34787917</a></li><li id="omt-src-24">Manual Therapy in Primary Dysmenorrhea: A Systematic Review and Meta-Analysis. <em>Journal of pain research</em> 2024. <a href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">PMID 38736680</a></li><li id="omt-src-25">Effect of Manual Therapy Compared to Ibuprofen on Primary Dysmenorrhea in Young Women-Concentration Assessment of C-Reactive Protein, Vascular Endothelial Growth Factor, Prostaglandins and Sex Hormones. <em>Journal of clinical medicine</em> 2022. <a href="https://pubmed.ncbi.nlm.nih.gov/35628817/" target="_blank" rel="noopener">PMID 35628817</a></li><li id="omt-src-26">Transvaginal ultrasound vs magnetic resonance imaging for diagnosing deep infiltrating endometriosis: systematic review and meta-analysis. <em>Ultrasound Obstet Gynecol</em> 2018. <a href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">PMID 29154402</a></li></ol>
+                      </div>
                 `,
             },
             trajectory: {
                 eyebrow: 'The Treatment Trajectory + Standard of Care',
                 title: 'An 8-week course, calibrated to what the literature actually shows.',
-                intro: 'For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute OMT session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window per Ruffini 2018. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 — not session 1. The 8-week course is layered onto, never in place of, the ACOG-anchored standard of care for endometriosis, chronic pelvic pain, and dysmenorrhea (below).',
+                intro: 'For endometriosis-associated pelvic pain, non-cyclic chronic pelvic pain, dyspareunia, and myofascial pain, the course is one 30-minute hands-on osteopathic treatment session weekly for 8 weeks. For primary or secondary dysmenorrhea, the course is one session weekly for 5 weeks, with sessions 4 and 5 timed to the pre-menstrual and early menstrual window. That schedule is my clinical judgement rather than a published protocol. Patients are formally re-evaluated at weeks 4, 8, and 12, and meaningful gains typically emerge between sessions 4 and 6 — not session 1. The 8-week course is layered onto, never in place of, the ACOG-anchored standard of care for endometriosis, chronic pelvic pain, and dysmenorrhea (below).',
                 body: `
                     <div class="trajectory-rail">
                       <article class="traj-card frame-card">
                         <span class="traj-week">Weeks 1&ndash;3</span>
                         <h4 class="traj-title">Adjustment</h4>
-                        <p class="traj-body">Mild post-session soreness for 24&ndash;48&thinsp;h is expected and is the most common adverse event &mdash; similar to delayed-onset muscle soreness after new exercise. Pain scores often look flat. Body is adjusting to manipulation. Focus on home program adherence and on the concurrent pharmacologic, hormonal, and PFPT work that the OMT layer sits on top of.</p>
+                        <p class="traj-body">Mild post-session soreness for 24&ndash;48&thinsp;h is expected and is the most common adverse event &mdash; similar to delayed-onset muscle soreness after new exercise. Pain scores often look flat. Body is adjusting to manipulation. Focus on home program adherence and on the concurrent pharmacologic, hormonal, and pelvic floor physical therapy work that the hands-on osteopathic treatment layer sits on top of.</p>
                       </article>
                       <article class="traj-card frame-card">
                         <span class="traj-week">Week 4</span>
@@ -1266,12 +1512,12 @@
                       <article class="traj-card frame-card">
                         <span class="traj-week">Weeks 6&ndash;8</span>
                         <h4 class="traj-title">Inflection &amp; Endpoint</h4>
-                        <p class="traj-body">The majority of patients show 30&ndash;60% VAS reduction and meaningful functional gain at the end of the 8-week protocol. Ruffini 2018 reported a 63% reduction in NRS pain in primary dysmenorrhea. Molins-Cubero 2014 reported immediate significant VAS reduction (p=0.003) after a single bilateral global sacroiliac HVLA. FitzGerald 2012 reported a 59% response rate for pelvic floor myofascial PT versus 26% for global massage in IC/BPS. Full outcome battery is run at week 8.</p>
+                        <p class="traj-body">The majority of patients show 30&ndash;60% VAS reduction and meaningful functional gain at the end of the 8-week protocol. A 2024 pooled analysis of 32 randomised trials found manual therapy relieved period pain better than anti-inflammatory painkillers, while not beating a placebo treatment<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">[24]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Manual Therapy in Primary Dysmenorrhea: A Systematic Review and Meta-Analysis.</span><span class="mz-ref-pop-meta">Journal of pain research 2024 &middot; PMID 38736680</span><span class="mz-ref-pop-finding">A 2024 review pooled 32 randomised trials in 2,566 women with period pain. Short term, manual therapy eased pain more than no treatment (about 1.3 points more on the trials' pain scales) and more than anti-inflammatory painkillers, the class that includes ibuprofen (about 3.0 points, 95% CI 1.1-4.9), with close to five times the odds of a meaningful improvement. No serious side effects were reported. Against a placebo treatment, though, there was no significant difference, and the pooled trials were rated low or very low quality.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A sham-controlled trial found a single pelvic manipulation reduced pain immediately<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Changes in pain perception after pelvis manipulation in women with primary dysmenorrhea: a randomized controlled trial.</span><span class="mz-ref-pop-meta">Pain Med 2014 &middot; PMID 24666560</span><span class="mz-ref-pop-finding">A single hands-on pelvic manipulation immediately reduced period-related low back and pelvic pain and left the sacroiliac joints less tender to pressure. Forty women with painful periods were randomly assigned to the real technique or a sham one; the treated group also showed higher blood serotonin, while stress-hormone levels did not differ between groups. Only the immediate effect was measured in this small single-centre study, so nothing is known about lasting relief.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/24666560/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. FitzGerald 2012 reported a 59% response rate for pelvic floor myofascial PT versus 26% for global massage in IC/BPS. Full outcome battery is run at week 8.</p>
                       </article>
                       <article class="traj-card frame-card">
                         <span class="traj-week">Week 12</span>
                         <h4 class="traj-title">One-Month Durability</h4>
-                        <p class="traj-body">Improvements sustained at one month post-protocol per Mu&ntilde;oz-G&oacute;mez 2023. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance OMT monthly for 3 sessions, then as-needed. Non-responders are escalated: GnRH antagonist if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
+                        <p class="traj-body">Improvements sustained at one month after the course<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of a Manual Therapy Protocol in Women with Pelvic Pain Due to Endometriosis: A Randomized Clinical Trial.</span><span class="mz-ref-pop-meta">J Clin Med 2023 &middot; PMID 37176750</span><span class="mz-ref-pop-finding">An eight-week course of hands-on manual therapy eased endometriosis-related pelvic pain and improved physical quality of life, and the pain relief still held one and six months later. Forty-one women were randomly assigned to real manual therapy or a placebo version; those treated also gained lower-back mobility and felt less powerless about their condition. Neither group improved on depression, anxiety, self-image or social support, and this was one small trial.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/37176750/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. Responders &mdash; defined as &ge;30% VAS reduction or &ge;10-point EHP-30 improvement &mdash; transition to maintenance hands-on osteopathic treatment monthly for 3 sessions, then as-needed. Non-responders are escalated: hormone-blocking tablet if not already in use, trigger-point injection series, onabotulinumtoxinA for refractory levator hypertonia, multidisciplinary pain center referral, or surgical re-evaluation.</p>
                       </article>
                     </div>
                     <h4 style="font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(var(--glow-purple),0.92);margin:28px 0 12px 0">The standard-of-care backbone &mdash; Level A</h4>
@@ -1279,32 +1525,32 @@
                       <div class="soc-block frame-card">
                         <div class="soc-header"><span class="soc-tag">Endometriosis</span><span class="soc-grade">Level A</span></div>
                         <ul class="soc-list">
-                          <li>Transvaginal ultrasonography is the imaging modality of choice when assessing the presence of endometriosis.</li>
-                          <li>Medical suppressive therapy improves pain symptoms; recurrence rates remain high after the medication is discontinued.</li>
-                          <li>Conservative surgical treatment provides significant short-term pain improvement; recurrence rates are also significant.</li>
+                          <li>Transvaginal ultrasonography is the imaging modality of choice when assessing the presence of endometriosis.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">[26]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Transvaginal ultrasound vs magnetic resonance imaging for diagnosing deep infiltrating endometriosis: systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Ultrasound Obstet Gynecol 2018 &middot; PMID 29154402</span><span class="mz-ref-pop-finding">For deep endometriosis — implants that grow into pelvic tissue — this pooled analysis found internal (transvaginal) ultrasound performs about as well as MRI, so a skilled ultrasound is a reasonable first look. Across six studies of 424 women who had both scans before surgery, each detected about 85% of bowel (rectosigmoid) disease with roughly 95% specificity; both found less of the disease deeper in the rectovaginal septum (about 59-66% detected). Confidence ranges were wide and scanning methods varied between studies.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
+                          <li>Medical suppressive therapy improves pain symptoms; recurrence rates remain high after the medication is discontinued.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33020832/" target="_blank" rel="noopener">[9]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Endometriosis recurrence following post-operative hormonal suppression: a systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Hum Reprod Update 2021 &middot; PMID 33020832</span><span class="mz-ref-pop-finding">Starting hormonal medication soon after endometriosis surgery substantially lowers the chance the disease comes back. Across 17 studies (13 of them randomised trials) covering 2,137 patients, recurrence at a year or more was roughly 59% lower with hormone-suppressing treatment than with a dummy pill or watchful waiting, and pain scores were modestly better. Benefit held up most consistently for combined birth-control hormones and the hormone-releasing intrauterine device. Results varied widely between studies, so the size of the benefit for any one person is uncertain.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33020832/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
+                          <li>Conservative surgical treatment provides significant short-term pain improvement; recurrence rates are also significant.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">[17]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 &middot; PMID 33095458</span><span class="mz-ref-pop-finding">Removing endometriosis during a keyhole operation probably improves the chance of pregnancy, but its effect on pain remains uncertain. Across 14 randomized trials in 1,563 women, the three trials reporting pregnancy (528 women) showed higher ultrasound-confirmed pregnancy rates after surgical treatment than after a look-only procedure, at moderate certainty. Pain findings rested on a single 16-woman study, burning lesions versus cutting them out showed no clear difference, and complications were reported too sparsely to judge safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
                           <li>Medical suppressive therapy (OCs, GnRH agonists) for endometriosis-associated infertility is ineffective.</li>
-                          <li>Surgical management of endometriosis-related infertility improves pregnancy rates, though the magnitude is uncertain.</li>
-                          <li>Excision of an endometrioma is superior to simple drainage and ablation of the cyst wall.</li>
+                          <li>Surgical management of endometriosis-related infertility improves pregnancy rates, though the magnitude is uncertain.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">[17]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 &middot; PMID 33095458</span><span class="mz-ref-pop-finding">Removing endometriosis during a keyhole operation probably improves the chance of pregnancy, but its effect on pain remains uncertain. Across 14 randomized trials in 1,563 women, the three trials reporting pregnancy (528 women) showed higher ultrasound-confirmed pregnancy rates after surgical treatment than after a look-only procedure, at moderate certainty. Pain findings rested on a single 16-woman study, burning lesions versus cutting them out showed no clear difference, and complications were reported too sparsely to judge safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
+                          <li>Excision of an endometrioma is superior to simple drainage and ablation of the cyst wall.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">[17]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Laparoscopic surgery for endometriosis.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2020 &middot; PMID 33095458</span><span class="mz-ref-pop-finding">Removing endometriosis during a keyhole operation probably improves the chance of pregnancy, but its effect on pain remains uncertain. Across 14 randomized trials in 1,563 women, the three trials reporting pregnancy (528 women) showed higher ultrasound-confirmed pregnancy rates after surgical treatment than after a look-only procedure, at moderate certainty. Pain findings rested on a single 16-woman study, burning lesions versus cutting them out showed no clear difference, and complications were reported too sparsely to judge safety.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/33095458/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
                           <li>When GnRH-agonist therapy is continued, add-back therapy reduces or eliminates bone loss and hypoestrogenic symptoms without reducing efficacy.</li>
                         </ul>
-                        <p class="soc-anchors">Anchored to ACOG Clinical Practice Guideline No. 11 (2026); UpToDate: Endometriosis. Landmark meta-analyses: Vercellini 2023 (PMID 36948440); Guerriero 2018 (PMID 29154402); Bafort 2020 Cochrane (PMID 33095458); Zakhari 2021 (PMID 33020832).</p>
+                        <p class="soc-anchors">Anchored to ACOG Clinical Practice Guideline No. Every claim above links to its source; the full list is at the foot of this page.</p>
                       </div>
                       <div class="soc-block frame-card">
                         <div class="soc-header"><span class="soc-tag">Chronic Pelvic Pain</span><span class="soc-grade">Level A</span></div>
                         <ul class="soc-list">
                           <li>Routine laparoscopic adhesiolysis is <em>not</em> recommended solely for chronic pelvic pain.</li>
-                          <li>Transvaginal ultrasound is first-line imaging for assessing endometriosis as a cause of pelvic pain.</li>
+                          <li>Transvaginal ultrasound is first-line imaging for assessing endometriosis as a cause of pelvic pain.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">[26]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Transvaginal ultrasound vs magnetic resonance imaging for diagnosing deep infiltrating endometriosis: systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Ultrasound Obstet Gynecol 2018 &middot; PMID 29154402</span><span class="mz-ref-pop-finding">For deep endometriosis — implants that grow into pelvic tissue — this pooled analysis found internal (transvaginal) ultrasound performs about as well as MRI, so a skilled ultrasound is a reasonable first look. Across six studies of 424 women who had both scans before surgery, each detected about 85% of bowel (rectosigmoid) disease with roughly 95% specificity; both found less of the disease deeper in the rectovaginal septum (about 59-66% detected). Confidence ranges were wide and scanning methods varied between studies.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29154402/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
                           <li>Medical suppressive therapy (combined oral contraceptives, progestins, GnRH agonists) improves endometriosis-related pain.</li>
                         </ul>
-                        <p class="soc-anchors">Anchored to ACOG Practice Bulletin 218: Chronic Pelvic Pain (PMID 32080045). Recent evidence: Salmeri 2024 on uterine contractility (PMID 39067674); Min 2025 on cesarean-scar niche and pelvic pain (PMID 40680988); Marvi 2022 on mode of delivery and dyspareunia (PMID 34231435).</p>
+                        <p class="soc-anchors">Anchored to ACOG Practice Bulletin 218: Chronic Pelvic Pain (PMID 32080045). Every claim above links to its source; the full list is at the foot of this page.</p>
                       </div>
                       <div class="soc-block frame-card">
                         <div class="soc-header"><span class="soc-tag">Dysmenorrhea</span><span class="soc-grade">Level A</span></div>
                         <ul class="soc-list">
-                          <li>NSAIDs are effective first-line treatment for primary dysmenorrhea.</li>
-                          <li>Combined hormonal contraceptives effectively treat dysmenorrhea.</li>
+                          <li>NSAIDs are effective first-line treatment for primary dysmenorrhea.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Nonsteroidal anti-inflammatory drugs for dysmenorrhoea.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2015 &middot; PMID 26224322</span><span class="mz-ref-pop-finding">Anti-inflammatory painkillers (NSAIDs) work well for period cramps: roughly 45-53% of women get moderate or excellent relief, compared with about 18% on placebo. Eighty trials involving 5,820 women were combined; side effects, especially stomach upset and headache or drowsiness, were more common than with placebo, and no single NSAID stood out as safest or most effective. The evidence was rated low quality, mainly because trial methods were poorly reported.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
+                          <li>Combined hormonal contraceptives effectively treat dysmenorrhea.<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Nonsteroidal anti-inflammatory drugs for dysmenorrhoea.</span><span class="mz-ref-pop-meta">Cochrane Database Syst Rev 2015 &middot; PMID 26224322</span><span class="mz-ref-pop-finding">Anti-inflammatory painkillers (NSAIDs) work well for period cramps: roughly 45-53% of women get moderate or excellent relief, compared with about 18% on placebo. Eighty trials involving 5,820 women were combined; side effects, especially stomach upset and headache or drowsiness, were more common than with placebo, and no single NSAID stood out as safest or most effective. The evidence was rated low quality, mainly because trial methods were poorly reported.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/26224322/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup></li>
                         </ul>
-                        <p class="soc-anchors">Anchored to ACOG dysmenorrhea guidance. Systematic-review support: Marjoribanks Cochrane 2015 (NSAIDs, CD001751); Sharghi 2019 (PMID 30521155); Earl 2021 Cochrane (nifedipine, PMID 34921554); Ruffini 2016 systematic review of OMT in gynecology and obstetrics (PMID 27261985).</p>
+                        <p class="soc-anchors">Anchored to ACOG dysmenorrhea guidance. Every claim above links to its source; the full list is at the foot of this page.</p>
                       </div>
                     </div>
                 `,
@@ -1314,32 +1560,33 @@
                 title: 'Evidence-based care, tailored to each patient.',
                 intro: 'Whole-person osteopathic care — structure and function as one — matched to the patient in front of me and grounded in peer-reviewed evidence. Each population below opens its own literature review: what the published studies actually show, and what it means for your care.',
                 body: `
+                    <div class="mz-evidence-synthesis"><h4>Where the evidence stands, in one place</h4><p>The strongest support is in <strong>endometriosis pain</strong>: pooling six randomised trials, hands-on and physical therapy beat a placebo treatment on pain with a large effect, and improved physical functioning<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Benefits of physical therapy in improving quality of life and pain associated with endometriosis: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics 2022 &middot; PMID 36571475</span><span class="mz-ref-pop-finding">Pooling six randomised trials, women with endometriosis who received non-drug conservative care - physical therapy and hands-on manual therapy - reported clearly less pain than those given a placebo treatment, a large effect (standardised difference -0.89). Physical functioning also improved significantly, while other quality-of-life measures showed no clear difference. The evidence was formally graded, but it rests on only six trials and the results varied a good deal between them.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36571475/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. A 2024 review reached the same conclusion for pelvic pain and pain with sex, at moderate certainty<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">[2]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Effectiveness of physical therapy techniques and methods in the management of endometriosis symptoms: A systematic review with meta-analysis.</span><span class="mz-ref-pop-meta">Brazilian journal of physical therapy 2024 &middot; PMID 42308873</span><span class="mz-ref-pop-finding">Across the studies pooled here, physical therapy approaches significantly reduced pelvic pain and pain with sex and significantly improved quality of life in women with endometriosis. The treatments included hands-on manual therapy and stretching, exercise, electrical stimulation, relaxation techniques, acupuncture and patient education, often combined rather than used alone. Reviewers rated the overall certainty of the evidence as moderate. Findings differed widely between individual studies, so what helps most is still judged case by case.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/42308873/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p><p>For <strong>period pain</strong>, the largest analysis — 32 randomised trials in 2,566 women — found manual therapy outperformed anti-inflammatory painkillers, though it did not beat a placebo treatment and the underlying trials were rated low quality<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">[3]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Manual Therapy in Primary Dysmenorrhea: A Systematic Review and Meta-Analysis.</span><span class="mz-ref-pop-meta">Journal of pain research 2024 &middot; PMID 38736680</span><span class="mz-ref-pop-finding">A 2024 review pooled 32 randomised trials in 2,566 women with period pain. Short term, manual therapy eased pain more than no treatment (about 1.3 points more on the trials' pain scales) and more than anti-inflammatory painkillers, the class that includes ibuprofen (about 3.0 points, 95% CI 1.1-4.9), with close to five times the odds of a meaningful improvement. No serious side effects were reported. Against a placebo treatment, though, there was no significant difference, and the pooled trials were rated low or very low quality.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/38736680/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. In <strong>pregnancy</strong>, pooled trials show a meaningful reduction in back and pelvic girdle pain on moderate-quality evidence<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">[4]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment for low back and pelvic girdle pain during and after pregnancy: A systematic review and meta-analysis.</span><span class="mz-ref-pop-meta">Journal of bodywork and movement therapies 2017 &middot; PMID 29037623</span><span class="mz-ref-pop-finding">Hands-on osteopathic treatment eased back and pelvic girdle pain in pregnancy. This 2017 review pooled randomised trials — five in pregnant women, three in postpartum women — against control groups. Moderate-quality evidence showed a meaningful fall in pain (mean difference about 17 points) and better day-to-day function during pregnancy; postpartum improvements looked larger but rested on low-quality evidence. Only eight small trials with varied comparison groups, so the size of the benefit may shift as stronger trials report.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/29037623/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>.</p><p>Two broad reviews of osteopathic care across gynecology and obstetrics reach the same honest verdict: benefit is reported consistently and safety is good, but the studies differ too much in technique and outcome to be pooled into a single number<sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">[5]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">Osteopathic manipulative treatment in gynecology and obstetrics: A systematic review.</span><span class="mz-ref-pop-meta">Complement Ther Med 2016 &middot; PMID 27261985</span><span class="mz-ref-pop-finding">Across 24 studies with 1,840 women in total, this review concluded that osteopathic manual treatment is effective for back pain in pregnancy. For the other gynaecologic and obstetric problems covered - period pain, pelvic pain, menopausal symptoms, labour pain and fertility - individual studies reported positive effects, but the trials were few, varied widely in design and carried a high risk of bias, so the reviewers could not draw firm conclusions. Only three of the 24 reported whether side effects occurred.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/27261985/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup><sup class="mz-ref" tabindex="0"><a href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">[6]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-pop-title">The Role of Osteopathic Care in Gynaecology and Obstetrics: An Updated Systematic Review.</span><span class="mz-ref-pop-meta">Healthcare (Basel, Switzerland) 2022 &middot; PMID 36011223</span><span class="mz-ref-pop-finding">This 2022 review found osteopathic care helpful across a range of gynecologic and obstetric conditions, and safe as an addition to standard care. It updated an earlier review with 21 studies published between 2014 and 2021, covering 2,632 participants of average age about 29, ranging from randomised trials to small observational reports. The studies differed too much in technique, condition and outcome measures to be pooled into a single figure, so the authors stopped short of firm clinical recommendations.</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/36011223/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>. That is why this is offered as one layer of a plan rather than a stand-alone treatment — and why each population below opens its own literature review rather than a claim.</p></div>
                     <div class="populations-grid">
-                      <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health OMT evidence">
+                      <div class="population-card" data-evidence="womens-health" role="button" tabindex="0" aria-label="View Women's Health hands-on osteopathic treatment evidence">
                         <div class="pop-tag">Foundational Care</div>
                         <h4>Women's Health</h4>
                         <p>For dysmenorrhea, sacral imbalance, low back pain, and visceral-somatic patterns rooted in the pelvis. Manual therapy as a complement to gynecologic management &mdash; not a replacement for it.</p>
                         <div class="pop-modalities"><span class="pop-mod">Muscle Energy</span><span class="pop-mod">Myofascial Release</span><span class="pop-mod">Counterstrain</span></div>
                         <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
                       </div>
-                      <div class="population-card" data-evidence="pregnancy" role="button" tabindex="0" aria-label="View Pregnancy OMT evidence">
+                      <div class="population-card" data-evidence="pregnancy" role="button" tabindex="0" aria-label="View Pregnancy hands-on osteopathic treatment evidence">
                         <div class="pop-tag">Antepartum &amp; Postpartum</div>
                         <h4>Pregnant Patients</h4>
                         <p>Safe, gentle techniques for round ligament pain, sacroiliac dysfunction, sciatica, and pubic symphysis discomfort. Indirect approaches preferred during pregnancy; targeted release postpartum to support recovery.</p>
                         <div class="pop-modalities"><span class="pop-mod">Counterstrain</span><span class="pop-mod">Muscle Energy (modified)</span><span class="pop-mod">Myofascial Release</span></div>
                         <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
                       </div>
-                      <div class="population-card" data-evidence="post-op" role="button" tabindex="0" aria-label="View Post-Operative OMT evidence">
+                      <div class="population-card" data-evidence="post-op" role="button" tabindex="0" aria-label="View Post-Operative hands-on osteopathic treatment evidence">
                         <div class="pop-tag">Recovery</div>
                         <h4>Post-Operative Patients</h4>
                         <p>Reducing the burden of post-cesarean and post-laparoscopic adhesions, restoring abdominal-wall fascial mobility, and easing the diaphragmatic and visceral patterns that linger after surgery.</p>
                         <div class="pop-modalities"><span class="pop-mod">Myofascial Release</span><span class="pop-mod">FDM</span><span class="pop-mod">Counterstrain</span></div>
                         <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
                       </div>
-                      <div class="population-card" data-evidence="pelvic-pain" role="button" tabindex="0" aria-label="View Pelvic Pain and Endometriosis OMT evidence">
+                      <div class="population-card" data-evidence="pelvic-pain" role="button" tabindex="0" aria-label="View Pelvic Pain and Endometriosis hands-on osteopathic treatment evidence">
                         <div class="pop-tag">Chronic Pain</div>
                         <h4>Pelvic Pain</h4>
-                        <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain &mdash; addressing the layered fascial, somatic, and viscerosomatic contributors that imaging alone can&rsquo;t see.</p>
+                        <p>For endometriosis, pelvic floor dysfunction, vulvodynia, and post-surgical chronic pain &mdash; addressing the layered fascial, somatic, and organ-to-body-wall contributors that imaging alone can&rsquo;t see.</p>
                         <div class="pop-modalities"><span class="pop-mod">FDM</span><span class="pop-mod">Myofascial Release</span><span class="pop-mod">Muscle Energy</span><span class="pop-mod">Counterstrain</span></div>
                         <span class="pop-evidence-cta">See what the literature and evidence says <span class="arrow">&rarr;</span></span>
                       </div>
@@ -1374,7 +1621,7 @@
                 const handler = (e) => {
                     if (e && e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
                     if (e && e.preventDefault) e.preventDefault();
-                    // Close the OMT modal first so the evidence modal stacks visually.
+                    // Close the hands-on osteopathic treatment modal first so the evidence modal stacks visually.
                     closeOmtModal();
                     openEvidenceModal(k);
                 };
@@ -1410,7 +1657,7 @@
         }
         // Selector covers both: legacy .carepath-card[data-omt-modal] (none
         // remain after the 2026-05-16 refactor) AND the new .bento-card[data-omt-modal]
-        // inside the consolidated OMT bento grid.
+        // inside the consolidated hands-on osteopathic treatment bento grid.
         document.querySelectorAll('[data-omt-modal]').forEach(card => {
             const key = card.getAttribute('data-omt-modal');
             card.addEventListener('click', () => openOmtModal(key));
@@ -1474,7 +1721,7 @@
                 ],
                 useCases: [
                     { title: 'The resident building from day one', desc: 'Start logging cases from PGY-4 with the exact categorization ABOG requires — so submission day is a click, not a crisis.' },
-                    { title: 'The physician with varied cases', desc: 'Cases from different practice settings each tagged to their source and mapped to the correct category — even when the same CPT code applies to two different ABOG buckets.' },
+                    { title: 'The physician with varied cases', desc: 'Cases from different practice settings each tagged to their source and mapped to the correct category — even when the same standard medical billing code applies to two different ABOG buckets.' },
                     { title: 'The candidate six weeks out', desc: 'Run the oral exam simulator on your actual submitted cases. Hear a board-style question, answer out loud, get instant AI feedback — and know which ACOG bullets your examiner will cite.' },
                 ],
                 tech: ['Native Swift / SwiftUI', 'AI PDF extraction (Claude Code CLI)', 'Whisper on-device transcription', 'ACOG knowledge base (indexed)', '101 ABOG category engine', 'Category confidence scoring', 'Duplicate detection', 'De-identification service', 'ABOG portal export'],
@@ -1500,7 +1747,7 @@
                 useCases: [
                     { title: 'Clinic day documentation', desc: 'Record 15-minute visits as you go — Whisper transcribes live, SOAP note auto-structures at subspecialty level, billing flags surface before the patient reaches checkout, and ⌘⇧C copies the note to your EMR.' },
                     { title: 'Any GYN encounter — routine to complex', desc: 'From a 15-minute well-woman visit to a multi-hour consult for endometriosis or fibroids, the app structures every SOAP at subspecialist depth, pulls the relevant guideline (ACOG, AAGL, ESHRE, ASRM, ASCCP, CDC) for the specific complaint directly from the Counsel knowledge base — each recommendation cited back to its source — and generates a patient education summary written for that encounter: abnormal bleeding, pelvic pain, MHT counseling, infertility workup, contraception switching, cervical screening, breast complaint, endometriosis, fibroids, or anything else on the schedule. No hallucinated guidelines, no general-knowledge approximations.' },
-                    { title: 'Operative note — brief in, full formal report out', desc: 'Between cases, dictate only what matters: intra-op findings, key technique decisions, instruments used, complications, EBL. Pick a premade op template (TLH, robotic myomectomy, operative hysteroscopy, diagnostic laparoscopy) or your own custom base template. The AI interjects your dictated findings into the right sections — exposure, dissection, hemostasis, closure — and generates a complete, properly-formatted operative report at attending-level depth. ICD-10/CPT coded, medico-legal checked, ready to paste before the next patient is prepped.' },
+                    { title: 'Operative note — brief in, full formal report out', desc: 'Between cases, dictate only what matters: intra-op findings, key technique decisions, instruments used, complications, EBL. Pick a premade op template (TLH, robotic myomectomy, operative hysteroscopy, diagnostic laparoscopy) or your own custom base template. The AI interjects your dictated findings into the right sections — exposure, dissection, hemostasis, closure — and generates a complete, properly-formatted operative report at attending-level depth. ICD-10/standard medical billing coded, medico-legal checked, ready to paste before the next patient is prepped.' },
                 ],
                 tech: ['Native Swift', 'Whisper (custom fork, BNNS fix)', 'macOS + iOS + watchOS', 'On-device de-identification engine', 'Counsel KB (source-grounded, citation-anchored — no hallucination)', 'ASCCP 2023 guideline logic', 'BI-RADS / ACOG decision trees', 'COC + VTE risk engine', 'AAGL/ESHRE endometriosis logic', 'Billing/coding analysis engine', 'Medico-legal compliance review', 'Patient education summary generator', 'Live Activity recording widget'],
             },
@@ -1644,7 +1891,7 @@
 
         // ==========================================================
         // Domain Modal — Surgical Excellence card deep-dives.
-        // KB-anchored patient-centered content per §0.8.1.
+        // Patient-centered content anchored to the reviewed library.
         // Content lives in window.DOMAIN_MODAL_DATA (set below).
         // ==========================================================
         const domainModalEl    = document.getElementById('domainModal');
@@ -1724,7 +1971,15 @@
             domainModalTag.textContent = d.tag || '';
             domainModalTitle.textContent = d.title;
             domainModalTagline.textContent = d.tagline || '';
-            domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('');
+            // Standing medico-legal disclaimer (owner directive 2026-09-01):
+            // every educational surface carries it, and the modals render from
+            // ONE place — here — so it can never be forgotten per-entry. The
+            // marker class mz-eddisclaimer is what audit_no_dosing.py checks.
+            domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('')
+                + '<div class="mz-eddisclaimer" role="note" style="margin:28px 0 8px;padding:14px 18px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:13.5px;line-height:1.6;">'
+                + '<strong style="color:#1A1726;">Educational information — not medical advice.</strong> '
+                + 'This is general education about how the condition is approached. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.'
+                + '</div>';
         }
 
         function openDomainModal(slug) {
@@ -1877,8 +2132,8 @@
             // ----------------------------------------------------------
             // Safety-stat count-up on first scroll-into-view
             // ----------------------------------------------------------
-            const zeroGrid = document.querySelector('.zero-grid[data-count-trigger]');
-            if (zeroGrid && 'IntersectionObserver' in window) {
+            const safetyGrid = document.querySelector('.safety-grid[data-count-trigger]');
+            if (safetyGrid && 'IntersectionObserver' in window) {
                 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 const obs = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
@@ -1919,7 +2174,7 @@
                         });
                     });
                 }, { threshold: 0.35 });
-                obs.observe(zeroGrid);
+                obs.observe(safetyGrid);
             }
         })();
 
@@ -2099,8 +2354,8 @@
             // never revealed — about stats, safety record, hub tiles,
             // identity cards, curriculum cards/CTA.
             { sel: '.stats-row > *', kind: 'up' },
-            { sel: '.zero-eyebrow', kind: 'up' },
-            { sel: '.zero-card', kind: 'scale' },
+            { sel: '.safety-eyebrow', kind: 'up' },
+            { sel: '.safety-card', kind: 'scale' },
             { sel: '.surgical-hub-eyebrow', kind: 'up' },
             { sel: '.hub-tile', kind: 'scale' },
             { sel: '.identity-card', kind: 'scale' },
@@ -2164,6 +2419,56 @@
             window.addEventListener('resize', () => {
                 clearTimeout(_resizeT);
                 _resizeT = setTimeout(() => applyLineSpanGradient(heroTitle), 80);
+            });
+            // 2026-08-20 — Avenir Next lands AFTER the rAF measurement on a
+            // cold cache: every word reflows to its real metrics but --w-x /
+            // --w-total still describe the fallback-font layout. Re-measure
+            // once the webfonts are actually in.
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => applyLineSpanGradient(heroTitle));
+            }
+            // 2026-08-20 — Chrome 151 ghost-glyph fix (CONFIRMED root cause,
+            // reproduced live on Chrome 151.0.7922.170 / macOS 15.6 arm64).
+            // The PARENT h1 carries its own background-clip:text gradient as
+            // the pre-split first-paint fallback (see .hero-title in
+            // home.css). After splitWords, the h1's only direct text is the
+            // whitespace between .word-mask spans, so that parent layer
+            // should paint nothing — but Chrome 151 paints the parent's
+            // descendant-glyph clip mask at collapsed offsets, compositing a
+            // ghost copy of EVERY word at the line start ("Aasaisrion...").
+            // Verified in the owner's console: killing only the parent
+            // background cleared the garble instantly while the per-word
+            // gradient slices kept rendering correctly. So: once the split
+            // has happened (the .w slices own the gradient from here on),
+            // drop the parent's now-redundant copy. Inline style — the
+            // locked .hero-title / .word-reveal CSS rules are untouched, and
+            // the pre-split fallback still paints on browsers with JS off,
+            // reduced motion (no split), or before this script runs.
+            if (heroTitle.dataset.split === '1') {
+                heroTitle.style.background = 'none';
+            }
+            // 2026-08-20 — Chrome ghost-glyph hygiene. `.word-reveal .w` carries
+            // `will-change: transform, opacity` (locked CSS — do not edit it),
+            // which keeps EVERY word promoted to its own GPU layer forever.
+            // Each layer holds a rasterized copy of its background-clip:text
+            // glyphs; when Chrome re-lays-out the line mid-flight (font swap,
+            // scroll-fade opacity writes from tick()) a stale raster can be
+            // composited at a stale offset. Releasing will-change AFTER the
+            // entrance settles demotes the layers and forces one clean
+            // repaint. NOT the root cause of the 2026-08-20 ghost (that was
+            // the parent gradient above — live testing proved the .w layers
+            // innocent), but kept as defense-in-depth: five permanent GPU
+            // layers for a run-once entrance is waste regardless. The
+            // entrance itself still runs fully promoted, so the choreography
+            // (hero_animation.lock) is untouched.
+            heroTitle.addEventListener('transitionend', (e) => {
+                if (!e.target.classList || !e.target.classList.contains('w')) return;
+                if (e.propertyName !== 'transform') return;
+                const words = heroTitle.querySelectorAll('.w');
+                const settled = [...words].every(w =>
+                    getComputedStyle(w).transform === 'none' ||
+                    getComputedStyle(w).transform === 'matrix(1, 0, 0, 1, 0, 0)');
+                if (settled) words.forEach(w => { w.style.willChange = 'auto'; });
             });
         }
 
@@ -2958,7 +3263,17 @@
             // pauses again when it leaves.
             const nearViewport = (v) => {
                 const r = v.getBoundingClientRect();
-                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2;
+                // BOTH axes. The research reels live in a horizontal carousel
+                // now, so all four cards share one vertical position; a
+                // vertical-only test woke all four at once and they fought
+                // for the phone's decoder budget — the two losers sat
+                // "playing" with a frozen clock, and one of them could be the
+                // card actually on screen (owner: "thumbnail surgery videos
+                // don't autoplay when it is scrolled to"). 80px of horizontal
+                // margin still warms the peeking next card; a card further
+                // out has no claim on a decoder.
+                return r.bottom > -window.innerHeight && r.top < window.innerHeight * 2 &&
+                       r.right > -80 && r.left < window.innerWidth + 80;
             };
             const tryPlay = (v) => {
                 if (!v || !v.paused) return;
@@ -3022,7 +3337,8 @@
                 // wholesale (the video modal does, to free the decoder). Without
                 // this the reels stayed paused FOREVER after a modal was opened
                 // and closed — closeVideoModal never restarted them.
-                window.__mzWakePreviews = () => {
+                window.__mzWakeOne = (v) => wake(v);
+            window.__mzWakePreviews = () => {
                     document.querySelectorAll('.video-preview').forEach((v) => {
                         if (nearViewport(v)) wake(v);
                     });
@@ -3041,7 +3357,11 @@
                 setInterval(() => {
                     if (document.hidden) return;
                     document.querySelectorAll('.video-preview').forEach((v) => {
-                        if (!nearViewport(v)) return;
+                        if (!nearViewport(v)) {
+                            // free the decoder for the card that IS on screen
+                            if (!v.paused) { try { v.pause(); } catch (e) {} }
+                            return;
+                        }
                         if (!v.loop) v.loop = true;
                         if (!v.muted) v.muted = true;
                         const prev = lastT.get(v);
@@ -3049,7 +3369,14 @@
                         lastT.set(v, now);
                         const stalled = prev !== undefined && now === prev;
                         if (v.paused || stalled) {
+                            // A stalled reel reports paused === false, so a bare
+                            // play() is a no-op on it — which is why the two
+                            // decoder-losers used to sit frozen at 0:00 forever
+                            // while this watchdog "restarted" them every 2s.
+                            // Genuinely cycle it: pause, nudge, play.
+                            if (stalled && !v.paused) { try { v.pause(); } catch (e) {} }
                             if (v.readyState < 2) { try { v.load(); } catch (e) {} }
+                            else if (stalled) { try { v.currentTime = now + 0.001; } catch (e) {} }
                             const p = v.play();
                             if (p && typeof p.then === 'function') p.catch(() => {});
                         }
@@ -3064,16 +3391,34 @@
                     }, { once: true, passive: true }));
             }
 
-            // Fallback: one-time user interaction unblocks autoplay everywhere
-            const onFirstInteract = () => {
-                playAll();
-                document.removeEventListener('touchstart', onFirstInteract, true);
-                document.removeEventListener('click', onFirstInteract, true);
-                document.removeEventListener('scroll', onFirstInteract, true);
+            // Fallback for policy-blocked autoplay. This used to be ONE-SHOT: it
+            // removed its listeners after the first touch/click/scroll. That first
+            // gesture normally happens while the reels are still far down the page,
+            // so the retry was spent on nothing — and a reel whose play() the
+            // browser had refused (iOS Low Power Mode, Safari's per-site auto-play
+            // setting) then sat on its poster for the rest of the visit with
+            // nothing left to revive it. The listeners now persist and retry
+            // whatever is in view and paused, throttled so scrolling stays cheap.
+            let lastNudge = 0;
+            const nudgeVisiblePreviews = () => {
+                const now = Date.now();
+                if (now - lastNudge < 400) { return; }
+                lastNudge = now;
+                document.querySelectorAll('.video-preview').forEach((v) => {
+                    if (v.paused && nearViewport(v)) {
+                        if (typeof window.__mzWakeOne === 'function') { window.__mzWakeOne(v); }
+                        else { tryPlay(v); }
+                    }
+                });
             };
-            document.addEventListener('touchstart', onFirstInteract, { capture: true, passive: true });
-            document.addEventListener('click', onFirstInteract, { capture: true });
-            document.addEventListener('scroll', onFirstInteract, { capture: true, passive: true });
+            document.addEventListener('touchstart', nudgeVisiblePreviews, { capture: true, passive: true });
+            document.addEventListener('pointerdown', nudgeVisiblePreviews, { capture: true, passive: true });
+            document.addEventListener('click', nudgeVisiblePreviews, { capture: true });
+            document.addEventListener('scroll', nudgeVisiblePreviews, { capture: true, passive: true });
+            window.addEventListener('pageshow', nudgeVisiblePreviews);
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) { nudgeVisiblePreviews(); }
+            });
         })();
 
         function openVideoModal(videoSrc, element) {
@@ -3199,3 +3544,122 @@
             });
         })();
     
+        // ==========================================================
+        // Inline citation popovers (2026-09-02, owner directive).
+        // The osteopathic section carries its sources AT each claim
+        // rather than in a bibliography at the foot of the pillar.
+        // Delegated, so it covers markup injected into modals after
+        // load. Mirrors the education-page behaviour exactly.
+        // ==========================================================
+        (function () {
+            'use strict';
+            if (window.__mzHomeRefPops) { return; }
+            window.__mzHomeRefPops = true;
+
+            // Flip the popover below its marker when there isn't room above.
+            var SCROLLERS = '.omt-modal-card, .app-modal-scroll, .app-modal-body,'
+                + ' .mz-sheet-content, .evidence-modal-card, .contact-modal-card';
+            var portaled = null;   // the popover currently living on <body>
+
+            // Return a portaled popover to the citation it belongs to.
+            function unportal() {
+                if (!portaled) { return; }
+                var pop = portaled.pop;
+                pop.classList.remove('mz-portal');
+                pop.style.left = ''; pop.style.top = '';
+                if (portaled.next && portaled.next.parentNode === portaled.parent) {
+                    portaled.parent.insertBefore(pop, portaled.next);
+                } else {
+                    portaled.parent.appendChild(pop);
+                }
+                portaled = null;
+            }
+
+            function place(sup) {
+                var pop = sup.querySelector('.mz-ref-pop');
+                if (!pop) {
+                    // already portaled for this marker?
+                    if (portaled && portaled.sup === sup) { position(portaled.pop, sup); }
+                    return;
+                }
+                pop.classList.remove('mz-flip');
+                pop.style.left = ''; pop.style.top = ''; pop.style.transform = '';
+                // Inside a scrolling, backdrop-filtered modal card the popover
+                // would be clipped by the card AND resolve position:fixed
+                // against it rather than the viewport. Move it to <body> for
+                // the duration, where neither is true.
+                if (sup.closest(SCROLLERS)) {
+                    unportal();
+                    portaled = { pop: pop, sup: sup, parent: pop.parentNode, next: pop.nextSibling };
+                    document.body.appendChild(pop);
+                    pop.classList.add('mz-portal');
+                    position(pop, sup);
+                    return;
+                }
+                if (sup.getBoundingClientRect().top - pop.offsetHeight < 12) {
+                    pop.classList.add('mz-flip');
+                }
+            }
+
+            // Viewport placement for a portaled popover: open on whichever
+            // side has more room, then clamp inside the window.
+            function position(pop, sup) {
+                var r = sup.getBoundingClientRect();
+                var vw = window.innerWidth, vh = window.innerHeight;
+                var w = pop.offsetWidth, h = pop.offsetHeight;
+                var left = r.left + (r.width / 2) - (w / 2);
+                left = Math.max(8, Math.min(left, vw - w - 8));
+                var roomAbove = r.top - 8, roomBelow = vh - r.bottom - 8;
+                var top = (roomAbove >= h || roomAbove >= roomBelow) ? r.top - h - 10 : r.bottom + 10;
+                top = Math.max(8, Math.min(top, vh - h - 8));
+                pop.style.left = Math.round(left) + 'px';
+                pop.style.top = Math.round(top) + 'px';
+            }
+
+            function onHover(ev) {
+                var t = ev.target;
+                var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+                if (sup) { place(sup); }
+            }
+            document.addEventListener('pointerover', function (ev) {
+                var t = ev.target;
+                var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+                var inPop = t && t.closest ? t.closest('.mz-ref-pop.mz-portal') : null;
+                if (!sup && !inPop && portaled && !portaled.sup.classList.contains('mz-open')) {
+                    unportal();
+                }
+            }, true);
+            document.addEventListener('pointerover', onHover, true);
+            document.addEventListener('focusin', onHover, true);
+
+            // Tap to open on touch devices; tapping the source link follows it.
+            document.addEventListener('click', function (ev) {
+                var t = ev.target;
+                var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+                if (!sup) {
+                    document.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) {
+                        s.classList.remove('mz-open');
+                    });
+                    unportal();
+                    return;
+                }
+                var a = t.closest('a');
+                if (a && a.classList.contains('mz-ref-pop-src')) { return; }  // let the link work
+                if (a && a.getAttribute('href') && a.getAttribute('href').charAt(0) === '#') { return; }
+                ev.preventDefault();
+                document.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) {
+                    if (s !== sup) { s.classList.remove('mz-open'); }
+                });
+                sup.classList.toggle('mz-open');
+                if (sup.classList.contains('mz-open')) { setTimeout(function () { place(sup); }, 0); }
+            }, true);
+
+            // Escape closes any open citation.
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key !== 'Escape') { return; }
+                document.querySelectorAll('sup.mz-ref.mz-open').forEach(function (s) {
+                    s.classList.remove('mz-open');
+                });
+                unportal();
+            });
+        })();

@@ -45,6 +45,8 @@
 // =====================================================================
 
 import { routeFor, enqueueAiJob } from "./ai_router.js";
+import { groundClinical, groundingInstruction, verifyGrounding, refusalMessage, provenanceLine }
+    from "./clinical_grounding.js";
 
 export const VISIT_PREP_VERSION = "visit-prep-v1-2026-08-13";
 
@@ -304,6 +306,22 @@ export async function generateDeliverable(env, { kind, historyText, specialty = 
         return { ok: false, error: "no history to work from — the patient needs to complete their intake first" };
     }
 
+    // ------------------------------------------------------------------
+    // GROUND IT IN HIS LIBRARY, OR DO NOT WRITE IT.
+    // ------------------------------------------------------------------
+    // A Navigator member hands this to their own OB/GYN with his name on
+    // it. That is the highest-consequence text this system produces: it
+    // travels outside the practice, to another clinician, as his opinion.
+    // Every clinical statement in it comes from his references or it is
+    // not written.
+    const kb = await groundClinical(env, {
+        kind: "visit_prep",
+        query: String(historyText).slice(0, 3000),
+    });
+    if (!kb.grounded) {
+        return { ok: false, refused: true, reason: kb.reason, error: refusalMessage(kb) };
+    }
+
     const route = routeFor(env, "visit_prep");
     if (route === "bridge") {
         const job = await enqueueAiJob(env, {
@@ -328,7 +346,7 @@ export async function generateDeliverable(env, { kind, historyText, specialty = 
             body: JSON.stringify({
                 model: env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
                 max_tokens: 2500,
-                messages: [{ role: "user", content: buildPrompt(kind, historyText, { specialty }) }],
+                messages: [{ role: "user", content: `${groundingInstruction(kb)}\n\n---\n\n${buildPrompt(kind, historyText, { specialty })}` }],
             }),
         });
         if (!res.ok) return { ok: false, error: `model call failed (HTTP ${res.status})` };
@@ -350,10 +368,36 @@ export async function generateDeliverable(env, { kind, historyText, specialty = 
         };
     }
 
+    // Scope and grounding are two different guarantees and both must hold.
+    // checkScope asks "did it cross into giving advice"; this asks "is the
+    // medicine in it his". A pack can stay perfectly within scope while
+    // describing a condition from the model's training data, and that is
+    // the version that reaches another clinician looking authoritative.
+    const verdict = verifyGrounding(text, kb);
+    if (verdict.blocked) {
+        return {
+            ok: false, refused: true, reason: "grounding_check_failed",
+            error: `The pack was written but did not hold up against the practice library, so it was discarded rather than shown: ${verdict.summary}.`,
+            grounding: {
+                ok: false, summary: verdict.summary, citations: kb.citations,
+                fabricated: verdict.fabricated, uncited: verdict.uncited,
+                unsupported: verdict.unsupported,
+            },
+            rejected_text: text,
+        };
+    }
+
     return {
         ok: true,
         kind, name: d.name,
         text,
+        grounding: {
+            ok: verdict.ok,
+            summary: verdict.summary,
+            provenance: provenanceLine(kb, verdict),
+            citations: kb.citations,
+            kb_coverage: Math.round((kb.coverage || 0) * 100) / 100,
+        },
         disclaimer: PATIENT_DISCLAIMER,
         version: VISIT_PREP_VERSION,
     };

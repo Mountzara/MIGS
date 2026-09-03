@@ -10,6 +10,7 @@
 
 import { previewAccess, preLaunchNotFound } from "../../../../_lib/preview_gate.js";
 import { requireRole } from "../../../../_lib/auth.js";
+import { checkWindow } from "../../../../_lib/iso_date.js";
 
 function err(status, code, message) {
     return new Response(JSON.stringify({ error: code, message }), {
@@ -18,7 +19,8 @@ function err(status, code, message) {
     });
 }
 
-function isDate(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+// Shape-only date checks accepted 2026-02-31 and an unbounded window.
+// Both now go through _lib/iso_date.js::checkWindow.
 function todayISO() {
     const d = new Date();
     const y = d.getFullYear();
@@ -47,8 +49,18 @@ export async function onRequestGet(ctx) {
     const today = todayISO();
     const from = url.searchParams.get("from") || addDaysISO(today, -30);
     const to = url.searchParams.get("to") || today;
-    if (!isDate(from)) return err(400, "invalid_from");
-    if (!isDate(to)) return err(400, "invalid_to");
+    // A range query with no ceiling is a denial of service on our own
+    // database and on the patient's phone: ?from=1900-01-01 returned a
+    // 46,000-point series in 1.6 MB of JSON, to be drawn in a chart 300
+    // pixels wide. 400 days is a bound on one REQUEST, not on what may
+    // be stored — a patient with five years of entries reads all of it, a
+    // window at a time.
+    const win = checkWindow(from, to, 400);
+    if (!win.ok) {
+        return err(400, win.error, win.error === "window_too_large"
+            ? `that is ${win.days} days; ask for at most ${win.max_days} at a time`
+            : undefined);
+    }
     if (to < from) return err(400, "invalid_window", "to < from");
 
     const res = await env.DB.prepare(`

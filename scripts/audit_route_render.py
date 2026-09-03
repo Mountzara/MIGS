@@ -123,7 +123,14 @@ def main():
     # environment rather than being a Mac-only hard blocker. The orphan-
     # discovery contract above still applies in all environments.
     def _gated(path):
-        return path.startswith("/admin") or path.startswith("/portal")
+        # /education/* is gated the same way: functions/education/_middleware.js
+        # serves a Coming Soon page to the public until
+        # EDUCATION_PUBLIC_LAUNCH is set, because each of the twelve patient
+        # guides is clinical content awaiting review. Auditing it without
+        # admin credentials would assert the Coming Soon title forever and
+        # then fail the day the gate opens — the audit must follow the gate,
+        # not fight it.
+        return path.startswith("/admin") or path.startswith("/portal") or path.startswith("/education")
 
     pw = admin_pass()
     public_only = not pw
@@ -158,6 +165,15 @@ def main():
                 title = page.title() or ""
             if r.get("title_contains") and r["title_contains"] not in title:
                 return f"RENDER {path}: title '{title}' missing '{r['title_contains']}'"
+            # title_contains_any: a route whose CORRECT render depends on the
+            # auditor's auth level. /portal/orders/ is the founding case: the
+            # audit's admin credentials pass the preview gate but are not a
+            # PATIENT session, so the page correctly redirects to member
+            # sign-in — and with a patient session it is the Tests page.
+            # Either title is a healthy render; anything else is a defect.
+            anyof = r.get("title_contains_any")
+            if anyof and not any(t in title for t in anyof):
+                return f"RENDER {path}: title '{title}' matches none of {anyof}"
             if title.strip() == homepage_title and not r.get("allow_homepage_title"):
                 return f"RENDER {path}: served the MARKETING HOMEPAGE (route fallthrough)"
             sel = r.get("selector")

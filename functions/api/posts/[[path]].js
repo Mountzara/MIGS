@@ -30,7 +30,7 @@
 // 2026-05-19 (Phase C): "claim_proposal" added so Claude can queue
 // candidate trend-brief claims to the admin dashboard for clinician
 // approval before they enter the active trend_watchlist.json.
-import { auditPostFormat, auditPublishable, healPaperCardPost, healPost, healPopoverSummaries, healAbstractCompleteness } from "../../_lib/post_format.js";
+import { auditPostFormat, auditPublishable, healPaperCardPost, healPost, healPopoverSummaries, ensurePopoverSourceLinks, healAbstractCompleteness } from "../../_lib/post_format.js";
 
 // Fetch the COMPLETE English abstract for a PMID from PubMed eutils. Returns
 // [{label, text}] of the AbstractText blocks, skipping any second-language
@@ -107,6 +107,15 @@ async function verifyPbkdf2(password, stored) {
 }
 
 async function isAdminRequest(request, env) {
+    // Path 0: the admin session cookie minted by admin/_middleware.js after
+    // a password check. Same reason as _lib/admin_api.js — the content
+    // pipeline is part of "the backend" and must not ask for credentials
+    // again once the operator has signed in.
+    try {
+        const sess = await import("../../_lib/admin_session.js");
+        if (await sess.verifyAdminSession(request, env)) return true;
+    } catch { /* fall through */ }
+
     // Path 1: Cloudflare Access JWT headers (set up via dashboard).
     const accessEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
     const accessJwt = request.headers.get("Cf-Access-Jwt-Assertion");
@@ -281,6 +290,11 @@ async function autoHealBody(env, kind, bodyHtml) {
         if (pop.changed) { body = pop.healed; healed = true; heal_steps.push(`popover-summaries:${pop.changed}`); }
         heal_problems.push(...pop.problems);
     } catch (e) { heal_problems.push(`popover heal threw: ${String(e && e.message || e)}`); }
+    try {
+        // Every citation offers its source (owner directive 2026-09-02).
+        const src = ensurePopoverSourceLinks(body);
+        if (src.changed) { body = src.healed; healed = true; heal_steps.push(`popover-source-links:${src.changed}`); }
+    } catch (e) { heal_problems.push(`popover source-link heal threw: ${String(e && e.message || e)}`); }
     try {
         const abs = await healAbstractCompleteness(body, fetchPubmedAbstract, { maxFetch: 30 }); // PubMed
         if (abs.changed) { body = abs.healed; healed = true; heal_steps.push(`abstract-completion:${abs.changed}`); }

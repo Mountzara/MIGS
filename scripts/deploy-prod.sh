@@ -288,6 +288,335 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/test_post_format_gate.mjs ]; 
 fi
 
 # ---------------------------------------------------------------------------
+# Syntax gate (codified 2026-08-13). `node --check` on every Function file,
+# in milliseconds, before anything expensive runs.
+#
+# Written after a backtick inside a SQL comment inside a template literal
+# closed the literal early and failed the wrangler build — after the whole
+# gate chain, the staging copy and the upload had already run. esbuild
+# catches it, but only at the very end of a two-minute deploy. This catches
+# the same class of error first, and names the file and column.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1; then
+    echo ""
+    echo "🔒 syntax gate — parsing every Function file..."
+    SYNTAX_ERRS=0
+    while IFS= read -r f; do
+        if ! node --check "$f" 2>>/tmp/_syntax_gate.log; then
+            SYNTAX_ERRS=$((SYNTAX_ERRS + 1))
+        fi
+    done < <(find functions -name '*.js' -o -name '*.mjs')
+    if [ "$SYNTAX_ERRS" -gt 0 ]; then
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — $SYNTAX_ERRS file(s) failed to parse:"
+        tail -40 /tmp/_syntax_gate.log
+        exit 1
+    fi
+    rm -f /tmp/_syntax_gate.log
+    echo "   ✅ syntax gate passed"
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# SQL column gate (codified 2026-08-13). D1 throws on an unknown column at
+# RUNTIME, so a handler that names one returns 500 forever with no build
+# error and no test failure. Seven endpoints were in that state when this
+# gate was written — the admin snapshot dashboard, the whole Transcription
+# sync, the patient briefing's document list, the onboarding wizard's
+# education step — several of them silently, because a bare catch turned
+# "the query is broken" into "there is no data".
+#
+# Hermetic (parses schema/*.sql, no network, <1s). No override flag: a
+# failure here means an endpoint is guaranteed to 500.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_sql_columns.mjs ]; then
+    echo ""
+    echo "🔒 SQL column gate — every SELECT names a column that exists..."
+    if node scripts/check_sql_columns.mjs --self-test > /tmp/_sql_cols_self.log 2>&1 \
+       && node scripts/check_sql_columns.mjs > /tmp/_sql_cols.log 2>&1; then
+        tail -1 /tmp/_sql_cols.log
+        echo "   ✅ SQL column gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the SQL column gate:"
+        tail -30 /tmp/_sql_cols.log /tmp/_sql_cols_self.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Portal header gate (codified 2026-08-13). The camera policy on
+# /portal/tech-check/ and the Stripe CSP on /portal/billing/ cannot be
+# expressed in _headers — that file APPENDS, and the browser resolves
+# duplicate Permissions-Policy features first-wins and duplicate CSPs by
+# intersection, so both overrides were inert while looking correct in curl.
+# They live in functions/_lib/portal_headers.js now; this asserts they stay
+# single-valued and correct.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_portal_headers.mjs ]; then
+    echo ""
+    echo "🔒 portal header gate — camera on tech-check, Stripe on billing..."
+    if node scripts/test_portal_headers.mjs > /tmp/_portal_headers.log 2>&1; then
+        tail -1 /tmp/_portal_headers.log
+        echo "   ✅ portal header gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the portal header gate:"
+        tail -20 /tmp/_portal_headers.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Clinical grounding gate (codified 2026-08-13). The owner's standing rule:
+# clinical answers come from HIS KB, never from the model's general
+# knowledge. On the day this was written the rule was enforced NOWHERE —
+# the 1,144-document library was wired into a single website-copy editor
+# while triage, after-visit summaries, patient message drafts, visit-prep
+# packs and the PROM recommender all called the model with no reference
+# material at all.
+#
+# Nothing caught it because an ungrounded prompt is not a runtime error. It
+# produces fluent, confident medicine from the wrong source — the failure
+# mode with no symptom. This gate makes forgetting impossible.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_clinical_grounding_wired.mjs ]; then
+    echo ""
+    echo "🔒 clinical grounding gate — every clinical path uses the practice KB..."
+    if node scripts/check_clinical_grounding_wired.mjs > /tmp/_kb_wired.log 2>&1 \
+       && node scripts/test_clinical_grounding.mjs > /tmp/_kb_verify.log 2>&1; then
+        tail -1 /tmp/_kb_wired.log
+        tail -1 /tmp/_kb_verify.log
+        echo "   ✅ clinical grounding gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the clinical grounding gate:"
+        tail -30 /tmp/_kb_wired.log /tmp/_kb_verify.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Date gate (codified 2026-08-13). Three endpoints validated dates with a
+# shape regex, so 2026-02-31 was accepted, stored, and then matched no
+# calendar query ever again — written, acknowledged and lost — and a
+# ?from=1900-01-01 trends request returned 46,000 points in 1.6 MB.
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Citation-integrity gate.
+#
+# The patient guides invite a reader to check the sources. That invitation
+# has to be true on every deploy, not on the days somebody remembers to
+# audit — the guides shipped for months with 556 references of which 85
+# were cited anywhere, one guide had two <li id="ref-14"> blocks so every
+# [14] resolved to the wrong paper, and none of it was visible until
+# someone went looking. Structural only, so it never depends on a network.
+# Run scripts/verify_citations.mjs (PubMed) before publishing new clinical
+# content.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_integrity.mjs ]; then
+    echo ""
+    echo "📚 citation-integrity gate..."
+    if node scripts/check_citation_integrity.mjs > /tmp/_cites.log 2>&1; then
+        head -2 /tmp/_cites.log
+        echo "   ✅ citation-integrity gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a citation does not hold up:"
+        cat /tmp/_cites.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Citation-SUPPORT report (advisory, never blocks).
+#
+# The integrity gate proves a citation resolves. This asks the harder
+# question — does the cited paper's own abstract support the SENTENCE it
+# sits behind, and if the sentence asserts a figure, does that figure
+# appear in the abstract. It found real mismatches: an endometrial-
+# sampling paper cited for AUB epidemiology, for coagulation testing and
+# for saline sonohysterography, and a stat card reading 90% while the
+# paper it cited reported 71-95%.
+#
+# Advisory on purpose. A claim can be supported by a paper that phrases it
+# differently, and only the full text settles some of them — blocking on
+# that would train everyone to skip the gate. It prints, every deploy, so
+# the number is never invisible.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_support.mjs ]; then
+    echo ""
+    echo "🔬 citation-support report (advisory)..."
+    node scripts/check_citation_support.mjs > /tmp/_cite_support.log 2>&1 || true
+    head -1 /tmp/_cite_support.log
+    echo "      full detail: node scripts/check_citation_support.mjs"
+fi
+
+# ---------------------------------------------------------------------------
+# Internal-link gate. A console whose own navigation points at a 404 reads
+# as broken software no matter how well the rest works — /admin/cases/ sat
+# like that for weeks while the nav highlighted it, and the single broken
+# link on the public site was the Education button on the 404 page, offered
+# to someone who had already hit a dead end.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_internal_links.mjs ]; then
+    echo ""
+    echo "🔗 internal-link gate..."
+    if node scripts/check_internal_links.mjs --strict > /tmp/_links.log 2>&1; then
+        head -1 /tmp/_links.log
+        echo "   ✅ internal-link gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a page links somewhere that does not exist:"
+        cat /tmp/_links.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Orders / results / estimates / referral gates.
+#
+# These three suites guard the parts of the system where a silent bug is a
+# CLINICAL or REGULATORY failure rather than a broken page:
+#   * orders     — a missed result is the classic outpatient negligence claim,
+#                  so the overdue clock and the critical-result escalation are
+#                  asserted rather than trusted.
+#   * gfe        — the No Surprises Act deadline ladder and the required
+#                  content elements (45 CFR 149.610). An estimate missing a
+#                  required element is worse than none: it looks compliant.
+#   * referrals  — an HMO/EPO member routed out of network is a denied claim
+#                  the patient pays. A false "ok" here has a dollar value.
+# ---------------------------------------------------------------------------
+for _suite in orders gfe referrals avs_education visit_type_alias note_extract undeliverable_domains notify_provider; do
+    if command -v node >/dev/null 2>&1 && [ -f "scripts/test_${_suite}.mjs" ]; then
+        echo ""
+        echo "🔒 ${_suite} gate..."
+        if node "scripts/test_${_suite}.mjs" > "/tmp/_${_suite}.log" 2>&1; then
+            tail -1 "/tmp/_${_suite}.log"
+            echo "   ✅ ${_suite} gate passed"
+        else
+            echo ""
+            echo "🛑 DEPLOY BLOCKED by the ${_suite} gate:"
+            tail -20 "/tmp/_${_suite}.log"
+            exit 1
+        fi
+    fi
+done
+
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_iso_date.mjs ]; then
+    echo ""
+    echo "🔒 date gate — real calendar dates and bounded windows..."
+    if node scripts/test_iso_date.mjs > /tmp/_iso_date.log 2>&1; then
+        tail -1 /tmp/_iso_date.log
+        echo "   ✅ date gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the date gate:"
+        tail -20 /tmp/_iso_date.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Inline-script gate (codified 2026-08-14). The public /portal/ page is
+# generated from a JS TEMPLATE LITERAL, so an escape written for the
+# BROWSER gets evaluated at generation time instead. One "\\n" that should
+# have been "\\\\n" put a real newline inside a string literal, which is a
+# hard syntax error — and a script that does not parse runs NONE of its
+# lines. The membership tiers, the comparison table, the evidence and the
+# disclosures all silently vanished from the page while the source looked
+# correct, the API was healthy, and every deploy passed. The owner reported
+# the model details were "left out"; nothing in the repo could have told
+# him otherwise, because the failure existed only in the GENERATED output.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_inline_scripts.mjs ]; then
+    echo ""
+    echo "🔒 inline-script gate — every inline <script> parses in a browser..."
+    if node scripts/check_inline_scripts.mjs > /tmp/_inline.log 2>&1; then
+        tail -1 /tmp/_inline.log
+        echo "   ✅ inline-script gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the inline-script gate:"
+        tail -25 /tmp/_inline.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Notification gate (codified 2026-08-14). The outbox was write-only: six
+# real notifications, three of them magic-link SIGN-IN emails, sat at
+# attempts=1 and were never retried. The judgement that makes a retry loop
+# safe is what counts as permanent — and the SES sandbox refusal reads like
+# a rejection while being transient at the account level, so classifying it
+# wrongly abandons exactly the mail that is about to start working.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_notification_flush.mjs ]; then
+    echo ""
+    echo "🔒 notification gate — retry backoff and failure classification..."
+    if node scripts/test_notification_flush.mjs > /tmp/_notif.log 2>&1; then
+        tail -1 /tmp/_notif.log
+        echo "   ✅ notification gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the notification gate:"
+        tail -20 /tmp/_notif.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Scheduling timezone gate (codified 2026-08-14). Every slot ever offered
+# was five hours early: dateStringToMs defaulted its offset to zero and
+# neither caller passed one, so a 9:00 a.m. block was stored as 09:00 UTC —
+# 4:00 a.m. in Chicago. It survived because the admin page formats
+# minute-of-day arithmetically ("09:00") while the patient page formats the
+# epoch ("4:45 AM"), so neither surface could see the other's number.
+# Covers both DST transitions, which a fixed -300 constant gets wrong twice
+# a year.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_scheduling_tz.mjs ]; then
+    echo ""
+    echo "🔒 scheduling timezone gate — slots land in practice hours..."
+    if node scripts/test_scheduling_tz.mjs > /tmp/_tz.log 2>&1; then
+        tail -1 /tmp/_tz.log
+        echo "   ✅ scheduling timezone gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the scheduling timezone gate:"
+        tail -20 /tmp/_tz.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
+# Triage auto-release gate (codified 2026-08-14). The admin panel promises
+# rows auto-release to the patient after four hours; the rule that makes
+# that safe is that URGENT rows never do. Pin both.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/test_triage_auto_release.mjs ]; then
+    echo ""
+    echo "🔒 triage auto-release gate — 4-hour clock, urgent always held..."
+    if node scripts/test_triage_auto_release.mjs > /tmp/_triage_ar.log 2>&1; then
+        tail -1 /tmp/_triage_ar.log
+        echo "   ✅ triage auto-release gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED by the triage auto-release gate:"
+        tail -20 /tmp/_triage_ar.log
+        exit 1
+    fi
+    echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # §0.4.1 / §0.4 — comprehensive regression audit (codified 2026-05-21).
 # Runs scripts/regression_audit.py against every known clinical surface BEFORE
 # the wrangler deploy. Exit code 0 = pass; 1 = block deploy.
@@ -417,9 +746,11 @@ if [ -z "${RSYNC_MISSING:-}" ]; then
         --exclude='wrangler.toml' \
         --exclude='.env' \
         --exclude='.env.*' \
-        --exclude='scripts/' \
-        --exclude='schema/' \
-        --exclude='docs/' \
+        --exclude='/scripts/' \
+        --exclude='/schema/' \
+        --exclude='/docs/' \
+        --exclude='/cite_audit/' \
+        --exclude='/.claude/' \
         --exclude='*.doc' \
         --exclude='*.docx' \
         --exclude='*.md' \
@@ -440,12 +771,130 @@ else
         --exclude='node_modules' --exclude='companion-app' --exclude='build' \
         --exclude='DerivedData' --exclude='.build' --exclude='*.xcuserstate' \
         --exclude='.DS_Store' --exclude='wrangler.toml' --exclude='.env' \
-        --exclude='.env.*' --exclude='scripts' --exclude='schema' --exclude='docs' \
+        --exclude='.env.*' --exclude='./scripts' --exclude='./schema' --exclude='./docs' \
+        --exclude='./cite_audit' --exclude='./.claude' \
         --exclude='*.doc' --exclude='*.docx' \
         --exclude='*.md' --exclude='*.sh' --exclude='*.py' \
         --exclude='.gitignore' --exclude='.gitattributes' \
         -cf - . ) | ( cd "$STAGE_DIR" && tar -xf - )
 fi
+
+# ---------------------------------------------------------------------------
+# Strip internal provenance comments from the PUBLIC copy (2026-08-20)
+# ---------------------------------------------------------------------------
+# The §0.8 anchors record which KB document and which field each claim came
+# from. They are genuinely useful IN THE REPO — the citation audit reads
+# them — and they have no business on the public internet: they publish
+# internal knowledge-base document ids, the field taxonomy (keyPoints,
+# criticalThresholds…) and the internal spec numbering, which together
+# describe how the content pipeline works to anyone who views source.
+#
+# 278 of them were being served. The repo keeps them; the deployed bytes
+# do not. Comments are removed from the STAGE only, so nothing in git
+# changes and the audit tooling still works.
+# ---------------------------------------------------------------------------
+STRIPPED=0
+while IFS= read -r f; do
+    if grep -q '<!-- §0.8 anchor\|kb_doc_id=' "$f" 2>/dev/null; then
+        # NOTE the [\s\S] rather than [^>]: the biggest leak was a 6,200-char
+        # "§0.8 KB-anchor manifest" comment carrying a JSON block of KB
+        # document ids, titles, fields and the claims quoted from them —
+        # and JSON contains '>' characters, so a [^>] pattern stopped at the
+        # first one and left the manifest in place.
+        perl -0pi -e 's/<!--\s*§0\.8[\s\S]*?-->//gs; s/<!--[^>]*kb_doc_id[\s\S]*?-->//gs' "$f"
+        STRIPPED=$((STRIPPED+1))
+    fi
+done < <(find "$STAGE_DIR" -name '*.html' -not -path '*/node_modules/*')
+if [ "$STRIPPED" -gt 0 ]; then
+    echo "🔒 stripped internal KB provenance comments from $STRIPPED staged page(s)"
+    if grep -rq 'kb_doc_id=' "$STAGE_DIR" --include='*.html' 2>/dev/null; then
+        echo "🛑 DEPLOY BLOCKED — internal kb_doc_id references still present in the stage after stripping."
+        grep -rl 'kb_doc_id=' "$STAGE_DIR" --include='*.html' | head -5
+        exit 1
+    fi
+fi
+
+# Strip ALL authoring comments from the PUBLIC copy (2026-08-20)
+# ---------------------------------------------------------------------------
+# The block above removed the §0.8 / kb_doc_id provenance comments and
+# nothing else, so everything else this repo writes into markup was still
+# being served: which gate enforces which invariant, where the hero
+# fingerprint lock lives, why each breakpoint is the number it is, what
+# every data- attribute drives, and the reasoning behind each fix. On
+# index.html alone that was 71 comments and 14.6 KB — a design document,
+# published, against the owner's explicit directive that a visitor must not
+# be able to learn how the site works.
+#
+# The repo keeps every comment (that is how the next session avoids
+# re-breaking things); the STAGE loses them. The stripper skips <script>
+# and <style> regions, because a JS string may contain the characters
+# "<!--" and a naive regex would eat live code from there to the next
+# "-->". See scripts/strip_html_comments.mjs and its --self-test.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/strip_html_comments.mjs ]; then
+    if ! node scripts/strip_html_comments.mjs --self-test > /tmp/_strip_selftest.log 2>&1; then
+        echo "🛑 DEPLOY BLOCKED — strip_html_comments self-test failed; refusing to run it over the stage."
+        cat /tmp/_strip_selftest.log
+        exit 1
+    fi
+    echo -n "🔒 "
+    node scripts/strip_html_comments.mjs "$STAGE_DIR"
+fi
+
+# ---------------------------------------------------------------------------
+# Stage-integrity assertion (added 2026-08-13)
+# ---------------------------------------------------------------------------
+# The exclude list above is a set of UNANCHORED patterns, so `docs/` did not
+# mean "the docs directory at the repo root" — it meant "any directory named
+# docs, at any depth". `functions/api/v1/admin/compliance/docs/` matched.
+# Both of its handlers were silently dropped from every deploy since that
+# endpoint shipped, and GET /api/v1/admin/compliance/docs returned 404 in
+# production while existing, complete, in the repo. Nothing reported it: the
+# staging step has no idea which files were supposed to survive.
+#
+# The three directory excludes are anchored now (`/docs/`), but the real fix
+# is to stop trusting the pattern list. Every file under functions/ is
+# deployable by definition — that is what the directory IS — so any
+# discrepancy between the repo and the stage is a bug in the exclude list,
+# and it blocks the deploy rather than shipping a hole in the API.
+REPO_FN_COUNT=$(find "$REPO_ROOT/functions" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | wc -l | tr -d ' ')
+STAGE_FN_COUNT=$(find "$STAGE_DIR/functions" -type f \( -name '*.js' -o -name '*.mjs' \) 2>/dev/null | wc -l | tr -d ' ')
+if [ "$REPO_FN_COUNT" != "$STAGE_FN_COUNT" ]; then
+    echo ""
+    echo "🛑 DEPLOY BLOCKED — the staging filter dropped Pages Functions."
+    echo "   repo:  $REPO_FN_COUNT handler(s) under functions/"
+    echo "   stage: $STAGE_FN_COUNT"
+    echo "   Missing (these would 404 in production):"
+    diff \
+        <(cd "$REPO_ROOT" && find functions -type f \( -name '*.js' -o -name '*.mjs' \) | sort) \
+        <(cd "$STAGE_DIR"  && find functions -type f \( -name '*.js' -o -name '*.mjs' \) | sort) \
+        | grep '^<' | sed 's/^< /      /'
+    echo "   An exclude pattern in this script is matching a path under functions/."
+    echo "   Anchor it with a leading slash (rsync) or ./ (tar)."
+    exit 1
+fi
+echo "   ✅ stage integrity: all $REPO_FN_COUNT Function handlers staged"
+
+# ---------------------------------------------------------------------------
+# Working directories must never ship (added 2026-08-14)
+# ---------------------------------------------------------------------------
+# `cite_audit/` and `.claude/` were being published. Among them,
+# https://mountzara.com/cite_audit/authoritative-cv-2026-08.txt served the
+# owner's full CV including a mobile number he had deliberately kept off
+# the published CV page, and /.claude/settings.json returned 200.
+#
+# Asserted rather than trusted: the exclude list is the thing that was
+# wrong, so checking the exclude list proves nothing. This checks the STAGE.
+for LEAK in cite_audit .claude docs scripts schema; do
+    if [ -e "$STAGE_DIR/$LEAK" ]; then
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — '$LEAK/' is in the staged upload and must never be public."
+        echo "   Found: $(find "$STAGE_DIR/$LEAK" -type f | head -5 | sed "s|$STAGE_DIR/||" | tr '\n' ' ')"
+        echo "   Anchor its exclude in BOTH staging paths in this script."
+        exit 1
+    fi
+done
+echo "   ✅ no working directories staged (cite_audit, .claude, docs, scripts, schema)"
 
 # ---------------------------------------------------------------------------
 # Oversized-file prune (added 2026-07-28)
@@ -508,15 +957,20 @@ echo "   mountzara.com → HTTP $HTTP"
 # the Pages deploy lands, since their content lives in R2 and is served
 # by /api/posts. A failure here is a hard error — clinical content that
 # has lost its §0.8 manifest must be re-anchored immediately.
+# 2026-09-02 — this gate used to REQUIRE a KB-anchor manifest inside every
+# R2-served post. That manifest carried the owner's local filesystem paths and
+# private .docx filenames and was stripped from all 15 posts by his directive,
+# so the gate now enforces the opposite: R2 posts must be free of build
+# manifests and AI notices, and must each carry the medical disclaimer.
+# Claim-level provenance stays enforced by the citation-integrity and
+# ref-popover gates.
 if [ -z "${DEPLOY_SKIP_KB_GATE:-}" ]; then
     echo ""
-    echo "🔒 §0.8.1 R2-post gate — verifying R2-served clinical posts..."
-    if ! python3 scripts/verify_kb_anchoring.py --r2-posts ; then
+    echo "🔒 R2-post leakage gate — live posts free of internals, disclaimer present..."
+    if ! python3 scripts/audit_no_internal_leakage.py --r2-posts ; then
         echo ""
-        echo "🛑 R2-POST GATE FAILED — at least one R2-served clinical post"
-        echo "   is missing its §0.8 KB-anchor manifest. Re-anchor with"
-        echo "   scripts/_anchor_all_clinical_posts.py (and _anchor_w20_post.py)"
-        echo "   then re-run this deploy."
+        echo "🛑 R2-POST LEAKAGE GATE FAILED — a live post carries build"
+        echo "   internals or an AI notice, or lost its medical disclaimer."
         exit 1
     fi
 fi
@@ -629,6 +1083,30 @@ else
     echo "🛑 PRODUCTION CANARY FAILED — the live site is NOT serving this build."
     exit 1
 fi
+
+# ---------------------------------------------------------------------------
+# Public-header assertion (post-deploy, live).
+#
+# _headers is not enough and never was: Cloudflare does not apply it to a
+# response a FUNCTION returns, so /education/* served twelve clinical guides
+# with no CSP, no HSTS and no frame protection while the file that
+# "configured" them looked correct. /portal/* hit the identical trap
+# earlier. Configuration is not evidence — this reads the live headers.
+# ---------------------------------------------------------------------------
+if command -v node >/dev/null 2>&1 && [ -f scripts/check_public_headers.mjs ]; then
+    echo ""
+    echo "🛡  public-header assertion..."
+    if MZ_ADMIN_BASIC="${MZ_ADMIN_BASIC:-}" node scripts/check_public_headers.mjs --strict > /tmp/_pubhdr.log 2>&1; then
+        tail -1 /tmp/_pubhdr.log
+        echo "   ✅ public headers verified on the live site"
+    else
+        echo ""
+        echo "🛑 A public route is under-protected:"
+        cat /tmp/_pubhdr.log
+        exit 1
+    fi
+fi
+
 
 echo "🔍 Runtime-CSS audit — getComputedStyle assertions on live site..."
         if "$PY" scripts/audit_runtime_css.py homepage > /tmp/_runtime_css_audit.log 2>&1; then
@@ -809,16 +1287,353 @@ fi
 # measured backdrop is what the reader actually sees.
 # Skip with DEPLOY_SKIP_CONTRAST_AUDIT=1.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# DARK-SURFACE GATE (2026-08-25) — the site is light, site-wide.
+# ---------------------------------------------------------------------------
+# Static, colour-based companion to the contrast gate. The light conversion
+# shipped three times looking finished while a whole FAMILY of surface stayed
+# dark — tokens, then gradient canvases, then dialog/panel neutrals, then the
+# pages built inside Pages Functions that no file sweep touches. This checks
+# by COLOUR rather than by name, so a dark ground fails wherever it is written
+# and in whatever syntax. See SYSTEM_MAP §8.0.0.
+# ---------------------------------------------------------------------------
+# PATIENT-JOURNEY GATE (2026-08-25)
+# ---------------------------------------------------------------------------
+# audit_route_render.py proves a route LOADS. It cannot tell you whether a
+# patient can get from one step to the next: a contact modal that opens onto
+# no email, a portal door that dead-ends instead of offering sign-in, an
+# education index whose cards link nowhere — each renders perfectly and passes
+# a render check while the journey is broken. This walks the path and asserts
+# what a patient must be able to DO at each step. Public surfaces only, so it
+# needs no credentials.
+# ---------------------------------------------------------------------------
+# CITATION EVIDENCE GATE (2026-08-25)
+# ---------------------------------------------------------------------------
+# verify_citations.mjs proves each PMID resolves to the paper the tooltip
+# names (esummary: author, title, year). This proves the FIGURES: every
+# claim carrying a number is checked against the paper's own abstract, held
+# in scripts/pubmed_corpus.json.
+#
+# It blocks on one thing only — a cited PMID with no abstract in the corpus.
+# That has to block, because verification would otherwise skip it and report
+# FEWER findings, which reads exactly like progress. The unsupported figures
+# themselves are advisory: choosing what supports a medical claim is a
+# clinician's judgement, and a gate that blocks on 87 of those is a gate
+# everyone learns to skip.
+#
+# Offline and deterministic by construction: same tree, same result. Refresh
+# the corpus deliberately with --refresh and commit the diff.
+if [ -f scripts/cite_verify_pubmed.mjs ]; then
+    echo ""
+    echo "🔍 Citation evidence gate — every figure against the paper's own abstract..."
+    if node scripts/cite_verify_pubmed.mjs > /tmp/_cite_evidence.log 2>&1; then
+        tail -4 /tmp/_cite_evidence.log
+        echo "   ✅ citation evidence gate passed"
+    else
+        cat /tmp/_cite_evidence.log
+        echo ""
+        echo "   Full log: /tmp/_cite_evidence.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# COURSE-SCHEMA GATE (2026-09-02) — Mount Zara's Reflections pedagogy contract.
+# ---------------------------------------------------------------------------
+# The owner's MSAEd principles are the ARCHITECTURE of the /learn/ courses:
+# every lesson opens in lived experience, carries teaching lifted from the
+# approved library, a private reflection, and an addable visit question;
+# checks correct real myths with grounded sources; counseling prose stays
+# dose-free and jargon-free; manifests and rendered pages cannot drift
+# (regeneration must be a no-op). Hermetic + offline.
+if [ -f scripts/audit_course_schema.py ]; then
+    echo ""
+    echo "🔍 Course-schema gate — the Reflections pedagogy contract..."
+    if python3 scripts/audit_course_schema.py > /tmp/_course_schema.log 2>&1; then
+        tail -1 /tmp/_course_schema.log
+        echo "   ✅ course-schema gate passed"
+    else
+        cat /tmp/_course_schema.log
+        echo ""
+        echo "   Full log: /tmp/_course_schema.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# RUNTIME GATE POOL (2026-09-02) — the browser gates run CONCURRENTLY.
+# ---------------------------------------------------------------------------
+# The serial chain had grown to ~1 hour per deploy (each runtime gate walks
+# up to 92 routes in its own browser, one after another) — which turned a
+# one-line CSS fix into an hour of the owner staring at the broken live
+# version. Every gate here is an independent, read-only audit of the SAME
+# live site, so they launch together and each result block below waits for
+# its own gate and reports with exactly the messaging it always had, in the
+# same order. Wall time becomes the slowest single gate, not the sum.
+declare -A POOL_PID=()
+pool_launch() {
+    local name="$1"; shift
+    # set +e inside the subshell: with -e inherited, a failing audit would
+    # abort the subshell BEFORE the exit file is written.
+    ( set +e; "$@" > "/tmp/_${name}.log" 2>&1; echo $? > "/tmp/_${name}.exit" ) &
+    POOL_PID[$name]=$!
+}
+# pool_wait MUST run in the main shell, never inside $(...): a command
+# substitution is a subshell, and a subshell cannot `wait` on the parent's
+# children — the wait returns instantly and the exit file is read before
+# the gate finished (found by reproduction 2026-09-02: every gate
+# false-failed). Wait first, then read the recorded status.
+pool_wait() {
+    local name="$1"
+    if [ -n "${POOL_PID[$name]:-}" ]; then wait "${POOL_PID[$name]}" 2>/dev/null || true; fi
+}
+pool_rc() {
+    cat "/tmp/_${1}.exit" 2>/dev/null || echo 1
+}
+if [ -f scripts/audit_patient_journey.py ]; then
+    pool_launch patient_journey python3 scripts/audit_patient_journey.py https://mountzara.com
+fi
+if [ -f scripts/audit_page_canvas.py ]; then
+    pool_launch page_canvas python3 scripts/audit_page_canvas.py https://mountzara.com
+fi
+if [ -f scripts/audit_light_text.py ]; then
+    pool_launch light_text python3 scripts/audit_light_text.py https://mountzara.com
+fi
 if [ -z "${DEPLOY_SKIP_CONTRAST_AUDIT:-}" ] && [ -f scripts/audit_contrast_pixels.py ]; then
+    pool_launch contrast_audit python3 scripts/audit_contrast_pixels.py https://mountzara.com --open-modals
+fi
+if [ -f scripts/audit_text_width.py ]; then
+    pool_launch text_width python3 scripts/audit_text_width.py https://mountzara.com
+fi
+if [ -f scripts/audit_hero_motion.py ]; then
+    pool_launch hero_motion python3 scripts/audit_hero_motion.py https://mountzara.com
+fi
+if [ -z "${DEPLOY_SKIP_NAV_AUDIT:-}" ] && command -v python3 >/dev/null 2>&1 && [ -f scripts/audit_nav_and_reading.py ]; then
+    pool_launch nav_read python3 scripts/audit_nav_and_reading.py "https://mountzara.com/"
+fi
+echo ""
+echo "⏱  Runtime gate pool launched: ${!POOL_PID[*]}"
+
+if [ -n "${POOL_PID[patient_journey]:-}" ]; then
+    echo ""
+    echo "🔍 Patient-journey gate — the path a patient is invited onto, walked..."
+    pool_wait patient_journey
+    if [ "$(pool_rc patient_journey)" = "0" ]; then
+        tail -1 /tmp/_patient_journey.log
+        echo "   ✅ patient-journey gate passed"
+    else
+        cat /tmp/_patient_journey.log
+        echo ""
+        echo "   Full log: /tmp/_patient_journey.log"
+        exit 1
+    fi
+fi
+
+if [ -f scripts/audit_dark_surfaces.py ]; then
+    echo ""
+    echo "🔍 Dark-surface gate — no dark grounds outside brand violets and scrims..."
+    if python3 scripts/audit_dark_surfaces.py > /tmp/_dark_surfaces.log 2>&1; then
+        tail -1 /tmp/_dark_surfaces.log
+        echo "   ✅ dark-surface gate passed"
+    else
+        cat /tmp/_dark_surfaces.log
+        echo ""
+        echo "   Full log: /tmp/_dark_surfaces.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# REF-POPOVER GATE (2026-09-01) — every citation popover carries its content.
+# ---------------------------------------------------------------------------
+# The owner's standing rule: hovering an inline citation shows the paper's
+# title, PMID and the curated plain-language summary — on education guides,
+# evidence briefs, trending posts, and every modal they open. 826 education
+# popovers shipped as bare one-liners and no gate noticed. The RULES live in
+# ONE place — functions/_lib/post_format.js (auditPopoverSurface), the same
+# module the production publish gate runs — per the owner's 2026-09-01
+# directive that popover requirements apply uniformly site-wide from a
+# single source. This script is only the walker: it derives the surfaces
+# (education pages from the tree, posts from the live API — a scan that
+# covers zero posts FAILS, it does not pass) and checks every popover
+# against the committed PubMed corpus (structure, sourced summaries, no
+# abstract dumps, metadata faithful to PubMed). Summaries that don't exist
+# yet are advisory: writing "what a paper shows" is clinical content for
+# the owner, not something a gate may author to silence itself.
+if [ -f scripts/audit_ref_popovers.mjs ]; then
+    echo ""
+    echo "🔍 Ref-popover gate — every citation hover carries title, PMID, summary..."
+    if node scripts/audit_ref_popovers.mjs > /tmp/_ref_popovers.log 2>&1; then
+        tail -2 /tmp/_ref_popovers.log
+        echo "   ✅ ref-popover gate passed"
+    else
+        cat /tmp/_ref_popovers.log
+        echo ""
+        echo "   Full log: /tmp/_ref_popovers.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# NO-DOSING GATE (2026-09-01) — owner directive: no dosing in counseling prose.
+# ---------------------------------------------------------------------------
+# "I NEVER want you to post actual dosing and things that really should be
+# reserved for private patient-doctor decisions about management." Counseling
+# prose is dose-free everywhere; text attributed to a specific paper (verbatim
+# abstracts, deep-dive analyses, cite cards, popovers, ref-list entries) is
+# research reporting and keeps the study's own facts. Also enforces the
+# standing medico-legal disclaimer (mz-eddisclaimer) on every educational
+# surface. Surfaces derived (tree + posts API, fails loud). Worker twin:
+# auditDosingLanguage in functions/_lib/post_format.js.
+# No internal machinery on public surfaces (2026-09-02). The owner found an
+# AI-provenance aside and build manifests carrying his local filesystem paths
+# and private .docx filenames on the live site; both had to be stripped by
+# hand from 24 pages and 15 posts. This gate stops either from returning.
+if [ -f scripts/audit_no_internal_leakage.py ]; then
+    echo ""
+    echo "🔍 Internal-leakage gate — no AI notice, no local paths, no build manifests..."
+    if python3 scripts/audit_no_internal_leakage.py; then
+        echo "   ✅ internal-leakage gate passed"
+    else
+        echo ""
+        echo "🛑 INTERNAL-LEAKAGE GATE FAILED — see the list above."
+        exit 1
+    fi
+fi
+
+if [ -f scripts/audit_no_dosing.py ]; then
+    echo ""
+    echo "🔍 No-dosing gate — counseling prose dose-free, disclaimers present..."
+    if python3 scripts/audit_no_dosing.py > /tmp/_no_dosing.log 2>&1; then
+        tail -1 /tmp/_no_dosing.log
+        echo "   ✅ no-dosing gate passed"
+    else
+        cat /tmp/_no_dosing.log
+        echo ""
+        echo "   Full log: /tmp/_no_dosing.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# PAGE-CANVAS GATE (2026-09-01) — every route's ground is opaque paper.
+# ---------------------------------------------------------------------------
+# The light conversion left html/body TRANSPARENT on most routes (only tint
+# gradients painted), so the ground became the visitor's browser canvas —
+# grey in dark-mode Safari; the owner saw "an ugly grey". Runtime check over
+# every derived route: the document must compute an OPAQUE paper-family
+# ground. fix_page_canvas.py appends the guard style; this proves the
+# rendered result.
+if [ -n "${POOL_PID[page_canvas]:-}" ]; then
+    echo ""
+    echo "🔍 Page-canvas gate — every route grounds on opaque paper..."
+    pool_wait page_canvas
+    if [ "$(pool_rc page_canvas)" = "0" ]; then
+        tail -1 /tmp/_page_canvas.log
+        echo "   ✅ page-canvas gate passed"
+    else
+        cat /tmp/_page_canvas.log
+        echo ""
+        echo "   Full log: /tmp/_page_canvas.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# LIGHT-TEXT GATE (2026-08-25) — no text the same brightness as its ground.
+# ---------------------------------------------------------------------------
+# Runtime companion to the dark-surface gate, and the one that covers BREADTH.
+# audit_contrast_pixels.py is more rigorous but slow enough that it only ever
+# ran over nine routes; the light conversion broke text on eighty. This does
+# one paint per route with modals forced open, so "is any text invisible
+# anywhere on the site" is answerable on every deploy. It skips text over a
+# photograph (the /about/ cover) and text on violet buttons.
+if [ -n "${POOL_PID[light_text]:-}" ]; then
+    echo ""
+    echo "🔍 Light-text gate — no text matching its own ground, incl. modals..."
+    pool_wait light_text
+    if [ "$(pool_rc light_text)" = "0" ]; then
+        tail -1 /tmp/_light_text.log
+        echo "   ✅ light-text gate passed"
+    else
+        cat /tmp/_light_text.log
+        echo ""
+        echo "   Full log: /tmp/_light_text.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# TEXT-WIDTH GATE (2026-09-02) — text uses the width it is given.
+# ---------------------------------------------------------------------------
+# Owner report: "text wraps to next line in middle of page, doesn't use the
+# entire width where it should — widespread." Measures true line-box
+# geometry on every derived route at 1440px; flags off-center dead-width
+# columns, premature mid-box wraps, tiny measures. The 2026-09-02 sweep's
+# headline cause: 20 education pages said class="key-facts" while the CSS
+# styles .facts — the stat grid never applied. data-widthok annotates
+# deliberate placements.
+if [ -n "${POOL_PID[text_width]:-}" ]; then
+    echo ""
+    echo "🔍 Text-width gate — no mid-page wraps, no dead-width columns..."
+    pool_wait text_width
+    if [ "$(pool_rc text_width)" = "0" ]; then
+        tail -1 /tmp/_text_width.log
+        echo "   ✅ text-width gate passed"
+    else
+        cat /tmp/_text_width.log
+        echo ""
+        echo "   Full log: /tmp/_text_width.log"
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# HERO-MOTION GATE (2026-09-02) — the opening animation runs and completes.
+# ---------------------------------------------------------------------------
+# The fingerprint lock protects the animation CODE; this proves the RENDERED
+# lifecycle on desktop + iPhone emulation: media decoded, visible motion,
+# last-frame handoff within 16s, no stuck intro overlay, no page errors.
+# Owner: "the opening page animation is stalling AGAIN — prevent this from
+# breaking after every revision."
+if [ -n "${POOL_PID[hero_motion]:-}" ]; then
+    echo ""
+    echo "🔍 Hero-motion gate — the opening animation runs and completes..."
+    pool_wait hero_motion
+    if [ "$(pool_rc hero_motion)" = "0" ]; then
+        tail -1 /tmp/_hero_motion.log
+        echo "   ✅ hero-motion gate passed"
+    else
+        cat /tmp/_hero_motion.log
+        echo ""
+        echo "   Full log: /tmp/_hero_motion.log"
+        exit 1
+    fi
+fi
+
+if [ -n "${POOL_PID[contrast_audit]:-}" ]; then
     echo ""
     echo "🔍 Contrast gate — WCAG ratios measured from rendered pixels..."
-    if python3 scripts/audit_contrast_pixels.py https://mountzara.com > /tmp/_contrast_audit.log 2>&1; then
+    pool_wait contrast_audit
+    if [ "$(pool_rc contrast_audit)" = "0" ]; then
         tail -1 /tmp/_contrast_audit.log
         echo "   ✅ contrast gate passed"
     else
         echo ""
-        echo "🛑 CONTRAST GATE FAILED — text on this site does not meet WCAG"
-        echo "   4.5:1 (3:1 for large text) against its real painted backdrop:"
+        # The audit exits non-zero for two different reasons: real failing
+        # ratios, and pages it could not measure (load error, engine crash
+        # mid-capture). Both must block — a gate that saw no pixels has
+        # proved nothing — but naming the wrong one sends the next person
+        # hunting a colour bug that does not exist. 2026-08-20: a WebKit
+        # "Target crashed" was reported here as "does not meet WCAG".
+        if grep -qE 'CAPTURE CRASHED|never loaded|NOTHING was measured' /tmp/_contrast_audit.log; then
+            echo "🛑 CONTRAST GATE COULD NOT MEASURE THE SITE — this is not a"
+            echo "   contrast verdict; the engine failed to capture some pages:"
+            grep -E 'CAPTURE CRASHED|never loaded|NOTHING was measured' /tmp/_contrast_audit.log | head -10
+        else
+            echo "🛑 CONTRAST GATE FAILED — text on this site does not meet WCAG"
+            echo "   4.5:1 (3:1 for large text) against its real painted backdrop:"
+        fi
         grep -E '✗|:1 \(need' /tmp/_contrast_audit.log | head -20
         echo ""
         echo "   Full log: /tmp/_contrast_audit.log"
@@ -834,6 +1649,42 @@ fi
 # video type, faststart moov, and a real ffmpeg decode of the first frames.
 # Skip with DEPLOY_SKIP_VIDEO_SRC_AUDIT=1.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Nav + reading-sheet gate (2026-08-20)
+# ---------------------------------------------------------------------------
+# Added after a nav consolidation shipped with `.mobile-toggle{display:none}`
+# as the LAST rule for that selector. The hamburger was invisible at every
+# width and there was NO navigation below 1180px. Every other gate passed —
+# fact-sync, contrast, visual, route-render, public headers, the lot —
+# because not one of them asks whether a person can reach the menu.
+#
+# It also covers the reading sheet, whose entire value is typographic: a
+# silent fallback to card sizing leaves the feature apparently working while
+# defeating its purpose.
+#
+# WebKit, not Chromium: this VM's proxy resets Chromium connections (the
+# same note is in audit_visual_runtime.py). A transport failure reports
+# UNJUDGEABLE and exits 0 — proving the site is reachable is the canary's
+# job, and blocking every deploy on a proxy quirk would make this useless.
+# Skip with DEPLOY_SKIP_NAV_AUDIT=1.
+# ---------------------------------------------------------------------------
+if [ -n "${POOL_PID[nav_read]:-}" ]; then
+    echo ""
+    echo "🔍 Nav + reading-sheet gate — menu reachable, sheet typography intact..."
+    pool_wait nav_read
+    if [ "$(pool_rc nav_read)" = "0" ]; then
+        tail -2 /tmp/_nav_read.log
+        echo "   ✅ nav + reading-sheet gate passed"
+    else
+        echo ""
+        echo "🛑 NAV / READING-SHEET GATE FAILED — the live site's navigation or"
+        echo "   reading sheet is broken:"
+        grep -E '✗|FAILED' /tmp/_nav_read.log | head -12
+        echo "   Override: DEPLOY_SKIP_NAV_AUDIT=1 ./scripts/deploy-prod.sh '<reason>'"
+        exit 1
+    fi
+fi
+
 if [ -z "${DEPLOY_SKIP_VIDEO_SRC_AUDIT:-}" ] && command -v node >/dev/null 2>&1 && [ -f scripts/audit_video_sources.mjs ]; then
     echo ""
     echo "🔍 Video-source gate — every reel URL playable at file level..."

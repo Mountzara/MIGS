@@ -23,6 +23,7 @@
 
 import { VISIT_TYPES } from "./visit_types.js";
 import { callClaude, AnthropicError } from "./anthropic.js";
+import { groundClinical, groundingInstruction, verifyGrounding } from "./clinical_grounding.js";
 
 // 2026-05-27 v2.0 — added requires_chaperone awareness per Phase 17 R1.
 // The Joshi & Welch (2023) GU-exam chaperone rule applies to any CBG/MIGS
@@ -384,10 +385,21 @@ export async function runTriage(env, { triage_id, dob, sections }) {
     const deid = deidentifyIntake({ triage_id, dob, sections });
     const catalog = visitTypeCatalogForPrompt();
     const user = buildUserMessage(deid, catalog);
+
+    // Ground the clinical REASONING in the practice library. Triage decides
+    // visit length and flags perioperative risk, and the rationale it writes
+    // is read by him — so the medicine behind it must come from his
+    // references rather than the model's training. Unlike the patient-facing
+    // paths this does not block: he reviews every triage row before release,
+    // and refusing to triage would stall booking entirely. It records what
+    // grounded the decision so a weak one is visible.
+    const kbQuery = String(user).slice(0, 3000);
+    const kb = await groundClinical(env, { kind: "intake_triage", query: kbQuery });
+
     const t0 = Date.now();
     const response = await callClaude(env, {
         system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: user }],
+        messages: [{ role: "user", content: kb.grounded ? `${groundingInstruction(kb)}\n\n---\n\n${user}` : user }],
         max_tokens: 1024,
         temperature: 0,
     });
@@ -399,8 +411,29 @@ export async function runTriage(env, { triage_id, dob, sections }) {
     if (validated.error) {
         throw new Error(`triage_validate_failed: ${validated.error}`);
     }
+    // Record what grounded the decision. Triage is not blocked on this —
+    // he reviews every row before release, and refusing to triage would
+    // stall booking outright — but a decision whose rationale cites
+    // nothing is exactly the one he should read most carefully, and that
+    // is only visible if it is recorded.
+    const groundingVerdict = kb.grounded
+        ? verifyGrounding(String(validated.rationale || ""), kb)
+        : null;
+
     return {
         decision: validated,
+        grounding: {
+            grounded: Boolean(kb.grounded),
+            reason: kb.reason,
+            citations: kb.citations || [],
+            kb_coverage: Math.round((kb.coverage || 0) * 100) / 100,
+            verified: groundingVerdict ? groundingVerdict.ok : false,
+            summary: groundingVerdict
+                ? groundingVerdict.summary
+                : "This triage was decided without support from the practice library — read the rationale before releasing it.",
+            uncited: groundingVerdict?.uncited || [],
+            fabricated: groundingVerdict?.fabricated || [],
+        },
         prompt_version: TRIAGE_PROMPT_VERSION,
         latency_ms: Date.now() - t0,
         anthropic_latency_ms: response.latency_ms,

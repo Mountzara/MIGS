@@ -20,7 +20,7 @@
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
+import { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, auditDosingLanguage, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness } from "../functions/_lib/post_format.js";
 import { onRequest } from "../functions/api/posts/[[path]].js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -165,6 +165,136 @@ if (healRes.ok) {
         "popover summary: a concise 53c foundational-citation descriptor (W21 standard) PASSES");
     A(auditPopoverSummaries({ kind: "claim_proposal", body_html: pop("BACKGROUND: x") }).ok,
         "popover summary: non-clinical kind exempt");
+}
+// ---------------- POPOVER STRUCTURE + SOURCING (2026-09-01) ----------------
+{
+    // An UNSTRUCTURED popover — bare text, no mz-ref-pop-title — must fail.
+    // 826 education popovers and a published brief shipped exactly this and
+    // the pre-2026-09-01 audit was blind to it (it only inspected popovers
+    // that already carried a finding span in the current schema).
+    const bare = `<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/42113611/">42113611</a><span class="mz-ref-pop" role="tooltip">Some paper title, Journal 2026 · PMID 42113611</span></sup>`;
+    const rb = auditPopoverSummaries({ kind: "blog", body_html: bare });
+    A(!rb.ok && rb.problems.some((p) => p.includes("unstructured") && p.includes("42113611")),
+        "popover structure: a bare unstructured popover FAILS");
+
+    // The W20-era class schema (mz-ref-title, no -pop- infix) is unstructured
+    // by the spec even though it carries content.
+    const oldSchema = `<sup class="mz-ref" tabindex="0" data-ref="1"><a href="#mz-ref-42113611">[1]</a><span class="mz-ref-pop" role="tooltip"><span class="mz-ref-design">Peer-reviewed paper · 2026</span><span class="mz-ref-title">vNOTES hysterectomy in class III obesity.</span><span class="mz-ref-meta">Ceska Gynekol · 2026</span><span class="mz-ref-finding">Among women with class III obesity, vNOTES eliminated conversion to laparotomy (0% vs 23.5%; P=0.035), with similar major-complication rates.</span></span></sup>`;
+    const ro = auditPopoverSummaries({ kind: "blog", body_html: oldSchema });
+    A(!ro.ok && ro.problems.some((p) => p.includes("unstructured")),
+        "popover structure: the W20-era class schema FAILS as unstructured");
+    // …and the heal normalises it — a pure class rename, text untouched.
+    const healedOld = healPopoverSummaries(oldSchema);
+    A(healedOld.changed === 1 && auditPopoverSummaries({ kind: "blog", body_html: healedOld.healed }).ok,
+        "popover heal: old-schema classes renamed to spec, audit passes");
+    const textOf = (s) => s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    A(textOf(healedOld.healed) === textOf(oldSchema),
+        "popover heal: schema rename changes ZERO visible text");
+
+    // A structured popover MISSING its finding, while the post's own cite
+    // card carries the paper's lens line, must fail — and the heal must wire
+    // the lens through (grounded sourcing, no invented content).
+    const findingLess = `<article class="mz-cite-card" id="mz-cite-42216742"><h3 class="mz-cite-title">T</h3><p class="mz-cite-fits"><strong>DO + CBG/MIGS lens — Frame: access: </strong>Same-day discharge after vNOTES hysterectomy was achieved in 78% of patients without a rise in readmissions.</p></article>` +
+        `<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/42216742/">42216742</a><span class="mz-ref-pop" id="ref-pop-42216742"><span class="mz-ref-pop-title">T</span><span class="mz-ref-pop-meta">J · 2026</span></span></sup>`;
+    const rf = auditPopoverSummaries({ kind: "blog", body_html: findingLess });
+    A(!rf.ok && rf.problems.some((p) => p.includes("42216742") && p.includes("missing")),
+        "popover sourcing: missing finding with a cite-card lens available FAILS");
+    const healedF = healPopoverSummaries(findingLess);
+    A(healedF.changed === 1 && /mz-ref-pop-finding">Same-day discharge/.test(healedF.healed),
+        "popover heal: missing finding filled from the post's own cite-card lens");
+    A(auditPopoverSummaries({ kind: "blog", body_html: healedF.healed }).ok,
+        "popover heal: filled output passes the audit");
+
+    // A missing finding with NO grounded source anywhere in the post is NOT
+    // a worker-gate failure (the deploy-side gate reports it as advisory for
+    // the clinician — a gate must never author clinical content to pass).
+    const noSource = `<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/42999999/">42999999</a><span class="mz-ref-pop" id="ref-pop-42999999"><span class="mz-ref-pop-title">T</span><span class="mz-ref-pop-meta">J</span></span></sup>`;
+    A(auditPopoverSummaries({ kind: "blog", body_html: noSource }).ok,
+        "popover sourcing: missing finding with NO grounded source is advisory, not a failure");
+    A(healPopoverSummaries(noSource).changed === 0,
+        "popover heal: nothing is invented when no grounded source exists");
+
+    // An author list is not a usable lens (mirrors apply_inline_refs rules).
+    const authorLens = findingLess.replace(/Same-day discharge[^<]*/, "Kizildemir YZ, İncebıyık M.");
+    A(healPopoverSummaries(authorLens).changed === 0,
+        "popover heal: an author-list lens line is rejected as a finding source");
+}
+// ---------------- POPOVER METADATA + VERBATIM DUMPS (one rulebook, 2026-09-01) ----------------
+{
+    const sup = (title, meta, finding) =>
+        `<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/42216742/">42216742</a><span class="mz-ref-pop" id="ref-pop-42216742"><span class="mz-ref-pop-title">${title}</span><span class="mz-ref-pop-meta">${meta}</span>${finding ? `<span class="mz-ref-pop-finding">${finding}</span>` : ""}</span></sup>`;
+    const meta = { 42216742: { title: "Survival after minimally invasive radical hysterectomy.", journal: "Obstetrics and gynecology", journal_abbrev: "Obstet Gynecol", years: ["2025", "2026"], abstract: "BACKGROUND: Radical hysterectomy is standard. RESULTS: Five-year survival favored open surgery in this cohort of 631 patients across 33 centers worldwide." } };
+    const abstracts = { 42216742: meta[42216742].abstract };
+    const ok = (h) => auditPopoverSurface(h, { meta, abstracts });
+    const good = sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2026", "A plain-language curated finding written in the clinician's own words.");
+    A(ok(good).problems.length === 0, "popover metadata: matching title/journal/year passes");
+    A(ok(sup("A completely different paper about something else entirely.", "Obstet Gynecol · 2026", "x".repeat(30))).problems.some((p) => p.code === "bad-title"),
+        "popover metadata: a title contradicting PubMed FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Lederman S, Ottery FD, et al.", "x".repeat(30))).problems.some((p) => p.code === "bad-journal"),
+        "popover metadata: an author list where the journal belongs FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2019", "x".repeat(30))).problems.some((p) => p.code === "bad-year"),
+        "popover metadata: a year PubMed never dates the paper FAILS");
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol (1992) · 2026", "x".repeat(30))).problems.every((p) => p.code !== "bad-year"),
+        "popover metadata: a year inside the journal name does not trip bad-year when the real year matches");
+    // verbatim paste of the abstract = a dump, even without a section label
+    const paste = "Five-year survival favored open surgery in this cohort of 631 patients across 33 centers worldwide.";
+    A(ok(sup("Survival after minimally invasive radical hysterectomy.", "Obstet Gynecol · 2026", paste)).problems.some((p) => p.code === "verbatim-dump"),
+        "popover finding: a verbatim abstract paste FAILS as a dump");
+    // …and the worker heal replaces a paste from the paper's own Bottom-line
+    const pasteBody = sup("T", "J · 2026", paste)
+        + `<dialog id="dd-42216742"><section class="mz-jc-section" id="dd-42216742-bottom"><h3>Bottom line</h3><p>Open surgery carried a survival advantage in this trial; minimally invasive routes need careful patient selection and counseling.</p></section><div class="mz-jc-abstract-body"><h5 class="mz-jc-abstract-label">Abstract</h5><p>${meta[42216742].abstract}</p></div></dialog>`;
+    const ph2 = healPopoverSummaries(pasteBody);
+    A(ph2.changed === 1 && /Open surgery carried a survival advantage/.test(ph2.healed) && !ph2.healed.includes(`mz-ref-pop-finding">${paste}`),
+        "popover heal: a verbatim paste is replaced from the modal Bottom-line");
+
+    // SOURCING GUARDS (2026-09-01, caught live on W21/W24): a Bottom-line cut
+    // off mid-sentence, or carrying an editorial placeholder, must NEVER be
+    // used as a finding source — three popovers quoted a truncated/stub
+    // Bottom-line and the structural gate blocked the deploy.
+    const truncBody = sup("T", "J · 2026", "")
+        .replace('</span></span></sup>', '</span></span></sup>')  // no finding span present
+        + `<dialog id="dd-42216742"><section class="mz-jc-section" id="dd-42216742-bottom"><h3>Bottom line</h3><p>In this prospective FET cohort of 589 cycles the protocol favored patients who</p></section></dialog>`;
+    A(healPopoverSummaries(truncBody).changed === 0,
+        "sourcing guard: a mid-sentence-truncated Bottom-line is never used as a finding");
+    const stubBody = truncBody.replace(/In this prospective[^<]*/, "The bottom line for the surgeon [Note: confirm effect size before publication] is that this changes practice.");
+    A(healPopoverSummaries(stubBody).changed === 0,
+        "sourcing guard: a Bottom-line carrying an editorial [Note:] placeholder is never used");
+}
+// ---------------- DOSING LANGUAGE (owner directive, 2026-09-01) ----------------
+{
+    const card = `<article class="mz-cite-card" id="mz-cite-9"><h3 class="mz-cite-title">t</h3><p class="mz-cite-fits">Phase-3 RCT of fezolinetant 30 mg or 45 mg daily vs placebo reduced vasomotor symptoms.</p></article>`;
+    const modal = `<dialog id="dd-9"><section class="mz-jc-section" id="dd-9-findings"><p>Intrathecal morphine 0.15 mg gave lower pain scores than 0.10 mg.</p></section></dialog>`;
+    A(auditDosingLanguage({ kind: "blog", body_html: card + modal + `<div class="mz-post-narrative">NSAIDs are first-line analgesia per the CPG.</div>` }).ok,
+        "dosing: study doses inside cite cards and deep-dive analyses are research reporting and PASS");
+    A(!auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-counseling"><p>Take ibuprofen 400–800 mg q6–8 h for cramping.</p></div>` }).ok,
+        "dosing: a dose in counseling prose FAILS");
+    A(!auditDosingLanguage({ kind: "evidence", body_html: `<div class="mz-post-narrative">Naproxen 500 mg BID outperformed placebo in our framing.</div>` }).ok,
+        "dosing: BID frequency in narrative prose FAILS");
+    A(auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-jc-abstract-body"><p>Patients received 2.5 mg letrozole daily.</p></div>` }).ok,
+        "dosing: verbatim abstract text is exempt");
+    A(auditDosingLanguage({ kind: "claim_proposal", body_html: `<p>50 mg</p>` }).ok,
+        "dosing: non-clinical kind exempt");
+    A(!auditPublishable({ kind: "blog", body_html: `<article class="mz-cite-card"><h3 class="mz-cite-title">t</h3></article><div class="mz-counseling">Start norethindrone 5 mg daily.</div>` }).publishable,
+        "publish gate: counseling dosing is NOT publishable");
+}
+// ---------------- DARK-GROUND AUDIT (one light theme, 2026-09-01) ----------------
+{
+    const wrap = (css) => `<style>${css}</style><article class="mz-cite-card"><h3 class="mz-cite-title">t</h3></article>`;
+    A(auditDarkGrounds({ kind: "blog", body_html: wrap(".mz-post-wrap { background: #FBFAF8; color: #1A1726; }") }).ok,
+        "dark grounds: the light paper palette passes");
+    const dk = auditDarkGrounds({ kind: "blog", body_html: wrap(".mz-ref-pop { background: rgba(18, 18, 24, 0.97); }") });
+    A(!dk.ok && dk.problems.some((p) => p.includes("rgba(18,18,24")),
+        "dark grounds: a dark opaque panel FAILS");
+    A(!auditDarkGrounds({ kind: "blog", body_html: wrap(".hero { background: linear-gradient(135deg, #0a0a12 0%, #14101f 100%); }") }).ok,
+        "dark grounds: dark gradient stops FAIL");
+    A(auditDarkGrounds({ kind: "blog", body_html: wrap(".btn { background: #6d28d9; } .badge { background: #4c1d95; }") }).ok,
+        "dark grounds: brand violets are allowed");
+    A(auditDarkGrounds({ kind: "blog", body_html: wrap("dialog::backdrop { background: rgba(26, 23, 38, 0.55); }") }).ok,
+        "dark grounds: a modal ::backdrop scrim is allowed");
+    A(auditDarkGrounds({ kind: "claim_proposal", body_html: wrap(".x{background:#000}") }).ok,
+        "dark grounds: non-clinical kind exempt");
+    A(!auditPublishable({ kind: "blog", body_html: wrap(".mz-post-wrap { background: #101018; }") }).publishable,
+        "publish gate: a dark-themed stylesheet is NOT publishable");
 }
 // ---------------- AUTHORITATIVE PUBLISH GATE (ingest/approve enforcement) ----------------
 {

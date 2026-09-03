@@ -346,9 +346,15 @@ async function loadUploadedDocuments(env, patientId) {
     // Returns metadata only — no decryption. Briefing UI offers a deep-link
     // per doc; full body decryption happens on click.
     try {
+        // The columns are `filename`, `mime_type` and `source_app`.
+        // `original_filename`, `content_type` and `source` have never
+        // existed, so this threw every time and the catch below reported
+        // it as "this patient has uploaded no documents" — a briefing that
+        // silently omitted the imaging the patient was told to upload.
+        // Aliased to the names the briefing template already renders.
         const { results } = await env.DB.prepare(`
-            SELECT id, kind, original_filename, content_type, size_bytes,
-                   uploaded_at, source
+            SELECT id, kind, filename AS original_filename, mime_type AS content_type,
+                   size_bytes, uploaded_at, source_app AS source
             FROM documents
             WHERE patient_id = ?
             ORDER BY uploaded_at DESC
@@ -357,6 +363,7 @@ async function loadUploadedDocuments(env, patientId) {
         return results || [];
     } catch (e) {
         // Table may not exist if Phase 1 Round 3 hasn't been applied in this env.
+        console.error("patient_briefing: documents query failed", String(e).slice(0, 200));
         return [];
     }
 }

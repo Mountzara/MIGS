@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -42,7 +42,7 @@
             font-weight: 200; font-size: clamp(26px, 3.4vw, 36px);
             letter-spacing: -0.02em; color: var(--fg-strong); margin: 0 0 6px 0;
         }
-        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 76ch; margin: 0 0 18px 0; }
+        .lede { font-size: 14.5px; line-height: 1.55; color: var(--fg-mid); max-width: 96ch; margin: 0 0 18px 0; }
 
         @keyframes mzRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -60,10 +60,10 @@
             border-color: var(--border);
             color: var(--fg-mid);
         }
-        .btn.ghost:hover { border-color: rgba(var(--glow-purple), 0.55); color: var(--fg-strong); }
+        .btn.ghost:hover { border-color: #6d28d9; color: var(--fg-strong); }
         .btn.danger {
             background: transparent;
-            color: rgba(252, 165, 165, 0.95);
+            color: #B91C1C;
             border-color: rgba(239, 68, 68, 0.40);
         }
         .btn.danger:hover { background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.65); color:#fff; }
@@ -84,7 +84,7 @@
             animation: mzRise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
             display: flex; flex-direction: column; gap: 10px;
         }
-        .payer-card:hover { transform: translateY(-2px); border-color: rgba(var(--glow-purple), 0.40); }
+        .payer-card:hover { transform: translateY(-2px); border-color: #6d28d9; }
 
         .payer-name { font-size: 16px; font-weight: 500; color: var(--fg-strong); line-height: 1.3; }
         .payer-id { font-family: 'SF Mono', monospace; font-size: 11.5px; color: var(--accent-soft); }
@@ -92,24 +92,24 @@
         .payer-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .chip {
             font-size: 10.5px; font-weight: 500; padding: 3px 9px; border-radius: 999px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             color: var(--fg-soft); letter-spacing: 0.04em;
         }
-        .chip.kind-commercial   { color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
-        .chip.kind-medicare     { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45); }
-        .chip.kind-medicaid     { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
+        .chip.kind-commercial   { color: var(--accent-soft); border-color: #6d28d9; }
+        .chip.kind-medicare     { color: #92400E; border-color: rgba(245, 158, 11, 0.45); }
+        .chip.kind-medicaid     { color: #047857; border-color: rgba(16, 185, 129, 0.45); }
         .chip.kind-workers_comp { color: var(--fg-mid); }
         .chip.kind-self_pay     { color: var(--fg-dim); }
         .chip.status-pending    { color: var(--fg-soft); }
-        .chip.status-signed     { color: rgba(252, 211, 77, 0.95); border-color: rgba(245, 158, 11, 0.45); }
-        .chip.status-active     { color: rgba(110, 231, 183, 0.95); border-color: rgba(16, 185, 129, 0.45); }
-        .chip.status-terminated { color: rgba(252, 165, 165, 0.95); border-color: rgba(239, 68, 68, 0.45); }
+        .chip.status-signed     { color: #92400E; border-color: rgba(245, 158, 11, 0.45); }
+        .chip.status-active     { color: #047857; border-color: rgba(16, 185, 129, 0.45); }
+        .chip.status-terminated { color: #B91C1C; border-color: rgba(239, 68, 68, 0.45); }
         .chip.vendor { color: rgba(167, 139, 250, 0.95); }
 
         .payer-stats {
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 8px; padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid #E9E5EE;
             font-size: 12px;
         }
         .payer-stats .k { display:block; font-size:9.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--fg-dim); margin-bottom:2px; }
@@ -121,7 +121,7 @@
         /* Modal */
         .modal-backdrop {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(26,23,38,0.14);
             backdrop-filter: blur(8px);
             z-index: 999;
             display: none;
@@ -132,7 +132,7 @@
         .modal {
             width: 100%; max-width: 560px;
             max-height: 90vh; overflow: auto;
-            background: rgba(7, 7, 10, 0.95);
+            background: rgba(255,255,255,0.96);
             border: 1px solid rgba(var(--glow-purple), 0.45);
             border-radius: 16px;
             padding: 28px 32px;
@@ -151,12 +151,12 @@
         .field input, .field select, .field textarea {
             font: inherit; font-size: 14px;
             padding: 9px 12px; border-radius: 9px;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             color: var(--fg-strong);
             transition: border-color 0.18s;
         }
         .field input:focus, .field select:focus, .field textarea:focus {
-            outline: none; border-color: rgba(var(--glow-purple), 0.55);
+            outline: none; border-color: #6d28d9;
         }
         .field textarea { min-height: 70px; resize: vertical; font-family: 'SF Mono', monospace; font-size: 12.5px; }
         .field .hint { font-size: 11.5px; color: var(--fg-dim); }
@@ -167,7 +167,7 @@
 
         .toast {
             position: fixed; right: 22px; bottom: 22px;
-            background: rgba(7, 7, 10, 0.92);
+            background: rgba(255,255,255,0.96);
             border: 1px solid rgba(var(--glow-purple), 0.45);
             border-radius: 10px; padding: 10px 16px;
             color: var(--fg-strong); font-size: 13px;
@@ -191,9 +191,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -224,7 +224,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -232,7 +232,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -264,16 +264,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <h1 class="page-title">Insurance payers</h1>
         <p class="lede">
             Contracted insurers + clearinghouse routing. Add a payer here before assigning it to a billing claim.
-            For the planned vendor strategy (Availity Essentials primary, Office Ally fallback), use
-            <code>clearinghouse_vendor=availity</code> for the major commercials and
-            <code>clearinghouse_vendor=office_ally</code> for everything else.
+            Big commercial plans route through Availity; everything else through Office Ally.
         </p>
 
         <div class="toolbar">
             <button class="btn" id="add-payer">+ Add payer</button>
-            <span style="margin-left:auto; font-size:11.5px; color:var(--fg-dim);">
-                Vendor strategy: see <code>docs/BILLING_PIPELINE.md §6</code>.
-            </span>
         </div>
 
         <div id="root">
@@ -304,11 +299,11 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="field">
                         <label>Payer kind</label>
                         <select id="f-payer_kind">
-                            <option value="commercial">commercial</option>
-                            <option value="medicare">medicare</option>
-                            <option value="medicaid">medicaid</option>
-                            <option value="workers_comp">workers_comp</option>
-                            <option value="self_pay">self_pay</option>
+                            <option value="commercial">Commercial</option>
+                            <option value="medicare">Medicare</option>
+                            <option value="medicaid">Medicaid</option>
+                            <option value="workers_comp">Workers' comp</option>
+                            <option value="self_pay">Self-pay</option>
                         </select>
                     </div>
                 </div>
@@ -317,10 +312,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     <div class="field">
                         <label>Contract status</label>
                         <select id="f-contract_status">
-                            <option value="pending">pending</option>
-                            <option value="signed">signed</option>
-                            <option value="active">active</option>
-                            <option value="terminated">terminated</option>
+                            <option value="pending">Pending signature</option>
+                            <option value="signed">Signed</option>
+                            <option value="active">Active</option>
+                            <option value="terminated">Terminated</option>
                         </select>
                     </div>
                     <div class="field">
@@ -349,9 +344,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 </div>
 
                 <div class="field">
-                    <label>Fee schedule (% of Medicare allowable)</label>
-                    <input type="number" id="f-fee_schedule_pct_medicare" step="0.01" min="0" placeholder="1.30">
-                    <span class="hint">Optional. 1.30 means the contract pays 130% of Medicare. Leave blank if unknown.</span>
+                    <label>Contract rate vs Medicare</label>
+                    <input type="text" inputmode="decimal" id="f-fee_schedule_pct_medicare" placeholder="130">
+                    <span class="hint">Optional. Enter 130 for a contract paying 130% of Medicare. Leave blank if unknown.</span>
                 </div>
 
                 <div class="field">
@@ -392,6 +387,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         const $bg   = document.getElementById('modal-bg');
         const $form = document.getElementById('payer-form');
 
+        // Plain-word labels for the stored enum values (values themselves unchanged).
+        const KIND_LABELS = { commercial: 'Commercial', medicare: 'Medicare', medicaid: 'Medicaid', workers_comp: "Workers' comp", self_pay: 'Self-pay' };
+        const STATUS_LABELS = { pending: 'Pending signature', signed: 'Signed', active: 'Active', terminated: 'Terminated' };
+
         function escapeHtml(s) {
             if (s == null) return '';
             return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -428,12 +427,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         ${p.payer_id ? `<div class="payer-id">${escapeHtml(p.payer_id)}</div>` : ''}
                     </div>
                     <div class="payer-chips">
-                        <span class="chip kind-${escapeHtml(p.payer_kind)}">${escapeHtml(p.payer_kind)}</span>
-                        <span class="chip status-${escapeHtml(p.contract_status)}">${escapeHtml(p.contract_status)}</span>
+                        <span class="chip kind-${escapeHtml(p.payer_kind)}">${escapeHtml(KIND_LABELS[p.payer_kind] || p.payer_kind)}</span>
+                        <span class="chip status-${escapeHtml(p.contract_status)}">${escapeHtml(STATUS_LABELS[p.contract_status] || p.contract_status)}</span>
                         ${p.clearinghouse_vendor ? `<span class="chip vendor">via ${escapeHtml(p.clearinghouse_vendor.replace(/_/g, ' '))}</span>` : ''}
                     </div>
                     ${p.fee_schedule_pct_medicare != null
-                        ? `<div class="payer-meta"><span>Fee schedule: <strong style="color:var(--fg-strong)">${(Number(p.fee_schedule_pct_medicare) * 100).toFixed(0)}% of Medicare</strong></span></div>`
+                        ? `<div class="payer-meta"><span>Contract rate: <strong style="color:var(--fg-strong)">${(Number(p.fee_schedule_pct_medicare) * 100).toFixed(0)}% of Medicare</strong></span></div>`
                         : ''}
                     ${p.contract_effective_date || p.contract_termination_date
                         ? `<div class="payer-meta">
@@ -459,7 +458,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             });
             $root.querySelectorAll('[data-delete]').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    if (!confirm('Delete this payer? Only allowed when no claims reference it.')) return;
+                    if (!confirm('Delete this payer? It has no claims, so nothing else is affected.')) return;
                     const resp = await fetch('/api/v1/admin/billing/payers/' + encodeURIComponent(btn.dataset.delete), {
                         method: 'DELETE', credentials: 'include',
                     });
@@ -483,7 +482,10 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             document.getElementById('f-clearinghouse_vendor').value = payer ? (payer.clearinghouse_vendor || '') : '';
             document.getElementById('f-contract_effective_date').value = payer ? (payer.contract_effective_date || '') : '';
             document.getElementById('f-contract_termination_date').value = payer ? (payer.contract_termination_date || '') : '';
-            document.getElementById('f-fee_schedule_pct_medicare').value = (payer && payer.fee_schedule_pct_medicare != null) ? payer.fee_schedule_pct_medicare : '';
+            // Stored as a ratio (1.30) but shown/entered as a percent (130).
+            document.getElementById('f-fee_schedule_pct_medicare').value = (payer && payer.fee_schedule_pct_medicare != null)
+                ? String(Math.round(Number(payer.fee_schedule_pct_medicare) * 10000) / 100)
+                : '';
             document.getElementById('f-rate_schedule_json').value = (payer && payer.rate_schedule_json) ? payer.rate_schedule_json : '';
             document.getElementById('f-submission_address').value = payer ? (payer.submission_address || '') : '';
             document.getElementById('f-appeals_address').value = payer ? (payer.appeals_address || '') : '';
@@ -502,12 +504,31 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             ev.preventDefault();
             const id = document.getElementById('f-id').value;
 
-            // Validate rate_schedule JSON if present.
+            // Validate rate_schedule JSON if present — and say where it broke.
             const rateText = document.getElementById('f-rate_schedule_json').value.trim();
             let rate_schedule = null;
             if (rateText) {
                 try { rate_schedule = JSON.parse(rateText); }
-                catch { toast('Rate schedule JSON is invalid', 'danger'); return; }
+                catch (err) {
+                    const msg = String((err && err.message) || '');
+                    let where = '';
+                    const lc = /line (\d+) column (\d+)/.exec(msg);
+                    const pos = /position (\d+)/.exec(msg);
+                    if (lc) where = ` — check line ${lc[1]}, column ${lc[2]}`;
+                    else if (pos) where = ` — check line ${rateText.slice(0, Number(pos[1])).split('\n').length}, character ${Number(pos[1]) + 1}`;
+                    toast('Rate schedule JSON is invalid' + where, 'danger');
+                    document.getElementById('f-rate_schedule_json').focus();
+                    return;
+                }
+            }
+
+            // "130" or "130%" both mean 130% of Medicare — stored as the ratio 1.30.
+            const feeRaw = document.getElementById('f-fee_schedule_pct_medicare').value.trim();
+            let fee_pct = null;
+            if (feeRaw !== '') {
+                const n = Number(feeRaw.replace(/%\s*$/, ''));
+                if (isNaN(n) || n < 0) { toast('Contract rate should be a number like 130 (meaning 130% of Medicare)', 'danger'); return; }
+                fee_pct = n > 3 ? n / 100 : n;
             }
 
             const body = {
@@ -518,7 +539,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 clearinghouse_vendor: document.getElementById('f-clearinghouse_vendor').value || null,
                 contract_effective_date: document.getElementById('f-contract_effective_date').value || null,
                 contract_termination_date: document.getElementById('f-contract_termination_date').value || null,
-                fee_schedule_pct_medicare: document.getElementById('f-fee_schedule_pct_medicare').value !== '' ? Number(document.getElementById('f-fee_schedule_pct_medicare').value) : null,
+                fee_schedule_pct_medicare: fee_pct,
                 rate_schedule: rate_schedule,
                 submission_address: document.getElementById('f-submission_address').value.trim() || null,
                 appeals_address: document.getElementById('f-appeals_address').value.trim() || null,
@@ -542,5 +563,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         loadPayers();
     })();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

@@ -86,15 +86,43 @@ const idxRaw = readFileSync("index.html", "utf8");
 if (!idxRaw.includes("90.4")) fail("index.html: same-day discharge must state the canonical 90.4%");
 if (!/stat-num">15</.test(idxRaw)) fail("index.html: publications stat must be 15");
 const curRaw = readFileSync("curriculum/cbg-migs/index.html", "utf8");
-if (!curRaw.includes("444") || !/1,?511/.test(curRaw)) fail("curriculum/cbg-migs: canonical 444 / 1,511 volumes missing");
+// 2026-08-23 — the 444 CASE count moved to the by-request CV only
+// (owner: raw case tallies are a credentialing document, not public).
+// The 1,511 PROCEDURE total is allowed to remain on the curriculum page.
+if (!/1,?511/.test(curRaw)) fail("curriculum/cbg-migs: canonical 1,511 procedure volume missing");
 
 const cur = readFileSync("curriculum/cbg-migs/index.html", "utf8");
 if (!/three-year/i.test(cur) || !/thirty-six months|36 months|Each of 36/i.test(cur)) fail("curriculum/cbg-migs: missing three-year / 36-month structure");
 if (/\btwo-year\b|twenty-four months/i.test(cur)) fail("curriculum/cbg-migs: stale two-year phrasing");
 const idx = readFileSync("index.html", "utf8");
 if (!idx.includes("Excellence in Minimally Invasive Gynecology")) fail("index: award name drifted from CV canonical");
-if (!/15:297/.test(idx)) fail("index: GMIT citation missing volume/pages (2026;15:297–299)");
+// 2026-08-24 — the 12-row publication list moved OFF the homepage (a
+// patient should not scroll a CV); the GMIT citation now lives on the
+// CV, which is where the canonical-volume requirement follows it.
+const cvGmit = readFileSync("cv/index.html", "utf8");
+if (!/15:297/.test(cvGmit)) fail("cv: GMIT citation missing volume/pages (2026;15:297–299)");
 const dep = readFileSync("scripts/deploy-prod.sh", "utf8");
-if (!/--exclude='docs'/.test(dep) || !/--exclude='docs\/'/.test(dep)) fail("deploy-prod.sh: docs/ not excluded from BOTH staging paths (internal documents would go public)");
+// The exclude must be ANCHORED to the repo root, and this gate must
+// require the anchored form rather than merely permit it.
+//
+// The unanchored patterns (`--exclude='docs'` / `--exclude='docs/'`) mean
+// "any directory named docs, at ANY depth" — which silently matched
+// functions/api/v1/admin/compliance/docs/ and dropped both of its handlers
+// from every deploy since that endpoint shipped. It 404'd in production
+// while existing, complete, in the repo, and nothing reported it.
+//
+// rsync anchors with a leading slash; tar anchors with a leading ./ against
+// the archive root. Both are required, because the two staging paths must
+// produce the same byte set.
+if (!/--exclude='\/docs\/'/.test(dep)) {
+    fail("deploy-prod.sh: rsync path must use the ANCHORED --exclude='/docs/' — an unanchored 'docs' also matches functions/api/v1/admin/compliance/docs/");
+}
+if (!/--exclude='\.\/docs'/.test(dep)) {
+    fail("deploy-prod.sh: tar path must use the ANCHORED --exclude='./docs' — an unanchored 'docs' also matches functions/api/v1/admin/compliance/docs/");
+}
+// And the unanchored forms must be gone, not merely accompanied.
+if (/--exclude='docs\/?'/.test(dep)) {
+    fail("deploy-prod.sh: an UNANCHORED docs exclude is still present — it matches any directory named docs at any depth, including Pages Functions");
+}
 if (failed) { console.error(`\nfact-sync gate: ${failed} violation(s)`); process.exit(2); }
 console.log(`fact-sync gate: CLEAN — ${files.length} deployable files agree with canonical facts; docs/ excluded from staging`);

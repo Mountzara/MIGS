@@ -219,7 +219,7 @@ export function auditAbstractCompleteness(post) {
 // ---------------------------------------------------------------------
 export function auditPublishable(post) {
     const fmt = auditPostFormat(post);
-    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post), auditModalPlaceholders(post)];
+    const checks = [fmt, auditNumericFidelity(post), auditAbstractCompleteness(post), auditPopoverSummaries(post), auditSummaryDuplication(post), auditTemplateBoilerplate(post), auditModalPlaceholders(post), auditDarkGrounds(post), auditDosingLanguage(post)];
     const problems = checks.flatMap((c) => c.problems);
     return { publishable: problems.length === 0, canonical: fmt.canonical, problems, checked_at: new Date().toISOString() };
 }
@@ -333,45 +333,375 @@ function _auditSummaryDuplicationImpl(post) {
 }
 
 // ---------------------------------------------------------------------
-// Popover-summary audit (2026-07-06). Each inline citation carries a hover
-// popover whose `mz-ref-pop-finding` field must be an ADEQUATE plain-language
-// summary of the paper's finding (the W20/W21 standard), NOT a raw dump of the
-// abstract's opening sentence. The 2026-07-06 audit found ~106 W23/W24
-// popovers whose finding field was the truncated abstract opening — it starts
-// with a structured-abstract section label (RATIONALE:/INTRODUCTION:/…), which
-// a real summary never does. Each was replaced with the paper's own modal
-// Bottom-line (already grounded + numeric-gated). Deterministic + offline:
-// flag any finding that (a) starts with a structured-abstract label or (b) is
-// too short to be a real summary (< 60 chars).
+// Popover-summary audit (2026-07-06; STRUCTURE + SOURCING added 2026-09-01).
+// Each inline citation carries a hover popover whose `mz-ref-pop-finding`
+// field must be an ADEQUATE plain-language summary of the paper's finding
+// (the W20/W21 standard), NOT a raw dump of the abstract's opening sentence.
+// The 2026-07-06 audit found ~106 W23/W24 popovers whose finding field was
+// the truncated abstract opening — it starts with a structured-abstract
+// section label (RATIONALE:/INTRODUCTION:/…), which a real summary never
+// does. Each was replaced with the paper's own modal Bottom-line (already
+// grounded + numeric-gated).
+//
+// 2026-09-01: the original audit ONLY inspected popovers that already had a
+// `mz-ref-pop-finding` span in the current schema. A popover with NO finding
+// span at all, or one authored in the earlier W20-era class schema
+// (mz-ref-title/-meta/-finding, no -pop- infix), was invisible to it — which
+// is exactly how a published brief shipped 24 hovers a reader learns nothing
+// from. Now every mz-ref-pop span is audited:
+//   * no mz-ref-pop-title           → unstructured, always a problem
+//   * no finding, but this post carries the paper's grounded summary
+//     (modal Bottom-line, or the cite card's lens line)  → a problem
+//   * no finding and NO grounded source in the post      → NOT a problem
+//     here (writing "what a paper shows" is clinical content; the deploy-
+//     side ref-popover gate reports these to the clinician as advisory)
+// Deterministic + offline.
 // ---------------------------------------------------------------------
 const RAW_ABSTRACT_LABEL = /^\s*(rationale|background|objectives?|introduction|methods?|materials?|purpose|aims?|importance|context|setting|design|participants)\b\s*[:\-–]/i;
-export function auditPopoverSummaries(post) {
-    const problems = [];
-    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
-    const h = typeof post.body_html === "string" ? post.body_html : "";
-    const re = /id="ref-pop-(\d+)"[\s\S]*?<span class="mz-ref-pop-finding">([^<]*)<\/span>/g;
+const SUP_SPAN_RE = /<sup class="mz-ref"[^>]*>[\s\S]*?<\/sup>/g;
+
+function supPmid(sup) {
+    const m = sup.match(/pubmed\.ncbi\.nlm\.nih\.gov\/(\d{5,9})/)
+        || sup.match(/id="ref-pop-(\d{5,9})"/)
+        || sup.match(/#mz-ref-(\d{5,9})/);
+    return m ? m[1] : null;
+}
+
+// An author list is not a finding (three W20 popovers shipped
+// "Kizildemir YZ, İncebıyık M." as their synopsis). A real synopsis is
+// prose and contains lowercase content words; an author list is capitalised
+// surnames plus initials. Unicode-aware — the string that shipped was
+// Turkish. Mirrors is_author_list in scripts/apply_inline_refs.py.
+function isAuthorList(t) {
+    t = String(t || "").trim();
+    if (!t || t.length > 140) return false;
+    let core = t.replace(/\b(?:et\s+al|and|&)\b/gi, " ");
+    core = core.replace(/[^\p{L}\p{N}\s'-]/gu, " ");
+    return !core.split(/\s+/).some((w) => w.length >= 4 && /^\p{Ll}/u.test(w));
+}
+
+// A candidate summary-source is usable only when it reads as FINISHED
+// authored prose: it must end in terminal punctuation (a Bottom-line cut
+// off mid-sentence propagates a truncation into every popover that quotes
+// it — caught live 2026-09-01 on W21/W24), and must carry no editorial
+// placeholder ("[Note: …]", "Pending …review") — those are author-stubs,
+// not findings.
+function usableSummarySource(c) {
+    if (c.length < 80 || RAW_ABSTRACT_LABEL.test(c)) return false;
+    if (!/[.!?]["')\]]?$/.test(c)) return false;
+    if (/\[Note:/i.test(c)) return false;
+    if (/pending\b[^.]{0,40}\breview\b/i.test(c)) return false;
+    return true;
+}
+
+// pmid -> the paper's modal Bottom-line (cleaned; only when adequate).
+function modalBottomLines(h) {
+    const bl = {};
+    const dRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+    let dm;
+    while ((dm = dRe.exec(h)) !== null) {
+        const s = dm[2].match(/id="dd-\d+-bottom"[^>]*>([\s\S]*?)<\/section>/);
+        if (!s) continue;
+        const c = cleanBottomLine(visibleText(s[1]));
+        if (usableSummarySource(c)) bl[dm[1]] = c;
+    }
+    return bl;
+}
+
+// pmid -> the cite card's lens line ("DO + CBG/MIGS lens — …:" / "Read
+// through the lens of the claim:" preambles stripped), only when it is a
+// usable finding by the pipeline's own rules (not an abstract dump, not an
+// author list, not trivially short). Mirrors card_index in
+// scripts/apply_inline_refs.py.
+function citeCardLenses(h) {
+    const out = {};
+    const cardRe = /<article class="mz-cite-card"[^>]*>[\s\S]*?<\/article>/g;
     let m;
+    while ((m = cardRe.exec(h)) !== null) {
+        const blob = m[0];
+        const pmid = (blob.match(/id="mz-cite-(\d+)"/) || blob.match(/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/) || [])[1];
+        if (!pmid || out[pmid]) continue;
+        const f = blob.match(/<p class="mz-cite-(?:fits|finding)"[^>]*>([\s\S]*?)<\/p>/);
+        if (!f) continue;
+        let txt = decodeEntities(visibleText(f[1]));
+        if (/^Read through the lens/.test(txt)) {
+            txt = txt.slice(txt.indexOf(":") + 1).trim();
+        } else if (txt.includes(" lens") && txt.includes(":")) {
+            const i1 = txt.indexOf(":"), i2 = txt.indexOf(":", i1 + 1);
+            txt = (i2 >= 0 ? txt.slice(i2 + 1) : txt.slice(i1 + 1)).trim();
+        }
+        if (txt.length >= 30 && !RAW_ABSTRACT_LABEL.test(txt) && !isAuthorList(txt)
+            && /[.!?]["')\]]?$/.test(txt) && !/\[Note:/i.test(txt)
+            && !/pending\b[^.]{0,40}\breview\b/i.test(txt)) out[pmid] = txt;
+    }
+    return out;
+}
+
+// pmid -> the visible text of the paper's embedded verbatim abstract
+// (mz-jc-abstract-body inside its deep-dive modal). Used for the
+// verbatim-dump check: a "summary" that is a contiguous copy of the
+// abstract is not a summary.
+function embeddedAbstracts(h) {
+    const out = {};
+    const dRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
+    let dm;
+    while ((dm = dRe.exec(h)) !== null) {
+        const abM = dm[2].match(/<div class="mz-jc-abstract-body">([\s\S]*?)<\/div>/);
+        if (abM) out[dm[1]] = visibleText(abM[1]);
+    }
+    return out;
+}
+
+// Aggressive text normalisation for verbatim-containment and title-equality
+// checks: entities decoded, case folded, everything but letters/digits
+// collapsed to single spaces. Two texts that differ only in punctuation,
+// ellipses or whitespace normalise identically.
+function normText(s) {
+    return decodeEntities(String(s || "")).toLowerCase().replace(/[^a-z0-9]+/gi, " ").trim();
+}
+
+/**
+ * THE canonical popover audit — one rulebook for EVERY surface (owner
+ * directive 2026-09-01: the rules must live in ONE place so an update
+ * applies to the entire site). Consumed by:
+ *   * auditPopoverSummaries below (the worker publish gate, every
+ *     POST/PUT/approve through /api/posts),
+ *   * scripts/audit_ref_popovers.mjs (the deploy gate, walking the
+ *     education pages and the published posts).
+ * Change a rule HERE and both gates change together; never fork a copy
+ * of these rules into a per-surface script.
+ *
+ * @param html      the surface's HTML
+ * @param opts.curated    (pmidOrKey) -> truthy when a grounded/curated
+ *                        summary EXISTS on this surface for that citation
+ * @param opts.abstracts  pmid -> abstract text (a committed corpus); the
+ *                        surface's own embedded modal abstracts are always
+ *                        consulted as well
+ * @param opts.meta       pmid -> {title, journal, journal_abbrev, year}
+ *                        from PubMed, enabling the metadata checks (the
+ *                        worker has no corpus, so these run deploy-side)
+ * @returns {problems: [{key, code, msg}], advisories: [{key, code, msg}]}
+ *   codes — problems: unstructured | missing-sourced | raw-dump |
+ *           verbatim-dump | near-empty | bad-title | bad-year | bad-journal
+ *           advisories: missing-unsourced
+ */
+export function auditPopoverSurface(html, opts = {}) {
+    const problems = [], advisories = [];
+    const h = String(html || "");
+    const curated = opts.curated || (() => false);
+    const corpusAbs = opts.abstracts || {};
+    const meta = opts.meta || {};
+    const emb = embeddedAbstracts(h);
     const seen = new Set();
-    while ((m = re.exec(h)) !== null) {
-        const pmid = m[1];
-        if (seen.has(pmid)) continue; // one report per paper
-        const finding = decodeEntities(m[2]).trim();
+    const push = (arr, key, code, msg) => { seen.add(key); arr.push({ key, code, msg }); };
+    let sm;
+    SUP_SPAN_RE.lastIndex = 0;
+    while ((sm = SUP_SPAN_RE.exec(h)) !== null) {
+        const sup = sm[0];
+        const pop = sup.match(/<span class="mz-ref-pop"[^>]*>[\s\S]*?<\/span>(?=<\/sup>)/);
+        if (!pop) continue;
+        const pmid = supPmid(sup);
+        const refKey = (sup.match(/data-r="(ref-\d+)"/) || [])[1] || null;
+        const key = pmid || refKey || `@${sm.index}`;
+        if (seen.has(key)) continue; // one report per paper
+        const label = pmid ? "ref-pop-" + pmid : (refKey || "at offset " + sm.index);
+        const p = pop[0];
+        if (!p.includes("mz-ref-pop-title")) {
+            push(problems, key, "unstructured", `popover ${label}: unstructured — no mz-ref-pop-title element. Every citation popover carries the paper's title, its meta line, and the plain-language finding.`);
+            continue;
+        }
+        const popTitle = decodeEntities(((p.match(/<span class="mz-ref-pop-title">([\s\S]*?)<\/span>/) || [])[1] || "").replace(/<[^>]*>/g, "")).trim();
+        const popMeta = decodeEntities(((p.match(/<span class="mz-ref-pop-meta">([\s\S]*?)<\/span>/) || [])[1] || "").replace(/<[^>]*>/g, "")).trim();
+        // ---- metadata checks (need a PubMed record for this citation) ----
+        // Education sups carry no PMID themselves — the ref list does — so a
+        // caller may key meta/abstracts by the surface ref id (ref-N) instead.
+        const lookup = pmid || refKey;
+        const pm = lookup ? (meta[pmid] || meta[refKey] || null) : null;
+        if (pm && pm.title && popTitle) {
+            const a = normText(popTitle), b = normText(pm.title);
+            if (a && b && a !== b && !a.includes(b) && !b.includes(a)) {
+                push(problems, key, "bad-title", `popover ${label}: title does not match the paper's PubMed title — popover says "${popTitle.slice(0, 60)}…", PubMed says "${pm.title.slice(0, 60)}…".`);
+                continue;
+            }
+        }
+        if (pm && (pm.year || (pm.years && pm.years.length)) && popMeta) {
+            // A paper legitimately carries several years (epub vs print issue)
+            // and a meta line can carry a year that is not the paper's date at
+            // all (the journal "Rev Assoc Med Bras (1992)"), so the meta is
+            // wrong only when it names at least one year and NONE of them is
+            // a PubMed date for this paper.
+            const okYears = (pm.years && pm.years.length ? pm.years : [pm.year]).map(String);
+            const metaYears = popMeta.match(/\b(?:19|20)\d{2}\b/g) || [];
+            if (metaYears.length && !metaYears.some((y) => okYears.includes(String(y)))) {
+                push(problems, key, "bad-year", `popover ${label}: meta line says ${metaYears.join("/")} but PubMed dates this paper ${okYears.join("/")} ("${popMeta.slice(0, 50)}").`);
+                continue;
+            }
+        }
+        if (pm && popMeta && (pm.journal || pm.journal_abbrev)) {
+            const j = normText(popMeta.split("·")[0]);
+            const j1 = normText(pm.journal || ""), j2 = normText(pm.journal_abbrev || "");
+            const jOk = !j || (j1 && (j1.includes(j) || j.includes(j1))) || (j2 && (j2.includes(j) || j.includes(j2)));
+            if (!jOk) {
+                push(problems, key, "bad-journal", `popover ${label}: meta line names "${popMeta.split("·")[0].trim()}" but PubMed publishes this paper in "${pm.journal_abbrev || pm.journal}".`);
+                continue;
+            }
+        }
+        // ---- finding checks ----
+        const fm = p.match(/<span class="mz-ref-pop-finding">([^<]*)<\/span>/);
+        if (!fm) {
+            if (curated(key) || (pmid && curated(pmid))) {
+                push(problems, key, "missing-sourced", `popover ${label}: the citation summary is missing even though this surface carries the paper's grounded summary — wire it through.`);
+            } else {
+                push(advisories, key, "missing-unsourced", `popover ${label}: no curated summary exists yet for this citation`);
+            }
+            continue;
+        }
+        const finding = decodeEntities(fm[1]).trim();
         if (RAW_ABSTRACT_LABEL.test(finding)) {
-            seen.add(pmid);
-            problems.push(`popover ref-pop-${pmid}: the citation summary is a raw abstract dump (starts "${finding.slice(0, 24)}…") — replace with an adequate plain-language finding (the paper's modal Bottom-line).`);
-        } else if (finding.length > 0 && finding.length < 25) {
+            push(problems, key, "raw-dump", `popover ${label}: the citation summary is a raw abstract dump (starts "${finding.slice(0, 24)}…") — replace with an adequate plain-language finding.`);
+            continue;
+        }
+        // Verbatim dump: the "summary" is a contiguous copy of the paper's
+        // abstract. A curated plain-language summary in the clinician's own
+        // words is essentially never a verbatim abstract substring; a
+        // copy-paste always is. The paper's title is exempt (a concise
+        // title-as-descriptor is the W21 standard and titles are quoted in
+        // abstracts often enough to collide).
+        const nf = normText(finding);
+        const abs = (lookup && (corpusAbs[pmid] || corpusAbs[refKey] || (pmid && emb[pmid]))) || "";
+        if (nf.length >= 60 && abs && normText(abs).includes(nf) && !(pm && normText(pm.title) === nf) && normText(popTitle) !== nf) {
+            push(problems, key, "verbatim-dump", `popover ${label}: the citation summary is a verbatim copy of the paper's abstract text ("${finding.slice(0, 50)}…") — a summary must be plain-language, not a paste.`);
+            continue;
+        }
+        if (finding.length > 0 && finding.length < 25) {
             // Empty/near-empty only. The floor sits BELOW the W20/W21
             // reference-standard minimum (53 chars) so a legitimately concise
             // foundational-citation descriptor is never flagged — the real
-            // defect this gate targets is the raw-abstract-dump above.
-            seen.add(pmid);
-            problems.push(`popover ref-pop-${pmid}: the citation summary is only ${finding.length} chars — effectively empty.`);
+            // defect this gate targets is the dumps above.
+            push(problems, key, "near-empty", `popover ${label}: the citation summary is only ${finding.length} chars — effectively empty.`);
         }
+    }
+    return { problems, advisories };
+}
+
+export function auditPopoverSummaries(post) {
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems: [] };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const src = groundedSummarySources(h);
+    const r = auditPopoverSurface(h, { curated: (pmid) => !!src[pmid] });
+    const problems = r.problems.map((p) => p.msg);
+    return { ok: problems.length === 0, problems };
+}
+
+/**
+ * pmid -> the grounded summary text a post itself carries for that paper
+ * (modal Bottom-line preferred, cite-card lens line second). This is the
+ * ONLY sourcing pool any popover tooling may draw from — exported so the
+ * deploy-side walker and repair scripts use the same pool as the worker
+ * heal, never a private re-implementation.
+ */
+export function groundedSummarySources(html) {
+    const h = String(html || "");
+    const bl = modalBottomLines(h);
+    const lens = citeCardLenses(h);
+    const out = { ...lens, ...bl }; // bottom-lines win
+    return out;
+}
+
+// ---------------------------------------------------------------------
+// Dark-ground audit (2026-09-01). The site is ONE light theme (SYSTEM_MAP
+// §8.0.0), and posts embed their own ~25KB stylesheet — so a generator that
+// still emits the old dark palette would publish a dark page. The deploy-side
+// dark-surface gate scans the published corpus, but only AT DEPLOY TIME; a
+// scheduled pipeline publish between deploys would ship dark and sit live
+// until the next deploy. This closes that window at the publish choke point.
+// Same rules as scripts/audit_dark_surfaces.py: a background/background-color
+// declaration (gradient stops included) whose colour is darker than the
+// neutral threshold, outside the brand-violet/semantic-tint allowlist and not
+// in a scrim/backdrop/photo context, must not publish. Deterministic+offline.
+// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Dosing-language audit (2026-09-01). Owner directive, verbatim: "I NEVER
+// want you to post actual dosing and things that really should be
+// reserved for private patient-doctor decisions about management." The
+// boundary: counseling/narrative prose is DOSE-FREE; text attributed to a
+// specific paper — verbatim abstracts, the deep-dive dialog analyses, the
+// per-paper cite cards and citation popovers — is research reporting and
+// keeps the study's own facts (an analysis that cannot say what dose a
+// trial tested is not an analysis). Deterministic + offline. The deploy-
+// side twin over the static surfaces is scripts/audit_no_dosing.py.
+// ---------------------------------------------------------------------
+// Concentration units (mg/dL, IU/L, µg/mL …) are lab values — diagnostic
+// education, not dosing — hence the unit-per-volume lookahead ("mg/d",
+// per day, is still dosing).
+const DOSING_RE = /\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b(?!\s*\/\s*(?:d?L|mL)\b)|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b|\b(?:BID|TID|QID)\b/gi;
+export function auditDosingLanguage(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    let h = typeof post.body_html === "string" ? post.body_html : "";
+    h = h.replace(/<!--[\s\S]*?-->/g, " ")
+        .replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/gi, " ")
+        .replace(/<details class="mz-abstract">[\s\S]*?<\/details>/gi, " ")
+        .replace(/<div class="abstract-body">[\s\S]*?<\/div>/gi, " ")
+        .replace(/<dialog\b[\s\S]*?<\/dialog>/gi, " ")
+        .replace(/<article class="mz-cite-card[\s\S]*?<\/article>/gi, " ")
+        .replace(/<sup class="mz-ref"[\s\S]*?<\/sup>/gi, " ")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+        .replace(/<[^>]+>/g, " ");
+    const found = [...new Set((h.match(DOSING_RE) || []).map((s) => s.trim()))];
+    if (found.length) {
+        problems.push(`counseling/narrative prose carries dosing (${found.slice(0, 6).join(", ")}) — dosing belongs to private patient-doctor management decisions, never to the site's own prose. Study doses stay inside the paper's attributed containers (abstract, deep-dive analysis, cite card).`);
+    }
+    return { ok: problems.length === 0, problems };
+}
+
+const THEME_ALLOW_HEX = new Set(["#2e1065", "#6d28d9", "#7c3aed", "#4c1d95", "#5b21b6", "#047857",
+    "#166534", "#14532d", "#7c2d12", "#92400e", "#b91c1c", "#991b1b", "#3d1478"]);
+const THEME_SCRIM_HINT = /(backdrop|overlay|scrim|::backdrop|vignette|cover-|photo|darkener)/i;
+const THEME_DARK_MAX_LUM = 60;
+function hexLum(hx) {
+    let s = hx.replace(/^#/, "");
+    if (s.length === 3) s = s.split("").map((c) => c + c).join("");
+    if (s.length < 6) return null;
+    return (parseInt(s.slice(0, 2), 16) * 299 + parseInt(s.slice(2, 4), 16) * 587 + parseInt(s.slice(4, 6), 16) * 114) / 1000;
+}
+export function auditDarkGrounds(post) {
+    const problems = [];
+    if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
+    const h = typeof post.body_html === "string" ? post.body_html : "";
+    const bgRe = /(?<![\w-])background(?:-color)?\s*:\s*([^;{}]+)/gi;
+    let m;
+    while ((m = bgRe.exec(h)) !== null) {
+        const decl = m[1];
+        const ctx = h.slice(Math.max(0, m.index - 260), m.index);
+        if (THEME_SCRIM_HINT.test(ctx)) continue;
+        for (const hx of decl.match(/#[0-9a-fA-F]{3,8}/g) || []) {
+            if (THEME_ALLOW_HEX.has(hx.toLowerCase())) continue;
+            const L = hexLum(hx);
+            if (L !== null && L < THEME_DARK_MAX_LUM) {
+                problems.push(`dark ground ${hx} (lum ${Math.round(L)}) in "${decl.trim().slice(0, 60)}" — the site is one LIGHT theme; a post must not embed a dark stylesheet.`);
+            }
+        }
+        let rm;
+        const rgbaRe = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([0-9.]+)\s*)?\)/g;
+        while ((rm = rgbaRe.exec(decl)) !== null) {
+            const L = (Number(rm[1]) * 299 + Number(rm[2]) * 587 + Number(rm[3]) * 114) / 1000;
+            const alpha = rm[4] !== undefined ? Number(rm[4]) : 1.0;
+            if (L < THEME_DARK_MAX_LUM && alpha >= 0.5) {
+                problems.push(`dark ground rgba(${rm[1]},${rm[2]},${rm[3]},${alpha}) (lum ${Math.round(L)}) in "${decl.trim().slice(0, 60)}" — the site is one LIGHT theme; a post must not embed a dark stylesheet.`);
+            }
+        }
+        if (problems.length >= 12) { problems.push("…further dark grounds elided — the stylesheet is dark-themed; regenerate on the light palette."); break; }
     }
     return { ok: problems.length === 0, problems };
 }
 function decodeEntities(s) {
-    return String(s || "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+    return String(s || "")
+        .replace(/&#(\d+);/g, (m, n) => { try { return String.fromCodePoint(Number(n)); } catch { return m; } })
+        .replace(/&#x([0-9a-fA-F]+);/g, (m, n) => { try { return String.fromCodePoint(parseInt(n, 16)); } catch { return m; } })
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
 }
 
 // ---------------------------------------------------------------------
@@ -788,30 +1118,85 @@ function cleanBottomLine(t) {
 function wordSet(s) { return new Set((String(s || "").toLowerCase().match(/[a-z0-9]+/g)) || []); }
 
 /**
- * Offline. Replace every raw-abstract-dump citation popover summary with the
- * paper's own (cleaned) modal Bottom-line. @returns {ok, healed, changed, problems}
+ * Offline. Three grounded popover repairs, all sourced from the post itself
+ * (no clinical content is ever invented):
+ *   1. an old-schema popover (W20-era mz-ref-title/-meta/-finding classes)
+ *      is renamed to the spec mz-ref-pop-* schema — a pure attribute rename,
+ *      zero text changes;
+ *   2. a raw-abstract-dump finding is replaced with the paper's own
+ *      (cleaned) modal Bottom-line;
+ *   3. a structured popover MISSING its finding span gets one, sourced from
+ *      the paper's modal Bottom-line or, failing that, its cite card's lens
+ *      line (the pipeline's own sourcing rules — abstract dumps and author
+ *      lists are rejected, exactly as in scripts/apply_inline_refs.py).
+ * A citation with no grounded source in the post is left alone: the deploy-
+ * side ref-popover gate reports it to the clinician as advisory.
+ * @returns {ok, healed, changed, problems}
  */
 export function healPopoverSummaries(bodyHtml) {
     let h = String(bodyHtml || "");
     const problems = [];
-    const bl = {};
-    const dRe = /<dialog[^>]*\bid="dd-(\d+)"[^>]*>([\s\S]*?)<\/dialog>/g;
-    let dm;
-    while ((dm = dRe.exec(h)) !== null) {
-        const s = dm[2].match(/id="dd-\d+-bottom"[^>]*>([\s\S]*?)<\/section>/);
-        if (!s) continue;
-        const c = cleanBottomLine(visibleText(s[1]));
-        if (c.length >= 80 && !RAW_ABSTRACT_LABEL.test(c)) bl[dm[1]] = c;
-    }
+    const bl = modalBottomLines(h);
+    const lens = citeCardLenses(h);
+    const emb = embeddedAbstracts(h);
     let changed = 0;
-    h = h.replace(/(<span class="mz-ref-pop" id="ref-pop-(\d+)"[\s\S]*?<span class="mz-ref-pop-finding">)([^<]*)(<\/span>)/g,
-        (full, pre, pmid, finding, post) => {
-            if (!RAW_ABSTRACT_LABEL.test(decodeEntities(finding).trim())) return full;
-            if (!bl[pmid]) { problems.push(`ref-pop-${pmid}: no adequate modal Bottom-line to source a summary — left for review`); return full; }
-            changed++;
-            return pre + escapeHtml(bl[pmid]) + post;
-        });
+    h = h.replace(SUP_SPAN_RE, (sup) =>
+        sup.replace(/(<span class="mz-ref-pop"[^>]*>)([\s\S]*?)(<\/span>)(?=<\/sup>)/, (full, pre, inner, post) => {
+            let out = inner;
+            const pmid = supPmid(sup);
+            // 1) schema normalisation (rename only — text is untouched)
+            if (out.includes('class="mz-ref-title"') && !out.includes("mz-ref-pop-title")) {
+                out = out
+                    .replace(/class="mz-ref-title"/g, 'class="mz-ref-pop-title"')
+                    .replace(/class="mz-ref-meta"/g, 'class="mz-ref-pop-meta"')
+                    .replace(/class="mz-ref-finding"/g, 'class="mz-ref-pop-finding"');
+            }
+            // 2) a dump finding → the paper's own modal Bottom-line. Two dump
+            //    shapes: a labelled abstract opening ("BACKGROUND: …") and a
+            //    verbatim paste of the abstract body (same guards as the
+            //    audit: ≥60 normalised chars, and never the paper's title
+            //    used as a concise descriptor).
+            out = out.replace(/(<span class="mz-ref-pop-finding">)([^<]*)(<\/span>)/, (f, fp, txt, fs) => {
+                const t = decodeEntities(txt).trim();
+                const isRaw = RAW_ABSTRACT_LABEL.test(t);
+                const nf = normText(t);
+                const popTitle = normText(((inner.match(/<span class="mz-ref-pop-title">([\s\S]*?)<\/span>/) || [])[1] || "").replace(/<[^>]*>/g, ""));
+                const isPaste = !isRaw && pmid && emb[pmid] && nf.length >= 60 && nf !== popTitle && normText(emb[pmid]).includes(nf);
+                if (!isRaw && !isPaste) return f;
+                if (!pmid || !bl[pmid]) { problems.push(`ref-pop-${pmid || "?"}: no adequate modal Bottom-line to source a summary — left for review`); return f; }
+                return fp + escapeHtml(bl[pmid]) + fs;
+            });
+            // 3) structured but finding-less → fill from the grounded source
+            if (out.includes("mz-ref-pop-title") && !out.includes("mz-ref-pop-finding") && pmid) {
+                const src = bl[pmid] || lens[pmid];
+                if (src) out += `<span class="mz-ref-pop-finding">${escapeHtml(src)}</span>`;
+            }
+            if (out !== inner) changed++;
+            return pre + out + post;
+        }));
     return { ok: true, healed: h, changed, problems };
+}
+
+/**
+ * Every citation popover carries a direct source link (owner directive,
+ * 2026-09-02): a reader hovering a citation must be able to click straight
+ * through to the paper. Kept OUT of healPopoverSummaries on purpose — that
+ * function's contract is that it never changes visible text, and this adds
+ * a visible affordance. @returns {ok, healed, changed}
+ */
+export function ensurePopoverSourceLinks(html) {
+    let changed = 0;
+    const h = String(html || "").replace(SUP_SPAN_RE, (sup) =>
+        sup.replace(/(<span class="mz-ref-pop"[^>]*>)([\s\S]*?)(<\/span>)(?=<\/sup>)/, (full, pre, inner, post) => {
+            const pmid = supPmid(sup);
+            if (!pmid || inner.includes("mz-ref-pop-src")) { return full; }
+            changed++;
+            return pre + inner
+                + `<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/"`
+                + ` target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>`
+                + post;
+        }));
+    return { ok: true, healed: h, changed };
 }
 
 /**
@@ -857,4 +1242,4 @@ export async function healAbstractCompleteness(bodyHtml, fetchAbstract, opts = {
     return { ok: true, healed: h, changed, fetched, problems };
 }
 
-export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };
+export default { auditPostFormat, auditPublishable, auditNumericFidelity, auditAbstractCompleteness, auditPopoverSummaries, auditPopoverSurface, auditSummaryDuplication, auditTemplateBoilerplate, auditModalPlaceholders, auditDarkGrounds, auditDosingLanguage, groundedSummarySources, healPaperCardPost, healDeepDiveModals, healPost, healPopoverSummaries, healAbstractCompleteness, extractStyleScript };

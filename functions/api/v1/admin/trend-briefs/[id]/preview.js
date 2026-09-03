@@ -26,10 +26,10 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
   :root {
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
-    --bg-base: #120b22;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
+    --bg-base: #FBFAF8;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
     --hairline: rgba(255, 255, 255, 0.08);
   }
   * { box-sizing: border-box; }
@@ -53,6 +53,7 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
     display: inline-block; margin-bottom: 18px;
     background: rgba(var(--glow-purple), 0.07);
   }
+  button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
 </head>
 <body>

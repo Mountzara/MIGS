@@ -9,11 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b; --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.10);
-            --fg-strong: #fff; --fg-mid: #ffffff;
-            --fg-soft: #ffffff; --fg-dim: #ffffff;
-            --accent: #6d28d9; --accent-soft: #a78bfa;
+            --bg-base: #FBFAF8; --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726; --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C; --fg-dim: #8B8698;
+            --accent: #6d28d9; --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --green: #10b981; --amber: #f59e0b; --red: #ef4444;
         }
@@ -44,21 +44,21 @@
         }
         .lede {
             font-size: 14.5px; line-height: 1.55; color: var(--fg-mid);
-            max-width: 76ch; margin: 0 0 20px 0;
+            max-width: 96ch; margin: 0 0 20px 0;
         }
         .controls {
             display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap;
         }
         input[type=search] {
             font: inherit;
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72); border: 1px solid var(--border);
             border-radius: 9px; padding: 9px 12px;
             color: var(--fg-strong); font-size: 14px;
             min-width: 260px;
         }
         input[type=search]:focus {
             outline: none;
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.06);
         }
         button {
@@ -73,10 +73,10 @@
         }
         button.primary:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.30); }
         button.ghost {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border); color: var(--fg-soft);
         }
-        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.ghost:hover { color: var(--fg-strong); border-color: #6d28d9; }
 
         .list { display: flex; flex-direction: column; gap: 8px; }
         .row {
@@ -92,7 +92,7 @@
         }
         .row:hover {
             transform: translateY(-1px);
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.04);
         }
         .row h3 { margin: 0 0 4px 0; font-size: 15.5px; font-weight: 500; color: var(--fg-strong); letter-spacing: -0.005em; }
@@ -106,8 +106,28 @@
             border-radius: 14px;
             padding: 36px 20px; text-align: center;
             color: var(--fg-soft); font-size: 13px;
+            line-height: 1.6;
             backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
         }
+        dialog {
+            background: #FFFFFF; color: var(--fg-strong);
+            border: 1px solid var(--border); border-radius: 14px;
+            padding: 22px; max-width: 520px; width: 92vw;
+        }
+        dialog::backdrop { background: rgba(26,23,38,0.14); }
+        dialog h2 { margin: 0 0 4px 0; font-weight: 300; font-size: 20px; }
+        dialog p.hint { font-size: 12.5px; color: var(--fg-soft); margin: 0 0 6px 0; line-height: 1.55; }
+        dialog label { display: block; font-size: 12px; color: var(--fg-soft); margin: 10px 0 4px; }
+        dialog input {
+            width: 100%; font: inherit; font-size: 13px;
+            background: #FFFFFF; border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 10px; color: var(--fg-strong);
+        }
+        dialog .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        dialog .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        dialog .msg { font-size: 12.5px; margin-top: 12px; line-height: 1.55; min-height: 1em; }
+        dialog .msg.bad { color: #B91C1C; }
+        dialog .msg.good { color: #047857; }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -120,9 +140,9 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -153,7 +173,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -161,7 +181,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -188,19 +208,57 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="wrap">
         <header class="bar">
             <span class="crumb"><a href="/admin/">Admin</a> &rsaquo; Patients</span>
-            <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);">/admin/patients</span>
         </header>
         <h1 class="page-title">Patients</h1>
         <p class="lede">Click into a patient for the unified case view: intake, triage, appointments, messages, symptoms, education, and the audit timeline in one place.</p>
 
         <div class="controls">
             <input type="search" id="q" placeholder="Search by last name, first name, or email…">
-            <button class="ghost" id="btn-refresh">Refresh</button>
+            <button class="primary" id="btn-add">+ Add patient</button>
+            <button class="ghost" id="btn-invite">Send portal invite</button>
             <span style="margin-left:auto; font-size:12px; color: var(--fg-dim);" id="count">—</span>
         </div>
 
-        <div id="list" class="list"><div class="empty-state">Loading…</div></div>
+        <div id="list" class="list"><div class="empty-state">Loading the roster…</div></div>
     </div>
+
+    <dialog id="dlg-add">
+        <h2>Add patient</h2>
+        <p class="hint">This creates the chart only. It does not give the patient portal access &mdash;
+        send a portal invite for that.</p>
+        <div class="grid2">
+            <div><label for="a-first">First name</label><input id="a-first" autocomplete="off"></div>
+            <div><label for="a-last">Last name</label><input id="a-last" autocomplete="off"></div>
+        </div>
+        <label for="a-email">Email</label><input id="a-email" type="email" autocomplete="off">
+        <div class="grid2">
+            <div><label for="a-dob">Date of birth</label><input id="a-dob" type="date" autocomplete="off"></div>
+            <div><label for="a-phone">Phone (optional)</label><input id="a-phone" autocomplete="off"></div>
+        </div>
+        <div class="msg" id="a-msg"></div>
+        <div class="acts">
+            <button class="primary" id="a-save">Add patient</button>
+            <button class="ghost" id="a-cancel">Cancel</button>
+        </div>
+    </dialog>
+
+    <dialog id="dlg-invite">
+        <h2>Send portal invite</h2>
+        <p class="hint">This creates a sign-up link for the patient. Nothing is emailed &mdash; copy the link below
+        and send it to them yourself.</p>
+        <label for="i-email">Email</label><input id="i-email" type="email" autocomplete="off">
+        <label for="i-name">Full name (optional)</label><input id="i-name" autocomplete="off">
+        <label for="i-url">Invite link</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <input id="i-url" readonly placeholder="Appears here once created" style="flex:1;">
+            <button class="ghost" id="i-copy" type="button">Copy</button>
+        </div>
+        <div class="msg" id="i-msg"></div>
+        <div class="acts">
+            <button class="primary" id="i-save">Create invite link</button>
+            <button class="ghost" id="i-cancel">Close</button>
+        </div>
+    </dialog>
 
     <script>
         const $ = (id) => document.getElementById(id);
@@ -211,6 +269,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 credentials: 'include', cache: 'no-store',
                 headers: { 'content-type': 'application/json' },
             });
+            if (res.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
             const ct = res.headers.get('content-type') || '';
             const body = ct.includes('json') ? await res.json() : await res.text();
             if (!res.ok) {
@@ -219,6 +278,36 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 throw e;
             }
             return body;
+        }
+        async function postJson(url, body) {
+            const res = await fetch(url, {
+                method: 'POST', credentials: 'include', cache: 'no-store',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (res.status === 401) { location.href = '/admin/_login?next=' + encodeURIComponent(location.pathname); return new Promise(() => {}); }
+            const ct = res.headers.get('content-type') || '';
+            const data = ct.includes('json') ? await res.json() : await res.text();
+            if (!res.ok) {
+                const e = new Error((data && data.message) || (data && data.error) || res.statusText);
+                e.code = data && data.error; e.status = res.status;
+                throw e;
+            }
+            return data;
+        }
+        // The API answers with slugs. An operator should not have to read them.
+        const ERRORS = {
+            invalid_email: 'That email address is not valid.',
+            invalid_first_name: 'Enter a first name.',
+            invalid_last_name: 'Enter a last name.',
+            invalid_dob: 'Pick the patient’s date of birth.',
+            email_already_registered: 'A patient with that email is already on the roster.',
+        };
+        function humanError(e) { return ERRORS[e.code] || e.message || 'Something went wrong.'; }
+        function setMsg(id, text, cls) {
+            const el = $(id);
+            el.textContent = text;
+            el.className = 'msg' + (cls ? ' ' + cls : '');
         }
         function escapeHtml(s) {
             if (s == null) return '';
@@ -246,21 +335,25 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 state.patients = data.patients || [];
                 render();
             } catch (e) {
-                $('list').innerHTML = `<div class="empty-state">Could not load: ${escapeHtml(e.message)}</div>`;
+                $('list').innerHTML = `<div class="empty-state">Could not load the roster: ${escapeHtml(e.message)}. Reload the page to try again.</div>`;
             }
         }
 
         function render() {
             $('count').textContent = `${state.patients.length} patient${state.patients.length === 1 ? '' : 's'}`;
             if (state.patients.length === 0) {
-                $('list').innerHTML = '<div class="empty-state">No patients match this search.</div>';
+                // "Nobody has been added yet" and "your search excluded everyone"
+                // are different problems and need different next steps.
+                $('list').innerHTML = state.filter
+                    ? `<div class="empty-state">No patient matches &ldquo;${escapeHtml(state.filter)}&rdquo;. Clear the search to see the full roster.</div>`
+                    : '<div class="empty-state">This is everyone in your practice — click a name to open their whole chart. Add your first patient with + Add patient, or send a portal invite and let them register themselves.</div>';
                 return;
             }
             $('list').innerHTML = state.patients.map(p => {
                 const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || '(no name)';
                 const ageY = age(p.dob);
                 const statusBadge = p.status !== 'active'
-                    ? ` · <span style="color: rgba(252, 211, 77, 0.92);">${escapeHtml(p.status)}</span>` : '';
+                    ? ` · <span style="color: #92400E;">${escapeHtml(p.status)}</span>` : '';
                 return `
                     <a class="row" href="/admin/cases/${encodeURIComponent(p.id)}/">
                         <div>
@@ -276,6 +369,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     </a>
                 `;
             }).join('');
+            if (state.patients.length === 100) {
+                $('list').innerHTML += '<div class="empty-state" style="padding: 16px;">Showing the first 100 &mdash; search to narrow.</div>';
+            }
         }
 
         $('q').addEventListener('input', () => {
@@ -285,9 +381,91 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 load();
             }, 220);
         });
-        $('btn-refresh').addEventListener('click', load);
+        // The Refresh button is gone — searching reloads, and returning to
+        // the tab picks up anything added elsewhere.
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+
+        // ---- add patient (POST /api/v1/admin/patients) ----
+        $('btn-add').addEventListener('click', () => {
+            setMsg('a-msg', '', '');
+            $('dlg-add').showModal();
+            $('a-first').focus();
+        });
+        $('a-cancel').addEventListener('click', () => $('dlg-add').close());
+        $('a-save').addEventListener('click', async () => {
+            const btn = $('a-save');
+            const body = {
+                first_name: $('a-first').value.trim(),
+                last_name: $('a-last').value.trim(),
+                email: $('a-email').value.trim(),
+                dob: $('a-dob').value.trim(),
+            };
+            const phone = $('a-phone').value.trim();
+            if (phone) body.phone = phone;
+            if (!body.first_name || !body.last_name || !body.email || !body.dob) {
+                setMsg('a-msg', 'First name, last name, email and date of birth are all required.', 'bad');
+                return;
+            }
+            btn.disabled = true;
+            setMsg('a-msg', 'Adding…', '');
+            try {
+                await postJson('/api/v1/admin/patients', body);
+                ['a-first', 'a-last', 'a-email', 'a-dob', 'a-phone'].forEach(id => { $(id).value = ''; });
+                setMsg('a-msg', '', '');
+                $('dlg-add').close();
+                // A stale search would hide the patient just created.
+                $('q').value = ''; state.filter = '';
+                load();
+            } catch (e) {
+                setMsg('a-msg', humanError(e), 'bad');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // ---- portal invite (POST /api/v1/admin/preview-invite) ----
+        $('btn-invite').addEventListener('click', () => {
+            setMsg('i-msg', '', '');
+            $('i-url').value = '';
+            $('dlg-invite').showModal();
+            $('i-email').focus();
+        });
+        $('i-cancel').addEventListener('click', () => $('dlg-invite').close());
+        $('i-save').addEventListener('click', async () => {
+            const btn = $('i-save');
+            const email = $('i-email').value.trim();
+            if (!email) { setMsg('i-msg', 'Enter the email address to invite.', 'bad'); return; }
+            const body = { email };
+            const full_name = $('i-name').value.trim();
+            if (full_name) body.full_name = full_name;
+            btn.disabled = true;
+            setMsg('i-msg', 'Creating…', '');
+            try {
+                const data = await postJson('/api/v1/admin/preview-invite', body);
+                $('i-url').value = data.grant_url || '';
+                $('i-url').select();
+                const exp = data.expires_at ? ` It works until ${fmtDate(data.expires_at)}.` : '';
+                setMsg('i-msg', `Invite link created.${exp} Copy it and send it to the patient — nothing is emailed automatically.`, 'good');
+            } catch (e) {
+                setMsg('i-msg', humanError(e), 'bad');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        $('i-copy').addEventListener('click', async () => {
+            const url = $('i-url').value;
+            if (!url) { setMsg('i-msg', 'Create the invite link first.', 'bad'); return; }
+            try {
+                await navigator.clipboard.writeText(url);
+                setMsg('i-msg', 'Link copied. Send it to the patient — nothing is emailed automatically.', 'good');
+            } catch (e) {
+                $('i-url').select();
+                setMsg('i-msg', 'The browser blocked the copy — the link is selected, copy it manually.', 'bad');
+            }
+        });
 
         load();
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

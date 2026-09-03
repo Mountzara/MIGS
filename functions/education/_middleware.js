@@ -28,6 +28,52 @@ const PUBLICLY_APPROVED_SLUGS = new Set([
     // "chronic-pelvic-pain",
 ]);
 
+
+// ---------------------------------------------------------------------
+// PUBLIC HARDENING HEADERS (2026-08-20)
+// ---------------------------------------------------------------------
+// _headers defines full site hardening — HSTS, CSP, X-Frame-Options DENY,
+// frame-ancestors 'none', the noai directives — and NONE of it reached
+// /education/*, because Cloudflare never applies _headers to a response a
+// FUNCTION returns, and this middleware returns every one of them. The
+// twelve clinical guides were therefore served with no CSP and no frame
+// protection: embeddable in someone else's page, and unprotected against
+// injected script. Exactly the failure portal_headers.js was written for
+// on /portal/* — the same trap, a different directory.
+//
+// Applied with Headers.set() so precisely one policy per header reaches
+// the browser (append would leave duplicates, which browsers resolve for
+// CSP by INTERSECTION and for Permissions-Policy first-wins).
+const PUBLIC_CSP = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' https://*.mountzara.com https://mountzara.com data:",
+    "media-src 'self' https://*.mountzara.com https://mountzara.com blob:",
+    "connect-src 'self' https://*.mountzara.com https://mountzara.com https://cloudflareinsights.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'", "form-action 'self'", "object-src 'none'",
+    "upgrade-insecure-requests",
+].join("; ");
+
+function harden(resp) {
+    const out = new Response(resp.body, resp);
+    out.headers.set("Content-Security-Policy", PUBLIC_CSP);
+    out.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+    out.headers.set("X-Frame-Options", "DENY");
+    out.headers.set("X-Content-Type-Options", "nosniff");
+    out.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    out.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    out.headers.set("Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()");
+    // The content is not licensed for model training; say so on every
+    // response, not only in robots.txt, which a scraper may never read.
+    out.headers.set("X-Robots-Tag", "index, follow, noai, noimageai");
+    out.headers.set("X-AI-Training", "noai, noimageai");
+    return out;
+}
+
 export async function onRequest(ctx) {
     const { request, env, next } = ctx;
 
@@ -37,17 +83,31 @@ export async function onRequest(ctx) {
     const parts = url.pathname.split("/").filter(Boolean); // ["education", "<slug>", ...]
     const slug = parts[1] || "";
     if (slug && PUBLICLY_APPROVED_SLUGS.has(slug)) {
-        return next();
+        return harden(await next());
+    }
+
+    // 2026-08-23 — the header above has promised since this file was
+    // written that EDUCATION_PUBLIC_LAUNCH = "true" opens the gate, but no
+    // code ever READ that variable: the only check was previewAccess(),
+    // which looks at PORTAL_PUBLIC_LAUNCH. So the owner's education release
+    // (approved after the citation verification) silently did nothing when
+    // the flag was set — the gate stayed closed and nothing reported the
+    // contradiction. Education and the portal launch INDEPENDENTLY: the
+    // guides are reviewed public content; the portal is accounts and PHI.
+    // Same exact-string discipline as isPortalLaunched: only "true" opens.
+    const eduLaunched = (env.EDUCATION_PUBLIC_LAUNCH || "false").toString().trim().toLowerCase() === "true";
+    if (eduLaunched) {
+        return harden(await next());
     }
 
     // Otherwise: same gate as /portal/*. Launched OR admin-authed → through.
     const { allow } = await previewAccess(request, env);
     if (allow) {
-        return next();
+        return harden(await next());
     }
 
     // Public, pre-launch — serve the Coming Soon HTML.
-    return new Response(COMING_SOON_HTML, {
+    return harden(new Response(COMING_SOON_HTML, {
         status: 200,
         headers: {
             "content-type": "text/html; charset=utf-8",
@@ -55,7 +115,7 @@ export async function onRequest(ctx) {
             "x-content-type-options": "nosniff",
             "referrer-policy": "strict-origin-when-cross-origin",
         },
-    });
+    }));
 }
 
 // ---------------------------------------------------------------------
@@ -76,10 +136,10 @@ const COMING_SOON_HTML = `<!doctype html>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120b22;
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
+            --bg-base: #FBFAF8;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
             --accent: #6d28d9;
             --accent-soft: #a78bfa;
             --glow-purple: 167, 139, 250;
@@ -165,8 +225,8 @@ const COMING_SOON_HTML = `<!doctype html>
             margin: 0 0 44px 0;
         }
         .topic {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background:rgba(255,255,255,0.72);
+            border:1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -226,7 +286,8 @@ const COMING_SOON_HTML = `<!doctype html>
                 opacity: 1 !important; transform: none !important;
             }
         }
-    </style>
+      button,button:hover,.btn,.btn:hover{color:#fff}
+</style>
 </head>
 <body>
     <main class="wrap">

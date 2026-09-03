@@ -11,13 +11,13 @@
 <script src="/admin/_nav.js"></script>
 <style>
 :root {
-    --bg-base: #120f1b;
-    --fg-strong: #ffffff;
-    --fg-mid: #ffffff;
-    --fg-soft: #ffffff;
-    --fg-faint: rgba(245, 245, 247, 0.38);
+    --bg-base: #FBFAF8;
+    --fg-strong: #1A1726;
+    --fg-mid: #4A4658;
+    --fg-soft: #6E6A7C;
+    --fg-faint: #8B8698;
     --accent: #6d28d9;
-    --accent-soft: #a78bfa;
+    --accent-soft: #7c3aed;
     --glow-purple: 167, 139, 250;
     --hairline: rgba(255, 255, 255, 0.08);
     --glass: rgba(255, 255, 255, 0.04);
@@ -45,7 +45,7 @@ html, body {
 .page-head .eyebrow {
     display: block;
     font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: rgba(var(--glow-purple), 0.92);
+    color: #6d28d9;
     margin-bottom: 6px;
 }
 .page-head p.lede { margin: 6px 0 0; font-size: 14px; color: var(--fg-soft); max-width: 64ch; }
@@ -57,9 +57,9 @@ html, body {
     transition: transform 0.18s, border-color 0.18s;
     cursor: pointer;
 }
-.chip:hover { transform: translateY(-1px); border-color: rgba(var(--glow-purple), 0.4); }
-.chip.active { border-color: rgba(var(--glow-purple), 0.7); background: rgba(var(--glow-purple), 0.07); }
-.chip .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.85); }
+.chip:hover { transform: translateY(-1px); border-color: #6d28d9; }
+.chip.active { border-color: #6d28d9; background: rgba(var(--glow-purple), 0.07); }
+.chip .label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; }
 .chip .nums { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: var(--fg-strong); margin-top: 4px; }
 
 .bar {
@@ -71,10 +71,10 @@ html, body {
 .bar label { font-size: 11px; color: var(--fg-soft); text-transform: uppercase; letter-spacing: 0.12em; }
 .bar input, .bar select, .bar button {
     font: inherit;
-    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.72); border: 1px solid var(--hairline);
     border-radius: 8px; color: var(--fg-mid); padding: 7px 12px; font-size: 13px;
 }
-.bar input:focus, .bar select:focus { outline: none; border-color: rgba(var(--glow-purple), 0.55); }
+.bar input:focus, .bar select:focus { outline: none; border-color: #6d28d9; }
 .bar button {
     cursor: pointer;
     background: linear-gradient(180deg, var(--accent-soft), var(--accent));
@@ -92,16 +92,16 @@ html, body {
     overflow: hidden;
     transition: transform 0.18s, border-color 0.18s;
 }
-.card:hover { border-color: rgba(var(--glow-purple), 0.30); }
+.card:hover { border-color: #6d28d9; }
 .card header {
     display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
     padding: 14px 18px; border-bottom: 1px solid var(--hairline);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255,255,255,0.72);
 }
 .badge {
     font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
     padding: 3px 9px; border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06); border: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.72); border: 1px solid var(--hairline);
     color: var(--fg-soft);
 }
 .badge.type-bug        { background: rgba(248, 113, 113, 0.12); color: var(--err); border-color: rgba(248, 113, 113, 0.35); }
@@ -111,11 +111,11 @@ html, body {
 .badge.sev-blocker     { background: rgba(248, 113, 113, 0.15); color: var(--blocker); border-color: rgba(248, 113, 113, 0.45); }
 .badge.sev-annoying    { background: rgba(251, 191, 36, 0.10); color: var(--annoying); border-color: rgba(251, 191, 36, 0.35); }
 .badge.sev-nice_to_have{ background: rgba(125, 211, 252, 0.08); color: var(--nice); border-color: rgba(125, 211, 252, 0.30); }
-.badge.status-new          { background: rgba(var(--glow-purple), 0.15); color: var(--accent-soft); border-color: rgba(var(--glow-purple), 0.45); }
+.badge.status-new          { background: rgba(var(--glow-purple), 0.15); color: var(--accent-soft); border-color: #6d28d9; }
 .badge.status-ai_analyzed  { background: rgba(125, 211, 252, 0.10); color: var(--nice); border-color: rgba(125, 211, 252, 0.35); }
 .badge.status-approved     { background: rgba(74, 222, 128, 0.12); color: var(--ok); border-color: rgba(74, 222, 128, 0.45); }
 .badge.status-rejected,
-.badge.status-wont_fix     { background: rgba(255, 255, 255, 0.04); color: var(--fg-faint); }
+.badge.status-wont_fix     { background: rgba(255,255,255,0.72); color: var(--fg-faint); }
 .badge.status-implemented  { background: rgba(74, 222, 128, 0.15); color: var(--ok); border-color: rgba(74, 222, 128, 0.5); }
 
 .label-chip {
@@ -126,7 +126,7 @@ html, body {
 .route-chip {
     font-size: 11.5px; color: var(--fg-soft);
     font-family: 'JetBrains Mono', monospace;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255,255,255,0.72);
     border: 1px solid var(--hairline);
     padding: 2px 8px; border-radius: 6px;
 }
@@ -179,10 +179,10 @@ html, body {
     font: inherit; font-size: 12.5px; font-weight: 500;
     padding: 7px 14px; border-radius: 8px; cursor: pointer;
     border: 1px solid var(--hairline);
-    background: rgba(255, 255, 255, 0.04); color: var(--fg-mid);
+    background: rgba(255,255,255,0.72); color: var(--fg-mid);
     transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
 }
-.btn:hover { transform: translateY(-1px); color: #fff; border-color: rgba(var(--glow-purple), 0.45); }
+.btn:hover { transform: translateY(-1px); color: #fff; border-color: #6d28d9; }
 .btn.approve { background: linear-gradient(180deg, rgba(74, 222, 128, 0.32), rgba(34, 197, 94, 0.32)); border-color: rgba(74, 222, 128, 0.45); color: #fff; }
 .btn.approve:hover { background: linear-gradient(180deg, rgba(74, 222, 128, 0.55), rgba(34, 197, 94, 0.55)); }
 .btn.reject { background: rgba(248, 113, 113, 0.10); border-color: rgba(248, 113, 113, 0.35); color: rgba(248, 113, 113, 0.95); }
@@ -195,6 +195,12 @@ html, body {
 }
 .empty-state h2 { color: var(--fg-strong); font-weight: 300; font-size: 22px; margin: 0 0 10px; }
 
+.filter-hint {
+    margin: -10px 0 18px;
+    font-size: 12.5px;
+    color: var(--fg-soft);
+}
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
         /* Fixed finalized hero line-art backdrop (static — does NOT play) so the
@@ -204,9 +210,9 @@ html, body {
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
@@ -237,7 +243,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -245,7 +251,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -305,6 +311,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <span id="lastUpdate" style="font-size:11.5px; color:var(--fg-soft); font-family:'JetBrains Mono', monospace;"></span>
     </div>
 
+    <p class="filter-hint">Showing Actionable only. Switch the filter to see Closed items.</p>
+
     <section id="cards" class="cards"></section>
 </main>
 
@@ -348,7 +356,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     }
 
     function renderRec(rec) {
-        if (!rec) return '<p class="rec-empty">Not analyzed yet. I&rsquo;ll process this the next time you open a Cowork session and ask me to "run the feedback queue".</p>';
+        if (!rec) return '<p class="rec-empty">Not analysed yet. This gets processed the next time you open a Cowork session and ask to run the feedback queue.</p>';
         return `
             <dl class="rec">
                 ${rec.summary       ? `<dt>Summary</dt><dd>${esc(rec.summary)}</dd>` : ''}
@@ -421,7 +429,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 cardsEl.innerHTML = `
                     <div class="empty-state">
                         <h2>Nothing in this bucket yet</h2>
-                        <p>Once a beta tester (Ally or anyone with a preview-grant cookie) clicks the Feedback button on a portal page, it lands here within seconds.</p>
+                        <p>Bug reports and suggestions from beta testers land here paired with an AI-drafted fix. Nothing submitted yet — issue a portal preview invite and have someone click the Feedback button on any portal page.</p>
                     </div>
                 `;
             } else {
@@ -485,5 +493,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     setInterval(loadCards, 30000); // auto-refresh every 30s
 })();
 </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

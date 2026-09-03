@@ -11,7 +11,7 @@
 // near the top of the <body>. The script handles its own styling +
 // injection point.
 //
-// §3.10 Apple-glass purple, sticky to top, mobile-friendly horizontal
+// Apple-glass purple, sticky to top, mobile-friendly horizontal
 // scroll on narrow viewports, prefers-reduced-motion override.
 // =====================================================================
 
@@ -19,32 +19,62 @@
     if (window.__mzAdminNavInstalled) return;
     window.__mzAdminNavInstalled = true;
 
-    const SECTIONS = [
-        { key: 'dashboard',  label: 'Dashboard',    href: '/admin/',            match: /^\/admin\/?$/           },
-        { key: 'patients',   label: 'Patients',     href: '/admin/patients/',   match: /^\/admin\/(patients|cases)\b/ },
-        { key: 'briefings',  label: 'Briefings',    href: '/admin/briefings/',  match: /^\/admin\/briefings\b/  },
-        { key: 'scheduling', label: 'Scheduling',   href: '/admin/scheduling/', match: /^\/admin\/scheduling\b/ },
-        { key: 'triage',     label: 'Triage',       href: '/admin/triage/',     match: /^\/admin\/triage\b/     },
-        { key: 'messages',   label: 'Messages',     href: '/admin/messages/',   match: /^\/admin\/messages\b/   },
-        { key: 'billing',    label: 'Billing',      href: '/admin/billing/',    match: /^\/admin\/billing\b/    },
-        { key: 'analytics',  label: 'Analytics',    href: '/admin/analytics/',  match: /^\/admin\/analytics\b/  },
-    { key: 'membership', label: 'Membership',   href: '/admin/membership/', match: /^\/admin\/membership\b/ },
-        { key: 'education',  label: 'Education',    href: '/admin/education/',  match: /^\/admin\/education\b/  },
-        { key: 'content',    label: 'Content',      href: '/admin/content/',    match: /^\/admin\/content\b/    },
-        { key: 'carousels',  label: 'Carousels',    href: '/admin/carousels/',  match: /^\/admin\/carousels\b/  },
-        { key: 'trendbriefs',label: 'Trend Briefs', href: '/admin/trend-briefs/', match: /^\/admin\/trend-briefs\b/ },
-        { key: 'compliance', label: 'Compliance',   href: '/admin/compliance/', match: /^\/admin\/compliance\b/ },
-        { key: 'feedback',   label: 'Feedback',     href: '/admin/feedback/',   match: /^\/admin\/feedback\b/   },
-        { key: 'debug',      label: 'Debug',        href: '/admin/debug/sessions/', match: /^\/admin\/debug\b/  },
+    // -----------------------------------------------------------------
+    // GROUPED NAVIGATION (2026-08-19)
+    // -----------------------------------------------------------------
+    // Twenty equal-weight tabs in one row is not navigation, it is a
+    // wall — the operator has to read all twenty to find one, and a
+    // half-empty install then reads as "nothing works" because nothing
+    // says what any tab is FOR. Seven groups, each opening to its pages
+    // with a one-line description. Nothing was removed or renamed; the
+    // hierarchy that always existed is now visible.
+    //
+    // Adding a page: put it in the group it belongs to. If it fits none
+    // of them, that is a signal about the page, not about this list.
+    const GROUPS = [
+        { key: 'home', label: 'Dashboard', href: '/admin/', match: /^\/admin\/?$/, items: [] },
+        { key: 'patients', label: 'Patients', match: /^\/admin\/(patients|cases|briefings)\b/, items: [
+            { label: 'Patient roster',  href: '/admin/patients/',  desc: 'Everyone in the practice' },
+            { label: 'Pre-visit briefings', href: '/admin/briefings/', desc: 'What to know before you walk in' },
+        ]},
+        { key: 'clinical', label: 'Clinical', match: /^\/admin\/(triage|orders|referrals|visits)\b/, items: [
+            { label: 'Triage review',   href: '/admin/triage/',    desc: 'New intakes waiting on you' },
+            { label: 'Orders & results',href: '/admin/orders/',    desc: 'Labs, imaging, and what came back' },
+            { label: 'Referrals',       href: '/admin/referrals/', desc: 'Who you refer to, and who covers them' },
+            { label: 'Visit summaries', href: '/admin/visits/',    desc: 'After-visit notes to approve' },
+        ]},
+        { key: 'schedule', label: 'Schedule', match: /^\/admin\/scheduling\b/, items: [
+            { label: 'Scheduling',      href: '/admin/scheduling/', desc: 'Availability and booked visits' },
+        ]},
+        { key: 'messages', label: 'Messages', match: /^\/admin\/messages\b/, items: [
+            { label: 'Patient messages', href: '/admin/messages/', desc: 'Secure inbox' },
+        ]},
+        { key: 'money', label: 'Money', match: /^\/admin\/(billing|gfe|membership)\b/, items: [
+            { label: 'Insurance billing', href: '/admin/billing/', desc: 'Claims, coding, ERAs' },
+            { label: 'Good faith estimates', href: '/admin/gfe/',  desc: 'Required for self-pay patients' },
+            { label: 'Membership',        href: '/admin/membership/', desc: 'Interest and tiers' },
+        ]},
+        { key: 'content', label: 'Content', match: /^\/admin\/(content|education|carousels|trend-briefs)\b/, items: [
+            { label: 'Posts & pages',   href: '/admin/content/',    desc: 'Site writing' },
+            { label: 'Patient education', href: '/admin/education/', desc: 'Condition libraries' },
+            { label: 'Carousels',       href: '/admin/carousels/',  desc: 'Homepage imagery' },
+            { label: 'Trend briefs',    href: '/admin/trend-briefs/', desc: 'Evidence review queue' },
+        ]},
+        { key: 'system', label: 'System', match: /^\/admin\/(analytics|compliance|feedback|debug)\b/, items: [
+            { label: 'Analytics',       href: '/admin/analytics/',  desc: 'Volume, NPS, outcomes' },
+            { label: 'Compliance',      href: '/admin/compliance/', desc: 'Signatures and attestations' },
+            { label: 'Feedback',        href: '/admin/feedback/',   desc: 'What patients said' },
+            { label: 'Sessions & debug',href: '/admin/debug/sessions/', desc: 'Tester invites & technical traces' },
+        ]},
     ];
 
     const STYLE = `
         .mz-admin-section-nav {
             position: sticky; top: 0; z-index: 999;
-            background: rgba(7, 7, 10, 0.86);
+            background: rgba(251, 250, 248, 0.92);
             backdrop-filter: blur(22px) saturate(165%);
             -webkit-backdrop-filter: blur(22px) saturate(165%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid #E9E5EE;
             padding: 10px clamp(16px, 4vw, 32px);
         }
         .mz-admin-section-nav .mz-asn-inner {
@@ -52,7 +82,7 @@
             max-width: 1280px; margin: 0 auto;
             overflow-x: auto;
             scrollbar-width: thin;
-            scrollbar-color: rgba(167, 139, 250, 0.4) transparent;
+            scrollbar-color: #6d28d9 transparent;
         }
         .mz-admin-section-nav .mz-asn-inner::-webkit-scrollbar { height: 4px; }
         .mz-admin-section-nav .mz-asn-inner::-webkit-scrollbar-thumb { background: rgba(167, 139, 250, 0.4); border-radius: 2px; }
@@ -60,22 +90,22 @@
             display: inline-flex; align-items: center; gap: 8px;
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.20em; text-transform: uppercase;
-            color: rgba(167, 139, 250, 0.95);
+            color: #6d28d9;
             padding: 6px 12px;
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid #E9E5EE;
             margin-right: 6px;
             white-space: nowrap;
             text-decoration: none;
             transition: color 0.18s;
         }
-        .mz-admin-section-nav .mz-asn-brand:hover { color: #ffffff; }
+        .mz-admin-section-nav .mz-asn-brand:hover { color: #1A1726; }
         .mz-admin-section-nav .mz-asn-link {
             font: inherit;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 999px;
             padding: 6px 14px;
-            color: rgba(245, 245, 247, 0.72);
+            color: #4A4658;
             font-size: 12.5px;
             font-weight: 500;
             letter-spacing: 0.02em;
@@ -85,24 +115,24 @@
         }
         .mz-admin-section-nav .mz-asn-link:hover {
             transform: translateY(-1px);
-            color: #ffffff;
-            border-color: rgba(167, 139, 250, 0.45);
+            color: #1A1726;
+            border-color: #6d28d9;
             background: rgba(167, 139, 250, 0.06);
         }
         .mz-admin-section-nav .mz-asn-link.active {
             background: rgba(167, 139, 250, 0.16);
-            border-color: rgba(167, 139, 250, 0.55);
-            color: rgba(167, 139, 250, 0.98);
+            border-color: #6d28d9;
+            color: #6d28d9;
         }
         .mz-admin-section-nav .mz-asn-spacer { flex: 1; }
         .mz-admin-section-nav .mz-asn-right {
             display: inline-flex; align-items: center; gap: 10px;
-            font-size: 11px; color: rgba(245, 245, 247, 0.42);
+            font-size: 11px; color: #6E6A7C;
             white-space: nowrap;
         }
         .mz-admin-section-nav .mz-asn-portal-link {
             font-size: 11.5px;
-            color: rgba(167, 139, 250, 0.85);
+            color: #6d28d9;
             text-decoration: none;
             padding: 4px 10px;
             border-radius: 6px;
@@ -110,16 +140,16 @@
         }
         .mz-admin-section-nav .mz-asn-portal-link:hover {
             background: rgba(167, 139, 250, 0.10);
-            color: #ffffff;
+            color: #1A1726;
         }
         .mz-admin-section-nav .mz-asn-signout {
             font-size: 11.5px;
-            color: rgba(245, 245, 247, 0.55);
+            color: #6E6A7C;
             text-decoration: none;
             padding: 4px 10px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #E9E5EE;
+            background: rgba(255, 255, 255, 0.72);
             transition: background 0.18s, color 0.18s, border-color 0.18s;
         }
         .mz-admin-section-nav .mz-asn-signout:hover {
@@ -127,12 +157,38 @@
             color: rgba(252, 165, 165, 0.95);
             border-color: rgba(239, 68, 68, 0.40);
         }
+        .mz-admin-section-nav .mz-asn-group { position: relative; display: inline-flex; }
+        .mz-admin-section-nav .mz-asn-trigger {
+            font: inherit; cursor: pointer; background: none; border: none;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .mz-admin-section-nav .mz-asn-caret { font-size: 9px; opacity: .6; }
+        .mz-admin-section-nav .mz-asn-menu {
+            display: none; position: absolute; top: calc(100% + 8px); left: 0;
+            min-width: 268px; z-index: 1000; padding: 7px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(26px) saturate(170%);
+            -webkit-backdrop-filter: blur(26px) saturate(170%);
+            border: 1px solid #E9E5EE; border-radius: 14px;
+            box-shadow: 0 26px 70px rgba(0,0,0,0.6);
+        }
+        .mz-admin-section-nav .mz-asn-group.open .mz-asn-menu { display: block; }
+        .mz-admin-section-nav .mz-asn-item {
+            display: block; padding: 9px 12px; border-radius: 9px;
+            text-decoration: none; color: #1A1726;
+        }
+        .mz-admin-section-nav .mz-asn-item:hover { background: rgba(167,139,250,0.16); }
+        .mz-admin-section-nav .mz-asn-item.current { background: rgba(167,139,250,0.22); }
+        .mz-admin-section-nav .mz-asn-item-label { display: block; font-size: 13px; }
+        .mz-admin-section-nav .mz-asn-item-desc {
+            display: block; font-size: 11px; margin-top: 2px; color: #6E6A7C;
+        }
         @media (max-width: 640px) {
             .mz-admin-section-nav .mz-asn-brand {
                 font-size: 10px;
                 padding: 5px 10px;
             }
-            .mz-admin-section-nav .mz-asn-right { display: none; }
+            .mz-admin-section-nav .mz-asn-portal-link { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
             .mz-admin-section-nav * { transition: none !important; }
@@ -149,19 +205,34 @@
         nav.className = 'mz-admin-section-nav';
         nav.setAttribute('aria-label', 'Admin section navigation');
 
-        const linksHtml = SECTIONS.map((s) => {
-            const active = s.match.test(path);
-            return `<a class="mz-asn-link${active ? ' active' : ''}" href="${s.href}">${s.label}</a>`;
+        const linksHtml = GROUPS.map((g) => {
+            const active = g.match.test(path);
+            if (g.items.length <= 1) {
+                // A dropdown with one entry is a click tax — render the
+                // single-page groups (Schedule, Messages) as plain links.
+                const href = g.items.length ? g.items[0].href : g.href;
+                return `<a class="mz-asn-link${active ? ' active' : ''}" href="${href}">${g.label}</a>`;
+            }
+            const menu = g.items.map((it) => {
+                const cur = path.indexOf(it.href) === 0;
+                return `<a class="mz-asn-item${cur ? ' current' : ''}" href="${it.href}">
+                    <span class="mz-asn-item-label">${it.label}</span>
+                    <span class="mz-asn-item-desc">${it.desc}</span></a>`;
+            }).join('');
+            return `<span class="mz-asn-group${active ? ' active' : ''}">
+                <button type="button" class="mz-asn-link mz-asn-trigger${active ? ' active' : ''}"
+                        aria-expanded="false">${g.label}<span class="mz-asn-caret">▾</span></button>
+                <span class="mz-asn-menu">${menu}</span></span>`;
         }).join('');
 
         nav.innerHTML = `
             <div class="mz-asn-inner">
-                <a class="mz-asn-brand" href="/admin/" aria-label="Admin home">⌥ Mount Zara · Admin</a>
+                <a class="mz-asn-brand" href="/admin/" aria-label="Admin home">Mount Zara · Admin</a>
                 ${linksHtml}
                 <span class="mz-asn-spacer"></span>
                 <span class="mz-asn-right">
-                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener">View member portal →</a>
-                    <a class="mz-asn-signout" href="/admin/_signout" title="Drop the cached admin credentials. Use when leaving an unattended Mac.">Sign out</a>
+                    <a class="mz-asn-portal-link" href="/portal/" target="_blank" rel="noopener" title="See the portal exactly as a patient will.">Preview patient portal →</a>
+                    <a class="mz-asn-signout" href="/admin/_signout" title="Sign out of the admin on this device.">Sign out</a>
                 </span>
             </div>
         `;
@@ -169,6 +240,33 @@
         // Inject as the first element of <body> so it sits above any
         // page-specific layout.
         document.body.insertBefore(nav, document.body.firstChild);
+
+        // Click to open, click anywhere to close, Escape to dismiss. Hover
+        // menus are a trap on a trackpad and unusable on an iPad, and this
+        // console gets used on both.
+        nav.addEventListener('click', (e) => {
+            const trigger = e.target.closest('.mz-asn-trigger');
+            const group = trigger && trigger.closest('.mz-asn-group');
+            const wasOpen = group && group.classList.contains('open');
+            nav.querySelectorAll('.mz-asn-group.open').forEach((g) => {
+                g.classList.remove('open');
+                const t = g.querySelector('.mz-asn-trigger');
+                if (t) t.setAttribute('aria-expanded', 'false');
+            });
+            if (group && !wasOpen) {
+                group.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                e.stopPropagation();
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mz-asn-group')) {
+                nav.querySelectorAll('.mz-asn-group.open').forEach((g) => g.classList.remove('open'));
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') nav.querySelectorAll('.mz-asn-group.open').forEach((g) => g.classList.remove('open'));
+        });
     }
 
     if (document.readyState === 'loading') {
@@ -194,99 +292,37 @@
 // page's own fetch helper. Pages that already set their own Authorization
 // header are passed through untouched (we never override a caller's header,
 // and never reprompt on their behalf).
+// ---------------------------------------------------------------------
+// ONE SIGN-IN FOR THE WHOLE BACKEND (2026-08-19)
+// ---------------------------------------------------------------------
+// This file used to install a fetch interceptor that popped its OWN glass
+// credential modal before any /api/v1/admin call, cached base64
+// user:pass in sessionStorage, and defaulted the username to an EMAIL
+// ADDRESS — which the server never accepts, because it compares against
+// ADMIN_USER. So signing in meant two prompts, two different usernames,
+// and a second one that could not succeed as offered.
+//
+// It is gone. Authenticating the page load now mints a signed, HttpOnly
+// admin session cookie (functions/_lib/admin_session.js), and the admin
+// API accepts it — so same-origin fetches are already authenticated and
+// need no header, no modal, and no credentials in sessionStorage.
+//
+// Do not reintroduce a client-side credential prompt here. If an admin
+// fetch returns 401, the session has expired: reload, and the middleware
+// challenges once.
 (function () {
     if (window.__mzAdminAuthInstalled) return;
     window.__mzAdminAuthInstalled = true;
-    var KEY = 'mz_admin_basic';
-    var declined = false;          // user cancelled the prompt → stop auto-prompting
-    function cached() { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } }
-    var EKEY = 'mz_admin_email';
-    function lastEmail() { try { return sessionStorage.getItem(EKEY) || 'chris.mabini@gmail.com'; } catch (e) { return 'chris.mabini@gmail.com'; } }
-    // On-theme glass credential modal — replaces the native window.prompt the
-    // Basic-auth fetch interceptor used to fire. Same mechanism (base64 user:pass
-    // cached in sessionStorage); only the UI changed. Returns a Promise<string|null>.
-    function credModal(defaultEmail) {
-        return new Promise(function (resolve) {
-            if (!document.getElementById('mz-admin-cred-style')) {
-                var st = document.createElement('style');
-                st.id = 'mz-admin-cred-style';
-                st.textContent =
-                  '.mz-cred-ov{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,8,10,.55);backdrop-filter:blur(8px) saturate(140%);-webkit-backdrop-filter:blur(8px) saturate(140%);}' +
-                  '.mz-cred-card{width:min(92%,400px);background:linear-gradient(155deg,rgba(48,48,58,.62),rgba(16,16,22,.66));backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:22px;box-shadow:0 40px 120px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.22);padding:30px 28px 26px;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Avenir Next",sans-serif;}' +
-                  '.mz-cred-card h2{margin:0 0 4px;font-size:18px;font-weight:600;}' +
-                  '.mz-cred-card p{margin:0 0 6px;font-size:13px;color:rgba(255,255,255,.55);}' +
-                  '.mz-cred-card label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin:16px 0 6px;}' +
-                  '.mz-cred-card input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#fff;font-size:15px;outline:none;}' +
-                  '.mz-cred-card input:focus{border-color:rgba(167,139,250,.7);background:rgba(255,255,255,.09);}' +
-                  '.mz-cred-row{display:flex;gap:10px;margin-top:22px;}' +
-                  '.mz-cred-row button{flex:1;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;}' +
-                  '.mz-cred-cancel{background:rgba(255,255,255,.08);color:#fff;}' +
-                  '.mz-cred-go{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;}';
-                document.head.appendChild(st);
-            }
-            var ov = document.createElement('div'); ov.className = 'mz-cred-ov';
-            var card = document.createElement('form'); card.className = 'mz-cred-card';
-            card.innerHTML = '<h2>Mount&nbsp;Zara — Admin</h2><p>Sign in to continue.</p>' +
-                '<label>Email</label><input type="email" autocomplete="username">' +
-                '<label>Password</label><input type="password" autocomplete="current-password">' +
-                '<div class="mz-cred-row"><button type="button" class="mz-cred-cancel">Cancel</button><button type="submit" class="mz-cred-go">Sign in</button></div>';
-            ov.appendChild(card); document.body.appendChild(ov);
-            var email = card.querySelector('input[type=email]');
-            var pass = card.querySelector('input[type=password]');
-            email.value = defaultEmail || '';
-            (email.value ? pass : email).focus();
-            function done(val) { try { ov.remove(); } catch (e) {} resolve(val); }
-            card.querySelector('.mz-cred-cancel').addEventListener('click', function () { done(null); });
-            ov.addEventListener('click', function (e) { if (e.target === ov) done(null); });
-            document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { document.removeEventListener('keydown', esc); done(null); } });
-            card.addEventListener('submit', function (e) {
-                e.preventDefault();
-                var u = email.value.trim(), p = pass.value;
-                if (!u || !p) { done(null); return; }
-                try { sessionStorage.setItem(EKEY, u); } catch (x) {}
-                done(btoa(u + ':' + p));
-            });
-        });
-    }
-    async function ensure(force) {
-        if (!force) { var c = cached(); if (c) return c; }
-        if (declined && !force) return null;
-        var b = await credModal(lastEmail());
-        if (!b) { declined = true; return null; }
-        try { sessionStorage.setItem(KEY, b); } catch (e) {}
-        declined = false;
-        return b;
-    }
-    function isAdminAPI(url) {
-        try {
-            var u = new URL(url, location.origin);
-            return u.origin === location.origin && /^\/api\/(v1\/admin|posts)\b/.test(u.pathname);
-        } catch (e) { return false; }
-    }
-    var orig = window.fetch.bind(window);
-    window.fetch = async function (input, init) {
-        var url = (typeof input === 'string') ? input : (input && input.url) || '';
-        if (!isAdminAPI(url)) return orig(input, init);
-        init = init || {};
-        var headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || undefined);
-        var hadAuth = headers.has('Authorization');   // caller manages its own auth
-        if (!hadAuth) {
-            var c = cached(); if (!c) c = await ensure(false);
-            if (c) headers.set('Authorization', 'Basic ' + c);
-        }
-        var res = await orig(input, Object.assign({}, init, { headers: headers }));
-        if (res.status === 401 && !hadAuth && !declined) {
-            try { sessionStorage.removeItem(KEY); } catch (e) {}
-            var c2 = await ensure(true);
-            if (c2) { headers.set('Authorization', 'Basic ' + c2); res = await orig(input, Object.assign({}, init, { headers: headers })); }
-        }
-        return res;
+    // Sign-out is a server action now — it must clear the cookie, which
+    // script cannot touch (HttpOnly, by design).
+    window.mzAdminSignOut = function () {
+        try { sessionStorage.removeItem('mz_admin_basic'); } catch (e) {}
+        location.href = '/admin/_signout';
     };
-    // Shared sign-out other pages can call.
-    window.mzAdminSignOut = function () { try { sessionStorage.removeItem(KEY); } catch (e) {} declined = false; };
-    // Read-only peek at cached creds for passive features (the freshness
-    // banner below) that must NEVER trigger the credential modal on load.
-    window.mzAdminCachedCreds = cached;
+    // Passive features (the freshness banner below) used this to decide
+    // whether credentials existed before firing a background fetch. With a
+    // cookie session the answer is simply "the page loaded, so yes".
+    window.mzAdminCachedCreds = function () { return 'session'; };
 })();
 
 // ---------------------------------------------------------------------
@@ -302,23 +338,23 @@
         if (!data || !data.problems || !data.problems.length) return;
         var bar = document.createElement('div');
         bar.setAttribute('role', 'alert');
-        bar.style.cssText = 'position:sticky;top:0;z-index:400;background:rgba(120,53,15,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(251,146,60,0.5);color:#fdba74;font:600 12.5px/1.45 "Avenir Next","Avenir",system-ui,sans-serif;padding:9px 16px;display:flex;gap:12px;align-items:flex-start;';
+        bar.style.cssText = 'position:sticky;top:0;z-index:400;background:rgba(120,53,15,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(251,146,60,0.5);color: #FEF3C7;font:600 12.5px/1.45 "Avenir Next","Avenir",system-ui,sans-serif;padding:9px 16px;display:flex;gap:12px;align-items:flex-start;';
         var n = data.problems.length;
         var newest = data.kinds && data.kinds.evidence && data.kinds.evidence.newest_published;
         var head = document.createElement('div');
         head.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
-        head.innerHTML = '&#9888;&#65039; Content pipeline: ' + n + ' issue' + (n === 1 ? '' : 's') +
+        head.innerHTML = '&#9888;&#65039; Site content: ' + n + ' thing' + (n === 1 ? ' needs' : 's need') + ' a look' +
             (newest ? ' &mdash; newest weekly post is ' + newest.age_days + ' days old' : '') +
             '. <u>Details</u>';
         var list = document.createElement('div');
-        list.style.cssText = 'display:none;margin-top:7px;font-weight:400;color:rgba(253,230,200,0.92);white-space:pre-line;';
+        list.style.cssText = 'display:none;margin-top:7px;font-weight:400;color: #FEF3C7;white-space:pre-line;';
         list.textContent = data.problems.map(function (p) { return '• ' + p; }).join('\n');
         head.appendChild(list);
         head.addEventListener('click', function () { list.style.display = list.style.display === 'none' ? 'block' : 'none'; });
         var x = document.createElement('button');
         x.textContent = '×';
         x.setAttribute('aria-label', 'Dismiss for this session');
-        x.style.cssText = 'background:none;border:none;color:#fdba74;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;';
+        x.style.cssText = 'background:none;border:none;color: #FEF3C7;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;';
         x.addEventListener('click', function () {
             try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
             bar.remove();
@@ -330,7 +366,8 @@
         try { if (sessionStorage.getItem(DISMISS_KEY)) return; } catch (e) {}
         var creds = (typeof window.mzAdminCachedCreds === 'function') ? window.mzAdminCachedCreds() : null;
         if (!creds) return;   // not signed in this session — stay silent, never prompt
-        fetch('/api/posts/_admin/freshness', { headers: { Authorization: 'Basic ' + creds } })
+        // The admin session cookie authenticates this call — no header.
+        fetch('/api/posts/_admin/freshness', { credentials: 'include' })
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(show)
             .catch(function () { /* banner is best-effort */ });

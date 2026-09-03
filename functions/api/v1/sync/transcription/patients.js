@@ -62,7 +62,7 @@ export async function onRequestGet(ctx) {
                 p.id           AS patient_id,
                 p.first_name,
                 p.last_name,
-                p.date_of_birth,
+                p.dob AS date_of_birth,   -- the column is dob; naming date_of_birth threw and 500'd the whole sync list
                 p.updated_at,
                 p.created_at,
                 pdf.dirty_reason,

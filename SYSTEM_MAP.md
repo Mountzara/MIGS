@@ -20,7 +20,7 @@ the next deploy regresses.
 
 | Section | What's in it |
 |---|---|
-| §1 | Three reference incidents — the foundational regression archetypes this map exists to prevent. |
+| §1 | Four reference incidents — the foundational regression archetypes this map exists to prevent. |
 | §2 | Repository topology + deploy chain (Cloudflare Pages, wrangler, gates). |
 | §3 | `index.html` inline `<style>` atlas — line ranges, @media scopes, brace-balance checkpoints. |
 | §4 | `index.html` inline `<script>` atlas — function inventory, DOM-timing trap, reference graph. |
@@ -38,11 +38,11 @@ the next deploy regresses.
 
 ---
 
-## 1. Three reference incidents — DO NOT REPEAT
+## 1. Four reference incidents — DO NOT REPEAT
 
-These three regressions happened in a single working session on 2026-05-26.
-All three would have been preventable if this map had existed beforehand.
-They are the foundational patterns this file protects against.
+§1.1–1.3 happened in a single working session on 2026-05-26; §1.4 on
+2026-08-24. All would have been preventable if this map had been read
+beforehand. They are the foundational patterns this file protects against.
 
 ### 1.1 CSS corruption — `index.html` line 5703 (silent site-wide breakage)
 
@@ -134,6 +134,54 @@ the target element is in a section ABOVE the script tag.
 
 ---
 
+### 1.4 Cascade source order — the mobile nav shipped black-on-black (2026-08-24)
+
+**Symptom:** the owner opened mountzara.com on an iPhone. Tapping the
+hamburger produced an unreadable near-black slab: the hero showed through
+it, the links were invisible, the "Request an appointment" pill floated
+mid-list overhanging the panel's left edge, and the panel opened 16px up
+INSIDE the 64px nav bar. Nothing about it was caught by any deploy gate.
+
+**Cause — two independent instances of the same trap:**
+
+1. *A dark-theme value left behind by the light conversion.* The mobile
+   panel still declared `background: rgba(0, 0, 0, 0.95)` from the old dark
+   theme, while its links had been swept to `var(--ink-2)` (#4A4658) with
+   everything else. Near-black text on a near-black panel. The light sweep
+   was done by selector, and this selector was never visited because
+   nothing renders it above 1180px — **a desktop review physically cannot
+   see it.**
+2. *Media queries add no specificity.* The mobile overrides for `.nav-cta`
+   and `.nav-links a` sat in the `@media (max-width: 1180px)` collapse
+   block near the TOP of `assets/css/home.css`. The base `.nav-cta` rule
+   (~line 8400) and the accessibility rule `nav a, .main-nav a { display:
+   inline-flex }` (~line 7780) are declared LATER at equal specificity, so
+   they won inside the media query too. The CTA kept its 13px desktop pill
+   sizing and the panel's links shrank to the width of their own label,
+   which is why the row separators stopped mid-word.
+
+**Fix:** panel repainted in `--paper` with `--ink` links; `--nav-h: 64px`
+declared once on `nav.main-nav` so the panel's `top` is derived from it and
+cannot drift again; and every mobile rule that must beat a later base rule
+moved to a **MOBILE NAV CTA block at the END of the file**, labelled as
+such. `toggleMenu()` also gained a close-on-tap/Escape handler.
+
+**Prevention rules:**
+- Never trust that a light/dark theme sweep reached a rule that only
+  renders at a viewport you did not open. Sweep by *rendered viewport*,
+  not by selector list.
+- Before adding a mobile override, `grep` for the base selector. If any
+  declaration of it appears LATER in the file, your override belongs at
+  the end of the file, not in the collapse block. This is the same trap
+  documented above `.mobile-toggle` (which once hid the hamburger at every
+  width) — it has now cost three separate regressions.
+- `scripts/_capture_mobile_nav.py` asserts the measured facts (panel
+  ground, link colour, panel top vs nav bottom, ≥44px tap targets,
+  full-width CTA, close-on-tap). Run it against production after any nav
+  or theme change.
+
+---
+
 ## 2. Repository topology + deploy chain
 
 ### 2.1 Hosting + bindings
@@ -177,16 +225,58 @@ the target element is in a section ABOVE the script tag.
    scaffolding dirs); calls `scripts/verify_kb_anchoring.py` per file;
    exits 1 on any FAIL. Skip with `DEPLOY_SKIP_KB_GATE=1` (use only
    for non-clinical changes).
-2. **§0.4.1 comprehensive regression audit** — calls
+2. **SQL column gate** (2026-08-13) — `scripts/check_sql_columns.mjs`
+   parses `schema/*.sql` into table→columns, extracts every SQL literal
+   from `functions/**`, and fails on any reference to a column that does
+   not exist. Hermetic, <1s, **no override flag** — a hit here means the
+   handler is guaranteed to throw at runtime. Judges only what is
+   decidable without a real parser: `alias.column` where the alias is
+   unambiguously bound, and bare identifiers in the SELECT list or
+   compared in the WHERE of a single-table statement. Run
+   `--self-test` (13 cases) to prove the checker itself still works.
+   **It found seven broken endpoints on the day it was written** — the
+   admin snapshot dashboard, the whole Transcription-app sync, the
+   patient briefing's document list, and the onboarding wizard's
+   education step — several of them SILENT, because a bare `catch`
+   turned "the query is broken" into "there is no data".
+3. **Inline-script gate** (2026-08-14) — `scripts/check_inline_scripts.mjs`
+   parses every inline `<script>`, in static HTML AND in the pages a
+   Function GENERATES (it evaluates the template literal first, because
+   that is where the bug lived). The public `/portal/` page is built from
+   a template literal, so an escape written for the BROWSER is evaluated
+   at generation time instead: one `\n` that needed to be `\\n` put a real
+   newline inside a string literal, and **a script that does not parse runs
+   NONE of its lines** — the membership tiers, comparison table, evidence
+   and disclosures all silently vanished while the source looked correct,
+   the API was healthy and every deploy passed.
+4. **Clinical grounding gate** (2026-08-14) — see §5
+   `clinical_grounding.js`.
+5. **Scheduling timezone gate** (2026-08-14) — `scripts/test_scheduling_tz.mjs`
+   (25). Every slot ever offered was five hours early; covers both DST
+   transitions.
+6. **Triage auto-release gate** / **notification gate** / **date gate** —
+   `test_triage_auto_release.mjs` (33), `test_notification_flush.mjs` (37),
+   `test_iso_date.mjs` (50).
+7. **Working-directory assertion** — the deploy fails if `cite_audit/`,
+   `.claude/`, `docs/`, `scripts/` or `schema/` reach the STAGE. Asserted
+   rather than trusted, because the exclude list is the thing that was
+   wrong: `cite_audit/authoritative-cv-2026-08.txt` was publishing the
+   owner's mobile number, which he had deliberately kept off the published
+   CV page.
+8. **Portal header gate** (2026-08-13) — `scripts/test_portal_headers.mjs`
+   (97 assertions). Asserts exactly ONE Permissions-Policy and ONE CSP
+   per portal path after `applyPortalHeaders`. See §5 `portal_headers.js`
+   for why this cannot live in `_headers`.
+4. **§0.4.1 comprehensive regression audit** — calls
    `/Users/beans/Developer/MountZara/agent-platform/scripts/regression_audit.py
    --all` (NOTE: lives outside this repo); audits 25+ surfaces against
    every hard rule in CLAUDE.md; logs to `/tmp/_deploy_audit.log`;
    exits 1 on any HARD FAIL. Skip with `DEPLOY_SKIP_REGRESSION_AUDIT=1`
    — DANGEROUS, only when manually documented.
-3. **`wrangler pages deploy .`** — Direct Upload via API token.
-4. **HEAD check on mountzara.com** — confirms HTTP 200 with cache-bust
+5. **`wrangler pages deploy .`** — Direct Upload via API token.
+6. **HEAD check on mountzara.com** — confirms HTTP 200 with cache-bust
    query.
-5. **§0.8.1 R2-post gate** — `scripts/verify_kb_anchoring.py --r2-posts`
+7. **§0.8.1 R2-post gate** — `scripts/verify_kb_anchoring.py --r2-posts`
    verifies every R2-served clinical post still carries its KB-anchor
    manifest in the structured fields.
 6. **All-fields audit gate** — `scripts/audit_live_post.py --list` runs
@@ -285,6 +375,24 @@ the target element is in a section ABOVE the script tag.
    mid-window `ended`+1.4s poster swap as settled (sampling currentTime
    off the swapped `<img>` crashed the audit).
    Demote: `DEPLOY_VISUAL_GATE_SOFT=1`. Skip: `DEPLOY_SKIP_VISUAL_AUDIT=1`.
+8c. **Nav + reading-sheet audit — HARD gate since 2026-08-20** —
+   `scripts/audit_nav_and_reading.py`. Driven by a shipped regression:
+   a nav consolidation left `.mobile-toggle { display: none }` as the
+   LAST rule for that selector, so the hamburger was invisible at every
+   width and there was **no navigation at all below 1180px**. All
+   thirteen existing gates passed — fact-sync, contrast, visual,
+   route-render, public headers — because not one of them asks whether
+   a person can reach the menu. Runs WebKit (Chromium's connections are
+   reset by this VM's proxy; same note as 8a/8b) at 1512 / 1100 / 390
+   and asserts: the menu button is visible whenever the bar is
+   collapsed; all thirteen destinations are reachable at every width;
+   the bar never overflows its own width; the reading sheet opens,
+   carries its copy, closes on Escape, and holds its typography
+   (>= 19px, >= 1.7 leading, measure capped under 820px); and gradient
+   headlines keep descender room. A transport failure reports
+   UNJUDGEABLE and exits 0 — proving reachability is the canary's job.
+   Skip with `DEPLOY_SKIP_NAV_AUDIT=1`.
+
 9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
    in headless Chromium on live + title/selector asserted (homepage-
@@ -909,31 +1017,43 @@ For each helper: who calls it, what depends on its signature.
 | `auth.js` | `getSession`, `requireRole`, `requireRoleOptional`, `signSession`, `verifyPassword`, `hashPassword`, `nowMs`, `PBKDF2_ITERATIONS` | Every `functions/api/v1/patient/*` + every `functions/api/v1/admin/*` (~80 files); `_middleware.js` | **§9.8.3:** `PBKDF2_ITERATIONS` MUST equal 100000 — if you change, you also change `scripts/_reset_admin_password_node.sh::iters`. **§10.10:** `getSession` accepts optional `ctx` and uses `ctx.waitUntil()` for `last_seen_at` UPDATE; if you change signature, touch `requireRole` + `requireRoleOptional` + every endpoint that passes `ctx`. |
 | `audit.js` | `logAudit(env, entry, ctx?)` | Every auth-sensitive route (~60 files) | **§10.10:** `ctx` param hands D1 INSERT to `ctx.waitUntil()`. If you remove `ctx` support, every endpoint regresses to synchronous audit and CPU-budget 503s reappear. |
 | `db.js` | `requireDb`, `getById`, `newId`, table/column whitelist | Most of `functions/api/v1/*` | If you add a table, add it to the whitelist here AND add migration to `schema/*.sql`. |
-| `phi.js` | `wrapDek`, `unwrapDek`, `encryptPhi`, `decryptPhi` | Documents, messages with attachments, snapshots | **PHI key rotation:** `scripts/phi_master_key_rotate.sh` calls `functions/api/v1/admin/phi/rotate.js` which uses BOTH `PHI_MASTER_KEY_OLD` + `PHI_MASTER_KEY`. Lock-step. |
+| `phi.js` | `wrapDek`, `unwrapDek`, `encryptPhi`, `decryptPhi`, `decryptPhiText`, `decryptPhiJson`, `putPhiObject`, `getPhiObject` | Documents, messages with attachments, snapshots | **PHI key rotation:** `scripts/phi_master_key_rotate.sh` calls `functions/api/v1/admin/phi/rotate.js` which uses BOTH `PHI_MASTER_KEY_OLD` + `PHI_MASTER_KEY`. Lock-step. **`decryptPhi` returns a `Uint8Array`, not a string** — passing it to `JSON.parse` coerces to `"123,45,67,…"` and throws at position 3; use `decryptPhiText`/`decryptPhiJson`. **AAD is not a hint:** AES-GCM decryption FAILS on a mismatch, and five different AAD conventions exist across writers (`documents:<patient>:<doc>`, `message_attachment/<attachment_id>`, `encounter/<enc>/photo_<n>`, `encounter/<enc>/ios_photo_<n>`, `clinical_ai/<session>/<part>`). Since **schema 0037** every writer records what it sealed with in `documents.phi_aad` and readers use that instead of guessing — the guess is what made a member's own message attachment 500 on download from `/portal/documents/`. A new writer MUST set `phi_aad`. |
 | `anthropic.js` | `callClaude(env, prompt, opts)` | `intake/triage.js`, `briefings/*`, AI snapshots, drug-AE, PROM recommender | **§12.2 BAA gating:** until Anthropic BAA signed, NEVER call with PHI. Every caller must de-identify per §11.7.2 prompt template. |
 | `totp.js` | `verifyTotp` | `functions/admin/_mfa.js` | RFC 6238 — don't change skew/period without re-enrolling. |
 | `mfa_cookie.js` | `signMfaCookie`, `verifyMfaCookie` | `functions/admin/_middleware.js`, `_mfa.js` | If you rotate `ADMIN_MFA_COOKIE_KEY`, every active admin session invalidates. |
 | `preview_invite.js` | `mintInvite`, `redeemInvite`, `signCookie`, `verifyCookie` | `/api/v1/admin/preview-invite.js`, `/portal/preview-grant/` | Rotating `PREVIEW_INVITE_KEY` invalidates all outstanding preview-grant URLs. |
 | `preview_gate.js` | `previewAccess(request, env)` | `functions/portal/_middleware.js` | Honors `PORTAL_PUBLIC_LAUNCH` env + admin auth + signed preview cookie. |
+| `clinical_grounding.js` · `kb_fields.js` | **The KB rule, enforced.** The owner's standing instruction: clinical answers come from HIS curated library, never from model training data. On 2026-08-13 that was enforced NOWHERE — the 1,144-document `kb_docs` index was wired into ONE endpoint (`admin/ai/suggest-edit.js`, a website-copy editor) while triage, after-visit summaries, patient message drafts, visit-prep packs and the PROM recommender all called the model with no reference material at all. A PRE-FLIGHT topical gate was built first and **abandoned on the evidence**: `scripts/calibrate_kb_grounding.mjs` showed in-scope CBG/MIGS questions score 98% mean coverage and out-of-scope questions score 98% too ("diabetic ketoacidosis insulin infusion protocol" scored 100%), because this is a general OB/GYN corpus that legitimately discusses asthma, insulin and corticosteroids. Coverage is kept as an ADVISORY signal and is explicitly not a gate. Enforcement is POST-GENERATION: `verifyGrounding()` rejects output with a fabricated citation, a citation whose document does not support the claim (checked by term overlap against the real text), or any uncited clinical assertion. `kb_fields.js` maps each task to the KB fields that answer it — a patient reply leads with `patientCounselingPoints`, triage with `criticalThresholds` — because `kb_load_d1.py` used to flatten all fifteen structured fields into one blob, which is why the first live run grounded a patient reply in a JMIG paper about robotic device malfunctions. | `_lib/intake_triage.js` · `_lib/visit_summary.js` · `_lib/visit_prep.js` · `_lib/prom_recommender.js` · `api/v1/admin/messages/[thread_id]/draft.js` · `api/v1/sync/ai-bridge/[[path]].js` · `scripts/claude_bridge.sh` | **`scripts/check_clinical_grounding_wired.mjs` is a deploy gate**: it enumerates every model call site and requires each CLINICAL one to ground, instruct AND verify. A new model call site must be classified deliberately or the deploy fails. Field-aware retrieval needs `kb_sections`, loaded by `scripts/kb_load_d1.py` from the machine holding the KB chunks; it degrades to the flat `kb_docs` index when absent, so deploying is safe either way. |
+| `iso_date.js` | Real-calendar date validation and bounded query windows. Three endpoints validated dates with a SHAPE regex, so `2026-02-31` was accepted, stored, and then matched no calendar query again — written, acknowledged and lost. `isLoggableDate()` also refuses the future (one day of grace for patients west of UTC). `checkWindow()` caps a request at 400 days: `?from=1900-01-01` on trends returned 46,246 points in 1.6 MB. | `api/v1/patient/symptoms/diary/[date].js` · `.../diary.js` · `.../trends.js` | Gate: `scripts/test_iso_date.mjs` (50). |
+| `portal_headers.js` | `PORTAL_BASE`, `BASE_CSP`, `BILLING_CSP`, `PERMISSIONS_DEFAULT`/`_TECH_CHECK`/`_BILLING`, `portalHeaders(path)`, `applyPortalHeaders(resp, path)` | `functions/portal/_middleware.js` (every `/portal/*` response passes through `seal()`) | **DO NOT move these back into `_headers`.** That file APPENDS — a path rule does not replace the site-wide `/*` rule, and the browser then resolves duplicate **Permissions-Policy** features **first-wins** and duplicate **CSPs** by **intersection**. Both overrides were therefore inert while looking correct in `curl`: `/portal/tech-check/` still had `camera=()` in force (an EMPTY allowlist disables the feature for the page's OWN origin, so `getUserMedia` rejected with `NotAllowedError` before any prompt and the device check told every patient their camera was broken), and `/portal/billing/` still enforced the strict CSP alongside the Stripe one (`window.Stripe` undefined → "Stripe is not defined" in the payment modal). Only `!` genuinely unsets. Separately, `_headers` never applies to a response a **Function constructs** — the pre-launch Coming Soon page, `/portal/visit/<id>/launch`, `/portal/nps/<token>` shipped with three headers, no CSP and a `public, max-age=60` cache. `applyPortalHeaders` uses `Headers.set()` so exactly one policy per header reaches the browser. Adding a portal page that needs a different policy = add a branch in `portalHeaders()` + a case in `scripts/test_portal_headers.mjs` (97 assertions, deploy gate). |
+| `admin/_login.js` + `admin_session.js` | **One BRANDED sign-in for the whole backend (2026-08-19).** `/admin/_login` is the door: a glass sign-in page matching the admin theme, accepting the username OR any address in `ADMIN_EMAILS` (case-insensitive) against the same PBKDF2 hash and the same KV lockout the Basic path used. The middleware no longer sends `WWW-Authenticate` to a browser — that header is what summons the unstyled grey dialog — so a document request without a session gets a 302 to the login page, while an API client still gets a plain 401 (Basic is ACCEPTED everywhere, just never DEMANDED of a person). `admin_api.js`'s 401 dropped its challenge header too, for the same reason, and carries `login_url` so the SPA can send the operator somewhere branded. **One sign-in for the whole backend.** Signing into the admin used to take TWO credential prompts with TWO DIFFERENT usernames: the browser's native Basic dialog wanting `ADMIN_USER` (`drmabini`), then a glass modal injected by `admin/_nav.js` before any API call that defaulted to an EMAIL ADDRESS — a value `readAdminIdentity` never accepts, since it compares against `ADMIN_USER`. `admin/trend-briefs/` carried a THIRD copy via `prompt()`. The second prompt existed because SPA fetches to `/api/v1/admin/*` could not rely on the browser replaying Basic credentials outside the `/admin` path tree; the fix is a SESSION, not another prompt. A successful password check in `functions/admin/_middleware.js` now mints a signed HttpOnly cookie (`mz_admin_session`, HMAC over `expiry|user`, 12 h, keyed by `ADMIN_SESSION_KEY` falling back to `SESSION_SECRET`), and every admin auth path accepts it. | `functions/admin/_middleware.js` (mints + accepts) · `_lib/admin_api.js::readAdminIdentity` · `api/posts/[[path]].js::isAdminRequest` · `admin/_signout.js` (clears it) · `admin/_nav.js` | **Do NOT reintroduce a client-side credential prompt in `admin/_nav.js` or any admin page.** A 401 on an admin fetch means the session expired — reload, and the middleware challenges once. Basic auth is still accepted for API clients with no cookie jar (the transcription app, scripts, curl). `SameSite=Lax` is load-bearing: the cookie rides top-level navigation to `/admin` but is not sent on cross-site POSTs, which is what protects the state-changing admin API from CSRF; `HttpOnly` keeps it away from an XSS payload on an admin page. Verified live: forged signature, wrong user, and expired-but-signed cookies are all 401, and `/admin/_signout` clears both `mz_session` and `mz_admin_session`. |
 | `session_trace.js` | `recordTrace`, `traceWrap`, `listRecentTraces` | Optional wrapping in any endpoint for debugging | PHI-conservative SHA256+salt-hashed IPs. |
 | `wizard.js` | `WIZARD_STEPS`, `computeStepStatus` | `/api/v1/patient/wizard/state.js`, `portal/_wizard.js` injection | Adding step: update `WIZARD_STEPS` + `computeStepStatus` + UI in `_wizard.js`. |
 | `stripe.js` | `createCustomer`, `createPaymentIntent`, `verifyWebhook` | `functions/api/billing/stripe/*` | If signature changes, touch `_stripe_e2e_*.sh` test scripts. |
-| `messaging.js` | `listThreads`, `startThread`, `replyInThread`, `markThreadRead`, `computeSlaDueAt`, `ALLOWED_URGENCIES` | `/api/v1/patient/messages/*` + `/api/v1/admin/messages/*` | Patient + admin endpoints share storage — schema change in `0004_phase3_messaging.sql` touches both. **R8 SLA lock-step:** `urgency`/`sla_due_at`/`sla_breached` (migration 0022) flow `startThread`/`replyInThread` → both `listThreads` SELECTs → `portal/messages` compose radios → `admin/messages::slaBadge` → `cron-worker/index.js::runSlaSweep` (15-min cron). Changing the clock semantics touches all six. |
+| `messaging.js` | `listThreads`, `startThread`, `replyInThread`, `markThreadRead`, `computeSlaDueAt`, `ALLOWED_URGENCIES` | `/api/v1/patient/messages/*` + `/api/v1/admin/messages/*` | Patient + admin endpoints share storage — schema change in `0004_phase3_messaging.sql` touches both. **R8 SLA lock-step:** `urgency`/`sla_due_at`/`sla_breached` (migration 0022) flow `startThread`/`replyInThread` → both `listThreads` SELECTs → `portal/messages` compose radios → `admin/messages::slaBadge` → `cron-worker/index.js::runSlaSweep` (15-min cron). Changing the clock semantics touches all six. **Attachments (2026-08-18, UI closed):** `message_attachments` rows (schema 0037) + envelope-encrypted bytes in `mountzara-phi` flow `POST /api/v1/{patient\|admin}/messages/<thread>/<message>/attachments` (multipart `file`, 25 MB cap, MIME allowlist; patient may attach only to messages they authored, admin only to clinician-authored) → `loadThreadMessages` returns an `attachments` array per message → BOTH messages pages render download chips (`/api/v1/{patient\|admin}/messages/attachments/<id>`, served `content-disposition: attachment`) and both compose surfaces (new + reply, each side) carry a file picker that uploads after the send returns `message_id`. The endpoints predate 2026-08-18; the UI did not — a send failure leaves no orphan because the upload only fires after a 201. |
 | `intake_sections.js` | Schema for 19 intake sections | `/api/v1/intake/*` endpoints + `portal/intake/*` UI | Adding section: schema migration + endpoint + UI in lock-step. |
 | `intake_triage.js` | De-identify intake → call Claude → write `appointment_triage` | `/api/v1/intake/[id]/triage.js` | Per §11.7 — never send PHI to Claude until BAA. |
 | `licensure.js` | `getLicensedStates(env)`, `isLicensedInState(env, state)`, `recordLicensureBlock(env, {patient_id, state, reason})`, `_resetCache` | The R3 state-gates + the R4 launch presence re-check — `intake/[id]/submit.js`, `intake/[id]/triage.js`, `appointments/book.js`, `appointments/[id]/launch.js` — plus `/api/v1/admin/practice/licensed-states.js` (write side) + `admin/scheduling/index.html` (picker UI) | **Phase 17 R3/R4.** Reads `practice_settings.licensed_states_json` (keyed by clinician); 60 s cache; conservative `["IL"]` fallback (fails closed). Patient state of residence comes from intake **Section 1 `address_state`** (a `<select>` in `portal/intake/index.html`, stored schemaless in `intake_section_data`). Changing the storage key/shape touches all 3 gates + the admin endpoint + UI + the intake field in lock-step. |
 | `prom_*.js` | PROM scoring, AI recommender, intake orchestrator | `/api/v1/patient/proms/*` + `/admin/proms/*` | PROM definitions in `0010_phase10_*.sql` migrations. |
 | `billing*.js` | Insurance + Stripe + AI advisor + invoice tax export | `/api/v1/admin/billing/*` | Schema migrations 0007-0009. |
 | `coding_coach.js` | Cross-encounter CODING COACH — aggregates the per-encounter coding analysis the transcription app syncs in (`billing_claims` / `billing_compliance_flags` / `billing_upcoding_opportunities` / `billing_claim_lines`) into undercoding-recovery + recurring-flag/modifier/doc-gap patterns + deterministic coaching actions. Pure shapers are unit-testable; reuses `windowRange` from `billing_insights.js`. De-identified aggregates only (no PHI → no BAA needed). | `/api/v1/admin/billing/coding-coach.js` + UI `admin/billing/coach/index.html` (linked from `admin/billing/` header) | Reads the §11 transcription-sync coding tables (schema 0006). Compliance framing is deliberate: undercoding RECOVERY tied to documentation already in the note — never speculative upcoding. |
-| `x12_837.js` · `claim_scrub.js` · `clearinghouse.js` · `payer_directory.js` | **Outbound billing rail.** `claim_scrub.scrubClaim(norm)` = clean-claim gate (hard blocks + denial-risk warnings; deterministic, unit-tested). `x12_837.generate837P(norm)` = ANSI X12 5010A1 837P EDI generator (unit-tested structure). `clearinghouse.js` = MULTI-vendor adapter (`mock`/`stedi`/`change_healthcare`/`availity`/`claim_md`/`office_ally`/`waystar`), `CLEARINGHOUSE_VENDOR`-selected, per-vendor creds+endpoints from env; `submitClaim`/`checkEligibility`/`isConfigured`. `payer_directory.js` = IL/CA + national payer scaffold (26 payers; IDs flagged for clearinghouse verification — never trusted blindly). Orchestrated by `POST …/claims/:id/submit`; go-live via `…/billing/clearinghouse` (readiness checklist + `seed_payers`). Runbook: `docs/BILLING_GO_LIVE.md`. | `claims/[id]/submit.js` · `billing/clearinghouse.js` | PHI on a live vendor call → keep `mock` + usage `'T'` until creds set + per-payer EDI enrollment + a verified 277CA test (`CLEARINGHOUSE_LIVE=1` flips usage to `'P'`). Payer IDs are clearinghouse-specific — confirm each against the live payer list before production. Insurance captured per-patient (`patient_insurance` table, schema 0025; `GET/PUT /api/v1/admin/patients/:id/insurance`; editor `admin/billing/insurance/`) → the submit endpoint auto-fills it (body still overrides); scrub blocks if a patient's is missing. Inbound rail: **835 ERA built** — `x12_835.parse835()` + `POST /api/v1/admin/billing/era` (admin or X-Pipeline-Token) auto-posts payments → paid/partially_paid/denied + CARC codes. Go-live console `admin/billing/clearinghouse/index.html` (readiness checklist · one-click payer→CH routing `route_by_kind` · ERA paste/post). 270/271 eligibility interface stubbed (`checkEligibility`); 276/277 status poll still TODO. |
+| `x12_837.js` · `claim_scrub.js` · `clearinghouse.js` · `payer_directory.js` | **Outbound billing rail.** `claim_scrub.scrubClaim(norm)` = clean-claim gate (hard blocks + denial-risk warnings; deterministic, unit-tested). `x12_837.generate837P(norm)` = ANSI X12 5010A1 837P EDI generator (unit-tested structure). `clearinghouse.js` = MULTI-vendor adapter (`mock`/`stedi`/`change_healthcare`/`availity`/`claim_md`/`office_ally`/`waystar`), `CLEARINGHOUSE_VENDOR`-selected, per-vendor creds+endpoints from env; `submitClaim`/`checkEligibility`/`isConfigured`. `payer_directory.js` = IL/CA + national payer scaffold (26 payers; IDs flagged for clearinghouse verification — never trusted blindly). Orchestrated by `POST …/claims/:id/submit`; go-live via `…/billing/clearinghouse` (readiness checklist + `seed_payers`). Runbook: `docs/BILLING_GO_LIVE.md`. | `claims/[id]/submit.js` · `billing/clearinghouse.js` | PHI on a live vendor call → keep `mock` + usage `'T'` until creds set + per-payer EDI enrollment + a verified 277CA test (`CLEARINGHOUSE_LIVE=1` flips usage to `'P'`). Payer IDs are clearinghouse-specific — confirm each against the live payer list before production. Insurance captured per-patient (`patient_insurance` table, schema 0025; `GET/PUT /api/v1/admin/patients/:id/insurance`; editor `admin/billing/insurance/`) → the submit endpoint auto-fills it (body still overrides); scrub blocks if a patient's is missing. Inbound rail: **835 ERA built** — `x12_835.parse835()` + `POST /api/v1/admin/billing/era` (admin or X-Pipeline-Token) auto-posts payments → paid/partially_paid/denied + CARC codes. Go-live console `admin/billing/clearinghouse/index.html` (readiness checklist · one-click payer→CH routing `route_by_kind` · 837 test-claim box). **ERA paste/post UI lives on `admin/billing/index.html`** (2026-08-18 — this row previously claimed the console had it; it never did): a collapsible panel POSTs the raw 835 text to `/api/v1/admin/billing/era` and renders payer/trace/posted/unmatched/skipped plus per-claim results. The same page's claim list now sends an explicit `days` window (60/180/365 selector) — before that the API's silent 60-day default hid older claims with no UI hint. 270/271 eligibility interface stubbed (`checkEligibility`); 276/277 status poll still TODO. |
 | `clearinghouse_onboarding.js` · `clearinghouse_credentials.js` | **Clearinghouse setup wizard engine.** `clearinghouse_onboarding.js` is pure, testable logic: `STEPS`/`PROFILE_FIELDS`/`PROFILE_GROUPS` (field specs), `npiValid` (CMS Luhn over `80840`+NPI — catches transpositions at entry, not six weeks later in a rejection), `zip9Valid`/`tinValid`/`taxonomyValid`, `validateProfile` (conditional requirements — a sole proprietor is not nagged for a Type 2 NPI), `VENDOR_FACTS` (per-vendor enrollment facts, each carrying `verified` + source URL), `INTERVIEW`+`scoreVendors` (ranked recommendation that ships its REASONS so it is auditable), `pairingAdvice`/`routingPlan`/`validateVendorSet`/`vendorReadiness` — **the vendor list is a SET, not a single choice**: running Availity (free Blues eligibility) alongside a full-service clearinghouse (government claims) is the normal shape for an IL/CA practice, so steps 3-5 render a tab per clearinghouse and each keeps its own packet, credentials, payer enrollment and test claim. `validateVendorSet` catches the expensive mistake (Availity alone cannot carry Medicare/Medicaid); `routingPlan` proposes payer-kind → vendor and NAMES the gap rather than silently routing government to a vendor that cannot carry it; `apply_routing` writes it onto `billing_payers.clearinghouse_vendor`, which `submitClaim` already honours. Add/remove is a soft delete (`clearinghouse_vendors.removed_at`) so leaving a clearinghouse keeps its enrollment history and credentials, `buildApplicationPacket` (profile → the exact values each application asks for), `buildEnrollmentMatrix`/`enrollmentSummary` (per-payer EDI/ERA/EFT tracker — the step that actually stalls practices), `readiness` (six-step gating; every step reports a human reason, never a bare false). `clearinghouse_credentials.js` = envelope-encrypted vendor credential storage + `withStoredCredentials(env, vendor)`, a Proxy that merges stored creds into `env` so `submitClaim`/`isConfigured` pick them up **without any change to `clearinghouse.js`** — env secrets ALWAYS win, DB is the fallback. | `api/v1/admin/billing/clearinghouse-setup.js` · `admin/billing/clearinghouse/index.html` · `schema/0032` · `_lib/phi.js` · `_lib/payer_directory.js` | **DOCTRINE (inherited from `credentialing_wizard.js`): never assert a requirement the vendor does not publish.** Vendor terms/pricing/endpoints change without notice; unverified items surface as explicit "confirm with the vendor" tasks, visually separated from sourced ones. **No invented pricing and no invented turnaround** — `cost_verified` is `false` everywhere on purpose. AI is deliberately OFF the critical path: every step is deterministic data, so the wizard cannot be blocked by an unreachable model. Tests: `scripts/test_clearinghouse_onboarding.mjs` (95 assertions; covers NPI check digit, conditional requirements, scoring direction, TIN masking, and the regression that matters — **rebuilding the payer checklist must never discard recorded enrollment progress**, and **one verified clearinghouse must never vouch for an unverified second one**). Requires migration `schema/0032`; the API returns `503 {schema_missing:true}` with the exact wrangler command rather than a 500 with a SQL string in it, and the page renders that as an instruction. |
 | `nppes.js` · `enrollment_extract.js` | **Wizard autofill — two paths, both refusing to guess.** `nppes.js` calls the public CMS NPI registry (no key, no cost) and maps the record onto the profile: legal name, taxonomy, licence, practice + pay-to addresses, ZIP+4, phone. This is BETTER than AI here — it is the authoritative source payers themselves check, so filling from it makes the commonest EDI rejection (name/address mismatch vs NPPES) impossible by construction. Proposes, never overwrites. `enrollment_extract.js` reads the practice's OWN paperwork (W-9, CMS-855, PTAN letter, Medicaid welcome, licence, clearinghouse welcome, EDI approval) and proposes profile fields. **It deliberately does NOT de-identify** — a W-9's whole purpose is to carry the identifiers we are reading — so admission is gated deterministically by `looksLikePatientDocument()`, which runs `_lib/deidentify.js` (the website mirror of the Mac app's `DeidentificationService`) as a DETECTOR and hard-refuses on MRN / member-ID / clinical language **before any model call or any storage**. Every proposed field must carry a verbatim `quote` or it is dropped; values are format-checked (NPI check digit catches OCR misreads) and confined to an allowlist so a hallucinated key cannot reach the profile. Nothing auto-commits — the physician accepts field by field. | `api/v1/admin/billing/clearinghouse-setup.js` · `_lib/deidentify.js` · `_lib/ai_router.js` · `_lib/phi.js` · `schema/0033` | **Do NOT route patient documents here — use `correspondence_extract.js`, which Safe-Harbor scrubs first.** The two pipelines have opposite requirements and sharing one would either leak PHI or return nothing useful. Files are stored envelope-encrypted in R2 (`env.PHI`) because a W-9 carries an EIN or an SSN; D1 keeps metadata and the extraction OUTCOME only, never the document text. AI routes through `ai_router` — with no `ANTHROPIC_API_KEY` it enqueues a CLI-bridge job and says so rather than failing silently. Autosave lives in `clearinghouse_profile_draft`, kept SEPARATE from the saved profile so a half-finished draft can never be silently promoted past validation. Tests: `scripts/test_enrollment_autofill.mjs` (32 assertions — the gate must refuse a chart/EOB/op-note AND admit a W-9; a gate that blocks everything gets uninstalled). |
+| `_lib/notify.js` (sendViaCloudflare) · `scripts/setup_cloudflare_email.sh` · `scripts/test_notify_provider.mjs` | **Mail provider: Cloudflare Email Sending (2026-08-20).** AWS refused SES production access twice on "no sending history" — a catch-22 for a sandboxed account. Owner: "Fix this for cloudflare." `sendViaCloudflare` posts the REST endpoint (`from.address` / `reply_to` — the WORKERS-binding names `from.email`/`replyTo` are wrong for REST and 400), and the send response's `permanent_bounces` writes the `email_suppression` row synchronously — replacing the whole SES/SNS webhook pipeline, which stays wired only for the SES fallback. **The retry hole this work found:** `sendDirect()` (the outbox flush path) skipped the reserved-domain and suppression guards, and `isPermanent()` treats the sandbox's "not verified" as recoverable — so the first flush after a working provider went live would have replayed six `@mountzara.test` rows as guaranteed hard bounces. Guards added to `sendDirect`, error strings pinned to `isPermanent`'s classifier, and the six rows retired to `abandoned` in D1. **BAA:** Cloudflare Email Service's BAA coverage is UNDOCUMENTED — "cloudflare" is deliberately NOT in `BAA_PROVIDERS`; `NOTIFY_ALLOW_NON_BAA=yes` is valid only pre-launch, and the notifications health endpoint surfaces this as a launch gate. Setup is one command once a token with **Email Sending: Edit** exists (the ONLY human step — no on-box credential can reach `/email/sending/*` or mint tokens, both probed 2026-08-20): `CF_EMAIL_TOKEN=<tok> ./scripts/setup_cloudflare_email.sh`. | `functions/api/v1/internal/notifications/flush.js` · `functions/api/v1/admin/notifications/health.js` · `functions/api/v1/internal/ses/feedback.js` · Pages env (`CF_EMAIL_TOKEN`, `CF_EMAIL_ACCOUNT_ID`, `NOTIFY_PROVIDER`) | **The provider switch is `NOTIFY_PROVIDER` and nothing else** — rollback is setting it back to `ses`; both providers' secrets stay configured. `test_notify_provider.mjs` (24 checks, in the deploy suite) pins payload shape, synchronous bounce suppression, the guarded retry path and the BAA gate. |
+| `scripts/strip_html_comments.mjs` · `scripts/audit_nav_and_reading.py` | **Authoring comments were a published design document (2026-08-20).** The existing strip step removed only `§0.8` / `kb_doc_id` provenance, so every other comment this repo writes into markup was served: which gate enforces which invariant, where the hero fingerprint lock lives, why each breakpoint is the number it is, what every `data-` attribute drives. 204 comments across 48 pages, 45.6 KB — against the owner's directive that a visitor must not be able to learn how the site works. `strip_html_comments.mjs` now removes ALL HTML comments from the **stage only** (repo keeps them), skipping `<script>`/`<style>` regions because a JS string may contain `<!--` and a naive regex would eat live code to the next `-->`; it has a `--self-test` the deploy runs before letting it touch the stage. Same commit added the nav + reading-sheet gate — see §8c. | `scripts/deploy-prod.sh` · every `*.html` | **A comment is deployed code.** The stripper must never be a bare global regex; the KB-manifest leak happened because `[^>]` stopped at the first `>` inside JSON. The self-test covers exactly that case, plus comment-lookalike strings inside `<script>` and `<style>`. |
+| `education/_middleware.js` (hardening) · `check_public_headers.mjs` | **The `_headers` trap, third occurrence (2026-08-20).** `_headers` declared the full hardening set — HSTS, CSP with `frame-ancestors 'none'`, `X-Frame-Options: DENY`, the `noai` directives — and **none of it reached `/education/*`**, because Cloudflare never applies `_headers` to a response a FUNCTION returns and that middleware returns every one of them. Twelve clinical guides were served with no CSP and embeddable in any third-party page, while the file that configured them read correctly. `/portal/*` hit the identical trap (`_lib/portal_headers.js`) and the pre-launch Coming Soon page hit it before that. Fixed by hardening inside the middleware with `Headers.set()` (append would leave duplicates, which browsers resolve for CSP by INTERSECTION and Permissions-Policy first-wins). Separately, the deploy now **strips internal provenance from the staged copy**: 278 `§0.8 anchor` comments plus a 6,200-char KB-anchor manifest carrying knowledge-base document ids, the field taxonomy and the claims quoted from them — the repo keeps them for the citation audit, the public bytes do not, and a guard fails the deploy if any `kb_doc_id` survives. | `_headers` · `functions/education/_middleware.js` · `functions/portal/_middleware.js` · `scripts/deploy-prod.sh` | **Configuration is not evidence.** `check_public_headers.mjs --strict` runs POST-deploy against the LIVE site and fails the deploy if any public route lacks CSP / HSTS / frame protection / `noai`, because every previous instance of this bug looked correct in the config file. Any new middleware will hit the same trap; the assertion is what catches it. Source is not otherwise exposed — verified that `/functions/*`, `/schema/*`, `/scripts/*`, `wrangler.toml`, `CLAUDE.md`, `SYSTEM_MAP.md`, `docs/*` and `.git/*` all 404, and every admin/internal/sync endpoint refuses unauthenticated. |
+| `check_citation_integrity.mjs` · `verify_citations.mjs` · `attach_citation.mjs` | **The site enforces its own citations (2026-08-20).** The twelve patient guides shipped for months carrying 556 references of which only 85 were cited anywhere in the text; the padding read as rigour, several unused papers were plainly off-topic for their guide (music therapy during labour under contraception, adjuvant breast-cancer therapy under the same), and the endometriosis guide had TWO `<li id="ref-14">` blocks so every `[14]` marker silently resolved to the first. A patient is invited to check these sources, so that invitation must hold on every deploy rather than on the days someone audits. `check_citation_integrity.mjs` is a **deploy gate**, structural and offline: every reference must be cited somewhere, every inline marker must resolve, ids unique and sequential, the visible `[N]` must match its anchor, and the public `/education/<t>/` and member `/portal/education/<t>/` copies must stay byte-identical. `verify_citations.mjs` is the network half — it checks each PMID against PubMed's own record (author, title, year) and screens whether the paper shares subject matter with its guide; run it before publishing clinical content, never in the deploy path, so a deploy cannot depend on NCBI. `attach_citation.mjs` puts one verified reference back behind one claim, editing both trees together. | `education/*` · `portal/education/*` · `scripts/deploy-prod.sh` | **Judgement about WHICH paper supports a claim is never automated** — the matcher proposes by term overlap and a human reads both before attaching, because a citation that resolves perfectly and does not support its sentence is the failure this whole apparatus exists to prevent. Verified 2026-08-20: 97 citations across the guides and 555 PMIDs across the 15 published posts all resolve to real papers, zero dead PMIDs. Each gate branch was proven by injecting an orphan reference, a dangling marker and a mirror drift, and confirming the deploy blocked. |
+| `note_extract.js` · `visit_type_alias.js` | **Closing the two gaps the app left, platform-side (2026-08-19).** The transcription app pushes the note but not always a patient recap, so encounters landed "not drafted" — nothing waiting for him, nothing for the patient. AI drafting cannot run on this deployment (no `ANTHROPIC_API_KEY`; the CLI bridge has not checked in for six days), so `note_extract.js` does the part needing no model: it parses the note's own SOAP structure and lifts the assessment and plan into a draft **VERBATIM**. Nothing is authored, softened or inferred, so the KB rule is satisfied by construction; a note with no recognisable assessment or plan produces **no draft rather than a mangled one**. `flagJargon()` then names the words a patient would look up (leiomyoma → fibroid) on the review screen AND in the approval response — advisory, never blocking, because approving an unedited extraction quietly hands her his note. `visit_type_alias.js` fixes the other gap: the app labels visits in speech ("Problem Visit") while `billing_service_catalog` is keyed by slug, so every synced claim sat at $0; labels resolve to keys, then the E/M code as a coarse floor, recording WHICH route priced it. | `api/v1/sync/transcription/notes.js` (auto-draft) · `coding.js` (pricing) · `api/v1/admin/encounters/[id]/summary.js` (`draft_from_note` action, jargon at review + approve) · `scripts/backfill_avs_drafts.mjs` · `scripts/backfill_claim_pricing.mjs` | **The draft is created `pending_clinician_review` and can never reach a patient unapproved** — its job is to remove the blank page, not to replace his judgement, and `source='note_extract'` records which he is reading. **The catalog holds CASH prices**: sound only while every patient is self-pay (true today — no payer contract signed, nothing submitted), and the response labels the basis `practice_cash_catalog` so a contracted rate supersedes it later. Backfills are idempotent and never overwrite a figure the app actually sent. Gates: `test_note_extract.mjs` (32), `test_visit_type_alias.mjs` (22). |
+| `avs_education.js` | **The after-visit summary carries the reading for THAT visit (2026-08-19).** An AVS that says "we discussed fibroids" and stops there sends the patient to a search engine, which is where the worst information about her condition lives. On approval, the visit's ICD-10 codes (from the encounter AND from orders placed at it) map to topic tags, tags select from the practice's own PUBLISHED primers, and up to three are assigned to the patient with the reason in her words ("Because you and Dr. Mabini talked about fibroids at this visit"). `SUPPORTED_AVS_LANGUAGES` + `buildPrompt({language})` write the patient half in her `preferred_language` AND an English rendering of the same text, split at `---ENGLISH---`, so she reads her language while the approval gate still means something — he cannot be asked to approve words he cannot read. | `api/v1/admin/encounters/[id]/summary.js` (attach on approve) · `api/v1/patient/visits.js` (reading returned with the opened summary) · `_lib/visit_summary.js` · `patient_education_assignments` · `education_materials` | **Selection is by CODE, never by asking a model what the note seems to be about, and NOTHING is authored here** — the patient receives Dr. Mabini's own ACOG/peer-review-anchored primers, per the standing rule that clinical content comes from the curated library. **An unmatched visit attaches NOTHING**: a generic pamphlet stapled to a specific visit teaches her the attachments are noise, and then the one that matters is ignored too. Capped at three. Gate: `scripts/test_avs_education.mjs` (31). |
+| `sync/transcription/*` (the app seam) | **MedicalTranscription.app integration — VERIFIED END TO END 2026-08-19.** The seam had looked wired for three months and had never worked once: (1) `sync_auth.js::syncRoute` never passed route `params` through, so `GET /patients/:id/context` — the endpoint that seeds every visit — returned 400 on every call it ever received while each handler looked correct in isolation; (2) `/coding` silently dropped any diagnosis whose code field was not one of two exact spellings while returning `ok:true` (a claim with no diagnoses is a guaranteed payer rejection) — it now accepts `icd10` too and reports `diagnoses_dropped` + a `warning`; (3) the app's summaries were sealed with AAD `encounter/<enc>/summary_patient` while both readers unsealed with `visit_summary_patient:<id>`, so an approved after-visit summary was marked visible and permanently undecryptable — both readers now try both conventions (safe: AAD fails closed). New rail: `POST /orders` turns dictated orders into tracked `clinical_orders` with the result clock running; `dry_run:true` returns what would be created so a mishearing is confirmed by the physician before it becomes a real order. Proven loop: pull patients → pull context → push note → push coding (claim + diagnoses land) → push snapshot → dry-run + commit orders → physician approves in /admin/visits/ → patient reads the exact dictated summary in /portal/visits/. | `functions/api/v1/sync/transcription/{patients,patients/[id]/context,notes,coding,snapshot,orders}.js` · `_lib/sync_auth.js` · `api/v1/patient/visits.js` · `api/v1/admin/encounters/[id]/summary.js` · `scripts/transcription_smoke.sh` · `docs/transcription-app-integration.md` | **STANDING POLICY: a rail is not "integrated" until data has made the round trip in production and been read back by the person it was for.** Token: `TRANSCRIPTION_SYNC_TOKEN` (rotated 2026-08-19; ops copy in `~/.config/mountzara/transcription-sync-token.txt`). Setup checklist shows "Connect the Medical Transcription app" until a real non-test encounter exists — evidence, not configuration. Smoke: `TRANSCRIPTION_SYNC_TOKEN=<t> ./scripts/transcription_smoke.sh` from the Mac. |
 | `bridge_context.js` | **The PHI boundary for the local Claude CLI bridge.** The bridge runs `claude -p` against the owner's PERSONAL subscription; the Anthropic BAA covers the **API**, not a consumer CLI — so everything reaching the bridge has LEFT BAA-covered infrastructure and must carry no PHI. Enforcement is **server-side and fail-closed**: the bridge is an untrusted client (token on a laptop, editable script), so `/api/v1/sync/ai-bridge/context/<kind>/<id>` scrubs, **re-scans to VERIFY**, and returns 409 with nothing when verification fails. There is no parameter, header or flag that yields raw text. `BRIDGE_KINDS` is an allowlist — an unvetted kind is refused and `claimNext` will not even dispatch it, so billing kinds (API-only per the owner's rule) can never land here. `tokenizeNames`/`tokenizeDates` keep names and dates as INDEXED tokens so a draft is still writable ("your surgery on [DATE_1]"); `rehydrate()` restores them **server-side** before the physician reads it, and `unresolvedTokens()` discards any draft citing a token that maps to nothing rather than showing a fiction. `billingContext()` is minimum-necessary by SELECTION, not by scrubbing — CPT/ICD/modifiers/units/POS only; narrative is never chosen. | `api/v1/sync/ai-bridge/[[path]].js` · `_lib/deidentify.js` · `_lib/phi.js` · `schema/0034` · `scripts/claude_bridge.sh` | The reverse map is a literal list of real names and dates — envelope-encrypted on `ai_jobs`, dropped the moment a result is rehydrated, and TTL'd via `map_expires_at` so an abandoned job leaves nothing behind. `bridge_disclosure_log` is the append-only artifact answering "prove no PHI was disclosed": rule counts and verification results, **never matched values**, readable at `GET …/ai-bridge/disclosures`. **2026-08-13 — REAL BUG FIXED in `deidentify.js`:** the MRN / member-ID / account patterns only matched colon-separated forms (`MRN: 123`), so natural phrasing (`my MRN is 123`) passed through **while the verifier reported ok=true** — a fail-OPEN that every downstream gate trusted. Patterns now accept linking words and require a digit in the value (which also stops "medical record was complete" over-redacting). ⚠️ **The Mac app's `DeidentificationService` needs the same fix.** Tests: `scripts/test_bridge_phi.mjs` (39 assertions) — written adversarially: each searches the OUTPUT for the identifier that went IN, rather than trusting a boolean. |
 | `membership.js` · `no_double_dip.js` · `visit_prep.js` · `brand.js` | **Membership programme.** `membership.js` = tiers (Standard $0 · Navigator $59 · Priority $199 · Complete $449), unit economics splitting `physician_minutes` from `automated_minutes` (the split is why the model closes — costing every minute at his rate made every tier a loss), `capacity()`/`maxPanel()` because minutes not dollars are the binding constraint for a solo surgeon, `validateTierLegality()` which fails a tier that sells a covered service **including on wording**, `eligibility()` excluding federal beneficiaries by default (42 U.S.C. §1320a-7a(a)(5)), verified `EVIDENCE` with URLs, and `valueComparison()`. **`no_double_dip.js` is the structural guarantee** the owner demanded — `TIER_PAID_FOR` maps each tier to the CPT codes its fee already bought, `screenClaim()` REFUSES those lines at submit time, and `screenTierBenefits()` guards the reverse direction so the offer cannot drift into the claim's territory. `visit_prep.js` = Navigator's deliverables + the licensure/scope gate. `brand.js` = tokens extracted from his own email signature. | `api/v1/membership.js` (public) · `api/v1/membership/interest.js` (waitlist) · `api/v1/admin/membership/interest.js` + `admin/membership/` (demand console) · `api/v1/admin/billing/claims/[id]/submit.js` (**gate wired here**) · `functions/portal/_middleware.js` (the public page) · `schema/0035`,`0036` | **THE DOUBLE-DIP GATE RUNS BEFORE THE CLEAN-CLAIM GATE AND FAILS CLOSED.** A claim that has gone out cannot be recalled; "we spotted it on the remittance" is not a control. The concrete risk it closes was already latent: Standard deliberately routes clinically-significant messages into a billable online digital E/M (99421-99423) so unpaid work does not accumulate — but Priority and Complete INCLUDE messaging in the fee, so billing 99421 for one of those members is payment twice for one message. `NEVER_BLOCKED` asserts by test that surgery, office E/M, imaging and pathology are never suppressed, because a member who is under-billed has still been failed. Tests: `scripts/test_no_double_dip.mjs` (51), `test_membership.mjs` (106), `test_visit_prep.mjs` (86), `test_membership_analytics.mjs` (26 — the demand console sits behind HTTP Basic auth and cannot be clicked through from CI, so its arithmetic is tested directly rather than shipped unverified). **Membership has no standalone page** — it lives inside `/portal/` in the portal's dark-glass theme, rendered from `/api/v1/membership`, with `/membership/*` 301'ing there. |
 | `visit_summary.js` | **After-visit summaries — the feature that was advertised and not built.** `encounter_ai_summaries` has existed since schema 0003, complete with a `pending_clinician_review -> approved` status column, and NOTHING wrote to it; only `phi/rotate.js` knew the table was there. Generates TWO summaries from the encounter note — patient-facing plain language, and a denser clinician version ending in an `UNCERTAIN:` line naming whatever was ambiguous, which is what he reviews against. `checkPatientTone()` flags language that promises an outcome, minimises a concern, introduces advice or speculates — it does NOT block, because he is reviewing anyway and a flagged phrase he can see beats a silent regeneration that loses a good summary. `extractDenormalised()` fills the plan/next-step/medication columns so the portal list view needs no decryption. | `api/v1/admin/encounters/[id]/summary.js` (generate + sign off) · `api/v1/patient/visits.js` (read) · `_lib/bridge_context.js` · `_lib/phi.js` · `schema/0003` | **"REVIEWED AND SIGNED OFF BY DR. MABINI" IS A GATE, NOT A DESCRIPTION.** The portal makes that promise, which is a clinical safety claim; an unreviewed AI summary of a medical visit reaching a patient is precisely the harm it prevents. `status = 'approved'` is in the **WHERE clause** of the patient read, not applied afterwards in JavaScript where a refactor could drop it and nothing would visibly break — the rows would simply start appearing. **Regenerating RESETS approval**, because a summary he approved is not the one he is now looking at. Approving with edits replaces the patient text with HIS words, since the point of the edit is that the model got something wrong. `visit_summary` is a vetted `BRIDGE_KINDS` entry, so the note is de-identified and verified server-side before it can reach the CLI, then rehydrated. Tests: `scripts/test_visit_summary.mjs` (49). |
 | `claim_assembler.js` | **Single source of truth** for loading a `billing_claims` row (+ lines/diagnoses/patient/`patient_insurance`/payer) and building the NORMALIZED claim object. Extracted from the submit endpoint so the OUTBOUND submit path AND the AI PRE-FLIGHT path assemble byte-identical artifacts. Exports `assembleClaim(env, claimRow, body)` + `billingProvider(env)`. | `claims/[id]/submit.js`, `claims/[id]/preflight.js` | If you change claim normalization, BOTH submit and pre-flight change together — that's the point. Unit-tested for equivalence. |
 | `carc_codes.js` | CARC/RARC denial-code knowledge base (curated for OB/GYN + MIGS): `CARC`/`RARC` maps, `lookupCarc`/`lookupRarc`, `recommendStrategy(codes)`. Each CARC carries plain-English text + category + `appealable` + a remediation `strategy` (corrected_claim / appeal / reconsideration / patient_bill / write_off). | `billing_ai_preflight.js`, `billing_appeal.js` | Grounds BOTH the AI features so even the no-AI fallback is code-accurate. Extend as new codes appear on real ERAs. |
 | `billing_ai_preflight.js` · `billing_appeal.js` | **AI-assisted denial layer** (BAA executed 2026-06-29). `aiPreflightReview(env,{norm,scrub})` = denial-prevention second opinion on the assembled claim (PHI-FREE — codes only); predicts the CARC each risk draws. `draftAppeal(env,ctx,nowMs)` = denial-response drafter (corrected-claim vs appeal vs reconsideration vs patient-bill) authoring the payer letter + corrected-claim changes; PHI-bearing by necessity (patient name/member id/DOB on the letter). Both default to `claude-opus-4-8` (override via `BILLING_AI_MODEL`; the advisor too), and both DEGRADE GRACEFULLY to a deterministic, CARC-grounded fallback when `ANTHROPIC_API_KEY` is absent. | `claims/[id]/preflight.js`, `claims/[id]/appeal.js` | Needs `ANTHROPIC_API_KEY` set as a Pages secret to enable the AI path (else fallback). **GOTCHA:** the Opus 4.7/4.8 family 400s on sampling params — `anthropic.js` `callClaude` now strips `temperature`/`top_p`/`top_k` for `modelRejectsSamplingParams(model)` (Opus 4.7+); Sonnet/Haiku keep them. `draftAppeal` is audit-logged as a PHI-bearing AI event (`claim_appeal_draft`). Persistence: `billing_preflight_reviews` + `billing_appeals` (schema 0026). |
+| `orders.js` · `gfe.js` · `referrals.js` | **The downstream-of-the-visit safety net (2026-08-18).** The practice could see a patient, bill the visit and submit a claim, but could not place a lab/imaging/referral order, know a result never came back, prove the patient was told, or check that a referral went somewhere the plan covers — the exact gaps that turn an independent telehealth practice into a malpractice or No-Surprises-Act problem. `orders.js` makes SILENCE QUERYABLE: every placed order carries `result_due_at`, `isOverdue()` is a pure function of the clock so the board and any sweep cannot disagree, a `critical` result runs its own 4-hour acknowledgment clock, and ACKNOWLEDGING a result is tracked separately from COMMUNICATING it to the patient (two duties clinicians conflate and plaintiffs do not). `escalationLevel()` ranks 0–5 so the most dangerous row sorts first without anyone scanning. `gfe.js` encodes 45 CFR 149.610: the business-day deadline ladder (≥10 business days out → 3 business days; 3–9 → 1 business day; <3 → not required; on request → 3), the required content elements as a `validateGfe()` checklist that NAMES what is missing, practice-vs-outside totals, and the $400 / 120-day dispute disclaimers. `referrals.js` is the coverage guard: `coverageRisk()` BLOCKS an out-of-network HMO/EPO/Medicaid destination, WARNS on PPO, and returns `verify` — never a confident yes — whenever the answer depends on a plan document; it also raises the second HMO trap (the plan may only honour a referral from its own designated PCP). `priorAuthAdvice()` flags advanced imaging (MRI/CT/PET) as likely-required and names the ordering practice, not the imaging centre, as responsible. | `api/v1/admin/orders.js` · `orders/[id].js` · `orders/[id]/results.js` · `orders/[id]/prior-auth.js` · `api/v1/admin/referral-directory.js` · `api/v1/admin/gfe.js` · `gfe/[id].js` · `api/v1/patient/orders.js` · `api/v1/patient/gfe.js` · UI `admin/orders/` `admin/referrals/` `admin/gfe/` `portal/orders/` · `schema/0040` | **DOCTRINE: never assert a payer requirement the payer does not publish** (inherited from `clearinghouse_onboarding.js`) — unknowns surface as `verify`, never as a confident answer. Two refusals are deliberate and load-bearing: an order cannot be marked `reviewed` when nothing has come back (that would be a false record — chase the result instead), and a GFE cannot be ISSUED while any required element is missing (an incomplete estimate is worse than none because it looks like compliance). The patient-facing endpoints show result STATUS but never result narrative, and only after clinician acknowledgment — an abnormal result reaches a patient through their clinician, not a status field refreshed at midnight. **The sweep is what makes it a safety net rather than a dashboard:** `POST /api/v1/internal/orders/sweep` (hourly from `cron-worker/index.js::runOrderSweep`, or admin-triggered via the board's "Run check now" button — the button exists because the cron Worker deploys separately, and without it the net would look installed while lying dormant) finds orders past their expected result date and unacknowledged critical results, stamps `overdue_notified_at` so each order alerts ONCE (a digest repeating yesterday's numbers gets filtered, and then the one that matters gets filtered with it), and emails the practice a CONTENT-FREE digest — counts and a link, never a patient, test or result, because that alert lands in an ordinary inbox. Gates: `scripts/test_orders.mjs` (59, incl. sweep planning + digest copy asserted to carry no identifiers), `test_gfe.mjs` (45), `test_referrals.mjs` (36), all three wired into `deploy-prod.sh`. Migration `schema/0040` is APPLIED to production D1. |
 | `care_goals_mapper.js` | Intake → care goals projection | `/api/v1/patient/profile.js`, `/api/v1/admin/briefings/*` | Per §11.5.1 expanded portal scope. |
 | `patient_briefing.js` | Aggregate snapshot for clinician pre-visit | `/api/v1/admin/briefings/*` | Pulls from intake + sync notes + messages + symptoms + PROMs. |
 | `trend_briefs.js` | Override JSON shape for trend-brief gold-renderer | `/api/v1/admin/trend-briefs/*` + `MountZaraResearchDigest/src/research_digest/gold_brief_render.py` (SIBLING REPO) | Per §3.8. Override shape lock-stepped across repos. |
@@ -1300,6 +1420,50 @@ URL lives inside locked `startHeroSequence`).
 Deliverable produced for the owner: `mz-hero-drawing-transparent.png` —
 the completed drawing from hero-ink-v2.webp (transparent, 1920×1080).
 
+### 7.13.1 Hero title ghost glyphs in Chrome 151 — parent clip-text gradient (2026-08-20)
+
+Owner-reported (Chrome 151.0.7922.170 / macOS 15.6 arm64): the hero
+headline rendered with a pile of duplicate glyphs at the line start —
+"Aasaisrion for women's health." — deterministic (every load, survives
+zoom re-raster, scroll-away, Incognito), while copy/paste of the
+headline yielded the correct single string.
+
+**Root cause (CONFIRMED by live console bisection with the owner).**
+The `<h1>` carries TWO copies of the gradient treatment: each `.w`
+paints its slice of the line-spanning gradient, and the PARENT
+(`.hero-title` / `.word-reveal` rules) ALSO has
+`background-clip: text` + gradient — deliberately, as the first-paint
+fallback for the moment before `splitWords` runs. Post-split, the h1's
+only direct text is inter-word whitespace, so the parent layer should
+paint nothing. Chrome 151 instead paints the parent's
+descendant-glyph clip mask at collapsed offsets, compositing a ghost
+copy of EVERY word at the line start. The bisection that proved it,
+in order, all live on the owner's machine: `will-change: auto` on all
+`.w` → no change; `filter: none` on the h1 → no change;
+`background-position: 0` on all `.w` → gradient went per-word, ghost
+unchanged (per-word slices innocent); `background: none` on the h1 →
+**ghost gone instantly**. DOM was verified clean throughout
+(`elementsFromPoint`, one `.hero-title`, five non-overlapping masks).
+
+**Fix in `assets/js/home.js`** directly after the
+`applyLineSpanGradient` invocation block (deliberately OUTSIDE every
+fingerprinted region — lock hash unchanged, verify with
+`node scripts/hero_anim_fingerprint.mjs --check`): once
+`heroTitle.dataset.split === '1'`, set inline `background: none` on
+the h1. The `.w` slices own the gradient from that point; the
+pre-split fallback still paints for no-JS, reduced-motion (no split),
+and pre-script first paint. Two hygiene measures shipped alongside
+(neither was the root cause): release `will-change: auto` on the `.w`
+spans via `transitionend` after the entrance settles (five permanent
+GPU layers for a run-once entrance), and re-run
+`applyLineSpanGradient` on `document.fonts.ready` (the lone rAF
+measurement runs against fallback-font metrics on a cold cache).
+
+Upstream: this is a Chrome 151 regression in parent-level
+`background-clip: text` masking over inline-block descendants. If a
+later Chrome fixes it, the inline `background: none` stays — it is
+correct layering regardless (the parent copy is redundant post-split).
+
 ### 7.14 Research reel autoplay — ONE observer owns .video-preview (2026-08-12)
 
 The four "Peer-reviewed work" reels were dead. Root-caused by patching
@@ -1394,6 +1558,353 @@ popovers, 0 malformed hrefs, 0 empty popovers, 0 dangling
 `aria-describedby`, no page errors.
 
 ## 8. Static surfaces
+
+### 8.0.-1 The patient journey is gated, not just the routes (2026-08-25)
+
+`scripts/audit_patient_journey.py` walks the path a patient is actually
+invited onto and asserts the AFFORDANCE at each step — the appointment CTA
+opens a contact route and that route reaches an inbox; the education index
+offers guides and a guide has content; the portal door explains itself rather
+than dead-ending; sign-in has an email field and a submit; `/cv/` offers a
+working request form; the footer routes to portal, what-I-treat and contact.
+
+**Why it is separate from `audit_route_render.py`.** That gate proves a route
+LOADS — right title, right selector. It cannot tell you whether a patient can
+get from one step to the next. A contact modal that opens onto no email, a
+portal door that dead-ends, an education index whose cards link nowhere: each
+of those renders perfectly and passes a render check while the journey is
+broken. Assert what a patient must be able to DO, not what markup is present.
+
+Public surfaces only, so it runs on every deploy without credentials. `/cv/`
+is Function-gated, so its request-form assertion only runs against production
+— locally the gate is not in the path and the raw page is served.
+
+### 8.0.0 ONE THEME — the light conversion is site-wide (2026-08-25)
+
+**The site is light. There is no dark surface left by design except
+brand-violet button/badge grounds, the `/about/` magazine cover photo, and
+modal scrims.** If you are adding a page, it inherits the light tokens; if
+you are editing one, do not reintroduce a dark ground.
+
+**Why this is called out.** The light conversion shipped in stages and each
+stage looked finished while a whole class of surface stayed dark, because
+nobody was measuring rendered pixels across every route:
+
+* the first pass converted the homepage only;
+* the second converted 12 education page pairs — and left
+  `.mz-modal :is(p,li,td,…) { color:#ffffff !important }` in all 25 of them,
+  so every one of those pages had a LIGHT modal carrying WHITE text. The page
+  looked converted; open a modal and the text was gone;
+* 65 further pages (all of `/admin/*`, `/portal/*`, `/cv/`, `/curriculum/*`,
+  `/evidence/`, `/trending/`, `/about/`, `/accessibility/`, `404`) were still
+  dark, plus 7 pages built inside Pages Functions that no file sweep touches
+  (`functions/admin/_login.js`, `_signout.js`, `cv/_middleware.js`,
+  `education/_middleware.js`, `portal/_middleware.js`,
+  `portal/preview-grant/index.js`, `api/v1/admin/trend-briefs/[id]/preview.js`).
+
+**The EIGHT surface families, and how each was missed.** Every one of these
+was found only after the previous fix had been declared done. A regex for one
+family says nothing about the others — walk all eight:
+
+1. **Tokens** — `--bg-base`, `--fg-*`, `--border`, `--bg-card`. Easy, and the
+   only family the early passes handled.
+2. **Gradient canvases** — 52 pages paint `html` with
+   `linear-gradient(178deg, #191526, #120f1b, #161321)`. A `background: #hex`
+   regex does not match a gradient stop, so every one of these pages kept a
+   near-black canvas while its tokens read light.
+3. **Dark neutral surfaces** — `dialog { background:#1a1626 }`, `#241d36`,
+   `#131217`, `rgba(7,7,10,.96)` panels and `rgba(0,0,0,.3)` input wells.
+   THIS is what kept MODALS dark after the page behind them went light.
+4. **Function-generated HTML** — `functions/admin/_login.js`, `_mfa.js`,
+   `_signout.js`, `cv/_middleware.js`, `education/_middleware.js`,
+   `portal/_middleware.js`, `portal/preview-grant/`, the trend-brief preview.
+   Never in the static tree at all.
+5. **Shared JS components that inject their own CSS** — `admin/_nav.js` paints
+   the admin toolbar and `portal/_wizard.js` the patient intake; a sweep over
+   `*.html` plus `functions/**` misses both, leaving a near-black bar on every
+   otherwise-light admin page.
+6. **White text left on a ground that is now paper** — a rule that paints text
+   white and declares no dark ground of its own inherits whatever is behind
+   it. 78 such rules.
+7. **White gradients clipped to text** — `background: linear-gradient(#fff…)`
+   with `-webkit-text-fill-color: transparent`. The ground check reads it as a
+   background; the colour check finds no `color:` at all. On `/cv/` this left
+   the page's largest headline — the owner's own name — invisible.
+8. **Bespoke per-page text tokens** — `--muted`, `--dim`, `--soft`,
+   `--ink-mute`, `--fg-faint` and friends, defined white on individual pages.
+   40 definitions. A converter that only knows `--fg-*` walks straight past.
+
+**Do NOT blanket-replace `color:#fff`.** On these pages most white text sits
+on a violet button/badge (`#2e1065`, `#6d28d9`, `#7c3aed`, `#4c1d95`) or on
+the `/about/` cover photo, where white is correct. Convert grounds, then let
+the rendered contrast gate name the exceptions.
+
+**THE DETERMINISM RULE — derive, never enumerate.** Every family above was
+missed for the same underlying reason: a check enumerated its surfaces from a
+hand-maintained list — a default of nine routes, a glob that covered only
+`functions/`, a memory of which pages exist — instead of deriving them from
+the system. A sample can only prove the sample, and a list maintained from
+memory drifts the moment the person maintaining it does.
+
+So every audit's surface list is now derived, and adding a surface adds its
+coverage with nobody remembering anything:
+
+* `audit_light_text.py` with no `--routes=` walks the tree: every
+  `index.html` is a route, plus `404.html` — 92 today, N tomorrow. The deploy
+  chain passes no route list, so it always audits everything. (Full-tree runs
+  cost minutes, not seconds; that is the price of a guarantee over a sample,
+  and it is paid on deploy, not on patients.)
+* `audit_dark_surfaces.py` globs `**/*.html` and `**/*.js`, and pulls every
+  published post from the API — failing LOUD if the posts cannot be fetched,
+  because a scan that covered zero posts would report clean.
+* `audit_route_render.py` already carries a discovery contract: a repo route
+  absent from its manifest fails the deploy.
+* `cite_verify_pubmed.mjs` derives its PMIDs from the pages and fails on any
+  PMID missing from the committed corpus.
+
+When adding an audit, this is the acceptance test: delete its list and it
+should still know what to check, or fail loudly that it cannot.
+
+**Enforcement — three gates, all in the deploy chain.**
+
+* `scripts/audit_dark_surfaces.py` — static, and checks by COLOUR rather than
+  by name, so a dark ground fails wherever it is written and in whatever
+  syntax. Also covers families 6 and 7. Scans `**/*.html` AND `**/*.js`.
+* `scripts/audit_light_text.py` — runtime, and the one that covers BREADTH.
+  One paint per route with modals forced open, so it can run over every route
+  rather than nine. Resolves each text run's real ground (colour or gradient,
+  walking ancestors) and flags text within 42 luminance of it. Skips text over
+  a photograph — `/about/`'s cover is white type on a headshot, which is
+  correct — and text on violet buttons.
+* `scripts/audit_contrast_pixels.py` gained `--open-modals`
+(2026-08-25): it force-opens every `dialog` / `[class*=modal|overlay|sheet|
+drawer|lightbox|popover]` before measuring, because a modal only paints once
+something opens it — which is exactly how the 25 education modals shipped
+inverted and unnoticed. Scrims (containers ≥95% of the viewport) are excluded
+from the ground check; a dark scrim is correct on a light theme.
+
+### 8.0.0.0 Medico-legal constitution: no dosing, disclaimers, paper grounds (2026-09-01)
+
+**Owner directives, verbatim and standing:** "I always need this to be
+medico-legally sound with CLEAR disclaimers that I am not OFFERING MEDICAL
+ADVICE, this is just an educational platform." And: "I NEVER want you to
+post actual dosing and things that really should be reserved for private
+patient-doctor decisions about management… This applies to all the other
+condition-specific cards and everywhere else in the website."
+
+* **No dosing in counseling prose — anywhere.** Doses (mg/mcg/µg/IU),
+  frequencies (q6-8h, BID/TID/QID), titration/regimen specifics. Text
+  ATTRIBUTED to a specific paper — verbatim abstracts, journal-club
+  deep-dive analyses, cite cards, citation popovers, reference-list
+  entries — is research reporting and keeps the study's own facts (an
+  analysis that cannot say what dose a trial tested is not an analysis).
+  Concentration units (mg/dL, IU/L…) are lab values, not dosing. HTML
+  comments and JSON provenance manifests are non-rendered and exempt.
+  Gates: `scripts/audit_no_dosing.py` (deploy; derived surfaces incl.
+  posts API, fail-loud) + `auditDosingLanguage` in
+  `functions/_lib/post_format.js` (publish choke point). The 2026-09-01
+  backfill stripped doses from 16 education pages, the homepage condition
+  modals (`assets/js/domain-modals.js`), and three posts' narrative
+  paragraphs — removal/generalization only, nothing authored.
+* **The disclaimer block (`mz-eddisclaimer`)** on every educational
+  surface: all education + portal education pages, the /evidence/ and
+  /trending/ shells (covers every post they render), and every homepage
+  condition modal — appended by the ONE renderer in `assets/js/home.js`
+  (`domainModalBody`), never per-entry. `scripts/fix_disclaimers.py`
+  injects; `audit_no_dosing.py` enforces presence.
+* **Every route grounds on opaque paper.** The light conversion left
+  html/body TRANSPARENT on most routes (only tint gradients painted), so
+  the ground became the visitor's browser canvas — grey in dark-mode
+  Safari ("you turned my website into an ugly grey").
+  `scripts/fix_page_canvas.py` appends
+  `<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>`
+  before the LAST `</body>` of every derived route;
+  `scripts/audit_page_canvas.py` (deploy gate) proves the RENDERED result
+  by pixels — three corner samples per route, all light (≥200 lum; the
+  violet tint washes are the design's own and pass) — because a
+  computed-style check false-positives on opaque gradient grounds.
+
+### 8.0.0.0c Mount Zara's Reflections — the /learn/ course platform (2026-09-02)
+
+**What it is:** free, open, guided patient courses on the conditions the
+practice treats (design doc: the "Mount Zara's Reflections" artifact,
+rev 3; owner decisions baked in). Phase 1 ships the engine + the
+endometriosis pilot.
+
+**The pedagogy IS the schema** (owner's MSAEd, enforced not remembered):
+every lesson = lived-experience `opening` → `teaching` blocks LIFTED from
+the approved library (education pages + condition modals — citations and
+popovers ride along; the generator NEVER authors clinical prose) →
+private `reflection` (client-side only, never transmitted) → optional
+`check` (wrong answers are real myths; corrections open with the belief's
+plausibility and trace to a published source) → one `action` feeding the
+questions-for-your-visit builder (localStorage; printable at
+`/learn/<topic>/your-questions/`).
+
+**Pieces:** `education/<topic>/course.json` (the manifest, one per topic
+that has a course) → `scripts/build_reflections_course.py` (generator →
+`learn/` catalog + course home + per-lesson routes; disclaimer + canvas
+guard baked into every page) → `scripts/audit_course_schema.py` (deploy
+gate: modules exactly 1..6, every lesson complete, checks well-formed,
+counseling prose dose-free and CPG-free, regeneration is a no-op so
+manifest and pages cannot drift). Generated pages are ordinary routes —
+every site-wide runtime gate (canvas, light-text, text-width, contrast,
+no-dosing) covers them automatically.
+
+**Module 4's voice** ("questions to ask any surgeon") renders with the
+amber owner-pending note until Dr. Mabini sets its tone personally —
+lessons carry `tone_owner_pending: true` in the manifest until then.
+
+### 8.0.0.0b Text width + hero motion are MEASURED, not eyeballed (2026-09-02)
+
+**Owner reports:** "text wraps to next line in middle of page, doesn't use
+the entire width where it should — widespread throughout the ENTIRE
+website," and "the opening page animation is stalling AGAIN — prevent
+this from breaking after every revision."
+
+* **`scripts/audit_text_width.py`** (deploy gate) — renders every derived
+  route at 1440px and measures true line-box geometry per text block
+  (rects of visible text nodes grouped per line; grid/flex cells use
+  their own track as available width; inline elements, boxes <320px,
+  closed-`<details>` content, hidden descendants and `data-widthok`
+  opt-outs exempt). Flags narrow-off-center columns beside dead space,
+  premature mid-box wraps, tiny measures in wide containers. The
+  2026-09-02 sweep found 72 blocks/12 signatures; headline cause: 20
+  education pages declared `<section class="key-facts">` while the CSS
+  styles `.facts` — the stat grid NEVER applied and cards rendered as
+  stacked full-width strips. All fixed (also: curriculum subtitles,
+  admin ledes, /cv/ tagline, portal greeting widened; /about/ cover deck
+  judged intentional and annotated `data-widthok`; bonus: /about/
+  scene-2 headline was invisible from a malformed gradient — fixed).
+  Now CLEAN on all 92 routes.
+* **RUNTIME GATE POOL (2026-09-02):** the seven browser gates
+  (patient-journey, page-canvas, light-text, contrast, text-width,
+  hero-motion, nav+reading) launch CONCURRENTLY in `deploy-prod.sh`
+  (`pool_launch`/`pool_rc`) and each result block waits on its own gate
+  with unchanged messaging and ordering — wall time is the slowest
+  single gate, not the sum. The serial chain had reached ~1 hour per
+  deploy, which turned a one-line fix into an hour of the owner staring
+  at the broken live version. Skip flags unchanged
+  (`DEPLOY_SKIP_CONTRAST_AUDIT`, `DEPLOY_SKIP_NAV_AUDIT` gate the
+  launches). NOTE for operators: never test "is a deploy running" with
+  `pgrep -f deploy-prod.sh` from a wrapper whose own command line
+  contains that string — three such waiters detected each other and
+  deadlocked all deploys for 3 hours on 2026-09-02; match
+  `[s]cripts/deploy-prod.sh` or check a PID you saved.
+* **`scripts/audit_hero_motion.py`** (deploy gate) — the fingerprint lock
+  protects the animation CODE; this proves the RENDERED lifecycle on
+  desktop + iPhone emulation: hero media decoded, visible motion between
+  early and settled frames, IMG src reaching the last-frame asset (or
+  VIDEO reaching its end) within 16s, no stuck intro overlay, no page
+  errors. A halted script, renamed asset, broken handoff or endless
+  spinner now fails the deploy instead of reaching the owner.
+
+### 8.0.0.1 Citation popovers — ONE rulebook, enforced everywhere (2026-09-01)
+
+**The requirement (owner, standing):** hovering ANY inline citation shows the
+paper's title, its journal/year/PMID meta line, and the curated
+plain-language summary of what the paper shows — on education guides,
+evidence briefs, trending posts, and every modal those surfaces open. 826
+education popovers and a published brief shipped without this; 51 post
+findings were verbatim abstract pastes; hundreds of metas carried the wrong
+thing entirely (author lists where the journal belongs; "PMID N" with no
+journal/year; citation lines mashed into the title). Root cause each time:
+**every surface had its own generation rules in its own script.**
+
+**THE RULE (owner directive, 2026-09-01): the popover rules live in ONE
+place — `functions/_lib/post_format.js`, `auditPopoverSurface()` — and every
+consumer walks surfaces into it. NEVER fork a copy of these rules into a
+per-surface script; change the module and every gate changes together.**
+
+**The spec markup** (single schema, everywhere):
+`<span class="mz-ref-pop"><span class="mz-ref-pop-title">PubMed title</span>
+<span class="mz-ref-pop-meta">journal · year (education adds · PMID N)</span>
+<span class="mz-ref-pop-finding">curated summary</span>
+<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/N/">Read the study on PubMed →</a></span>`
+inside `<sup class="mz-ref">`.
+
+**Runtime gates vs. pool contention (2026-09-02).** The post-upload runtime
+gates run seven browsers in parallel, and three of them condemned clean
+deploys because a timing-sensitive measurement was taken under that load:
+`audit_contrast_pixels.py` and `audit_nav_and_reading.py` each timed out a
+single 45s `networkidle` load of the homepage (video + animated hero +
+deferred media probes) and reported "could not measure" / "navigation is
+broken", while standalone runs against the identical live build returned 0
+contrast failures and 35/35 nav checks; `audit_hero_motion.py` sampled its
+"before" frame at a blind 1.8s that could land AFTER the animation settled,
+so early == late read as "the drawing never drew" on a homepage that drew
+fine. Fixes, all of which keep the checks themselves unchanged: the two
+loaders retry with a progressively more forgiving wait (networkidle 45s →
+load 60s → domcontentloaded 60s); hero-motion samples its early frame as
+soon as the hero element exists, and re-measures once on a fresh context
+when the ONLY failure is the motion floor — structural failures (missing
+element, never decoded, stuck overlay, page errors) still fail on the spot.
+Rule for new runtime gates: never let a sampled quantity fail a deploy on a
+single observation, and never widen a threshold to fix a flake.
+
+**The finding's editorial contract** (owner directive 2026-09-02): takeaway
+FIRST — the concrete clinical conclusion leads, never a document-type opener
+("Review of…", "Study of…"); then 1-3 sentences of substance (numbers,
+population, comparison) and the honest caveat; 250-600 chars; dose-free.
+The src link is mandatory on every popover — `healPopoverSummaries()` step 4
+appends it when missing, and the popover CSS must keep the open popover
+clickable: `pointer-events: auto` in the open state plus a `::after` hover
+bridge spanning the lift gap (education/portal pages, course BASE_CSS, and
+each post's embedded style block all carry this; posts are self-contained).
+
+**The rulebook checks** (codes): `unstructured`, `missing-sourced` (summary
+absent though grounded text exists on the surface), `raw-dump` (finding
+starts with an abstract section label), `verbatim-dump` (finding is a
+contiguous copy of the paper's abstract — title-as-descriptor exempt),
+`near-empty`, `bad-title` / `bad-journal` / `bad-year` (metadata contradicts
+the paper's PubMed record; a meta year passes if ANY year in it is a PubMed
+date for the paper, so "Rev Assoc Med Bras (1992) · 2026" is fine).
+`missing-unsourced` is ADVISORY — writing "what a paper shows" is clinical
+content for the clinician, never for a gate.
+
+**Two enforcement layers around the one module:**
+
+* **Deploy chain:** `scripts/audit_ref_popovers.mjs` (in `deploy-prod.sh`) —
+  a WALKER only. Derives education pages from the tree and posts from the
+  live API (zero posts scanned = FAIL), and feeds each surface plus its
+  curated map into `auditPopoverSurface`. Metadata/dump facts come from the
+  committed corpus `scripts/popover_meta_corpus.json` (title / journal /
+  journal_abbrev / years / abstract for EVERY PMID cited anywhere on the
+  site, entities decoded; `--refresh` refetches, a cited PMID missing from
+  it fails the gate). Replaced `audit_ref_popovers.py` — deleted, do not
+  resurrect a second implementation.
+* **Publish choke point** (every POST/PUT/approve through `/api/posts`,
+  which is what protects SCHEDULED pipeline publishes between deploys):
+  `auditPopoverSummaries(post)` = the same `auditPopoverSurface` with the
+  post's own grounded pool; `auditDarkGrounds` refuses a dark embedded
+  stylesheet (same colour rules as `audit_dark_surfaces.py`). Both wired
+  into `auditPublishable`, so a failing auto-post is held as a draft. The
+  worker skips the metadata checks only because it has no corpus; the
+  deploy gate covers them.
+* **The heal** (`healPopoverSummaries`, runs in `autoHealBody` at ingest) is
+  grounded-only: (1) W20-era class-schema rename (pure attribute rename),
+  (2) dump findings — labelled OR verbatim-paste — replaced from the paper's
+  own modal Bottom-line, (3) missing finding filled from
+  `groundedSummarySources` (Bottom-line, else cite-card lens; author lists
+  and abstract dumps rejected). No grounded source → LEFT ALONE.
+
+**Sourcing rule (unchanged, absolute):** no tool may author clinical text to
+silence a gate. Curated summaries come from the post's own cite cards /
+modal bottom-lines, the education pages' `.ref-what` blocks, or the owner.
+Metadata is different: title/journal/year are facts from PubMed and ARE
+deterministically correctable — `scripts/fix_popover_metadata.mjs` rebuilds
+every popover's title/meta from the corpus, uniformly, on every surface
+(and repaired the 2026-09-01 backlog: ~1,000 rebuilt metas/titles, 119
+dump findings replaced from grounded sources).
+
+All of it is unit-tested by `scripts/test_post_format_gate.mjs` (hard deploy
+gate; 101 checks). `scripts/fixtures/canonical_reference_post.json` carries
+the LIVE light stylesheet — refresh it from live W21 if the canonical
+palette ever changes again, or the dark-ground tests will fail the fixture.
+One-off backfill scripts (2026-09-01, superseded for future work by the
+module + `fix_popover_metadata.mjs`): `scripts/fix_ref_popovers.py`,
+`scripts/fix_post_popovers.py`.
+
 
 ### 8.1 Root pages
 
@@ -1818,6 +2329,51 @@ gzips via CompressionStream, PUTs to `mountzara-backups/d1/<UTC-date>.ndjson.gz`
 the cron-worker's enumerated table list (`cron-worker/src/index.js`)
 or it won't be backed up.
 
+**Cloud content producer (2026-09-01) — the Mac pipeline's replacement.**
+The Mac `MountZaraResearchDigest` producer died after 2026-07-28 (last
+published post W29 2026-07-13; 24 briefs stranded `pending`; its KB
+retrieval was already broken — `kb_manifest.fell_back_to_empty=true` on
+the whole 7/28 batch — and its influencer list never reached the server).
+Its job now runs as scheduled Claude sessions per
+`scripts/cloud_producer_runbook.md` — THE manual: constitution (never
+publish, KB+PubMed grounding only, clinician text stays clinician-owned,
+fail loud), both flows (Tuesday trend briefs via
+`/api/v1/admin/trend-briefs/pending-review`; pull of approved overrides →
+light-format draft posts → `/finalize`; Monday digest drafts), the
+verbatim 32-row §3.8 audit table, template anatomy, light palette, and
+the Routine definitions. Supporting pieces: the KB endpoint below; R2
+`config/trend-watchlist.json`; `scripts/relight_pending_briefs.py`
+(converted all 24 stranded pending bodies dark→light in R2 on 2026-09-01
+— they rendered white-on-paper in the admin preview shell, which is part
+of why review stalled; prose asserted byte-identical outside styling).
+
+**KB grounding for the content pipeline (2026-09-01).**
+`functions/api/v1/internal/kb/ground.js` — POST, X-Pipeline-Token or
+admin auth — exposes `groundClinical()` (the one retrieval rulebook in
+`_lib/clinical_grounding.js`, over the production `kb_docs` FTS5 index,
+1,500 docs) to producer sessions, so cloud-side brief/post generation
+grounds its clinical framing in the curated KB, never model memory
+(§0.8.1 constitution). Thin wrapper only: retrieval logic and per-kind
+policies stay in the lib. Companion config: R2 `mountzara-content`
+`config/trend-watchlist.json` — the claim ledger (seeded from the
+trend_brief_pending history) plus the owner-supplied influencer watch
+list (empty until he provides it; the Mac pipeline's list never reached
+the server, which is why every 2026-07-28 brief carries influencer=null).
+
+**Content-pipeline stale-alert email (2026-09-01).** The daily 09:00 run
+also fires `runContentStaleAlert` → `POST
+/api/v1/internal/content/stale-alert` (Pages, X-Pipeline-Token — email
+delivery lives in the Pages runtime). The endpoint checks two facts and
+EMAILS the owner (`ALERT_EMAIL` || first `ADMIN_EMAILS`): newest published
+post older than 8 days (the Mac digest pipeline has stopped), and trend
+briefs sitting `pending` review longer than 7 days (the queue is waiting
+on a human and nobody knows). Throttles itself to one email per 7 days via
+its own `audit_log` rows (`action=content_stale_email`); counts and admin
+links only, no clinical content. This closes the freshness check's
+documented "KNOWN GAP: no mailer" — the W29 stall sat unnoticed for seven
+weeks with 15 briefs pending because the audit row existed and nothing
+told a human.
+
 ---
 
 ## 13. `scripts/*` — deploy chain + tooling (~129 files)
@@ -1830,7 +2386,7 @@ or it won't be backed up.
 | **Per-feature commits** | `_commit_*.sh` (~15 — per-iteration commits for major features) |
 | **Content generation** | `_gen_<topic>_page.py` (12 — one per education topic), `_anchor_*.py`, page builders |
 | **Verification (audits)** | `verify_kb_anchoring.py` (§0.8.1 gate), `audit_live_post.py` (§3.7.1 gate), `audit_deploy_gate.py` (structural-integrity hard gate — deploy gate #7; reuses `audit_accuracy.py` header-* + `audit_inline_refs.py`), `audit_admin_drafts.py`, `audit_public_surfaces.py`, `cite_audit_*.py`, `voice_sweep_*.py`, `audit_route_render.py` + `route_render_manifest.json` (§13.5 route-render hard gate — deploy gate #9, env-resilient; `/` asserts `#identity-map` since 2026-07-22 — `#how-you-visit` moved to portal in 5953296), `_lib_pw_launch.py` (shared Playwright launcher: container-Chromium/engine fallback + proxy env wiring for ALL Python browser audits), `smoketest_phase17.sh` (Phase 17/18 gate assertions incl. §0b route reachability) |
-| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`. **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
+| **Visual VERIFY (Playwright + iPhone)** | `_verify_identity_map_*.py`, `_verify_idmap_c2_screenshot.py`, `_verify_idmap_c3_carousel.py`, `_verify_iphone_*.py`, `_verify_portal_edu_*.py`, `_audit_iphone_*.py`, `_measure_iphone_*.py`, `_remeasure_iphone.py`, `_capture_mobile.py` (2026-08-24 — screenshots + horizontal-overflow report for `/`, `/about/`, `/evidence/` at 390×844 and 430×932; takes `[outdir] [base_url]` so it runs against production OR a local `python3 -m http.server`), `_capture_mobile_nav.py` (2026-08-24 — opens the hamburger panel and asserts the MEASURED facts that the 8/24 mobile regression broke: panel top == nav bottom, panel ground is paper not `rgba(0,0,0,.95)`, link colour is ink, every tap target ≥44px, CTA is full-width, and the panel closes on link tap). **HARD RULE — every verification/audit script MUST write screenshots, PNGs, JSON reports, and any other artifact to `/Users/beans/Documents/` (NEVER `~/Desktop`). User's Desktop is for USER files only. 2026-05-26 cleanup removed 20 `mz_*` dirs + 1 PNG (~193 MB) of prior-session test artifacts that earlier Claude sessions had dumped to Desktop. Do not repeat.** |
 | **Stripe** | `_stripe_e2e_*.sh`, `_stripe_create_webhook.sh` |
 | **Seed** | `_seed_jane_doe.sh`, `_seed_jane_meds.sh`, `_seed_blank_test_patient.sh`, `_send_jane_magic_link_email.sh` |
 | **D1** | `_backup_d1_to_r2.sh` (manual; cron does it nightly), `_apply_phase14_migration.sh`, `_verify_phase14_schema.sh` |

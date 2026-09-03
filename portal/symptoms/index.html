@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.10);
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
-            --fg-dim: #ffffff;
+            --bg-base: #FBFAF8;
+            --bg-card: rgba(255,255,255,0.72);
+            --border: #E9E5EE;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
+            --fg-dim: #8B8698;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
             --amber: #f59e0b;
             --green: #10b981;
@@ -44,7 +44,7 @@
         .eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 12px;
         }
         h1 {
@@ -54,7 +54,7 @@
         }
         .lede {
             font-size: 15px; line-height: 1.6;
-            color: var(--fg-soft); margin: 0 0 22px 0; max-width: 64ch;
+            color: var(--fg-soft); margin: 0 0 22px 0; max-width: 80ch;
         }
         .panel {
             background: var(--bg-card);
@@ -73,7 +73,7 @@
         .panel h2 {
             font-size: 12px; font-weight: 700;
             letter-spacing: 0.18em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.92);
+            color: #6d28d9;
             margin: 0 0 14px 0;
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -90,16 +90,16 @@
         button:hover { transform: translateY(-1px); background: rgba(var(--glow-purple), 0.26); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         button.ghost {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border-color: var(--border); color: var(--fg-soft);
         }
-        button.ghost:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.ghost:hover { color: var(--fg-strong); border-color: #6d28d9; }
         button.icon {
             padding: 6px 10px; min-width: 36px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border-color: var(--border); color: var(--fg-soft);
         }
-        button.icon:hover { color: var(--fg-strong); border-color: rgba(var(--glow-purple), 0.45); }
+        button.icon:hover { color: var(--fg-strong); border-color: #6d28d9; }
 
         .date-nav {
             display: flex; align-items: center; gap: 10px;
@@ -121,13 +121,13 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
         .domain-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px 18px;
             transition: border-color 0.22s, background 0.22s;
         }
-        .domain-card:hover { border-color: rgba(var(--glow-purple), 0.30); }
+        .domain-card:hover { border-color: #6d28d9; }
         .domain-card h3 {
             margin: 0 0 12px 0;
             font-size: 11px; font-weight: 700;
@@ -196,7 +196,7 @@
             display: inline-flex; gap: 0;
             border-radius: 999px;
             border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             overflow: hidden;
         }
         .yesno button {
@@ -217,7 +217,7 @@
             margin-top: 4px;
         }
         .chip {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 5px 12px;
@@ -226,12 +226,12 @@
             transition: all 0.15s;
         }
         .chip:hover {
-            border-color: rgba(var(--glow-purple), 0.45);
+            border-color: #6d28d9;
             color: var(--fg-strong);
         }
         .chip.active {
             background: rgba(var(--glow-purple), 0.18);
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             color: var(--accent-soft);
         }
 
@@ -241,7 +241,7 @@
             gap: 0;
             border-radius: 9px;
             border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             overflow: hidden;
         }
         .stepper button { background: transparent; border: none; border-radius: 0; padding: 6px 12px; color: var(--fg-soft); font-size: 16px; min-width: 36px; }
@@ -256,7 +256,7 @@
 
         /* text input for medication */
         textarea, input[type=text] {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 8px 10px;
@@ -266,14 +266,14 @@
             transition: border-color 0.18s, background 0.18s;
         }
         textarea:focus, input[type=text]:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
             outline: none;
         }
 
         .note-row {
             margin-top: 22px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px dashed rgba(var(--glow-purple), 0.30);
             border-radius: 12px;
             padding: 14px 16px;
@@ -283,7 +283,7 @@
 
         .save-bar {
             position: sticky; bottom: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.72);
             border: 1px solid rgba(var(--glow-purple), 0.35);
             border-radius: 12px;
             padding: 12px 16px;
@@ -320,7 +320,7 @@
             margin-bottom: 14px;
         }
         .trend-controls select {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.72);
             border: 1px solid var(--border);
             border-radius: 9px;
             padding: 8px 12px;
@@ -329,17 +329,23 @@
             min-width: 220px;
         }
         .trend-controls select:focus {
-            border-color: rgba(var(--glow-purple), 0.55);
+            border-color: #6d28d9;
             background: rgba(var(--glow-purple), 0.05);
             outline: none;
         }
         .trend-svg-wrap {
-            background: rgba(0, 0, 0, 0.15);
+            background: #FFFFFF;
             border-radius: 10px;
             padding: 16px;
             border: 1px solid var(--border);
         }
         svg.trend { width: 100%; height: 220px; display: block; }
+        .grid-hint {
+            margin: 14px 0 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--fg-soft);
+        }
         .trend-empty {
             padding: 30px 16px; text-align: center;
             color: var(--fg-soft); font-size: 13px;
@@ -359,7 +365,7 @@
             transition: opacity 0.22s, transform 0.22s;
             pointer-events: none; z-index: 1000;
         }
-        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: rgba(252, 165, 165, 0.98); }
+        .toast.error { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.55); color: #B91C1C; }
         .toast.show { opacity: 1; transform: translateY(0); }
 
         @media (prefers-reduced-motion: reduce) {
@@ -376,14 +382,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -411,7 +417,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -419,7 +425,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -429,10 +435,41 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* -------------------------------------------------------------------
+   THE EMERGENCY BANNER. Added 2026-08-14.
+   -------------------------------------------------------------------
+   This page collects bleeding_pads_per_hour, flooding_episodes,
+   clots_quarter_size_plus and pelvic_pain_0_10 — the exact criteria the
+   portal home page names when it says call 911. The server GRADES the
+   entry and writes an urgent encounter event
+   (api/v1/patient/symptoms/diary/[date].js), and the page's only feedback
+   to the patient was the word "Saved."
+
+   Every other portal surface that touches acute symptoms carries this
+   wording. This was the one page built to CAPTURE them and the only one
+   without it.
+
+   It sits at the TOP, because a patient logging twelve pads an hour
+   should not have to scroll to find it — and it is static markup rather
+   than a response-driven interstitial because the page saves via
+   sendBeacon on beforeunload, where no response can be rendered.
+   ------------------------------------------------------------------- */
+.panic {
+    margin: 0 0 26px;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #B91C1C;
+    line-height: 1.55;
+}
+.panic strong { color: #92400E; font-weight: 600; }
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Member portal</a>
@@ -442,6 +479,14 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <p class="eyebrow">Member portal · Daily diary</p>
         <h1>Symptom diary</h1>
         <p class="lede">Tap or drag for each symptom you want to track today. Anything you leave blank stays blank — log only what matters today. Your clinician reviews these trends before every visit, so the data shapes the conversation.</p>
+
+        <div class="panic">
+            <strong>If you have an emergency</strong> &mdash; soaking through a pad an hour for more
+            than two hours, passing clots larger than a quarter with dizziness or fainting, severe
+            abdominal pain, chest pain, or signs of stroke &mdash; call <strong>911</strong> or go to
+            the nearest emergency department. Logging it here does not alert anyone urgently: this
+            diary is reviewed before your visits, not in real time.
+        </div>
 
         <div class="date-nav">
             <button class="icon" id="btn-prev">◀</button>
@@ -461,6 +506,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <div id="domains" class="domains">
                 <div style="grid-column: 1/-1; color: var(--fg-soft); padding: 16px; text-align: center;">Loading symptoms…</div>
             </div>
+            <p class="grid-hint">Move any slider that applies and press Save. Even one number a day gives Dr. Mabini something real to look at.</p>
             <div class="note-row">
                 <label for="note">Note for today (optional)</label>
                 <textarea id="note" maxlength="500" placeholder="Anything you want your clinician to know in context (≤ 500 chars)"></textarea>
@@ -478,7 +524,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <button class="ghost" id="trend-refresh">Refresh</button>
             </div>
             <div class="trend-svg-wrap" id="trend-svg-wrap">
-                <div class="trend-empty">Pick a symptom to chart.</div>
+                <div class="trend-empty">Pick a symptom to chart it.</div>
             </div>
         </section>
 
@@ -603,7 +649,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 if (state.entry.updated_at) {
                     $('entry-meta').textContent = 'Updated ' + new Date(state.entry.updated_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
                 } else {
-                    $('entry-meta').textContent = 'No entry yet';
+                    $('entry-meta').textContent = 'Nothing logged today.';
                 }
                 renderDomains();
                 $('note').value = state.entry.note || '';
@@ -842,7 +888,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             const wrap = $('trend-svg-wrap');
             const nonNull = series.filter(p => p.value !== null);
             if (nonNull.length === 0) {
-                wrap.innerHTML = '<div class="trend-empty">No data logged for this symptom in the last 30 days. Start logging to see a trend.</div>';
+                wrap.innerHTML = '<div class="trend-empty">Nothing logged for this in the last 30 days. Start logging and a trend appears here.</div>';
                 return;
             }
             const W = 780, H = 220, PAD_L = 36, PAD_R = 12, PAD_T = 12, PAD_B = 28;
@@ -942,5 +988,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             } catch {}
         });
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>

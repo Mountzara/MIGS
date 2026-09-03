@@ -221,3 +221,15 @@ export function requiresChaperone(key) {
     const v = KEY_INDEX.get(key);
     return !!(v && v.requires_chaperone);
 }
+
+/**
+ * What AI triage writes when it cannot decide. It is deliberately NOT a
+ * member of VISIT_TYPES, so `isValidVisitTypeKey()` rejects it — that is
+ * the property every guard depends on.
+ *
+ * It lives here rather than in a cron endpoint because three unrelated
+ * places need it: the triage writer, the auto-release hold, and the
+ * release validator. Reaching across the tree for it is how one of them
+ * ends up with a stale copy.
+ */
+export const MANUAL_REVIEW_PLACEHOLDER = "manual_review_required";

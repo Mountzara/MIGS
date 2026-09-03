@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#120f1b">
+    <meta name="theme-color" content="#FBFAF8">
     <meta name="description" content="CBG/MIGS — Physician Blog and Journal Club. Weekly synthesis of the peer-reviewed Complex Benign Gynecology and Minimally Invasive Gynecologic Surgery literature.">
     <title>CBG/MIGS — Physician Blog · Mount Zara</title>
     <link rel="icon" type="image/png" href="/assets/images/mount-zara-monogram.png">
@@ -26,8 +26,8 @@
     </style>
     <style>
         :root {
-            --bg: #120f1b;
-            --white: #ffffff;
+            --bg: #FBFAF8;
+            --white: #1A1726;
             --gray-1: rgba(255, 255, 255, 0.72);
             --gray-2: rgba(255, 255, 255, 0.5);
             --gray-3: rgba(255, 255, 255, 0.3);
@@ -50,7 +50,7 @@
             background:
                 radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
                 radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.14), transparent 56%),
-                linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+                linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             color: var(--text-on-dark);
             min-height: 100vh;
             line-height: 1.5;
@@ -71,12 +71,12 @@
                and links keep brand purple (they are not grey). */
         dialog.mz-jc-modal, dialog.deepdive-modal {
             background:
-                linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.06) 100%),
-                rgba(16, 11, 30, 0.68) !important;
+                linear-gradient(135deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.50) 100%),
+                rgba(251, 250, 248, 0.94) !important;
             -webkit-backdrop-filter: blur(28px) saturate(1.85) !important;
             backdrop-filter: blur(28px) saturate(1.85) !important;  /* 44px was heavy while scrolling the 12-section modal; 28px is visually equal frost at a fraction of the compositing cost */
-            border: 1px solid rgba(255, 255, 255, 0.14) !important;
-            color: #ffffff !important;
+            border: 1px solid #E9E5EE !important;
+            color: #1A1726 !important;
             /* 2026-08-08 — center the deep-dive dialog. The shell's universal
                reset (* { margin: 0 }) overrode the UA's dialog margin:auto, so
                modals rendered flush top-left with the right 40% of the viewport
@@ -88,17 +88,37 @@
             max-height: min(92vh, calc(100vh - 32px)) !important;
             max-width: calc(100vw - 24px);
         }
-                .mz-ref-pop, .mz-ref-pop * { color: #ffffff !important; }
-        .mz-verdict-label { color: #ffffff !important; }
-        .mz-ref-pop .mz-ref-pop-title, .mz-ref-pop .mz-ref-title { color: #ffffff !important; }
+                .mz-ref-pop, .mz-ref-pop * { color: #1A1726 !important; }
+        .mz-verdict-label { color: #1A1726 !important; }
+        .mz-ref-pop .mz-ref-pop-title, .mz-ref-pop .mz-ref-title { color: #1A1726 !important; }
+/* --- mz-pop-geometry (2026-09-02) -----------------------------------------
+   The evidence line is now a real synthesis, not a one-liner, so the popover
+   has to hold 250-600 characters without running off the screen. It gets a
+   capped height with internal scroll, and flips BELOW the citation whenever
+   there isn't room above (JS adds .mz-flip). */
+sup.mz-ref .mz-ref-pop {
+    width: min(380px, 92vw);
+    max-height: min(52vh, 440px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
+sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
+sup.mz-ref:hover .mz-ref-pop.mz-flip,
+sup.mz-ref:focus-within .mz-ref-pop.mz-flip,
+sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
+
         dialog.mz-jc-modal::backdrop, dialog.deepdive-modal::backdrop {
-            background: rgba(6, 4, 14, 0.55);
+            /* a scrim stays a scrim — this is what separates the modal from
+               the page behind it, and it is the one surface that SHOULD be
+               dark on a light theme */
+            background: rgba(26, 23, 38, 0.45);
         }
         dialog.mz-jc-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
         label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *),
         dialog.deepdive-modal :is(p, li, td, th, dd, dt, blockquote, figcaption,
         label, span, div, strong, em):not(a):not(a *):not(h3 *):not(h4 *) {
-            color: #ffffff !important;
+            color: #1A1726 !important;
         }
 
 
@@ -110,7 +130,7 @@
            buttons keep their brand/semantic colors. */
         .brief-detail-body :is(p, li, em, strong, label, span, div, figcaption, td, th):not(a):not(a *):not(h2 *):not(h3 *):not(h4 *):not([class*="verdict"]):not([class*="verdict"] *):not(.mz-deepdive-trigger):not(.mz-deepdive-trigger *),
         .post-detail-body :is(p, li, em, strong, label, span, div, figcaption, td, th):not(a):not(a *):not(h2 *):not(h3 *):not(h4 *):not([class*="verdict"]):not([class*="verdict"] *):not(.mz-deepdive-trigger):not(.mz-deepdive-trigger *) {
-            color: #ffffff !important;
+            color: #1A1726 !important;
         }
         /* Finalized hero line-art as a fixed backdrop (static final frame — does
            NOT play) so the page's glass components (cards, footer) frost against
@@ -130,11 +150,13 @@
             position: absolute; top: 50%; left: 50%;
             width: 100vw; height: 56.25vw;   /* true 16:9, no distortion */
             object-fit: contain; pointer-events: none;
-            filter: saturate(1.5) brightness(1.08) contrast(1.12);
+            /* 2026-08-25 — none: the asset ships pre-inked (violet strokes on a
+               white field), so there is no runtime colour transform left. */
+            filter: none;
             /* screen-blend: black pixels of the drawing become transparent so
                the mauve line-art floats directly on the plum gradient
                (mirrors index.html .hero-video, 2026-07-22). */
-            mix-blend-mode: screen;
+            mix-blend-mode: multiply;
             transform: translate(-48%, -50%) rotate(-22deg) scale(2.09);
         }
         a { color: inherit; text-decoration: none; }
@@ -143,17 +165,17 @@
         .nav {
             position: sticky; top: 0; z-index: 100;
             padding: 18px clamp(20px, 4vw, 48px);
-            background: rgba(10, 10, 12, 0.72);
+            background: rgba(255,255,255,0.96);
             backdrop-filter: blur(18px) saturate(160%);
             -webkit-backdrop-filter: blur(18px) saturate(160%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid #E9E5EE;
             display: flex; align-items: center; justify-content: space-between;
         }
-        .nav-brand { display: inline-flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: var(--white); }
-        .nav-brand img { height: 32px; filter: brightness(0) invert(1); }
+        .nav-brand { display: inline-flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; letter-spacing: 0.08em; color: #1A1726; }
+        .nav-brand img { height: 32px; filter: brightness(0) saturate(100%) opacity(0.86); }
         .nav-links { display: flex; gap: clamp(14px, 2.2vw, 28px); font-size: 15px; }
-        .nav-links a { color: #ffffff; transition: color 0.2s ease; }
-        .nav-links a:hover, .nav-links a.active { color: var(--white); }
+        .nav-links a { color: #4A4658; transition: color 0.2s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #6d28d9; }
 
         .hero {
             padding: clamp(80px, 12vw, 160px) clamp(20px, 5vw, 64px) clamp(60px, 8vw, 100px);
@@ -166,20 +188,20 @@
         }
         .eyebrow {
             display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
-            text-transform: uppercase; color: rgba(var(--glow-purple), 0.95);
+            text-transform: uppercase; color: #6d28d9;
             margin-bottom: 20px; position: relative;
         }
         h1.title {
             font-size: clamp(36px, 5.5vw, 64px); font-weight: 700; letter-spacing: -0.03em;
-            line-height: 1.05; margin-bottom: 22px; color: var(--white); position: relative;
+            line-height: 1.05; margin-bottom: 22px; color: #1A1726; position: relative;
         }
         .title-accent {
-            background: linear-gradient(135deg, #ffffff 0%, rgba(var(--glow-purple), 0.95) 100%);
+            background: linear-gradient(118deg, #3d1478 0%, #6d28d9 55%, #8b5cf6 100%);
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
         .subtitle {
             font-size: clamp(17px, 1.8vw, 21px); font-weight: 400; line-height: 1.55;
-            color: #ffffff; max-width: 720px; margin: 0 auto; position: relative;
+            color: #4A4658; max-width: 720px; margin: 0 auto; position: relative;
         }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 10vw, 140px); }
@@ -198,10 +220,18 @@
             /* Nav must FIT a 390px phone: brand + 4 links measured 429px,
                giving every page a 39px sideways wobble (found by
                audit_reader_path.mjs mobile pass, 2026-07-22). */
-            .nav { padding-left: 14px; padding-right: 14px; }
-            .nav-brand { font-size: 15px; letter-spacing: 0.05em; gap: 8px; }
-            .nav-brand img { height: 26px; }
-            .nav-links { gap: 10px; font-size: 13px; }
+            /* 2026-08-24 — the 2026-07-22 sizes fit the row to EXACTLY 390px
+               (brand 175 + links 187 + 28 padding). With no slack the brand
+               broke "MOUNT ZARA" onto a second line and the nav grew to 82px
+               of cramped two-line header, links jammed against the wordmark.
+               Smaller type plus nowrap leaves ~40px of real slack. */
+            .nav { padding: 12px 14px; }
+            .nav-brand {
+                font-size: 13px; letter-spacing: 0.04em; gap: 7px;
+                white-space: nowrap; flex-shrink: 0;
+            }
+            .nav-brand img { height: 24px; }
+            .nav-links { gap: 9px; font-size: 12.5px; white-space: nowrap; }
             /* Post bodies must never widen the page: legacy inline-reference
                popovers (.mz-ref-pop, ~360px absolutely positioned) overflowed
                the viewport by 115-246px on W20/W21-era posts. */
@@ -216,16 +246,16 @@
             background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.02) 55%, rgba(255,255,255,0.05) 100%);
             backdrop-filter: blur(28px) saturate(180%);
             -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.13);
+            border: 1px solid #E9E5EE;
             border-radius: 22px;
-            box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -16px rgba(0,0,0,0.55), 0 6px 16px -6px rgba(0,0,0,0.35);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(255,255,255,0.04) inset, 0 18px 44px -16px rgba(26,23,38,0.14), 0 6px 16px -6px rgba(0,0,0,0.35);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s ease, background 0.3s ease;
             opacity: 0; transform: translateY(28px); cursor: pointer; min-height: 240px;
         }
         .brief-card.in { opacity: 1; transform: translateY(0); }
         .brief-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(var(--glow-purple), 0.42);
+            border-color: #6d28d9;
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.10) 0%, rgba(var(--glow-purple), 0.02) 100%);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 20px 50px -16px rgba(var(--glow-purple-deep), 0.45), 0 0 0 1px rgba(var(--glow-purple), 0.22);
         }
@@ -237,20 +267,20 @@
         .verdict-supported { color: rgba(var(--verdict-supported), 0.95); background: rgba(var(--verdict-supported), 0.10); border: 1px solid rgba(var(--verdict-supported), 0.30); }
         .verdict-mixed { color: rgba(var(--verdict-mixed), 0.95); background: rgba(var(--verdict-mixed), 0.10); border: 1px solid rgba(var(--verdict-mixed), 0.30); }
         .verdict-unsupported { color: rgba(var(--verdict-unsupported), 0.95); background: rgba(var(--verdict-unsupported), 0.10); border: 1px solid rgba(var(--verdict-unsupported), 0.30); }
-        .verdict-neutral { color: rgba(var(--glow-purple), 0.95); background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.24); }
-        .brief-date { font-size: 12.5px; color: #ffffff; letter-spacing: 0.04em; text-transform: uppercase; padding-top: 5px; }
-        .brief-card-title { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.35; margin-bottom: 12px; color: var(--white); }
-        .brief-summary { font-size: 14.5px; line-height: 1.62; color: #ffffff; flex: 1; margin-bottom: 18px; }
+        .verdict-neutral { color: #6d28d9; background: rgba(var(--glow-purple), 0.10); border: 1px solid rgba(var(--glow-purple), 0.24); }
+        .brief-date { font-size: 12.5px; color: #6E6A7C; letter-spacing: 0.04em; text-transform: uppercase; padding-top: 5px; }
+        .brief-card-title { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.35; margin-bottom: 12px; color: #1A1726; }
+        .brief-summary { font-size: 14.5px; line-height: 1.62; color: #4A4658; flex: 1; margin-bottom: 18px; }
         .brief-cta {
             display: inline-flex; align-items: center; gap: 8px;
-            font-size: 13px; font-weight: 600; color: rgba(var(--glow-purple), 0.95);
+            font-size: 13px; font-weight: 600; color: #6d28d9;
             margin-top: auto; transition: gap 0.2s ease, color 0.2s ease;
         }
         .brief-card:hover .brief-cta { gap: 12px; color: #fff; }
 
         .empty {
             text-align: center; padding: clamp(60px, 8vw, 100px) 20px;
-            color: #ffffff; font-size: 16px;
+            color: #4A4658; font-size: 16px;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
             border: 1px dashed rgba(255, 255, 255, 0.10); border-radius: 24px;
         }
@@ -259,14 +289,14 @@
         .brief-detail { max-width: 880px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 48px) clamp(80px, 10vw, 140px); }
         .brief-detail-back {
             display: inline-flex; align-items: center; gap: 8px;
-            font-size: 14px; font-weight: 500; color: #ffffff;
+            font-size: 14px; font-weight: 500; color: #4A4658;
             margin-bottom: 32px; padding: 10px 16px; border-radius: 999px;
-            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
             transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease;
         }
-        .brief-detail-back:hover { background: rgba(var(--glow-purple), 0.12); color: #fff; gap: 12px; }
+        .brief-detail-back:hover { background: #6d28d9; color: #fff; gap: 12px; }
         .brief-detail-meta { display: flex; gap: 12px; margin-bottom: 18px; }
-        .brief-detail-title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 18px; color: var(--white); }
+        .brief-detail-title { font-size: clamp(26px, 3.4vw, 40px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 18px; color: #1A1726; }
         /* 2026-08-08 — was the "Claim under review" block. These are the
            author's own posts, not fact-checks, so the summary now renders as
            a plain standfirst: same panel, no label, no italics. */
@@ -277,16 +307,16 @@
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
             border: 1px solid rgba(var(--glow-purple), 0.20);
         }
-        .brief-detail-body { font-size: 16px; line-height: 1.75; color: #ffffff; }
-        .brief-detail-body h2 { font-size: clamp(22px, 2.2vw, 30px); margin: 36px 0 12px; color: var(--white); letter-spacing: -0.018em; line-height: 1.2; font-weight: 600; }
-        .brief-detail-body h3 { font-size: clamp(18px, 1.8vw, 22px); margin: 28px 0 10px; color: var(--white); line-height: 1.3; font-weight: 600; }
+        .brief-detail-body { font-size: 16px; line-height: 1.75; color: #1A1726; }
+        .brief-detail-body h2 { font-size: clamp(22px, 2.2vw, 30px); margin: 36px 0 12px; color: #1A1726; letter-spacing: -0.018em; line-height: 1.2; font-weight: 600; }
+        .brief-detail-body h3 { font-size: clamp(18px, 1.8vw, 22px); margin: 28px 0 10px; color: #1A1726; line-height: 1.3; font-weight: 600; }
         .brief-detail-body p { margin: 14px 0; }
         .brief-detail-body ul, .brief-detail-body ol { margin: 14px 0; padding-left: 22px; }
         .brief-detail-body li { margin: 8px 0; }
-        .brief-detail-body a { color: rgba(var(--glow-purple), 0.95); border-bottom: 1px solid rgba(var(--glow-purple), 0.32); transition: color 0.2s ease, border-color 0.2s ease; }
-        .brief-detail-body a:hover { color: #fff; border-bottom-color: rgba(var(--glow-purple), 0.95); }
+        .brief-detail-body a { color: #6d28d9; border-bottom: 1px solid rgba(var(--glow-purple), 0.32); transition: color 0.2s ease, border-color 0.2s ease; }
+        .brief-detail-body a:hover { color: #fff; border-bottom-color: #6d28d9; }
 
-        /* §3.8 belt-and-suspenders dialog hide. The browser UA stylesheet
+        /* belt-and-suspenders dialog hide. The browser UA stylesheet
            rule `dialog:not([open]) { display: none }` already hides closed
            dialogs natively, but per user directive 2026-05-26 — when posts
            are innerHTML'd into .brief-detail-body, in some browsers / browser
@@ -300,22 +330,22 @@
         .brief-detail-body div.deepdive-modal:not([data-open="true"]) { display: none !important; }
 
         /* Prominent publication date at top of every post */
-        .brief-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .brief-detail-pubdate { display: inline-flex; align-items: center; gap: 8px; font-family: 'Nunito Sans', 'Avenir Next', system-ui, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; }
         .brief-detail-pubdate::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(var(--glow-purple), 0.92); }
         .brief-detail-pubdate-label { font-weight: 600; letter-spacing: 0.18em; }
-        .brief-detail-pubdate-date { font-weight: 500; color: #ffffff; letter-spacing: 0.06em; }
+        .brief-detail-pubdate-date { font-weight: 500; color: #6E6A7C; letter-spacing: 0.06em; }
 
-        .loader { text-align: center; padding: clamp(60px, 8vw, 100px); color: #ffffff; }
-        .loader-spinner { width: 32px; height: 32px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: rgba(var(--glow-purple), 0.95); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
+        .loader { text-align: center; padding: clamp(60px, 8vw, 100px); color: #4A4658; }
+        .loader-spinner { width: 32px; height: 32px; border: 2px solid rgba(var(--glow-purple), 0.18); border-top-color: #6d28d9; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        footer { padding: 40px 24px; text-align: center; font-size: 13px; color: #ffffff;
+        footer { padding: 40px 24px; text-align: center; font-size: 13px; color: #6E6A7C;
             /* Apple-glass footer (matches index.html) — luminous tinted gradient,
                blur, specular top edge, so it frosts the line-art backdrop. */
-            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.16) 100%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.35) 42%, rgba(244,241,236,0.62) 100%);
             backdrop-filter: saturate(180%) blur(28px); -webkit-backdrop-filter: saturate(180%) blur(28px);
-            border-top: 1px solid rgba(255,255,255,0.14); box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset; }
-        footer a { color: rgba(var(--glow-purple), 0.85); }
+            border-top: 1px solid #E9E5EE; box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset; }
+        footer a { color: #6d28d9; }
     
         /* magazine-justify-2026-06-29 */
         .brief-detail-body, .brief-detail-body p { text-align: left; -webkit-hyphens: manual; hyphens: manual; }
@@ -331,7 +361,7 @@
         .brief-detail-body .design-chart .design-row .label { font-size: 14px; line-height: 1.3; }
         .brief-detail-body .design-chart .bar-bg {
             height: 8px; border-radius: 4px;
-            background: rgba(255, 255, 255, 0.08); overflow: hidden;
+            background: rgba(255,255,255,0.72); overflow: hidden;
         }
         .brief-detail-body .design-chart .bar-fill {
             display: block; height: 100%; width: 0; border-radius: 4px;
@@ -374,7 +404,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -382,7 +412,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -413,12 +443,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 /* 2026-08-08 — small accent text lightened to clear 4.5:1 on dark glass
    (measured 3.36-4.32:1 with #a78bfa / rgba(139,92,246,.85-.95)). */
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
-.footer-brand a, .site-footer a, footer a { color: #c4b5fd !important; }
+.footer-brand a, .site-footer a, footer a { color: #6d28d9 !important; }
 </style>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true">
-        <img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt="">
+        <img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt="">
     </div>
     <nav class="nav">
         <a href="/" class="nav-brand">
@@ -447,7 +477,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                     Loading briefs…
                 </div>
             </div>
-        </main>
+        <div class="mz-eddisclaimer" role="note" style="max-width:72ch;margin:40px auto 24px;padding:16px 20px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:14px;line-height:1.6;"><strong style="color:#1A1726;">Educational information — not medical advice.</strong> Everything on this page is general education. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.</div>
+</main>
     </div>
 
     <div id="detailView" hidden>
@@ -607,7 +638,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 const grid = document.getElementById('briefList');
                 if (briefs.length === 0) {
                     grid.innerHTML = `<div class="empty">
-                        <p style="font-size:18px; color:#ffffff; margin-bottom:8px;">No briefs published yet.</p>
+                        <p style="font-size:18px; color: #4A4658; margin-bottom:8px;">No briefs published yet.</p>
                         <p>The first influencer-claim evidence brief will appear here once approved in the admin dashboard.</p>
                     </div>`;
                     return;
@@ -692,5 +723,35 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             loadList();
         }
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+
+<script>
+/* mz-pop-geometry — open the citation popover downward when the citation
+   sits too high on screen for the popover to fit above it. Delegated, so it
+   also covers post bodies injected into the reader shells after load. */
+(function () {
+    if (window.__mzPopFlip) { return; }
+    window.__mzPopFlip = true;
+    function place(sup) {
+        var pop = sup.querySelector('.mz-ref-pop');
+        if (!pop) { return; }
+        pop.classList.remove('mz-flip');
+        var top = sup.getBoundingClientRect().top;
+        if (top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
+    }
+    function onEvent(ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { place(sup); }
+    }
+    document.addEventListener('pointerover', onEvent, true);
+    document.addEventListener('focusin', onEvent, true);
+    document.addEventListener('click', function (ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { setTimeout(function () { place(sup); }, 0); }
+    }, true);
+})();
+</script>
 </body>
 </html>

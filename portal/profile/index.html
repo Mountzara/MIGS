@@ -11,12 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #120f1b;
-            --fg-strong: #ffffff;
-            --fg-mid: #ffffff;
-            --fg-soft: #ffffff;
+            --bg-base: #FBFAF8;
+            --fg-strong: #1A1726;
+            --fg-mid: #4A4658;
+            --fg-soft: #6E6A7C;
             --accent: #6d28d9;
-            --accent-soft: #a78bfa;
+            --accent-soft: #7c3aed;
             --glow-purple: 167, 139, 250;
         }
         * { box-sizing: border-box; }
@@ -47,7 +47,7 @@
         .eyebrow {
             font-size: 11px; font-weight: 700;
             letter-spacing: 0.22em; text-transform: uppercase;
-            color: rgba(var(--glow-purple), 0.95);
+            color: #6d28d9;
             margin-bottom: 14px;
         }
         h1 {
@@ -60,8 +60,8 @@
         }
         .lede { font-size: 15.5px; line-height: 1.65; color: var(--fg-soft); margin: 0 0 28px 0; max-width: 56ch; }
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 14px;
             backdrop-filter: blur(28px) saturate(165%);
             -webkit-backdrop-filter: blur(28px) saturate(165%);
@@ -69,7 +69,7 @@
             margin-bottom: 16px;
             animation: mzRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .card h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.92); margin: 0 0 14px 0; }
+        .card h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; }
         dl { margin: 0; display: grid; grid-template-columns: 1fr 2fr; gap: 8px 18px; font-size: 14px; }
         dt { color: var(--fg-soft); }
         dd { margin: 0; color: var(--fg-strong); word-break: break-word; }
@@ -79,8 +79,8 @@
         input, select {
             width: 100%;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #E9E5EE;
             border-radius: 9px;
             color: var(--fg-strong);
             font: inherit; font-size: 14px;
@@ -88,8 +88,8 @@
         }
         input:focus, select:focus {
             outline: none;
-            border-color: rgba(var(--glow-purple), 0.65);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #6d28d9;
+            background: rgba(255,255,255,0.72);
             box-shadow: 0 0 0 3px rgba(var(--glow-purple), 0.18);
         }
         button.primary {
@@ -105,8 +105,8 @@
         button.primary:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(var(--glow-purple), 0.55); }
         button[disabled] { opacity: 0.5; cursor: not-allowed; }
         .msg { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 8px; margin-top: 10px; display: none; }
-        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: rgba(110, 231, 183, 0.95); }
-        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: rgba(252, 165, 165, 0.95); }
+        .msg.ok { display: block; background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.40); color: #047857; }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.32); color: #B91C1C; }
         .loading { color: var(--fg-soft); font-size: 14px; }
         @keyframes mzRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -118,14 +118,14 @@
         html { background:
             radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.09), transparent 62%),
             radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.07), transparent 58%),
-            linear-gradient(178deg, #191526 0%, #120f1b 55%, #161321 100%);
+            linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
             /* 2026-07-28 — explicit plum canvas. The old var-fallback chain
-               bottomed out at legacy #07070a black on pages whose tokens
+               bottomed out at legacy #FBFAF8 black on pages whose tokens
                didn't resolve, leaving flat near-black canvases (user-caught
                on /curriculum/; survey found 16 such pages). */ }
         body { background-color: transparent !important; }
         .page-bg-stage { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: transparent; /* was opaque #000 — hid the plum body (2026-07-28 sweep) */ opacity: 0.42; /* 2026-08-08 — was 0.75: at desktop widths the saturate(2.0)-boosted strokes crossed naked headings/ledes at near-full strength and made them unreadable (user: 'why did you allow this page to be live'). The art stays present as texture; text wins. */ }
-        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: saturate(1.5) brightness(1.08) contrast(1.12); mix-blend-mode: screen; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
+        .page-bg-art { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; object-fit: contain; pointer-events: none; filter: none; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); mask-image: radial-gradient(140% 140% at 50% 50%, #000 48%, transparent 74%); /* 2026-08-08 — feather the image rectangle: its hard bounding-box edge crossed tall mobile pages as a diagonal seam that read as a rendering glitch */ transform: translate(-48%, -50%) rotate(-22deg) scale(2.09); }
     
 /* ===== 2026-08-08 accessibility pass (measured, not assumed) =====
    Audit found: contrast failures concentrated on translucent "light" panels,
@@ -153,7 +153,7 @@ nav a, .site-nav a, .main-nav a, footer a, .foot a, .footer-content a,
 /* Focus must be visible on every interactive element, on any background. */
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 summary:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 3px solid #c4b5fd;
+    outline: 3px solid #6d28d9;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -161,7 +161,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .skip-link {
     background: #2e1065 !important;
     color: #ffffff !important;
-    border: 1px solid #c4b5fd;
+    border: 1px solid #6d28d9;
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -174,7 +174,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 </style>
 </head>
 <body>
-    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-v2.webp" alt=""></div>
+    <div class="page-bg-stage" aria-hidden="true"><img class="page-bg-art" src="https://mountzara.com/media/hero-last-frame-ink-v2.webp" alt=""></div>
     <div class="wrap">
         <div class="top-row">
             <a href="/portal/">&larr; Portal home</a>
@@ -186,13 +186,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.10);">
-                <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Intake</div>
-                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your intake</div>
+                <a href="/portal/intake/" style="display:block; padding: 18px 20px; background: rgba(255,255,255,0.96); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 6px;">Your health history</div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Continue your health history</div>
                     <div style="font-size: 13px; color: var(--fg-soft);">18 short sections, autosaved. Resume any time. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
                 </a>
-                <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(7,7,10,0.65); text-decoration: none; transition: background 0.18s ease;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(var(--glow-purple), 0.95); margin-bottom: 6px;">Documents</div>
+                <a href="/portal/documents/" style="display:block; padding: 18px 20px; background: rgba(255,255,255,0.96); text-decoration: none; transition: background 0.18s ease;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6d28d9; margin-bottom: 6px;">Documents</div>
                     <div style="font-size: 15px; font-weight: 500; color: var(--fg-strong); margin-bottom: 4px;">Upload records &amp; imaging</div>
                     <div style="font-size: 13px; color: var(--fg-soft);">Encrypted on the server. PDF, images, DOCX, DICOM. <span style="color: var(--accent-soft);">Open &rarr;</span></div>
                 </a>
@@ -202,6 +202,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div class="card" id="identityCard">
             <h2>Identity &middot; on the record</h2>
             <div class="loading" id="identityLoading">Loading…</div>
+            <div id="identityError" class="msg error" role="status" aria-live="polite" style="display:none;">
+                We couldn&rsquo;t load your details just now. Reload the page, or message us if it keeps happening.
+            </div>
             <dl id="identityList" style="display:none">
                 <dt>Name</dt><dd id="fName"></dd>
                 <dt>Email</dt><dd id="fEmail"></dd>
@@ -220,11 +223,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             </p>
             <div style="display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;">
                 <div id="photoPreviewWrap" style="width: 96px; height: 96px; border-radius: 50%;
-                     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+                     background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                      display: flex; align-items: center; justify-content: center;
                      overflow: hidden; flex-shrink: 0; font-size: 38px; font-weight: 300;
                      color: rgba(167,139,250,0.95);">
                     <span id="photoInitial">?</span>
+                    <span id="photoPlaceholderLabel" style="display:none; font-size:12px; font-weight:400;
+                          color: var(--fg-soft, rgba(255,255,255,0.7)); text-align:center; padding:0 6px;">Add a photo</span>
                     <img id="photoPreview" alt="" style="display:none; width:100%; height:100%; object-fit: cover;">
                 </div>
                 <div style="flex: 1 1 220px; min-width: 220px;">
@@ -249,8 +254,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </button>
                         <button type="button" id="nicknameSaveBtn"
                             style="padding: 8px 14px; border-radius: 10px;
-                                   background: rgba(255,255,255,0.04); color: var(--ink);
-                                   border: 1px solid rgba(255,255,255,0.10); font-size: 13px; font-weight: 600; cursor: pointer;">
+                                   background: rgba(255,255,255,0.72); color: var(--ink);
+                                   border: 1px solid #E9E5EE; font-size: 13px; font-weight: 600; cursor: pointer;">
                             Save nickname
                         </button>
                     </div>
@@ -264,36 +269,36 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         <div class="card" id="careGoalsCard">
             <h2>Your goals &amp; preferences for care</h2>
             <p class="hint" style="color: var(--ink-mute); font-size: 13px; margin: 0 0 14px;">
-                Tell us what matters most to you. We'll pull these into every pre-visit briefing so they shape
-                each conversation. Add one per line.
+                What matters most to you about your care? Anything you write here, Dr. Mabini reads before your visit.
+                Add one per line.
             </p>
             <div class="grid-2">
                 <label>Goals (what you'd like out of care)
                     <textarea id="cg_goals" rows="5"
                         placeholder="One per line — e.g.&#10;Avoid hysterectomy if possible&#10;Return to running by 12 weeks post-op"
                         style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Preferences (how you'd like care to feel)
                     <textarea id="cg_preferences" rows="5"
                         placeholder="One per line — e.g.&#10;Telehealth-first when feasible&#10;Morning visits"
                         style="width: 100%; resize: vertical; min-height: 100px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Things to avoid
                     <textarea id="cg_avoid" rows="4"
                         placeholder="One per line — e.g.&#10;Opioids unless absolutely necessary"
                         style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
                 <label>Anything else we should know
                     <textarea id="cg_notes" rows="4" maxlength="1200"
                         placeholder="Schedule constraints, life context, what helps you feel heard…"
                         style="width: 100%; resize: vertical; min-height: 80px; padding: 10px 12px;
-                               background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10);
+                               background: rgba(255,255,255,0.72); border: 1px solid #E9E5EE;
                                border-radius: 8px; color: var(--ink); font: inherit; font-size: 13px;"></textarea>
                 </label>
             </div>
@@ -303,7 +308,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </div>
 
         <div class="card">
-            <h2>Editable</h2>
+            <h2>Your details</h2>
             <form id="profileForm" autocomplete="on">
                 <div class="grid-2">
                     <label>Preferred name
@@ -322,7 +327,15 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                         </select>
                     </label>
                     <label>Time zone
-                        <input type="text" id="timezone" name="timezone" placeholder="America/Chicago">
+                        <select id="timezone" name="timezone">
+                            <option value="America/Chicago">Central &mdash; America/Chicago</option>
+                            <option value="America/New_York">Eastern &mdash; America/New_York</option>
+                            <option value="America/Denver">Mountain &mdash; America/Denver</option>
+                            <option value="America/Phoenix">Arizona &mdash; America/Phoenix</option>
+                            <option value="America/Los_Angeles">Pacific &mdash; America/Los_Angeles</option>
+                            <option value="America/Anchorage">Alaska &mdash; America/Anchorage</option>
+                            <option value="Pacific/Honolulu">Hawaii &mdash; Pacific/Honolulu</option>
+                        </select>
                     </label>
                 </div>
                 <button class="primary" type="submit" id="saveBtn">Save changes</button>
@@ -348,13 +361,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 }
 
                 const r = await fetch('/api/v1/patient/profile', { credentials: 'same-origin' });
-                if (!r.ok) { showMsg('Could not load profile.', 'error'); return; }
+                if (!r.ok) { failIdentity(); return; }
                 const body = await r.json();
                 const p = body.profile;
                 $('fName').textContent = `${p.first_name} ${p.last_name}${p.preferred_name ? ' (' + p.preferred_name + ')' : ''}`;
                 $('fEmail').textContent = p.email;
                 $('fDob').textContent = p.dob;
-                $('fStatus').textContent = p.status;
+                $('fStatus').textContent = statusLabel(p.status);
                 $('fCreated').textContent = new Date(p.created_at).toLocaleDateString();
                 $('identityLoading').style.display = 'none';
                 $('identityList').style.display = '';
@@ -362,7 +375,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('pronouns').value = p.pronouns || '';
                 $('phone').value = p.phone || '';
                 $('preferred_language').value = p.preferred_language || 'en';
-                $('timezone').value = p.timezone || 'America/Chicago';
+                setTimezone(p.timezone);
 
                 // Phase 14 Round D — Photo / nickname / care_goals
                 $('nickname').value = p.nickname || '';
@@ -373,8 +386,41 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('cg_avoid').value = (cg.avoid || []).join('\n');
                 $('cg_notes').value = cg.notes || '';
             } catch (err) {
-                showMsg('Network error loading profile.', 'error');
+                failIdentity();
             }
+        }
+
+        // The identity card used to be left reading "Loading…" for the rest of
+        // the session on any failure, which reads as a hung page rather than a
+        // failed fetch. Hide the spinner, then say so.
+        function failIdentity() {
+            $('identityLoading').style.display = 'none';
+            $('identityError').style.display = '';
+        }
+
+        // A stored zone outside the shortlist must not silently blank the
+        // select and then get saved back as an empty string on the next save.
+        function setTimezone(tz) {
+            const sel = $('timezone');
+            const want = String(tz || '').trim() || 'America/Chicago';
+            if (!Array.prototype.some.call(sel.options, o => o.value === want)) {
+                const opt = document.createElement('option');
+                opt.value = want;
+                opt.textContent = want;
+                sel.appendChild(opt);
+            }
+            sel.value = want;
+        }
+
+        // The raw enum is a database value, not something to show a patient.
+        const STATUS_LABELS = {
+            active: 'Active',
+            suspended: 'On hold — message us',
+            closed: 'Closed',
+        };
+        function statusLabel(v) {
+            const k = String(v == null ? '' : v).trim().toLowerCase();
+            return STATUS_LABELS[k] || (k ? k.charAt(0).toUpperCase() + k.slice(1) : '—');
         }
 
         function renderPhoto(p) {
@@ -388,11 +434,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 img.src = `${p.photo_url}?v=${v}`;
                 img.style.display = '';
                 $('photoInitial').style.display = 'none';
+                $('photoPlaceholderLabel').style.display = 'none';
                 $('photoDeleteBtn').style.display = '';
             } else {
                 img.style.display = 'none';
                 img.removeAttribute('src');
-                $('photoInitial').style.display = '';
+                $('photoInitial').style.display = 'none';
+                $('photoPlaceholderLabel').style.display = '';
                 $('photoDeleteBtn').style.display = 'none';
             }
         }
@@ -541,5 +589,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             }
         });
     </script>
+<style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
 </body>
 </html>
