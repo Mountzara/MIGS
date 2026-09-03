@@ -1171,16 +1171,32 @@ export function healPopoverSummaries(bodyHtml) {
                 const src = bl[pmid] || lens[pmid];
                 if (src) out += `<span class="mz-ref-pop-finding">${escapeHtml(src)}</span>`;
             }
-            // 4) every popover carries a direct source link (owner directive,
-            //    2026-09-02): a reader hovering the citation must be able to
-            //    click straight through to the paper.
-            if (pmid && !out.includes("mz-ref-pop-src")) {
-                out += `<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>`;
-            }
             if (out !== inner) changed++;
             return pre + out + post;
         }));
     return { ok: true, healed: h, changed, problems };
+}
+
+/**
+ * Every citation popover carries a direct source link (owner directive,
+ * 2026-09-02): a reader hovering a citation must be able to click straight
+ * through to the paper. Kept OUT of healPopoverSummaries on purpose — that
+ * function's contract is that it never changes visible text, and this adds
+ * a visible affordance. @returns {ok, healed, changed}
+ */
+export function ensurePopoverSourceLinks(html) {
+    let changed = 0;
+    const h = String(html || "").replace(SUP_SPAN_RE, (sup) =>
+        sup.replace(/(<span class="mz-ref-pop"[^>]*>)([\s\S]*?)(<\/span>)(?=<\/sup>)/, (full, pre, inner, post) => {
+            const pmid = supPmid(sup);
+            if (!pmid || inner.includes("mz-ref-pop-src")) { return full; }
+            changed++;
+            return pre + inner
+                + `<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/${pmid}/"`
+                + ` target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>`
+                + post;
+        }));
+    return { ok: true, healed: h, changed };
 }
 
 /**
