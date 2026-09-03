@@ -91,6 +91,23 @@
                 .mz-ref-pop, .mz-ref-pop * { color: #1A1726 !important; }
         .mz-verdict-label { color: #1A1726 !important; }
         .mz-ref-pop .mz-ref-pop-title, .mz-ref-pop .mz-ref-title { color: #1A1726 !important; }
+/* --- mz-pop-geometry (2026-09-02) -----------------------------------------
+   The evidence line is now a real synthesis, not a one-liner, so the popover
+   has to hold 250-600 characters without running off the screen. It gets a
+   capped height with internal scroll, and flips BELOW the citation whenever
+   there isn't room above (JS adds .mz-flip). */
+sup.mz-ref .mz-ref-pop {
+    width: min(380px, 92vw);
+    max-height: min(52vh, 440px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+sup.mz-ref .mz-ref-pop.mz-flip { top: calc(100% + 8px); bottom: auto; }
+sup.mz-ref .mz-ref-pop.mz-flip::after { top: auto; bottom: 100%; }
+sup.mz-ref:hover .mz-ref-pop.mz-flip,
+sup.mz-ref:focus-within .mz-ref-pop.mz-flip,
+sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
+
         dialog.mz-jc-modal::backdrop, dialog.deepdive-modal::backdrop {
             /* a scrim stays a scrim — this is what separates the modal from
                the page behind it, and it is the one surface that SHOULD be
@@ -707,5 +724,34 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
     </script>
 <style id="mz-canvas-guard">html{background-color:#FBFAF8}</style>
+
+<script>
+/* mz-pop-geometry — open the citation popover downward when the citation
+   sits too high on screen for the popover to fit above it. Delegated, so it
+   also covers post bodies injected into the reader shells after load. */
+(function () {
+    if (window.__mzPopFlip) { return; }
+    window.__mzPopFlip = true;
+    function place(sup) {
+        var pop = sup.querySelector('.mz-ref-pop');
+        if (!pop) { return; }
+        pop.classList.remove('mz-flip');
+        var top = sup.getBoundingClientRect().top;
+        if (top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
+    }
+    function onEvent(ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { place(sup); }
+    }
+    document.addEventListener('pointerover', onEvent, true);
+    document.addEventListener('focusin', onEvent, true);
+    document.addEventListener('click', function (ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { setTimeout(function () { place(sup); }, 0); }
+    }, true);
+})();
+</script>
 </body>
 </html>

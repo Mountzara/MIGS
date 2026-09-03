@@ -164,6 +164,13 @@ sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:v
 .mz-ref-pop-src { display:inline-block; margin-top:8px; font-size:11.5px; font-weight:600;
     letter-spacing:0.01em; color:var(--vio, #6d28d9); text-decoration:none; }
 .mz-ref-pop-src:hover, .mz-ref-pop-src:focus-visible { text-decoration:underline; color:#4c1d95; }
+/* mz-pop-geometry — the evidence line is a real synthesis (250-600 chars), so
+   the popover caps its height with internal scroll and flips below the
+   citation when there isn't room above (JS adds .mz-flip). */
+sup.mz-ref .mz-ref-pop { width:min(380px,92vw); max-height:min(52vh,440px);
+    overflow-y:auto; overscroll-behavior:contain; }
+sup.mz-ref .mz-ref-pop.mz-flip { top:calc(100% + 8px); bottom:auto; }
+sup.mz-ref .mz-ref-pop.mz-flip::after { top:auto; bottom:100%; }
 /* ---- scroll reveals (JS adds .rv; no-JS stays fully visible) ---- */
 @media (prefers-reduced-motion: no-preference) {
     .rv { opacity:0; transform:translateY(16px);
@@ -174,6 +181,24 @@ sup.mz-ref:hover .mz-ref-pop, sup.mz-ref:focus-within .mz-ref-pop { visibility:v
 """
 
 LESSON_JS = """
+(function () {
+    'use strict';
+    // mz-pop-geometry — flip a citation popover below its marker when there
+    // isn't room above it for the full evidence summary.
+    function placePop(sup) {
+        var pop = sup.querySelector('.mz-ref-pop');
+        if (!pop) { return; }
+        pop.classList.remove('mz-flip');
+        if (sup.getBoundingClientRect().top - pop.offsetHeight < 12) { pop.classList.add('mz-flip'); }
+    }
+    function onPopEvent(ev) {
+        var t = ev.target;
+        var sup = t && t.closest ? t.closest('sup.mz-ref') : null;
+        if (sup) { placePop(sup); }
+    }
+    document.addEventListener('pointerover', onPopEvent, true);
+    document.addEventListener('focusin', onPopEvent, true);
+})();
 (function () {
     'use strict';
     var COURSE = document.body.getAttribute('data-course');
