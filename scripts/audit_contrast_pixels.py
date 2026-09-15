@@ -308,10 +308,29 @@ OPEN_MODALS = """() => {
             if (seen.has(el)) continue;
             seen.add(el);
             try {
+                // 2026-09-15 — DO NOT restyle an element that is already
+                // visible. These selectors match on a class SUBSTRING, so
+                // `.contact-modal-card` and even `.modal-divider` match
+                // "[class*=modal]"; forcing display:flex on the card laid its
+                // children out in a row and threw the divider text outside the
+                // card's painted box, onto the scrim. The gate then reported a
+                // 1.04:1 failure on a modal that renders perfectly to a reader.
+                // A gate that changes the page is measuring its own damage.
+                const cs = getComputedStyle(el);
+                const hidden = cs.display === 'none' || cs.visibility === 'hidden'
+                    || parseFloat(cs.opacity) === 0 || el.hasAttribute('hidden')
+                    || (el.tagName === 'DIALOG' && !el.open);
+                if (!hidden) continue;
                 if (el.tagName === 'DIALOG' && !el.open) el.show();
                 el.classList.add('open', 'active', 'visible', 'is-open', 'show');
                 el.removeAttribute('hidden');
-                el.style.setProperty('display', el.tagName === 'DIALOG' ? 'block' : 'flex', 'important');
+                // Reveal by clearing the inline display first; only impose one
+                // if the element is STILL not displayed, and then a block, not
+                // a flex — imposing flex rewrites the element's own layout.
+                el.style.removeProperty('display');
+                if (getComputedStyle(el).display === 'none') {
+                    el.style.setProperty('display', el.tagName === 'DIALOG' ? 'block' : 'block', 'important');
+                }
                 el.style.setProperty('opacity', '1', 'important');
                 el.style.setProperty('visibility', 'visible', 'important');
                 n++;

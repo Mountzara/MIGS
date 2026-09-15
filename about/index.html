@@ -1288,8 +1288,8 @@
                background-IMAGE, so backgroundColor stayed transparent and any
                compositing path (a contrast measurement, or a browser that does not
                paint the gradient) fell through to the dark scrim behind it. */
-            background-color: #FBFAF8;
             background: linear-gradient(180deg, #F4F1EC 0%, #FBFAF8 100%);
+            background-color: #FBFAF8;   /* AFTER the shorthand: `background:` resets background-color */
             border: 1px solid #E9E5EE;
             border-radius: 22px;
             padding: 40px 36px 36px;
