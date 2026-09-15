@@ -36,7 +36,13 @@ USAGE
     brief_pipeline.py apply    <post-id>   # assemble + enforce site rules + audit
     brief_pipeline.py publish  <post-id>   # PUT + approve (refuses unless apply passed)
 
-Stages are independent and idempotent; run `prepare` before any agent work.
+STAGE ORDER MATTERS FOR COST, NOT ONLY CORRECTNESS. Run `prepare` then `curate`
+BEFORE any authoring. A deep dive, synthesis or narrative written before curation
+describes a set of papers that may not survive it: on W31 ten syntheses were
+authored first and three had to be thrown away and rewritten. curate detects and
+invalidates them, so nothing wrong ships — but the work is simply wasted.
+
+Stages are independent and idempotent; run `prepare` and `curate` before any agent work.
 """
 from __future__ import annotations
 import html as H
