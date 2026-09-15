@@ -12,6 +12,8 @@ sample of citations, asserts what a reader actually gets:
     summary — two different code paths, CSS :hover and a click handler  (S3)
   * the popover carries a link to the study        (S3)
   * the marker resolves to a numbered reference    (S4)
+  * no element id is duplicated on the assembled page — the body's ids plus
+    the shell's, which is the only place a collision can actually happen (S14)
 
 Every marker is checked, not a sample. --max=N caps it for a spot check.
 
@@ -33,6 +35,23 @@ for a in sys.argv[1:]:
 # tappable, and a sample is exactly how a defect survives on the markers nobody
 # looked at. A brief with 200 citations takes longer; that is the right trade.
 MAX_CHECKED = int(next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--max=")), "0")) or None
+
+
+def duplicate_ids(page, route):
+    """Ids as the browser sees them: the injected body PLUS the shell's chrome.
+
+    A brief's ids are unique within its own body and can still collide with the
+    page that injects it; the reader's browser resolves an anchor to whichever
+    came first. Only the rendered document can answer this.
+    """
+    dupes = page.evaluate("""() => {
+        const seen = new Map();
+        for (const el of document.querySelectorAll('[id]')) {
+            seen.set(el.id, (seen.get(el.id) || 0) + 1);
+        }
+        return [...seen.entries()].filter(([, n]) => n > 1).map(([id, n]) => id + ' x' + n);
+    }""")
+    return [f"{route}: duplicate element id on the rendered page: {d}" for d in dupes[:10]]
 
 
 def check_marker(page, sup, route, i, mode):
@@ -76,6 +95,7 @@ def audit(page, route, mode="hover"):
     n = sups.count()
     if n == 0:
         return [f"{route}: no inline citations on the rendered page"]
+    fails += duplicate_ids(page, route)
     limit = min(n, MAX_CHECKED) if MAX_CHECKED else n
     for i in range(limit):
         fails += check_marker(page, sups.nth(i), route, i, mode)

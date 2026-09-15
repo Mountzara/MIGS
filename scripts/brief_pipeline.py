@@ -376,7 +376,11 @@ Reply with ONLY a JSON object:
 
 STANDARDS = """
 THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
- S1  Every factual claim in the site's own prose carries an inline citation placed right after it.
+ S1  Every factual claim in the site's flowing prose — narrative, editorial, topic syntheses, item
+     subsections — carries an inline citation placed right after it. A cite card and a deep-dive
+     dialog are one paper's own attributed containers: they carry that paper's title, meta line, link
+     to the study and deep-dive trigger instead of an inline marker, and every claim in them must be
+     supported by that paper.
  S2  Citation markers are sequential superscript NUMBERS (1, 2, 3 …) in order of first appearance; the
      same paper keeps its number wherever it recurs. A PMID, author-year or anything else as the visible
      marker fails.
@@ -417,14 +421,22 @@ STAGE_STANDARDS = {
     "curate":  ["S11"],
     "author":  ["S1", "S3", "S5", "S6", "S7", "S8", "S10", "S13"],
     "guard":   ["S6"],
-    "apply":   [f"S{i}" for i in range(1, 15)],
+    # S14's contrast half is a rendered-page property; a text reader cannot see
+    # it, and asking one to certify it is the same spec/capability mismatch the
+    # S3 check had. verify_rendered measures both after publish and unpublishes
+    # on failure, so they are enforced — just not from this text.
+    "apply":   [f"S{i}" for i in range(1, 15) if i not in (3, 14)],
 }
+RENDERED_ONLY = {"S3": "hover and tap behaviour", "S14": "contrast on the rendered page"}
 
 
 def stage_addendum(stage: str) -> str:
     own = STAGE_STANDARDS.get(stage, [])
     later = [f"S{i}" for i in range(1, 15) if f"S{i}" not in own]
-    scope = (f"\nIN SCOPE AT THIS STAGE (block on these): {', '.join(own)}."
+    rendered = ("\nMEASURED ON THE RENDERED PAGE after publish, not from this text — do not block on "
+                "them here: " + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + "."
+                if stage == "apply" else "")
+    scope = (f"\nIN SCOPE AT THIS STAGE (block on these): {', '.join(own)}." + rendered
              + (f"\nENFORCED BY A LATER STAGE — report as advisory, DO NOT block: {', '.join(later)}."
                 if later else "\nEVERY standard is in scope: this is the finished body.")
              + "\n")
@@ -1206,6 +1218,9 @@ animal study, and never write a preclinical result as a clinical one.
 PROHIBITIONS: no AI/disclaimer/placeholder language; no file paths, internal names or section marks; no
 dose presented as advice; never the words "never" or "always" in your own prose; write CBG/MIGS, never
 bare MIGS.
+NO ADVICE: appraise the paper; never address a patient ("you should…", "take…", "ask your doctor…").
+The Monday, applicability and equity sections drift into this most — write what a clinician weighs,
+not what a patient should do.
 FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown, no style attributes or colours."""
 
 
@@ -1257,7 +1272,8 @@ Return ONLY {{"sections": {{<key>: "<inner html>", …}}}} for exactly the keys 
         return pmid, None, "author produced nothing"
     verdict = _claude(f"""You are the adversarial reviewer for a physician-authored journal-club analysis. Default to REFUTE.
 READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
-Check for: any number, population, comparator or outcome absent from that abstract; overstatement OR
+Check for: anything addressed to a patient as advice, in any wording (the Monday, applicability and
+equity sections drift into it most); any number, population, comparator or outcome absent from that abstract; overstatement OR
 understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
 written as a human finding); AI/placeholder language; a dose given as advice; "never"/"always" in the
 clinician's prose; bare "MIGS"; markup not matching the required shape.
@@ -2429,22 +2445,36 @@ person who made the claim; the brief exists to inform them, not to score against
 For EACH section: is its heading a clear, specific signpost a reader can navigate by (not a label, not
 a scoreboard, not vague)? Is every sentence free of sneering, gotcha framing, or language that treats
 the claim's author as a mark — while still stating plainly where the evidence is thin?
-Also judge whether the subheadings listed give a reader a clear map of the items.
+Judge EACH subheading separately: is it a clear, specific name for that item that a reader can
+navigate by? One aggregate answer lets an unclear one through on a "mostly fine" impression.
 SECTIONS: {json.dumps(secs, ensure_ascii=False)[:90000]}
 SUBHEADINGS: {json.dumps(subs, ensure_ascii=False)[:8000]}
 Reply with ONLY {{"sections": [{{"id": "...", "heading_ok": true|false, "tone_ok": true|false, "why": "..."}}, ...],
-  "subheadings_ok": true|false, "subheadings_why": "..."}} with one object per section given."""
+  "subheadings": [{{"id": "...", "ok": true|false, "why": "..."}}, ...]}} with one object per section
+AND one object per subheading given."""
                 , timeout_s=900)
     if not v or not isinstance(v.get("sections"), list):
         die("trend prose audit returned no verdict")
+    judged = {str(r.get("id")) for r in v["sections"]}
+    missing = [x["id"] for x in secs if x["id"] not in judged]
+    if missing:
+        die(f"trend prose audit skipped section(s) {missing[:5]} — a skipped section is not a passed one")
     faults = []
     for r in v["sections"]:
         if not r.get("heading_ok"):
             faults.append(f"[editorial] heading of {r.get('id')}: {str(r.get('why', ''))[:110]}")
         if not r.get("tone_ok"):
             faults.append(f"[editorial] tone in {r.get('id')}: {str(r.get('why', ''))[:110]}")
-    if v.get("subheadings_ok") is False:
-        faults.append(f"[editorial] subheadings: {str(v.get('subheadings_why', ''))[:120]}")
+    sub_v = v.get("subheadings")
+    if not isinstance(sub_v, list):
+        die("trend prose audit returned no per-subheading verdicts")
+    judged_s = {str(r.get("id")) for r in sub_v}
+    missing_s = [x["id"] for x in subs if x["id"] not in judged_s]
+    if missing_s:
+        die(f"trend prose audit skipped subheading(s) {missing_s[:5]}")
+    for r in sub_v:
+        if not r.get("ok"):
+            faults.append(f"[{r.get('id')}] subheading: {str(r.get('why', ''))[:110]}")
     return faults
 
 
@@ -2593,8 +2623,13 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     doses = DOSE_RE.findall(prose)
     if doses:
         faults.append(f"dosing in the site's own prose: {doses[:5]}")
-    if re.search(r"Pending[^<]{0,40}review", re.sub(r"<style[\s\S]*?</style>", " ", h)):
+    _vis = re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)
+    if re.search(r"Pending[^<]{0,40}review", _vis):
         faults.append("a reader-visible 'Pending review' placeholder remains")
+    # S9 applies to every brief, not only the trend format, where this check
+    # used to sit inside the trend-only branch beside the verdict-gauge rule
+    if re.search(r"\[Awaiting|class=\"[^\"]*mz-placeholder|\[\s*pending\s*\]|\[TODO", _vis, re.I):
+        faults.append("an authorship placeholder remains")
     if re.search(r"machine-generated|AI-generated|generated by (?:an )?AI", prose, re.I):
         faults.append("AI-provenance language in reader-visible prose")
     if INTERNAL_RE.search(H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)))):
@@ -2695,8 +2730,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
                 faults.append(f"[editorial] {label} is present but has no substance")
         if re.search(r'mz-verdict|REVIEW REQUIRED', h):
             faults.append("a verdict gauge or its label remains")
-        if re.search(r'\[Awaiting|class="[^"]*mz-placeholder', h):
-            faults.append("an authorship placeholder remains")
+
         bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b", prose, re.I)
         if bad:
             faults.append(f"scoring language in the site's own prose: {sorted(set(b.lower() for b in bad))[:4]}")
