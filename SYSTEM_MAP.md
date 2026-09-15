@@ -393,6 +393,19 @@ such. `toggleMenu()` also gained a close-on-tap/Escape handler.
    UNJUDGEABLE and exits 0 — proving reachability is the canary's job.
    Skip with `DEPLOY_SKIP_NAV_AUDIT=1`.
 
+> **2026-09-15 — nav gate no longer hardcodes WebKit.**
+> `scripts/audit_nav_and_reading.py` called `pw.webkit.launch()` directly.
+> In a fresh container with Chromium only, the launch raised before any
+> check ran and the gate printed `FAILED` with an EMPTY detail body —
+> indistinguishable from a real broken nav — and it did so AFTER the
+> upload had landed, so the deploy chain stopped with the site live and
+> the video-source gate unrun. It now uses `_lib_pw_launch.launch_reachable()`
+> like every other live gate (chromium-first, TLS capped through the proxy,
+> falls back to any engine that can load the URL, raises if none can).
+> Re-verified 35/35 on live via the container Chromium. If a gate ever
+> prints FAILED with no `✗` lines beneath it, suspect the browser launch,
+> not the site.
+
 9. **Route-render audit (added 2026-06-10)** —
    `scripts/audit_route_render.py` per §13.5: every manifest route loaded
    in headless Chromium on live + title/selector asserted (homepage-

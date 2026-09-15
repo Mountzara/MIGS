@@ -15,14 +15,26 @@
 # the prose ever falls back to card sizing, the feature is pointless while
 # still appearing to work.
 #
-# TRANSPORT: Chromium's connections are reset by the agent VM's proxy
-# (see the same note in audit_visual_runtime.py); WebKit connects
-# natively, so WebKit is the engine here. A transport failure is reported
-# as UNJUDGEABLE and exits 0 — an unreachable site is the canary's job to
-# catch, not this one's, and blocking every deploy on a proxy quirk would
-# make the gate worthless.
+# TRANSPORT: this gate used to hardcode `pw.webkit.launch()` on the
+# theory that the agent VM's proxy resets Chromium. On 2026-09-15 that
+# hardcoding blocked a deploy AFTER the upload had landed: the fresh
+# container ships Chromium only, WebKit's binary did not exist, and the
+# launch raised before a single check ran — the gate printed "FAILED" with
+# an empty detail body, which is indistinguishable from a real broken nav.
+# Every other live gate (contrast, light-text, page-canvas) had just run
+# green on Chromium in the same pool, so the "Chromium can't connect"
+# premise was stale here: _lib_pw_launch caps TLS at 1.2 through the proxy
+# and that is what makes Chromium reach the site.
+#
+# Now uses launch_reachable(): probes the live URL, chromium first, falls
+# back to any engine that can actually load it, and RAISES if none can.
+# A transport failure inside the checks is still reported as UNJUDGEABLE
+# and exits 0 — an unreachable site is the canary's job to catch, not
+# this one's. A missing browser binary is no longer mistaken for either.
 # =====================================================================
-import sys, time
+import os, sys, time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "https://mountzara.com/"
 NAV_LINK_MIN = 12     # 2026-08-24: Member Portal moved to the FOOTER when the
@@ -48,7 +60,9 @@ def main():
 
     url = URL + ("&" if "?" in URL else "?") + "cb=" + str(int(time.time()))
     with sync_playwright() as pw:
-        browser = pw.webkit.launch()
+        from _lib_pw_launch import launch_reachable
+        browser, engine, note = launch_reachable(pw, url, headless=True)
+        print(f"   (engine: {engine}{'; ' + note if note else ''})")
         try:
             for w, h, label in [(1512, 950, "desktop"), (1100, 900, "tablet"), (390, 844, "phone")]:
                 page = browser.new_page(viewport={"width": w, "height": h}, ignore_https_errors=True)
@@ -74,7 +88,7 @@ def main():
                     msg = str(e)
                     if any(t in msg for t in ("ERR_CONNECTION", "ERR_PROXY", "ERR_TUNNEL",
                                               "ERR_NAME_NOT_RESOLVED", "ERR_SOCKET")):
-                        print(f"⏭  nav/reading audit UNJUDGEABLE — WebKit could not reach the site "
+                        print(f"⏭  nav/reading audit UNJUDGEABLE — {engine} could not reach the site "
                               f"({msg.split(' at ')[0][:70]}).")
                         return 0
                     raise
