@@ -585,6 +585,27 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
     blocking = v.get("blocking") or ([] if v.get("passed") else (v.get("problems") or []))
     advisory = v.get("advisory") or []
+    # THE SCOPE IS ENFORCED HERE, NOT BY ASKING. The prompt tells each reviewer
+    # which standards its stage owns, and the prepare reviewer blocked on S11
+    # anyway — correctly observing off-topic papers, at the one stage that
+    # cannot remove them, because `curate` runs next. An instruction in a
+    # prompt is not a control. A blocking item whose every named standard
+    # belongs to a later stage is recorded as advisory: the observation is
+    # kept, the stage is not stopped for another stage's job. An item naming
+    # no standard is this stage's own finding and still blocks.
+    own = set(STAGE_STANDARDS.get(stage, []))
+    kept, deferred = [], []
+    for item in blocking:
+        named = set(re.findall(r"\bS(?:1[0-4]|[1-9])\b", str(item)))
+        if named and not (named & own):
+            deferred.append(f"[deferred to a later stage: {', '.join(sorted(named))}] {item}")
+        else:
+            kept.append(item)
+    if deferred:
+        advisory = list(advisory) + deferred
+        blocking = kept
+        v["passed"] = not blocking
+        print(f"    {len(deferred)} finding(s) deferred — a standard a later stage enforces")
     for prob in blocking[:8]:
         print(f"    BLOCKING: {prob}")
     for prob in advisory[:6]:
