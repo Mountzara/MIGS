@@ -1737,6 +1737,34 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+**2026-09-15, second half of the same bug.** Opening the briefs in the
+contrast gate immediately caught what the ground fix alone had missed: colours
+written for a dark ground that are LITERALS in the post CSS, not variables, so
+the rescoped palette could not reach them. Amber-300 on the mechanism cards'
+"Read the full abstract" and PMID chips measured **1.27:1**; the salmon
+gap-section heading **1.59:1** — on live, published briefs. `post-light.js`
+now darkens pale `color:` declarations in the post's stylesheet and in inline
+style attributes. It DARKENS rather than replaces, because hue carries meaning
+(amber is "mechanism, not clinical evidence"): hue and saturation are kept and
+lightness forced to **0.26**. Not 0.30 — that puts amber at 4.34:1 against the
+mechanism card's own tinted ground and the 11px chips need 4.5. Only `color:`
+is rewritten; the same amber at 4% alpha as a background or border is correct.
+
+Two lessons worth keeping: **a gate that cannot see a surface proves nothing
+about it** — one deploy after the brief routes were added, the gate found a
+real defect that had been live for months. And **a light ground is not a light
+theme**: converting the background is half the job; the foreground literals are
+the other half.
+
+**`.contact-modal-card` got an explicit `background-color`.** Its visual ground
+is a `linear-gradient`, i.e. a background-IMAGE, so `backgroundColor` stayed
+transparent and every compositing path — a contrast measurement, or a browser
+that fails to paint the gradient — fell through to the dark scrim behind it.
+The modal always rendered correctly to a reader; the declaration makes that
+true of the element, not just of the paint.
+
+---
+
 ### 8.0.0.0f "NOT CURRENTLY OFFERED" — the practice-scope notice (2026-09-15)
 
 **Owner, verbatim:** "For anything that implies need for in person visits,
