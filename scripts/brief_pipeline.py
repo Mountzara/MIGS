@@ -571,6 +571,46 @@ def escape_bare_angles(h: str) -> str:
                   fix, h, flags=re.S)
 
 
+def dedupe_popover_ids(h: str) -> str:
+    """One PMID cited twice produces two elements with the same id.
+
+    Invalid HTML, and `aria-describedby` resolves to the first match only, so a
+    screen reader reading the second citation is handed the wrong paper's
+    summary — or the right one by luck. Live W33/W29/W20 each carried several.
+    Each <sup> keeps its own id; repeats get a suffix, and the matching
+    aria-describedby inside that same <sup> is updated with it.
+    """
+    seen: dict[str, int] = {}
+
+    def fix(m: re.Match) -> str:
+        sup = m.group(0)
+        pid = re.search(r'id="(ref-pop-[^"]+)"', sup)
+        if not pid:
+            return sup
+        base = pid.group(1)
+        seen[base] = seen.get(base, 0) + 1
+        if seen[base] == 1:
+            return sup
+        uniq = f"{base}-{seen[base]}"
+        return sup.replace(f'id="{base}"', f'id="{uniq}"').replace(
+            f'aria-describedby="{base}"', f'aria-describedby="{uniq}"')
+
+    return re.sub(r'<sup class="mz-ref">.*?</sup>', fix, h, flags=re.S)
+
+
+def strip_build_comments(h: str) -> str:
+    """Remove build/run-manifest comments from the body.
+
+    A draft carried a trailing HTML comment with run-manifest JSON naming the
+    generator and its "legacy auto-draft path". Not rendered, but plain in
+    view-source, and the standing directive is that no internal build detail
+    appears on any page.
+    """
+    return re.sub(r"<!--(?:(?!-->)[\s\S])*?"
+                  r"(?:run_manifest|blog_generator|auto-draft|generator\"?\s*:|kb_entries_retrieved)"
+                  r"(?:(?!-->)[\s\S])*?-->", "", h)
+
+
 def cmd_apply(post_id: str) -> None:
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
@@ -685,6 +725,8 @@ def cmd_apply(post_id: str) -> None:
                         ("rgba(8, 8, 12, 0.99)", "rgba(251,250,248,0.99)")):
         h = h.replace(dark, light)
     h = escape_bare_angles(h)
+    h = dedupe_popover_ids(h)
+    h = strip_build_comments(h)
     h = h.replace("(parity with \u00a73.8 trend brief)", "(parity with the trend brief)")
     if "mz-eddisclaimer" not in h:
         m = re.search(r'<ol class="mz-references-list"', h)
@@ -712,6 +754,12 @@ def cmd_apply(post_id: str) -> None:
     # conversion overrides at every use; that rule refused the live, correctly
     # rendering W33. Duplicating a repo check with different semantics is how
     # a pipeline starts blocking good work, so this defers to the one audit.
+    from collections import Counter as _C
+    _dupes = {k: v for k, v in _C(re.findall(r'id="(ref-pop-[^"]+)"', h)).items() if v > 1}
+    if _dupes:
+        faults.append(f"duplicate popover ids remain: {list(_dupes)[:4]}")
+    if re.search(r"<!--(?:(?!-->)[\s\S])*?(?:run_manifest|blog_generator|auto-draft)", h):
+        faults.append("a build/run-manifest comment remains in the body")
     for sup in re.findall(r'<sup class="mz-ref">.*?</sup>', h, re.S):
         if "mz-ref-pop-finding" not in sup or "mz-ref-pop-src" not in sup:
             faults.append("a citation popover lacks its summary or source link")
