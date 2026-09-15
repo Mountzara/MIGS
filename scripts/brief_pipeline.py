@@ -333,8 +333,10 @@ Reply with ONLY a JSON object:
   "problems": ["..."], "notes": "one or two sentences"}}""",
 
     "apply": """You are reviewing the ASSEMBLED BODY of a clinical brief before it publishes on Dr. Mabini's site.
-Read {W}body.applied.html (it is large — read the opening, the narrative section, 2-3 topic syntheses,
-2-3 deep-dive dialogs, and the end).
+Read {W}body.applied.html (it is large — read the opening, EVERY prose section by its heading (weekly:
+the narrative and every topic synthesis; trend: opening, bottom line, shape of the evidence, every
+item subsection, lens, where the two sides can meet, gaps, closing), a sample of cite cards, 2-3
+deep-dive dialogs, the reference list, and the end).
 Check and report honestly:
  1. Any reader-visible placeholder, "Pending review", or text admitting machine generation.
  2. Any dose (mg/mcg/IU) in the SITE'S OWN prose — narrative, synthesis, section intros. Doses are
@@ -400,8 +402,9 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
  S13 Trend briefs carry NO verdict gauge and no "verdict", "debunk", "myth" language; clear headlines and
      subheadlines; one framing label per item from the fixed list; a "Where the two sides can meet"
      section; a tone the person who made the claim could read and learn from.
- S14 The brief renders on the site's paper background with readable contrast, and the page shows no
-     duplicate element ids.
+ S14 The brief renders on the site's paper background with readable contrast — measured on the rendered
+     page (near-invisible-text and pixel-contrast gates on the published route, unpublishing on failure) —
+     and the page shows no duplicate element ids.
 """
 
 STANDARDS_ADDENDUM = """
@@ -427,8 +430,9 @@ def standards_audit(W: str, post_id: str) -> None:
     """
     kind = "trend" if json.load(open(W + "manifest.json")).get("format") == "trend" else "weekly"
     prompt = f"""You are auditing a published-ready clinical brief ({kind} brief) for Dr. Mabini's site, as a
-careful reader would. Read {W}body.applied.html — the opening, the narrative or editorial, at least
-three topic syntheses or item subsections, the reference list, and two deep-dive dialogs.
+careful reader would. Read {W}body.applied.html — every section under every heading (nothing on the
+page is out of scope: opening, narrative or editorial, EVERY topic synthesis or item subsection, the
+shape-of-evidence section, the cite cards, the reference list) and at least two deep-dive dialogs.
 {STANDARDS}
 For EACH standard S1-S14 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
 the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
@@ -825,10 +829,20 @@ def prepare_trend(post_id: str) -> None:
         dp = W + f"drafts_dd/{pmid}.json"
         if os.path.exists(dp):
             d = json.load(open(dp))
-            by_title = {norm(v["title"]): k for k, v in secs.items()}
+            while isinstance(d, dict) and ("blocks" in d or "sections" in d) and isinstance(d.get("blocks") or d.get("sections"), dict):
+                d = d.get("blocks") or d.get("sections")
+            by_number = dict(zip(range(1, 13), JC_KEYS[1:]))     # "1 · …" is question … "12 · …" is prompts
             out = {}
             for k, v in d.items():
-                out[by_title.get(norm(k), k)] = v
+                if not isinstance(v, str):
+                    continue
+                mnum = re.match(r"\s*(\d{1,2})\s*[·•]", str(k))
+                if mnum and int(mnum.group(1)) in by_number:
+                    out[by_number[int(mnum.group(1))]] = v
+                elif re.match(r"\s*the bottom line", str(k), re.I):
+                    out["bottom"] = v
+                else:
+                    out[k] = v
             json.dump(out, open(dp, "w"), ensure_ascii=False)
 
     repaired, unfetched, mismatched, repair_reason = reconcile_abstracts(papers)
@@ -1931,7 +1945,7 @@ def apply_sections(W: str, man: dict, h: str) -> tuple:
         while isinstance(secs, dict) and set(secs) == {"sections"} or set(secs) == {"blocks"}:
             secs = secs.get("sections") or secs.get("blocks")
         for key, inner in secs.items():
-            if key in NOT_AUTHORABLE or key == "card" or key.startswith("_"):
+            if key in NOT_AUTHORABLE or key == "card" or key.startswith("_") or not isinstance(inner, str):
                 continue
             pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)'
                              % (re.escape(pmid), re.escape(key)), re.S)
@@ -2053,8 +2067,20 @@ TOUCH_SCRIPT = ('<script>(function(){document.addEventListener("click",function(
 PROSE_CONTAINERS = re.compile(
     r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
     r'|<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>'
-    r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence)"[^>]*>[\s\S]*?</section>')
-CARD_FITS = re.compile(r'<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-(\d+)"[\s\S]*?<p class="mz-cite-fits">([\s\S]*?)</p>')
+    r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence|shape)"[^>]*>[\s\S]*?</section>')
+CARD_RE = re.compile(r'<article class="mz-cite-card[^"]*"[\s\S]*?</article>')
+
+
+def card_texts(h: str) -> list:
+    """(pmid, clinician text) for every cite card, whatever its shape."""
+    out = []
+    for m in CARD_RE.finditer(h):
+        card = m.group(0)
+        pm = _pmid_of(card) or (re.search(r"openDeepDive\('dd-(\d+)'", card) or [None, None])[1]
+        paras = re.findall(r'<p class="mz-cite-(?:fits|finding)">([\s\S]*?)</p>', card)
+        if pm and paras:
+            out.append((pm, " ".join(paras)))
+    return out
 
 
 def _num_tokens(text: str) -> set:
@@ -2136,10 +2162,12 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                     a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
                     if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
                         preclinical.append(f"{c}: {bare[:90]}")
-    for pm, card in CARD_FITS.findall(h):
+    for pm, card in card_texts(h):
         ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
         if re.search(r"(?<!CBG/)\bMIGS\b", ct) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
             faults.append(f"card {pm}: bare MIGS, never/always, or advice in the lens paragraph")
+        if DOSE_RE.search(ct):
+            faults.append(f"card {pm}: dosing in the clinician's card paragraph")
         for t in _num_tokens(ct):
             if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
                 faults.append(f"card {pm}: number {t} is not in the paper's abstract")
@@ -2206,11 +2234,15 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
             pj = json.load(open(pf))
             abstracts[q] = {"title": pj.get("title", ""), "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or ""}
     faults, results = [], []
-    frags = PROSE_CONTAINERS.findall(h)
-    for i, frag in enumerate(frags):
+    frags = [(f_, None) for f_ in PROSE_CONTAINERS.findall(h)]
+    # a card's paragraph is attributed to one paper: audited against that paper alone
+    frags += [(f'<p>{t}</p>', pm) for pm, t in card_texts(h)]
+    for i, (frag, card_pm) in enumerate(frags):
         sents = _sentences(frag)
         if not sents:
             continue
+        if card_pm:
+            sents = [sn + f" ⟦{card_pm}⟧" for sn in sents]
         cited = sorted({c for sn in sents for c in re.findall(r"⟦(\d+)⟧", sn)})
         ctx = {c: abstracts[c] for c in cited if c in abstracts}
         listing = "\n".join(f"[{n}] {sn}" for n, sn in enumerate(sents, 1))
@@ -2374,7 +2406,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             faults.append("a verdict gauge or its label remains")
         if re.search(r'\[Awaiting|class="[^"]*mz-placeholder', h):
             faults.append("an authorship placeholder remains")
-        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation)\b", prose, re.I)
+        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation|influencers?|false claims?)\b", prose, re.I)
         if bad:
             faults.append(f"scoring language in the site's own prose: {sorted(set(b.lower() for b in bad))[:4]}")
         for tid in man["topics"]:
@@ -2577,32 +2609,53 @@ def cmd_apply_trend(post_id: str) -> None:
                   f'<p class="mz-toc-group-synthesis">{it["html"].strip()}</p>')
     jumps = " &middot; ".join(f'<a href="#{tid}">{H.escape(json.load(open(W + f"topics/{tid}.json"))["title"], quote=False)}</a>' for tid in man["topics"])
     unit = (man.get("trend") or {}).get("unit") or "item"
+    def with_id(section_html, sid):
+        return re.sub(r'^<section class="([^"]*)"', r'<section class="\1" id="%s"' % sid, section_html, count=1) if section_html else ""
     new = [
         sec(H.escape(parts["tagline"], quote=False), parts["tagline_body"], "mz-post-narrative", "opening"),
         sec("Bottom line, up front", parts["bottom_line"], sid="bottom-line"),
-        find_old("The shape of the evidence"),
+        with_id(find_old("The shape of the evidence"), "shape"),
         sec(f"Where the evidence stands, {unit} by {unit}",
             parts["evidence_intro"] + f'<p class="mz-trend-jumps">{jumps}</p>' + items, sid="evidence"),
         sec("From a DO + CBG/MIGS lens", parts["lens"], sid="lens"),
         sec("Where the two sides can meet", parts["bridge"], sid="bridge"),
-        find_old("What the studies show"),
+        with_id(find_old("What the studies show"), "papers"),
         sec("Where the literature doesn't go (yet)", parts["gaps"], sid="gaps"),
         sec("Closing thoughts", parts["closing"], sid="closing"),
     ]
     if not find_old("What the studies show"):
         die("the paper-by-paper section is missing from the source")
-    # anything else the source carried that is not an authored placeholder stays after
-    used = {find_old("The shape of the evidence"), find_old("What the studies show")}
-    keep_rest = "".join(v for k, v in old.items() if v not in used and not re.search(r"Awaiting|mz-placeholder|mz-references", v)
-                        and k not in ("Bottom line, up front", "Where the literature lands today", "From a DO + CBG/MIGS lens",
-                                      "Where the literature doesn't go (yet)", "Closing thoughts") and not k.startswith("["))
-    h = before + "".join(x for x in new if x) + keep_rest + tail
+    # nothing else from the source publishes: a section this pipeline neither
+    # authored nor audits has no gate in front of it, so it does not ship
+    h = before + "".join(x for x in new if x) + tail
     # the source's empty references section goes; the finish builds a real one
     h = re.sub(r'<section class="[^"]*mz-references[^"]*"[^>]*>(?:(?!<li id="ref-)[\s\S])*?</section>', "", h)
 
     finish_and_audit(W, post_id, post, h, man, dropped, repairs,
                      {"dropped": len(dropped), "abstracts": repaired_n, "sections": applied,
                       "items": len(man["topics"])})
+
+
+
+def verify_rendered(route: str, post_id: str) -> None:
+    """S14 is a property of the RENDERED page, so it is measured on the
+    published route with the site's own Playwright gates — near-invisible text
+    and pixel contrast — immediately after approve. A failure unpublishes the
+    post before anyone reads it and refuses the stage."""
+    checks = [
+        ["python3", os.path.join(ROOT, "scripts/audit_light_text.py"), BASE, f"--routes={route}"],
+        ["python3", os.path.join(ROOT, "scripts/audit_contrast_pixels.py"), BASE, f"--pages={route}"],
+    ]
+    for cmd in checks:
+        print(f"  rendered check: {os.path.basename(cmd[1])} {route}")
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800, cwd=os.path.join(ROOT, "scripts"))
+        if r.returncode != 0:
+            tail = (r.stdout + r.stderr).strip().splitlines()[-8:]
+            print("\n".join("    " + l for l in tail))
+            json.dump({}, open("/tmp/_mz_reject.json", "w"))
+            print("UNPUBLISH:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/reject", "POST", auth=True, data_file="/tmp/_mz_reject.json"))[:200])
+            die(f"the published page failed {os.path.basename(cmd[1])}; it has been unpublished")
+    print("  rendered checks: passed")
 
 
 def cmd_publish(post_id: str) -> None:
@@ -2619,6 +2672,7 @@ def cmd_publish(post_id: str) -> None:
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json")))
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json")))
+    verify_rendered(f"/evidence/?id={post_id}", post_id)
     record(W, "publish", {"published": True})
 
 
@@ -2650,6 +2704,7 @@ def cmd_publish_trend(post_id: str) -> None:
     print("APPROVE:", json.dumps(ap)[:400])
     if not (isinstance(ap, dict) and (ap.get("ok") or ap.get("status") == "published" or (ap.get("post") or {}).get("status") == "published")):
         die("approve did not publish the post")
+    verify_rendered(f"/trending/?id={sid}", sid)
     # queue bookkeeping: the framing is the record, not a verdict
     framing = [{"item": titles[t], "framing": syn[t]["framing"]} for t in man["topics"] if t in syn]
     rationale = "Published through brief_pipeline (trend path). Item framings: " + "; ".join(f"{f['item']} — {f['framing']}" for f in framing)
