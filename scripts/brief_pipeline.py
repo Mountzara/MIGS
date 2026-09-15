@@ -1278,6 +1278,12 @@ def cmd_author(post_id: str) -> None:
         stage skipped it — leaving two "Pending review" placeholders that only
         apply's post-condition caught, one stage too late.
         """
+        want = {k for k in json.load(open(W + f"papers/{q}.json")).get("pending", [])
+                if k not in NOT_AUTHORABLE}
+        if not want:
+            # a paper whose sections are already published (a re-run of a
+            # live brief) has nothing to write; there is no draft to verify
+            return False
         path = W + f"drafts_dd/{q}.json"
         if not os.path.exists(path):
             return True
@@ -1984,7 +1990,10 @@ def cmd_apply(post_id: str) -> None:
     if os.path.exists(W + "narrative.json"):
         narr = json.load(open(W + "narrative.json"))["html"].strip()
         nm = re.search(r'(<section class="[^"]*mz-post-narrative[^"]*"[^>]*>)(.*?)(</section>)', h, re.S)
-        if nm and ("mz-jc-pending-tag" in nm.group(2) or len(re.sub(r"<[^>]+>", "", nm.group(2)).strip()) < 600):
+        if nm:
+            # narrative.json is the pipeline's verified narrative for THIS
+            # composition; it replaces whatever the stored body carried, a
+            # stub or an earlier authored version without inline citations
             h = h[:nm.start(2)] + narr + h[nm.end(2):]
         elif not nm:
             first = re.search(r'<nav class="mz-toc"|<section class="[^"]*\btopic-section\b', h)
