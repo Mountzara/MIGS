@@ -1127,16 +1127,28 @@ def cmd_curate(post_id: str) -> None:
                 dropped_ctx[x["pmid"]] = {"pmid": x["pmid"], "title": pj.get("title", ""),
                                           "abstract": (pj.get("abstract") or "")[:3500]}
                 papers_ctx.append(dropped_ctx[x["pmid"]])
-        v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
+        # CHUNKED. A flat character cut dropped the tail of a large topic's
+        # paper list out of the request, so those papers were never independently
+        # classified and the corroboration silently covered less than it claimed.
+        assignments = {}
+        for _i in range(0, len(papers_ctx), 10):
+            _batch = papers_ctx[_i:_i + 10]
+            _v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
 alone, for an audience of gynecologic surgeons. Answer with the heading the paper belongs under — which may be a DIFFERENT heading from the one it is
 currently filed under; a paper covering several of the headings goes under the one it covers most.
 Use "NONE" only when nothing in this brief is about it: a different organ, specialty or population (a
 keyword collision). A broad review that spans several of these headings is NOT "NONE".
 TOPIC HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
-PAPERS: {json.dumps(papers_ctx, ensure_ascii=False)[:90000]}
-Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}""", timeout_s=900)
-        if not v or not isinstance(v.get("assignments"), dict):
-            die(f"{tid}: corroboration returned no verdict")
+PAPERS: {json.dumps(_batch, ensure_ascii=False)}
+Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} with one entry for
+EVERY paper given.""", timeout_s=900)
+            if not _v or not isinstance(_v.get("assignments"), dict):
+                die(f"{tid}: corroboration returned no verdict")
+            _missing = [x["pmid"] for x in _batch if x["pmid"] not in _v["assignments"]]
+            if _missing:
+                die(f"{tid}: corroboration skipped {_missing[:5]}")
+            assignments.update(_v["assignments"])
+        v = {"assignments": assignments}
         here = titles[tid]
         # A disagreement about WHICH heading is a filing error, not a reason to
         # lose the paper: it moves to the heading the second pass named. Only
@@ -2711,9 +2723,10 @@ For EVERY sentence return one object:
         design, or what the literature shows; false for the author's own interpretation, a question,
         a transition, or a statement about the brief itself
  cited: true if the sentence carries at least one ⟦PMID⟧ token
- placement: false if the sentence makes MORE THAN ONE factual claim and a citation does not follow each
-        of them — a single marker parked at the end of a sentence carrying two different studies'
-        findings does not attribute either; null when the sentence makes at most one claim
+ placement: false if any factual claim in the sentence is not followed by the citation that supports it
+        — a marker parked at the end of a sentence carrying two different studies' findings attributes
+        neither, and a marker sitting before its claim or on the wrong clause fails the same way. true
+        when every claim is followed by its own citation; null only when the sentence makes no claim
  supported: for a cited claim, true only if every factual element is traceable to the cited abstracts
             (no invented number, population, comparator, outcome or direction; no overstatement or
             understatement); null when claim is false
