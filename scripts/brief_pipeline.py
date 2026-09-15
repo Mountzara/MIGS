@@ -533,7 +533,7 @@ def cmd_prepare(post_id: str) -> None:
             "id": tid,
             "title": txt((re.search(r"<h2[^>]*>(.*?)</h2>", seg, re.S) or [None, ""])[1]),
             "papers": [{"pmid": q, "title": papers[q]["title"], "meta": papers[q]["meta"],
-                        "abstract": papers[q]["abstract"][:4500],
+                        "abstract": papers[q]["abstract"],
                         "bottom": papers[q]["context"].get("bottom", ""),
                         "findings": papers[q]["context"].get("findings", "")}
                        for q in pmids if q in papers],
@@ -670,7 +670,7 @@ def prepare_trend(post_id: str) -> None:
         tid = "topic-" + slug(name)
         json.dump({"id": tid, "title": name,
                    "papers": [{"pmid": q, "title": papers[q]["title"], "meta": papers[q]["meta"],
-                               "abstract": papers[q]["abstract"][:4500], "bottom": "", "findings": ""}
+                               "abstract": papers[q]["abstract"], "bottom": "", "findings": ""}
                               for q in groups[name]]},
                   open(W + f"topics/{tid}.json", "w"), ensure_ascii=False, indent=1)
         topics.append(tid)

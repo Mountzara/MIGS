@@ -37,7 +37,10 @@ function pagesWithCitations() {
     const out = [];
     const walk = (dir) => {
         for (const e of readdirSync(dir)) {
-            if (["node_modules", ".git", "cite_audit", "docs"].includes(e)) continue;
+            // .brief-work holds the brief pipeline's gitignored work files
+            // (source and assembled bodies under review); they are not
+            // deployable pages and the live posts are audited on approve.
+            if (["node_modules", ".git", "cite_audit", "docs", ".brief-work"].includes(e)) continue;
             const p = join(dir, e);
             let st;
             try { st = readdirSync(p); } catch { st = null; }
