@@ -633,8 +633,25 @@ def fetch_pubmed(pmids: list[str]) -> dict[str, dict]:
                 lab = (re.search(r'Label="([^"]+)"', m.group(1)) or [None, None])[1]
                 body = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(2))).strip()
                 parts.append((lab.upper() + ": " if lab else "") + body)
+            # The journal and year a reader sees are factual claims like any
+            # other and were never fetched, so nothing could check them: the
+            # popover's meta line was free text the author typed, and the
+            # reference list came from whatever the stored brief already said.
+            ja = re.search(r"<ISOAbbreviation>(.*?)</ISOAbbreviation>", art, re.S)
+            jm = re.search(r"<Journal>[\s\S]*?<Title>(.*?)</Title>", art, re.S)
+            src = ja or jm
+            journal = H.unescape(re.sub(r"<[^>]+>", "", src.group(1))).strip() if src else ""
+            ym = (re.search(r"<PubDate>[\s\S]*?<Year>(\d{4})</Year>", art)
+                  or re.search(r"<ArticleDate[^>]*>[\s\S]*?<Year>(\d{4})</Year>", art)
+                  or re.search(r"<PubDate>[\s\S]*?<MedlineDate>(\d{4})", art))
+            year = ym.group(1) if ym else ""
+            au = re.findall(r"<Author[^>]*>[\s\S]*?<LastName>(.*?)</LastName>[\s\S]*?<Initials>(.*?)</Initials>", art)
+            cite = ""
+            if au:
+                cite = ", ".join(f"{a} {i}" for a, i in au[:3]) + (" et al." if len(au) > 3 else "")
             if pm:
-                out[pm] = {"title": title, "abstract": H.unescape("\n".join(parts)).strip()}
+                out[pm] = {"title": title, "abstract": H.unescape("\n".join(parts)).strip(),
+                           "journal": journal, "year": year, "authors": cite}
         time.sleep(0.34)
     return out
 
@@ -672,6 +689,10 @@ def reconcile_abstracts(papers: dict) -> tuple:
         real_labels = {m.group(2).upper() for m in re.finditer(r"(^|\n)([A-Z][A-Z /&-]{2,40}):", real_n)}
         mine_upper = mine_n.upper()
         truncated = bool(real_labels) and any(lab + ":" not in mine_upper for lab in real_labels)
+        # the meta line every surface shows, built from PubMed alone
+        p["journal"], p["year"] = r.get("journal", ""), r.get("year", "")
+        p["meta_verified"] = " \u00b7 ".join(
+            x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
         # PubMed's text is the abstract for EVERY paper, not only the ones caught
         # as wrong or truncated: a stored abstract sharing enough terms to pass
         # the overlap test could still differ from the source, and "verbatim"
@@ -2079,8 +2100,15 @@ def _pmid_of(sup: str) -> str | None:
     return m.group(1) if m else None
 
 
-def number_citations(h: str) -> tuple:
-    """Renumber every inline citation and return (html, pmids_in_citation_order)."""
+def number_citations(h: str, meta: dict | None = None) -> tuple:
+    """Renumber every inline citation and return (html, pmids_in_citation_order).
+
+    The popover's journal-and-year line is REWRITTEN from the PubMed-verified
+    meta rather than trusted: it was free text an author typed into the markup,
+    so the popover and the reference list could show two different, both
+    unverified, years for the same paper.
+    """
+    META = meta or {}
     order: list = []
     canon: dict = {}
     for m in SUP_RE.finditer(h):
@@ -2104,6 +2132,12 @@ def number_citations(h: str) -> tuple:
         counts[pm] = k
         pid = f"ref-pop-{pm}" + (f"-{k}" if k > 1 else "")
         inner = canon[pm]
+        if META.get(pm):
+            meta_html = f'<span class="mz-ref-pop-meta">{H.escape(META[pm], quote=False)}</span>'
+            if "mz-ref-pop-meta" in inner:
+                inner = re.sub(r'<span class="mz-ref-pop-meta">[\s\S]*?</span>', meta_html, inner, count=1)
+            else:
+                inner = re.sub(r"(</span>)", meta_html + r"\1", inner, count=1)
         if "mz-ref-pop-src" not in inner:
             inner += (f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
                       f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>')
@@ -2113,7 +2147,7 @@ def number_citations(h: str) -> tuple:
     return SUP_RE.sub(rewrite, h), order
 
 
-def build_references(W: str, h: str, order: list) -> str:
+def build_references(W: str, h: str, order: list, meta: dict | None = None) -> str:
     """Replace any reference list with one in citation order, entries from the paper files."""
     old_entries = {m.group(1): m.group(2) for m in re.finditer(r'<li id="ref-(\d+)">([\s\S]*?)</li>', h)}
     items = []
@@ -2121,9 +2155,10 @@ def build_references(W: str, h: str, order: list) -> str:
         pf = W + f"papers/{pm}.json"
         if os.path.exists(pf):
             pj = json.load(open(pf))
-            meta = re.sub(r"\s*[·•]\s*PMID\s*\d+\s*$", "", pj.get("meta") or "").strip().rstrip(".")
+            line = ((meta or {}).get(pm) or pj.get("meta_verified")
+                    or re.sub(r"\s*[·•]\s*PMID\s*\d+\s*$", "", pj.get("meta") or "").strip().rstrip("."))
             title = (pj.get("title") or "").strip()
-            text = f"{H.escape(meta, quote=False)}. {H.escape(title, quote=False)}"
+            text = f"{H.escape(line, quote=False)}. {H.escape(title, quote=False)}"
         elif pm in old_entries:
             text = re.sub(r'\s*<a class="mz-ref-pmid"[\s\S]*?</a>', "", old_entries[pm]).strip()
         else:
@@ -2599,8 +2634,15 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     """Shared tail for every brief shape: references, light theme, hygiene,
     disclaimer, post-conditions, the site's own publish audit, the review."""
     # citations: numbered in order of first appearance; references to match
-    h, cite_order = number_citations(h)
-    h = build_references(W, h, cite_order)
+    verified_meta = {}
+    for q in man["pmids"]:
+        pf = W + f"papers/{q}.json"
+        if os.path.exists(pf):
+            mv = json.load(open(pf)).get("meta_verified")
+            if mv:
+                verified_meta[q] = mv
+    h, cite_order = number_citations(h, verified_meta)
+    h = build_references(W, h, cite_order, verified_meta)
     stats["citations"] = len(cite_order)
     # 5. light theme at rest, 6. markup hygiene, 7. disclaimer
     src = open(os.path.join(ROOT, "scripts/repost_light_theme.py")).read().rsplit("\nmain()", 1)[0]
@@ -2691,6 +2733,16 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     ref_ids = re.findall(r'<li id="ref-(\d+)">', h)
     if ref_ids != cite_order:
         faults.append("the reference list is not in citation order or does not match the cited set")
+    for sup in SUP_RE.findall(h):
+        pmv = _pmid_of(sup)
+        want = (json.load(open(W + f"papers/{pmv}.json")).get("meta_verified")
+                if pmv and os.path.exists(W + f"papers/{pmv}.json") else None)
+        if not want:
+            continue
+        got = re.search(r'<span class="mz-ref-pop-meta">([\s\S]*?)</span>', sup)
+        if not got or H.unescape(re.sub(r"<[^>]+>", "", got.group(1))).strip() != want:
+            faults.append(f"[popover:{pmv}] the journal/year line is not the one PubMed gives")
+            break
     for href in set(re.findall(r'<a class="mz-ref-link" href="#(ref-\d+)"', h)):
         if f'id="{href}"' not in h:
             faults.append(f"citation marker points at a missing reference {href}")
