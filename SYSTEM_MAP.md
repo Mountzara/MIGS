@@ -1737,6 +1737,44 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+### 8.0.0.0f "NOT CURRENTLY OFFERED" — the practice-scope notice (2026-09-15)
+
+**Owner, verbatim:** "For anything that implies need for in person visits,
+and/or procedures - can say this is not currently offered at this time - if
+a patient wants to know where I see patients and perform surgeries, they
+can fill out the 'contact me' form to request more information - or fill
+out the widget box."
+
+**One text, one function.** `assets/js/home.js → mzScopeNotice()` renders
+the notice; it is injected into every domain (procedure-guide) modal and
+every OMT modal at open, and into every `[data-mz-scope-slot]` at load.
+Slots live in `index.html`: under the Surgical Practice header, under the
+Osteopathic header, inside `.hub-panel-card`, and in the contact modal
+(`data-mz-scope-slot="contact"`, which drops the self-referential link).
+`about/index.html` does not load `home.js`, so its contact modal carries
+the text statically — keep the two in step.
+
+**The two "ask" paths, as they actually exist.** There is no contact FORM
+on the site; "Get in touch" opens the email modal (`openContactModal`).
+The "widget box" is the interest widget on the portal coming-soon page
+(`functions/portal/_middleware.js`), which now carries an optional
+question field wired to the interest endpoint's existing `note`
+parameter (≤400 chars; the endpoint refuses clinical text on purpose).
+`admin/membership/` shows the question in a new column, so a question
+left there reaches him.
+
+**Also carries the notice:** `functions/_lib/membership.js →
+PRACTICE_SCOPE.how_to_ask` (served by `/api/v1/membership`),
+`available.js` / `book.js` `visit_type_not_offered` messages,
+`telehealth-consent/index.html` §1. The JSON-LD `availableService` on the
+homepage no longer claims surgery as an available service.
+
+**MUST TOUCH TOGETHER when the scope changes again:** `home.js` (text) ·
+`about/index.html` (static copy) · `_middleware.js` (portal line) ·
+`membership.js` · the two booking messages · consent §1 · §8.0.0.0d.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are

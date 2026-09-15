@@ -1637,7 +1637,7 @@
             omtModalEyebrowEl.textContent = data.eyebrow;
             omtModalTitleEl.textContent = data.title;
             omtModalIntroEl.textContent = data.intro;
-            omtModalBodyEl.innerHTML = data.body;
+            omtModalBodyEl.innerHTML = mzScopeNotice() + data.body;
             // The literature hub injects .population-card[data-evidence]
             // sub-cards dynamically. Bind their evidence-modal handlers now.
             if (key === 'literature' || key === 'populations') wirePopulationCardsInside(omtModalBodyEl);
@@ -1959,6 +1959,35 @@
             return `<section class="app-modal-section">${eyebrow}${title}${inner}</section>`;
         }
 
+        // -----------------------------------------------------------------
+        // PRACTICE SCOPE NOTICE (owner directive 2026-09-15): anything on the
+        // site that implies an in-person visit, an office procedure or surgery
+        // says plainly that these are not currently offered, and points the
+        // patient to the two ways to ask where he sees patients and operates.
+        // ONE copy of the text, rendered into every surface from here.
+        // -----------------------------------------------------------------
+        function mzScopeNotice(opts) {
+            const o = opts || {};
+            const contact = o.inContact
+                ? 'use any of the options below'
+                : '<a href="#contact" onclick="if (typeof openContactModal === \'function\') { openContactModal(); return false; }">send a message using Get in touch</a>';
+            return '<div class="mz-scope-notice" role="note">'
+                + '<strong>In-person visits, office procedures and surgery are not currently offered through this practice at this time.</strong> '
+                + 'Dr. Mabini is seeing patients by video only. If you would like to know where he sees patients in person and performs surgery, '
+                + contact + ', or leave your question in the <a href="/portal/">interest box on the member portal</a>, and he will get back to you.'
+                + '</div>';
+        }
+        window.mzScopeNotice = mzScopeNotice;
+        function fillScopeSlots() {
+            document.querySelectorAll('[data-mz-scope-slot]').forEach(el => {
+                if (el.__mzScope) return;
+                el.__mzScope = true;
+                el.innerHTML = mzScopeNotice({ inContact: el.getAttribute('data-mz-scope-slot') === 'contact' });
+            });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fillScopeSlots);
+        else fillScopeSlots();
+
         function populateDomainModal(slug) {
             const d = (window.DOMAIN_MODAL_DATA || {})[slug];
             if (!d) {
@@ -1976,6 +2005,7 @@
             // ONE place — here — so it can never be forgotten per-entry. The
             // marker class mz-eddisclaimer is what audit_no_dosing.py checks.
             domainModalBody.innerHTML = (d.sections || []).map(renderDomainSection).join('')
+                + mzScopeNotice()
                 + '<div class="mz-eddisclaimer" role="note" style="margin:28px 0 8px;padding:14px 18px;background:#F4F0FB;border:1px solid #E9E5EE;border-radius:12px;color:#4A4658;font-size:13.5px;line-height:1.6;">'
                 + '<strong style="color:#1A1726;">Educational information — not medical advice.</strong> '
                 + 'This is general education about how the condition is approached. It is not a diagnosis, a treatment recommendation, or a substitute for care from your own clinician, and reading it does not create a physician–patient relationship. Decisions about testing, medications, or surgery belong in a private conversation between you and your doctor.'

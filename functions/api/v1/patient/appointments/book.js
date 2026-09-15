@@ -208,8 +208,8 @@ export async function onRequestPost(ctx) {
     if (telehealthOnly) {
         if (!isBookableVisitTypeKey(visit_type)) {
             return err(409, "visit_type_not_offered",
-                "This visit needs an in-person examination, and Dr. Mabini is seeing patients by video only at this time. "
-                + "He has been notified and will contact you about the right next step.");
+                "This visit needs an in-person examination, and in-person visits, office procedures and surgery are not currently offered through this practice at this time. "
+                + "He has been notified and will contact you about the right next step. If you would like to know where he sees patients in person and performs surgery, ask through Get in touch on mountzara.com.");
         }
         if (modality !== "telehealth") {
             return err(409, "telehealth_only",

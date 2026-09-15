@@ -431,13 +431,14 @@ input.bad{border-color:rgba(239,68,68,.7);}
         // ---- the list
         h += '<section class="block"><h2>The list · ' + d.total + "</h2>";
         h += '<div class="scroll-x"><table class="tbl"><thead><tr>'
-           + "<th>When</th><th>Email</th><th>Tier</th><th>State</th><th>Has OB/GYN</th><th>Source</th></tr></thead><tbody>";
+           + "<th>When</th><th>Email</th><th>Tier</th><th>State</th><th>Has OB/GYN</th><th>Question</th><th>Source</th></tr></thead><tbody>";
         (d.recent || []).forEach(function (r) {
             h += "<tr><td>" + esc((r.created_at || "").replace("T", " ").slice(0, 16)) + "</td>"
                + "<td class='nm'>" + esc(r.email) + "</td>"
                + "<td>" + esc(r.tier || "—") + "</td>"
                + "<td>" + esc(r.state || "—") + "</td>"
                + "<td>" + esc(r.has_obgyn || "—") + "</td>"
+               + "<td class='q'>" + esc(r.note || "") + "</td>"
                + "<td>" + esc(r.source || "—") + "</td></tr>";
         });
         h += "</tbody></table></div>";

@@ -141,6 +141,7 @@ export const PRACTICE_SCOPE = {
         "Surgery, and scheduling surgery through this practice",
     ],
     referral_note: "When something needs to be examined, done or operated on, Dr. Mabini says so plainly and helps you get to a clinician who can do it. He does not hold on to a problem he cannot finish.",
+    how_to_ask: "In-person visits, office procedures and surgery are not currently offered through this practice at this time. To ask where Dr. Mabini sees patients in person and performs surgery, send a message through Get in touch on mountzara.com or leave the question in the interest box on the member portal, and he will get back to you.",
 };
 
 export const TIERS = [

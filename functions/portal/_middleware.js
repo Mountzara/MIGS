@@ -437,15 +437,20 @@ const COMING_SOON_HTML = `<!doctype html>
                     <input id="su-state" type="text" maxlength="2" placeholder="IL" autocomplete="address-level1" style="text-transform:uppercase">
                 </div>
             </div>
+            <div style="margin:15px 0 0">
+                <label for="su-note">A question for Dr.&nbsp;Mabini? (optional)</label>
+                <input id="su-note" type="text" maxlength="400" placeholder="e.g. Where do you see patients in person or perform surgery?" autocomplete="off">
+            </div>
             <button type="button" class="btn" id="su-go">Join the list</button>
             <div class="msg" id="su-msg" role="status" aria-live="polite"></div>
             <p class="fine">Please don&rsquo;t include symptoms or medical history here &mdash; this is a
             mailing list, not a medical record, and it isn&rsquo;t encrypted for that. There will be a
             secure place for it when the portal opens.</p>
         </div>
-        <p class="fine" style="max-width:640px">If you&rsquo;re an existing patient and need the office in
-        the meantime, please call the practice or email
-        <a href="mailto:info@mountzara.com">info@mountzara.com</a>.</p>
+        <p class="fine" style="max-width:640px"><strong>In-person visits, office procedures and surgery are not
+        currently offered through this practice at this time</strong> &mdash; Dr.&nbsp;Mabini is seeing patients by
+        video only. To ask where he sees patients in person and performs surgery, leave the question in the box
+        above or email <a href="mailto:info@mountzara.com">info@mountzara.com</a>, and he will get back to you.</p>
     </section>
 
     <footer>
@@ -562,13 +567,14 @@ const COMING_SOON_HTML = `<!doctype html>
                 email: email,
                 tier: ($("su-tier") || {}).value || "any",
                 state: ($("su-state").value || "").trim().toUpperCase(),
+                note: (($("su-note") || {}).value || "").trim().slice(0, 400),
                 source: "portal_coming_soon"
             })
         }).then(function (r) { return r.json(); }).then(function (j) {
             go.disabled = false; go.textContent = "Join the list";
             if (!j.ok) { show(j.error || "Could not add you just now.", false); return; }
             show(j.message + (j.note ? "\\n\\n" + j.note : ""), true);
-            $("su-email").value = "";
+            $("su-email").value = ""; if ($("su-note")) $("su-note").value = "";
         }).catch(function () {
             go.disabled = false; go.textContent = "Join the list";
             show("Could not reach the server. Please try again.", false);

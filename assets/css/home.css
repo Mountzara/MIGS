@@ -9093,3 +9093,24 @@ sup.mz-ref .mz-ref-pop.mz-fixed::after { display: none; }
 .mz-evidence-synthesis p { margin: 0 0 12px; color: #4A4658; line-height: 1.7; }
 .mz-evidence-synthesis p:last-child { margin-bottom: 0; }
 .mz-evidence-synthesis strong { color: #1A1726; }
+
+/* Practice-scope notice (2026-09-15) — one text, rendered by
+   mzScopeNotice() in home.js into modals and [data-mz-scope-slot]s. */
+.mz-scope-notice {
+    margin: 18px 0 8px;
+    padding: 14px 18px;
+    background: #F4F0FB;
+    border: 1px solid #E9E5EE;
+    border-left: 3px solid #6d28d9;
+    border-radius: 12px;
+    color: #4A4658;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+}
+.mz-scope-notice strong { color: #1A1726; }
+.mz-scope-notice a { color: #6d28d9; text-decoration: underline; text-underline-offset: 2px; }
+.mz-scope-notice a:hover { color: #4c1d95; }
+.section-sub + .mz-scope-slot { margin: 18px auto 28px; max-width: 760px; }
+.hub-panel-card > [data-mz-scope-slot] { margin: 0 clamp(16px, 3vw, 28px) clamp(16px, 3vw, 28px); }
+.contact-modal-card [data-mz-scope-slot] .mz-scope-notice { margin: 0 0 22px; font-size: 13.5px; }
