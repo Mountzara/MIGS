@@ -1026,23 +1026,50 @@ def cmd_curate(post_id: str) -> None:
         papers_ctx = [{"pmid": q["pmid"], "title": q["title"], "abstract": (q.get("abstract") or "")[:3500]}
                       for q in t["papers"] if q["pmid"] in d["keep"]]
         v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
-alone, for an audience of gynecologic surgeons. Use "NONE" when the paper is about a different organ,
-specialty or population (a keyword collision), not merely tangential.
+alone, for an audience of gynecologic surgeons. Answer with the heading the paper belongs under — which may be a DIFFERENT heading from the one it is
+currently filed under; a paper covering several of the headings goes under the one it covers most.
+Use "NONE" only when nothing in this brief is about it: a different organ, specialty or population (a
+keyword collision). A broad review that spans several of these headings is NOT "NONE".
 TOPIC HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
 PAPERS: {json.dumps(papers_ctx, ensure_ascii=False)[:90000]}
 Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}""", timeout_s=900)
         if not v or not isinstance(v.get("assignments"), dict):
             die(f"{tid}: corroboration returned no verdict")
         here = titles[tid]
-        disagreed = []
+        # A disagreement about WHICH heading is a filing error, not a reason to
+        # lose the paper: it moves to the heading the second pass named. Only
+        # "NONE" — nothing in this brief is about it — drops it. The first run
+        # deleted four on-topic endometriosis reviews for being filed under the
+        # wrong supplement, and the curate reviewer refused the stage for it.
+        moved, disagreed = [], []
+        by_title = {tt: ti for ti, tt in titles.items()}
         for q in list(d["keep"]):
             got = str(v["assignments"].get(q, "")).strip()
-            if got != here:
-                disagreed.append({"pmid": q, "reason": f"independent classification filed it under {got or 'nothing'!r}, not {here!r}"})
+            if got == here:
+                continue
+            dest = by_title.get(got)
+            if dest and dest != tid:
+                moved.append((q, dest, got))
+            else:
+                disagreed.append({"pmid": q, "reason": "independent classification found no heading in this brief that it belongs under"})
+        for q, dest, got in moved:
+            rec = next((x for x in t["papers"] if x["pmid"] == q), None)
+            d["keep"].remove(q); d["keep_reasons"].pop(q, None)
+            dd = decisions.setdefault(dest, {"keep": [], "keep_reasons": {}, "drop": [], "retitle": None})
+            if q not in dd["keep"]:
+                dd["keep"].append(q)
+                dd["keep_reasons"][q] = f"moved from {here!r}: independent classification filed it under {got!r}"
+            if rec:
+                dt = json.load(open(W + f"topics/{dest}.json"))
+                if all(x["pmid"] != q for x in dt["papers"]):
+                    dt["papers"].append(rec)
+                    json.dump(dt, open(W + f"topics/{dest}.json", "w"), ensure_ascii=False, indent=1)
+            print(f"  MOVE {q}: {tid} -> {dest} (independent classification said {got!r})")
         if disagreed:
             for x in disagreed:
                 d["keep"].remove(x["pmid"]); d["keep_reasons"].pop(x["pmid"], None); d["drop"].append(x)
                 print(f"  DROP {x['pmid']} from {tid}: {x['reason']}")
+        if moved or disagreed:
             t["papers"] = [q for q in t["papers"] if q["pmid"] in d["keep"]]
             json.dump(t, open(W + f"topics/{tid}.json", "w"), ensure_ascii=False, indent=1)
         d["corroboration"] = {q: v["assignments"].get(q) for q in papers_ctx and [x["pmid"] for x in papers_ctx]}
@@ -2278,6 +2305,84 @@ def prose_faults(W: str, h: str, man: dict) -> list:
 
 
 
+
+def popover_audit(W: str, h: str) -> list:
+    """Every citation popover's summary, judged against its own paper.
+
+    A reader meets the popover before the study; a generic or wrong summary
+    there is the citation lying. Presence of the field was checked; what it
+    said was not, except inside a bundled per-synthesis verdict.
+    """
+    seen, items = set(), []
+    for sup in SUP_RE.findall(h):
+        pm = _pmid_of(sup)
+        f = re.search(r'<span class="mz-ref-pop-finding">([\s\S]*?)</span>', sup)
+        if not pm or not f or pm in seen:
+            continue
+        seen.add(pm)
+        pf = W + f"papers/{pm}.json"
+        if not os.path.exists(pf):
+            continue
+        pj = json.load(open(pf))
+        items.append({"pmid": pm, "finding": H.unescape(re.sub(r"<[^>]+>", " ", f.group(1))).strip(),
+                      "paper_title": pj.get("title", ""), "abstract": (pj.get("pubmed_abstract") or pj.get("abstract") or "")[:3500]})
+    faults = []
+    for i in range(0, len(items), 8):
+        chunk = items[i:i + 8]
+        v = _claude(f"""Judge each citation popover summary against its own paper's abstract.
+A popover is what a reader sees when hovering a citation marker, so it must be: plain language (not a
+paste of the abstract, not a generic sentence that could sit under any paper), the study's own
+conclusion with its numbers and design, and a closing sentence saying how it bears on the claim
+("Monday:" or "Relevance:"), 250-600 characters, with nothing in it the abstract does not support.
+POPOVERS: {json.dumps(chunk, ensure_ascii=False)[:90000]}
+Reply with ONLY {{"popovers": [{{"pmid": "...", "ok": true|false, "why": "<one clause when not ok>"}}, ...]}}
+with one object for each popover given.""", timeout_s=900)
+        if not v or not isinstance(v.get("popovers"), list):
+            die("popover audit returned no verdict")
+        for r in v["popovers"]:
+            if not r.get("ok"):
+                faults.append(f"[popover:{r.get('pmid')}] citation summary: {str(r.get('why', ''))[:120]}")
+    return faults
+
+
+
+def trend_prose_audit(W: str, h: str, man: dict) -> list:
+    """Headlines, subheadings and tone of the assembled trend brief, per section.
+
+    Judged on the published body, not only on the parts at authoring time: a
+    heading that reads as a scoreboard, or a sentence the person who made the
+    claim would experience as a sneer, defeats the point of these briefs.
+    """
+    secs = []
+    for m in re.finditer(r'<section class="mz-post-section[^"]*"[^>]*id="([^"]+)"[^>]*>\s*<h2[^>]*>([\s\S]*?)</h2>([\s\S]*?)</section>', h):
+        secs.append({"id": m.group(1), "heading": H.unescape(re.sub(r"<[^>]+>", "", m.group(2))).strip(),
+                     "text": H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", m.group(3))))[:6000]})
+    subs = [{"id": a, "subheading": H.unescape(re.sub(r"<[^>]+>", "", b)).strip()}
+            for a, b in re.findall(r'<h3 class="mz-subhead" id="([^"]+)"[^>]*>([\s\S]*?)</h3>', h)]
+    v = _claude(f"""You are judging a brief that checks a viral health claim against the literature. The reader may be the
+person who made the claim; the brief exists to inform them, not to score against them.
+For EACH section: is its heading a clear, specific signpost a reader can navigate by (not a label, not
+a scoreboard, not vague)? Is every sentence free of sneering, gotcha framing, or language that treats
+the claim's author as a mark — while still stating plainly where the evidence is thin?
+Also judge whether the subheadings listed give a reader a clear map of the items.
+SECTIONS: {json.dumps(secs, ensure_ascii=False)[:90000]}
+SUBHEADINGS: {json.dumps(subs, ensure_ascii=False)[:8000]}
+Reply with ONLY {{"sections": [{{"id": "...", "heading_ok": true|false, "tone_ok": true|false, "why": "..."}}, ...],
+  "subheadings_ok": true|false, "subheadings_why": "..."}} with one object per section given."""
+                , timeout_s=900)
+    if not v or not isinstance(v.get("sections"), list):
+        die("trend prose audit returned no verdict")
+    faults = []
+    for r in v["sections"]:
+        if not r.get("heading_ok"):
+            faults.append(f"[editorial] heading of {r.get('id')}: {str(r.get('why', ''))[:110]}")
+        if not r.get("tone_ok"):
+            faults.append(f"[editorial] tone in {r.get('id')}: {str(r.get('why', ''))[:110]}")
+    if v.get("subheadings_ok") is False:
+        faults.append(f"[editorial] subheadings: {str(v.get('subheadings_why', ''))[:120]}")
+    return faults
+
+
 def grounding_audit(W: str, h: str, man: dict) -> list:
     """Every sentence of the site's own prose, judged against the abstracts it cites.
 
@@ -2298,6 +2403,14 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
     frags = [(f_, None, piece_of(h, f_)) for f_ in prose_fragments(h)]
     # a card's paragraph is attributed to one paper: audited against that paper alone
     frags += [(f'<p>{t}</p>', pm, f"card:{pm}") for pm, t in card_texts(h)]
+    # every deep-dive's authored sections, minus the verbatim abstract, judged
+    # against that paper: "monday" is first-person clinical prose and the most
+    # advice-prone text on the page, and nothing exhaustive read it before
+    for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
+        secs_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        secs_d = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", secs_d)
+        if re.sub(r"<[^>]+>", "", secs_d).strip():
+            frags.append((secs_d, pm, f"dialog:{pm}"))
     for i, (frag, card_pm, pc) in enumerate(frags):
         sents = _sentences(frag)
         if not sents:
@@ -2326,6 +2439,8 @@ For EVERY sentence return one object:
             presents that finding as a human or clinical result
  advice: true if the sentence tells a patient what to do (any phrasing)
  dose: true if the sentence states an amount of a drug or supplement to take
+ provenance: true if the sentence refers to how the text was produced (a model, an assistant, an
+        automated draft, a pending review, a placeholder, an internal file or process) in ANY wording
  note: one clause of evidence when any flag is true
 Be adversarial: default to supported=false when you cannot trace an element.
 Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects.""", timeout_s=900)
@@ -2341,7 +2456,10 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
                 bad.append("claim without a citation")
             if r.get("claim") and r.get("cited") and r.get("supported") is False:
                 bad.append("not supported by the cited abstracts")
-            for k in ("preclinical_as_human", "advice", "dose"):
+            if card_pm and r.get("dose"):
+                # a study's own dose inside an attributed container is permitted
+                r["dose"] = False
+            for k in ("preclinical_as_human", "advice", "dose", "provenance"):
                 if r.get(k):
                     bad.append(k.replace("_", " "))
             if bad:
@@ -2449,7 +2567,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     if not faults:
         # the sentence-level model audit runs only on a body that passed every
         # mechanical check, so a malformed body is not paid for twice
-        g = grounding_audit(W, h, man)
+        g = grounding_audit(W, h, man) + popover_audit(W, h)
+        if man.get("format") == "trend":
+            g += trend_prose_audit(W, h, man)
         for f_ in g:
             print("  GROUNDING:", f_)
         faults += g
@@ -2813,6 +2933,15 @@ def repair(W: str, msg: str) -> list:
                 json.dump(syn, open(syn_path, "w"), ensure_ascii=False); done.append(f"synthesis {pc}")
         elif pc in ("narrative", "editorial") and os.path.exists(narr_path):
             os.remove(narr_path); done.append(pc)
+        elif pc.startswith("popover:"):
+            pm = pc.split(":", 1)[1]
+            syn = json.load(open(syn_path)) if os.path.exists(syn_path) else {"items": []}
+            hit = [i["tid"] for i in syn["items"] if f"ref-pop-{pm}" in (i.get("html") or "") or f"/{pm}/" in (i.get("html") or "")]
+            if hit:
+                syn["items"] = [i for i in syn["items"] if i["tid"] not in hit]
+                json.dump(syn, open(syn_path, "w"), ensure_ascii=False); done.append(f"synthesis carrying popover {pm}")
+            elif os.path.exists(narr_path):
+                os.remove(narr_path); done.append(f"narrative carrying popover {pm}")
         elif pc.startswith("card:"):
             dp = W + f"drafts_dd/{pc[5:]}.json"
             if os.path.exists(dp):

@@ -380,6 +380,18 @@ function mockEnv(seed = {}) {
     };
 }
 const ADMIN_H = { "Cf-Access-Authenticated-User-Email": "a@b.c", "Cf-Access-Jwt-Assertion": "x" };
+// A brief publishes only with the brief pipeline's receipt for the exact body
+// it audited (scripts/brief_pipeline.py writes it after the standards audit and
+// the sentence-level grounding audit pass). These helpers forge one for the
+// test's own bodies; the negative cases below prove a body without one cannot
+// be published by any route.
+async function receiptFor(html) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(html || ""));
+    return {
+        body_sha256: [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join(""),
+        standards_passed: true, grounding_passed: true,
+    };
+}
 async function call(env, method, path, body, headers = {}) {
     const req = new Request("https://x.test/api/posts" + path, {
         method, headers: { "content-type": "application/json", ...headers },
@@ -398,8 +410,14 @@ A(r1.status === 201 && r1.j.auto_healed === true && r1.j.format_canonical === tr
     "stale POST auto-healed → canonical: " + JSON.stringify({ s: r1.status, healed: r1.j && r1.j.auto_healed, canon: r1.j && r1.j.format_canonical }));
 const stored = JSON.parse(env.CONTENT._store.get("posts/w99.json"));
 A(!stored.body_html.includes("paper-card") && stored.format_auto_healed_at, "stored post is canonical + stamped auto-healed");
+const a0 = await call(env, "POST", "/w99/approve", null, ADMIN_H);
+A(a0.status === 422, "approve REFUSED without a brief-pipeline receipt: " + a0.status);
+await call(env, "PUT", "/w99", { pipeline_receipt: await receiptFor(stored.body_html) }, ADMIN_H);
 const a1 = await call(env, "POST", "/w99/approve", null, ADMIN_H);
-A(a1.status === 200, "auto-healed post approves cleanly: " + a1.status);
+A(a1.status === 200, "auto-healed post with a matching receipt approves cleanly: " + a1.status);
+await call(env, "PUT", "/w99", { pipeline_receipt: await receiptFor("a different body entirely") }, ADMIN_H);
+const a1b = await call(env, "POST", "/w99/approve", null, ADMIN_H);
+A(a1b.status === 422, "approve REFUSED when the receipt is for another body: " + a1b.status);
 
 // unhealable garbage → lands warned, approve refuses, force works
 const r2 = await call(env, "POST", "", { id: "bad1", kind: "evidence", body_html: '<article class="paper-card">no grammar at all', title: "t" }, { "X-Pipeline-Token": "tok" });
@@ -415,7 +433,9 @@ const envH = mockEnv({
     "posts/blog-2026-W21.json": JSON.stringify(refPost),
     "posts/wpub.json": JSON.stringify({ id: "wpub", kind: "evidence", status: "published", published_at: "2026-06-01T00:00:00Z", title: "t", body_html: stalePost.body_html }),
 });
-const r3 = await call(envH, "POST", "", { id: "wpub", kind: "evidence", body_html: stalePost.body_html, title: "t2" }, { "X-Pipeline-Token": "tok" });
+const r3noR = await call(envH, "POST", "", { id: "wpub", kind: "evidence", body_html: stalePost.body_html, title: "t2" }, { "X-Pipeline-Token": "tok" });
+A(r3noR.status === 409, "format-heal of a published post REFUSED without a receipt: " + r3noR.status);
+const r3 = await call(envH, "POST", "", { id: "wpub", kind: "evidence", body_html: stalePost.body_html, title: "t2", pipeline_receipt: await receiptFor(stalePost.body_html) }, { "X-Pipeline-Token": "tok" });
 A(r3.status === 201 && r3.j.format_healed === true && r3.j.format_canonical === true,
     "stale re-POST of published stale id → auto-heal + format-heal replaces it: " + JSON.stringify({ s: r3.status, fh: r3.j && r3.j.format_healed }));
 const healedPub = JSON.parse(envH.CONTENT._store.get("posts/wpub.json"));
@@ -463,7 +483,7 @@ const envM = mockEnv({
         body_html: stalePost.body_html,
     }),
 });
-const r6 = await call(envM, "POST", "", { id: "wm", kind: "evidence", body_html: stalePost.body_html, title: "pipeline title", summary: "This week's research digest covers 2", verdict: "auto", linkedin_draft: "auto-li" }, { "X-Pipeline-Token": "tok" });
+const r6 = await call(envM, "POST", "", { id: "wm", kind: "evidence", body_html: stalePost.body_html, title: "pipeline title", summary: "This week's research digest covers 2", verdict: "auto", linkedin_draft: "auto-li", pipeline_receipt: await receiptFor(stalePost.body_html) }, { "X-Pipeline-Token": "tok" });
 const wm = JSON.parse(envM.CONTENT._store.get("posts/wm.json"));
 A(r6.status === 201 && r6.j.format_healed === true, "stale re-POST of published id heals: " + JSON.stringify({ s: r6.status, fh: r6.j && r6.j.format_healed }));
 A(wm.title === "Clinician title" && wm.verdict === "clinician-verdict" && wm.linkedin_draft === "clinician-li" && wm.summary === "Clinician summary",

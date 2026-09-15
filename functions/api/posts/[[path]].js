@@ -593,6 +593,9 @@ async function onRequestImpl({ request, env, params }) {
         // lands — including a stale re-render of a published id — is held
         // to the same standard as W20/W21. Provably lossless or it doesn't
         // apply (see _lib/post_format.js safety model).
+        // The receipt is the pipeline's signature over the body IT audited, so
+        // it is checked against what was submitted, before any server-side heal.
+        const submittedBody = body.body_html || "";
         const heal = await autoHealBody(env, body.kind, body.body_html || "");
         body.body_html = heal.body_html;
 
@@ -624,7 +627,7 @@ async function onRequestImpl({ request, env, params }) {
             const incomingPub = auditPublishable({ kind: body.kind, body_html: body.body_html || "" });
             const existingAudit = auditPostFormat(existing);
             formatHeal = existing.status === "published" && !existingAudit.canonical && incomingPub.publishable
-                && (await pipelineReceiptHolds({ body_html: body.body_html || "", pipeline_receipt: body.pipeline_receipt })).ok;
+                && (await pipelineReceiptHolds({ body_html: submittedBody, pipeline_receipt: body.pipeline_receipt })).ok;
             const lockedStatuses = new Set(["published", "rejected"]);
             if (lockedStatuses.has(existing.status) && !formatHeal) {
                 return errorResponse(
