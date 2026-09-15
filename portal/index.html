@@ -599,7 +599,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 } else if (triage.status === 'released') {
                     $('appt-badge').textContent = 'ready to book';
                     $('appt-badge').className = 'badge badge-released';
-                    $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${escapeHtml(labelVisit(triage.visit_type))}</strong> · ${triage.duration_min} min · ${triage.in_person_required ? 'In person' : 'In person or by video'}. Pick a time that works for you.`;
+                    $('appt-body').innerHTML = `<strong style="color:var(--fg-strong);">${escapeHtml(labelVisit(triage.visit_type))}</strong> · ${triage.duration_min} min · By video. Pick a time that works for you.`;
                     $('appt-action').textContent = 'Pick a time →';
                 } else if (triage.status === 'pending_review') {
                     underReview();
@@ -620,9 +620,12 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         }
 
         // Booked state — the visit is scheduled, so the card becomes the
-        // door to the visit itself: telehealth gets a Join-visit link
+        // door to the visit itself: a Join-visit link
         // (/portal/visit/<id>/launch, live 15 min before start) plus a
-        // device check; in-person shows when to arrive.
+        // device check. The in-person branch below is kept, not deleted:
+        // visits booked before the practice went telehealth-only still
+        // have modality = 'in_person' in the appointments table, and a
+        // patient holding one of those must still be told what to do.
         async function renderBookedAppointment(triage) {
             let appt = null;
             try {

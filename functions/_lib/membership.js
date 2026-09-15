@@ -104,6 +104,45 @@ export const COMPLIANCE_REVIEW = [
 // admin console can show what the programme would cost without it, which
 // is the honest argument for having built any of this.
 
+// ---------------------------------------------------------------------
+// PRACTICE SCOPE — telehealth only (2026-09-15, owner directive)
+// ---------------------------------------------------------------------
+// "I will only be doing telehealth services ... I will NOT be seeing
+// patients in person at this time."
+//
+// This matters to the membership more than to anything else on the site,
+// because a membership is a promise made in advance and charged monthly.
+// Selling "your visits, procedures and surgery billed to your health
+// plan" while the practice performs no procedures and no surgery is not
+// a copy problem; it is a promise the practice cannot keep, taken by
+// direct debit. Every tier below is described in terms of what a video
+// visit can actually deliver: consultation, a second opinion on records
+// already taken, orders for imaging and laboratory work, prescriptions
+// sent electronically, and coordination with the clinicians who do the
+// hands-on part.
+//
+// The single source of truth for the modality is
+// `visit_types.js → PRACTICE_MODALITY`. This constant describes the
+// consequences for the OFFER; that one governs what can be booked.
+export const PRACTICE_SCOPE = {
+    modality: "telehealth_only",
+    headline: "Every visit with Dr. Mabini is a video visit.",
+    can_do: [
+        "Consultation, evaluation and follow-up by video",
+        "A second opinion on the records, imaging and pathology you already have",
+        "Orders for imaging and laboratory work",
+        "Prescriptions sent electronically to your pharmacy",
+        "Written plans and coordination with the clinicians who examine and operate on you",
+    ],
+    cannot_do: [
+        "Physical or pelvic examination",
+        "Office procedures — endometrial biopsy, colposcopy, IUD insertion or removal",
+        "Osteopathic manipulative treatment, which requires hands",
+        "Surgery, and scheduling surgery through this practice",
+    ],
+    referral_note: "When something needs to be examined, done or operated on, Dr. Mabini says so plainly and helps you get to a clinician who can do it. He does not hold on to a problem he cannot finish.",
+};
+
 export const TIERS = [
     {
         key: "standard",
@@ -111,7 +150,7 @@ export const TIERS = [
         price_month: 0,
         price_year: 0,
         tagline: "Use your insurance. Pay this practice nothing.",
-        summary: "This is the ordinary arrangement, and for most patients it is the right one. You see Dr. Mabini as a patient of the practice, your visits and procedures are billed to your health plan, and you pay your plan's copay, coinsurance and deductible — nothing else. There is no membership fee and never will be. The paid tiers below add things insurance does not cover; they do not add care, and they do not change what your plan pays.",
+        summary: "This is the ordinary arrangement, and for most patients it is the right one. You see Dr. Mabini by video as a patient of the practice, your video visits are billed to your health plan, and you pay your plan's copay, coinsurance and deductible — nothing else. There is no membership fee and never will be. The paid tiers below add things insurance does not cover; they do not add care, and they do not change what your plan pays.",
         benefits: [
             { label: "Patient portal, records and visit summaries", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
             // Zero physician minutes ON PURPOSE. AI triages; anything that
@@ -120,7 +159,8 @@ export const TIERS = [
             // as a free perk would turn covered work into unpaid work.
             { label: "Secure messaging about your existing care", covered_service: false, physician_minutes: 0, automated_minutes: 10 },
             { label: "Online scheduling", covered_service: false, physician_minutes: 0, automated_minutes: 2 },
-            { label: "Your visits, procedures and surgery billed to your health plan", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
+            { label: "Your video visits billed to your health plan", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
+            { label: "Orders for imaging and labs, and prescriptions sent electronically to your pharmacy", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
             { label: "No membership fee, and no charge from this practice beyond your plan's cost-sharing", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
         ],
         capacity_weight: 0,
@@ -157,8 +197,8 @@ export const TIERS = [
         price_month: 199,
         price_year: 1990,         // two months free — improves cash and retention
         tagline: "Reach him directly, and get more of his time.",
-        insurance_note: "Your visits, procedures and surgery are still billed to your health plan, unchanged. This fee buys access and time — things insurance does not cover. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging your fee already covers, so it cannot be paid for twice.",
-        summary: "For patients managing something ongoing — endometriosis, fibroids, chronic pelvic pain, menopause — where the value is continuity and access rather than more procedures.",
+        insurance_note: "Your video visits are still billed to your health plan, unchanged. This fee buys access and time — things insurance does not cover. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging your fee already covers, so it cannot be paid for twice.",
+        summary: "For patients managing something ongoing — endometriosis, fibroids, chronic pelvic pain, menopause — where the value is continuity and access rather than more procedures. Everything here happens by video, message and in writing.",
         benefits: [
             { label: "Everything in Navigator — preparation packs for visits with any of your clinicians",
               covered_service: false, physician_minutes: 0, automated_minutes: 0 },
@@ -167,9 +207,9 @@ export const TIERS = [
             { label: "Direct asynchronous messaging with Dr. Mabini, answered within one business day",
               covered_service: false, physician_minutes: 4, automated_minutes: 18 },
             // The only benefit that is irreducibly his: a longer room.
-            { label: "Extended 45-minute consultations instead of the standard slot",
+            { label: "Extended 45-minute video consultations instead of the standard slot",
               covered_service: false, physician_minutes: 6, automated_minutes: 0 },
-            { label: "Appointments within two weeks, held open for members",
+            { label: "Video appointments within two weeks, held open for members",
               covered_service: false, physician_minutes: 0, automated_minutes: 2 },
             { label: "Care coordination — imaging, labs and outside records chased on your behalf",
               covered_service: false, physician_minutes: 1, automated_minutes: 12 },
@@ -184,7 +224,7 @@ export const TIERS = [
         price_month: 449,
         price_year: 4490,         // two months free
         tagline: "Someone is actually watching the whole picture.",
-        insurance_note: "Your visits, procedures and surgery are still billed to your health plan, unchanged. This fee buys access, time and coordination. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging, review sessions and care coordination your fee already covers.",
+        insurance_note: "Your video visits are still billed to your health plan, unchanged. This fee buys access, time and coordination. While your membership is active, the practice is BLOCKED in software from billing your plan for the messaging, review sessions and care coordination your fee already covers.",
         summary: "For complex or long-running disease — deep endometriosis, recurrent fibroids, pelvic pain that has already been through three clinicians. Quarterly reviews, a written second opinion on your existing records, and symptom tracking he actually reads.",
         benefits: [
             { label: "Everything in Priority", covered_service: false, physician_minutes: 0, automated_minutes: 0 },
@@ -288,7 +328,7 @@ export function eligibility({ payerKind = "commercial", tierKey = "priority", ov
         reason: "Commercial and self-pay patients may enrol.",
         disclosures: [
             "Membership is not insurance and does not pay for medical care.",
-            "Your visits and procedures continue to be billed to your health plan in the ordinary way.",
+            "Your video visits continue to be billed to your health plan in the ordinary way.",
             "You may cancel at any time; unused prepaid months are refunded pro rata.",
         ],
     };
@@ -540,7 +580,7 @@ export const EVIDENCE = [
 export const MODEL_COMPARISON = [
     { dimension: "Getting seen",
       traditional: "41.8 days on average for a new OB/GYN appointment, and longer in many markets.",
-      here: "Within two weeks, held open for members.",
+      here: "A video appointment within two weeks, held open for members.",
       evidence: "wait_times" },
     { dimension: "Between visits",
       traditional: "A phone tree, a message that may be answered in several days, or nothing until the next appointment.",
@@ -548,7 +588,7 @@ export const MODEL_COMPARISON = [
       evidence: null },
     { dimension: "Length of a visit",
       traditional: "A 15-minute slot, often shorter in practice.",
-      here: "45 minutes on Priority; a 40-minute video review every quarter on Complete.",
+      here: "A 45-minute video visit on Priority; a 40-minute video review every quarter on Complete.",
       evidence: null },
     { dimension: "Continuity",
       traditional: "Whoever is available. Records that do not follow you between systems.",
@@ -560,7 +600,10 @@ export const MODEL_COMPARISON = [
       evidence: "diagnostic_delay" },
     { dimension: "Where you have to be",
       traditional: "In the building, during business hours.",
-      here: "Virtual-first. Access does not depend on your geography or your ability to take a day off work." },
+      here: "Wherever you are, as long as you are in Illinois or California that day. Every visit is a video visit — access does not depend on your ability to take a day off work." },
+    { dimension: "What a video visit cannot do",
+      traditional: "You are examined, and anything found is dealt with in the same building.",
+      here: "There is no examination, no office procedure and no surgery here at this time. When you need one, he says so and helps you get to the clinician who can do it — he does not hold on to a problem he cannot finish." },
       // Deliberately uncited. This row used to reference the racial-
       // disparities study, which was removed on 2026-08-14 — see EVIDENCE.
       // The row stands on its own: virtual-first access is a plain
@@ -680,6 +723,11 @@ export const MARKET_ANCHOR = {
 // Conflating them is how practices end up accidentally selling insurance.
 
 export const SELF_PAY_PRINCIPLES = [
+    // Written for the surgical practice and kept for it, because these
+    // are the rules that will apply the day operating resumes. The
+    // FIRST line states what is true today, so nobody reads the rest as
+    // a price list for an operation this practice is not performing.
+    "Today the practice offers video consultation only, so the only self-pay price that exists is the price of a video visit. The surgical principles below are the rules the practice will hold itself to when operating resumes; they are not an offer now.",
     "Quote one all-in number covering the surgeon's fee, and say plainly what it excludes — facility and anaesthesia are billed separately by them, not by this practice.",
     "Quote before scheduling, in writing, and honour it for 90 days.",
     "Bundle the global period: pre-operative visit, the operation, and 90 days of post-operative care in one price, so recovery never generates a surprise bill.",
@@ -688,7 +736,7 @@ export const SELF_PAY_PRINCIPLES = [
 ];
 
 export default {
-    MEMBERSHIP_VERSION, TIERS, tier, COMPLIANCE_REVIEW,
+    MEMBERSHIP_VERSION, PRACTICE_SCOPE, TIERS, tier, COMPLIANCE_REVIEW,
     validateTierLegality, eligibility, FEDERAL_PAYERS,
     DEFAULT_ASSUMPTIONS, unitEconomics, capacity, maxPanel,
     SELF_PAY_PRINCIPLES,

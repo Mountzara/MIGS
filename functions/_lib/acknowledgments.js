@@ -18,7 +18,12 @@ import { newId } from "./db.js";
 export const DOC_VERSIONS = {
     npp: "2026-08-14",
     terms: "2026-08-14",
-    telehealth_consent: "2026-08-14",
+    // Bumped 2026-09-15. The practice became video-only, which changed
+    // what §3 promises about alternatives and what §8 says about
+    // controlled substances — material in both directions. Every patient
+    // re-acknowledges; a consent to the August text is not consent to
+    // this one.
+    telehealth_consent: "2026-09-15",
 };
 
 export const DOC_URLS = {

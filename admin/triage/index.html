@@ -782,10 +782,20 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                           <option value="afternoon" ${(row.clinician_override_preferred_time_of_day ?? row.ai_preferred_time_of_day) === 'afternoon' ? 'selected' : ''}>afternoon</option>
                         </select>
                       </div>
+                      <!-- The checkbox still writes the override column, because
+                           that column is what turns back on the day in-person
+                           clinic resumes. It has NO effect on booking while the
+                           practice is telehealth-only, and saying so here is the
+                           point: this control silently doing nothing is exactly
+                           the failure that hid for months last time. -->
                       <div class="toggle-row" style="margin-top: 26px;">
                         <input type="checkbox" data-field="in_person_required" ${(row.clinician_override_in_person_required ?? row.ai_in_person_required) ? 'checked' : ''} ${formDisabled} id="ipr-${row.id}">
                         <label for="ipr-${row.id}">In-person required</label>
                       </div>
+                      <p style="grid-column:1/-1; margin:6px 0 0; font-size:11.5px; opacity:.65; line-height:1.5;">
+                        Practice is telehealth-only: this flag is recorded but does not
+                        gate booking. Every released triage is offered video slots.
+                      </p>
                     </div>
 
                     <label class="field-label">Override reason (optional, ≤500 chars)</label>

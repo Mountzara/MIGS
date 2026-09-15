@@ -20,11 +20,19 @@
 //   - if block.allowed_visit_types is set, the visit_type must be in it
 //   - if patient.in_person_required, block.location must NOT be
 //     'telehealth_only'
-//   - if visit type is 'omt_treatment' or 'office_procedure', block
-//     location must be 'clinic' or 'procedure_room' (no telehealth)
+//   - if the visit type is hands-on ('omt_treatment', 'office_procedure',
+//     'annual_exam'), block location must be 'clinic' or 'procedure_room'
+//     (no telehealth)
+//   - while the practice is telehealth-only, hands-on visit types return
+//     no slots at all and every slot returned is a video slot
 // =====================================================================
 
-import { getVisitType } from "./visit_types.js";
+import {
+    getVisitType,
+    isTelehealthOnly,
+    isBookableVisitTypeKey,
+    requiresHandsOn,
+} from "./visit_types.js";
 
 /**
  * @param {object} args
@@ -53,8 +61,25 @@ export function computeAvailableSlots(args) {
 
     if (!visit_type || !duration_min || duration_min < 5) return [];
     const vt = getVisitType(visit_type);
-    // visit-type-implied modality restrictions
-    const procedureOrOmt = vt && (vt.category === "procedure" || visit_type === "omt_treatment");
+
+    // -----------------------------------------------------------------
+    // TELEHEALTH-ONLY PRACTICE. While PRACTICE_MODALITY is telehealth
+    // only, three things are true regardless of what the triage row says:
+    // a hands-on visit type has no slots at all, in_person_required is
+    // moot, and every slot returned is a video slot. Resolving that here
+    // — rather than in each caller — is deliberate: `available` and
+    // `book` disagreeing about modality is precisely the class of bug
+    // that let the in-person checkbox do nothing for months.
+    // -----------------------------------------------------------------
+    const telehealthOnly = isTelehealthOnly();
+    if (telehealthOnly && !isBookableVisitTypeKey(visit_type)) return [];
+    // A hands-on visit type (OMT, office procedure, annual exam) can
+    // never be a video slot. `category === "procedure"` used to stand in
+    // for this and was wrong about `pre_op`, a counselling visit with
+    // nothing to examine, which it forced in-person.
+    const handsOn = requiresHandsOn(visit_type);
+    const inPersonRequired = telehealthOnly ? false : in_person_required;
+    const effModality = telehealthOnly ? "telehealth" : modality;
 
     const buffer_min = duration_min >= 45 ? 5 : 0;
     const totalMin = duration_min + buffer_min;
@@ -85,11 +110,11 @@ export function computeAvailableSlots(args) {
         }
         // modality vs location compatibility
         const loc = blk.location;
-        if (procedureOrOmt) {
+        if (handsOn) {
             if (loc === "telehealth_only") continue;
         }
-        if (in_person_required && loc === "telehealth_only") continue;
-        if (modality === "telehealth" && loc === "procedure_room") continue;
+        if (inPersonRequired && loc === "telehealth_only") continue;
+        if (effModality === "telehealth" && loc === "procedure_room") continue;
 
         // Walk 15-min steps within the block.
         for (let mod = blk.start_minute_of_day; mod + totalMin <= blk.end_minute_of_day; mod += STEP) {
@@ -123,9 +148,9 @@ export function computeAvailableSlots(args) {
             // Otherwise infer from patient preference + visit_type:
             let slotModality = "in_person";
             if (loc === "telehealth_only") slotModality = "telehealth";
-            else if (procedureOrOmt) slotModality = "in_person";
-            else if (in_person_required) slotModality = "in_person";
-            else if (modality === "telehealth") slotModality = "telehealth";
+            else if (handsOn) slotModality = "in_person";
+            else if (inPersonRequired) slotModality = "in_person";
+            else if (effModality === "telehealth") slotModality = "telehealth";
             else slotModality = "in_person";
 
             out.push({

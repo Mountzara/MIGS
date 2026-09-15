@@ -1724,6 +1724,68 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+### 8.0.0.0d TELEHEALTH-ONLY — one flag, eleven surfaces (2026-09-15)
+
+**Owner directive, verbatim and standing:** "I will only be doing telehealth
+services (will be able to write orders, send prescriptions via eprescribe. I
+will NOT be seeing patients in person at this time."
+
+**SINGLE SOURCE OF TRUTH:** `functions/_lib/visit_types.js` →
+`PRACTICE_MODALITY = "telehealth_only"`. Nothing else decides the modality.
+Flip that one constant back to `"hybrid"` and in-person care resumes across
+every surface below with its original chaperone, duration and location rules
+intact — which is why the catalog was gated, not deleted.
+
+**The three hands-on visit types are withheld, not rewritten.** `omt_treatment`,
+`office_procedure` and `annual_exam` carry `hands_on_required: true` and are
+filtered out of `bookableVisitTypes()`. `pre_op` is NOT hands-on: it is
+counseling, and the old `category === "procedure"` heuristic that forced it
+in-person was simply wrong. `requiresHandsOn(key)` replaced that heuristic in
+both the scheduler and the booking endpoint.
+
+**Two lookup functions, and they are not interchangeable:**
+
+| Function | Returns | Use it in |
+|---|---|---|
+| `getVisitType(key)` | the RAW catalog entry, `modality_preferred: "in_person"` and all | admin, analytics, anything describing the record |
+| `getBookableVisitType(key)` / `isBookableVisitTypeKey(key)` | telehealth-shaped, or `null` if unbookable now | **every booking path** |
+
+Reading `vt.modality_preferred` off `getVisitType()` in a booking path is the
+trap: eleven types still say `in_person` for the day clinic resumes, so the
+patient's telehealth request gets capped back to in-person and they are shown
+an empty calendar with no explanation.
+
+**MUST TOUCH TOGETHER — changing the practice modality means changing all of:**
+
+| File | What it holds |
+|---|---|
+| `functions/_lib/visit_types.js` | `PRACTICE_MODALITY`, `hands_on_required`, `bookableVisitTypes()`, `getBookableVisitType()`, `requiresHandsOn()` |
+| `functions/_lib/scheduling.js` | `computeAvailableSlots()` — returns `[]` for a hands-on type, forces every slot to `telehealth` |
+| `functions/api/v1/patient/appointments/available.js` | resolves modality BEFORE the legacy capping logic; returns `visit_type_not_offered`; sends the EFFECTIVE `in_person_required` to the client |
+| `functions/api/v1/patient/appointments/book.js` | last gate before the row is written — `telehealth_only`, `visit_type_not_offered`; does NOT consult the stored `in_person_required` |
+| `functions/_lib/intake_triage.js` | prompts Claude from `bookableVisitTypes()`; forces `in_person_required: false` server-side |
+| `portal/appointments/book/index.html` | no modality chooser, no "switch to an in-person visit"; consent row always shown |
+| `portal/index.html`, `portal/appointments/index.html`, `portal/visit/launch/index.html` | patient copy |
+| `functions/_lib/membership.js` | `PRACTICE_SCOPE` + every tier's `insurance_note` and benefit labels |
+| `functions/api/v1/membership.js` | serves `practice_scope` and the scope disclosure with the price |
+| `telehealth-consent/index.html` + `functions/_lib/acknowledgments.js` | §1 scope, §3 alternatives, §8 controlled substances — **and the `DOC_VERSIONS.telehealth_consent` bump that forces re-acknowledgment** |
+| `index.html` (hero sub + footer), `privacy-practices/index.html` | public copy |
+| `docs/compliance/controlled-substances.md` §3.1 | no in-person evaluation ⇒ no controlled substance, stated outright |
+
+**Why the booking system had to change before the copy.** Copy alone would have
+been contradicted by the next screen: a patient reading "video only" could still
+open the booker and pick an OMT appointment. A membership is worse still — it is
+charged monthly in advance, so an unkept promise is taken by direct debit before
+anyone notices.
+
+**The admin controls were annotated, not removed.** `admin/triage/index.html`
+still writes `clinician_override_in_person_required` (that column is what turns
+back on later) but now says under the checkbox that it does not gate booking.
+That label exists because a control silently doing nothing is precisely how the
+in-person checkbox went months without working.
+
+---
+
 ### 8.0.0.0c Mount Zara's Reflections — the /learn/ course platform (2026-09-02)
 
 **What it is:** free, open, guided patient courses on the conditions the

@@ -134,37 +134,20 @@
             border-left: 2px solid rgba(var(--glow-purple), 0.55);
             margin: 12px 0 0 0;
         }
-        .modality-toggle {
-            display: flex;
-            gap: 8px;
+        /* Telehealth-only practice: the modality chooser is gone, and so
+           are its styles. What replaced it states the modality once. */
+        .modality-note {
             margin-top: 14px;
-        }
-        .modality-chip {
-            background: rgba(255,255,255,0.72);
+            padding: 11px 14px;
             border: 1px solid var(--border);
+            border-left: 3px solid #6d28d9;
             border-radius: 8px;
-            padding: 8px 14px;
+            background: rgba(var(--glow-purple), 0.07);
             font-size: 13px;
+            line-height: 1.55;
             color: var(--fg-soft);
-            cursor: pointer;
-            transition: all 0.18s;
         }
-        .modality-chip:hover {
-            transform: translateY(-1px);
-            border-color: #6d28d9;
-            color: var(--fg-strong);
-        }
-        .modality-chip.active {
-            background: rgba(var(--glow-purple), 0.16);
-            border-color: #6d28d9;
-            color: var(--accent-soft);
-        }
-        .modality-chip:disabled,
-        .modality-chip.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .modality-note strong { color: var(--fg-strong); }
         .date-strip {
             display: flex;
             gap: 8px;
@@ -510,10 +493,13 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             <h2 id="triage-card-title">Your visit</h2>
             <div class="triage-fields" id="triage-fields"></div>
             <div class="rationale" id="triage-rationale" style="display:none;"></div>
-            <div class="modality-toggle" id="modality-toggle" style="display:none;">
-                <button class="modality-chip" data-modality="in_person">In person</button>
-                <button class="modality-chip" data-modality="telehealth">Telehealth</button>
-            </div>
+            <!-- Telehealth-only practice (2026-09): there is no modality to
+                 choose, so there is no chooser. An affordance for a visit the
+                 practice cannot deliver is worse than no affordance at all. -->
+            <p class="modality-note" id="modality-note" style="display:none;">
+                This is a <strong>video visit</strong>. Dr. Mabini is seeing patients by video only
+                at this time, and you'll need to be in Illinois or California during your visit.
+            </p>
             <!-- Telehealth consent: IL 225 ILCS 150 / CA B&P 2290.5 provide for
                  consent documented in the record. The server refuses a
                  telehealth booking (HTTP 428) until this is acknowledged once;
@@ -576,7 +562,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div class="modal-overlay" id="chaperone-modal" role="dialog" aria-modal="true" aria-labelledby="chap-title">
       <div class="modal">
         <h2 id="chap-title">This visit needs a chaperone.</h2>
-        <p class="modal-sub" id="chap-rationale">Per our practice policy and to follow standard-of-care for women's health, an adult support person needs to be present in the room with you during this visit.</p>
+        <p class="modal-sub" id="chap-rationale">Per our practice policy and to follow standard-of-care for women's health, an adult support person needs to be present in the room with you during this video visit.</p>
         <label class="chap-option" data-method="partner_present">
           <input type="radio" name="chap-method" value="partner_present">
           <span><span class="co-title">My partner or spouse</span><span class="co-sub">An adult partner will be in the room with me.</span></span>
@@ -591,7 +577,6 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
         </label>
         <div class="modal-actions">
           <button type="button" class="btn-primary" id="chap-continue" disabled>Continue</button>
-          <button type="button" class="btn-ghost" id="chap-switch">Switch to an in-person visit</button>
           <button type="button" class="btn-ghost" id="chap-cancel">Cancel</button>
         </div>
       </div>
@@ -600,7 +585,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <script>
         const state = {
             triage: null,
-            modalityChoice: null,            // 'in_person' | 'telehealth' | null
+            modalityChoice: 'telehealth',    // telehealth-only practice
             slotsByDate: {},
             dates: [],
             selectedDate: null,
@@ -760,7 +745,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 <span class="k">Status</span><span class="v">${statusPill} ${urgPill}</span>
                 <span class="k">Visit type</span><span class="v">${visitLine}</span>
                 <span class="k">Length</span><span class="v">${fmtDuration(t.duration_min || 30)}</span>
-                <span class="k">Modality</span><span class="v">${t.in_person_required ? 'In person (required)' : 'In person or telehealth'}</span>
+                <span class="k">Modality</span><span class="v">Video visit (Doxy.me)</span>
                 <span class="k">Preferred time</span><span class="v">${escapeHtml(t.preferred_time_of_day || 'any')}</span>
             `;
 
@@ -773,25 +758,17 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             if (t.status === 'pending_review' && t.auto_release_eta_ms) {
                 startCountdown(t.auto_release_eta_ms);
             }
-            if (t.status === 'released' && !t.in_person_required) {
-                const tog = $('modality-toggle');
-                tog.style.display = 'flex';
-                state.modalityChoice = 'in_person';
-                tog.querySelectorAll('.modality-chip').forEach(b => {
-                    b.classList.toggle('active', b.getAttribute('data-modality') === 'in_person');
-                    b.addEventListener('click', () => {
-                        state.modalityChoice = b.getAttribute('data-modality');
-                        const cr = $('th-consent-row');
-                        if (cr) cr.style.display = state.modalityChoice === 'telehealth' ? 'flex' : 'none';
-                        tog.querySelectorAll('.modality-chip').forEach(x =>
-                            x.classList.toggle('active', x === b)
-                        );
-                        loadSlots();
-                    });
-                });
-            } else {
-                state.modalityChoice = t.in_person_required ? 'in_person' : 'in_person';
+            // Telehealth-only: the modality is settled before the patient
+            // arrives, so the consent is always the one that applies and is
+            // always shown — it is not conditional on a choice that no
+            // longer exists.
+            if (t.status === 'released') {
+                const note = $('modality-note');
+                if (note) note.style.display = 'block';
+                const cr = $('th-consent-row');
+                if (cr) cr.style.display = 'flex';
             }
+            state.modalityChoice = 'telehealth';
         }
 
         function startCountdown(etaMs) {
@@ -909,7 +886,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             list.innerHTML = slots.map((s, idx) => `
                 <button class="slot" data-idx="${idx}">
                     <span class="time">${fmtTime(s.starts_at)}</span>
-                    <span class="mod">${s.modality === 'telehealth' ? 'TELEHEALTH' : 'IN PERSON'}</span>
+                    <span class="mod">${s.modality === 'telehealth' ? 'VIDEO' : 'IN PERSON'}</span>
                 </button>
             `).join('');
             list.querySelectorAll('.slot').forEach(btn => {
@@ -930,7 +907,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             $('confirm-when').textContent = `${dt} at ${tm}`;
             $('confirm-visit-type').textContent = visitTypeLabel(t.visit_type);
             $('confirm-duration').textContent = fmtDuration(t.duration_min);
-            $('confirm-modality').textContent = s.modality === 'telehealth' ? 'Telehealth (Doxy.me)' : 'In person';
+            $('confirm-modality').textContent = s.modality === 'telehealth' ? 'Video visit (Doxy.me)' : 'In person';
             $('confirm-card').classList.add('show');
             $('confirm-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -975,7 +952,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
                 $('booked-when').textContent = `${fmtDate(data.appointment.starts_at, 'long')} at ${fmtTime(data.appointment.starts_at)}`;
                 $('booked-visit-type').textContent = visitTypeLabel(data.appointment.visit_type);
                 $('booked-duration').textContent = fmtDuration(data.appointment.duration_min);
-                $('booked-modality').textContent = data.appointment.modality === 'telehealth' ? 'Telehealth (Doxy.me)' : 'In person';
+                $('booked-modality').textContent = data.appointment.modality === 'telehealth' ? 'Video visit (Doxy.me)' : 'In person';
                 if (data.appointment.modality === 'telehealth') {
                     $('booked-doxy').style.display = 'block';
                     // Give the patient the actual doors: the Join-visit
@@ -1025,18 +1002,9 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
             doBook({ chaperone_confirmed: true, chaperone_confirmation_method: chapMethod });
         });
         $('chap-cancel').addEventListener('click', closeChaperoneModal);
-        $('chap-switch').addEventListener('click', () => {
-            closeChaperoneModal();
-            // Switch the booking to in-person: flip the modality toggle + reload.
-            state.modalityChoice = 'in_person';
-            const tog = $('modality-toggle');
-            if (tog) {
-                tog.querySelectorAll('.modality-chip').forEach(x =>
-                    x.classList.toggle('active', x.getAttribute('data-modality') === 'in_person'));
-            }
-            $('confirm-card').classList.remove('show');
-            loadSlots();
-        });
+        // There is no "switch to an in-person visit" here any more. While the
+        // practice is telehealth-only that button led nowhere — it flipped a
+        // toggle that no longer exists and reloaded an empty calendar.
 
         function escapeHtml(s) {
             if (s == null) return '';

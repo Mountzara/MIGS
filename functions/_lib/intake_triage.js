@@ -21,7 +21,7 @@
 // changes are auditable and analytics can compare versions over time.
 // =====================================================================
 
-import { VISIT_TYPES } from "./visit_types.js";
+import { VISIT_TYPES, bookableVisitTypes, isTelehealthOnly } from "./visit_types.js";
 import { callClaude, AnthropicError } from "./anthropic.js";
 import { groundClinical, groundingInstruction, verifyGrounding } from "./clinical_grounding.js";
 
@@ -230,7 +230,10 @@ export function deidentifyIntake({ triage_id, dob, sections }) {
 // Visit-type catalog summary — what Claude sees.
 // ---------------------------------------------------------------------
 function visitTypeCatalogForPrompt() {
-    return VISIT_TYPES.map(v => ({
+    // Only what the practice can actually deliver. Under telehealth-only this
+    // excludes the hands-on visit types entirely, so triage cannot route a
+    // patient to a visit nobody can perform.
+    return bookableVisitTypes().map(v => ({
         key: v.key,
         label: v.label,
         duration_min: v.duration_min,
@@ -262,8 +265,11 @@ Decision rules (from CLAUDE.md §11.7.2):
 - Default fallback: "routine_followup".
 
 Modality rules:
-- in_person_required = true if: OMT, office procedure, annual exam, complex pelvic pain evaluation.
-- telehealth eligible if: established patient + (transportation barrier OR quick concern OR routine follow-up OR late post-op).
+- This practice is TELEHEALTH-ONLY. Every visit is by video. ALWAYS set in_person_required = false.
+- Never route to a hands-on visit type; they are not in the catalog above and cannot be booked.
+- If the intake suggests the patient needs a physical examination, an in-office procedure or
+  surgery, still choose the closest telehealth visit type and say so in the rationale — the
+  clinician will raise it in the visit and refer out. Do not invent a visit type for it.
 
 Time-of-day preference:
 - "morning" for new_patient_complex and endo_pain_evaluation (better cognition, more time).
@@ -278,8 +284,7 @@ Secondary concerns: list ERAS / perioperative flags that should reach the clinic
 
 Chaperone rule (Joshi & Welch 2023 p. 51 — applies to CBG/MIGS):
 - Every catalog entry carries a "requires_chaperone" boolean.
-- If you choose a visit type with requires_chaperone=true AND in_person_required=false, you MUST set chaperone_required=true in your response.
-- If you choose a visit type with requires_chaperone=true AND in_person_required=true, set chaperone_required=true (chaperone is needed for the in-person exam portion).
+- If you choose a visit type with requires_chaperone=true, you MUST set chaperone_required=true in your response. This holds for every visit, because every visit is by video and a chaperone-flagged visit type is one where an adult must be in the room with the patient.
 - If you choose a visit type with requires_chaperone=false, set chaperone_required=false.
 - Never override the catalog's requires_chaperone flag to false; it represents a clinical-safety floor.
 
@@ -362,7 +367,9 @@ function validateTriage(obj) {
         visit_type: obj.visit_type,
         duration_min: Math.round(obj.duration_min),
         urgency: obj.urgency,
-        in_person_required: obj.in_person_required,
+        // Enforced, not trusted: under telehealth-only no triage result may
+        // route a patient to an in-person visit, whatever the model returned.
+        in_person_required: isTelehealthOnly() ? false : obj.in_person_required,
         preferred_time_of_day: obj.preferred_time_of_day,
         chaperone_required,
         rationale,
