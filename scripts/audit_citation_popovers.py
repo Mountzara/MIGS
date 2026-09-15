@@ -12,6 +12,7 @@ sample of citations, asserts what a reader actually gets:
     summary — two different code paths, CSS :hover and a click handler  (S3)
   * the popover carries a link to the study        (S3)
   * the marker resolves to a numbered reference    (S4)
+  * the educational disclaimer is actually VISIBLE to a reader          (S8)
   * no element id is duplicated on the assembled page — the body's ids plus
     the shell's, which is the only place a collision can actually happen (S14)
 
@@ -35,6 +36,24 @@ for a in sys.argv[1:]:
 # tappable, and a sample is exactly how a defect survives on the markers nobody
 # looked at. A brief with 200 citations takes longer; that is the right trade.
 MAX_CHECKED = int(next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--max=")), "0")) or None
+
+
+def disclaimer_visible(page, route):
+    """The disclaimer is only a disclaimer if a reader can read it.
+
+    The pipeline inserts it whenever it is absent and then checks it is
+    present — a check that cannot fail. What matters is that it renders, with
+    real text, on the page.
+    """
+    el = page.locator(".mz-eddisclaimer").first
+    if el.count() == 0:
+        return [f"{route}: no educational disclaimer on the rendered page"]
+    if not el.is_visible():
+        return [f"{route}: the educational disclaimer is present but not visible"]
+    txt = (el.inner_text() or "").strip()
+    if len(txt) < 80:
+        return [f"{route}: the educational disclaimer renders only {len(txt)} characters"]
+    return []
 
 
 def duplicate_ids(page, route):
@@ -96,6 +115,7 @@ def audit(page, route, mode="hover"):
     if n == 0:
         return [f"{route}: no inline citations on the rendered page"]
     fails += duplicate_ids(page, route)
+    fails += disclaimer_visible(page, route)
     limit = min(n, MAX_CHECKED) if MAX_CHECKED else n
     for i in range(limit):
         fails += check_marker(page, sups.nth(i), route, i, mode)

@@ -726,8 +726,11 @@ def reconcile_abstracts(papers: dict) -> tuple:
         # as wrong or truncated: a stored abstract sharing enough terms to pass
         # the overlap test could still differ from the source, and "verbatim"
         # means the source text. The repair record stays for the faults found.
-        p["pubmed_abstract"] = r["abstract"][:6000]
-        p["abstract"] = r["abstract"][:6000]
+        # NO CAP. Capping here truncated the ground truth, so "verbatim and
+        # complete" was checked against a copy that was already cut — the one
+        # kind of truncation the check could never see.
+        p["pubmed_abstract"] = r["abstract"]
+        p["abstract"] = r["abstract"]
         if wrong or truncated:
             if wrong:
                 why = ("the stored brief carried placeholder text in place of an abstract"
@@ -2636,6 +2639,8 @@ For EVERY sentence return one object:
  dose: true if the sentence states an amount of a drug or supplement to take
  provenance: true if the sentence refers to how the text was produced (a model, an assistant, an
         automated draft, a pending review, a placeholder, an internal file or process) in ANY wording
+ internal: true if the sentence names something internal to how this site is built rather than the
+        literature — a file, a path, a spec or section number, a style guide, a pipeline or tool
  note: one clause of evidence when any flag is true
 Be adversarial: default to supported=false when you cannot trace an element.
 Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects.""", timeout_s=900)
@@ -2671,7 +2676,7 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             if card_pm and r.get("dose"):
                 # a study's own dose inside an attributed container is permitted
                 r["dose"] = False
-            for k in ("preclinical_as_human", "advice", "dose", "provenance"):
+            for k in ("preclinical_as_human", "advice", "dose", "provenance", "internal"):
                 if r.get(k):
                     bad.append(k.replace("_", " "))
             if bad:
