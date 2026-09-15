@@ -57,8 +57,51 @@
     };
     var uid = 0;
 
+    // Pale accent TEXT is the second half of the dark-theme problem, and the
+    // one the first version missed (2026-09-15, caught by the contrast gate at
+    // 1.27:1 on live briefs). The grounds went to paper, but colours written
+    // for a dark ground stayed: amber-300 on the mechanism cards' "Read the
+    // full abstract" and PMID chips, salmon on the gap-section heading. They
+    // are literals, not variables, so the palette above cannot reach them.
+    //
+    // Hue carries meaning here — amber IS "mechanism, not clinical evidence" —
+    // so the fix darkens rather than replaces: keep hue and saturation, force
+    // lightness down to a level that reads on paper. Only `color:` is touched;
+    // the same amber as a 4%-alpha background or a border is exactly right.
+    function darkenIfPale(r, g, b) {
+        const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+        if (0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) <= 0.5) return null;   // already readable
+        const R = r / 255, G = g / 255, B = b / 255;
+        const mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn;
+        let h = 0;
+        if (d) {
+            if (mx === R) h = ((G - B) / d + (G < B ? 6 : 0));
+            else if (mx === G) h = (B - R) / d + 2;
+            else h = (R - G) / d + 4;
+            h *= 60;
+        }
+        // 0.26, not 0.30: at 0.30 amber-300 lands on 4.34:1 against the
+        // mechanism card's own tinted ground, and the small 11px chips need
+        // 4.5. 0.26 gives 5.46:1 there and 9.7:1 for the salmon heading.
+        const l = 0.26, sat = d ? Math.min(0.85, d / (1 - Math.abs(2 * ((mx + mn) / 2) - 1) || 1)) : 0;
+        const c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+        let [rr, gg, bb] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+                         : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+        const hex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+        return '#' + hex(rr) + hex(gg) + hex(bb);
+    }
+
+    function darkenColorDecls(css) {
+        return css.replace(/(^|[;{\s])color\s*:\s*(rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)[^)]*\)|#fff\b|#ffffff\b|white\b)/gi,
+            (m, pre, val, r, g, b) => {
+                if (/^(#fff\b|#ffffff\b|white\b)$/i.test(val)) return pre + 'color: ' + INK;
+                const dark = darkenIfPale(+r, +g, +b);
+                return dark ? pre + 'color: ' + dark : m;
+            });
+    }
+
     function lighten(css, hostId) {
-        return css
+        return darkenColorDecls(css)
             // 1. drop document-level rules. Predecessor may be start, `}` or
             //    `{` (a rule nested in @media). `body.x {` and `html[…] {`
             //    do not match — the selector must end right before `{`.
@@ -73,6 +116,15 @@
         for (var k in LIGHT) if (Object.prototype.hasOwnProperty.call(LIGHT, k)) host.style.setProperty(k, LIGHT[k]);
         host.style.setProperty('color', INK);
         host.style.setProperty('background', 'transparent');
+        try { darkenInlineStyles(host); } catch (e) {}
+    }
+
+    function darkenInlineStyles(host) {
+        host.querySelectorAll('[style*="color"]').forEach((el) => {
+            const before = el.getAttribute('style') || '';
+            const after = darkenColorDecls(before);
+            if (after !== before) el.setAttribute('style', after);
+        });
     }
 
     function process(styleEl) {

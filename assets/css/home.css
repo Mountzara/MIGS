@@ -6423,6 +6423,11 @@
             max-width: 480px;
             max-height: calc(100vh - 48px);
             overflow-y: auto;
+            /* explicit opaque ground: the visual ground is a linear-gradient, i.e. a
+               background-IMAGE, so backgroundColor stayed transparent and any
+               compositing path (a contrast measurement, or a browser that does not
+               paint the gradient) fell through to the dark scrim behind it. */
+            background-color: #FBFAF8;
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);

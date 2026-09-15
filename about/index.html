@@ -1284,6 +1284,11 @@
             position: relative;
             width: 100%;
             max-width: 480px;
+            /* explicit opaque ground: the visual ground is a linear-gradient, i.e. a
+               background-IMAGE, so backgroundColor stayed transparent and any
+               compositing path (a contrast measurement, or a browser that does not
+               paint the gradient) fell through to the dark scrim behind it. */
+            background-color: #FBFAF8;
             background: linear-gradient(180deg, #F4F1EC 0%, #FBFAF8 100%);
             border: 1px solid #E9E5EE;
             border-radius: 22px;
