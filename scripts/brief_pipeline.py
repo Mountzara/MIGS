@@ -474,6 +474,9 @@ shape-of-evidence section, the cite cards, the reference list) and at least two 
 For EACH standard S1-S15 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
 the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
 for the case that fails, not the case that passes.
+EXCEPT: """ + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + """ — these are properties of
+the RENDERED page, which you are not looking at. Report them as "met": null with a note; do not fail
+the audit on them. A browser measures both before this body is allowed to publish.
 Reply with ONLY a JSON object:
 {{"passed": <true only if every applicable standard is met>,
   "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S15": {{...}}}},
@@ -482,7 +485,11 @@ Reply with ONLY a JSON object:
     if not v or "passed" not in v:
         die("standards audit returned no verdict")
     blocking = v.get("blocking") or []
-    unmet = [k for k, r in (v.get("standards") or {}).items() if isinstance(r, dict) and r.get("met") is False]
+    unmet = [k for k, r in (v.get("standards") or {}).items()
+             if isinstance(r, dict) and r.get("met") is False and k not in RENDERED_ONLY]
+    blocking = [b for b in blocking
+                if not (set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(b))) and
+                        set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(b))) <= set(RENDERED_ONLY))]
     out = {"digest": _sha_file(W + "body.applied.html"), "passed": bool(v.get("passed")) and not blocking and not unmet,
            "blocking": blocking, "unmet": unmet, "standards": v.get("standards"), "notes": v.get("notes")}
     json.dump(out, open(W + ".ledger/apply.standards.json", "w"), indent=1, ensure_ascii=False)
@@ -2302,6 +2309,8 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             faults.append(f"{label} in a heading: {mh.group(0)!r}")
     if re.search(r"(?<!CBG/)\bMIGS\b", heads, re.I):
         faults.append('bare "MIGS" in a heading (write CBG/MIGS)')
+    if re.search(r"\b(?:never|always)\b", heads, re.I):
+        faults.append('"never"/"always" in a heading')
     # S10
     if re.search(r"(?<!CBG/)\bMIGS\b", text, re.I):
         faults.append("bare \"MIGS\" in the site's own prose (write CBG/MIGS)")
@@ -3047,6 +3056,66 @@ def cmd_apply_trend(post_id: str) -> None:
 
 
 
+
+def preview_and_verify(W: str, post_id: str, kind_route: str) -> None:
+    """Render the body in the reader's shell LOCALLY and run the rendered gates.
+
+    verify_rendered() runs after approve, so a body that fails contrast or hover
+    reached production and was pulled back — a reader could see it. This builds
+    the same page the shell builds (its stylesheets, its container, the light
+    theme script) from the body about to be published, serves it on localhost
+    and measures it there. A failure refuses the publish instead of undoing it.
+    """
+    import http.server
+    import socketserver
+    import threading
+
+    shell = open(os.path.join(ROOT, "evidence/index.html"), encoding="utf-8").read()
+    styles = "".join(m.group(0) for m in re.finditer(r"<style[\s\S]*?</style>", shell))
+    body = open(W + "body.applied.html", encoding="utf-8").read()
+    light = ""
+    lp = os.path.join(ROOT, "assets/js/post-light.js")
+    if os.path.exists(lp):
+        light = "<script>" + open(lp, encoding="utf-8").read() + "</script>"
+    page = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+            + styles + "</head><body><main class=\"container\"><div id=\"detailContent\" "
+            "data-mz-post-scope><div class=\"brief-detail-body\">" + body
+            + "</div></div></main>" + light + "</body></html>")
+    d = os.path.join(SCRATCH, "_preview")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "preview.html"), "w", encoding="utf-8").write(page)
+
+    class Q(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **k):
+            super().__init__(*a, directory=d, **k)
+
+        def log_message(self, *a):
+            pass
+
+    with socketserver.TCPServer(("127.0.0.1", 0), Q) as httpd:
+        port = httpd.server_address[1]
+        t = threading.Thread(target=httpd.serve_forever, daemon=True)
+        t.start()
+        base = f"http://127.0.0.1:{port}"
+        print(f"  pre-publish render check on {base}/preview.html")
+        checks = [
+            ["python3", os.path.join(ROOT, "scripts/audit_citation_popovers.py"), base, "--routes=/preview.html"],
+            ["python3", os.path.join(ROOT, "scripts/audit_light_text.py"), base, "--routes=/preview.html"],
+        ]
+        try:
+            for cmd in checks:
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=2400,
+                                   cwd=os.path.join(ROOT, "scripts"))
+                if r.returncode != 0:
+                    tail = (r.stdout + r.stderr).strip().splitlines()[-10:]
+                    print("\n".join("    " + l for l in tail))
+                    die(f"the rendered page fails {os.path.basename(cmd[1])} — refusing to publish it")
+        finally:
+            httpd.shutdown()
+    print("  pre-publish render check: passed")
+
+
 def verify_rendered(route: str, post_id: str) -> None:
     """S14 is a property of the RENDERED page, so it is measured on the
     published route with the site's own Playwright gates — near-invisible text
@@ -3078,6 +3147,7 @@ def cmd_publish(post_id: str) -> None:
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
+    preview_and_verify(W, post_id, "/evidence/")
     body = open(W + "body.applied.html", encoding="utf-8").read()
     receipt = json.load(open(W + ".ledger/receipt.json"))
     json.dump({"body_html": body, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
@@ -3096,6 +3166,7 @@ def cmd_publish_trend(post_id: str) -> None:
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
     man = json.load(open(W + "manifest.json")); trend = man["trend"]
+    preview_and_verify(W, post_id, "/trending/")
     body = open(W + "body.applied.html", encoding="utf-8").read()
     parts = json.load(open(W + "narrative.json"))["parts"]
     syn = {i["tid"]: i for i in json.load(open(W + "syntheses.json"))["items"]}
