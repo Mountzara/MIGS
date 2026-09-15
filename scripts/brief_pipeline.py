@@ -285,8 +285,10 @@ Check and report honestly:
     as a human/clinical finding?
  4. Any AI/placeholder language, a dose given as advice, "never"/"always" in the clinician's prose?
  5. Does every kept paper in the manifest have a draft, and every live topic a synthesis?
- 6. Sample 2 syntheses in {W}syntheses.json: does each cite only papers from its own topic, with a
-    takeaway-first finding and a PubMed link in every popover?
+ 6. Sample 2 syntheses in {W}syntheses.json: does each cite EVERY paper in its topic file (compare the
+    PMIDs cited against the topic file's papers — an uncited paper is BLOCKING), only papers from its
+    own topic, with a takeaway-first finding and a PubMed link in every popover? Does the narrative /
+    editorial cite the studies it names?
 SEVERITY: BLOCKING = a draft misrepresents its paper or is missing. ADVISORY = style.
 Reply with ONLY a JSON object:
 {{"passed": <true if no blocking problems>, "blocking": ["..."], "advisory": ["..."],
@@ -341,8 +343,14 @@ Check and report honestly:
     an association read as causation, a hedge dropped.
  5. Anything that reads as medical advice to a patient rather than an appraisal of the literature.
  6. Broken markup you can see: unescaped angle brackets in text, an empty section, a truncated abstract.
+ 7. CITATIONS, the standard form: every inline marker is a superscript NUMBER (1, 2, 3 …) in order of
+    first appearance — never a PMID as the visible marker; the reference list is numbered in that same
+    order; every paper the brief covers is cited at least once in the prose (narrative, syntheses,
+    editorial), not only listed at the end; each marker's hover popover carries the study's summary
+    and a link to the study.
 SEVERITY MATTERS: BLOCKING = anything a reader would see that is false, unsafe, or internal
-(placeholder text, dosing in the site's voice, an overstated claim, advice, a broken citation).
+(placeholder text, dosing in the site's voice, an overstated claim, advice, a broken citation, a PMID
+shown as a marker, a paper cited nowhere).
 ADVISORY = tone, emphasis, or curation.
 Reply with ONLY a JSON object:
 {{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
@@ -981,12 +989,16 @@ WHAT: one synthesis paragraph per topic — the inner HTML of <p class="mz-toc-g
 to 2,500 characters of prose in Dr. Mabini's first-person clinician voice (DO + complex benign
 gynecology / minimally invasive gynecologic surgery), reading the week's papers on this topic as a
 whole, naming studies by first author, giving the actual numbers, and saying what changes on a Monday.
-CITATIONS: cite 1 to 4 of the topic's papers INLINE, immediately after the claim each supports, using
-EXACTLY this markup with that paper's PMID:
+CITATIONS: cite EVERY paper in the topic file INLINE — each one at least once, placed immediately after
+the claim it supports, the first time that study is discussed. When several papers support one
+sentence, place their citations back to back. Write the PMID as the marker text; the pipeline renumbers
+markers sequentially (1, 2, 3 …) in order of first appearance and builds the reference list from them.
+Use EXACTLY this markup with that paper's PMID:
 <sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
 FINDING: 250-600 characters, TAKEAWAY-FIRST — the clinical conclusion leads, with the paper's own
 numbers, then one sentence starting "Monday:" with the concrete implication. Never open with "This
-study…". Cite ONLY PMIDs present in the topic file, each at most once.
+study…". Cite ONLY PMIDs present in the topic file; every one of them must appear at least once.
+LENGTH: 1,000 characters minimum; at most 1,800 plus 150 per paper in the topic.
 GROUNDING: every claim and number from that paper's abstract. Overstatement and understatement are both
 failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >."""
 
@@ -1004,12 +1016,15 @@ trials in this condition showing the claimed benefit; "Studied in a related cond
 when the human evidence is in a neighbouring condition; "Promising, but not yet shown in people" for
 mechanism, animal or in-vitro work; "The evidence so far points the other way" when trials tested the
 claim and did not find it; otherwise "Not enough evidence to say".
-CITATIONS: cite 1 to 4 of this item's papers INLINE, right after the claim each supports, using EXACTLY
-this markup with the paper's PMID:
+CITATIONS: cite EVERY paper in the topic file INLINE — each at least once, right after the claim it
+supports, the first time that study is discussed; several citations may sit back to back after one
+sentence. Write the PMID as the marker text; the pipeline renumbers markers sequentially in order of
+first appearance and builds the reference list from them. Use EXACTLY this markup with the paper's PMID:
 <sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
 FINDING: 250-600 characters. The study's conclusion FIRST, with its own numbers and design, then one
 sentence starting "Relevance:" saying how it bears on this claim. Never open with "This study".
-Cite ONLY PMIDs in the topic file, each at most once.
+Cite ONLY PMIDs in the topic file; every one of them must appear at least once.
+LENGTH: 700 characters minimum; at most 1,600 plus 150 per paper in the item.
 GROUNDING: every claim and number from the abstracts. Overstatement and understatement are both
 failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
 {tone}"""
@@ -1033,10 +1048,11 @@ Return ONLY {{"html": "<inner html>", "cited": ["PMID", …], "framing": "<one l
         verdict = _claude(f"""You are the adversarial reviewer for a physician-authored evidence subsection. Default to REFUTE.
 THE CLAIM: {claim}
 READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; the
-"framing" label is the one the cited abstracts actually justify (from: {"; ".join(FRAMINGS)}); every
-cited PMID is in the topic file and cited at most once; every popover carries title, meta, a 250-600
-character conclusion-first finding with a "Relevance:" sentence, and the PubMed link, id ref-pop-PMID;
-700-1,600 characters of prose; no dose in the clinician's own prose; no AI/placeholder language; tone
+"framing" label is the one the cited abstracts actually justify (from: {"; ".join(FRAMINGS)}); EVERY
+paper in the topic file is cited inline at least once and every cited PMID is in the topic file (an
+uncited paper is BLOCKING — add the citation or a sentence discussing it); every popover carries
+title, meta, a 250-600 character conclusion-first finding with a "Relevance:" sentence, and the PubMed
+link, id ref-pop-PMID; at least 700 characters of prose; no dose in the clinician's own prose; no AI/placeholder language; tone
 is respectful to the person who made the claim — no "verdict", "debunk", "myth", "misinformation", no
 "influencer" used as a label.
 If fixable by tightening, deleting an unsupported sentence, correcting a popover or the label, return
@@ -1060,11 +1076,13 @@ Return ONLY {{"html": "<inner html>", "cited": ["PMID", …]}}.""")
     if not draft or not draft.get("html"):
         return tid, None, "author produced nothing"
     verdict = _claude(f"""You are the adversarial reviewer for a physician-authored evidence synthesis. Default to REFUTE.
-READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; every cited
-PMID present in the topic file and cited at most once; every popover carrying title, meta, a 250-600
-character takeaway-first finding ending in a "Monday:" sentence, and the PubMed source link, with
-id ref-pop-PMID; no overstatement or understatement; no dose in the clinician's own prose; no
-AI/placeholder language, paths or section marks; 1,000-2,500 characters of prose.
+READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; EVERY
+paper in the topic file is cited inline at least once, and every cited PMID is in the topic file; every
+popover carries title, meta, a 250-600 character takeaway-first finding ending in a "Monday:" sentence,
+and the PubMed source link, with id ref-pop-PMID; no overstatement or understatement; no dose in the
+clinician's own prose; no AI/placeholder language, paths or section marks; at least 1,000 characters
+of prose. A paper left uncited is a BLOCKING problem — add the citation where the study is discussed,
+or add a sentence discussing it.
 If fixable by tightening, deleting an unsupported sentence, or correcting a popover, return fixed_html
 with ok=true and problems listing the changes. Otherwise ok=false.
 GENERATED: {json.dumps(draft)[:60000]}
@@ -1075,6 +1093,27 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
         return tid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
     return tid, {"tid": tid, "html": verdict.get("fixed_html") or draft["html"],
                  "cited": draft.get("cited"), "problems": verdict.get("problems")}, None
+
+
+NARRATIVE_RULES = """
+WHAT: the editorial narrative that opens the brief — the inner HTML of
+<section class="mz-post-section mz-post-narrative">: one <h2> titled
+"Monday Mornings: <a specific phrase drawn from this week's papers>" followed by 3-4 <p> totalling
+2,400-3,400 characters of prose (citation markup not counted).
+VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
+surgery surgeon reading the week as a whole. Open on the one paper you keep returning to, read the
+others as variations on a structural theme, name studies by first author, close on what changes on a
+Monday. Direct, specific, no throat-clearing.
+GROUNDING: every study, author, number and finding from the topic files. No external facts.
+Overstatement and understatement are both failures — never write a preclinical or animal result as a
+human finding.
+CITATIONS: cite every study you name, inline, right after the claim, with EXACTLY this markup and the
+paper's PMID (the pipeline renumbers markers 1, 2, 3 … in order of first appearance):
+<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
+FINDING: 250-600 characters, the study's conclusion first with its numbers, then one sentence starting
+"Monday:" with the implication. Never open with "This study".
+PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, no dose in your own
+prose. Escape & < >. Return inner HTML only."""
 
 def _author_narrative(W: str, topics: list) -> tuple:
     files = ", ".join(f"{W}topics/{t}.json" for t in topics)
@@ -1088,7 +1127,8 @@ Return ONLY {{"html": "<inner html>"}}.""")
 READ every topic file: {files}
 Check: every study, author, number and finding traceable to a topic file; no overstatement or
 understatement; no preclinical or animal result written as a human finding; one <h2> starting
-"Monday Mornings:" then 3-4 <p>, 2,400-3,400 characters of prose; no citation markup; no
+"Monday Mornings:" then 3-4 <p>, 2,400-3,400 characters of prose (citation markup excluded from the count); every study
+named carries an inline citation in the standard markup, and every cited PMID is in a topic file; no
 AI/placeholder language, paths or section marks; no dose beyond the abstracts.
 If fixable by tightening or deleting an unsupported sentence, return fixed_html with ok=true and
 problems listing the changes. Otherwise ok=false with problems.
@@ -1141,8 +1181,11 @@ VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minima
 surgery surgeon writing for a reader who may be the person who made the claim.
 {BRIDGE_TONE}
 GROUNDING: only studies, numbers and findings present in the syntheses or topic files. No dose in your
-prose. No citation markup here (the subsections carry it). No AI/placeholder language, paths, section
-marks. Escape & < >. Return inner HTML for each part:
+prose. Cite every study you name, inline, right after the claim, with EXACTLY this markup and the
+paper's PMID (the pipeline renumbers markers sequentially):
+<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
+(FINDING: 250-600 characters, conclusion first with numbers, then a "Relevance:" sentence.)
+No AI/placeholder language, paths, section marks. Escape & < >. Return inner HTML for each part:
 {spec}
 Return ONLY a JSON object with exactly those keys.""")
     if not draft or not all(draft.get(k) for k in TREND_EDITORIAL_PARTS):
@@ -1153,7 +1196,8 @@ THE CLAIM: {claim}
 READ {W}syntheses.json (each item's verified subsection and framing label) and the topic files: {files}.
 Check: every study, number and finding traceable; the bottom line names items consistently with their
 framing labels (an item labelled "Supported by clinical trials" is not described as unsupported, and
-vice versa); no dose; no citation markup; no AI/placeholder language; each part matches its spec:
+vice versa); no dose; every study named carries an inline citation in the standard markup with a PMID
+from a topic file; no AI/placeholder language; each part matches its spec:
 {spec}
 TONE: respectful to the person who made the claim; refuse any sneer, any "verdict", "debunk", "myth",
 "misinformation", or "influencer" used as a label.
@@ -1646,31 +1690,94 @@ def apply_sections(W: str, man: dict, h: str) -> tuple:
     return h, applied
 
 
+# ---------------------------------------------------------------------------
+# CITATIONS — numbered in order of first appearance, references to match
+# ---------------------------------------------------------------------------
+# Authors write the marker as the PMID because that is the one identifier they
+# can get right. A reader must see the standard form: a superscript 1, 2, 3 …
+# in order of first appearance, each resolving to the numbered entry in the
+# reference list, each carrying a hover popover with the study's summary and
+# a link to the study. W33 and W34 shipped with raw PMIDs as the marker text
+# and reference lists in feed order; no check here looked at either. Now both
+# are built here, deterministically, and both are post-conditions.
+
+SUP_RE = re.compile(r'<sup class="mz-ref"[^>]*>[\s\S]*?</sup>')
+
+
+def _pmid_of(sup: str) -> str | None:
+    m = re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", sup) or re.search(r"ref-pop-(\d{5,9})", sup)
+    return m.group(1) if m else None
+
+
+def number_citations(h: str) -> tuple:
+    """Renumber every inline citation and return (html, pmids_in_citation_order)."""
+    order: list = []
+    canon: dict = {}
+    for m in SUP_RE.finditer(h):
+        pm = _pmid_of(m.group(0))
+        if not pm:
+            continue
+        if pm not in order:
+            order.append(pm)
+        pop = re.search(r'<span class="mz-ref-pop"[^>]*>([\s\S]*?)</span>(?=\s*</sup>)', m.group(0))
+        if pop and "mz-ref-pop-finding" in pop.group(1) and pm not in canon:
+            canon[pm] = pop.group(1)
+    num = {pm: i + 1 for i, pm in enumerate(order)}
+    counts: dict = {}
+
+    def rewrite(m):
+        sup = m.group(0)
+        pm = _pmid_of(sup)
+        if not pm or pm not in canon:
+            return sup
+        k = counts.get(pm, 0) + 1
+        counts[pm] = k
+        pid = f"ref-pop-{pm}" + (f"-{k}" if k > 1 else "")
+        inner = canon[pm]
+        if "mz-ref-pop-src" not in inner:
+            inner += (f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
+                      f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>')
+        return (f'<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="{pid}">{num[pm]}</a>'
+                f'<span class="mz-ref-pop" id="{pid}" role="tooltip">{inner}</span></sup>')
+
+    return SUP_RE.sub(rewrite, h), order
+
+
+def build_references(W: str, h: str, order: list) -> str:
+    """Replace any reference list with one in citation order, entries from the paper files."""
+    old_entries = {m.group(1): m.group(2) for m in re.finditer(r'<li id="ref-(\d+)">([\s\S]*?)</li>', h)}
+    items = []
+    for pm in order:
+        pf = W + f"papers/{pm}.json"
+        if os.path.exists(pf):
+            pj = json.load(open(pf))
+            meta = re.sub(r"\s*[·•]\s*PMID\s*\d+\s*$", "", pj.get("meta") or "").strip().rstrip(".")
+            title = (pj.get("title") or "").strip()
+            text = f"{H.escape(meta, quote=False)}. {H.escape(title, quote=False)}"
+        elif pm in old_entries:
+            text = re.sub(r'\s*<a class="mz-ref-pmid"[\s\S]*?</a>', "", old_entries[pm]).strip()
+        else:
+            text = f"PMID {pm}"
+        items.append(f'<li id="ref-{pm}">{text} <a class="mz-ref-pmid" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
+                     f'target="_blank" rel="noopener noreferrer">PMID {pm}</a></li>')
+    refs = ('<section class="mz-post-section mz-references" id="references">'
+            '<h2 class="mz-section-title">References</h2><ol class="mz-references-list">'
+            + "".join(items) + "</ol></section>")
+    h = re.sub(r'<section class="[^"]*mz-references[^"]*"[^>]*>[\s\S]*?</section>', "", h)
+    h = re.sub(r'<ol class="mz-references-list">[\s\S]*?</ol>', "", h)
+    anchor = h.find("<dialog")
+    if anchor < 0:
+        anchor = h.rfind("<script")
+    return h[:anchor] + refs + h[anchor:] if anchor >= 0 else h + refs
+
+
 def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, dropped: list, repairs: dict, stats: dict) -> None:
     """Shared tail for every brief shape: references, light theme, hygiene,
     disclaimer, post-conditions, the site's own publish audit, the review."""
-    # A canonical brief carries a references list. A cards-only source (W31)
-    # has none, and the publish audit refuses the editorial spine without it.
-    if not re.search(r'class="[^"]*mz-references', h):
-        items = []
-        for pmid in man["pmids"]:
-            pf = W + f"papers/{pmid}.json"
-            if not os.path.exists(pf):
-                continue
-            pj = json.load(open(pf))
-            meta = re.sub(r"\s*[·•]\s*PMID\s*\d+\s*$", "", pj.get("meta") or "").strip()
-            title = (pj.get("title") or "").strip()
-            items.append(f'<li id="ref-{pmid}">{H.escape(meta, quote=False)}. {H.escape(title, quote=False)} '
-                         f'<a class="mz-ref-pmid" href="https://pubmed.ncbi.nlm.nih.gov/{pmid}/" target="_blank" '
-                         f'rel="noopener noreferrer">PMID {pmid}</a></li>')
-        refs = ('<section class="mz-post-section mz-references" id="references">'
-                '<h2 class="mz-section-title">References</h2><ol class="mz-references-list">'
-                + "".join(items) + "</ol></section>")
-        anchor = h.find("<dialog")
-        if anchor < 0:
-            anchor = h.rfind("<script")
-        h = h[:anchor] + refs + h[anchor:] if anchor >= 0 else h + refs
-        print(f"  built a references list of {len(items)} entries (source had none)")
+    # citations: numbered in order of first appearance; references to match
+    h, cite_order = number_citations(h)
+    h = build_references(W, h, cite_order)
+    stats["citations"] = len(cite_order)
     # 5. light theme at rest, 6. markup hygiene, 7. disclaimer
     src = open(os.path.join(ROOT, "scripts/repost_light_theme.py")).read().rsplit("\nmain()", 1)[0]
     ns: dict = {}
@@ -1724,6 +1831,32 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     for sup in re.findall(r'<sup class="mz-ref">.*?</sup>', h, re.S):
         if "mz-ref-pop-finding" not in sup or "mz-ref-pop-src" not in sup:
             faults.append("a citation popover lacks its summary or source link")
+            break
+    # every kept paper is cited in the site's own prose; markers are 1..n in
+    # order of first appearance and resolve to the reference list, which is in
+    # the same order and contains exactly the cited papers
+    kept = list(man["pmids"])
+    uncited = [q for q in kept if q not in cite_order]
+    if uncited:
+        faults.append(f"{len(uncited)} kept paper(s) cited nowhere in the prose: {uncited[:6]}")
+    marker_text = [re.sub(r"<[^>]+>", "", m).strip() for m in re.findall(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', h, re.S)]
+    if any(re.fullmatch(r"\d{5,9}", t) for t in marker_text):
+        faults.append("a citation marker still shows a PMID instead of its number")
+    seen, expect = [], 1
+    for pm in [ _pmid_of(x) for x in SUP_RE.findall(h) ]:
+        if pm and pm not in seen:
+            seen.append(pm)
+    for i_, m in enumerate(SUP_RE.findall(h)):
+        pm = _pmid_of(m); t = re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', m, re.S) or [None, ""])[1]).strip()
+        if pm in seen and t != str(seen.index(pm) + 1):
+            faults.append(f"citation marker for PMID {pm} reads {t!r}, expected {seen.index(pm) + 1}")
+            break
+    ref_ids = re.findall(r'<li id="ref-(\d+)">', h)
+    if ref_ids != cite_order:
+        faults.append("the reference list is not in citation order or does not match the cited set")
+    for href in set(re.findall(r'<a class="mz-ref-link" href="#(ref-\d+)"', h)):
+        if f'id="{href}"' not in h:
+            faults.append(f"citation marker points at a missing reference {href}")
             break
     body_text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h)))
     for pmid, abstract in repairs.items():
