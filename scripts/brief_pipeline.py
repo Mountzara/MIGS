@@ -1110,8 +1110,21 @@ def cmd_curate(post_id: str) -> None:
         if not d["keep"] or tid not in titles:
             continue
         t = json.load(open(W + f"topics/{tid}.json"))
+        # The second opinion covers the DROPS too. Judging only the keeps made
+        # the corroboration one-directional: a paper the first pass removed was
+        # never re-examined, and four on-topic endometriosis reviews were lost
+        # that way on the supplement brief. A drop the second pass assigns to a
+        # heading in this brief is restored to it.
         papers_ctx = [{"pmid": q["pmid"], "title": q["title"], "abstract": (q.get("abstract") or "")[:3500]}
                       for q in t["papers"] if q["pmid"] in d["keep"]]
+        dropped_ctx = {}
+        for x in d.get("drop") or []:
+            pfd = W + f"papers/{x['pmid']}.json"
+            if os.path.exists(pfd):
+                pj = json.load(open(pfd))
+                dropped_ctx[x["pmid"]] = {"pmid": x["pmid"], "title": pj.get("title", ""),
+                                          "abstract": (pj.get("abstract") or "")[:3500]}
+                papers_ctx.append(dropped_ctx[x["pmid"]])
         v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
 alone, for an audience of gynecologic surgeons. Answer with the heading the paper belongs under — which may be a DIFFERENT heading from the one it is
 currently filed under; a paper covering several of the headings goes under the one it covers most.
@@ -1130,6 +1143,25 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}"
         # wrong supplement, and the curate reviewer refused the stage for it.
         moved, disagreed = [], []
         by_title = {tt: ti for ti, tt in titles.items()}
+        # a drop the second pass files under one of this brief's headings is
+        # restored there — the first pass was wrong to remove it
+        for q, rec_d in dropped_ctx.items():
+            got = str(v["assignments"].get(q, "")).strip()
+            dest = by_title.get(got)
+            if not dest:
+                continue
+            d["drop"] = [x for x in d["drop"] if x["pmid"] != q]
+            dd = decisions.setdefault(dest, {"keep": [], "keep_reasons": {}, "drop": [], "retitle": None})
+            if q not in dd["keep"]:
+                dd["keep"].append(q)
+                dd["keep_reasons"][q] = f"restored: an independent classification filed it under {got!r}"
+            dt = json.load(open(W + f"topics/{dest}.json"))
+            if all(x["pmid"] != q for x in dt["papers"]):
+                pj = json.load(open(W + f"papers/{q}.json"))
+                dt["papers"].append({"pmid": q, "title": pj.get("title", ""), "meta": pj.get("meta", ""),
+                                     "abstract": pj.get("abstract", ""), "bottom": "", "findings": ""})
+                json.dump(dt, open(W + f"topics/{dest}.json", "w"), ensure_ascii=False, indent=1)
+            print(f"  RESTORE {q}: dropped from {tid}, filed under {dest} by the second pass")
         for q in list(d["keep"]):
             got = str(v["assignments"].get(q, "")).strip()
             if got == here:
