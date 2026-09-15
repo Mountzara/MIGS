@@ -381,9 +381,11 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
      dialog are one paper's own attributed containers: they carry that paper's title, meta line, link
      to the study and deep-dive trigger instead of an inline marker, and every claim in them must be
      supported by that paper.
- S2  Citation markers are sequential superscript NUMBERS (1, 2, 3 …) in order of first appearance; the
-     same paper keeps its number wherever it recurs. A PMID, author-year or anything else as the visible
-     marker fails.
+ S2  On the PUBLISHED page, citation markers are sequential superscript NUMBERS (1, 2, 3 …) in order of
+     first appearance; the same paper keeps its number wherever it recurs. A PMID, author-year or
+     anything else as the visible marker fails. (Authors write the PMID into the marker because it is
+     the identifier they can get right; the pipeline renumbers deterministically before publication and
+     refuses any marker still showing a PMID. The requirement is on what a reader sees.)
  S3  Every marker is hoverable (and tappable) and shows a plain-language summary of that study's finding
      and its relevance, with a link to the study; the marker itself resolves to the numbered reference.
  S4  The reference list is numbered in citation order and contains exactly the cited papers; every paper
@@ -2452,6 +2454,17 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             faults.append(f"[card:{pmc}] the card carries no link to the study it summarises")
         if f"dd-{pmc}" not in c:
             faults.append(f"[card:{pmc}] the card has no deep-dive trigger")
+        # the other two things the standard says a card carries
+        pfc = W + f"papers/{pmc}.json"
+        if os.path.exists(pfc):
+            pjc = json.load(open(pfc))
+            card_txt = H.unescape(re.sub(r"<[^>]+>", " ", c)).lower()
+            ttl = re.sub(r"[^a-z0-9 ]", "", (pjc.get("title") or "").lower()).split()
+            if ttl and not all(w in card_txt for w in ttl[:6]):
+                faults.append(f"[card:{pmc}] the card does not carry the paper's title")
+            jrn = (pjc.get("journal") or "").lower()
+            if jrn and jrn.split()[0] not in card_txt:
+                faults.append(f"[card:{pmc}] the card does not carry the paper's journal line")
     for pm, card in card_texts(h):
         ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
         if re.search(r"(?<!CBG/)\bMIGS\b", ct, re.I) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
@@ -2698,6 +2711,9 @@ For EVERY sentence return one object:
         design, or what the literature shows; false for the author's own interpretation, a question,
         a transition, or a statement about the brief itself
  cited: true if the sentence carries at least one ⟦PMID⟧ token
+ placement: false if the sentence makes MORE THAN ONE factual claim and a citation does not follow each
+        of them — a single marker parked at the end of a sentence carrying two different studies'
+        findings does not attribute either; null when the sentence makes at most one claim
  supported: for a cited claim, true only if every factual element is traceable to the cited abstracts
             (no invented number, population, comparator, outcome or direction; no overstatement or
             understatement); null when claim is false
@@ -2744,6 +2760,8 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             if card_pm and r.get("dose"):
                 # a study's own dose inside an attributed container is permitted
                 r["dose"] = False
+            if r.get("placement") is False and not card_pm and pc != "headings":
+                bad.append("a citation does not follow each claim in the sentence")
             for k in ("preclinical_as_human", "advice", "dose", "provenance", "internal"):
                 if r.get(k):
                     bad.append(k.replace("_", " "))
