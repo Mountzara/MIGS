@@ -1053,7 +1053,7 @@ def cmd_curate(post_id: str) -> None:
         if not t["papers"]:
             decisions[tid] = {"keep": [], "drop": [], "retitle": None}
             continue
-        prompt = CURATE_PROMPT.format(topic_file=tf, tid=tid)
+        prompt = CURATE_PROMPT.format(topic_file=tf, tid=tid) + stage_objections(W, "curate")
         r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
                            capture_output=True, text=True, timeout=900, cwd=ROOT)
         if r.returncode != 0:
@@ -1226,6 +1226,8 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}"
     else:
         print(f"  curation decisions unchanged ({fingerprint}); previously authored content stays valid")
     record(W, "curate", {"kept": len(kept_pmids), "dropped": len(orphans), "fingerprint": fingerprint})
+    if os.path.exists(W + ".ledger/curate.objections.json"):
+        os.remove(W + ".ledger/curate.objections.json")
     ai_review(W, "curate")
     print(f"  ledger: curate OK — authoring may now run for {post_id}")
 
@@ -1659,6 +1661,9 @@ def cmd_author(post_id: str) -> None:
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "curate");  require_review(W, "curate")
     man = json.load(open(W + "manifest.json"))
+    objections = stage_objections(W, "author")
+    if objections:
+        print(f"  carrying {objections.count(chr(10) + '  - ')} reviewer objection(s) into this attempt")
     from concurrent.futures import ThreadPoolExecutor
 
     # A draft file's EXISTENCE is not evidence it was verified. W31's drafts
@@ -1791,6 +1796,8 @@ def cmd_author(post_id: str) -> None:
             print(f"  wrote narrative ({len(item['problems'] or [])} reviewer correction(s))")
         else:
             print("  narrative already current for these curation decisions")
+    if os.path.exists(W + ".ledger/author.objections.json"):
+        os.remove(W + ".ledger/author.objections.json")
     record(W, "author", {"papers": len(man["pmids"]), "authored_now": len(todo),
                          "topics": len(man["topics"]), "syntheses_now": len(need)})
     ai_review(W, "author")
@@ -3232,9 +3239,48 @@ def cmd_publish_trend(post_id: str) -> None:
 REPAIR_ROUNDS = 3
 
 
+def stage_objections(W: str, stage: str) -> str:
+    """What a reviewer refused this stage for last time, fed back into the prompt.
+
+    A review that refuses a stage and then does not reach the next attempt is a
+    report, not a control: the curate reviewer objected that a heading
+    overpromised relative to the one paper left under it, and the retry ran the
+    identical prompt and produced the identical decision.
+    """
+    path = W + f".ledger/{stage}.objections.json"
+    if not os.path.exists(path):
+        return ""
+    items = json.load(open(path)).get("blocking") or []
+    if not items:
+        return ""
+    return ("\n\nA PREVIOUS ATTEMPT AT THIS STAGE WAS REFUSED BY REVIEW FOR THE FOLLOWING. Act on each one\n"
+            "in the decision you return now — do not repeat the decision that was refused:\n"
+            + "\n".join(f"  - {x}" for x in items[:6]))
+
+
 def repair(W: str, msg: str) -> list:
     """Invalidate the pieces a refusal names. Returns what it invalidated."""
     done = []
+    # A stage's own reviewer refused it: record the objections so the retry
+    # sees them, and clear that stage's receipts so it actually re-runs.
+    m_stage = re.search(r"the (\w+) review refused this stage", msg)
+    if m_stage:
+        st = m_stage.group(1)
+        rv = W + f".ledger/{st}.review.json"
+        blocking = (json.load(open(rv)).get("blocking") or []) if os.path.exists(rv) else []
+        json.dump({"blocking": blocking}, open(W + f".ledger/{st}.objections.json", "w"),
+                  indent=1, ensure_ascii=False)
+        for f in (f"{st}.json", f"{st}.review.json"):
+            if os.path.exists(W + ".ledger/" + f):
+                os.remove(W + ".ledger/" + f)
+        done.append(f"{st} (re-running with {len(blocking)} reviewer objection(s) fed back)")
+        # later stages are void too, since this one's output changes
+        order = STAGES[STAGES.index(st) + 1:] if st in STAGES else []
+        for later in order:
+            for f in (f"{later}.json", f"{later}.review.json"):
+                if os.path.exists(W + ".ledger/" + f):
+                    os.remove(W + ".ledger/" + f)
+        return done
     pieces = set(re.findall(r"\[([a-z_:\-0-9]+)\]", msg))
     syn_path, narr_path = W + "syntheses.json", W + "narrative.json"
     for pc in pieces:
