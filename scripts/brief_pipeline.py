@@ -405,12 +405,38 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
      and the page shows no duplicate element ids.
 """
 
+# WHICH STAGE OWES WHICH STANDARD. A reviewer handed the whole list will block
+# on a standard its stage cannot possibly meet yet: W31's prepare review refused
+# because the topic files still held off-topic papers — which is exactly what
+# `curate` removes, one stage later. A gate that refuses work for not having
+# done a later stage's job stops the pipeline without improving anything. So
+# each reviewer is told what is IN SCOPE now and what a later stage enforces;
+# `apply` reviews the finished body and owns all of them.
+STAGE_STANDARDS = {
+    "prepare": ["S5"],
+    "curate":  ["S11"],
+    "author":  ["S1", "S3", "S5", "S6", "S7", "S8", "S10", "S13"],
+    "guard":   ["S6"],
+    "apply":   [f"S{i}" for i in range(1, 15)],
+}
+
+
+def stage_addendum(stage: str) -> str:
+    own = STAGE_STANDARDS.get(stage, [])
+    later = [f"S{i}" for i in range(1, 15) if f"S{i}" not in own]
+    scope = (f"\nIN SCOPE AT THIS STAGE (block on these): {', '.join(own)}."
+             + (f"\nENFORCED BY A LATER STAGE — report as advisory, DO NOT block: {', '.join(later)}."
+                if later else "\nEVERY standard is in scope: this is the finished body.")
+             + "\n")
+    return STANDARDS_ADDENDUM + scope
+
+
 STANDARDS_ADDENDUM = """
 
 INDEPENDENT OF THE CHECKS ABOVE: also judge this stage's output against THE STANDARDS below. They are the
 owner's requirements, not the pipeline's own instructions. If the stage's instructions and a standard
-disagree, THE STANDARD WINS and the mismatch is BLOCKING. List each unmet standard by its number in
-"blocking".
+disagree, THE STANDARD WINS. List each unmet standard by its number — in "blocking" when the standard
+is in scope at this stage, in "advisory" when a later stage enforces it.
 """ + STANDARDS
 
 
@@ -524,7 +550,7 @@ Reply with ONLY a JSON object:
 
 def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     """Run the stage's reviewer. Raises if it refuses or cannot be read."""
-    prompt = REVIEW_PROMPTS[stage].format(W=W) + STANDARDS_ADDENDUM
+    prompt = REVIEW_PROMPTS[stage].format(W=W) + stage_addendum(stage)
     print(f"  reviewing {stage} …", flush=True)
     r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
                        capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
