@@ -47,6 +47,7 @@ Stages are independent and idempotent; run `prepare` and `curate` before any age
 """
 from __future__ import annotations
 import html as H
+import datetime
 import json
 import os
 import re
@@ -386,6 +387,15 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     return v
 
 
+def is_trend(post_id: str) -> bool:
+    """A trend brief is addressed as trend-<dir>; its server id lives in <dir>/trend.json."""
+    return post_id.startswith("trend-")
+
+
+def slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", H.unescape(text).lower()).strip("_")[:40]
+
+
 def work_dir(post_id: str) -> str:
     key = post_id.split("-")[-1].lower()
     return os.path.join(SCRATCH, key) + "/"
@@ -426,43 +436,9 @@ def txt(s: str) -> str:
     return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", s or ""))).strip()
 
 
-def cmd_prepare(post_id: str) -> None:
-    W = work_dir(post_id)
-    os.makedirs(W + "papers", exist_ok=True)
-    os.makedirs(W + "topics", exist_ok=True)
-    os.makedirs(W + "drafts_dd", exist_ok=True)
-
-    post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
-    post = post.get("post", post)
-    body = post["body_html"]
-    json.dump(post, open(W + f"{post_id}.source.json", "w"), ensure_ascii=False)
-
-    dialogs = re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>(.*?)</dialog>', body, re.S)
-    if not dialogs:
-        die(f"{post_id}: no journal-club dialogs found — wrong post shape")
-
-    papers: dict[str, dict] = {}
-    for pmid, inner in dialogs:
-        secs = {}
-        for s in re.finditer(r'<section class="mz-jc-section" id="dd-\d+-([a-z_-]+)">(.*?)</section>', inner, re.S):
-            pending = "mz-jc-pending-tag" in s.group(2) or "Pending Dr. Mabini" in s.group(2)
-            secs[s.group(1)] = {"pending": pending, "text": txt(s.group(2))}
-        papers[pmid] = {
-            "pmid": pmid,
-            "title": txt((re.search(r'class="mz-jc-modal-title"[^>]*>(.*?)</h2>', inner, re.S) or [None, ""])[1]),
-            "meta": txt((re.search(r'class="mz-jc-modal-meta"[^>]*>(.*?)</p>', inner, re.S) or [None, ""])[1]),
-            "abstract": (secs.get("abstract", {}) or {}).get("text", ""),
-            "context": {k: v["text"][:1200] for k, v in secs.items() if not v["pending"] and k != "abstract"},
-            # NEVER authorable: the abstract is the paper's own verbatim text,
-            # filled from PubMed by the repair step, and the title is the
-            # paper's title. Leaving them in `pending` let an author write a
-            # section headed "Verbatim PubMed abstract" — a machine-written
-            # abstract presented as the source — and apply then overwrote the
-            # real PubMed text with it.
-            "pending": [k for k, v in secs.items() if v["pending"] and k not in NOT_AUTHORABLE],
-        }
-
-    # --- the check that would have saved 176 agents on W31 ---
+def reconcile_abstracts(papers: dict) -> tuple:
+    """Every abstract is checked against PubMed, the only authority on what a
+    PMID says. Returns (repaired, unfetched, mismatched, repair_reason)."""
     real = fetch_pubmed(sorted(papers))
     repaired, unfetched, mismatched = [], [], []
     repair_reason: dict[str, str] = {}
@@ -499,6 +475,48 @@ def cmd_prepare(post_id: str) -> None:
             repair_reason[pmid] = "wrong paper" if wrong else "truncated"
         if r["title"] and share(terms(r["title"], 8), p["title"]) < 0.4:
             mismatched.append((pmid, p["title"][:50], r["title"][:50]))
+    return repaired, unfetched, mismatched, repair_reason
+
+
+def cmd_prepare(post_id: str) -> None:
+    if is_trend(post_id):
+        return prepare_trend(post_id)
+    W = work_dir(post_id)
+    os.makedirs(W + "papers", exist_ok=True)
+    os.makedirs(W + "topics", exist_ok=True)
+    os.makedirs(W + "drafts_dd", exist_ok=True)
+
+    post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
+    post = post.get("post", post)
+    body = post["body_html"]
+    json.dump(post, open(W + f"{post_id}.source.json", "w"), ensure_ascii=False)
+
+    dialogs = re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>(.*?)</dialog>', body, re.S)
+    if not dialogs:
+        die(f"{post_id}: no journal-club dialogs found — wrong post shape")
+
+    papers: dict[str, dict] = {}
+    for pmid, inner in dialogs:
+        secs = {}
+        for s in re.finditer(r'<section class="mz-jc-section" id="dd-\d+-([a-z_-]+)">(.*?)</section>', inner, re.S):
+            pending = "mz-jc-pending-tag" in s.group(2) or "Pending Dr. Mabini" in s.group(2)
+            secs[s.group(1)] = {"pending": pending, "text": txt(s.group(2))}
+        papers[pmid] = {
+            "pmid": pmid,
+            "title": txt((re.search(r'class="mz-jc-modal-title"[^>]*>(.*?)</h2>', inner, re.S) or [None, ""])[1]),
+            "meta": txt((re.search(r'class="mz-jc-modal-meta"[^>]*>(.*?)</p>', inner, re.S) or [None, ""])[1]),
+            "abstract": (secs.get("abstract", {}) or {}).get("text", ""),
+            "context": {k: v["text"][:1200] for k, v in secs.items() if not v["pending"] and k != "abstract"},
+            # NEVER authorable: the abstract is the paper's own verbatim text,
+            # filled from PubMed by the repair step, and the title is the
+            # paper's title. Leaving them in `pending` let an author write a
+            # section headed "Verbatim PubMed abstract" — a machine-written
+            # abstract presented as the source — and apply then overwrote the
+            # real PubMed text with it.
+            "pending": [k for k, v in secs.items() if v["pending"] and k not in NOT_AUTHORABLE],
+        }
+
+    repaired, unfetched, mismatched, repair_reason = reconcile_abstracts(papers)
     for pmid, p in papers.items():
         json.dump(p, open(W + f"papers/{pmid}.json", "w"), ensure_ascii=False, indent=1)
 
@@ -548,6 +566,150 @@ def cmd_prepare(post_id: str) -> None:
     record(W, "prepare", {"papers": len(papers), "repaired": repaired, "topics": topics})
     ai_review(W, "prepare")
     print(f"  ledger: prepare OK — authoring may now run for {post_id}")
+
+
+
+# ---------------------------------------------------------------------------
+# TREND BRIEFS — a viral claim checked against the literature
+# ---------------------------------------------------------------------------
+# Same chain, same gates, same reviewers. What differs is the shape: one claim
+# with several items (twelve supplements, say) instead of a week of topics, so
+# each item is a topic; a hero with no gauge; and an editorial that presents
+# the evidence in plain prose under clear headlines rather than a verdict.
+# The purpose of these briefs is to be a reliable source the person who made
+# the claim can read and learn from — not to score against them.
+
+FRAMINGS = [
+    "Supported by clinical trials",
+    "Promising, but not yet shown in people",
+    "Not enough evidence to say",
+    "The evidence so far points the other way",
+    "Studied in a related condition, not this one",
+]
+
+BRIDGE_TONE = """
+TONE — THIS MATTERS: the reader may be the person who made the claim. Write so they can take something
+useful from it. Give the honest framing — where a claim is plausible, where the trials do not support
+it as stated, where there is simply not enough evidence — but never sneer, never score points.
+Do not use the words "verdict", "debunk", "myth", "false claim", "misinformation" or "influencer" as
+a label. Say what the studies found and let the reader weigh it. Credit what the post gets right."""
+
+
+def supplement_of(design: str) -> str:
+    d = re.sub(r"^\[\d+\]\s*[·•]\s*", "", design or "")
+    return (re.split(r"\s*[·•]\s*", d)[0] or "").strip() or "General"
+
+
+def prepare_trend(post_id: str) -> None:
+    W = work_dir(post_id)
+    for d in ("papers", "topics", "drafts_dd"):
+        os.makedirs(W + d, exist_ok=True)
+    if not os.path.exists(W + "trend.json"):
+        die(f"{W}trend.json missing: it must name queue_id, post_id, title and unit")
+    trend = json.load(open(W + "trend.json"))
+    for k in ("queue_id", "post_id", "title"):
+        if not trend.get(k):
+            die(f"trend.json lacks {k}")
+    if not os.path.exists(W + "body.healed.html"):
+        die(f"{W}body.healed.html missing: the assembled trend body is the source")
+    body = open(W + "body.healed.html", encoding="utf-8").read()
+    json.dump({"id": trend["post_id"], "kind": "blog", "title": trend["title"], "body_html": body},
+              open(W + f"{post_id}.source.json", "w"), ensure_ascii=False)
+
+    dialogs = re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>(.*?)</dialog>', body, re.S)
+    if not dialogs:
+        die(f"{post_id}: no journal-club dialogs found")
+    norm = lambda t: re.sub(r"[^a-z0-9]+", "", H.unescape(re.sub(r"<[^>]+>", "", t)).lower())
+    papers: dict[str, dict] = {}
+    for pmid, inner in dialogs:
+        secs = {}
+        for sm in re.finditer(r'<section class="mz-jc-section[^"]*" id="dd-\d+-([a-z_-]+)"[^>]*>(.*?)</section>', inner, re.S):
+            h3 = re.search(r"<h3[^>]*>(.*?)</h3>", sm.group(2), re.S)
+            secs[sm.group(1)] = {"title": txt(h3.group(1)) if h3 else sm.group(1), "text": txt(sm.group(2))}
+        pf = W + f"papers/{pmid}.json"
+        old = json.load(open(pf)) if os.path.exists(pf) else {}
+        papers[pmid] = {
+            "pmid": pmid,
+            "title": txt((re.search(r'class="mz-jc-modal-title"[^>]*>(.*?)</h2>', inner, re.S) or [None, ""])[1]) or old.get("title", ""),
+            "meta": txt((re.search(r'class="mz-jc-modal-cite"[^>]*>(.*?)</p>', inner, re.S) or [None, ""])[1]) or old.get("cite", ""),
+            "design": old.get("design", ""),
+            "topic": supplement_of(old.get("design", "")),
+            "abstract": old.get("abstract") or old.get("abstract_verbatim") or secs.get("abstract", {}).get("text", ""),
+            "context": {},
+            "pending": [k for k in secs if k not in NOT_AUTHORABLE],
+            "section_titles": {k: v["title"] for k, v in secs.items()},
+        }
+        # drafts written before this pipeline are keyed by the section's
+        # heading text; the section writer keys by the section id
+        dp = W + f"drafts_dd/{pmid}.json"
+        if os.path.exists(dp):
+            d = json.load(open(dp))
+            by_title = {norm(v["title"]): k for k, v in secs.items()}
+            out = {}
+            for k, v in d.items():
+                out[by_title.get(norm(k), k)] = v
+            json.dump(out, open(dp, "w"), ensure_ascii=False)
+
+    repaired, unfetched, mismatched, repair_reason = reconcile_abstracts(papers)
+    for pmid, p in papers.items():
+        json.dump(p, open(W + f"papers/{pmid}.json", "w"), ensure_ascii=False, indent=1)
+
+    # one topic per item of the claim, in the order the post names them
+    order = [x["supplement"] for x in (json.load(open(W + "brief_context.json")).get("per_supplement") or [])] \
+        if os.path.exists(W + "brief_context.json") else []
+    groups: dict[str, list] = {}
+    for pmid, p in papers.items():
+        groups.setdefault(p["topic"], []).append(pmid)
+    def rank(name):
+        for i, o in enumerate(order):
+            if norm(name) in norm(o) or norm(o) in norm(name):
+                return i
+        return len(order)
+    topics = []
+    for name in sorted(groups, key=rank):
+        tid = "topic-" + slug(name)
+        json.dump({"id": tid, "title": name,
+                   "papers": [{"pmid": q, "title": papers[q]["title"], "meta": papers[q]["meta"],
+                               "abstract": papers[q]["abstract"][:4500], "bottom": "", "findings": ""}
+                              for q in groups[name]]},
+                  open(W + f"topics/{tid}.json", "w"), ensure_ascii=False, indent=1)
+        topics.append(tid)
+
+    # deep dives verified before this pipeline existed keep that standing only
+    # when the verification record covers them completely
+    if os.path.exists(W + "deepdives_final.json"):
+        ver = json.load(open(W + "deepdives_final.json"))
+        ver = ver if isinstance(ver, list) else next(iter(ver.values()))
+        covered = {e["pmid"] for e in ver if e.get("blocks")}
+        for pmid in papers:
+            dp = W + f"drafts_dd/{pmid}.json"
+            if pmid in covered and os.path.exists(dp):
+                d = json.load(open(dp))
+                if set(papers[pmid]["pending"]) <= {k for k in d if not k.startswith("_")}:
+                    d["_verified"] = "adversarial review passed (verify workflow, before this pipeline)"
+                    json.dump(d, open(dp, "w"), ensure_ascii=False)
+
+    json.dump({"post_id": post_id, "format": "trend", "kind": "blog", "dir": W,
+               "pmids": sorted(papers), "topics": topics, "narrative_is_stub": True,
+               "has_toc": False, "trend": trend},
+              open(W + "manifest.json", "w"), indent=1, ensure_ascii=False)
+    print(f"{post_id}: {len(papers)} papers, {len(topics)} items of the claim")
+    if repaired:
+        from collections import Counter
+        print(f"  abstracts REPAIRED from PubMed: {len(repaired)} ({dict(Counter(repair_reason.values()))})")
+    else:
+        print("  abstracts REPAIRED from PubMed: 0")
+    if mismatched:
+        for row in mismatched[:5]:
+            print(f"  TITLE MISMATCH {row[0]}: brief={row[1]!r} pubmed={row[2]!r}")
+        die(f"{len(mismatched)} paper(s) carry a title PubMed does not agree with")
+    if unfetched:
+        die(f"could not fetch an abstract for {unfetched[:8]}")
+    json.dump({pm: papers[pm]["abstract"] for pm in repaired},
+              open(W + "abstract_repairs.json", "w"), ensure_ascii=False)
+    record(W, "prepare", {"papers": len(papers), "repaired": repaired, "topics": topics})
+    ai_review(W, "prepare")
+    print(f"  ledger: prepare OK — curate may now run for {post_id}")
 
 
 # ---------------------------------------------------------------------------
@@ -730,7 +892,10 @@ applicability: one or two <p> — to whom it transfers and to whom it does not
 equity: one or two <p> — who is represented; say plainly what is not reported
 prompts: <ol> of 3-4 <li>
 bottom: one <p>, 2-4 sentences
-findings: 2-3 <p> with the abstract's own numbers"""
+findings: 2-3 <p> with the abstract's own numbers
+rob: one or two <p> — what could be wrong with the conclusions, from the design as stated
+kb: one or two <p> — how this sits with what was already established, without inventing outside studies
+monday: one <p> — change, hold, or counsel: what a CBG/MIGS clinician does with it on Monday"""
 
 AUTHOR_RULES = """
 VOICE: Dr. Mabini's own journal-club analysis — first-person clinician, DO + complex benign gynecology /
@@ -826,8 +991,68 @@ GROUNDING: every claim and number from that paper's abstract. Overstatement and 
 failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >."""
 
 
+TREND_SYNTH_RULES = """
+WHAT: the subsection for ONE item of a viral claim — the inner HTML that follows an <h3> carrying the
+item's name — 700 to 1,600 characters of prose in Dr. Mabini's first-person clinician voice (DO +
+complex benign gynecology / minimally invasive gynecologic surgery). State what the post claims for
+this item in one neutral clause, then what the fetched studies actually found, with the numbers, then
+what a reader can reasonably do with that.
+FRAMING: choose exactly one label for this item from this list and return it as "framing":
+{framings}
+The label must follow from the cited abstracts: "Supported by clinical trials" needs randomized human
+trials in this condition showing the claimed benefit; "Studied in a related condition, not this one"
+when the human evidence is in a neighbouring condition; "Promising, but not yet shown in people" for
+mechanism, animal or in-vitro work; "The evidence so far points the other way" when trials tested the
+claim and did not find it; otherwise "Not enough evidence to say".
+CITATIONS: cite 1 to 4 of this item's papers INLINE, right after the claim each supports, using EXACTLY
+this markup with the paper's PMID:
+<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
+FINDING: 250-600 characters. The study's conclusion FIRST, with its own numbers and design, then one
+sentence starting "Relevance:" saying how it bears on this claim. Never open with "This study".
+Cite ONLY PMIDs in the topic file, each at most once.
+GROUNDING: every claim and number from the abstracts. Overstatement and understatement are both
+failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+{tone}"""
+
+
 def _author_one_topic(args_t: tuple) -> tuple:
     W, tid = args_t
+    man = json.load(open(W + "manifest.json"))
+    if man.get("format") == "trend":
+        claim = (man.get("trend") or {}).get("claim") or json.load(open(W + "brief_context.json")).get("claim", "")
+        rules = TREND_SYNTH_RULES.format(framings="\n".join(f"  - {f}" for f in FRAMINGS), tone=BRIDGE_TONE)
+        draft = _claude(f"""Author the subsection for one item of a viral claim being checked against the literature.
+THE CLAIM: {claim}
+READ (Read tool): {W}topics/{tid}.json — title (the item), and papers[] each with pmid, title, meta, abstract.
+{rules}
+Return ONLY {{"html": "<inner html>", "cited": ["PMID", …], "framing": "<one label from the list>"}}.""")
+        if not draft or not draft.get("html"):
+            return tid, None, "author produced nothing"
+        if draft.get("framing") not in FRAMINGS:
+            return tid, None, f"framing not from the fixed list: {draft.get('framing')!r}"
+        verdict = _claude(f"""You are the adversarial reviewer for a physician-authored evidence subsection. Default to REFUTE.
+THE CLAIM: {claim}
+READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; the
+"framing" label is the one the cited abstracts actually justify (from: {"; ".join(FRAMINGS)}); every
+cited PMID is in the topic file and cited at most once; every popover carries title, meta, a 250-600
+character conclusion-first finding with a "Relevance:" sentence, and the PubMed link, id ref-pop-PMID;
+700-1,600 characters of prose; no dose in the clinician's own prose; no AI/placeholder language; tone
+is respectful to the person who made the claim — no "verdict", "debunk", "myth", "misinformation", no
+"influencer" used as a label.
+If fixable by tightening, deleting an unsupported sentence, correcting a popover or the label, return
+fixed_html / fixed_framing with ok=true and problems listing the changes. Otherwise ok=false.
+GENERATED: {json.dumps(draft)[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "...", "fixed_framing": "..."}}""")
+        if not verdict:
+            return tid, None, "verification produced nothing"
+        if not verdict.get("ok"):
+            return tid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+        framing = verdict.get("fixed_framing") or draft["framing"]
+        if framing not in FRAMINGS:
+            return tid, None, f"reviewer returned a framing outside the list: {framing!r}"
+        return tid, {"tid": tid, "html": verdict.get("fixed_html") or draft["html"],
+                     "cited": draft.get("cited"), "framing": framing,
+                     "problems": verdict.get("problems")}, None
     draft = _claude(f"""Author the topic synthesis for one topic of a CBG/MIGS "Monday Mornings" brief.
 READ (Read tool): {W}topics/{tid}.json — title, and papers[] each with pmid, title, meta, abstract.
 {SYNTH_RULES}
@@ -850,23 +1075,6 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
         return tid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
     return tid, {"tid": tid, "html": verdict.get("fixed_html") or draft["html"],
                  "cited": draft.get("cited"), "problems": verdict.get("problems")}, None
-
-
-NARRATIVE_RULES = """
-WHAT: the editorial narrative that opens the brief — the inner HTML of
-<section class="mz-post-section mz-post-narrative">: one <h2> titled
-"Monday Mornings: <a specific phrase drawn from this week's papers>" followed by 3-4 <p> totalling
-2,400-3,400 characters of prose.
-VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
-surgery surgeon reading the week as a whole. Open on the one paper you keep returning to, read the
-others as variations on a structural theme, name studies by first author, close on what changes on a
-Monday. Direct, specific, no throat-clearing.
-GROUNDING: every study, author, number and finding from the topic files. No external facts.
-Overstatement and understatement are both failures — never write a preclinical or animal result as a
-human finding. Do NOT use citation markup; the syntheses below carry the citations.
-PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, no dose beyond what an
-abstract states. Escape & < >. Return inner HTML only."""
-
 
 def _author_narrative(W: str, topics: list) -> tuple:
     files = ", ".join(f"{W}topics/{t}.json" for t in topics)
@@ -892,6 +1100,117 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
         return None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:200]}"
     return {"html": verdict.get("fixed_html") or draft["html"],
             "problems": verdict.get("problems")}, None
+
+
+CARD_RULES = """
+WHAT: the card-level lens paragraph shown under this paper's title in the brief — 2 to 4 sentences,
+first person, Dr. Mabini's DO + CBG/MIGS (complex benign gynecology / minimally invasive gynecologic
+surgery) reading of THIS paper specifically: what it studied, in whom, the one number or finding that
+matters, and what it changes or does not change on a Monday.
+MUST BE SPECIFIC: name the design, population and key result from the abstract. No reusable template
+sentences, no "this week's signal", no "what I'd want to read next", no "the gap I'm building tools to
+close". A reader should be unable to move this paragraph to another paper.
+GROUNDING: every fact from the abstract. No dose in your prose. No AI/placeholder language. No
+"never"/"always". Write CBG/MIGS, never bare MIGS. Plain text with & < > escaped, no markup."""
+
+
+
+TREND_EDITORIAL_PARTS = {
+    "lede": "one or two sentences, plain, saying what this brief does for the reader (inner HTML of the hero lede)",
+    "tagline": "a short, specific, non-adversarial headline for the opening section — no colon-explainer",
+    "tagline_body": "1-2 <p>: why this post matters to real patients, what the reader will find below",
+    "bottom_line": "2-3 <p> under 'Bottom line, up front': which items hold up, which are promising, which the trials did not bear out, which have too little evidence — plain statements, by name, agreeing exactly with the framing labels",
+    "evidence_intro": "1 <p> introducing the item-by-item section and explaining that each carries one of the framing labels",
+    "lens": "2-3 <p> for 'From a DO + CBG/MIGS lens': the structure/function, body-unity, whole-person reading of the claim and the evidence",
+    "bridge": "2-3 <p> for 'Where the two sides can meet': what the post gets right, what a clinician adds, how a reader can use both without choosing sides",
+    "gaps": "1-3 <p> for 'Where the literature doesn't go (yet)': what nobody has studied, and what would settle it",
+    "closing": "1 <p> closing thought",
+}
+
+
+def _author_trend_editorial(W: str, man: dict) -> tuple:
+    trend = man.get("trend") or {}
+    claim = trend.get("claim") or json.load(open(W + "brief_context.json")).get("claim", "")
+    spec = "\n".join(f"  {k}: {v}" for k, v in TREND_EDITORIAL_PARTS.items())
+    files = ", ".join(f"{W}topics/{t}.json" for t in man["topics"])
+    draft = _claude(f"""Author the editorial prose for a brief that checks a viral claim against the literature.
+THE CLAIM: {claim}
+READ (Read tool): {W}syntheses.json — the verified item-by-item subsections with their framing labels.
+This editorial must agree with those labels exactly. Also read the topic files as needed: {files}.
+VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
+surgery surgeon writing for a reader who may be the person who made the claim.
+{BRIDGE_TONE}
+GROUNDING: only studies, numbers and findings present in the syntheses or topic files. No dose in your
+prose. No citation markup here (the subsections carry it). No AI/placeholder language, paths, section
+marks. Escape & < >. Return inner HTML for each part:
+{spec}
+Return ONLY a JSON object with exactly those keys.""")
+    if not draft or not all(draft.get(k) for k in TREND_EDITORIAL_PARTS):
+        missing = [k for k in TREND_EDITORIAL_PARTS if not (draft or {}).get(k)]
+        return None, f"author produced nothing for {missing[:4]}"
+    verdict = _claude(f"""You are the adversarial reviewer for a physician-authored editorial. Default to REFUTE.
+THE CLAIM: {claim}
+READ {W}syntheses.json (each item's verified subsection and framing label) and the topic files: {files}.
+Check: every study, number and finding traceable; the bottom line names items consistently with their
+framing labels (an item labelled "Supported by clinical trials" is not described as unsupported, and
+vice versa); no dose; no citation markup; no AI/placeholder language; each part matches its spec:
+{spec}
+TONE: respectful to the person who made the claim; refuse any sneer, any "verdict", "debunk", "myth",
+"misinformation", or "influencer" used as a label.
+If fixable, return the corrected parts under "fixed" (only the keys you changed) with ok=true and
+problems listing the changes. Otherwise ok=false.
+GENERATED: {json.dumps(draft)[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed": {{}}}}""")
+    if not verdict:
+        return None, "verification produced nothing"
+    if not verdict.get("ok"):
+        return None, f"refused: {'; '.join((verdict.get('problems') or [])[:3])[:300]}"
+    parts = dict(draft); parts.update(verdict.get("fixed") or {})
+    return {"parts": parts, "problems": verdict.get("problems")}, None
+
+
+def _author_card(args_t: tuple) -> tuple:
+    W, pmid = args_t
+    draft = _claude(f"""Write the card lens paragraph for one paper in a CBG/MIGS brief.
+READ (Read tool): {W}papers/{pmid}.json — "abstract" is the ground truth; and {W}drafts_dd/{pmid}.json
+for the already-verified bottom line, which this paragraph must agree with.
+{CARD_RULES}
+Return ONLY {{"card": "<paragraph>"}}.""")
+    if not draft or not draft.get("card"):
+        return pmid, None, "author produced nothing"
+    verdict = _claude(f"""You are the adversarial reviewer for a physician-authored paper summary. Default to REFUTE.
+READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
+Check: every fact traceable to the abstract; specific to this paper (design, population, key result
+named); no template phrasing that could sit under any paper; no dose; no AI/placeholder language; no
+"never"/"always"; no bare "MIGS"; 2-4 sentences; no markup.
+If fixable by tightening, return fixed_card with ok=true and problems listing the changes. Otherwise ok=false.
+GENERATED: {json.dumps(draft['card'])}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_card": "..."}}""")
+    if not verdict:
+        return pmid, None, "verification produced nothing"
+    if not verdict.get("ok"):
+        return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+    path = W + f"drafts_dd/{pmid}.json"
+    d = json.load(open(path))
+    d["card"] = verdict.get("fixed_card") or draft["card"]
+    json.dump(d, open(path, "w"), ensure_ascii=False)
+    return pmid, len(verdict.get("problems") or []), None
+
+
+def cards_needed(W: str, post_id: str) -> set:
+    """PMIDs whose cite card carries a lens paragraph (<p class="mz-cite-fits">).
+
+    Only that card shape has a slot to write into. W31's source filled every
+    slot from a fill-in-the-number template repeated across up to fourteen
+    papers, which the site's publish audit refuses; the card must be written
+    per paper like everything else.
+    """
+    src = json.load(open(W + f"{post_id}.source.json"))["body_html"]
+    out = set()
+    for m in re.finditer(r'<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-(\d+)"[\s\S]*?</article>', src):
+        if 'class="mz-cite-fits"' in m.group(0):
+            out.add(m.group(1))
+    return out
 
 
 def cmd_author(post_id: str) -> None:
@@ -924,6 +1243,9 @@ def cmd_author(post_id: str) -> None:
             return True
         if not d.get("_verified"):
             return True
+        # The card is a separate piece with its own authoring pass below; a
+        # missing card must not make a verified deep dive look unverified —
+        # that re-authored 69 sound deep dives on W31 to get 69 paragraphs.
         want = {k for k in json.load(open(W + f"papers/{q}.json")).get("pending", [])
                 if k not in NOT_AUTHORABLE}
         return bool(want - {k for k in d if not k.startswith("_")})
@@ -941,6 +1263,22 @@ def cmd_author(post_id: str) -> None:
     if failed:
         record(W, "author", {"failed": f"{len(failed)} paper(s) could not be authored"})
         die(f"{len(failed)} paper(s) could not be authored: {[f[0] for f in failed][:6]}")
+
+    # --- card lens paragraphs, where the card shape has one ---
+    need_card = [q for q in sorted(cards_needed(W, post_id) & set(man["pmids"]))
+                 if not (json.load(open(W + f"drafts_dd/{q}.json")).get("card") if os.path.exists(W + f"drafts_dd/{q}.json") else None)]
+    if need_card:
+        print(f"  {len(need_card)} card lens paragraph(s) to author")
+        card_failed = []
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for pmid, fixes, err in ex.map(_author_card, [(W, q) for q in need_card]):
+                if err:
+                    card_failed.append((pmid, err)); print(f"  FAILED card {pmid}: {err}")
+                else:
+                    print(f"  wrote card {pmid}" + (f" ({fixes} reviewer correction(s))" if fixes else ""))
+        if card_failed:
+            record(W, "author", {"failed": f"{len(card_failed)} card(s) could not be authored"})
+            die(f"card authoring failed: {[f[0] for f in card_failed][:6]}")
 
     missing = [q for q in man["pmids"] if _unverified(q)]
     if missing:
@@ -975,23 +1313,37 @@ def cmd_author(post_id: str) -> None:
 
     # --- narrative: required when the stored brief carries a stub, and
     # re-authored whenever curation changed what the week actually contains ---
-    narr_path = W + "narrative.json"
-    t_dec = os.path.getmtime(W + ".ledger/curate.decisions") if os.path.exists(W + ".ledger/curate.decisions") else 0
-    # Every Monday-Mornings brief carries a narrative. W31's source had no
-    # narrative SECTION at all, so "is it a stub?" answered False and the stage
-    # skipped authoring one — the absence of a placeholder is not the presence
-    # of an editorial.
-    needs_narr = not os.path.exists(narr_path) or os.path.getmtime(narr_path) < t_dec
-    if needs_narr:
-        print("  authoring the cross-topic narrative")
-        item, err = _author_narrative(W, man["topics"])
-        if err:
-            record(W, "author", {"failed": f"narrative: {err}"})
-            die(f"narrative authoring failed: {err}")
-        json.dump({"html": item["html"]}, open(narr_path, "w"), ensure_ascii=False)
-        print(f"  wrote narrative ({len(item['problems'] or [])} reviewer correction(s))")
+    if man.get("format") == "trend":
+        narr_path = W + "narrative.json"
+        t_dec = os.path.getmtime(W + ".ledger/curate.decisions") if os.path.exists(W + ".ledger/curate.decisions") else 0
+        if not os.path.exists(narr_path) or os.path.getmtime(narr_path) < t_dec:
+            print("  authoring the editorial (lede, headline, bottom line, lens, bridge, gaps, closing)")
+            item, err = _author_trend_editorial(W, man)
+            if err:
+                record(W, "author", {"failed": f"editorial: {err}"})
+                die(f"editorial authoring failed: {err}")
+            json.dump({"html": "", "parts": item["parts"]}, open(narr_path, "w"), ensure_ascii=False)
+            print(f"  wrote editorial ({len(item['problems'] or [])} reviewer correction(s))")
+        else:
+            print("  editorial already current for these curation decisions")
     else:
-        print("  narrative already current for these curation decisions")
+        narr_path = W + "narrative.json"
+        t_dec = os.path.getmtime(W + ".ledger/curate.decisions") if os.path.exists(W + ".ledger/curate.decisions") else 0
+        # Every Monday-Mornings brief carries a narrative. W31's source had no
+        # narrative SECTION at all, so "is it a stub?" answered False and the stage
+        # skipped authoring one — the absence of a placeholder is not the presence
+        # of an editorial.
+        needs_narr = not os.path.exists(narr_path) or os.path.getmtime(narr_path) < t_dec
+        if needs_narr:
+            print("  authoring the cross-topic narrative")
+            item, err = _author_narrative(W, man["topics"])
+            if err:
+                record(W, "author", {"failed": f"narrative: {err}"})
+                die(f"narrative authoring failed: {err}")
+            json.dump({"html": item["html"]}, open(narr_path, "w"), ensure_ascii=False)
+            print(f"  wrote narrative ({len(item['problems'] or [])} reviewer correction(s))")
+        else:
+            print("  narrative already current for these curation decisions")
     record(W, "author", {"papers": len(man["pmids"]), "authored_now": len(todo),
                          "topics": len(man["topics"]), "syntheses_now": len(need)})
     ai_review(W, "author")
@@ -1205,35 +1557,8 @@ def strip_build_comments(h: str) -> str:
                   r"(?:(?!-->)[\s\S])*?-->", "", h)
 
 
-def cmd_apply(post_id: str) -> None:
-    W = work_dir(post_id)
-    require(W, "prepare"); require_review(W, "prepare")
-    require(W, "curate");  require_review(W, "curate")
-    require(W, "guard");   require_review(W, "guard")
-    require_authored_after_curate(W)
-    man = json.load(open(W + "manifest.json"))
-    post = json.load(open(W + f"{post_id}.source.json"))
-    h = post["body_html"]
-
-    # 0a. excise the papers curation dropped, before anything else touches the body
-    curation = json.load(open(W + "curation.json")) if os.path.exists(W + "curation.json") else {}
-    dropped = curation.get("dropped_pmids") or []
-    for pmid in dropped:
-        h = excise_paper(h, pmid)
-    h = retitle_topics(h, curation.get("decisions") or {})
-    # a topic whose papers all went takes its whole section with it
-    for tid, d in (curation.get("decisions") or {}).items():
-        if not d["keep"]:
-            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<div class="mz-references|<ol class="mz-references-list|$)'
-                       % re.escape(tid), "", h)
-    # the TOC is rebuilt from what survives, so drop the stale one
-    h = re.sub(r'<nav class="mz-toc"[\s\S]*?</nav>', "", h)
-
-    # 0. repaired abstracts. prepare() fixes the WORK FILE so authoring is
-    # grounded correctly; without this step the page keeps showing whatever
-    # wrong or truncated text it had. W31 carried a placeholder in all 88, and
-    # the live W33 carried one abstract truncated to start at "METHODS:" while
-    # labelled "Verbatim PubMed abstract".
+def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
+    """Every kept paper's abstract section carries that paper's PubMed abstract."""
     repairs = {}
     if os.path.exists(W + "abstract_repairs.json"):
         repairs = json.load(open(W + "abstract_repairs.json"))
@@ -1295,13 +1620,18 @@ def cmd_apply(post_id: str) -> None:
         repaired_n += 1
 
     # 1. deep-dive sections
+    return h, repairs, repaired_n
+
+
+def apply_sections(W: str, man: dict, h: str) -> tuple:
+    """Write every authored deep-dive section into its dialog, keeping the heading."""
     applied = 0
     for pmid in man["pmids"]:
         secs = json.load(open(W + f"drafts_dd/{pmid}.json"))
         while isinstance(secs, dict) and set(secs) == {"sections"} or set(secs) == {"blocks"}:
             secs = secs.get("sections") or secs.get("blocks")
         for key, inner in secs.items():
-            if key in NOT_AUTHORABLE:
+            if key in NOT_AUTHORABLE or key == "card" or key.startswith("_"):
                 continue
             pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)'
                              % (re.escape(pmid), re.escape(key)), re.S)
@@ -1313,51 +1643,34 @@ def cmd_apply(post_id: str) -> None:
                            head.group(1), flags=re.S).strip() if head else HEAD.get(key, key)
             h = h[:m.start()] + m.group(1) + f"<h3>{title}</h3>" + inner.strip() + m.group(3) + h[m.end():]
             applied += 1
+    return h, applied
 
-    # 2. syntheses and 3. narrative, when present
-    syn_n = 0
-    if os.path.exists(W + "syntheses.json"):
-        for it in json.load(open(W + "syntheses.json"))["items"]:
-            if not it.get("html"):
+
+def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, dropped: list, repairs: dict, stats: dict) -> None:
+    """Shared tail for every brief shape: references, light theme, hygiene,
+    disclaimer, post-conditions, the site's own publish audit, the review."""
+    # A canonical brief carries a references list. A cards-only source (W31)
+    # has none, and the publish audit refuses the editorial spine without it.
+    if not re.search(r'class="[^"]*mz-references', h):
+        items = []
+        for pmid in man["pmids"]:
+            pf = W + f"papers/{pmid}.json"
+            if not os.path.exists(pf):
                 continue
-            st = re.search(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>' % re.escape(it["tid"]), h)
-            if not st:
-                continue
-            nxt = re.search(r'<section class="[^"]*\btopic-section\b', h[st.end():])
-            seg_end = st.end() + (nxt.start() if nxt else len(h) - st.end())
-            m = re.compile(r'<p class="mz-toc-group-synthesis">(.*?)</p>', re.S).search(h, st.end(), seg_end)
-            if m:
-                h = h[:m.start(1)] + it["html"].strip() + h[m.end(1):]
-            else:
-                hdr = re.compile(r'<div class="topic-header">.*?</div>\s*</div>', re.S).search(h, st.end(), seg_end)
-                if not hdr:
-                    continue
-                h = h[:hdr.end()] + '<p class="mz-toc-group-synthesis">' + it["html"].strip() + "</p>" + h[hdr.end():]
-            syn_n += 1
-    if os.path.exists(W + "narrative.json"):
-        narr = json.load(open(W + "narrative.json"))["html"].strip()
-        nm = re.search(r'(<section class="[^"]*mz-post-narrative[^"]*"[^>]*>)(.*?)(</section>)', h, re.S)
-        if nm and ("mz-jc-pending-tag" in nm.group(2) or len(re.sub(r"<[^>]+>", "", nm.group(2)).strip()) < 600):
-            h = h[:nm.start(2)] + narr + h[nm.end(2):]
-        elif not nm:
-            first = re.search(r'<nav class="mz-toc"|<section class="[^"]*\btopic-section\b', h)
-            h = h[:first.start()] + '<section class="mz-post-section mz-post-narrative">' + narr + "</section>" + h[first.start():]
-
-    # 4. TOC
-    if 'class="mz-toc"' not in h:
-        chips = ""
-        for m in re.finditer(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="(topic-[^"]+)"[^>]*>(.*?)'
-                             r'(?=<section class="[^"]*\btopic-section\b|$)', h, re.S):
-            t = re.search(r"<h2[^>]*>(.*?)</h2>", m.group(2), re.S)
-            n = len(set(re.findall(r'id="mz-cite-(\d+)"', m.group(2))))
-            chips += (f'<a class="mz-toc-chip" href="#{m.group(1)}">'
-                      f'{t.group(1).strip() if t else m.group(1)} <span class="mz-toc-chip-count">{n}</span></a>')
-        first = re.search(r'<section class="[^"]*\btopic-section\b', h)
-        if first and chips:
-            h = (h[:first.start()] + '<nav class="mz-toc" aria-label="Jump to a topic">'
-                 '<p class="mz-toc-label">Jump to a topic</p>'
-                 f'<div class="mz-toc-chips">{chips}</div></nav>' + h[first.start():])
-
+            pj = json.load(open(pf))
+            meta = re.sub(r"\s*[·•]\s*PMID\s*\d+\s*$", "", pj.get("meta") or "").strip()
+            title = (pj.get("title") or "").strip()
+            items.append(f'<li id="ref-{pmid}">{H.escape(meta, quote=False)}. {H.escape(title, quote=False)} '
+                         f'<a class="mz-ref-pmid" href="https://pubmed.ncbi.nlm.nih.gov/{pmid}/" target="_blank" '
+                         f'rel="noopener noreferrer">PMID {pmid}</a></li>')
+        refs = ('<section class="mz-post-section mz-references" id="references">'
+                '<h2 class="mz-section-title">References</h2><ol class="mz-references-list">'
+                + "".join(items) + "</ol></section>")
+        anchor = h.find("<dialog")
+        if anchor < 0:
+            anchor = h.rfind("<script")
+        h = h[:anchor] + refs + h[anchor:] if anchor >= 0 else h + refs
+        print(f"  built a references list of {len(items)} entries (source had none)")
     # 5. light theme at rest, 6. markup hygiene, 7. disclaimer
     src = open(os.path.join(ROOT, "scripts/repost_light_theme.py")).read().rsplit("\nmain()", 1)[0]
     ns: dict = {}
@@ -1422,6 +1735,20 @@ def cmd_apply(post_id: str) -> None:
         probe = re.sub(r"\s+", " ", prose).strip()[:48]
         if len(probe) >= 24 and probe not in body_text:
             faults.append(f"repaired abstract for {pmid} did not reach the body")
+    if man.get("format") == "trend":
+        if re.search(r'mz-verdict|REVIEW REQUIRED', h):
+            faults.append("a verdict gauge or its label remains")
+        if re.search(r'\[Awaiting|class="[^"]*mz-placeholder', h):
+            faults.append("an authorship placeholder remains")
+        bad = re.findall(r"\b(verdicts?|debunk\w*|myths?|misinformation)\b", prose, re.I)
+        if bad:
+            faults.append(f"scoring language in the site's own prose: {sorted(set(b.lower() for b in bad))[:4]}")
+        for tid in man["topics"]:
+            m = re.search(r'<h3[^>]*id="%s"[^>]*>[\s\S]{0,600}?<p class="mz-framing"[^>]*>(?:<strong>)?([^<]+)' % re.escape(tid), h)
+            if not m:
+                faults.append(f"item {tid} has no headed subsection with a framing line")
+            elif m.group(1).strip() not in FRAMINGS:
+                faults.append(f"item {tid} carries a framing outside the fixed list: {m.group(1).strip()!r}")
     if faults:
         record(W, "apply", {"failed": "; ".join(faults)})
         for f in faults:
@@ -1438,17 +1765,211 @@ def cmd_apply(post_id: str) -> None:
         "{publishable:a.publishable,canonical:a.canonical,problems:a.problems}))})"
         % (ROOT, W + f"{post_id}.applied.json")], capture_output=True, text=True, cwd=ROOT)
     verdict = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
-    print(f"{post_id}: dropped={len(dropped)} abstracts-repaired={repaired_n} sections={applied} syntheses={syn_n} citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
+    print(f"{post_id}: " + " ".join(f"{k}={v}" for k, v in stats.items()) + f" citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
     print(f"  post-conditions: all passed | auditPublishable: {json.dumps(verdict)}")
     if not verdict.get("publishable"):
         record(W, "apply", {"failed": json.dumps(verdict.get("problems"))[:400]})
         die("the publish audit refused this body")
-    record(W, "apply", {"sections": applied, "syntheses": syn_n})
+    record(W, "apply", stats)
     ai_review(W, "apply")
     print(f"  ledger: apply OK — publish may now run for {post_id}")
 
 
+def cmd_apply(post_id: str) -> None:
+    if is_trend(post_id):
+        return cmd_apply_trend(post_id)
+    W = work_dir(post_id)
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "curate");  require_review(W, "curate")
+    require(W, "guard");   require_review(W, "guard")
+    require_authored_after_curate(W)
+    man = json.load(open(W + "manifest.json"))
+    post = json.load(open(W + f"{post_id}.source.json"))
+    h = post["body_html"]
+
+    # 0a. excise the papers curation dropped, before anything else touches the body
+    curation = json.load(open(W + "curation.json")) if os.path.exists(W + "curation.json") else {}
+    dropped = curation.get("dropped_pmids") or []
+    for pmid in dropped:
+        h = excise_paper(h, pmid)
+    h = retitle_topics(h, curation.get("decisions") or {})
+    # a topic whose papers all went takes its whole section with it
+    for tid, d in (curation.get("decisions") or {}).items():
+        if not d["keep"]:
+            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<div class="mz-references|<ol class="mz-references-list|$)'
+                       % re.escape(tid), "", h)
+    # any topic section the manifest no longer lists goes — curate removes a
+    # topic from the manifest when nothing in it survives, and an orphan
+    # section with no papers would otherwise render as an empty header
+    for tid in re.findall(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="([^"]+)"', h):
+        if tid not in man["topics"]:
+            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<section class="[^"]*mz-references|<div class="mz-references|<ol class="mz-references-list|<dialog|<script|$)'
+                       % re.escape(tid), "", h)
+    # card lens paragraphs
+    cards_written = 0
+    for pmid in man["pmids"]:
+        dp = W + f"drafts_dd/{pmid}.json"
+        card = json.load(open(dp)).get("card") if os.path.exists(dp) else None
+        if not card:
+            continue
+        am = re.search(r'(<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-%s"[\s\S]*?)(<p class="mz-cite-fits">)([\s\S]*?)(</p>)' % re.escape(pmid), h)
+        if am:
+            h = h[:am.start(3)] + "<strong>DO + CBG/MIGS lens:</strong> " + H.escape(card, quote=False) + h[am.end(3):]
+            cards_written += 1
+    # the TOC is rebuilt from what survives, so drop the stale one
+    h = re.sub(r'<nav class="mz-toc"[\s\S]*?</nav>', "", h)
+
+    # 0. repaired abstracts. prepare() fixes the WORK FILE so authoring is
+    # grounded correctly; without this step the page keeps showing whatever
+    # wrong or truncated text it had. W31 carried a placeholder in all 88, and
+    # the live W33 carried one abstract truncated to start at "METHODS:" while
+    # labelled "Verbatim PubMed abstract".
+    h, repairs, repaired_n = write_abstracts(W, man, h, dropped)
+
+    h, applied = apply_sections(W, man, h)
+
+    # 2. syntheses and 3. narrative, when present
+    syn_n = 0
+    if os.path.exists(W + "syntheses.json"):
+        for it in json.load(open(W + "syntheses.json"))["items"]:
+            if not it.get("html"):
+                continue
+            st = re.search(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>' % re.escape(it["tid"]), h)
+            if not st:
+                continue
+            nxt = re.search(r'<section class="[^"]*\btopic-section\b', h[st.end():])
+            seg_end = st.end() + (nxt.start() if nxt else len(h) - st.end())
+            m = re.compile(r'<p class="mz-toc-group-synthesis">(.*?)</p>', re.S).search(h, st.end(), seg_end)
+            if m:
+                h = h[:m.start(1)] + it["html"].strip() + h[m.end(1):]
+            else:
+                hdr = re.compile(r'<div class="topic-header">.*?</div>\s*</div>', re.S).search(h, st.end(), seg_end)
+                if not hdr:
+                    continue
+                h = h[:hdr.end()] + '<p class="mz-toc-group-synthesis">' + it["html"].strip() + "</p>" + h[hdr.end():]
+            syn_n += 1
+    if os.path.exists(W + "narrative.json"):
+        narr = json.load(open(W + "narrative.json"))["html"].strip()
+        nm = re.search(r'(<section class="[^"]*mz-post-narrative[^"]*"[^>]*>)(.*?)(</section>)', h, re.S)
+        if nm and ("mz-jc-pending-tag" in nm.group(2) or len(re.sub(r"<[^>]+>", "", nm.group(2)).strip()) < 600):
+            h = h[:nm.start(2)] + narr + h[nm.end(2):]
+        elif not nm:
+            first = re.search(r'<nav class="mz-toc"|<section class="[^"]*\btopic-section\b', h)
+            h = h[:first.start()] + '<section class="mz-post-section mz-post-narrative">' + narr + "</section>" + h[first.start():]
+
+    # 4. TOC
+    if 'class="mz-toc"' not in h:
+        chips = ""
+        for m in re.finditer(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="(topic-[^"]+)"[^>]*>(.*?)'
+                             r'(?=<section class="[^"]*\btopic-section\b|$)', h, re.S):
+            t = re.search(r"<h2[^>]*>(.*?)</h2>", m.group(2), re.S)
+            n = len(set(re.findall(r'id="mz-cite-(\d+)"', m.group(2))))
+            chips += (f'<a class="mz-toc-chip" href="#{m.group(1)}">'
+                      f'{t.group(1).strip() if t else m.group(1)} <span class="mz-toc-chip-count">{n}</span></a>')
+        first = re.search(r'<section class="[^"]*\btopic-section\b', h)
+        if first and chips:
+            h = (h[:first.start()] + '<nav class="mz-toc" aria-label="Jump to a topic">'
+                 '<p class="mz-toc-label">Jump to a topic</p>'
+                 f'<div class="mz-toc-chips">{chips}</div></nav>' + h[first.start():])
+
+    finish_and_audit(W, post_id, post, h, man, dropped, repairs,
+                     {"dropped": len(dropped), "cards": cards_written, "abstracts": repaired_n,
+                      "sections": applied, "syntheses": syn_n})
+
+
+
+def cmd_apply_trend(post_id: str) -> None:
+    W = work_dir(post_id)
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "curate");  require_review(W, "curate")
+    require(W, "guard");   require_review(W, "guard")
+    require_authored_after_curate(W)
+    man = json.load(open(W + "manifest.json"))
+    post = json.load(open(W + f"{post_id}.source.json"))
+    h = post["body_html"]
+    curation = json.load(open(W + "curation.json")) if os.path.exists(W + "curation.json") else {}
+    dropped = curation.get("dropped_pmids") or []
+    for pmid in dropped:
+        h = excise_paper(h, pmid)
+    for stale in (W + "body.applied.html",):
+        if os.path.exists(stale):
+            os.remove(stale)
+
+    h, repairs, repaired_n = write_abstracts(W, man, h, dropped)
+    h, applied = apply_sections(W, man, h)
+    h = h.replace(' mz-jc-placeholder"', '"').replace('class="mz-jc-placeholder"', 'class="mz-jc-p"')
+
+    parts = json.load(open(W + "narrative.json"))["parts"]
+    syn = {i["tid"]: i for i in json.load(open(W + "syntheses.json"))["items"] if i.get("html")}
+    missing = [t for t in man["topics"] if t not in syn]
+    if missing:
+        die(f"items without a verified subsection: {missing}")
+
+    # --- hero: no gauge, no submitted-for-review line, an authored lede ---
+    h = re.sub(r'<p class="mz-post-pubdate"[^>]*>[\s\S]*?</p>\s*', "", h, count=1)
+    h = re.sub(r'<div class="mz-verdict-gauge"[\s\S]*?<p class="mz-verdict-label">[\s\S]*?</p>\s*</div>\s*', "", h, count=1)
+    lm = re.search(r'(<p class="mz-post-lede">)([\s\S]*?)(</p>)', h)
+    if not lm:
+        die("hero has no lede paragraph")
+    h = h[:lm.start(2)] + parts["lede"].strip() + h[lm.end(2):]
+
+    # --- sections: rebuilt in a fixed order under clear headlines ---
+    split = h.find("<dialog")
+    head, tail = (h[:split], h[split:]) if split >= 0 else (h, "")
+    hero_end = re.search(r'</section>', head[head.find('class="mz-post-hero"'):]).end() + head.find('class="mz-post-hero"')
+    before, rest = head[:hero_end], head[hero_end:]
+    old = {}
+    for m in re.finditer(r'<section class="mz-post-section[^"]*"[^>]*>\s*<h2 class="mz-section-title"[^>]*>(.*?)</h2>([\s\S]*?)</section>', rest):
+        old[H.unescape(re.sub(r"<[^>]+>", "", m.group(1))).strip()] = m.group(0)
+    def find_old(prefix):
+        for k, v in old.items():
+            if k.lower().startswith(prefix.lower()):
+                return v
+        return ""
+    def sec(title, inner, extra_class="", sid=""):
+        idattr = f' id="{sid}"' if sid else ""
+        return (f'<section class="mz-post-section{(" " + extra_class) if extra_class else ""}"{idattr}>'
+                f'<h2 class="mz-section-title">{title}</h2>{inner}</section>')
+    items = ""
+    for tid in man["topics"]:
+        t = json.load(open(W + f"topics/{tid}.json"))
+        it = syn[tid]
+        items += (f'<h3 class="mz-subhead" id="{tid}">{H.escape(t["title"], quote=False)}</h3>'
+                  f'<p class="mz-framing"><strong>{H.escape(it["framing"], quote=False)}</strong></p>'
+                  f'<p class="mz-toc-group-synthesis">{it["html"].strip()}</p>')
+    jumps = " &middot; ".join(f'<a href="#{tid}">{H.escape(json.load(open(W + f"topics/{tid}.json"))["title"], quote=False)}</a>' for tid in man["topics"])
+    unit = (man.get("trend") or {}).get("unit") or "item"
+    new = [
+        sec(H.escape(parts["tagline"], quote=False), parts["tagline_body"], "mz-post-narrative", "opening"),
+        sec("Bottom line, up front", parts["bottom_line"], sid="bottom-line"),
+        find_old("The shape of the evidence"),
+        sec(f"Where the evidence stands, {unit} by {unit}",
+            parts["evidence_intro"] + f'<p class="mz-trend-jumps">{jumps}</p>' + items, sid="evidence"),
+        sec("From a DO + CBG/MIGS lens", parts["lens"], sid="lens"),
+        sec("Where the two sides can meet", parts["bridge"], sid="bridge"),
+        find_old("What the studies show"),
+        sec("Where the literature doesn't go (yet)", parts["gaps"], sid="gaps"),
+        sec("Closing thoughts", parts["closing"], sid="closing"),
+    ]
+    if not find_old("What the studies show"):
+        die("the paper-by-paper section is missing from the source")
+    # anything else the source carried that is not an authored placeholder stays after
+    used = {find_old("The shape of the evidence"), find_old("What the studies show")}
+    keep_rest = "".join(v for k, v in old.items() if v not in used and not re.search(r"Awaiting|mz-placeholder|mz-references", v)
+                        and k not in ("Bottom line, up front", "Where the literature lands today", "From a DO + CBG/MIGS lens",
+                                      "Where the literature doesn't go (yet)", "Closing thoughts") and not k.startswith("["))
+    h = before + "".join(x for x in new if x) + keep_rest + tail
+    # the source's empty references section goes; the finish builds a real one
+    h = re.sub(r'<section class="[^"]*mz-references[^"]*"[^>]*>(?:(?!<li id="ref-)[\s\S])*?</section>', "", h)
+
+    finish_and_audit(W, post_id, post, h, man, dropped, repairs,
+                     {"dropped": len(dropped), "abstracts": repaired_n, "sections": applied,
+                      "items": len(man["topics"])})
+
+
 def cmd_publish(post_id: str) -> None:
+    if is_trend(post_id):
+        return cmd_publish_trend(post_id)
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "guard");   require_review(W, "guard")
@@ -1459,6 +1980,46 @@ def cmd_publish(post_id: str) -> None:
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json")))
     record(W, "publish", {"published": True})
+
+
+def cmd_publish_trend(post_id: str) -> None:
+    W = work_dir(post_id)
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "guard");   require_review(W, "guard")
+    require(W, "apply");   require_review(W, "apply")
+    man = json.load(open(W + "manifest.json")); trend = man["trend"]
+    body = open(W + "body.applied.html", encoding="utf-8").read()
+    parts = json.load(open(W + "narrative.json"))["parts"]
+    syn = {i["tid"]: i for i in json.load(open(W + "syntheses.json"))["items"]}
+    titles = {t: json.load(open(W + f"topics/{t}.json"))["title"] for t in man["topics"]}
+    summary = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", "", parts["lede"]))).strip()[:300]
+    sid = trend["post_id"]
+    doc = {"id": sid, "kind": man.get("kind", "blog"), "title": trend["title"], "summary": summary,
+           "body_html": body, "verdict": None, "week_label": trend.get("date") or datetime.date.today().isoformat(),
+           "topics_covered": [titles[t] for t in man["topics"]], "pmids_cited": man["pmids"], "gaps_surfaced": []}
+    json.dump(doc, open(W + "_post.json", "w"), ensure_ascii=False)
+    r = curl_json(f"{BASE}/api/posts", "POST", auth=True, data_file=W + "_post.json")
+    print("CREATE:", json.dumps(r)[:300])
+    if isinstance(r, dict) and r.get("error") and "exist" in json.dumps(r).lower():
+        json.dump({k: v for k, v in doc.items() if k not in ("id", "kind")}, open(W + "_put.json", "w"), ensure_ascii=False)
+        print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{sid}", "PUT", auth=True, data_file=W + "_put.json"))[:300])
+    json.dump({}, open(W + "_approve.json", "w"))
+    ap = curl_json(f"{BASE}/api/posts/{sid}/approve", "POST", auth=True, data_file=W + "_approve.json")
+    print("APPROVE:", json.dumps(ap)[:400])
+    if not (isinstance(ap, dict) and (ap.get("ok") or ap.get("status") == "published" or (ap.get("post") or {}).get("status") == "published")):
+        die("approve did not publish the post")
+    # queue bookkeeping: the framing is the record, not a verdict
+    framing = [{"item": titles[t], "framing": syn[t]["framing"]} for t in man["topics"] if t in syn]
+    rationale = "Published through brief_pipeline (trend path). Item framings: " + "; ".join(f"{f['item']} — {f['framing']}" for f in framing)
+    json.dump({"override": {"evidence_framing": framing, "rationale": rationale[:4000],
+                            "reviewer_notes": "No verdict gauge: the evidence is presented in prose under headed subsections."}},
+              open(W + "_queue_approve.json", "w"), ensure_ascii=False)
+    qa = curl_json(f"{BASE}/api/v1/admin/trend-briefs/{trend['queue_id']}/approve", "POST", auth=True, data_file=W + "_queue_approve.json")
+    print("QUEUE APPROVE:", json.dumps(qa)[:300])
+    json.dump({"rerender_passed": True, "draft_post_id": sid}, open(W + "_finalize.json", "w"))
+    print("QUEUE FINALIZE:", json.dumps(curl_json(f"{BASE}/api/v1/admin/trend-briefs/{trend['queue_id']}/finalize", "POST", auth=True, data_file=W + "_finalize.json"))[:300])
+    record(W, "publish", {"published": True, "post_id": sid})
+
 
 
 if __name__ == "__main__":

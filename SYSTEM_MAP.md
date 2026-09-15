@@ -1881,6 +1881,65 @@ post-condition or raises; a warning is how all of the above shipped.
 
 ---
 
+### 8.0.0.0h `brief_pipeline.py` — curate, author, and the trend-brief path (2026-09-15)
+
+The chain is now **`prepare → curate → author → guard → apply → publish`**, and
+the AI writing is inside it, not launched by hand around it. Owner directive,
+verbatim: *"THE AI NEEDS TO BE DETERMINISTICALLY in THE CODE."* Every model
+call the pipeline makes — authoring, adversarial verification, stage review —
+is a `claude -p` invocation from `brief_pipeline.py` with a fixed prompt and a
+parsed JSON verdict, retried on a malformed reply and refused on a real one.
+
+* **curate** — one decision per paper: does it belong under the topic it was
+  filed under, for this audience? Decisions are executed, not logged: the cite
+  card, deep dive, reference entry and TOC count all go, and a topic left with
+  nothing goes with them. W34 lost 28 papers and two whole topics ("Narrow
+  Band Imaging in Gynecology" held one autoimmune-gastritis paper; "ICG
+  Fluorescence in Gynecologic Surgery" held three non-gynecologic papers and a
+  synthesis that said so). W31 lost 19 and C-Section Scar entirely. Drops are
+  measured against the STORED post, never the mutated topic files, so a re-run
+  cannot un-curate. A change of DECISION (fingerprint of dropped set + surviving
+  topics) invalidates syntheses and narrative written earlier; a re-run with the
+  same verdict does not.
+* **author** — every kept paper gets a verified deep dive; every live topic a
+  verified synthesis with inline citation popovers; every brief an editorial;
+  every card shape that has a lens slot a per-paper paragraph (W31's were one
+  template repeated across up to fourteen papers, and the publish audit refuses
+  that). A draft counts only if THIS stage stamped it `_verified` AND every
+  pending section is present — a file's existence proved nothing, and a stamp
+  without completeness let a draft missing `methods` and `question` through.
+  `abstract` and `title` are NEVER authorable: an author once wrote its own
+  "Verbatim PubMed abstract" for 68 papers and apply overwrote PubMed with it.
+* **guard / apply / publish** as before, plus: a concentration is not a dose
+  (`185.9 mg/L` is a lab value; `mg/kg`, `mg/day` are dosing); the references
+  list is built BEFORE the audit runs; both dialog shapes (with and without the
+  abstract wrapper div) are written.
+
+**Trend briefs** (`trend-<dir>`, `.brief-work/<dir>/trend.json` naming
+`queue_id`, `post_id`, `title`, `unit`) go through the same chain. Each item
+of the claim is a topic. Owner directive, verbatim: *"get away from the
+'Verdict' phrasing, and just present the evidence and the facts in the prose —
+let the reader's decide, but give the honest framing … it is aimed to be a
+reliable source for 'influencers' to come and get the information … I am not
+here to make enemies, but to bridge two often conflicting sides together"*,
+and *"give clear headlines and subheadlines that help readers stay organized."*
+So: no verdict gauge, no "verdict"/"debunk"/"myth" in the site's own prose
+(post-condition); a hero lede; headed sections in fixed order — opening,
+**Bottom line, up front**, the shape of the evidence, **Where the evidence
+stands, item by item** (an `<h3>` per item carrying ONE framing from a fixed
+list: *Supported by clinical trials · Promising, but not yet shown in people ·
+Not enough evidence to say · The evidence so far points the other way ·
+Studied in a related condition, not this one*), **From a DO + CBG/MIGS lens**,
+**Where the two sides can meet**, the paper-by-paper cards with their deep
+dives, gaps, closing, references. Every subsection cites its own studies inline
+with the standard popover (title, meta, a conclusion-first finding ending in a
+"Relevance:" sentence, PubMed link). The post is created with `verdict: null`
+so the listing shows no badge. `trend-briefs/[id]/approve` now accepts
+`evidence_framing` (`[{item, framing}]`) in place of a verdict, and the
+trending page copy no longer promises one.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are
