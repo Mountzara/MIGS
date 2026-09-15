@@ -431,7 +431,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         }
         .post-card:hover .post-cta {
             gap: 12px;
-            color: #fff;
+            color: #4c1d95;
         }
         .post-cta-arrow {
             display: inline-block;
@@ -525,7 +525,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             border-bottom: 1px solid rgba(var(--glow-purple), 0.32);
             transition: color 0.2s ease, border-color 0.2s ease;
         }
-        .post-detail-body a:hover { color: #fff; border-bottom-color: #6d28d9; }
+        .post-detail-body a:hover { color: #4c1d95; border-bottom-color: #6d28d9; }
         .post-detail-body code {
             background: rgba(255,255,255,0.72);
             padding: 2px 7px;
@@ -688,6 +688,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
 .footer-brand a, .site-footer a, footer a { color: #6d28d9 !important; }
 </style>
+    <!-- ink on paper for the injected post body — see assets/js/post-light.js -->
+    <script src="/assets/js/post-light.js"></script>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true">
@@ -729,7 +731,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div id="detailView" hidden>
         <article class="post-detail">
             <a href="/trending/" class="post-detail-back">← Back to all posts</a>
-            <div id="detailContent">
+            <div id="detailContent" data-mz-post-scope>
                 <div class="loader">
                     <div class="loader-spinner"></div>
                     Loading post…

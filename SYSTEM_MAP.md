@@ -1737,6 +1737,77 @@ condition-specific cards and everywhere else in the website."
   violet tint washes are the design's own and pass) — because a
   computed-style check false-positives on opaque gradient grounds.
 
+### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
+
+**Owner, verbatim:** "all the briefs in /evidence/ when clicked still are
+showing the black background that are unreadable. WHAT THE FUCK HOW MANY
+TIMES HAVE I ASKED YOU TO FIX THIS".
+
+**What was actually wrong.** Every stored brief (D1 `posts.body_html`,
+served by `/api/posts/<id>`) carries its own ~25 KB `<style>`, written for
+the old dark site: `:root { --bg-base:#07070a; --fg-strong:#fff … }` and
+`html, body { background: var(--bg-base); color: var(--fg-mid) }`. The
+reader shells (`evidence/index.html`, `trending/index.html`) inject it
+with `innerHTML`, which puts that stylesheet in the HOST document:
+`<body>` is repainted near-black, and the post's `:root` redefines the
+shell's own tokens so even the shell's title goes dark-on-dark. Three
+document-level fixes in a row (meta color-scheme, body colour, the
+`#mz-canvas-guard` on `<html>`) could not reach it: the dark rules arrive
+AFTER load, from the data, and re-apply on every open.
+
+**Why every gate stayed green.** page-canvas, light-text and contrast all
+derived routes from `index.html` files. `/evidence/` (the listing) is
+paper; `/evidence/?id=blog-2026-W29` is a row, not a file, and was never
+loaded. Seven briefs shipped unreadable through a gate chain that reported
+CLEAN on 125 routes. *A route list that cannot see the data-driven
+surfaces proves nothing about them.*
+
+**The fix — one script, three shells.**
+`assets/js/post-light.js`, included by `evidence/`, `trending/` and the
+admin `trend-briefs/[id]/preview.js` shell. Every `<style>` inside a
+`[data-mz-post-scope]` container (at load and via MutationObserver,
+which fires before paint — no dark flash):
+1. bare `html` / `body` / `html, body` rules are removed;
+2. `:root` is rescoped to the container, so the post keeps every variable
+   it defines and the host keeps its own;
+3. a paper palette is set INLINE on the container for the dark theme's
+   variables (`--bg-base`, `--fg-*`, `--accent-soft`, `--glow-purple`,
+   `--text-on-dark`, `--gray-*` …). Inline custom properties beat the
+   rescoped rule; a post's own element-scoped definition (the forest-plot
+   viz greys) still wins for its subtree, which is correct.
+Shell styles marked `data-mz-keep` are never touched. A `!important`
+body/html colour guard is added once as a belt.
+
+Also fixed in the shells themselves (dark-era rules that only became
+visible once the ground was paper): `.brief-detail-claim { color:#fff }`,
+`.brief-detail-body a:hover { color:#fff }`, `.brief-card:hover .brief-cta`
+and their trending twins.
+
+**The gates now open every brief.** `scripts/_lib_brief_routes.py`
+asks `/api/posts?kind=…&status=published` and returns `/<shell>/?id=<id>`
+per published post; page-canvas, light-text and contrast all append them.
+The helper RAISES if the API cannot be read — a gate that cannot
+enumerate must fail, not audit fewer surfaces. All three gates also join
+their `?cb=` cache-buster with `&` when the route already carries a
+query; before this they would have produced `?id=x?cb=…` and audited the
+listing again under a different name.
+
+**MUST TOUCH TOGETHER:** `assets/js/post-light.js` · `evidence/index.html`
+· `trending/index.html` · `functions/api/v1/admin/trend-briefs/[id]/preview.js`
+· `scripts/_lib_brief_routes.py` · `scripts/audit_page_canvas.py` ·
+`scripts/audit_light_text.py` · `scripts/audit_contrast_pixels.py`.
+A new reader shell needs the script tag AND `data-mz-post-scope` on its
+container AND a row in `_lib_brief_routes.KINDS`.
+
+**Not changed, on purpose:** the stored `body_html` blobs and the pipeline's
+canonical `<style>` (`post_format.js` copies it verbatim from a reference
+post). They stay dark at rest; the shell renders them light regardless,
+which also covers every future post. `admin/content/` renders raw
+`body_html` in a sandboxed `srcdoc` iframe as a *source* preview and is
+left dark by design.
+
+---
+
 ### 8.0.0.0d TELEHEALTH-ONLY — one flag, eleven surfaces (2026-09-15)
 
 **Owner directive, verbatim and standing:** "I will only be doing telehealth

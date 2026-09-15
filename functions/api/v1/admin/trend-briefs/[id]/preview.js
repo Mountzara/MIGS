@@ -22,7 +22,7 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-<style>
+<style data-mz-keep>
   :root {
     --accent: #6d28d9;
     --glow-purple: 167, 139, 250;
@@ -55,9 +55,10 @@ const PREVIEW_SHELL_PREFIX = `<!doctype html>
   }
   button,button:hover,.btn,.btn:hover{color:#fff}
 </style>
+<script src="/assets/js/post-light.js"></script>
 </head>
 <body>
-<div class="preview-shell">
+<div class="preview-shell" data-mz-post-scope>
 <div class="preview-banner">Admin preview · not the public render</div>
 `;
 

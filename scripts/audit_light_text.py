@@ -61,6 +61,17 @@ if ROUTES is None:
     ROUTES = derive_routes()
     n_files = len(ROUTES)
     print(f"  auditing every route derived from the tree: {n_files}")
+    # 2026-09-15 — plus every published brief. Each brief injects its own
+    # stylesheet after load; the listing route cannot see that. Seven
+    # briefs rendered white-on-near-black while this gate stayed green.
+    _base = (sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "https://mountzara.com").rstrip("/")
+    from _lib_brief_routes import published_brief_routes, is_local
+    if is_local(_base):
+        print("  (local preview: no posts API, brief routes skipped)")
+    else:
+        _briefs = published_brief_routes(_base)   # raises: a gate that cannot enumerate must fail
+        print(f"  plus every published brief from the posts API: {len(_briefs)}")
+        ROUTES += _briefs
 
 JS = r"""() => {
   // force every modal-ish container visible: a modal only paints once opened,
@@ -154,7 +165,7 @@ def main():
         for route in ROUTES:
             url = BASE.rstrip('/') + route + ("index.html" if "localhost" in BASE or "127.0.0.1" in BASE else "")
             try:
-                page.goto(url + f"?cb={int(time.time()*1000)}", wait_until="domcontentloaded", timeout=40000)
+                page.goto(url + ("&" if "?" in url else "?") + f"cb={int(time.time()*1000)}", wait_until="domcontentloaded", timeout=40000)
                 page.wait_for_timeout(2000)
                 hits = page.evaluate(JS)
             except Exception as e:

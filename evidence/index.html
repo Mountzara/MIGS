@@ -276,7 +276,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
             font-size: 13px; font-weight: 600; color: #6d28d9;
             margin-top: auto; transition: gap 0.2s ease, color 0.2s ease;
         }
-        .brief-card:hover .brief-cta { gap: 12px; color: #fff; }
+        .brief-card:hover .brief-cta { gap: 12px; color: #4c1d95; }
 
         .empty {
             text-align: center; padding: clamp(60px, 8vw, 100px) 20px;
@@ -302,7 +302,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
            a plain standfirst: same panel, no label, no italics. */
         .brief-detail-claim {
             font-size: clamp(17px, 1.7vw, 20px); line-height: 1.55;
-            color: #ffffff; margin-bottom: 36px; padding: 24px 28px;
+            color: #1A1726; margin-bottom: 36px; padding: 24px 28px;
             border-radius: 14px;
             background: linear-gradient(135deg, rgba(var(--glow-purple), 0.06) 0%, rgba(var(--glow-purple), 0.015) 100%);
             border: 1px solid rgba(var(--glow-purple), 0.20);
@@ -314,7 +314,7 @@ sup.mz-ref.mz-open .mz-ref-pop.mz-flip { transform: translateX(-50%); }
         .brief-detail-body ul, .brief-detail-body ol { margin: 14px 0; padding-left: 22px; }
         .brief-detail-body li { margin: 8px 0; }
         .brief-detail-body a { color: #6d28d9; border-bottom: 1px solid rgba(var(--glow-purple), 0.32); transition: color 0.2s ease, border-color 0.2s ease; }
-        .brief-detail-body a:hover { color: #fff; border-bottom-color: #6d28d9; }
+        .brief-detail-body a:hover { color: #4c1d95; border-bottom-color: #6d28d9; }
 
         /* belt-and-suspenders dialog hide. The browser UA stylesheet
            rule `dialog:not([open]) { display: none }` already hides closed
@@ -445,6 +445,8 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
 .eyebrow, .brief-cta, .post-cta, .pill, .ch-num, .ph-label, .mo, .tile-more,
 .footer-brand a, .site-footer a, footer a { color: #6d28d9 !important; }
 </style>
+    <!-- ink on paper for the injected post body — see assets/js/post-light.js -->
+    <script src="/assets/js/post-light.js"></script>
 </head>
 <body>
     <div class="page-bg-stage" aria-hidden="true">
@@ -484,7 +486,7 @@ summary:focus-visible, input:focus-visible, select:focus-visible {
     <div id="detailView" hidden>
         <article class="brief-detail">
             <a href="/evidence/" class="brief-detail-back">← Back to all briefs</a>
-            <div id="detailContent">
+            <div id="detailContent" data-mz-post-scope>
                 <div class="loader">
                     <div class="loader-spinner"></div>
                     Loading brief…

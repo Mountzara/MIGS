@@ -64,6 +64,16 @@ def corner_means(page):
 def main():
     routes = derive_routes()
     print(f"  auditing the rendered ground on every route derived from the tree: {len(routes)}")
+    # 2026-09-15 — plus every published brief. The listing is a file; the
+    # briefs are rows, and each injects its own stylesheet. Seven shipped
+    # near-black while this gate stayed green on /evidence/ alone.
+    from _lib_brief_routes import published_brief_routes, is_local
+    if is_local(BASE):
+        print("  (local preview: no posts API, brief routes skipped)")
+    else:
+        briefs = published_brief_routes(BASE)   # raises: a gate that cannot enumerate must fail
+        print(f"  plus every published brief from the posts API: {len(briefs)}")
+        routes += briefs
     failures = []
     with sync_playwright() as p:
         browser, engine, note = launch_engine(p, "webkit")
@@ -81,7 +91,7 @@ def main():
         page = ctx.new_page()
         for route in routes:
             try:
-                page.goto(f"{BASE}{route}?cb={int(time.time())}", wait_until="domcontentloaded", timeout=45000)
+                page.goto(f"{BASE}{route}{'&' if '?' in route else '?'}cb={int(time.time())}", wait_until="domcontentloaded", timeout=45000)
                 page.wait_for_timeout(600)
                 page.evaluate("document.querySelectorAll('video').forEach(v=>{try{v.pause()}catch(e){}})")
                 samples = corner_means(page)

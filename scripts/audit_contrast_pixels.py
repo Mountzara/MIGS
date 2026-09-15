@@ -398,6 +398,13 @@ def main():
         if a.startswith("--pages="):
             pages = a.split("=", 1)[1].split(",")
     local = "localhost" in base
+    # 2026-09-15 — plus every published brief: each injects its own
+    # stylesheet after load, so the listing route proves nothing about it.
+    if not local:
+        from _lib_brief_routes import published_brief_routes
+        _briefs = published_brief_routes(base)   # raises: a gate that cannot enumerate must fail
+        print(f"  plus every published brief from the posts API: {len(_briefs)}")
+        pages = list(pages) + _briefs
     srv = None
     if local:
         import subprocess
@@ -435,7 +442,7 @@ def main():
             ctx = b.new_context(viewport=vp, device_scale_factor=dpr, ignore_https_errors=True)
             page = ctx.new_page()
             for path in pages:
-                url = f"{base}{path}" + ("index.html" if local else "") + f"?cb={int(time.time()*1000)}"
+                url = f"{base}{path}" + ("index.html" if local else "") + ("&" if "?" in path else "?") + f"cb={int(time.time()*1000)}"
                 # The homepage carries video, an animated hero and deferred
                 # media probes, so "networkidle" can exceed the budget when
                 # this gate runs inside the parallel deploy pool — which
