@@ -181,9 +181,21 @@ def main():
         d = re.sub(r'(<p class="mz-jc-modal-meta">)[\s\S]*?(</p>)',
                    rf"\g<1><strong>{esc(e.get('design','Indexed study').split(',')[0][:70])}</strong> · PMID {e['pmid']}\g<2>", d)
         ab = e.get("abstract_verbatim")
-        if ab:
-            d = re.sub(r'(<div class="mz-jc-abstract-body">)[\s\S]*?(</div>)',
-                       lambda m: m.group(1) + abstract_blocks(ab) + m.group(2), d, count=1)
+        # 2026-09-15 — THIS MUST NOT FALL THROUGH SILENTLY. It used to: when a
+        # paper had no abstract_verbatim, the dialog kept the EXEMPLAR's
+        # abstract, so the brief presented one paper's "Verbatim PubMed
+        # abstract" under another paper's title. Twelve of thirty-two papers in
+        # the pending supplement brief shipped that way, every one of them
+        # showing the same obesity/PCOS text. A missing abstract is a fetch
+        # failure to fix upstream, never a slot to leave furnished with
+        # someone else's words.
+        if not ab:
+            raise SystemExit(
+                f"REFUSING TO ASSEMBLE: PMID {e['pmid']} ({e.get('title', '')[:60]}) has no "
+                f"abstract_verbatim. Re-fetch it before assembling — the template's abstract "
+                f"must never stand in for a paper's own.")
+        d = re.sub(r'(<div class="mz-jc-abstract-body">)[\s\S]*?(</div>)',
+                   lambda m: m.group(1) + abstract_blocks(ab) + m.group(2), d, count=1)
         return d
 
     direct_cards, mech_cards, dialogs, refs, synth = [], [], [], [], []
