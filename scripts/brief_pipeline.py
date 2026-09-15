@@ -30,6 +30,7 @@ code that runs the same way every time. The rule this file enforces:
 USAGE
 =====
     brief_pipeline.py prepare  <post-id>   # extract work files + repair abstracts
+    brief_pipeline.py curate   <post-id>   # remove papers not about their topic
     brief_pipeline.py pmids    <post-id>   # the authoritative list, never typed by hand
     brief_pipeline.py guard    <post-id>   # lexical wrong-paper screen over drafts
     brief_pipeline.py apply    <post-id>   # assemble + enforce site rules + audit
@@ -126,7 +127,7 @@ def curl_json(url: str, method: str = "GET", auth: bool = False, data_file: str 
 # cannot verify a draft the guard has not screened, you cannot apply without
 # a clean guard, and you cannot publish a body that apply did not bless. The
 # order is not a convention to remember; it is a precondition to execute.
-STAGES = ["prepare", "guard", "apply", "publish"]
+STAGES = ["prepare", "curate", "guard", "apply", "publish"]
 
 # Every mechanical stage must be READ by an intelligent reviewer before the
 # next one runs. This is not belt-and-braces; it is the half of the job the
@@ -142,7 +143,7 @@ STAGES = ["prepare", "guard", "apply", "publish"]
 #
 # The mechanical stage records `<stage>.json`; the reviewer records
 # `<stage>.review.json` with a verdict. require() demands BOTH.
-REVIEWED_STAGES = ["prepare", "guard", "apply"]
+REVIEWED_STAGES = ["prepare", "curate", "guard", "apply"]
 
 
 def _digest(paths: list[str]) -> str:
@@ -167,7 +168,8 @@ def _receipt_path(W: str, stage: str) -> str:
 def stage_inputs(W: str, stage: str) -> list[str]:
     return {
         "prepare": [],
-        "guard": [W + "papers", W + "drafts_dd"],
+        "curate": [W + "papers", W + "topics"],
+        "guard": [W + "papers", W + "drafts_dd", W + "curation.json"],
         "apply": [W + "papers", W + "drafts_dd", W + "manifest.json"],
         "publish": [W + "body.applied.html"] if os.path.exists(W + "body.applied.html") else [W + "manifest.json"],
     }[stage]
@@ -278,6 +280,24 @@ design mislabelled, preclinical written as clinical, dose as advice, placeholder
 ADVISORY = stylistic or curation observations.
 Reply with ONLY a JSON object:
 {{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
+  "problems": ["..."], "notes": "one or two sentences"}}""",
+
+    "curate": """You are reviewing the CURATION decisions for a clinical brief aimed at a complex benign
+gynecology / minimally invasive gynecologic surgery practice.
+Read {W}curation.json (what was kept and dropped, with reasons) and spot-check against {W}topics/.
+Review ONLY those two things. Do NOT read or judge body.applied.html — it is the PREVIOUS assembly and
+is rebuilt from these decisions by a later stage, so a mismatch there is expected at this point and is
+that stage's post-condition to enforce, not yours.
+Check and report honestly:
+ 1. Was anything DROPPED that a gynecologic surgeon would actually want — an adjacent women's-health
+    paper, a basic-science paper genuinely about the topic? A wrong drop silently removes real content.
+ 2. Was anything KEPT that is plainly about another organ, specialty or population?
+ 3. Do the stated drop reasons match what those papers are actually about?
+ 4. Did any topic lose so much that its title now misdescribes what remains?
+SEVERITY: BLOCKING = a paper wrongly dropped, or an obviously off-topic paper still kept.
+ADVISORY = borderline judgement calls.
+Reply with ONLY a JSON object:
+{{"passed": <true if no blocking problems>, "blocking": ["..."], "advisory": ["..."],
   "problems": ["..."], "notes": "one or two sentences"}}""",
 
     "apply": """You are reviewing the ASSEMBLED BODY of a clinical brief before it publishes on Dr. Mabini's site.
@@ -497,6 +517,149 @@ def cmd_prepare(post_id: str) -> None:
     print(f"  ledger: prepare OK — authoring may now run for {post_id}")
 
 
+# ---------------------------------------------------------------------------
+# curate — remove papers that are not about the topic they were filed under
+# ---------------------------------------------------------------------------
+# The upstream feed selects by keyword, so roughly a third of any topic is not
+# about that topic: MRgFUS for Parkinson's TREMOR filed under Uterine Fibroids
+# because both mention MRgFUS; an endobronchial leiomyoma under the same
+# because both say leiomyoma; pediatric congenital adrenal hyperplasia under
+# Menopausal Hormone Therapy; six of seven "ICG Fluorescence in Gynecologic
+# Surgery" papers that are head-and-neck, glioblastoma, thyroid, liver.
+#
+# Recording that as an advisory and publishing anyway is the "check that warns"
+# this file exists to forbid. A paper that is not about the topic does not
+# belong in the topic, so this stage decides, per paper, and the decision is
+# executed: the card, the deep dive, the reference entry and the TOC count all
+# go. A topic left with nothing goes too.
+CURATE_PROMPT = """You are curating one topic of a clinical brief for a complex benign gynecology /
+minimally invasive gynecologic surgery (CBG/MIGS) practice.
+
+Read {topic_file}. It has a `title` and a list of `papers`, each with a pmid, title and abstract.
+
+For EACH paper decide whether it belongs under that topic heading for THIS audience — practising
+gynecologic surgeons reading a weekly literature brief.
+
+KEEP a paper when it is about the topic in women's health, even if the study is basic science,
+preclinical, or an adjacent gynecologic condition. Breadth within the topic is fine.
+
+DROP a paper when it landed here by keyword collision or is about a different organ, specialty or
+population entirely — a neurology paper sharing a device name, a lung tumour sharing a histology
+word, a paediatric endocrine paper sharing a hormone word, a head-and-neck or hepatobiliary paper
+sharing an imaging dye. Being merely tangential is NOT enough to drop; being about something else is.
+
+Be decisive and specific. For every DROP give the reason in one clause naming what the paper is
+actually about.
+
+Reply with ONLY a JSON object:
+{{"topic": "{tid}", "keep": ["pmid", ...], "drop": [{{"pmid": "...", "reason": "..."}}],
+  "retitle": "<a better topic title, ONLY if the kept set no longer matches the current one, else null>"}}"""
+
+
+def cmd_curate(post_id: str) -> None:
+    W = work_dir(post_id)
+    require(W, "prepare"); require_review(W, "prepare")
+    man = json.load(open(W + "manifest.json"))
+    decisions, dropped_total, kept_total = {}, 0, 0
+    for tid in man["topics"]:
+        tf = W + f"topics/{tid}.json"
+        t = json.load(open(tf))
+        if not t["papers"]:
+            decisions[tid] = {"keep": [], "drop": [], "retitle": None}
+            continue
+        prompt = CURATE_PROMPT.format(topic_file=tf, tid=tid)
+        r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+                           capture_output=True, text=True, timeout=900, cwd=ROOT)
+        if r.returncode != 0:
+            die(f"curation of {tid} could not run: {r.stderr.strip()[:200]}")
+        try:
+            text = json.loads(r.stdout).get("result", "")
+        except json.JSONDecodeError:
+            text = r.stdout
+        m = re.search(r"\{[\s\S]*\}", text)
+        if not m:
+            die(f"curation of {tid} returned no JSON: {text[:250]}")
+        v = json.loads(m.group(0))
+        known = {q["pmid"] for q in t["papers"]}
+        keep = [q for q in v.get("keep", []) if q in known]
+        drop = [d for d in v.get("drop", []) if d.get("pmid") in known]
+        if len(keep) + len(drop) != len(known):
+            die(f"curation of {tid} did not account for every paper "
+                f"({len(keep)}+{len(drop)} vs {len(known)}) — refusing a partial verdict")
+        decisions[tid] = {"keep": keep, "drop": drop, "retitle": v.get("retitle")}
+        dropped_total += len(drop); kept_total += len(keep)
+        for d in drop:
+            print(f"  DROP {d['pmid']} from {tid}: {d['reason'][:88]}")
+        # the topic file must reflect the decision, so authors never see a dropped paper
+        t["papers"] = [q for q in t["papers"] if q["pmid"] in keep]
+        if v.get("retitle"):
+            t["retitled_from"], t["title"] = t["title"], v["retitle"]
+        json.dump(t, open(tf, "w"), ensure_ascii=False, indent=1)
+
+    # a previous assembly predates these decisions; delete it so nothing —
+    # a reviewer, a later stage, or a person — can read it as current
+    for stale in (W + "body.applied.html", W + f"{post_id}.applied.json"):
+        if os.path.exists(stale):
+            os.remove(stale)
+    # WHAT WAS DROPPED IS MEASURED AGAINST THE SOURCE POST, NOT AGAINST THE
+    # CURRENT TOPIC FILES. curate mutates the topic files, so a second run sees
+    # an already-clean set, decides to drop nothing, and — if the drop list
+    # were derived from those files — would overwrite curation.json with an
+    # empty list and silently un-curate the brief. The stored post is the only
+    # stable authority for what the brief started with.
+    source = json.load(open(W + f"{post_id}.source.json"))
+    source_pmids = list(dict.fromkeys(re.findall(r'<dialog[^>]*id="dd-(\d+)"', source["body_html"])))
+    kept_pmids = {q for d in decisions.values() for q in d["keep"]}
+    orphans = [q for q in source_pmids if q not in kept_pmids]
+    # merge this run's reasons with any recorded earlier, so re-running keeps
+    # the explanation for a paper dropped in a previous pass
+    prior = json.load(open(W + "curation.json")) if os.path.exists(W + "curation.json") else {}
+    for tid, d in (prior.get("decisions") or {}).items():
+        merged = {x["pmid"]: x for x in (decisions.get(tid, {}).get("drop") or [])}
+        for x in d.get("drop") or []:
+            merged.setdefault(x["pmid"], x)
+        if tid in decisions:
+            decisions[tid]["drop"] = list(merged.values())
+    json.dump({"decisions": decisions, "dropped_pmids": orphans},
+              open(W + "curation.json", "w"), ensure_ascii=False, indent=1)
+    man["pmids"] = [q for q in man["pmids"] if q in kept_pmids]
+    man["topics"] = [t for t in man["topics"] if decisions[t]["keep"]]
+    json.dump(man, open(W + "manifest.json", "w"), indent=1)
+    for q in orphans:
+        for f in (W + f"papers/{q}.json", W + f"drafts_dd/{q}.json"):
+            if os.path.exists(f):
+                os.remove(f)
+    # A synthesis written before curation describes a set of papers that no
+    # longer exists — it may cite a dropped paper, or belong to a topic that is
+    # gone entirely. That is wrong CONTENT, not stale markup, so it is removed
+    # here and must be re-authored. Leaving it for apply's post-condition to
+    # trip over is how a stage ends up reporting a markup fault for what is
+    # really a factual one.
+    if os.path.exists(W + "syntheses.json"):
+        syn = json.load(open(W + "syntheses.json"))
+        live, stale_tids = [], []
+        for it in syn.get("items", []):
+            html_s = it.get("html") or ""
+            if it["tid"] not in man["topics"] or any(q in html_s for q in orphans):
+                stale_tids.append(it["tid"])
+            else:
+                live.append(it)
+        if stale_tids:
+            syn["items"] = live
+            json.dump(syn, open(W + "syntheses.json", "w"), ensure_ascii=False)
+            print(f"  invalidated {len(stale_tids)} synthesis/syntheses written pre-curation: {stale_tids}")
+    if os.path.exists(W + "narrative.json"):
+        narr = json.load(open(W + "narrative.json")).get("html", "")
+        if any(q in narr for q in orphans):
+            os.rename(W + "narrative.json", W + "narrative.stale.json")
+            print("  invalidated the narrative: it cites a paper curation dropped")
+    print(f"{post_id}: source had {len(source_pmids)} papers; keeping {len(kept_pmids)}, "
+          f"dropping {len(orphans)} off-topic; {len(man['topics'])} topic(s) remain")
+    record(W, "curate", {"kept": len(kept_pmids), "dropped": len(orphans)})
+    ai_review(W, "curate")
+    print(f"  ledger: curate OK — authoring may now run for {post_id}")
+
+
 def cmd_pmids(post_id: str) -> None:
     """The authoritative list. Never retype one of these by hand."""
     W = work_dir(post_id)
@@ -510,6 +673,7 @@ def cmd_pmids(post_id: str) -> None:
 def cmd_guard(post_id: str) -> None:
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
+    require(W, "curate");  require_review(W, "curate")
     rows = []
     for f in sorted(os.listdir(W + "drafts_dd")):
         pm = f[:-5]
@@ -577,6 +741,42 @@ def escape_bare_angles(h: str) -> str:
                   fix, h, flags=re.S)
 
 
+def excise_paper(h: str, pmid: str) -> str:
+    """Remove every trace of one paper from a brief body.
+
+    A paper dropped in curation must leave nothing behind: a lingering deep-dive
+    dialog is dead weight in the DOM, a lingering reference is a citation to
+    something the brief no longer discusses, and a lingering trigger button is a
+    dead click. Order matters — remove the card before the dialog, or the card's
+    trigger keeps a dangling aria-controls.
+    """
+    # cite card (article keyed by id or containing the PMID's trigger)
+    for m in list(re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h)):
+        if f'mz-cite-{pmid}' in m.group(0) or f"openDeepDive('dd-{pmid}')" in m.group(0) \
+           or f"/{pmid}/" in m.group(0):
+            h = h[:m.start()] + h[m.end():]
+            break
+    # deep-dive dialog
+    h = re.sub(r'<dialog[^>]*id="dd-%s"[\s\S]*?</dialog>' % re.escape(pmid), "", h)
+    # reference-list entry
+    h = re.sub(r'<li>(?:(?!</li>)[\s\S])*?%s(?:(?!</li>)[\s\S])*?</li>' % re.escape(pmid), "", h)
+    # any inline citation to it (rare — syntheses are written after curation)
+    h = re.sub(r'<sup class="mz-ref">(?:(?!</sup>)[\s\S])*?ref-pop-%s(?:(?!</sup>)[\s\S])*?</sup>'
+               % re.escape(pmid), "", h)
+    return h
+
+
+def retitle_topics(h: str, decisions: dict) -> str:
+    for tid, d in decisions.items():
+        if not d.get("retitle"):
+            continue
+        m = re.search(r'(<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>[\s\S]{0,400}?<h2[^>]*>)([\s\S]*?)(</h2>)'
+                      % re.escape(tid), h)
+        if m:
+            h = h[:m.start(2)] + H.escape(d["retitle"], quote=False) + h[m.end(2):]
+    return h
+
+
 def dedupe_popover_ids(h: str) -> str:
     """One PMID cited twice produces two elements with the same id.
 
@@ -620,10 +820,25 @@ def strip_build_comments(h: str) -> str:
 def cmd_apply(post_id: str) -> None:
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
+    require(W, "curate");  require_review(W, "curate")
     require(W, "guard");   require_review(W, "guard")
     man = json.load(open(W + "manifest.json"))
     post = json.load(open(W + f"{post_id}.source.json"))
     h = post["body_html"]
+
+    # 0a. excise the papers curation dropped, before anything else touches the body
+    curation = json.load(open(W + "curation.json")) if os.path.exists(W + "curation.json") else {}
+    dropped = curation.get("dropped_pmids") or []
+    for pmid in dropped:
+        h = excise_paper(h, pmid)
+    h = retitle_topics(h, curation.get("decisions") or {})
+    # a topic whose papers all went takes its whole section with it
+    for tid, d in (curation.get("decisions") or {}).items():
+        if not d["keep"]:
+            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<div class="mz-references|<ol class="mz-references-list|$)'
+                       % re.escape(tid), "", h)
+    # the TOC is rebuilt from what survives, so drop the stale one
+    h = re.sub(r'<nav class="mz-toc"[\s\S]*?</nav>', "", h)
 
     # 0. repaired abstracts. prepare() fixes the WORK FILE so authoring is
     # grounded correctly; without this step the page keeps showing whatever
@@ -633,6 +848,9 @@ def cmd_apply(post_id: str) -> None:
     repairs = {}
     if os.path.exists(W + "abstract_repairs.json"):
         repairs = json.load(open(W + "abstract_repairs.json"))
+    # a paper curation removed has no dialog to repair into — and must not be
+    # re-checked for a landing that is correctly impossible
+    repairs = {k: v for k, v in repairs.items() if k not in set(dropped)}
     repaired_n = 0
     for pmid, abstract in repairs.items():
         dm = re.search(r'(<dialog[^>]*id="dd-%s"[^>]*>)(.*?)(</dialog>)' % re.escape(pmid), h, re.S)
@@ -760,6 +978,10 @@ def cmd_apply(post_id: str) -> None:
     # conversion overrides at every use; that rule refused the live, correctly
     # rendering W33. Duplicating a repo check with different semantics is how
     # a pipeline starts blocking good work, so this defers to the one audit.
+    for pmid in dropped:
+        if re.search(r'(dd-%s|mz-cite-%s|ref-pop-%s|pubmed\.ncbi\.nlm\.nih\.gov/%s)'
+                     % ((re.escape(pmid),) * 4), h):
+            faults.append(f"dropped paper {pmid} still appears in the body")
     from collections import Counter as _C
     _dupes = {k: v for k, v in _C(re.findall(r'id="(ref-pop-[^"]+)"', h)).items() if v > 1}
     if _dupes:
@@ -796,7 +1018,7 @@ def cmd_apply(post_id: str) -> None:
         "{publishable:a.publishable,canonical:a.canonical,problems:a.problems}))})"
         % (ROOT, W + f"{post_id}.applied.json")], capture_output=True, text=True, cwd=ROOT)
     verdict = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
-    print(f"{post_id}: abstracts-repaired={repaired_n} sections={applied} syntheses={syn_n} citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
+    print(f"{post_id}: dropped={len(dropped)} abstracts-repaired={repaired_n} sections={applied} syntheses={syn_n} citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
     print(f"  post-conditions: all passed | auditPublishable: {json.dumps(verdict)}")
     if not verdict.get("publishable"):
         record(W, "apply", {"failed": json.dumps(verdict.get("problems"))[:400]})
@@ -823,4 +1045,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
