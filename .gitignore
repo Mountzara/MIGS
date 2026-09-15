@@ -65,3 +65,8 @@ docs/**/*.m4v
 docs/**/*.mov
 docs/**/*.mp4
 *.m4v
+
+# Brief pipeline work files (per-paper abstracts, drafts, ledger receipts).
+# Inside the repo so the stage reviewers can actually read what they review;
+# never committed — the source of truth is the stored post plus PubMed.
+.brief-work/

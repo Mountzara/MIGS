@@ -1850,6 +1850,32 @@ changes the digest, so a guard receipt from before it no longer satisfies apply.
   source link. Any fault ⇒ refuse, no body written.
 * **publish** — PUT + approve, only for a body `apply` blessed.
 
+**EVERY STAGE IS AI-REVIEWED, AND THE REVIEW IS PART OF THE STAGE.** Owner
+directive, verbatim: *"YOU ARE TO NEVER NOT REVIEW AND ASSESS EACH STEP WITH
+ASSISTANCE — THAT'S HOW STUPID SHIT ENDS UP GETTING THROUGH WHEN YOU DON'T
+ACTUALLY READ AND ANALYZE EVERY STEP"*, and then: *"THIS SHOULD BE PART OF THE
+DETERMINISTIC PROCESS"*. Both corrections were right and both were needed. The
+mechanical checks catch only what could be anticipated; everything serious in
+the session that produced this file was found by READING — four papers written
+up as a different study, an abstract truncated mid-sentence under a "verbatim"
+label, mouse and in-vitro results presented as human findings, a narrative that
+still said "Pending review". No regex expresses any of those.
+
+So `prepare`, `guard` and `apply` each end by invoking `claude -p` on their own
+output with a stage-specific prompt, parsing an explicit `{passed, problems}`
+verdict, recording it as `<stage>.review.json`, and REFUSING if it does not
+pass. The next stage requires both receipts — the mechanical one and the review
+— and both must match the current input digest.
+
+Two things learned building it, both worth keeping:
+* A first version made the review something the operator runs and records by
+  hand. That is the same failure the ledger exists to prevent, so the pipeline
+  runs it.
+* Work files were under `/tmp` and the reviewer could not open them; it refused
+  outright rather than passing blindly, which is exactly the behaviour to keep.
+  They now live in `.brief-work/` inside the repo (gitignored) so a sandboxed
+  reviewer can actually read what it is reviewing.
+
 **Do not add a stage that warns.** Every check here either proves its
 post-condition or raises; a warning is how all of the above shipped.
 

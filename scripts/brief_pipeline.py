@@ -47,7 +47,12 @@ import sys
 import time
 
 ROOT = "/home/user/MIGS"
-SCRATCH = os.environ.get("MZ_BRIEF_SCRATCH") or "/tmp/claude-0/-home-user-MIGS/7a2758e6-6b6d-5fff-a789-a9193d8f2863/scratchpad"
+# Work files live INSIDE the repo, gitignored. They were under /tmp, and the
+# stage reviewers could not read them — a sandboxed reviewer only sees the
+# project. A review that cannot open what it is reviewing is not a review, and
+# the first run of this file proved it by refusing outright, which is the
+# behaviour to keep.
+SCRATCH = os.environ.get("MZ_BRIEF_SCRATCH") or os.path.join(ROOT, ".brief-work")
 UA = "mz-operator-tools/1.0 (brief-pipeline)"
 ADMIN = os.environ.get("MZ_ADMIN_AUTH", "chris.mabini@gmail.com:MartyBeans!2345")
 BASE = "https://www.mountzara.com"
@@ -123,6 +128,22 @@ def curl_json(url: str, method: str = "GET", auth: bool = False, data_file: str 
 # order is not a convention to remember; it is a precondition to execute.
 STAGES = ["prepare", "guard", "apply", "publish"]
 
+# Every mechanical stage must be READ by an intelligent reviewer before the
+# next one runs. This is not belt-and-braces; it is the half of the job the
+# checks cannot do. Owner directive 2026-09-15, verbatim: "YOU ARE TO NEVER
+# NOT REVIEW AND ASSESS EACH STEP WITH ASSISTANCE — THAT'S HOW STUPID SHIT
+# ENDS UP GETTING THROUGH WHEN YOU DON'T ACTUALLY READ AND ANALYZE EVERY STEP."
+#
+# Everything serious found in the session that produced this file was found by
+# reading, not by a rule: four papers written up as a different study, an
+# abstract truncated mid-sentence under a "verbatim" label, mouse and in-vitro
+# results presented as human findings, a narrative that still said "Pending
+# review". No regex expresses any of those. A reviewer does.
+#
+# The mechanical stage records `<stage>.json`; the reviewer records
+# `<stage>.review.json` with a verdict. require() demands BOTH.
+REVIEWED_STAGES = ["prepare", "guard", "apply"]
+
 
 def _digest(paths: list[str]) -> str:
     import hashlib
@@ -158,6 +179,38 @@ def record(W: str, stage: str, extra: dict | None = None) -> None:
               open(_receipt_path(W, stage), "w"), indent=1)
 
 
+def require_review(W: str, stage: str) -> dict:
+    """Refuse to proceed unless a reviewer READ this stage's output and passed it."""
+    p = W + f".ledger/{stage}.review.json"
+    if not os.path.exists(p):
+        die(f"stage '{stage}' ran but was never reviewed. Run the {stage} review and record it "
+            f"with: brief_pipeline.py record-review <post-id> {stage} <verdict.json>")
+    r = json.load(open(p))
+    if not r.get("passed"):
+        die(f"the {stage} review did not pass: {json.dumps(r.get('problems'))[:400]}")
+    now = _digest(stage_inputs(W, stage))
+    if r.get("digest") != now:
+        die(f"the {stage} review read different inputs (reviewed {r.get('digest')}, now {now}) — review again")
+    return r
+
+
+def cmd_record_review(post_id: str) -> None:
+    """Record a reviewer's verdict over a stage. Called after the AI review runs."""
+    W = work_dir(post_id)
+    stage, path = sys.argv[3], sys.argv[4]
+    if stage not in REVIEWED_STAGES:
+        die(f"'{stage}' is not a reviewed stage; reviewed stages are {REVIEWED_STAGES}")
+    require(W, stage)                      # cannot review a stage that did not run
+    v = json.load(open(path))
+    if "passed" not in v:
+        die("a review verdict must carry an explicit boolean 'passed'")
+    v["digest"] = _digest(stage_inputs(W, stage))
+    v["at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
+    print(f"  ledger: {stage} review recorded — passed={v['passed']}"
+          + (f" | {len(v.get('problems') or [])} problem(s)" if v.get("problems") else ""))
+
+
 def require(W: str, stage: str) -> dict:
     """Refuse to proceed unless `stage` passed on the inputs that exist now."""
     p = _receipt_path(W, stage)
@@ -170,6 +223,96 @@ def require(W: str, stage: str) -> dict:
     if r.get("digest") != now:
         die(f"stage '{stage}' ran against different inputs (receipt {r.get('digest')}, now {now}) — re-run it")
     return r
+
+
+# ---------------------------------------------------------------------------
+# AI REVIEW — a step of the pipeline, not a thing to remember
+# ---------------------------------------------------------------------------
+# The mechanical checks catch what could be anticipated and nothing else.
+# Everything serious in the session that produced this file was found by
+# READING: four papers written up as a different study, an abstract truncated
+# mid-sentence under a "verbatim" label, mouse and in-vitro results presented
+# as human findings, a narrative still reading "Pending review". No regex
+# expresses any of those.
+#
+# So each stage ends by handing its own output to a reviewer and refusing to
+# pass if the reviewer refuses. Making this a step I invoke by hand would be
+# the same failure the ledger exists to prevent — the pipeline runs it.
+REVIEW_PROMPTS = {
+    "prepare": """You are reviewing the PREPARE stage of a clinical brief pipeline for Dr. Mabini's site.
+Read {W}manifest.json, then sample AT LEAST 8 files across {W}papers/ (pick a spread, not the first 8)
+and 3 across {W}topics/.
+Check and report honestly:
+ 1. Does each paper file's `abstract` actually belong to its `title`/`pmid`? Name any that look like a
+    different study, a placeholder, a truncated fragment, or another paper's text.
+ 2. Is any abstract suspiciously short, or starting mid-way (e.g. at "METHODS:") as if truncated?
+ 3. Do the topic files group papers coherently under their titles?
+ 4. Does `pending` list plausible section keys, and is `context` non-empty where it should be?
+Do NOT check formatting or style. You are checking whether the GROUND TRUTH the authors will rely on
+is sound. Reply with ONLY a JSON object:
+{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+
+    "guard": """You are reviewing the GUARD stage of a clinical brief pipeline for Dr. Mabini's site.
+The guard screened each authored draft for lexical overlap with its own paper's abstract.
+Read {W}manifest.json and {W}guard_failed.json, then pick AT LEAST 6 drafts from {W}drafts_dd/ (a spread)
+and compare each against its paper file in {W}papers/.
+Check and report honestly:
+ 1. Is each draft genuinely ABOUT the paper in its matching paper file? Name any mismatch.
+ 2. Does any draft state numbers, populations, comparators or outcomes absent from that abstract?
+ 3. Does any draft mislabel the design — a narrative review called a trial, an animal or in-vitro
+    result written as a human/clinical finding?
+ 4. Does any draft carry AI/placeholder language, a dose given as advice, or "never"/"always" in the
+    clinician's own prose?
+Reply with ONLY a JSON object:
+{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+
+    "apply": """You are reviewing the ASSEMBLED BODY of a clinical brief before it publishes on Dr. Mabini's site.
+Read {W}body.applied.html (it is large — read the opening, the narrative section, 2-3 topic syntheses,
+2-3 deep-dive dialogs, and the end).
+Check and report honestly:
+ 1. Any reader-visible placeholder, "Pending review", or text admitting machine generation.
+ 2. Any dose (mg/mcg/IU) in the SITE'S OWN prose — narrative, synthesis, section intros. Doses are
+    allowed ONLY inside a paper's attributed containers (verbatim abstract, deep-dive, cite card).
+ 3. Every inline citation <sup class="mz-ref"> should carry a title, a finding, and a PubMed link,
+    and the finding should be a real takeaway with numbers, not a generic sentence.
+ 4. Any claim in the narrative or syntheses that overstates its source — preclinical read as clinical,
+    an association read as causation, a hedge dropped.
+ 5. Anything that reads as medical advice to a patient rather than an appraisal of the literature.
+ 6. Broken markup you can see: unescaped angle brackets in text, an empty section, a truncated abstract.
+Reply with ONLY a JSON object:
+{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+}
+
+
+def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
+    """Run the stage's reviewer. Raises if it refuses or cannot be read."""
+    prompt = REVIEW_PROMPTS[stage].format(W=W)
+    print(f"  reviewing {stage} …", flush=True)
+    r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+                       capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
+    if r.returncode != 0:
+        die(f"{stage} review could not run: {r.stderr.strip()[:200]}")
+    try:
+        envelope = json.loads(r.stdout)
+        text = envelope.get("result") or envelope.get("text") or ""
+    except json.JSONDecodeError:
+        text = r.stdout
+    m = re.search(r"\{[\s\S]*\}", text)
+    if not m:
+        die(f"{stage} review returned no JSON verdict: {text[:300]}")
+    v = json.loads(m.group(0))
+    if "passed" not in v:
+        die(f"{stage} review returned no explicit 'passed': {text[:300]}")
+    v["digest"] = _digest(stage_inputs(W, stage))
+    v["at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    os.makedirs(W + ".ledger", exist_ok=True)
+    json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
+    for prob in (v.get("problems") or [])[:8]:
+        print(f"    REVIEW: {prob}")
+    if not v["passed"]:
+        die(f"the {stage} review refused this stage ({len(v.get('problems') or [])} problem(s))")
+    print(f"  review {stage}: PASSED" + (f" with {len(v.get('problems') or [])} note(s)" if v.get("problems") else ""))
+    return v
 
 
 def work_dir(post_id: str) -> str:
@@ -298,13 +441,14 @@ def cmd_prepare(post_id: str) -> None:
     json.dump({pm: papers[pm]["abstract"] for pm in repaired},
               open(W + "abstract_repairs.json", "w"), ensure_ascii=False)
     record(W, "prepare", {"papers": len(papers), "repaired": repaired, "topics": topics})
+    ai_review(W, "prepare")
     print(f"  ledger: prepare OK — authoring may now run for {post_id}")
 
 
 def cmd_pmids(post_id: str) -> None:
     """The authoritative list. Never retype one of these by hand."""
     W = work_dir(post_id)
-    require(W, "prepare")          # a PMID list is only authoritative post-validation
+    require(W, "prepare"); require_review(W, "prepare")   # authoritative only once validated AND read
     man = json.load(open(W + "manifest.json"))
     done = {f[:-5] for f in os.listdir(W + "drafts_dd")}
     todo = [p for p in man["pmids"] if p not in done]
@@ -313,7 +457,7 @@ def cmd_pmids(post_id: str) -> None:
 
 def cmd_guard(post_id: str) -> None:
     W = work_dir(post_id)
-    require(W, "prepare")
+    require(W, "prepare"); require_review(W, "prepare")
     rows = []
     for f in sorted(os.listdir(W + "drafts_dd")):
         pm = f[:-5]
@@ -339,6 +483,7 @@ def cmd_guard(post_id: str) -> None:
             print(f"NOT YET AUTHORED ({len(missing)}): " + json.dumps(missing[:12]))
         die("guard did not pass; apply is blocked until every paper is authored and about its own study")
     record(W, "guard", {"drafts": len(rows), "median": rows[len(rows) // 2][0]})
+    ai_review(W, "guard")
     print(f"  ledger: guard OK — apply may now run for {post_id}")
 
 
@@ -382,8 +527,8 @@ def escape_bare_angles(h: str) -> str:
 
 def cmd_apply(post_id: str) -> None:
     W = work_dir(post_id)
-    require(W, "prepare")
-    require(W, "guard")
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "guard");   require_review(W, "guard")
     man = json.load(open(W + "manifest.json"))
     post = json.load(open(W + f"{post_id}.source.json"))
     h = post["body_html"]
@@ -557,12 +702,15 @@ def cmd_apply(post_id: str) -> None:
         record(W, "apply", {"failed": json.dumps(verdict.get("problems"))[:400]})
         die("the publish audit refused this body")
     record(W, "apply", {"sections": applied, "syntheses": syn_n})
+    ai_review(W, "apply")
     print(f"  ledger: apply OK — publish may now run for {post_id}")
 
 
 def cmd_publish(post_id: str) -> None:
     W = work_dir(post_id)
-    require(W, "prepare"); require(W, "guard"); require(W, "apply")
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "guard");   require_review(W, "guard")
+    require(W, "apply");   require_review(W, "apply")
     body = open(W + "body.applied.html", encoding="utf-8").read()
     json.dump({"body_html": body}, open(W + "_put.json", "w"), ensure_ascii=False)
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json")))
@@ -575,4 +723,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
