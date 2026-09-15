@@ -1301,12 +1301,15 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}"
 SECTION_SPECS = """
 question: two <p> — "<strong>The clinical problem.</strong> …" then "<strong>The question.</strong> …"
 pico: <dl> with Population, Intervention / Exposure, Comparator, Outcome, Design; "Not stated in the abstract." where absent
-methods: one or two <p> appraising design, sample, analysis AS STATED; grade honestly
+methods: one or two <p> appraising design, sample, analysis AS STATED; grade honestly. If the
+  abstract does not state the design, say so plainly — do not infer one from the journal or the title,
+  and do not assert it as fact
 strengths: <ul> of 3-5 <li>, each specific and grounded
 applicability: one or two <p> — to whom it transfers and to whom it does not
 equity: one or two <p> — who is represented; say plainly what is not reported
 prompts: <ol> of 3-4 <li>
-bottom: one <p>, 2-4 sentences
+bottom: one <p>, 2-4 sentences. Name the design only if the abstract states it; otherwise write what
+  the paper reports without labelling its design
 findings: 2-3 <p> with the abstract's own numbers
 rob: one or two <p> — what could be wrong with the conclusions, from the design as stated
 kb: one or two <p> — how this sits with what was already established, without inventing outside studies
