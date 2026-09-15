@@ -207,7 +207,7 @@ def require_review(W: str, stage: str) -> dict:
     p = W + f".ledger/{stage}.review.json"
     if not os.path.exists(p):
         die(f"stage '{stage}' ran but was never reviewed. Run the {stage} review and record it "
-            f"with: brief_pipeline.py record-review <post-id> {stage} <verdict.json>")
+            f"— run the stage; its reviewer produces the verdict")
     r = json.load(open(p))
     if not r.get("passed"):
         die(f"the {stage} review did not pass: {json.dumps(r.get('problems'))[:400]}")
@@ -217,22 +217,12 @@ def require_review(W: str, stage: str) -> dict:
     return r
 
 
-def cmd_record_review(post_id: str) -> None:
-    """Record a reviewer's verdict over a stage. Called after the AI review runs."""
-    W = work_dir(post_id)
-    stage, path = sys.argv[3], sys.argv[4]
-    if stage not in REVIEWED_STAGES:
-        die(f"'{stage}' is not a reviewed stage; reviewed stages are {REVIEWED_STAGES}")
-    require(W, stage)                      # cannot review a stage that did not run
-    v = json.load(open(path))
-    if "passed" not in v:
-        die("a review verdict must carry an explicit boolean 'passed'")
-    v["digest"] = _digest(stage_inputs(W, stage))
-    v["at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
-    print(f"  ledger: {stage} review recorded — passed={v['passed']}"
-          + (f" | {len(v.get('problems') or [])} problem(s)" if v.get("problems") else ""))
-
+# cmd_record_review REMOVED (2026-09-15). It let any caller write a stage's
+# review verdict by hand — `record-review <post-id> <stage> <verdict.json>` with
+# {"passed": true} — and require_review() could not tell that from a verdict
+# ai_review() actually obtained from the model. A reviewer that can be written
+# by the thing being reviewed is not a reviewer. Every stage verdict is now
+# produced only inside ai_review().
 
 def require(W: str, stage: str) -> dict:
     """Refuse to proceed unless `stage` passed on the inputs that exist now."""
@@ -562,6 +552,7 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     for prob in advisory[:6]:
         print(f"    advisory: {prob}")
     v["blocking"], v["advisory"] = blocking, advisory
+    v["produced_by"] = "ai_review"
     json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
     if blocking or not v["passed"]:
         die(f"the {stage} review refused this stage ({len(blocking)} blocking problem(s))")
@@ -3008,4 +2999,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review, "standards-check": cmd_standards_check, "run": cmd_run}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "standards-check": cmd_standards_check, "run": cmd_run}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
