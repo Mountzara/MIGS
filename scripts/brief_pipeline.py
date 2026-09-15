@@ -388,8 +388,7 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
      and its relevance, with a link to the study; the marker itself resolves to the numbered reference.
  S4  The reference list is numbered in citation order and contains exactly the cited papers; every paper
      the brief covers is cited in the prose at least once — none is merely listed.
- S5  Every study in the brief has a full journal-club deep dive: all sections authored (no "Pending
-     review" or placeholder), and its abstract reproduced verbatim and complete from PubMed.
+ S5  Every study's abstract is reproduced in its deep dive verbatim and complete, as PubMed gives it.
  S6  Every claim is grounded in the cited abstract — no overstatement, no understatement, no preclinical
      or animal result presented as a human finding, no invented numbers or populations.
  S7  No dosing (mg, mcg, µg, IU, mg/kg, mg/day) in the site's own prose; doses appear only inside a
@@ -404,6 +403,8 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
  S13 Trend briefs carry NO verdict gauge and no "verdict", "debunk", "myth" language; clear headlines and
      subheadlines; one framing label per item from the fixed list; a "Where the two sides can meet"
      section; a tone the person who made the claim could read and learn from.
+ S15 Every study has a full journal-club deep dive with every section authored — no "Pending review",
+     no placeholder, no empty section.
  S14 The brief renders on the site's paper background with readable contrast — measured on the rendered
      page (near-invisible-text and pixel-contrast gates on the published route, unpublishing on failure) —
      and the page shows no duplicate element ids.
@@ -417,22 +418,22 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
 # each reviewer is told what is IN SCOPE now and what a later stage enforces;
 # `apply` reviews the finished body and owns all of them.
 STAGE_STANDARDS = {
-    "prepare": ["S5"],
+    "prepare": ["S5"],                     # the abstracts, not the writing
     "curate":  ["S11"],
-    "author":  ["S1", "S3", "S5", "S6", "S7", "S8", "S10", "S13"],
+    "author":  ["S1", "S3", "S6", "S7", "S8", "S10", "S13", "S15"],
     "guard":   ["S6"],
     # S14's contrast half is a rendered-page property; a text reader cannot see
     # it, and asking one to certify it is the same spec/capability mismatch the
     # S3 check had. verify_rendered measures both after publish and unpublishes
     # on failure, so they are enforced — just not from this text.
-    "apply":   [f"S{i}" for i in range(1, 15) if i not in (3, 14)],
+    "apply":   [f"S{i}" for i in range(1, 16) if i not in (3, 14)],
 }
 RENDERED_ONLY = {"S3": "hover and tap behaviour", "S14": "contrast on the rendered page"}
 
 
 def stage_addendum(stage: str) -> str:
     own = STAGE_STANDARDS.get(stage, [])
-    later = [f"S{i}" for i in range(1, 15) if f"S{i}" not in own]
+    later = [f"S{i}" for i in range(1, 16) if f"S{i}" not in own]
     rendered = ("\nMEASURED ON THE RENDERED PAGE after publish, not from this text — do not block on "
                 "them here: " + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + "."
                 if stage == "apply" else "")
@@ -470,12 +471,12 @@ careful reader would. Read {W}body.applied.html — every section under every he
 page is out of scope: opening, narrative or editorial, EVERY topic synthesis or item subsection, the
 shape-of-evidence section, the cite cards, the reference list) and at least two deep-dive dialogs.
 {STANDARDS}
-For EACH standard S1-S14 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
+For EACH standard S1-S15 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
 the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
 for the case that fails, not the case that passes.
 Reply with ONLY a JSON object:
 {{"passed": <true only if every applicable standard is met>,
-  "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S14": {{...}}}},
+  "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S15": {{...}}}},
   "blocking": ["S<n>: what fails, with evidence", ...], "notes": "one or two sentences"}}"""
     v = _claude(prompt, timeout_s=1200)
     if not v or "passed" not in v:
@@ -596,7 +597,7 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     own = set(STAGE_STANDARDS.get(stage, []))
     kept, deferred = [], []
     for item in blocking:
-        named = set(re.findall(r"\bS(?:1[0-4]|[1-9])\b", str(item)))
+        named = set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(item)))
         if named and not (named & own):
             deferred.append(f"[deferred to a later stage: {', '.join(sorted(named))}] {item}")
         else:
