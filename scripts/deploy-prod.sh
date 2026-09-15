@@ -432,6 +432,40 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_integrity.mjs 
 fi
 
 # ---------------------------------------------------------------------------
+# Rendered-citation gate. check_citation_integrity.mjs reads the repo's own
+# pages; this one opens every PUBLISHED brief in a browser and checks what a
+# reader actually gets from a citation: a numbered marker (not a PMID), a
+# popover that appears on hover carrying a real summary, a link to the study,
+# and a marker that resolves to its numbered reference. Static HTML cannot
+# prove any of that. Set DEPLOY_SKIP_CITATION_RENDER=1 only for a failure that
+# is pre-existing and explicitly accepted.
+# ---------------------------------------------------------------------------
+if [ "${DEPLOY_SKIP_CITATION_RENDER:-0}" != "1" ] && [ -f scripts/audit_citation_popovers.py ]; then
+    echo ""
+    echo "🔗 rendered-citation gate — markers numbered, hoverable, resolving..."
+    _routes=$(python3 - <<'PYR'
+import sys
+sys.path.insert(0, "scripts")
+from _lib_brief_routes import published_brief_routes
+print(",".join(published_brief_routes("https://www.mountzara.com")))
+PYR
+)
+    if [ -z "$_routes" ]; then
+        echo "🛑 DEPLOY BLOCKED — could not enumerate published briefs for the citation gate"
+        exit 1
+    fi
+    if (cd scripts && python3 audit_citation_popovers.py "https://www.mountzara.com" "--routes=$_routes") > /tmp/_cite_render.log 2>&1; then
+        tail -2 /tmp/_cite_render.log
+        echo "   ✅ rendered-citation gate passed"
+    else
+        echo ""
+        echo "🛑 DEPLOY BLOCKED — a citation does not behave for a reader:"
+        tail -25 /tmp/_cite_render.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Citation-SUPPORT report (advisory, never blocks).
 #
 # The integrity gate proves a citation resolves. This asks the harder

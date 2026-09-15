@@ -2266,6 +2266,18 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                     a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
                     if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
                         preclinical.append(f"[{pc}] {c}: {bare[:90]}")
+    # a card's prose is attributed by its container, so the container must
+    # actually carry that attribution: a link to the study and its deep dive
+    for mcard in CARD_RE.finditer(h):
+        c = mcard.group(0)
+        pmc = _pmid_of(c) or (re.search(r"openDeepDive\('dd-(\d+)'", c) or [None, None])[1]
+        if not pmc:
+            faults.append("a cite card names no paper")
+            continue
+        if f"pubmed.ncbi.nlm.nih.gov/{pmc}" not in c:
+            faults.append(f"[card:{pmc}] the card carries no link to the study it summarises")
+        if f"dd-{pmc}" not in c:
+            faults.append(f"[card:{pmc}] the card has no deep-dive trigger")
     for pm, card in card_texts(h):
         ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
         if re.search(r"(?<!CBG/)\bMIGS\b", ct, re.I) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
@@ -2344,9 +2356,10 @@ def prose_faults(W: str, h: str, man: dict) -> list:
     dup = [k for k, v in _C(re.findall(r'\sid="([^"]+)"', h)).items() if v > 1]
     if dup:
         faults.append(f"duplicate element ids on the page: {dup[:5]}")
-    # S3: tappable
-    if "mz-open" not in h:
-        faults.append("no touch handler for citation popovers in the body")
+    # S3 is a property of the RENDERED page — whether hovering a marker really
+    # reveals the summary — so audit_citation_popovers.py measures it on the
+    # published route after publish. The check that stood here looked for the
+    # very string this stage injects moments earlier, so it could never fail.
     return faults
 
 
@@ -2461,9 +2474,14 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
         sents = _sentences(frag)
         if not sents:
             continue
-        if card_pm:
-            sents = [sn + f" ⟦{card_pm}⟧" for sn in sents]
-        cited = sorted({c for sn in sents for c in re.findall(r"⟦(\d+)⟧", sn)})
+        # A card IS its paper's attributed container: it carries that paper's
+        # title, its meta line and a link to the study, so its prose needs no
+        # inline marker. That structure is CHECKED in prose_faults rather than
+        # assumed, and these sentences are judged for support against that
+        # paper — synthesising a citation token here graded every card as
+        # cited by construction instead of by evidence.
+        cited = sorted({c for sn in sents for c in re.findall(r"⟦(\d+)⟧", sn)}
+                       | ({card_pm} if card_pm else set()))
         ctx = {c: abstracts[c] for c in cited if c in abstracts}
         listing = "\n".join(f"[{n}] {sn}" for n, sn in enumerate(sents, 1))
         v = _claude(f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
@@ -2498,7 +2516,7 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             except Exception:
                 continue
             bad = []
-            if r.get("claim") and not r.get("cited"):
+            if r.get("claim") and not r.get("cited") and not card_pm:
                 bad.append("claim without a citation")
             if r.get("claim") and r.get("cited") and r.get("supported") is False:
                 bad.append("not supported by the cited abstracts")
@@ -2878,6 +2896,7 @@ def verify_rendered(route: str, post_id: str) -> None:
     checks = [
         ["python3", os.path.join(ROOT, "scripts/audit_light_text.py"), BASE, f"--routes={route}"],
         ["python3", os.path.join(ROOT, "scripts/audit_contrast_pixels.py"), BASE, f"--pages={route}"],
+        ["python3", os.path.join(ROOT, "scripts/audit_citation_popovers.py"), BASE, f"--routes={route}"],
     ]
     for cmd in checks:
         print(f"  rendered check: {os.path.basename(cmd[1])} {route}")
