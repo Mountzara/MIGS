@@ -461,6 +461,9 @@ def require_standards(W: str) -> None:
         die("the standards audit did not pass this body")
     if r.get("digest") != _sha_file(W + "body.applied.html"):
         die("the standards audit is for a different body than the one on disk — run apply")
+    g = W + ".ledger/apply.grounding.json"
+    if not os.path.exists(g) or json.load(open(g)).get("faults"):
+        die("no passing sentence-level grounding audit on record for this body — run apply")
 
 
 def spec_receipt_path() -> str:
@@ -494,6 +497,10 @@ For EACH standard, name (a) the authoring instruction that tells an author to me
 deterministic check that refuses a body that does not, and (c) the reviewer prompt that checks it.
 A standard with no (b) is a GAP. An instruction that CONTRADICTS a standard is a GAP. A check that is
 weaker than the standard (checks presence but not correctness, checks one place but not all) is a GAP.
+For a standard that is semantic (whether a claim is supported, whether a sentence is advice, whether a
+paper is on-topic), (b) is satisfied ONLY by a model audit that the code applies to EVERY unit
+(sentence, paper) with a per-unit verdict and a deterministic refusal on any failing verdict — a
+regex allowlist alone does not satisfy it, and a single sampling review does not either.
 Be adversarial and concrete: quote the line. Do not credit a comment or a docstring as enforcement.
 Reply with ONLY a JSON object:
 {{"passed": <true only if no gaps>, "gaps": ["S<n>: <what is missing or contradicts>, <where>"],
@@ -668,6 +675,10 @@ def cmd_prepare(post_id: str) -> None:
         for s in re.finditer(r'<section class="mz-jc-section" id="dd-\d+-([a-z_-]+)">(.*?)</section>', inner, re.S):
             pending = "mz-jc-pending-tag" in s.group(2) or "Pending Dr. Mabini" in s.group(2)
             secs[s.group(1)] = {"pending": pending, "text": txt(s.group(2))}
+        for k in JC_KEYS:
+            if k not in secs:
+                # a section the dialog does not carry at all is still owed
+                secs[k] = {"pending": True, "text": ""}
         papers[pmid] = {
             "pmid": pmid,
             "title": txt((re.search(r'class="mz-jc-modal-title"[^>]*>(.*?)</h2>', inner, re.S) or [None, ""])[1]),
@@ -793,6 +804,9 @@ def prepare_trend(post_id: str) -> None:
         for sm in re.finditer(r'<section class="mz-jc-section[^"]*" id="dd-\d+-([a-z_-]+)"[^>]*>(.*?)</section>', inner, re.S):
             h3 = re.search(r"<h3[^>]*>(.*?)</h3>", sm.group(2), re.S)
             secs[sm.group(1)] = {"title": txt(h3.group(1)) if h3 else sm.group(1), "text": txt(sm.group(2))}
+        for k in JC_KEYS:
+            if k not in secs:
+                secs[k] = {"title": HEAD.get(k, k), "text": ""}
         pf = W + f"papers/{pmid}.json"
         old = json.load(open(pf)) if os.path.exists(pf) else {}
         papers[pmid] = {
@@ -971,6 +985,44 @@ def cmd_curate(post_id: str) -> None:
     for stale in (W + "body.applied.html", W + f"{post_id}.applied.json"):
         if os.path.exists(stale):
             os.remove(stale)
+
+    # CORROBORATION. A curator's keep is a single judgment. A second, independent
+    # call — given only the abstracts and the list of the brief's topic titles,
+    # not the curator's reasons — must file each kept paper under the same
+    # topic; a paper the two do not agree on is dropped, with both answers
+    # recorded. Two independent judgments agreeing is the deterministic rule.
+    titles = {}
+    for tid in man["topics"]:
+        tf = W + f"topics/{tid}.json"
+        if os.path.exists(tf):
+            titles[tid] = json.load(open(tf))["title"]
+    for tid, d in decisions.items():
+        if not d["keep"] or tid not in titles:
+            continue
+        t = json.load(open(W + f"topics/{tid}.json"))
+        papers_ctx = [{"pmid": q["pmid"], "title": q["title"], "abstract": (q.get("abstract") or "")[:3500]}
+                      for q in t["papers"] if q["pmid"] in d["keep"]]
+        v = _claude(f"""Classify each paper below under ONE of this brief's topic headings, from its title and abstract
+alone, for an audience of gynecologic surgeons. Use "NONE" when the paper is about a different organ,
+specialty or population (a keyword collision), not merely tangential.
+TOPIC HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
+PAPERS: {json.dumps(papers_ctx, ensure_ascii=False)[:90000]}
+Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}""", timeout_s=900)
+        if not v or not isinstance(v.get("assignments"), dict):
+            die(f"{tid}: corroboration returned no verdict")
+        here = titles[tid]
+        disagreed = []
+        for q in list(d["keep"]):
+            got = str(v["assignments"].get(q, "")).strip()
+            if got != here:
+                disagreed.append({"pmid": q, "reason": f"independent classification filed it under {got or 'nothing'!r}, not {here!r}"})
+        if disagreed:
+            for x in disagreed:
+                d["keep"].remove(x["pmid"]); d["keep_reasons"].pop(x["pmid"], None); d["drop"].append(x)
+                print(f"  DROP {x['pmid']} from {tid}: {x['reason']}")
+            t["papers"] = [q for q in t["papers"] if q["pmid"] in d["keep"]]
+            json.dump(t, open(W + f"topics/{tid}.json", "w"), ensure_ascii=False, indent=1)
+        d["corroboration"] = {q: v["assignments"].get(q) for q in papers_ctx and [x["pmid"] for x in papers_ctx]}
     # WHAT WAS DROPPED IS MEASURED AGAINST THE SOURCE POST, NOT AGAINST THE
     # CURRENT TOPIC FILES. curate mutates the topic files, so a second run sees
     # an already-clean set, decides to drop nothing, and — if the drop list
@@ -1681,7 +1733,11 @@ def cmd_guard(post_id: str) -> None:
 # ---------------------------------------------------------------------------
 # apply — assemble the body and enforce every standing site rule in one place
 # ---------------------------------------------------------------------------
+JC_KEYS = ["bottom", "question", "pico", "methods", "abstract", "findings", "rob", "strengths",
+           "applicability", "kb", "equity", "monday", "prompts"]
 HEAD = {"question": "Clinical question", "pico": "PICO", "methods": "Methodology &mdash; methods strength",
+        "rob": "Risk of bias &mdash; limitations", "kb": "Where this sits in the established literature",
+        "monday": "Where this changes Monday clinic &mdash; DO + CBG/MIGS lens", "abstract": "Verbatim PubMed abstract",
         "strengths": "Strengths", "applicability": "External validity &amp; applicability",
         "equity": "Equity &amp; population considerations", "prompts": "Discussion prompts for journal club",
         "bottom": "Bottom line &mdash; author&#39;s own interpretation",
@@ -1700,8 +1756,10 @@ DISCLAIMER = ('<div class="mz-eddisclaimer" role="note" style="margin:28px 0 8px
 # report. The first version of this rule matched "185.9 mg" inside "185.9 mg/L"
 # and flagged a C-reactive protein as dosing. Per-volume units are excluded;
 # per-weight and per-time (mg/kg, mg/day) are dosing and stay in.
+NUM_WORDS = r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|hundred|thousand)"
 DOSE_RE = re.compile(
-    r"\b\d[\d,.\u2013\u2014-]*\s?(?:mg|mcg|\u00b5g|\u03bcg|IU)\b(?!\s*/\s*(?:L|dL|mL|l|dl|ml))",
+    r"\b(?:\d[\d,.\u2013\u2014-]*|" + NUM_WORDS + r"(?:[\s-]" + NUM_WORDS + r")?)[\s-]*"
+    r"(?:mg|mcg|\u00b5g|\u03bcg|IU|milligrams?|micrograms?|international units?)\b(?!\s*/\s*(?:L|dL|mL|l|dl|ml))",
     re.I)
 # Containers that may carry a study's own reported dose, because the dose is
 # attributed to the paper there. Everything outside them is the site's voice.
@@ -1794,9 +1852,9 @@ def strip_build_comments(h: str) -> str:
     view-source, and the standing directive is that no internal build detail
     appears on any page.
     """
-    return re.sub(r"<!--(?:(?!-->)[\s\S])*?"
-                  r"(?:run_manifest|blog_generator|auto-draft|generator\"?\s*:|kb_entries_retrieved)"
-                  r"(?:(?!-->)[\s\S])*?-->", "", h)
+    # every comment goes, not only the ones matching a keyword list — a
+    # comment is never reader content and any of them can carry build detail
+    return re.sub(r"<!--[\s\S]*?-->", "", h)
 
 
 def write_abstracts(W: str, man: dict, h: str, dropped: list) -> tuple:
@@ -1879,6 +1937,17 @@ def apply_sections(W: str, man: dict, h: str) -> tuple:
                              % (re.escape(pmid), re.escape(key)), re.S)
             m = pat.search(h)
             if not m:
+                # the dialog lacks this section entirely: create it before the
+                # dialog's closing so the fixed section list is always complete
+                dm = re.search(r'(<dialog[^>]*id="dd-%s"[^>]*>)([\s\S]*?)(</dialog>)' % re.escape(pmid), h)
+                if not dm:
+                    continue
+                inner_d = dm.group(2)
+                cut_at = inner_d.rfind("</div>") if inner_d.rstrip().endswith("</div>") else len(inner_d)
+                new_sec = (f'<section class="mz-jc-section" id="dd-{pmid}-{key}"><h3>{HEAD.get(key, key)}</h3>'
+                           + inner.strip() + "</section>")
+                h = h[:dm.start(2)] + inner_d[:cut_at] + new_sec + inner_d[cut_at:] + h[dm.end(2):]
+                applied += 1
                 continue
             head = re.search(r"<h3[^>]*>(.*?)</h3>", m.group(2), re.S)
             title = re.sub(r'\s*<span class="mz-jc-pending-tag">.*?</span>', "",
@@ -1984,7 +2053,12 @@ TOUCH_SCRIPT = ('<script>(function(){document.addEventListener("click",function(
 PROSE_CONTAINERS = re.compile(
     r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
     r'|<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>'
-    r'|<section class="mz-post-section"[^>]*id="(?:bottom-line|lens|bridge|gaps|closing|evidence)"[^>]*>[\s\S]*?</section>')
+    r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence)"[^>]*>[\s\S]*?</section>')
+CARD_FITS = re.compile(r'<article class="mz-cite-card[^"]*"[^>]*id="mz-cite-(\d+)"[\s\S]*?<p class="mz-cite-fits">([\s\S]*?)</p>')
+
+
+def _num_tokens(text: str) -> set:
+    return {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
 ADVICE_RE = re.compile(r"\byou (?:should|need to|must|ought to)\b|\b(?:start|stop) taking\b|\btake (?:\d|one|two|a) (?:capsule|tablet|dose)|\bask your (?:doctor|surgeon|physician)\b|\bI recommend (?:that )?you\b", re.I)
 PROVENANCE_RE = re.compile(r"\b(?:AI|machine|auto)[- ]generated\b|generated by (?:an? )?(?:AI|model|assistant|LLM)|large language model|\bLLMs?\b|\bClaude\b|\bChatGPT\b|\bGPT-?\d", re.I)
 INTERNAL_RE = re.compile(r"/Users/|/home/|/tmp/|\.brief-work|CLAUDE\.md|SYSTEM_MAP|§\s?\d+\.\d+|brief_pipeline|\b[a-z_]+\.(?:json|py|mjs)\b")
@@ -2042,7 +2116,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         pf = W + f"papers/{q}.json"
         if os.path.exists(pf):
             pj = json.load(open(pf))
-            abstracts[q] = re.sub(r"[,\s]", "", (pj.get("pubmed_abstract") or pj.get("abstract") or "") + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
+            abstracts[q] = _num_tokens((pj.get("pubmed_abstract") or pj.get("abstract") or "") + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
     uncited_claims, bad_numbers, preclinical = [], [], []
     for frag in PROSE_CONTAINERS.findall(h):
         for sent in _sentences(frag):
@@ -2053,7 +2127,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                 uncited_claims.append(bare[:110])
                 continue
             if cites:
-                pool = "".join(abstracts.get(c, "") for c in cites)
+                pool = set().union(*[abstracts.get(c, set()) for c in cites]) if cites else set()
                 for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", bare):
                     t = tok.replace(",", "")
                     if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in pool:
@@ -2062,6 +2136,14 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                     a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
                     if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
                         preclinical.append(f"{c}: {bare[:90]}")
+    for pm, card in CARD_FITS.findall(h):
+        ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
+        if re.search(r"(?<!CBG/)\bMIGS\b", ct) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
+            faults.append(f"card {pm}: bare MIGS, never/always, or advice in the lens paragraph")
+        for t in _num_tokens(ct):
+            if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
+                faults.append(f"card {pm}: number {t} is not in the paper's abstract")
+                break
     if uncited_claims:
         faults.append(f"{len(uncited_claims)} sentence(s) state a number or study with no citation, e.g. {uncited_claims[:2]}")
     if bad_numbers:
@@ -2103,6 +2185,80 @@ def prose_faults(W: str, h: str, man: dict) -> list:
     # S3: tappable
     if "mz-open" not in h:
         faults.append("no touch handler for citation popovers in the body")
+    return faults
+
+
+
+def grounding_audit(W: str, h: str, man: dict) -> list:
+    """Every sentence of the site's own prose, judged against the abstracts it cites.
+
+    No regex expresses "a factual claim with no citation", "a finding the cited
+    abstract does not support", "an animal result written as a human one" or
+    "advice to a patient" in novel phrasing. So the model judges every sentence,
+    deterministically — each prose container is one call, each sentence gets an
+    explicit verdict, and any failing sentence refuses the body. The verdict is
+    recorded with the body's digest; publish requires it.
+    """
+    abstracts = {}
+    for q in man["pmids"]:
+        pf = W + f"papers/{q}.json"
+        if os.path.exists(pf):
+            pj = json.load(open(pf))
+            abstracts[q] = {"title": pj.get("title", ""), "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or ""}
+    faults, results = [], []
+    frags = PROSE_CONTAINERS.findall(h)
+    for i, frag in enumerate(frags):
+        sents = _sentences(frag)
+        if not sents:
+            continue
+        cited = sorted({c for sn in sents for c in re.findall(r"⟦(\d+)⟧", sn)})
+        ctx = {c: abstracts[c] for c in cited if c in abstracts}
+        listing = "\n".join(f"[{n}] {sn}" for n, sn in enumerate(sents, 1))
+        v = _claude(f"""You are auditing the sentences of a clinical brief against the abstracts they cite. Citations
+appear as ⟦PMID⟧ tokens inside the sentence they belong to.
+SENTENCES:
+{listing}
+CITED ABSTRACTS (the only permitted sources for these sentences):
+{json.dumps(ctx, ensure_ascii=False)[:90000]}
+For EVERY sentence return one object:
+ n: its number
+ claim: true if it asserts a fact about a study, a finding, a number, a population, a mechanism, a
+        design, or what the literature shows; false for the author's own interpretation, a question,
+        a transition, or a statement about the brief itself
+ cited: true if the sentence carries at least one ⟦PMID⟧ token
+ supported: for a cited claim, true only if every factual element is traceable to the cited abstracts
+            (no invented number, population, comparator, outcome or direction; no overstatement or
+            understatement); null when claim is false
+ preclinical_as_human: true if a cited abstract reports animal or in-vitro work and the sentence
+            presents that finding as a human or clinical result
+ advice: true if the sentence tells a patient what to do (any phrasing)
+ dose: true if the sentence states an amount of a drug or supplement to take
+ note: one clause of evidence when any flag is true
+Be adversarial: default to supported=false when you cannot trace an element.
+Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects.""", timeout_s=900)
+        if not v or not isinstance(v.get("sentences"), list):
+            die(f"grounding audit returned no verdict for prose container {i + 1}")
+        for r in v["sentences"]:
+            try:
+                n = int(r.get("n")); sn = sents[n - 1]
+            except Exception:
+                continue
+            bad = []
+            if r.get("claim") and not r.get("cited"):
+                bad.append("claim without a citation")
+            if r.get("claim") and r.get("cited") and r.get("supported") is False:
+                bad.append("not supported by the cited abstracts")
+            for k in ("preclinical_as_human", "advice", "dose"):
+                if r.get(k):
+                    bad.append(k.replace("_", " "))
+            if bad:
+                shown = re.sub(r"\u27e6\d+\u27e7", "", sn)[:120]
+                note = str(r.get("note", ""))[:100]
+                faults.append(f"{'; '.join(bad)}: \"{shown}\" ({note})")
+            results.append({"container": i + 1, "n": n, "flags": bad, "note": r.get("note")})
+    json.dump({"digest": _sha_file(W + "body.applied.html") if os.path.exists(W + "body.applied.html") else None,
+               "faults": faults, "sentences": results},
+              open(W + ".ledger/apply.grounding.json", "w"), indent=1, ensure_ascii=False)
     return faults
 
 
@@ -2163,8 +2319,8 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     _dupes = {k: v for k, v in _C(re.findall(r'id="(ref-pop-[^"]+)"', h)).items() if v > 1}
     if _dupes:
         faults.append(f"duplicate popover ids remain: {list(_dupes)[:4]}")
-    if re.search(r"<!--(?:(?!-->)[\s\S])*?(?:run_manifest|blog_generator|auto-draft)", h):
-        faults.append("a build/run-manifest comment remains in the body")
+    if "<!--" in h:
+        faults.append("an HTML comment remains in the body")
     for sup in re.findall(r'<sup class="mz-ref">.*?</sup>', h, re.S):
         if "mz-ref-pop-finding" not in sup or "mz-ref-pop-src" not in sup:
             faults.append("a citation popover lacks its summary or source link")
@@ -2196,6 +2352,13 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             faults.append(f"citation marker points at a missing reference {href}")
             break
     faults += prose_faults(W, h, man)
+    if not faults:
+        # the sentence-level model audit runs only on a body that passed every
+        # mechanical check, so a malformed body is not paid for twice
+        g = grounding_audit(W, h, man)
+        for f_ in g:
+            print("  GROUNDING:", f_)
+        faults += [f"grounding: {len(g)} sentence(s) failed the sentence-level audit"] if g else []
     body_text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h)))
     for pmid, abstract in repairs.items():
         # Probe on prose, not on a structured label: apply() renders
