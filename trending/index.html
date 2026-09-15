@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="light">
     <meta name="theme-color" content="#FBFAF8">
     <meta name="description" content="Trend Briefs — public-facing evaluations of trending gynecologic claims circulating on social media.">
     <title>Trend Briefs — Mount Zara</title>
@@ -53,7 +53,7 @@
                 radial-gradient(110vmax 80vmax at 82% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
                 radial-gradient(90vmax 70vmax at 4% 112%, rgba(109, 40, 217, 0.14), transparent 56%),
                 linear-gradient(178deg, #FDFCFB 0%, #FBFAF8 55%, #F6F3EF 100%);
-            color: var(--text-on-dark);
+            color: #1A1726; /* was var(--text-on-dark) = #fff: the background was migrated to the light gradient but the base text colour was left on the dark token, so anything that did not set its own ink inherited white */
             min-height: 100vh;
             line-height: 1.5;
         }

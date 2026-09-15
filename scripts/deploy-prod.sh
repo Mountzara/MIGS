@@ -1489,6 +1489,23 @@ fi
 # AI-provenance aside and build manifests carrying his local filesystem paths
 # and private .docx filenames on the live site; both had to be stripped by
 # hand from 24 pages and 15 posts. This gate stops either from returning.
+# The document must not declare itself dark (2026-09-15). The owner reported
+# unreadable black backgrounds on the evidence briefs repeatedly; every earlier
+# fix recoloured individual elements while the fault sat at the document level —
+# a <meta name="color-scheme" content="dark"> on nine pages, and a body rule
+# inheriting white base text on three. This gate stops both from returning.
+if [ -f scripts/audit_document_theme.py ]; then
+    echo ""
+    echo "🔍 Document-theme gate — no page declares itself dark..."
+    if python3 scripts/audit_document_theme.py; then
+        echo "   ✅ document-theme gate passed"
+    else
+        echo ""
+        echo "🛑 DOCUMENT-THEME GATE FAILED — see the list above."
+        exit 1
+    fi
+fi
+
 if [ -f scripts/audit_no_internal_leakage.py ]; then
     echo ""
     echo "🔍 Internal-leakage gate — no AI notice, no local paths, no build manifests..."
