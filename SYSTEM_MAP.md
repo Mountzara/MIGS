@@ -1940,6 +1940,52 @@ trending page copy no longer promises one.
 
 ---
 
+### 8.0.0.0i THE STANDARDS layer — reviewers judge against the owner's requirements, not the pipeline's prompts (2026-09-15)
+
+**Owner, verbatim:** *"AI should be carefully reviewing each layer so that
+nothing is missed… ARE YOU SURE YOU HAVE CODED AI ANALYSIS ASSISTANCE to make
+sure everything in your deterministic scripts is [not] incorrectly passing?"*
+
+What was true and what was missing. Every stage did end in a reviewer. Every
+reviewer was handed THAT STAGE'S PROMPT and judged the output against it. So
+when the prompt itself was wrong — the PMID as the visible citation marker,
+"cite 1 to 4 papers", "no citation markup in the narrative" — the reviewers
+confirmed a wrong specification faithfully and W33/W34 published with raw
+PMIDs as markers and most prose uncited. A review that can only confirm my
+instructions cannot catch my instructions.
+
+Now in `brief_pipeline.py`:
+* **`STANDARDS`** — the owner's requirements S1–S14, written once in
+  reader-facing terms (sequential numbered markers; every claim cited; hover
+  summary + relevance + link; reference list in citation order with every
+  paper cited; complete verbatim PubMed abstracts; grounding; no dosing; no
+  advice; no internal/AI language; CBG/MIGS and no never/always; on-topic
+  papers; the weekly editorial spine; the trend format with no verdict; paper
+  background and unique ids).
+* **Every stage reviewer gets the standards appended** and is told: if the
+  stage's instructions and a standard disagree, the standard wins and the
+  mismatch is blocking.
+* **`standards_audit`** — a second, separate reader audit of the assembled
+  body given NOTHING but the standards and the page; `publish` refuses
+  without its passing receipt for the exact body on disk.
+* **`standards-check`** — turns the standards on the pipeline file itself:
+  for each standard it must find an authoring instruction, a deterministic
+  refusal, and a reviewer check; a missing or weaker one is a gap. `publish`
+  refuses unless a passing receipt exists for the CURRENT digest of the file,
+  so a rule cannot be edited and used unchecked. Its first run found nine
+  gaps in my pipeline, quoted by line; every one is now a deterministic check
+  in `prose_faults()`: an uncited sentence carrying a number or a named
+  study; a number in a cited sentence absent from the cited abstracts; an
+  animal/in-vitro paper described as a human finding; PubMed's abstract not
+  present whole in the deep dive (prepare now takes PubMed's text for EVERY
+  paper); patient-directed advice; broadened internal-name and AI-provenance
+  patterns; bare MIGS and never/always; a topic without a synthesis, a TOC
+  that does not list the live topics, a missing narrative; page-wide
+  duplicate ids; a recorded reason for every KEEP in curation; a touch
+  handler for popovers injected when a body lacks one.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are

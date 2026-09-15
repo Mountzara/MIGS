@@ -36,6 +36,8 @@ USAGE
     brief_pipeline.py guard    <post-id>   # lexical wrong-paper screen over drafts
     brief_pipeline.py apply    <post-id>   # assemble + enforce site rules + audit
     brief_pipeline.py publish  <post-id>   # PUT + approve (refuses unless apply passed)
+    brief_pipeline.py standards-check -    # review THIS file's rules and gates against THE STANDARDS;
+                                           # publish refuses without a passing receipt for this version
 
 STAGE ORDER MATTERS FOR COST, NOT ONLY CORRECTNESS. Run `prepare` then `curate`
 BEFORE any authoring. A deep dive, synthesis or narrative written before curation
@@ -358,9 +360,161 @@ Reply with ONLY a JSON object:
 }
 
 
+
+# ---------------------------------------------------------------------------
+# THE STANDARDS — what the owner requires of every published brief
+# ---------------------------------------------------------------------------
+# Written down ONCE, here, in reader-facing terms. Every reviewer in this
+# pipeline is handed this list in addition to its stage prompt, and is told
+# that an unmet standard is blocking even when the stage's own checks passed.
+# Why: the reviewers used to judge each stage against MY prompt for that
+# stage, so when the prompt was wrong (a PMID as the citation marker; "cite 1
+# to 4 papers"; "no citation markup in the narrative") they passed a wrong
+# specification faithfully and two briefs shipped that way. A review that
+# can only confirm my instructions cannot catch my instructions.
+# `standards-check` turns the same list on this file itself.
+
+STANDARDS = """
+THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
+ S1  Every factual claim in the site's own prose carries an inline citation placed right after it.
+ S2  Citation markers are sequential superscript NUMBERS (1, 2, 3 …) in order of first appearance; the
+     same paper keeps its number wherever it recurs. A PMID, author-year or anything else as the visible
+     marker fails.
+ S3  Every marker is hoverable (and tappable) and shows a plain-language summary of that study's finding
+     and its relevance, with a link to the study; the marker itself resolves to the numbered reference.
+ S4  The reference list is numbered in citation order and contains exactly the cited papers; every paper
+     the brief covers is cited in the prose at least once — none is merely listed.
+ S5  Every study in the brief has a full journal-club deep dive: all sections authored (no "Pending
+     review" or placeholder), and its abstract reproduced verbatim and complete from PubMed.
+ S6  Every claim is grounded in the cited abstract — no overstatement, no understatement, no preclinical
+     or animal result presented as a human finding, no invented numbers or populations.
+ S7  No dosing (mg, mcg, µg, IU, mg/kg, mg/day) in the site's own prose; doses appear only inside a
+     paper's attributed containers (verbatim abstract, deep dive, cite card).
+ S8  A clear educational disclaimer; nothing that reads as medical advice to a patient.
+ S9  No internal paths, spec references, build comments, AI-provenance language or placeholders visible.
+ S10 Terminology: "CBG/MIGS", never bare "MIGS"; no "never"/"always" in the clinician's own prose.
+ S11 Papers are on-topic for the heading they sit under (keyword collisions removed), and a heading with
+     nothing under it does not exist.
+ S12 Weekly briefs carry the editorial spine: an opening narrative, a synthesis paragraph above each
+     topic's cards, a jump-to-topic TOC, the reference list.
+ S13 Trend briefs carry NO verdict gauge and no "verdict", "debunk", "myth" language; clear headlines and
+     subheadlines; one framing label per item from the fixed list; a "Where the two sides can meet"
+     section; a tone the person who made the claim could read and learn from.
+ S14 The brief renders on the site's paper background with readable contrast, and the page shows no
+     duplicate element ids.
+"""
+
+STANDARDS_ADDENDUM = """
+
+INDEPENDENT OF THE CHECKS ABOVE: also judge this stage's output against THE STANDARDS below. They are the
+owner's requirements, not the pipeline's own instructions. If the stage's instructions and a standard
+disagree, THE STANDARD WINS and the mismatch is BLOCKING. List each unmet standard by its number in
+"blocking".
+""" + STANDARDS
+
+
+def _sha_file(path: str) -> str:
+    import hashlib
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+
+
+def standards_audit(W: str, post_id: str) -> None:
+    """A reader's audit of the assembled body against THE STANDARDS alone.
+
+    Separate from the apply review on purpose: that review carries the
+    stage's checklist and can inherit its blind spots. This one is given
+    nothing but the standards and the page.
+    """
+    kind = "trend" if json.load(open(W + "manifest.json")).get("format") == "trend" else "weekly"
+    prompt = f"""You are auditing a published-ready clinical brief ({kind} brief) for Dr. Mabini's site, as a
+careful reader would. Read {W}body.applied.html — the opening, the narrative or editorial, at least
+three topic syntheses or item subsections, the reference list, and two deep-dive dialogs.
+{STANDARDS}
+For EACH standard S1-S14 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
+the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
+for the case that fails, not the case that passes.
+Reply with ONLY a JSON object:
+{{"passed": <true only if every applicable standard is met>,
+  "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S14": {{...}}}},
+  "blocking": ["S<n>: what fails, with evidence", ...], "notes": "one or two sentences"}}"""
+    v = _claude(prompt, timeout_s=1200)
+    if not v or "passed" not in v:
+        die("standards audit returned no verdict")
+    blocking = v.get("blocking") or []
+    unmet = [k for k, r in (v.get("standards") or {}).items() if isinstance(r, dict) and r.get("met") is False]
+    out = {"digest": _sha_file(W + "body.applied.html"), "passed": bool(v.get("passed")) and not blocking and not unmet,
+           "blocking": blocking, "unmet": unmet, "standards": v.get("standards"), "notes": v.get("notes")}
+    json.dump(out, open(W + ".ledger/apply.standards.json", "w"), indent=1, ensure_ascii=False)
+    for b in blocking:
+        print(f"    STANDARD NOT MET: {b}")
+    if not out["passed"]:
+        die(f"standards audit refused the body ({len(blocking) or len(unmet)} standard(s) unmet)")
+    print("  standards audit: every applicable standard met")
+
+
+def require_standards(W: str) -> None:
+    path = W + ".ledger/apply.standards.json"
+    if not os.path.exists(path):
+        die("no standards audit on record for this body — run apply")
+    r = json.load(open(path))
+    if not r.get("passed"):
+        die("the standards audit did not pass this body")
+    if r.get("digest") != _sha_file(W + "body.applied.html"):
+        die("the standards audit is for a different body than the one on disk — run apply")
+
+
+def spec_receipt_path() -> str:
+    d = os.path.join(SCRATCH, "_standards")
+    os.makedirs(d, exist_ok=True)
+    return os.path.join(d, _sha_file(os.path.abspath(__file__)) + ".json")
+
+
+def require_spec_review() -> None:
+    """Publishing requires that THIS version of the pipeline has been reviewed
+    against the standards. Any edit to the file changes its digest and voids
+    the receipt, so a rule cannot be changed and used without being checked."""
+    path = spec_receipt_path()
+    if not os.path.exists(path):
+        die("this version of brief_pipeline.py has not been reviewed against THE STANDARDS — run: brief_pipeline.py standards-check -")
+    r = json.load(open(path))
+    if not r.get("passed"):
+        die("the standards-check of this version of the pipeline found gaps — fix them, then re-run standards-check")
+
+
+def cmd_standards_check(_: str) -> None:
+    """Review the pipeline's own rules and gates against THE STANDARDS."""
+    me = os.path.abspath(__file__)
+    prompt = f"""You are reviewing a deterministic publishing pipeline against the requirements it must enforce.
+Read {me} in full. It authors, verifies, assembles and publishes clinical briefs; the AI prompts it
+sends are string constants (SECTION_SPECS, SYNTH_RULES, TREND_SYNTH_RULES, NARRATIVE_RULES, CARD_RULES,
+TREND_EDITORIAL_PARTS, REVIEW_PROMPTS, the verification prompts inside _author_* functions), and its
+mechanical gates are the post-conditions in finish_and_audit and the site audit it calls.
+{STANDARDS}
+For EACH standard, name (a) the authoring instruction that tells an author to meet it, (b) the
+deterministic check that refuses a body that does not, and (c) the reviewer prompt that checks it.
+A standard with no (b) is a GAP. An instruction that CONTRADICTS a standard is a GAP. A check that is
+weaker than the standard (checks presence but not correctness, checks one place but not all) is a GAP.
+Be adversarial and concrete: quote the line. Do not credit a comment or a docstring as enforcement.
+Reply with ONLY a JSON object:
+{{"passed": <true only if no gaps>, "gaps": ["S<n>: <what is missing or contradicts>, <where>"],
+  "coverage": {{"S1": {{"instruction": "...", "check": "...", "review": "..."}}, ...}}, "notes": "..."}}"""
+    v = _claude(prompt, timeout_s=1500)
+    if not v or "passed" not in v:
+        die("standards-check returned no verdict")
+    gaps = v.get("gaps") or []
+    out = {"file_digest": _sha_file(me), "passed": bool(v.get("passed")) and not gaps, "gaps": gaps,
+           "coverage": v.get("coverage"), "notes": v.get("notes")}
+    json.dump(out, open(spec_receipt_path(), "w"), indent=1, ensure_ascii=False)
+    for g in gaps:
+        print(f"  GAP: {g}")
+    if not out["passed"]:
+        die(f"standards-check found {len(gaps)} gap(s) in this version of the pipeline")
+    print("  standards-check: every standard has an instruction, a deterministic check and a review")
+
+
 def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     """Run the stage's reviewer. Raises if it refuses or cannot be read."""
-    prompt = REVIEW_PROMPTS[stage].format(W=W)
+    prompt = REVIEW_PROMPTS[stage].format(W=W) + STANDARDS_ADDENDUM
     print(f"  reviewing {stage} …", flush=True)
     r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
                        capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
@@ -469,8 +623,13 @@ def reconcile_abstracts(papers: dict) -> tuple:
         real_labels = {m.group(2).upper() for m in re.finditer(r"(^|\n)([A-Z][A-Z /&-]{2,40}):", real_n)}
         mine_upper = mine_n.upper()
         truncated = bool(real_labels) and any(lab + ":" not in mine_upper for lab in real_labels)
+        # PubMed's text is the abstract for EVERY paper, not only the ones caught
+        # as wrong or truncated: a stored abstract sharing enough terms to pass
+        # the overlap test could still differ from the source, and "verbatim"
+        # means the source text. The repair record stays for the faults found.
+        p["pubmed_abstract"] = r["abstract"][:6000]
+        p["abstract"] = r["abstract"][:6000]
         if wrong or truncated:
-            p["abstract"] = r["abstract"][:6000]
             if wrong:
                 why = ("the stored brief carried placeholder text in place of an abstract"
                        if re.search(r"pending\s+review|verbatim pubmed abstract\s*$", mine_n, re.I) or len(mine_n) < 200
@@ -676,6 +835,8 @@ def prepare_trend(post_id: str) -> None:
     topics = []
     for name in sorted(groups, key=rank):
         tid = "topic-" + slug(name)
+        if tid in topics:
+            die(f"two items of the claim collide on the id {tid!r}: {name!r}")
         json.dump({"id": tid, "title": name,
                    "papers": [{"pmid": q, "title": papers[q]["title"], "meta": papers[q]["meta"],
                                "abstract": papers[q]["abstract"], "bottom": "", "findings": ""}
@@ -755,7 +916,8 @@ Be decisive and specific. For every DROP give the reason in one clause naming wh
 actually about.
 
 Reply with ONLY a JSON object:
-{{"topic": "{tid}", "keep": ["pmid", ...], "drop": [{{"pmid": "...", "reason": "..."}}],
+{{"topic": "{tid}", "keep": ["pmid", ...], "keep_reasons": {{"pmid": "<one clause: what the paper is about and why it belongs here>", ...}},
+  "drop": [{{"pmid": "...", "reason": "..."}}],
   "retitle": "<a better topic title, ONLY if the kept set no longer matches the current one, else null>"}}"""
 
 
@@ -789,7 +951,12 @@ def cmd_curate(post_id: str) -> None:
         if len(keep) + len(drop) != len(known):
             die(f"curation of {tid} did not account for every paper "
                 f"({len(keep)}+{len(drop)} vs {len(known)}) — refusing a partial verdict")
-        decisions[tid] = {"keep": keep, "drop": drop, "retitle": v.get("retitle")}
+        reasons = v.get("keep_reasons") or {}
+        missing_r = [q for q in keep if len(str(reasons.get(q, "")).strip()) < 15]
+        if missing_r:
+            die(f"{tid}: no stated reason for keeping {missing_r[:5]} — every decision is recorded, keep or drop")
+        decisions[tid] = {"keep": keep, "keep_reasons": {q: str(reasons[q]).strip() for q in keep},
+                          "drop": drop, "retitle": v.get("retitle")}
         dropped_total += len(drop); kept_total += len(keep)
         for d in drop:
             print(f"  DROP {d['pmid']} from {tid}: {d['reason'][:88]}")
@@ -1000,7 +1167,12 @@ numbers, then one sentence starting "Monday:" with the concrete implication. Nev
 study…". Cite ONLY PMIDs present in the topic file; every one of them must appear at least once.
 LENGTH: 1,000 characters minimum; at most 1,800 plus 150 per paper in the topic.
 GROUNDING: every claim and number from that paper's abstract. Overstatement and understatement are both
-failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >."""
+failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
+carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
+each time the sentence's claim rests on a paper.
+TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
 
 
 TREND_SYNTH_RULES = """
@@ -1027,7 +1199,12 @@ Cite ONLY PMIDs in the topic file; every one of them must appear at least once.
 LENGTH: 700 characters minimum; at most 1,600 plus 150 per paper in the item.
 GROUNDING: every claim and number from the abstracts. Overstatement and understatement are both
 failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
-{tone}"""
+{tone}
+CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
+carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
+each time the sentence's claim rests on a paper.
+TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
 
 
 def _author_one_topic(args_t: tuple) -> tuple:
@@ -1052,7 +1229,8 @@ READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper
 paper in the topic file is cited inline at least once and every cited PMID is in the topic file (an
 uncited paper is BLOCKING — add the citation or a sentence discussing it); every popover carries
 title, meta, a 250-600 character conclusion-first finding with a "Relevance:" sentence, and the PubMed
-link, id ref-pop-PMID; at least 700 characters of prose; no dose in the clinician's own prose; no AI/placeholder language; tone
+link, id ref-pop-PMID; at least 700 characters of prose; Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
+without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice. no dose in the clinician's own prose; no AI/placeholder language; tone
 is respectful to the person who made the claim — no "verdict", "debunk", "myth", "misinformation", no
 "influencer" used as a label.
 If fixable by tightening, deleting an unsupported sentence, correcting a popover or the label, return
@@ -1082,7 +1260,8 @@ popover carries title, meta, a 250-600 character takeaway-first finding ending i
 and the PubMed source link, with id ref-pop-PMID; no overstatement or understatement; no dose in the
 clinician's own prose; no AI/placeholder language, paths or section marks; at least 1,000 characters
 of prose. A paper left uncited is a BLOCKING problem — add the citation where the study is discussed,
-or add a sentence discussing it.
+or add a sentence discussing it. Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
+without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice.
 If fixable by tightening, deleting an unsupported sentence, or correcting a popover, return fixed_html
 with ok=true and problems listing the changes. Otherwise ok=false.
 GENERATED: {json.dumps(draft)[:60000]}
@@ -1113,7 +1292,12 @@ paper's PMID (the pipeline renumbers markers 1, 2, 3 … in order of first appea
 FINDING: 250-600 characters, the study's conclusion first with its numbers, then one sentence starting
 "Monday:" with the implication. Never open with "This study".
 PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, no dose in your own
-prose. Escape & < >. Return inner HTML only."""
+prose. Escape & < >. Return inner HTML only.
+CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
+carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
+each time the sentence's claim rests on a paper.
+TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
 
 def _author_narrative(W: str, topics: list) -> tuple:
     files = ", ".join(f"{W}topics/{t}.json" for t in topics)
@@ -1128,7 +1312,8 @@ READ every topic file: {files}
 Check: every study, author, number and finding traceable to a topic file; no overstatement or
 understatement; no preclinical or animal result written as a human finding; one <h2> starting
 "Monday Mornings:" then 3-4 <p>, 2,400-3,400 characters of prose (citation markup excluded from the count); every study
-named carries an inline citation in the standard markup, and every cited PMID is in a topic file; no
+named carries an inline citation in the standard markup, and every cited PMID is in a topic file; Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
+without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice. no
 AI/placeholder language, paths or section marks; no dose beyond the abstracts.
 If fixable by tightening or deleting an unsupported sentence, return fixed_html with ok=true and
 problems listing the changes. Otherwise ok=false with problems.
@@ -1185,7 +1370,13 @@ prose. Cite every study you name, inline, right after the claim, with EXACTLY th
 paper's PMID (the pipeline renumbers markers sequentially):
 <sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
 (FINDING: 250-600 characters, conclusion first with numbers, then a "Relevance:" sentence.)
-No AI/placeholder language, paths, section marks. Escape & < >. Return inner HTML for each part:
+No AI/placeholder language, paths, section marks. Escape & < >.
+CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
+carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
+each time the sentence's claim rests on a paper.
+TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+Return inner HTML for each part:
 {spec}
 Return ONLY a JSON object with exactly those keys.""")
     if not draft or not all(draft.get(k) for k in TREND_EDITORIAL_PARTS):
@@ -1197,7 +1388,8 @@ READ {W}syntheses.json (each item's verified subsection and framing label) and t
 Check: every study, number and finding traceable; the bottom line names items consistently with their
 framing labels (an item labelled "Supported by clinical trials" is not described as unsupported, and
 vice versa); no dose; every study named carries an inline citation in the standard markup with a PMID
-from a topic file; no AI/placeholder language; each part matches its spec:
+from a topic file; no AI/placeholder language; each part matches its spec: Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
+without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice.
 {spec}
 TONE: respectful to the person who made the claim; refuse any sneer, any "verdict", "debunk", "myth",
 "misinformation", or "influencer" used as a label.
@@ -1777,6 +1969,143 @@ def build_references(W: str, h: str, order: list) -> str:
     return h[:anchor] + refs + h[anchor:] if anchor >= 0 else h + refs
 
 
+
+TOUCH_SCRIPT = ('<script>(function(){document.addEventListener("click",function(e){var ref=e.target.closest'
+                '&&e.target.closest("sup.mz-ref");if(!ref){document.querySelectorAll(".mz-ref.mz-open").forEach'
+                '(function(el){el.classList.remove("mz-open")});return;}if(e.target.closest("a.mz-ref-pop-src"))'
+                'return;e.preventDefault();document.querySelectorAll(".mz-ref.mz-open").forEach(function(el){if'
+                '(el!==ref)el.classList.remove("mz-open")});ref.classList.toggle("mz-open");});})();</script>')
+
+
+
+# ---------------------------------------------------------------------------
+# Deterministic checks on the site's own prose (S1, S5, S6, S8, S9, S10, S12, S14)
+# ---------------------------------------------------------------------------
+PROSE_CONTAINERS = re.compile(
+    r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
+    r'|<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>'
+    r'|<section class="mz-post-section"[^>]*id="(?:bottom-line|lens|bridge|gaps|closing|evidence)"[^>]*>[\s\S]*?</section>')
+ADVICE_RE = re.compile(r"\byou (?:should|need to|must|ought to)\b|\b(?:start|stop) taking\b|\btake (?:\d|one|two|a) (?:capsule|tablet|dose)|\bask your (?:doctor|surgeon|physician)\b|\bI recommend (?:that )?you\b", re.I)
+PROVENANCE_RE = re.compile(r"\b(?:AI|machine|auto)[- ]generated\b|generated by (?:an? )?(?:AI|model|assistant|LLM)|large language model|\bLLMs?\b|\bClaude\b|\bChatGPT\b|\bGPT-?\d", re.I)
+INTERNAL_RE = re.compile(r"/Users/|/home/|/tmp/|\.brief-work|CLAUDE\.md|SYSTEM_MAP|§\s?\d+\.\d+|brief_pipeline|\b[a-z_]+\.(?:json|py|mjs)\b")
+ANIMAL_RE = re.compile(r"\b(?:mice|mouse|murine|rats?|rodent|in vitro|cell lines?|zebrafish|rabbits?|porcine|bovine)\b", re.I)
+HUMAN_RE = re.compile(r"\b(?:patients?|women|participants?|subjects|cohort|trial|randomi[sz]ed|men\b|adults?|people)\b", re.I)
+
+
+def _sentences(html_frag: str) -> list:
+    """Sentences of a prose fragment with each citation collapsed to ⟦PMID⟧ tokens."""
+    t = SUP_RE.sub(lambda m: " ⟦%s⟧ " % (_pmid_of(m.group(0)) or "?"), html_frag)
+    t = re.sub(r"<h[1-6][^>]*>[\s\S]*?</h[1-6]>", " ", t)
+    t = H.unescape(re.sub(r"<[^>]+>", " ", t))
+    t = re.sub(r"\s+", " ", t).strip()
+    parts = re.split(r"(?<=[.!?])\s+(?=[A-Z“\"(])", t)
+    out = []
+    for x in parts:
+        x = x.strip()
+        if not x:
+            continue
+        if x.startswith("⟦") and out:          # a citation placed after the full stop
+            m = re.match(r"((?:⟦\d+⟧\s*)+)(.*)", x)
+            out[-1] += " " + m.group(1).strip()
+            x = m.group(2).strip()
+            if not x:
+                continue
+        out.append(x)
+    return out
+
+
+def prose_faults(W: str, h: str, man: dict) -> list:
+    faults = []
+    prose = " ".join(PROSE_CONTAINERS.findall(h))
+    text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
+    # S10
+    if re.search(r"(?<!CBG/)\bMIGS\b", text):
+        faults.append("bare \"MIGS\" in the site's own prose (write CBG/MIGS)")
+    ab = re.findall(r"\b(?:never|always)\b", text, re.I)
+    if ab:
+        faults.append(f"\"never\"/\"always\" in the clinician's prose ({len(ab)}x)")
+    # S8
+    m = ADVICE_RE.search(text)
+    if m:
+        faults.append(f"reads as advice to a patient: {m.group(0)!r}")
+    # S9, over the whole visible body
+    vis = H.unescape(re.sub(r"<[^>]+>", " ", re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>|<!--[\s\S]*?-->", " ", h)))
+    m = PROVENANCE_RE.search(vis)
+    if m:
+        faults.append(f"AI-provenance language visible: {m.group(0)!r}")
+    m = INTERNAL_RE.search(vis)
+    if m:
+        faults.append(f"internal name or path visible: {m.group(0)!r}")
+    # S1 + S6, sentence by sentence
+    abstracts = {}
+    for q in man["pmids"]:
+        pf = W + f"papers/{q}.json"
+        if os.path.exists(pf):
+            pj = json.load(open(pf))
+            abstracts[q] = re.sub(r"[,\s]", "", (pj.get("pubmed_abstract") or pj.get("abstract") or "") + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
+    uncited_claims, bad_numbers, preclinical = [], [], []
+    for frag in PROSE_CONTAINERS.findall(h):
+        for sent in _sentences(frag):
+            cites = re.findall(r"⟦(\d+)⟧", sent)
+            bare = re.sub(r"⟦\d+⟧", " ", sent)
+            has_number = re.search(r"\d", bare) or re.search(r"\bet al\b|\bcolleagues\b", bare)
+            if has_number and not cites:
+                uncited_claims.append(bare[:110])
+                continue
+            if cites:
+                pool = "".join(abstracts.get(c, "") for c in cites)
+                for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", bare):
+                    t = tok.replace(",", "")
+                    if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in pool:
+                        bad_numbers.append(f"{t} (cites {', '.join(cites)})")
+                for c in cites:
+                    a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
+                    if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
+                        preclinical.append(f"{c}: {bare[:90]}")
+    if uncited_claims:
+        faults.append(f"{len(uncited_claims)} sentence(s) state a number or study with no citation, e.g. {uncited_claims[:2]}")
+    if bad_numbers:
+        faults.append(f"{len(bad_numbers)} number(s) in cited sentences absent from the cited abstracts, e.g. {bad_numbers[:4]}")
+    if preclinical:
+        faults.append(f"animal/in-vitro paper described as a human finding: {preclinical[:2]}")
+    # S5: every kept paper's abstract section carries PubMed's text whole
+    alnum = lambda x: re.sub(r"[^a-z0-9]", "", H.unescape(re.sub(r"<[^>]+>", " ", x)).lower())
+    for q in man["pmids"]:
+        pf = W + f"papers/{q}.json"
+        if not os.path.exists(pf):
+            continue
+        src = json.load(open(pf)).get("pubmed_abstract") or ""
+        if not src:
+            faults.append(f"{q}: no PubMed abstract on record — prepare did not reconcile it")
+            continue
+        dm = re.search(r'<dialog[^>]*id="dd-%s"[^>]*>([\s\S]*?)</dialog>' % re.escape(q), h)
+        sec = re.search(r'id="dd-%s-abstract"[^>]*>([\s\S]*?)</section>' % re.escape(q), dm.group(1)) if dm else None
+        if not sec or alnum(src) not in alnum(sec.group(1)):
+            faults.append(f"{q}: the deep dive's abstract is not PubMed's text, whole")
+    # S12 (weekly)
+    if man.get("format") != "trend":
+        for tid in man["topics"]:
+            st = re.search(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>([\s\S]*?)(?=<section class="[^"]*\btopic-section\b|<section class="[^"]*mz-references|<dialog|$)' % re.escape(tid), h)
+            syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', st.group(1)) if st else None
+            if not syn or len(re.sub(r"<[^>]+>", "", syn.group(1))) < 600:
+                faults.append(f"topic {tid} has no synthesis paragraph of substance above its cards")
+        chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
+        if sorted(chips) != sorted(man["topics"]):
+            faults.append("the jump-to-topic TOC does not list exactly the live topics")
+        nm = re.search(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h)
+        if not nm or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", nm.group(1)))) < 2000:
+            faults.append("the opening narrative is missing or too short")
+    # S14: page-wide unique ids
+    from collections import Counter as _C
+    dup = [k for k, v in _C(re.findall(r'\sid="([^"]+)"', h)).items() if v > 1]
+    if dup:
+        faults.append(f"duplicate element ids on the page: {dup[:5]}")
+    # S3: tappable
+    if "mz-open" not in h:
+        faults.append("no touch handler for citation popovers in the body")
+    return faults
+
+
 def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, dropped: list, repairs: dict, stats: dict) -> None:
     """Shared tail for every brief shape: references, light theme, hygiene,
     disclaimer, post-conditions, the site's own publish audit, the review."""
@@ -1794,6 +2123,8 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
                         ("rgba(12, 12, 16, 0.985)", "rgba(251,250,248,0.97)"),
                         ("rgba(8, 8, 12, 0.99)", "rgba(251,250,248,0.99)")):
         h = h.replace(dark, light)
+    if "mz-open" not in h:
+        h = h.rstrip() + TOUCH_SCRIPT
     h = escape_bare_angles(h)
     h = dedupe_popover_ids(h)
     h = strip_build_comments(h)
@@ -1864,6 +2195,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         if f'id="{href}"' not in h:
             faults.append(f"citation marker points at a missing reference {href}")
             break
+    faults += prose_faults(W, h, man)
     body_text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h)))
     for pmid, abstract in repairs.items():
         # Probe on prose, not on a structured label: apply() renders
@@ -1911,6 +2243,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         die("the publish audit refused this body")
     record(W, "apply", stats)
     ai_review(W, "apply")
+    standards_audit(W, post_id)
     print(f"  ledger: apply OK — publish may now run for {post_id}")
 
 
@@ -2113,6 +2446,8 @@ def cmd_publish(post_id: str) -> None:
     if is_trend(post_id):
         return cmd_publish_trend(post_id)
     W = work_dir(post_id)
+    require_spec_review()
+    require_standards(W)
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
@@ -2126,6 +2461,8 @@ def cmd_publish(post_id: str) -> None:
 
 def cmd_publish_trend(post_id: str) -> None:
     W = work_dir(post_id)
+    require_spec_review()
+    require_standards(W)
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
@@ -2168,4 +2505,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review, "standards-check": cmd_standards_check}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
