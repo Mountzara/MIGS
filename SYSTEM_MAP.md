@@ -1940,6 +1940,45 @@ trending page copy no longer promises one.
 
 ---
 
+### 8.0.0.0k What `standards-check` found in my own pipeline (2026-09-15)
+
+**Owner:** *"ARE YOU FUCKING SURE YOU HAVE CODED AI ANALYSIS ASSISTANCE to make
+sure everything in your deterministic scripts is [not] incorrectly passing?"*
+
+The answer was no, and the way to prove it was to point the audit at the
+pipeline itself. `standards-check` reads `brief_pipeline.py` and demands, for
+each of S1–S14, an authoring instruction, a deterministic refusal AND a
+reviewer check — where a semantic standard is satisfied only by a model audit
+applied to EVERY unit with a per-unit verdict, never a sampling review. It
+refuses to let `publish` run without a passing receipt for the file's current
+digest, so a rule cannot be edited and used unchecked.
+
+Run against my own code it found **forty-odd real gaps across eleven passes**.
+The ones worth remembering, because each is a class of mistake:
+
+| Fault | Why it mattered |
+|---|---|
+| `prose` reassigned by a later loop | the trend brief's "no verdict/debunk/myth" gate scanned a stray abstract fragment on essentially every run |
+| three model audits iterated the reply, not the request | a partial answer meant sentences were never judged, silently — the "exhaustive" check was not |
+| `record-review` CLI | let a hand-written `{"passed": true}` stand in for a real review; a reviewer that can be written by the thing being reviewed is not a reviewer |
+| touch-handler check | looked for the string the same stage injects moments earlier, so it could never fail |
+| `cited` forced true for cards | graded every card as cited by construction instead of by evidence |
+| overstatement gated on an inline marker | never fired for card or deep-dive prose, which is where the numbers are |
+| duplicate-id check on the body | could not see a collision with the shell the browser assembles |
+| the hero lede in no scan at all | four standards unenforced there for that one omission |
+| citation gate sampled twelve markers | a sample is how a defect survives on the markers nobody looked at |
+| reviewers handed every standard | blocked a stage for not doing a LATER stage's job (prepare refused for off-topic papers `curate` removes) |
+
+Two rules came out of it and belong to the whole repo:
+* **A check that cannot fail is not a check.** Both the touch-handler test and
+  the forced `cited` flag passed by construction.
+* **A property of the rendered page is measured on the rendered page.** Hover,
+  tap, contrast and id collisions are checked by Playwright on the published
+  route (`audit_citation_popovers.py`, `audit_light_text.py`,
+  `audit_contrast_pixels.py`), and a failure unpublishes the post.
+
+---
+
 ### 8.0.0.0i THE STANDARDS layer — reviewers judge against the owner's requirements, not the pipeline's prompts (2026-09-15)
 
 **Owner, verbatim:** *"AI should be carefully reviewing each layer so that

@@ -2154,7 +2154,11 @@ TOUCH_SCRIPT = ('<script>(function(){document.addEventListener("click",function(
 # Deterministic checks on the site's own prose (S1, S5, S6, S8, S9, S10, S12, S14)
 # ---------------------------------------------------------------------------
 PROSE_CONTAINERS = re.compile(
-    r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
+    # the hero lede is the first prose a reader meets and was in none of the
+    # scans — not the terminology regexes, not the advice regex, not the
+    # per-sentence audit; four standards were unenforced there for that alone
+    r'<p class="mz-post-lede">[\s\S]*?</p>'
+    r'|<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
     r'|<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>'
     r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence|shape|papers)"[^>]*>[\s\S]*?</section>')
 
@@ -2176,6 +2180,8 @@ def piece_of(h: str, frag: str) -> str:
         if frag.startswith('<p class="mz-toc-group-synthesis">') and m:
             return m[-1].group(1)
         return "editorial"
+    if frag.startswith('<p class="mz-post-lede">'):
+        return "editorial" if 'id="opening"' in h[:pos] or "mz-post-hero" in h[:pos] else "narrative"
     if "mz-post-narrative" in frag[:200]:
         return "narrative" if 'id="opening"' not in frag[:200] else "editorial"
     return "editorial"
