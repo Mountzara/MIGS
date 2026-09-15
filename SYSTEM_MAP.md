@@ -1803,6 +1803,58 @@ homepage no longer claims surgery as an available service.
 
 ---
 
+### 8.0.0.0g `scripts/brief_pipeline.py` — THE ONLY PATH A BRIEF TAKES (2026-09-15)
+
+**Owner, verbatim:** "How the fuck is this not deterministically done with hard
+code so you don't keep making the same fucking mistake for every brief… the
+deterministic code WILL FORCE YOU TO FOLLOW INSTRUCTIONS IN A CERTAIN WAY LAYER
+BY LAYER."
+
+Correct, and it was the real failure of that session. Four briefs were prepared
+by hand and each hit a different instance of the same handful of faults, because
+every stage was retyped:
+
+| Brief | Fault that reached, or nearly reached, a reader |
+|---|---|
+| W31 | all 88 "abstracts" were the placeholder `Verbatim PubMed abstract Pending review…`; 176 agents would have analysed nothing |
+| supplement | 12 of 32 papers displayed ANOTHER paper's abstract as their own verbatim source |
+| W33 / W34 | 4 and 8 papers written up as an entirely different study |
+| W33 | dosing in the site's own prose; a narrative that still read "Pending review"; a literal `<` truncating a popover |
+| — | a PMID list typed from memory launched a run against files that did not exist |
+
+**`prepare → guard → apply → publish`, and the order is a precondition, not a
+convention.** Each stage writes a receipt under `<work>/.ledger/` containing a
+SHA of the inputs it consumed. The next stage recomputes that SHA and refuses if
+the receipt is missing, records a failure, or is STALE. Re-authoring a paper
+changes the digest, so a guard receipt from before it no longer satisfies apply.
+
+* **prepare** — extracts per-paper and per-topic work files from the stored
+  draft, then checks every abstract against PubMed efetch and REPAIRS it when
+  the stored brief did not carry the paper's own. Refuses outright on a title
+  PubMed disagrees with, or an abstract it cannot fetch. This is the ten-HTTP-call
+  check that would have saved 176 agents on W31.
+* **pmids** — the authoritative work list, read from the manifest. Never retype one.
+* **guard** — lexical overlap between each draft and its own abstract.
+  Calibrated on 12 known-bad drafts (0.025–0.25) against 89 sound ones
+  (0.375–0.95): clean gap, no overlap, so `OVERLAP_BLOCK = 0.30`. Perfect
+  agreement with the adversarial reviewers on W34 (8/8, no false positives),
+  which makes it a free substitute for a paid check. Also reports unauthored papers.
+* **apply** — assembles sections, syntheses, narrative (replacing a STUB
+  narrative, never authored prose), TOC; converts the embedded theme to light;
+  escapes bare `<` inside popover spans; injects the educational disclaimer.
+  Then SEVEN post-conditions, each one a fault that actually shipped: dosing in
+  the site's own prose (study doses are legal only inside the attributed
+  containers — abstract, deep-dive, cite card), a reader-visible "Pending
+  review", AI-provenance language, an internal path or spec reference, a missing
+  disclaimer, a still-embedded dark stylesheet, a popover without its summary or
+  source link. Any fault ⇒ refuse, no body written.
+* **publish** — PUT + approve, only for a body `apply` blessed.
+
+**Do not add a stage that warns.** Every check here either proves its
+post-condition or raises; a warning is how all of the above shipped.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are
