@@ -68,61 +68,116 @@
     // so the fix darkens rather than replaces: keep hue and saturation, force
     // lightness down to a level that reads on paper. Only `color:` is touched;
     // the same amber as a 4%-alpha background or a border is exactly right.
-    function darkenIfPale(r, g, b) {
-        const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-        if (0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) <= 0.5) return null;   // already readable
-        const R = r / 255, G = g / 255, B = b / 255;
-        const mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn;
-        let h = 0;
+    // Darken any text colour that cannot carry itself on paper.
+    //
+    // The first version tested LIGHTNESS ("is it pale?") and so let through
+    // #2997FF — a saturated mid-blue, luminance 0.31, therefore "not pale" —
+    // which renders at 2.68:1 on the cream card ground at 11px. Five live
+    // headings on W29 read that way. Lightness was the wrong question:
+    // contrast is the question, so this measures it directly against the
+    // ground the text will actually sit on, and walks lightness down until
+    // the colour clears, preserving hue and saturation so the design's
+    // meaning survives (amber = mechanism, blue = a data label).
+    var PAPER_RGB = [251, 250, 248], CARD_RGB = [244, 241, 236];   // page ground, card ground
+    function _lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    function _lum(c) { return 0.2126 * _lin(c[0]) + 0.7152 * _lin(c[1]) + 0.0722 * _lin(c[2]); }
+    function _ratio(a, b) { var la = _lum(a), lb = _lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); }
+    function _hsl(r, g, b) {
+        var R = r / 255, G = g / 255, B = b / 255;
+        var mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn, h = 0, l = (mx + mn) / 2;
         if (d) {
             if (mx === R) h = ((G - B) / d + (G < B ? 6 : 0));
             else if (mx === G) h = (B - R) / d + 2;
             else h = (R - G) / d + 4;
             h *= 60;
         }
-        // 0.26, not 0.30: at 0.30 amber-300 lands on 4.34:1 against the
-        // mechanism card's own tinted ground, and the small 11px chips need
-        // 4.5. 0.26 gives 5.46:1 there and 9.7:1 for the salmon heading.
-        const l = 0.26, sat = d ? Math.min(0.85, d / (1 - Math.abs(2 * ((mx + mn) / 2) - 1) || 1)) : 0;
-        const c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
-        let [rr, gg, bb] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
-                         : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
-        const hex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
-        return '#' + hex(rr) + hex(gg) + hex(bb);
+        var s = d ? d / (1 - Math.abs(2 * l - 1) || 1) : 0;
+        return [h, Math.min(1, s), l];
+    }
+    function _rgb(h, s, l) {
+        var c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+        var t = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+              : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+        return [Math.round((t[0] + m) * 255), Math.round((t[1] + m) * 255), Math.round((t[2] + m) * 255)];
+    }
+    function darkenIfPale(r, g, b) {
+        // Judge against the WORSE of the two grounds a post paints on.
+        var worst = _ratio([r, g, b], PAPER_RGB) < _ratio([r, g, b], CARD_RGB) ? PAPER_RGB : CARD_RGB;
+        if (_ratio([r, g, b], worst) >= 4.6) return null;          // already carries itself
+        var hsl = _hsl(r, g, b), out = null;
+        // An achromatic colour carries no meaning to preserve — white and the
+        // near-greys are body text that lost its dark ground, so they go to
+        // ink rather than to the first grey that happens to clear the bar.
+        if (hsl[1] < 0.12) return INK;
+        for (var l = Math.min(hsl[2], 0.5); l >= 0.08; l -= 0.01) {
+            var cand = _rgb(hsl[0], hsl[1], l);
+            if (_ratio(cand, worst) >= 4.6) { out = cand; break; }
+        }
+        if (!out) out = [26, 23, 38];                              // fall back to ink
+        var hex = function (v) { return v.toString(16).padStart(2, '0'); };
+        return '#' + hex(out[0]) + hex(out[1]) + hex(out[2]);
     }
 
-    function darkenColorDecls(css) {
-        return css.replace(/(^|[;{\s])color\s*:\s*(rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)[^)]*\)|#fff\b|#ffffff\b|white\b)/gi,
-            (m, pre, val, r, g, b) => {
-                if (/^(#fff\b|#ffffff\b|white\b)$/i.test(val)) return pre + 'color: ' + INK;
-                const dark = darkenIfPale(+r, +g, +b);
+    // Parse any CSS colour literal this codebase actually uses.
+    function parseColor(v) {
+        v = String(v || '').trim();
+        let m = v.match(/^#([0-9a-f]{3})$/i);
+        if (m) return [parseInt(m[1][0] + m[1][0], 16), parseInt(m[1][1] + m[1][1], 16), parseInt(m[1][2] + m[1][2], 16), 1];
+        m = v.match(/^#([0-9a-f]{6})$/i);
+        if (m) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4, 6), 16), 1];
+        m = v.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:[,/]\s*([\d.]+))?\s*\)$/i);
+        if (m) return [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]];
+        if (/^white$/i.test(v)) return [255, 255, 255, 1];
+        if (/^black$/i.test(v)) return [0, 0, 0, 1];
+        return null;
+    }
+
+    // Does this rule paint a ground DARK enough that light text belongs on it?
+    // "Has a background" is too crude: the mechanism card's own background is
+    // amber at 4% alpha, so its text still effectively sits on paper and must
+    // be darkened. Only a substantially opaque, genuinely dark ground earns
+    // the right to keep light text.
+    function rulePaintsDarkGround(body) {
+        const decls = String(body || '').match(/background(?:-color)?\s*:\s*([^;]+)/gi) || [];
+        for (const d of decls) {
+            const val = d.replace(/^[^:]*:\s*/, '').trim();
+            if (/gradient|url\(/i.test(val)) {
+                const inner = val.match(/(#[0-9a-f]{3,6}|rgba?\([^)]*\))/gi) || [];
+                for (const c of inner) {
+                    const p = parseColor(c);
+                    if (p && p[3] >= 0.5 && _lum(p) < 0.45) return true;
+                }
+                continue;
+            }
+            const first = (val.match(/(#[0-9a-f]{3,6}|rgba?\([^)]*\)|white|black)/i) || [])[0];
+            const p = parseColor(first);
+            if (p && p[3] >= 0.5 && _lum(p) < 0.45) return true;
+        }
+        return false;
+    }
+
+    function darkenColorDecls(css, darkGround) {
+        return css.replace(/(^|[;{\s])color\s*:\s*(#[0-9a-f]{3,6}\b|rgba?\([^)]*\)|white\b)/gi,
+            (m, pre, val) => {
+                if (darkGround) return m;                 // light text on a dark chip is correct
+                const p = parseColor(val);
+                if (!p || p[3] === 0) return m;
+                const dark = darkenIfPale(p[0], p[1], p[2]);
                 return dark ? pre + 'color: ' + dark : m;
             });
     }
 
-    function lighten(css, hostId) {
-        return darkenColorDecls(css)
-            // 1. drop document-level rules. Predecessor may be start, `}` or
-            //    `{` (a rule nested in @media). `body.x {` and `html[…] {`
-            //    do not match — the selector must end right before `{`.
-            .replace(/(^|[{}])\s*(?:html|body)(?:\s*,\s*(?:html|body))?\s*\{[^{}]*\}/g, '$1')
-            // 2. rescope :root to the container.
-            .replace(/(^|[^\w-])(:root)(?![\w-])/g, '$1#' + hostId);
-    }
-
-    function paint(host) {
-        if (!host || host.__mzLit) return;
-        host.__mzLit = true;
-        for (var k in LIGHT) if (Object.prototype.hasOwnProperty.call(LIGHT, k)) host.style.setProperty(k, LIGHT[k]);
-        host.style.setProperty('color', INK);
-        host.style.setProperty('background', 'transparent');
-        try { darkenInlineStyles(host); } catch (e) {}
+    // Walk rule by rule so each declaration is judged with its own ground in
+    // view, rather than treating the stylesheet as one flat string.
+    function darkenStylesheet(css) {
+        return css.replace(/([^{}]*)\{([^{}]*)\}/g, (whole, sel, body) =>
+            sel + '{' + darkenColorDecls(body, rulePaintsDarkGround(body)) + '}');
     }
 
     function darkenInlineStyles(host) {
         host.querySelectorAll('[style*="color"]').forEach((el) => {
             const before = el.getAttribute('style') || '';
-            const after = darkenColorDecls(before);
+            const after = darkenColorDecls(before, rulePaintsDarkGround(before));
             if (after !== before) el.setAttribute('style', after);
         });
     }
