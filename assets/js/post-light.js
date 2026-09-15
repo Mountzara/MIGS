@@ -156,6 +156,25 @@
         return false;
     }
 
+    // Custom properties need the same treatment, and the first version missed
+    // them: `.forest-plot` redefines `--accent: #2997FF` for its own subtree,
+    // which overrode the host palette, and `.forest-plot h4` renders from it —
+    // the five unreadable "Effect estimates" headings. A definition is only
+    // rewritten when its NAME is not one a background would use; darkening
+    // something that turns out to be a ground is the one way this could make a
+    // page worse, so the exclusion is by name and deliberately broad.
+    var BG_NAME = /(^|-)(bg|background|ground|surface|paper|canvas|scrim|shadow|border|outline|fill|stroke|line|grid|track|rail|divider|hairline|overlay)(-|$)/i;
+    function darkenCustomProps(css) {
+        return css.replace(/(^|[;{\s])(--[\w-]+)\s*:\s*(#[0-9a-f]{3,6}\b|rgba?\([^)]*\)|white\b)/gi,
+            (m, pre, name, val) => {
+                if (BG_NAME.test(name)) return m;
+                const p = parseColor(val);
+                if (!p || p[3] === 0) return m;
+                const dark = darkenIfPale(p[0], p[1], p[2]);
+                return dark ? pre + name + ': ' + dark : m;
+            });
+    }
+
     function darkenColorDecls(css, darkGround) {
         return css.replace(/(^|[;{\s])color\s*:\s*(#[0-9a-f]{3,6}\b|rgba?\([^)]*\)|white\b)/gi,
             (m, pre, val) => {
@@ -171,7 +190,7 @@
     // view, rather than treating the stylesheet as one flat string.
     function darkenStylesheet(css) {
         return css.replace(/([^{}]*)\{([^{}]*)\}/g, (whole, sel, body) =>
-            sel + '{' + darkenColorDecls(body, rulePaintsDarkGround(body)) + '}');
+            sel + '{' + darkenCustomProps(darkenColorDecls(body, rulePaintsDarkGround(body))) + '}');
     }
 
     function darkenInlineStyles(host) {
@@ -180,6 +199,25 @@
             const after = darkenColorDecls(before, rulePaintsDarkGround(before));
             if (after !== before) el.setAttribute('style', after);
         });
+    }
+
+    function lighten(css, hostId) {
+        return darkenStylesheet(css)
+            // 1. drop document-level rules. Predecessor may be start, `}` or
+            //    `{` (a rule nested in @media). `body.x {` and `html[…] {`
+            //    do not match — the selector must end right before `{`.
+            .replace(/(^|[{}])\s*(?:html|body)(?:\s*,\s*(?:html|body))?\s*\{[^{}]*\}/g, '$1')
+            // 2. rescope :root to the container.
+            .replace(/(^|[^\w-])(:root)(?![\w-])/g, '$1#' + hostId);
+    }
+
+    function paint(host) {
+        if (!host || host.__mzLit) return;
+        host.__mzLit = true;
+        for (var k in LIGHT) if (Object.prototype.hasOwnProperty.call(LIGHT, k)) host.style.setProperty(k, LIGHT[k]);
+        host.style.setProperty('color', INK);
+        host.style.setProperty('background', 'transparent');
+        try { darkenInlineStyles(host); } catch (e) {}
     }
 
     function process(styleEl) {
