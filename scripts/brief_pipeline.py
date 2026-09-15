@@ -737,22 +737,38 @@ bare MIGS.
 FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown."""
 
 
-def _claude(prompt: str, timeout_s: int = 900) -> dict | None:
-    r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
-                       capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
-    if r.returncode != 0:
-        return None
-    try:
-        text = json.loads(r.stdout).get("result", "")
-    except json.JSONDecodeError:
-        text = r.stdout
-    m = re.search(r"\{[\s\S]*\}", text)
-    if not m:
-        return None
-    try:
-        return json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return None
+def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None:
+    """One model call returning parsed JSON, retried on a transient failure.
+
+    A single unparseable reply used to kill the whole stage: W31's
+    topic-pelvic_pain synthesis failed on "verification produced nothing" after
+    the other nine had succeeded, discarding the run. Authoring is the expensive
+    half of this pipeline; it should not be thrown away because one call came
+    back malformed. Genuine refusals are still refusals — this retries only the
+    failure to get a usable answer at all.
+    """
+    last = None
+    for attempt in range(attempts):
+        try:
+            r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+                               capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
+        except subprocess.TimeoutExpired:
+            last = "timeout"; continue
+        if r.returncode != 0:
+            last = (r.stderr or "")[:120]; continue
+        try:
+            text = json.loads(r.stdout).get("result", "")
+        except json.JSONDecodeError:
+            text = r.stdout
+        m = re.search(r"\{[\s\S]*\}", text)
+        if not m:
+            last = "no JSON object in reply"; continue
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            last = "malformed JSON"; continue
+    print(f"    (model call failed {attempts}x: {last})")
+    return None
 
 
 def _author_one_paper(args_t: tuple) -> tuple:
@@ -782,6 +798,7 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}}}}"""
     if not verdict.get("ok"):
         return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
+    final["_verified"] = "adversarial review passed"
     json.dump(final, open(W + f"drafts_dd/{pmid}.json", "w"), ensure_ascii=False)
     return pmid, len(verdict.get("problems") or []), None
 
@@ -827,6 +844,48 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
                  "cited": draft.get("cited"), "problems": verdict.get("problems")}, None
 
 
+NARRATIVE_RULES = """
+WHAT: the editorial narrative that opens the brief — the inner HTML of
+<section class="mz-post-section mz-post-narrative">: one <h2> titled
+"Monday Mornings: <a specific phrase drawn from this week's papers>" followed by 3-4 <p> totalling
+2,400-3,400 characters of prose.
+VOICE: Dr. Mabini's first person — a DO and complex benign gynecology / minimally invasive gynecologic
+surgery surgeon reading the week as a whole. Open on the one paper you keep returning to, read the
+others as variations on a structural theme, name studies by first author, close on what changes on a
+Monday. Direct, specific, no throat-clearing.
+GROUNDING: every study, author, number and finding from the topic files. No external facts.
+Overstatement and understatement are both failures — never write a preclinical or animal result as a
+human finding. Do NOT use citation markup; the syntheses below carry the citations.
+PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, no dose beyond what an
+abstract states. Escape & < >. Return inner HTML only."""
+
+
+def _author_narrative(W: str, topics: list) -> tuple:
+    files = ", ".join(f"{W}topics/{t}.json" for t in topics)
+    draft = _claude(f"""Author the cross-topic editorial narrative for one week's CBG/MIGS "Monday Mornings" brief.
+READ (Read tool) every one of these topic files: {files}
+{NARRATIVE_RULES}
+Return ONLY {{"html": "<inner html>"}}.""")
+    if not draft or not draft.get("html"):
+        return None, "author produced nothing"
+    verdict = _claude(f"""You are the adversarial reviewer for a physician-authored editorial. Default to REFUTE.
+READ every topic file: {files}
+Check: every study, author, number and finding traceable to a topic file; no overstatement or
+understatement; no preclinical or animal result written as a human finding; one <h2> starting
+"Monday Mornings:" then 3-4 <p>, 2,400-3,400 characters of prose; no citation markup; no
+AI/placeholder language, paths or section marks; no dose beyond the abstracts.
+If fixable by tightening or deleting an unsupported sentence, return fixed_html with ok=true and
+problems listing the changes. Otherwise ok=false with problems.
+NARRATIVE: {json.dumps(draft)[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
+    if not verdict:
+        return None, "verification produced nothing"
+    if not verdict.get("ok"):
+        return None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:200]}"
+    return {"html": verdict.get("fixed_html") or draft["html"],
+            "problems": verdict.get("problems")}, None
+
+
 def cmd_author(post_id: str) -> None:
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
@@ -834,7 +893,21 @@ def cmd_author(post_id: str) -> None:
     man = json.load(open(W + "manifest.json"))
     from concurrent.futures import ThreadPoolExecutor
 
-    todo = [q for q in man["pmids"] if not os.path.exists(W + f"drafts_dd/{q}.json")]
+    # A draft file's EXISTENCE is not evidence it was verified. W31's drafts
+    # were produced by an earlier, verification-free path; this stage saw the
+    # files, skipped them, and reported "all papers have a verified deep dive"
+    # when none of them had been through a reviewer. Only a draft this stage
+    # stamped counts as verified.
+    def _unverified(q: str) -> bool:
+        path = W + f"drafts_dd/{q}.json"
+        if not os.path.exists(path):
+            return True
+        try:
+            return not json.load(open(path)).get("_verified")
+        except Exception:
+            return True
+
+    todo = [q for q in man["pmids"] if _unverified(q)]
     print(f"{post_id}: {len(todo)} paper(s) to author, {len(man['pmids']) - len(todo)} already written")
     failed = []
     if todo:
@@ -848,10 +921,10 @@ def cmd_author(post_id: str) -> None:
         record(W, "author", {"failed": f"{len(failed)} paper(s) could not be authored"})
         die(f"{len(failed)} paper(s) could not be authored: {[f[0] for f in failed][:6]}")
 
-    missing = [q for q in man["pmids"] if not os.path.exists(W + f"drafts_dd/{q}.json")]
+    missing = [q for q in man["pmids"] if _unverified(q)]
     if missing:
         record(W, "author", {"failed": f"missing drafts: {missing[:6]}"})
-        die(f"every kept paper needs a deep dive; missing {len(missing)}")
+        die(f"every kept paper needs a VERIFIED deep dive; {len(missing)} unverified or missing")
     print(f"  all {len(man['pmids'])} paper(s) have a verified deep dive")
 
     # --- syntheses: one per surviving topic ---
@@ -878,6 +951,26 @@ def cmd_author(post_id: str) -> None:
         record(W, "author", {"failed": f"topics without a synthesis: {still[:6]}"})
         die(f"every live topic needs a synthesis; missing {still}")
     print(f"  all {len(man['topics'])} topic(s) have a verified synthesis")
+
+    # --- narrative: required when the stored brief carries a stub, and
+    # re-authored whenever curation changed what the week actually contains ---
+    narr_path = W + "narrative.json"
+    t_dec = os.path.getmtime(W + ".ledger/curate.decisions") if os.path.exists(W + ".ledger/curate.decisions") else 0
+    # Every Monday-Mornings brief carries a narrative. W31's source had no
+    # narrative SECTION at all, so "is it a stub?" answered False and the stage
+    # skipped authoring one — the absence of a placeholder is not the presence
+    # of an editorial.
+    needs_narr = not os.path.exists(narr_path) or os.path.getmtime(narr_path) < t_dec
+    if needs_narr:
+        print("  authoring the cross-topic narrative")
+        item, err = _author_narrative(W, man["topics"])
+        if err:
+            record(W, "author", {"failed": f"narrative: {err}"})
+            die(f"narrative authoring failed: {err}")
+        json.dump({"html": item["html"]}, open(narr_path, "w"), ensure_ascii=False)
+        print(f"  wrote narrative ({len(item['problems'] or [])} reviewer correction(s))")
+    else:
+        print("  narrative already current for these curation decisions")
     record(W, "author", {"papers": len(man["pmids"]), "authored_now": len(todo),
                          "topics": len(man["topics"]), "syntheses_now": len(need)})
     ai_review(W, "author")
