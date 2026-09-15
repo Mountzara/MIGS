@@ -249,8 +249,18 @@ Check and report honestly:
  3. Do the topic files group papers coherently under their titles?
  4. Does `pending` list plausible section keys, and is `context` non-empty where it should be?
 Do NOT check formatting or style. You are checking whether the GROUND TRUTH the authors will rely on
-is sound. Reply with ONLY a JSON object:
-{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+is sound.
+SEVERITY MATTERS. Classify each finding:
+ * BLOCKING — the ground truth itself is wrong: an abstract belonging to a different paper, a
+   placeholder, a truncated abstract, a title PubMed would not recognise. Authors would write
+   falsehoods from it.
+ * ADVISORY — the ground truth is correct but the CURATION is loose: an off-topic paper grouped under
+   a topic, an over-broad topic. The upstream feed selects papers by keyword, so a brief legitimately
+   contains papers that are noise for this practice, and the authored syntheses name that explicitly
+   ("most of these are noise for our lane"). Report it; do not block on it.
+Reply with ONLY a JSON object:
+{{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
+  "problems": ["..."], "notes": "one or two sentences"}}""",
 
     "guard": """You are reviewing the GUARD stage of a clinical brief pipeline for Dr. Mabini's site.
 The guard screened each authored draft for lexical overlap with its own paper's abstract.
@@ -263,8 +273,12 @@ Check and report honestly:
     result written as a human/clinical finding?
  4. Does any draft carry AI/placeholder language, a dose given as advice, or "never"/"always" in the
     clinician's own prose?
+SEVERITY MATTERS: BLOCKING = the draft misrepresents its own paper (wrong study, invented number,
+design mislabelled, preclinical written as clinical, dose as advice, placeholder language).
+ADVISORY = stylistic or curation observations.
 Reply with ONLY a JSON object:
-{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+{{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
+  "problems": ["..."], "notes": "one or two sentences"}}""",
 
     "apply": """You are reviewing the ASSEMBLED BODY of a clinical brief before it publishes on Dr. Mabini's site.
 Read {W}body.applied.html (it is large — read the opening, the narrative section, 2-3 topic syntheses,
@@ -279,8 +293,12 @@ Check and report honestly:
     an association read as causation, a hedge dropped.
  5. Anything that reads as medical advice to a patient rather than an appraisal of the literature.
  6. Broken markup you can see: unescaped angle brackets in text, an empty section, a truncated abstract.
+SEVERITY MATTERS: BLOCKING = anything a reader would see that is false, unsafe, or internal
+(placeholder text, dosing in the site's voice, an overstated claim, advice, a broken citation).
+ADVISORY = tone, emphasis, or curation.
 Reply with ONLY a JSON object:
-{{"passed": true|false, "problems": ["..."], "notes": "one or two sentences"}}""",
+{{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
+  "problems": ["..."], "notes": "one or two sentences"}}""",
 }
 
 
@@ -307,11 +325,17 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     v["at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     os.makedirs(W + ".ledger", exist_ok=True)
     json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
-    for prob in (v.get("problems") or [])[:8]:
-        print(f"    REVIEW: {prob}")
-    if not v["passed"]:
-        die(f"the {stage} review refused this stage ({len(v.get('problems') or [])} problem(s))")
-    print(f"  review {stage}: PASSED" + (f" with {len(v.get('problems') or [])} note(s)" if v.get("problems") else ""))
+    blocking = v.get("blocking") or ([] if v.get("passed") else (v.get("problems") or []))
+    advisory = v.get("advisory") or []
+    for prob in blocking[:8]:
+        print(f"    BLOCKING: {prob}")
+    for prob in advisory[:6]:
+        print(f"    advisory: {prob}")
+    v["blocking"], v["advisory"] = blocking, advisory
+    json.dump(v, open(W + f".ledger/{stage}.review.json", "w"), indent=1)
+    if blocking or not v["passed"]:
+        die(f"the {stage} review refused this stage ({len(blocking)} blocking problem(s))")
+    print(f"  review {stage}: PASSED" + (f" — {len(advisory)} advisory note(s) recorded" if advisory else ""))
     return v
 
 
@@ -388,15 +412,32 @@ def cmd_prepare(post_id: str) -> None:
     # --- the check that would have saved 176 agents on W31 ---
     real = fetch_pubmed(sorted(papers))
     repaired, unfetched, mismatched = [], [], []
+    repair_reason: dict[str, str] = {}
     for pmid, p in papers.items():
         r = real.get(pmid)
         if not r or len(r["abstract"]) < 80:
             unfetched.append(pmid)
             continue
-        if share(terms(r["abstract"] + " " + r["title"], 30), p["abstract"]) < ABSTRACT_MATCH_MIN:
+        # Two distinct faults, and term-overlap only catches the first.
+        #  (a) WRONG paper's abstract  -> overlap collapses.
+        #  (b) TRUNCATED abstract      -> overlap stays high, because it is the
+        #      right paper; only a section is missing. The live W33 shipped one
+        #      starting mid-way at "METHODS:" under a "Verbatim PubMed
+        #      abstract" heading, and W34 carried another. Length catches it.
+        mine_n = re.sub(r"\s+", " ", re.sub(r"^\s*(Verbatim PubMed abstract|Abstract)\s*", "", p["abstract"], flags=re.I)).strip()
+        real_n = re.sub(r"\s+", " ", r["abstract"]).strip()
+        wrong = share(terms(real_n + " " + r["title"], 30), mine_n) < ABSTRACT_MATCH_MIN
+        # compare on the SECTION LABELS PubMed publishes: a missing PURPOSE or
+        # BACKGROUND is the exact shape of the truncation seen in production.
+        real_labels = {m.group(2).upper() for m in re.finditer(r"(^|\n)([A-Z][A-Z /&-]{2,40}):", real_n)}
+        mine_upper = mine_n.upper()
+        truncated = bool(real_labels) and any(lab + ":" not in mine_upper for lab in real_labels)
+        if wrong or truncated:
             p["abstract"] = r["abstract"][:6000]
-            p["_abstract_source"] = "PubMed efetch — the stored brief did not carry this paper's own abstract"
+            p["_abstract_source"] = ("PubMed efetch — the stored brief carried "
+                                     + ("a different paper's abstract" if wrong else "a truncated abstract"))
             repaired.append(pmid)
+            repair_reason[pmid] = "wrong paper" if wrong else "truncated"
         if r["title"] and share(terms(r["title"], 8), p["title"]) < 0.4:
             mismatched.append((pmid, p["title"][:50], r["title"][:50]))
     for pmid, p in papers.items():
@@ -429,7 +470,12 @@ def cmd_prepare(post_id: str) -> None:
               open(W + "manifest.json", "w"), indent=1)
 
     print(f"{post_id}: {len(papers)} papers, {len(topics)} topics")
-    print(f"  abstracts REPAIRED from PubMed: {len(repaired)}" + (f" {repaired[:6]}" if repaired else ""))
+    if repaired:
+        from collections import Counter
+        why = Counter(repair_reason.values())
+        print(f"  abstracts REPAIRED from PubMed: {len(repaired)} ({dict(why)}) e.g. {repaired[:5]}")
+    else:
+        print("  abstracts REPAIRED from PubMed: 0")
     has_toc = 'class="mz-toc"' in body
     print(f"  narrative is a stub: {narrative_stub} | TOC present: {has_toc}")
     if mismatched:
