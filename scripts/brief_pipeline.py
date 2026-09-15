@@ -1303,8 +1303,11 @@ external facts, no invented numbers, populations or demographics. Overstatement 
 both failures: report a significant result with its numbers; never inflate a narrative review or an
 animal study, and never write a preclinical result as a clinical one.
 PROHIBITIONS: no AI/disclaimer/placeholder language; no file paths, internal names or section marks; no
-dose presented as advice; never the words "never" or "always" in your own prose; write CBG/MIGS, never
-bare MIGS.
+dose presented as advice.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the paper; never address a patient ("you should…", "take…", "ask your doctor…").
 The Monday, applicability and equity sections drift into this most — write what a clinician weighs,
 not what a patient should do.
@@ -1403,7 +1406,10 @@ failures. No dose in your own prose. No AI/placeholder language, paths or sectio
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
-TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
 NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
 background and any inline colour can break its contrast."""
@@ -1437,7 +1443,10 @@ failures. No dose in your own prose. No AI/placeholder language, paths or sectio
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
-TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
 NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
 background and any inline colour can break its contrast."""
@@ -1532,7 +1541,10 @@ prose. Escape & < >. Return inner HTML only.
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
-TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
 NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
 background and any inline colour can break its contrast."""
@@ -1574,7 +1586,8 @@ MUST BE SPECIFIC: name the design, population and key result from the abstract. 
 sentences, no "this week's signal", no "what I'd want to read next", no "the gap I'm building tools to
 close". A reader should be unable to move this paragraph to another paper.
 GROUNDING: every fact from the abstract. No dose in your prose. No AI/placeholder language. No
-"never"/"always". Write CBG/MIGS, never bare MIGS.
+"never"/"always". When you name the practice write "CBG/MIGS", never bare "MIGS", and only where
+the paper actually bears on it — omit it rather than shoehorn it in.
 NO ADVICE: appraise the paper; never address a patient ("you should…", "take…", "ask your doctor…").
 Plain text with & < > escaped, no markup."""
 
@@ -1614,7 +1627,10 @@ No AI/placeholder language, paths, section marks. Escape & < >.
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
-TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
+TERMS: when you name the practice, write "CBG/MIGS", never bare "MIGS" — and only where the paper
+actually bears on it. A menopause, sleep or neurology paper needs no mention of the practice at all;
+omit it rather than shoehorn it in, because a bare "MIGS" reads as minimally invasive glaucoma surgery.
+Do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
 NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
 background and any inline colour can break its contrast.
