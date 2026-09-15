@@ -3347,6 +3347,16 @@ def repair(W: str, msg: str) -> list:
             dp = W + f"drafts_dd/{pc[7:]}.json"
             if os.path.exists(dp):
                 os.remove(dp); done.append(pc)
+    # A paper or card the author could not write leaves no draft behind, so the
+    # retry picks it up on its own. Clearing the stage receipt is the whole
+    # repair — the generic fallback below would throw away the narrative and
+    # every synthesis, which have nothing to do with a failed paper.
+    if re.search(r"(paper|card|synthesis|syntheses)\(?s?\)? (could not be authored|authoring failed)", msg):
+        for f in ("author.json", "author.review.json"):
+            if os.path.exists(W + ".ledger/" + f):
+                os.remove(W + ".ledger/" + f)
+        n = len(set(re.findall(r"\b\d{7,9}\b", msg))) or "the failing"
+        return [f"{n} unwritten piece(s) — re-authoring only those"]
     # a wrong-paper finding from guard names PMIDs: those drafts are rewritten
     if "wrong-paper" in msg or "not about its own paper" in msg:
         for pm in set(re.findall(r"\b(\d{7,9})\b", msg)):
