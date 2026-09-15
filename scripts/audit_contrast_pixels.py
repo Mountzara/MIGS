@@ -510,7 +510,14 @@ def main():
                     });
                 }""")
                 page.wait_for_timeout(200)
-                if OPEN_MODALS_FLAG:
+                # 2026-09-15 — never force modals open on a BRIEF route. A brief
+                # carries 80–110 journal-club <dialog>s and hundreds of citation
+                # popovers; forcing all of them visible and rasterising the
+                # result pegged the software GPU for 50+ minutes with no output
+                # and stalled a deploy. The light-text gate already audits
+                # modals on every route; here a brief is measured at rest.
+                is_brief = "?id=" in path
+                if OPEN_MODALS_FLAG and not is_brief:
                     try:
                         opened = page.evaluate(OPEN_MODALS)
                         if opened:
@@ -520,7 +527,7 @@ def main():
                 # With --open-modals we deliberately forced overlays visible,
                 # so the "overlay stuck at rest" check cannot apply — it would
                 # report our own instrumentation as a defect.
-                stuck = [] if OPEN_MODALS_FLAG else page.evaluate(REST_OVERLAY)
+                stuck = [] if (OPEN_MODALS_FLAG and not is_brief) else page.evaluate(REST_OVERLAY)
                 if stuck:
                     for o in stuck:
                         print(f"  ✗ {path} [{label}] FULL-PAGE OVERLAY VISIBLE AT REST: "
