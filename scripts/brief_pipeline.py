@@ -2347,7 +2347,13 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                 uncited_claims.append(f"[{pc}] {bare[:110]}")
                 continue
             if cites:
-                pool = set().union(*[abstracts.get(c, set()) for c in cites]) if cites else set()
+                # pooling every cited abstract lets a number from paper A pass
+                # in a sentence that attributes it to paper B; the pool is the
+                # union only because one sentence may legitimately draw on
+                # several, but a sentence citing ONE paper is checked against
+                # that paper alone
+                pool = (abstracts.get(cites[0], set()) if len(cites) == 1
+                        else set().union(*[abstracts.get(c, set()) for c in cites])) if cites else set()
                 for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", bare):
                     t = tok.replace(",", "")
                     if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in pool:
@@ -2492,6 +2498,10 @@ Reply with ONLY {{"popovers": [{{"pmid": "...", "ok": true|false, "why": "<one c
 with one object for each popover given.""", timeout_s=900)
         if not v or not isinstance(v.get("popovers"), list):
             die("popover audit returned no verdict")
+        judged_p = {str(r.get("pmid")) for r in v["popovers"]}
+        missing_p = [x["pmid"] for x in chunk if x["pmid"] not in judged_p]
+        if missing_p:
+            die(f"popover audit skipped {missing_p[:5]} — a skipped popover is not a passed one")
         for r in v["popovers"]:
             if not r.get("ok"):
                 faults.append(f"[popover:{r.get('pmid')}] citation summary: {str(r.get('why', ''))[:120]}")
@@ -2624,6 +2634,14 @@ Be adversarial: default to supported=false when you cannot trace an element.
 Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} objects.""", timeout_s=900)
         if not v or not isinstance(v.get("sentences"), list):
             die(f"grounding audit returned no verdict for prose container {i + 1}")
+        # An audit that judged only some of the units has not audited. Accepting
+        # whatever subset came back made the one exhaustive semantic check for
+        # citation-per-claim and grounding quietly non-exhaustive.
+        judged = {int(r["n"]) for r in v["sentences"] if str(r.get("n", "")).strip().isdigit()}
+        unjudged = [n for n in range(1, len(sents) + 1) if n not in judged]
+        if unjudged:
+            die(f"grounding audit skipped {len(unjudged)} of {len(sents)} sentence(s) in {pc} "
+                f"— no verdict for {unjudged[:5]}")
         for r in v["sentences"]:
             try:
                 n = int(r.get("n")); sn = sents[n - 1]
