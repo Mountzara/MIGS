@@ -295,6 +295,8 @@ def cmd_prepare(post_id: str) -> None:
         die(f"{len(mismatched)} paper(s) carry a title PubMed does not agree with — fix upstream")
     if unfetched:
         die(f"could not fetch an abstract for {unfetched[:8]} — resolve before authoring")
+    json.dump({pm: papers[pm]["abstract"] for pm in repaired},
+              open(W + "abstract_repairs.json", "w"), ensure_ascii=False)
     record(W, "prepare", {"papers": len(papers), "repaired": repaired, "topics": topics})
     print(f"  ledger: prepare OK — authoring may now run for {post_id}")
 
@@ -385,6 +387,39 @@ def cmd_apply(post_id: str) -> None:
     man = json.load(open(W + "manifest.json"))
     post = json.load(open(W + f"{post_id}.source.json"))
     h = post["body_html"]
+
+    # 0. repaired abstracts. prepare() fixes the WORK FILE so authoring is
+    # grounded correctly; without this step the page keeps showing whatever
+    # wrong or truncated text it had. W31 carried a placeholder in all 88, and
+    # the live W33 carried one abstract truncated to start at "METHODS:" while
+    # labelled "Verbatim PubMed abstract".
+    repairs = {}
+    if os.path.exists(W + "abstract_repairs.json"):
+        repairs = json.load(open(W + "abstract_repairs.json"))
+    repaired_n = 0
+    for pmid, abstract in repairs.items():
+        dm = re.search(r'(<dialog[^>]*id="dd-%s"[^>]*>)(.*?)(</dialog>)' % re.escape(pmid), h, re.S)
+        if not dm:
+            die(f"cannot write the repaired abstract for {pmid}: no dialog")
+        am = re.search(r'(<div class="mz-jc-abstract-body">)(.*?)(</div>)', dm.group(2), re.S)
+        if not am:
+            die(f"cannot write the repaired abstract for {pmid}: no abstract container")
+        blocks = []
+        for part in re.split(r"\n(?=[A-Z][A-Z /&-]{2,40}:)", "\n" + abstract.strip()):
+            part = part.strip()
+            if not part:
+                continue
+            lm = re.match(r"([A-Z][A-Z /&-]{2,40}):\s*([\s\S]*)", part)
+            if lm:
+                blocks.append(f'<h5 class="mz-jc-abstract-label">{H.escape(lm.group(1).title(), quote=False)}</h5>'
+                              f"<p>{H.escape(lm.group(2).strip(), quote=False)}</p>")
+            else:
+                blocks.append(f"<p>{H.escape(part, quote=False)}</p>")
+        if not any("mz-jc-abstract-label" in b for b in blocks):
+            blocks.insert(0, '<h5 class="mz-jc-abstract-label">Abstract</h5>')
+        inner = dm.group(2)[:am.start(2)] + "".join(blocks) + dm.group(2)[am.end(2):]
+        h = h[:dm.start(2)] + inner + h[dm.end(2):]
+        repaired_n += 1
 
     # 1. deep-dive sections
     applied = 0
@@ -479,12 +514,27 @@ def cmd_apply(post_id: str) -> None:
         faults.append("internal path or spec reference")
     if "mz-eddisclaimer" not in h:
         faults.append("educational disclaimer missing")
-    if re.search(r":root[^}]*#07070a", h):
-        faults.append("dark stylesheet still embedded")
+    # NOTE: no dark-stylesheet check here. auditPublishable() below already
+    # tests this correctly — dark colours inside BACKGROUND declarations. An
+    # earlier version of this file flagged any :root block containing
+    # `--bg-base: #07070a`, which is a custom-property DEFINITION the light
+    # conversion overrides at every use; that rule refused the live, correctly
+    # rendering W33. Duplicating a repo check with different semantics is how
+    # a pipeline starts blocking good work, so this defers to the one audit.
     for sup in re.findall(r'<sup class="mz-ref">.*?</sup>', h, re.S):
         if "mz-ref-pop-finding" not in sup or "mz-ref-pop-src" not in sup:
             faults.append("a citation popover lacks its summary or source link")
             break
+    body_text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h)))
+    for pmid, abstract in repairs.items():
+        # Probe on prose, not on a structured label: apply() renders
+        # "INTRODUCTION:" as <h5>Introduction</h5>, so the raw label text is
+        # correctly absent from the body. An earlier probe included it and
+        # reported a false failure on a repair that had in fact landed.
+        prose = re.sub(r"(^|\n)[A-Z][A-Z /&-]{2,40}:\s*", " ", abstract)
+        probe = re.sub(r"\s+", " ", prose).strip()[:48]
+        if len(probe) >= 24 and probe not in body_text:
+            faults.append(f"repaired abstract for {pmid} did not reach the body")
     if faults:
         record(W, "apply", {"failed": "; ".join(faults)})
         for f in faults:
@@ -501,7 +551,7 @@ def cmd_apply(post_id: str) -> None:
         "{publishable:a.publishable,canonical:a.canonical,problems:a.problems}))})"
         % (ROOT, W + f"{post_id}.applied.json")], capture_output=True, text=True, cwd=ROOT)
     verdict = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
-    print(f"{post_id}: sections={applied} syntheses={syn_n} citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
+    print(f"{post_id}: abstracts-repaired={repaired_n} sections={applied} syntheses={syn_n} citations={len(re.findall(chr(60)+'sup class=.mz-ref', h))}")
     print(f"  post-conditions: all passed | auditPublishable: {json.dumps(verdict)}")
     if not verdict.get("publishable"):
         record(W, "apply", {"failed": json.dumps(verdict.get("problems"))[:400]})
