@@ -16,8 +16,8 @@
    because the dark rules arrive AFTER load, from the data.
 
    The gate that "passed" audited /evidence/ — the listing — and never
-   opened a brief. The routes now include every published brief; see
-   SYSTEM_MAP §8.0.0.0e.
+   opened a brief. The deploy gates now open every published brief; the
+   repository's system map records the incident and the must-touch list.
 
    WHAT. For every <style> inside a [data-mz-post-scope] container, at
    load and whenever one lands (MutationObserver, which runs before paint
