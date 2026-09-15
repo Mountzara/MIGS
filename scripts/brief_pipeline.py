@@ -70,6 +70,8 @@ BASE = "https://www.mountzara.com"
 OVERLAP_BLOCK = 0.30
 # An abstract in a work file must look like the PMID's real abstract.
 ABSTRACT_MATCH_MIN = 0.35
+# Sections no author may write: they are the paper's own words or metadata.
+NOT_AUTHORABLE = {"abstract", "title"}
 
 STOP = set("""about above after again against because before being below between both during each further having
 into itself more most other over same some such than that their them then there these they this those through
@@ -451,7 +453,13 @@ def cmd_prepare(post_id: str) -> None:
             "meta": txt((re.search(r'class="mz-jc-modal-meta"[^>]*>(.*?)</p>', inner, re.S) or [None, ""])[1]),
             "abstract": (secs.get("abstract", {}) or {}).get("text", ""),
             "context": {k: v["text"][:1200] for k, v in secs.items() if not v["pending"] and k != "abstract"},
-            "pending": [k for k, v in secs.items() if v["pending"]],
+            # NEVER authorable: the abstract is the paper's own verbatim text,
+            # filled from PubMed by the repair step, and the title is the
+            # paper's title. Leaving them in `pending` let an author write a
+            # section headed "Verbatim PubMed abstract" — a machine-written
+            # abstract presented as the source — and apply then overwrote the
+            # real PubMed text with it.
+            "pending": [k for k, v in secs.items() if v["pending"] and k not in NOT_AUTHORABLE],
         }
 
     # --- the check that would have saved 176 agents on W31 ---
@@ -899,13 +907,26 @@ def cmd_author(post_id: str) -> None:
     # when none of them had been through a reviewer. Only a draft this stage
     # stamped counts as verified.
     def _unverified(q: str) -> bool:
+        """Incomplete counts as unverified.
+
+        A stamp says a reviewer passed what it was shown; it says nothing about
+        whether every section was written. W31 carried a draft stamped verified
+        while missing its `methods` and `question` sections entirely, and the
+        stage skipped it — leaving two "Pending review" placeholders that only
+        apply's post-condition caught, one stage too late.
+        """
         path = W + f"drafts_dd/{q}.json"
         if not os.path.exists(path):
             return True
         try:
-            return not json.load(open(path)).get("_verified")
+            d = json.load(open(path))
         except Exception:
             return True
+        if not d.get("_verified"):
+            return True
+        want = {k for k in json.load(open(W + f"papers/{q}.json")).get("pending", [])
+                if k not in NOT_AUTHORABLE}
+        return bool(want - {k for k in d if not k.startswith("_")})
 
     todo = [q for q in man["pmids"] if _unverified(q)]
     print(f"{post_id}: {len(todo)} paper(s) to author, {len(man['pmids']) - len(todo)} already written")
@@ -1080,7 +1101,14 @@ DISCLAIMER = ('<div class="mz-eddisclaimer" role="note" style="margin:28px 0 8px
               'reading it does not create a physician&ndash;patient relationship. Decisions about testing, '
               'medications or surgery belong in a private conversation between you and your doctor.</div>')
 
-DOSE_RE = re.compile(r"\b\d[\d,.\u2013\u2014-]*\s?(?:mg|mcg|\u00b5g|\u03bcg|IU)\b", re.I)
+# A DOSE is an amount administered. A CONCENTRATION is a measurement — CRP at
+# 185.9 mg/L and AMH at 1.98 ng/mL are lab results a brief must be free to
+# report. The first version of this rule matched "185.9 mg" inside "185.9 mg/L"
+# and flagged a C-reactive protein as dosing. Per-volume units are excluded;
+# per-weight and per-time (mg/kg, mg/day) are dosing and stay in.
+DOSE_RE = re.compile(
+    r"\b\d[\d,.\u2013\u2014-]*\s?(?:mg|mcg|\u00b5g|\u03bcg|IU)\b(?!\s*/\s*(?:L|dL|mL|l|dl|ml))",
+    re.I)
 # Containers that may carry a study's own reported dose, because the dose is
 # attributed to the paper there. Everything outside them is the site's voice.
 ATTRIBUTED = re.compile(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>|<dialog[\s\S]*?</dialog>"
@@ -1212,14 +1240,35 @@ def cmd_apply(post_id: str) -> None:
     # a paper curation removed has no dialog to repair into — and must not be
     # re-checked for a landing that is correctly impossible
     repairs = {k: v for k, v in repairs.items() if k not in set(dropped)}
+    # Every kept paper's abstract section must carry that paper's real
+    # abstract. A brief whose stored abstract was a placeholder has no repair
+    # recorded unless prepare replaced it, so fill from the work file, which
+    # prepare has already reconciled against PubMed.
+    for q in man["pmids"]:
+        if q not in repairs:
+            pf = W + f"papers/{q}.json"
+            if os.path.exists(pf):
+                a = json.load(open(pf)).get("abstract") or ""
+                if len(a) > 120 and not re.search(r"pending\s+review", a, re.I):
+                    repairs[q] = a
     repaired_n = 0
     for pmid, abstract in repairs.items():
         dm = re.search(r'(<dialog[^>]*id="dd-%s"[^>]*>)(.*?)(</dialog>)' % re.escape(pmid), h, re.S)
         if not dm:
             die(f"cannot write the repaired abstract for {pmid}: no dialog")
         am = re.search(r'(<div class="mz-jc-abstract-body">)(.*?)(</div>)', dm.group(2), re.S)
+        fallback = None
         if not am:
-            die(f"cannot write the repaired abstract for {pmid}: no abstract container")
+            # Two brief shapes exist. W33/W34 wrap the abstract in
+            # <div class="mz-jc-abstract-body">; W31 has no wrapper at all —
+            # the abstract section holds a heading and the "Pending review"
+            # placeholder directly. Write into the section body in that case
+            # rather than refusing a brief for being the other shape.
+            fallback = re.search(
+                r'(<section class="mz-jc-section" id="dd-%s-abstract">)(.*?)(</section>)' % re.escape(pmid),
+                dm.group(2), re.S)
+            if not fallback:
+                die(f"cannot write the repaired abstract for {pmid}: no abstract container or section")
         blocks = []
         for part in re.split(r"\n(?=[A-Z][A-Z /&-]{2,40}:)", "\n" + abstract.strip()):
             part = part.strip()
@@ -1233,7 +1282,15 @@ def cmd_apply(post_id: str) -> None:
                 blocks.append(f"<p>{H.escape(part, quote=False)}</p>")
         if not any("mz-jc-abstract-label" in b for b in blocks):
             blocks.insert(0, '<h5 class="mz-jc-abstract-label">Abstract</h5>')
-        inner = dm.group(2)[:am.start(2)] + "".join(blocks) + dm.group(2)[am.end(2):]
+        if am:
+            inner = dm.group(2)[:am.start(2)] + "".join(blocks) + dm.group(2)[am.end(2):]
+        else:
+            # keep the section's own heading, minus its pending tag
+            head = re.search(r"<h3[^>]*>(.*?)</h3>", fallback.group(2), re.S)
+            title = re.sub(r'\s*<span class="mz-jc-pending-tag">.*?</span>', "",
+                           head.group(1), flags=re.S).strip() if head else "Verbatim PubMed abstract"
+            body_new = f"<h3>{title}</h3>" + '<div class="mz-jc-abstract-body">' + "".join(blocks) + "</div>"
+            inner = dm.group(2)[:fallback.start(2)] + body_new + dm.group(2)[fallback.end(2):]
         h = h[:dm.start(2)] + inner + h[dm.end(2):]
         repaired_n += 1
 
@@ -1244,6 +1301,8 @@ def cmd_apply(post_id: str) -> None:
         while isinstance(secs, dict) and set(secs) == {"sections"} or set(secs) == {"blocks"}:
             secs = secs.get("sections") or secs.get("blocks")
         for key, inner in secs.items():
+            if key in NOT_AUTHORABLE:
+                continue
             pat = re.compile(r'(<section class="mz-jc-section" id="dd-%s-%s">)(.*?)(</section>)'
                              % (re.escape(pmid), re.escape(key)), re.S)
             m = pat.search(h)
