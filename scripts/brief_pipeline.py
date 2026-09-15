@@ -3412,6 +3412,37 @@ def repair(W: str, msg: str) -> list:
 
 def cmd_run(post_id: str) -> None:
     W = work_dir(post_id)
+    # ONE RUN PER BRIEF. Two runs on the same work directory fight over the
+    # ledger and the topic files: an older process recreated the very topics a
+    # newer one had just removed, so a fix that worked looked like it had not,
+    # and both paid for the same authoring twice.
+    os.makedirs(W + ".ledger", exist_ok=True)
+    lock = W + ".ledger/run.lock"
+    if os.path.exists(lock):
+        try:
+            other = int(open(lock).read().strip())
+        except Exception:
+            other = None
+        alive = False
+        if other:
+            try:
+                os.kill(other, 0)
+                alive = True
+            except OSError:
+                alive = False
+        if alive:
+            die(f"another run for {post_id} is already working here (pid {other}) — "
+                f"stop it, or wait for it, before starting a second")
+        os.remove(lock)
+    open(lock, "w").write(str(os.getpid()))
+    try:
+        _run_chain(post_id, W)
+    finally:
+        if os.path.exists(lock) and open(lock).read().strip() == str(os.getpid()):
+            os.remove(lock)
+
+
+def _run_chain(post_id: str, W: str) -> None:
     print(f"RUN {post_id}")
     try:
         require(W, "prepare"); require_review(W, "prepare")
