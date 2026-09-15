@@ -31,6 +31,7 @@ USAGE
 =====
     brief_pipeline.py prepare  <post-id>   # extract work files + repair abstracts
     brief_pipeline.py curate   <post-id>   # remove papers not about their topic
+    brief_pipeline.py author   <post-id>   # write + adversarially verify every missing piece
     brief_pipeline.py pmids    <post-id>   # the authoritative list, never typed by hand
     brief_pipeline.py guard    <post-id>   # lexical wrong-paper screen over drafts
     brief_pipeline.py apply    <post-id>   # assemble + enforce site rules + audit
@@ -133,7 +134,7 @@ def curl_json(url: str, method: str = "GET", auth: bool = False, data_file: str 
 # cannot verify a draft the guard has not screened, you cannot apply without
 # a clean guard, and you cannot publish a body that apply did not bless. The
 # order is not a convention to remember; it is a precondition to execute.
-STAGES = ["prepare", "curate", "guard", "apply", "publish"]
+STAGES = ["prepare", "curate", "author", "guard", "apply", "publish"]
 
 # Every mechanical stage must be READ by an intelligent reviewer before the
 # next one runs. This is not belt-and-braces; it is the half of the job the
@@ -149,7 +150,7 @@ STAGES = ["prepare", "curate", "guard", "apply", "publish"]
 #
 # The mechanical stage records `<stage>.json`; the reviewer records
 # `<stage>.review.json` with a verdict. require() demands BOTH.
-REVIEWED_STAGES = ["prepare", "curate", "guard", "apply"]
+REVIEWED_STAGES = ["prepare", "curate", "author", "guard", "apply"]
 
 
 def _digest(paths: list[str]) -> str:
@@ -175,6 +176,7 @@ def stage_inputs(W: str, stage: str) -> list[str]:
     return {
         "prepare": [],
         "curate": [W + "papers", W + "topics"],
+        "author": [W + "papers", W + "topics", W + "curation.json"],
         "guard": [W + "papers", W + "drafts_dd", W + "curation.json"],
         "apply": [W + "papers", W + "drafts_dd", W + "manifest.json"],
         "publish": [W + "body.applied.html"] if os.path.exists(W + "body.applied.html") else [W + "manifest.json"],
@@ -268,6 +270,23 @@ SEVERITY MATTERS. Classify each finding:
    ("most of these are noise for our lane"). Report it; do not block on it.
 Reply with ONLY a JSON object:
 {{"passed": <true if there are NO blocking problems>, "blocking": ["..."], "advisory": ["..."],
+  "problems": ["..."], "notes": "one or two sentences"}}""",
+
+    "author": """You are reviewing the AUTHOR stage of a clinical brief pipeline for Dr. Mabini's site.
+Every kept paper should now have a verified journal-club deep dive in {W}drafts_dd/.
+Read {W}manifest.json, then sample AT LEAST 6 drafts across {W}drafts_dd/ against their paper files.
+Check and report honestly:
+ 1. Is each draft about the paper in its matching paper file?
+ 2. Does any draft state a number, population, comparator or outcome absent from that abstract?
+ 3. Is any design mislabelled — a narrative review called a trial, an animal or in-vitro result written
+    as a human/clinical finding?
+ 4. Any AI/placeholder language, a dose given as advice, "never"/"always" in the clinician's prose?
+ 5. Does every kept paper in the manifest have a draft, and every live topic a synthesis?
+ 6. Sample 2 syntheses in {W}syntheses.json: does each cite only papers from its own topic, with a
+    takeaway-first finding and a PubMed link in every popover?
+SEVERITY: BLOCKING = a draft misrepresents its paper or is missing. ADVISORY = style.
+Reply with ONLY a JSON object:
+{{"passed": <true if no blocking problems>, "blocking": ["..."], "advisory": ["..."],
   "problems": ["..."], "notes": "one or two sentences"}}""",
 
     "guard": """You are reviewing the GUARD stage of a clinical brief pipeline for Dr. Mabini's site.
@@ -661,9 +680,249 @@ def cmd_curate(post_id: str) -> None:
             print("  invalidated the narrative: it cites a paper curation dropped")
     print(f"{post_id}: source had {len(source_pmids)} papers; keeping {len(kept_pmids)}, "
           f"dropping {len(orphans)} off-topic; {len(man['topics'])} topic(s) remain")
-    record(W, "curate", {"kept": len(kept_pmids), "dropped": len(orphans)})
+    # Content is invalidated by a change of DECISION, not by curate merely
+    # running again. Re-running with an identical verdict must not force the
+    # re-authoring of work that already matches it — a gate that cries wolf
+    # gets worked around, which is worse than no gate.
+    import hashlib as _hl
+    fingerprint = _hl.sha256(json.dumps(
+        {"dropped": sorted(orphans), "topics": sorted(man["topics"])}, sort_keys=True).encode()).hexdigest()[:16]
+    marker = W + ".ledger/curate.decisions"
+    prior_fp = open(marker).read().strip() if os.path.exists(marker) else None
+    if prior_fp != fingerprint:
+        open(marker, "w").write(fingerprint)
+        print(f"  curation DECISIONS changed ({prior_fp} -> {fingerprint}); content authored earlier is now stale")
+    else:
+        print(f"  curation decisions unchanged ({fingerprint}); previously authored content stays valid")
+    record(W, "curate", {"kept": len(kept_pmids), "dropped": len(orphans), "fingerprint": fingerprint})
     ai_review(W, "curate")
     print(f"  ledger: curate OK — authoring may now run for {post_id}")
+
+
+# ---------------------------------------------------------------------------
+# author — the AI writing, run BY the pipeline
+# ---------------------------------------------------------------------------
+# Review was already inside every stage. The writing was not: deep dives,
+# syntheses and the narrative were produced by launching agents by hand, which
+# meant the one part of the process most likely to go wrong was the one part
+# with no gate in front of it. That is how W31's syntheses came to be written
+# before its paper set was settled, and how two briefs were authored against
+# abstracts nobody had checked.
+#
+# Every piece is now written by this stage and adversarially verified by this
+# stage, both through `claude -p`, both required before the next stage runs.
+# Nothing is authored outside the chain.
+
+SECTION_SPECS = """
+question: two <p> — "<strong>The clinical problem.</strong> …" then "<strong>The question.</strong> …"
+pico: <dl> with Population, Intervention / Exposure, Comparator, Outcome, Design; "Not stated in the abstract." where absent
+methods: one or two <p> appraising design, sample, analysis AS STATED; grade honestly
+strengths: <ul> of 3-5 <li>, each specific and grounded
+applicability: one or two <p> — to whom it transfers and to whom it does not
+equity: one or two <p> — who is represented; say plainly what is not reported
+prompts: <ol> of 3-4 <li>
+bottom: one <p>, 2-4 sentences
+findings: 2-3 <p> with the abstract's own numbers"""
+
+AUTHOR_RULES = """
+VOICE: Dr. Mabini's own journal-club analysis — first-person clinician, DO + complex benign gynecology /
+minimally invasive gynecologic surgery lens, direct, no filler.
+GROUNDING: every factual claim from the paper's verbatim abstract or its already-filled sections. No
+external facts, no invented numbers, populations or demographics. Overstatement AND understatement are
+both failures: report a significant result with its numbers; never inflate a narrative review or an
+animal study, and never write a preclinical result as a clinical one.
+PROHIBITIONS: no AI/disclaimer/placeholder language; no file paths, internal names or section marks; no
+dose presented as advice; never the words "never" or "always" in your own prose; write CBG/MIGS, never
+bare MIGS.
+FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown."""
+
+
+def _claude(prompt: str, timeout_s: int = 900) -> dict | None:
+    r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+                       capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
+    if r.returncode != 0:
+        return None
+    try:
+        text = json.loads(r.stdout).get("result", "")
+    except json.JSONDecodeError:
+        text = r.stdout
+    m = re.search(r"\{[\s\S]*\}", text)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return None
+
+
+def _author_one_paper(args_t: tuple) -> tuple:
+    W, pmid = args_t
+    p = json.load(open(W + f"papers/{pmid}.json"))
+    if not p.get("pending"):
+        return pmid, None, "no pending sections"
+    draft = _claude(f"""Author the pending journal-club sections for one paper in a CBG/MIGS brief.
+READ (Read tool): {W}papers/{pmid}.json — "abstract" is the ground truth, "pending" lists the keys to write.
+{AUTHOR_RULES}
+SECTION SPECS:{SECTION_SPECS}
+Return ONLY {{"sections": {{<key>: "<inner html>", …}}}} for exactly the keys in "pending".""")
+    if not draft or not draft.get("sections"):
+        return pmid, None, "author produced nothing"
+    verdict = _claude(f"""You are the adversarial reviewer for a physician-authored journal-club analysis. Default to REFUTE.
+READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
+Check for: any number, population, comparator or outcome absent from that abstract; overstatement OR
+understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
+written as a human finding); AI/placeholder language; a dose given as advice; "never"/"always" in the
+clinician's prose; bare "MIGS"; markup not matching the required shape.
+If fixable by tightening or deleting an unsupported sentence, return the corrected sections in
+fixed_sections with ok=true and problems listing the changes. Otherwise ok=false with problems.
+GENERATED: {json.dumps(draft['sections'])[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}}}}""")
+    if not verdict:
+        return pmid, None, "verification produced nothing"
+    if not verdict.get("ok"):
+        return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+    final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
+    json.dump(final, open(W + f"drafts_dd/{pmid}.json", "w"), ensure_ascii=False)
+    return pmid, len(verdict.get("problems") or []), None
+
+
+SYNTH_RULES = """
+WHAT: one synthesis paragraph per topic — the inner HTML of <p class="mz-toc-group-synthesis"> — 1,000
+to 2,500 characters of prose in Dr. Mabini's first-person clinician voice (DO + complex benign
+gynecology / minimally invasive gynecologic surgery), reading the week's papers on this topic as a
+whole, naming studies by first author, giving the actual numbers, and saying what changes on a Monday.
+CITATIONS: cite 1 to 4 of the topic's papers INLINE, immediately after the claim each supports, using
+EXACTLY this markup with that paper's PMID:
+<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
+FINDING: 250-600 characters, TAKEAWAY-FIRST — the clinical conclusion leads, with the paper's own
+numbers, then one sentence starting "Monday:" with the concrete implication. Never open with "This
+study…". Cite ONLY PMIDs present in the topic file, each at most once.
+GROUNDING: every claim and number from that paper's abstract. Overstatement and understatement are both
+failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >."""
+
+
+def _author_one_topic(args_t: tuple) -> tuple:
+    W, tid = args_t
+    draft = _claude(f"""Author the topic synthesis for one topic of a CBG/MIGS "Monday Mornings" brief.
+READ (Read tool): {W}topics/{tid}.json — title, and papers[] each with pmid, title, meta, abstract.
+{SYNTH_RULES}
+Return ONLY {{"html": "<inner html>", "cited": ["PMID", …]}}.""")
+    if not draft or not draft.get("html"):
+        return tid, None, "author produced nothing"
+    verdict = _claude(f"""You are the adversarial reviewer for a physician-authored evidence synthesis. Default to REFUTE.
+READ {W}topics/{tid}.json. Check: every number and claim traceable to that paper's abstract; every cited
+PMID present in the topic file and cited at most once; every popover carrying title, meta, a 250-600
+character takeaway-first finding ending in a "Monday:" sentence, and the PubMed source link, with
+id ref-pop-PMID; no overstatement or understatement; no dose in the clinician's own prose; no
+AI/placeholder language, paths or section marks; 1,000-2,500 characters of prose.
+If fixable by tightening, deleting an unsupported sentence, or correcting a popover, return fixed_html
+with ok=true and problems listing the changes. Otherwise ok=false.
+GENERATED: {json.dumps(draft)[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_html": "..."}}""")
+    if not verdict:
+        return tid, None, "verification produced nothing"
+    if not verdict.get("ok"):
+        return tid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+    return tid, {"tid": tid, "html": verdict.get("fixed_html") or draft["html"],
+                 "cited": draft.get("cited"), "problems": verdict.get("problems")}, None
+
+
+def cmd_author(post_id: str) -> None:
+    W = work_dir(post_id)
+    require(W, "prepare"); require_review(W, "prepare")
+    require(W, "curate");  require_review(W, "curate")
+    man = json.load(open(W + "manifest.json"))
+    from concurrent.futures import ThreadPoolExecutor
+
+    todo = [q for q in man["pmids"] if not os.path.exists(W + f"drafts_dd/{q}.json")]
+    print(f"{post_id}: {len(todo)} paper(s) to author, {len(man['pmids']) - len(todo)} already written")
+    failed = []
+    if todo:
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for pmid, fixes, err in ex.map(_author_one_paper, [(W, q) for q in todo]):
+                if err:
+                    failed.append((pmid, err)); print(f"  FAILED {pmid}: {err}")
+                else:
+                    print(f"  wrote {pmid}" + (f" ({fixes} reviewer correction(s))" if fixes else ""))
+    if failed:
+        record(W, "author", {"failed": f"{len(failed)} paper(s) could not be authored"})
+        die(f"{len(failed)} paper(s) could not be authored: {[f[0] for f in failed][:6]}")
+
+    missing = [q for q in man["pmids"] if not os.path.exists(W + f"drafts_dd/{q}.json")]
+    if missing:
+        record(W, "author", {"failed": f"missing drafts: {missing[:6]}"})
+        die(f"every kept paper needs a deep dive; missing {len(missing)}")
+    print(f"  all {len(man['pmids'])} paper(s) have a verified deep dive")
+
+    # --- syntheses: one per surviving topic ---
+    syn_path = W + "syntheses.json"
+    syn = json.load(open(syn_path)) if os.path.exists(syn_path) else {"items": []}
+    have = {i["tid"] for i in syn["items"] if i.get("html")}
+    need = [t for t in man["topics"] if t not in have]
+    print(f"  {len(need)} synthesis/syntheses to author, {len(have)} already written")
+    syn_failed = []
+    if need:
+        with ThreadPoolExecutor(max_workers=3) as ex:
+            for tid, item, err in ex.map(_author_one_topic, [(W, t) for t in need]):
+                if err:
+                    syn_failed.append((tid, err)); print(f"  FAILED {tid}: {err}")
+                else:
+                    syn["items"].append(item)
+                    print(f"  wrote {tid}" + (f" ({len(item['problems'] or [])} reviewer correction(s))" if item.get("problems") else ""))
+        json.dump(syn, open(syn_path, "w"), ensure_ascii=False)
+    if syn_failed:
+        record(W, "author", {"failed": f"{len(syn_failed)} synthesis/syntheses failed"})
+        die(f"synthesis authoring failed: {[f[0] for f in syn_failed][:6]}")
+    still = [t for t in man["topics"] if t not in {i["tid"] for i in syn["items"] if i.get("html")}]
+    if still:
+        record(W, "author", {"failed": f"topics without a synthesis: {still[:6]}"})
+        die(f"every live topic needs a synthesis; missing {still}")
+    print(f"  all {len(man['topics'])} topic(s) have a verified synthesis")
+    record(W, "author", {"papers": len(man["pmids"]), "authored_now": len(todo),
+                         "topics": len(man["topics"]), "syntheses_now": len(need)})
+    ai_review(W, "author")
+    print(f"  ledger: author OK — guard may now run for {post_id}")
+
+
+def require_authored_after_curate(W: str) -> None:
+    """Refuse authored content that predates curation.
+
+    Authoring happens outside this file — agents write drafts_dd/, syntheses
+    and the narrative — so the ledger cannot gate what it does not run. What it
+    CAN do is refuse to consume anything written before the paper set was
+    settled. A draft, synthesis or narrative authored earlier may describe a
+    paper curation removed, or a topic that no longer exists.
+
+    Documenting the order in a docstring did not stop me getting it wrong on
+    W31, where ten syntheses were authored before curation and three had to be
+    thrown away. A comment is not a control.
+    """
+    receipt = _receipt_path(W, "curate")
+    if not os.path.exists(receipt):
+        die("curate has not run; author nothing until the paper set is settled")
+    # Compare against when the DECISIONS last changed, not when curate last ran.
+    marker = W + ".ledger/curate.decisions"
+    t_curate = os.path.getmtime(marker) if os.path.exists(marker) else os.path.getmtime(receipt)
+    stale = []
+    for path in [W + "syntheses.json", W + "narrative.json"]:
+        if os.path.exists(path) and os.path.getmtime(path) < t_curate:
+            stale.append(os.path.basename(path))
+    # Deep dives are deliberately NOT time-checked. A deep dive is grounded in
+    # one paper's own abstract and says nothing about which other papers share
+    # its topic, so curation cannot invalidate it — and curate deletes the
+    # drafts of papers it dropped, so what remains is by construction a draft
+    # of a surviving paper. What IS checked is that correspondence.
+    dd = W + "drafts_dd"
+    if os.path.isdir(dd):
+        kept = set(json.load(open(W + "manifest.json"))["pmids"])
+        orphaned = sorted({f[:-5] for f in os.listdir(dd)} - kept)
+        if orphaned:
+            stale.append(f"draft(s) for paper(s) curation dropped: {orphaned[:5]}")
+    if stale:
+        die("authored BEFORE curation, so it may describe papers that did not survive: "
+            + "; ".join(stale)
+            + ". Re-author it, or re-run curate if the paper set is unchanged and you have "
+              "confirmed the content matches it.")
 
 
 def cmd_pmids(post_id: str) -> None:
@@ -680,6 +939,8 @@ def cmd_guard(post_id: str) -> None:
     W = work_dir(post_id)
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "curate");  require_review(W, "curate")
+    require(W, "author");  require_review(W, "author")
+    require_authored_after_curate(W)
     rows = []
     for f in sorted(os.listdir(W + "drafts_dd")):
         pm = f[:-5]
@@ -828,6 +1089,7 @@ def cmd_apply(post_id: str) -> None:
     require(W, "prepare"); require_review(W, "prepare")
     require(W, "curate");  require_review(W, "curate")
     require(W, "guard");   require_review(W, "guard")
+    require_authored_after_curate(W)
     man = json.load(open(W + "manifest.json"))
     post = json.load(open(W + f"{post_id}.source.json"))
     h = post["body_html"]
@@ -1051,4 +1313,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
