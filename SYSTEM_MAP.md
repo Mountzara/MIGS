@@ -1986,6 +1986,39 @@ Now in `brief_pipeline.py`:
 
 ---
 
+### 8.0.0.0j `run`, the receipt gate, and the weekly routine (2026-09-15)
+
+**Owner:** *"this code has a way to automatically correct this when there are
+errors… And when the auto-routine happens next week, the auto routine knows
+that this is the strict standard on how to do it and what to do when there
+are errors?"*
+
+* **`brief_pipeline.py run <post-id>`** — the whole chain. Every refusal names
+  the piece it comes from (`[topic-x]`, `[narrative]`, `[editorial]`,
+  `[card:<pmid>]`, `[dialog:<pmid>]`); `repair()` invalidates exactly those
+  pieces, they are re-authored under the same rules, and the chain resumes
+  from the earliest stale stage. Three rounds, then it stops and prints what
+  still fails. Sentence-level grounding faults, number mismatches, uncited
+  claims, dosing in a card, a wrong-paper deep dive — all repairable this way.
+* **The receipt.** When the standards audit and the sentence-level grounding
+  audit both pass, `apply` writes `<work>/.ledger/receipt.json` (SHA-256 of
+  the exact body, both audits passed, the pipeline file's digest). `publish`
+  sends it as `pipeline_receipt`.
+* **The server gate** (`functions/api/posts/[[path]].js`,
+  `pipelineReceiptHolds`): `/approve`, a PUT that flips status to published,
+  and the format-heal auto-publish path ALL refuse a body whose receipt is
+  missing, failed, or is for a different body. The weekly generator can still
+  create drafts; nothing it creates can publish without going through the
+  pipeline. `{"force":true}` remains the recorded admin escape.
+* **`scripts/weekly_briefs.sh`** — what the scheduled routine calls: runs
+  `standards-check` on the pipeline itself (refusing to publish anything if
+  the pipeline has a gap), then `run` on every unpublished weekly draft; trend
+  drafts are listed as waiting for their descriptor, never skipped silently.
+  It needs a runner with `python3`, `node`, Playwright's Chromium and the
+  `claude` CLI on PATH — the same environment this session runs in.
+
+---
+
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
 
 **Owner, verbatim:** "all the briefs in /evidence/ when clicked still are

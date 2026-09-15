@@ -36,6 +36,7 @@ USAGE
     brief_pipeline.py guard    <post-id>   # lexical wrong-paper screen over drafts
     brief_pipeline.py apply    <post-id>   # assemble + enforce site rules + audit
     brief_pipeline.py publish  <post-id>   # PUT + approve (refuses unless apply passed)
+    brief_pipeline.py run      <post-id>   # the whole chain with bounded repair — what the weekly routine calls
     brief_pipeline.py standards-check -    # review THIS file's rules and gates against THE STANDARDS;
                                            # publish refuses without a passing receipt for this version
 
@@ -83,9 +84,16 @@ are is be by of to in on for and the a an as at it its from or not no we our stu
 result method methods conclusion conclusions background objective purpose aim aims group groups""".split())
 
 
+class Refused(SystemExit):
+    """A stage refused. Carries the reason so `run` can repair and retry."""
+    def __init__(self, msg: str):
+        super().__init__(2)
+        self.msg = msg
+
+
 def die(msg: str) -> "NoReturn":
     print(f"REFUSED: {msg}", file=sys.stderr)
-    sys.exit(2)
+    raise Refused(msg)
 
 
 def terms(text: str, n: int = 40) -> list[str]:
@@ -466,8 +474,9 @@ def require_standards(W: str) -> None:
     if r.get("digest") != _sha_file(W + "body.applied.html"):
         die("the standards audit is for a different body than the one on disk — run apply")
     g = W + ".ledger/apply.grounding.json"
-    if not os.path.exists(g) or json.load(open(g)).get("faults"):
-        die("no passing sentence-level grounding audit on record for this body — run apply")
+    gr = json.load(open(g)) if os.path.exists(g) else {}
+    if not gr or gr.get("faults") or gr.get("digest") != _sha_file(W + "body.applied.html"):
+        die("no passing sentence-level grounding audit on record for THIS body — run apply")
 
 
 def spec_receipt_path() -> str:
@@ -1148,7 +1157,7 @@ animal study, and never write a preclinical result as a clinical one.
 PROHIBITIONS: no AI/disclaimer/placeholder language; no file paths, internal names or section marks; no
 dose presented as advice; never the words "never" or "always" in your own prose; write CBG/MIGS, never
 bare MIGS.
-FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown."""
+FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown, no style attributes or colours."""
 
 
 def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None:
@@ -1203,14 +1212,19 @@ Check for: any number, population, comparator or outcome absent from that abstra
 understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
 written as a human finding); AI/placeholder language; a dose given as advice; "never"/"always" in the
 clinician's prose; bare "MIGS"; markup not matching the required shape.
-If fixable by tightening or deleting an unsupported sentence, return the corrected sections in
-fixed_sections with ok=true and problems listing the changes. Otherwise ok=false with problems.
-GENERATED: {json.dumps(draft['sections'])[:60000]}
-Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}}}}""")
+Judge EVERY section separately. If a section is fixable by tightening or deleting an unsupported
+sentence, return its corrected html in fixed_sections and mark it ok; a section you cannot fix is
+not ok. GENERATED: {json.dumps(draft['sections'])[:60000]}
+Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
+  "sections": {{"<key>": {{"ok": true|false, "why": "..."}}, ...}} for every generated key}}""")
     if not verdict:
         return pmid, None, "verification produced nothing"
     if not verdict.get("ok"):
         return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+    per = verdict.get("sections") or {}
+    failing = [k for k in draft["sections"] if not (per.get(k) or {}).get("ok")]
+    if failing:
+        return pmid, None, f"section(s) not passed by the verifier: {failing[:4]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
     final["_verified"] = "adversarial review passed"
     json.dump(final, open(W + f"drafts_dd/{pmid}.json", "w"), ensure_ascii=False)
@@ -1238,7 +1252,9 @@ CITE EVERY CLAIM: every sentence that states a study's finding, a number, a popu
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
 TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
-NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
+background and any inline colour can break its contrast."""
 
 
 TREND_SYNTH_RULES = """
@@ -1270,7 +1286,9 @@ CITE EVERY CLAIM: every sentence that states a study's finding, a number, a popu
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
 TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
-NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
+background and any inline colour can break its contrast."""
 
 
 def _author_one_topic(args_t: tuple) -> tuple:
@@ -1363,7 +1381,9 @@ CITE EVERY CLAIM: every sentence that states a study's finding, a number, a popu
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
 TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
-NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…")."""
+NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
+background and any inline colour can break its contrast."""
 
 def _author_narrative(W: str, topics: list) -> tuple:
     files = ", ".join(f"{W}topics/{t}.json" for t in topics)
@@ -1442,6 +1462,8 @@ carries the citation of the paper it comes from — not only the first mention o
 each time the sentence's claim rests on a paper.
 TERMS: write "CBG/MIGS", never bare "MIGS"; do not use the words "never" or "always" in your own prose.
 NO ADVICE: appraise the literature; do not address a patient ("you should…", "take…", "stop…").
+NO STYLING: write no style attributes, no colours, no backgrounds — the site renders on its own paper
+background and any inline colour can break its contrast.
 Return inner HTML for each part:
 {spec}
 Return ONLY a JSON object with exactly those keys.""")
@@ -2067,7 +2089,29 @@ TOUCH_SCRIPT = ('<script>(function(){document.addEventListener("click",function(
 PROSE_CONTAINERS = re.compile(
     r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>'
     r'|<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>'
-    r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence|shape)"[^>]*>[\s\S]*?</section>')
+    r'|<section class="mz-post-section[^"]*"[^>]*id="(?:opening|bottom-line|lens|bridge|gaps|closing|evidence|shape|papers)"[^>]*>[\s\S]*?</section>')
+
+
+def prose_fragments(h: str) -> list:
+    """Every prose container, with cite cards removed (cards are audited on their own)."""
+    return [CARD_RE.sub(" ", f) for f in PROSE_CONTAINERS.findall(h)]
+
+
+def piece_of(h: str, frag: str) -> str:
+    """Which authored piece a prose fragment belongs to: topic-<x> (a synthesis),
+    narrative, or editorial — the unit `run` re-authors when the fragment fails."""
+    pos = h.find(frag[:200])
+    if pos < 0:
+        return "unknown"
+    if frag.startswith('<p class="mz-toc-group-synthesis">') or 'id="evidence"' in frag[:200]:
+        back = h[:pos]
+        m = list(re.finditer(r'id="(topic-[^"]+)"', back))
+        if frag.startswith('<p class="mz-toc-group-synthesis">') and m:
+            return m[-1].group(1)
+        return "editorial"
+    if "mz-post-narrative" in frag[:200]:
+        return "narrative" if 'id="opening"' not in frag[:200] else "editorial"
+    return "editorial"
 CARD_RE = re.compile(r'<article class="mz-cite-card[^"]*"[\s\S]*?</article>')
 
 
@@ -2116,7 +2160,7 @@ def _sentences(html_frag: str) -> list:
 
 def prose_faults(W: str, h: str, man: dict) -> list:
     faults = []
-    prose = " ".join(PROSE_CONTAINERS.findall(h))
+    prose = " ".join(prose_fragments(h))
     text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", prose)))
     # S10
     if re.search(r"(?<!CBG/)\bMIGS\b", text):
@@ -2144,40 +2188,41 @@ def prose_faults(W: str, h: str, man: dict) -> list:
             pj = json.load(open(pf))
             abstracts[q] = _num_tokens((pj.get("pubmed_abstract") or pj.get("abstract") or "") + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
     uncited_claims, bad_numbers, preclinical = [], [], []
-    for frag in PROSE_CONTAINERS.findall(h):
+    for frag in prose_fragments(h):
+        pc = piece_of(h, frag)
         for sent in _sentences(frag):
             cites = re.findall(r"⟦(\d+)⟧", sent)
             bare = re.sub(r"⟦\d+⟧", " ", sent)
             has_number = re.search(r"\d", bare) or re.search(r"\bet al\b|\bcolleagues\b", bare)
             if has_number and not cites:
-                uncited_claims.append(bare[:110])
+                uncited_claims.append(f"[{pc}] {bare[:110]}")
                 continue
             if cites:
                 pool = set().union(*[abstracts.get(c, set()) for c in cites]) if cites else set()
                 for tok in re.findall(r"\d[\d,]*(?:\.\d+)?", bare):
                     t = tok.replace(",", "")
                     if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in pool:
-                        bad_numbers.append(f"{t} (cites {', '.join(cites)})")
+                        bad_numbers.append(f"[{pc}] {t} (cites {', '.join(cites)})")
                 for c in cites:
                     a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
                     if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
-                        preclinical.append(f"{c}: {bare[:90]}")
+                        preclinical.append(f"[{pc}] {c}: {bare[:90]}")
     for pm, card in card_texts(h):
         ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
         if re.search(r"(?<!CBG/)\bMIGS\b", ct) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
-            faults.append(f"card {pm}: bare MIGS, never/always, or advice in the lens paragraph")
+            faults.append(f"[card:{pm}] bare MIGS, never/always, or advice in the lens paragraph")
         if DOSE_RE.search(ct):
-            faults.append(f"card {pm}: dosing in the clinician's card paragraph")
+            faults.append(f"[card:{pm}] dosing in the clinician's card paragraph")
         for t in _num_tokens(ct):
             if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
-                faults.append(f"card {pm}: number {t} is not in the paper's abstract")
+                faults.append(f"[card:{pm}] number {t} is not in the paper's abstract")
                 break
-    if uncited_claims:
-        faults.append(f"{len(uncited_claims)} sentence(s) state a number or study with no citation, e.g. {uncited_claims[:2]}")
-    if bad_numbers:
-        faults.append(f"{len(bad_numbers)} number(s) in cited sentences absent from the cited abstracts, e.g. {bad_numbers[:4]}")
-    if preclinical:
-        faults.append(f"animal/in-vitro paper described as a human finding: {preclinical[:2]}")
+    for x in uncited_claims:
+        faults.append(f"{x[:x.index(']') + 1]} sentence states a number or study with no citation: {x[x.index(']') + 2:]}")
+    for x in bad_numbers:
+        faults.append(f"{x[:x.index(']') + 1]} number absent from the cited abstracts: {x[x.index(']') + 2:]}")
+    for x in preclinical:
+        faults.append(f"{x[:x.index(']') + 1]} animal/in-vitro paper described as a human finding: {x[x.index(']') + 2:]}")
     # S5: every kept paper's abstract section carries PubMed's text whole
     alnum = lambda x: re.sub(r"[^a-z0-9]", "", H.unescape(re.sub(r"<[^>]+>", " ", x)).lower())
     for q in man["pmids"]:
@@ -2197,14 +2242,30 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         for tid in man["topics"]:
             st = re.search(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[^>]*>([\s\S]*?)(?=<section class="[^"]*\btopic-section\b|<section class="[^"]*mz-references|<dialog|$)' % re.escape(tid), h)
             syn = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', st.group(1)) if st else None
-            if not syn or len(re.sub(r"<[^>]+>", "", syn.group(1))) < 600:
+            if not syn or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", syn.group(1)))) < 1000:
                 faults.append(f"topic {tid} has no synthesis paragraph of substance above its cards")
         chips = re.findall(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#([^"]+)"', h)
         if sorted(chips) != sorted(man["topics"]):
             faults.append("the jump-to-topic TOC does not list exactly the live topics")
         nm = re.search(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h)
-        if not nm or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", nm.group(1)))) < 2000:
+        if not nm or len(re.sub(r"<[^>]+>", "", SUP_RE.sub("", nm.group(1)))) < 2400:
             faults.append("the opening narrative is missing or too short")
+    # deep-dive sections are the clinician's prose too: terms, advice, styling
+    for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
+        body_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        dt = H.unescape(re.sub(r"<[^>]+>", " ", body_d))
+        if re.search(r"(?<!CBG/)\bMIGS\b", dt):
+            faults.append(f"[dialog:{pm}] bare MIGS"); 
+        if re.search(r"\b(?:never|always)\b", dt, re.I):
+            faults.append(f"[dialog:{pm}] never/always in the clinician's prose")
+        if ADVICE_RE.search(dt):
+            faults.append(f"[dialog:{pm}] reads as advice to a patient")
+        if re.search(r'<section class="mz-jc-section[^"]*" id="dd-\d+-(?!abstract)[a-z_]+"[^>]*>[\s\S]*?style="[^"]*(?:color|background)', body_d):
+            faults.append(f"[dialog:{pm}] inline colour styling in authored content")
+    for frag in prose_fragments(h) + [c for _, c in card_texts(h)]:
+        if re.search(r'style="[^"]*(?:color|background)', frag):
+            faults.append("inline colour styling in authored prose")
+            break
     # S14: page-wide unique ids
     from collections import Counter as _C
     dup = [k for k, v in _C(re.findall(r'\sid="([^"]+)"', h)).items() if v > 1]
@@ -2234,10 +2295,10 @@ def grounding_audit(W: str, h: str, man: dict) -> list:
             pj = json.load(open(pf))
             abstracts[q] = {"title": pj.get("title", ""), "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or ""}
     faults, results = [], []
-    frags = [(f_, None) for f_ in PROSE_CONTAINERS.findall(h)]
+    frags = [(f_, None, piece_of(h, f_)) for f_ in prose_fragments(h)]
     # a card's paragraph is attributed to one paper: audited against that paper alone
-    frags += [(f'<p>{t}</p>', pm) for pm, t in card_texts(h)]
-    for i, (frag, card_pm) in enumerate(frags):
+    frags += [(f'<p>{t}</p>', pm, f"card:{pm}") for pm, t in card_texts(h)]
+    for i, (frag, card_pm, pc) in enumerate(frags):
         sents = _sentences(frag)
         if not sents:
             continue
@@ -2286,9 +2347,10 @@ Reply with ONLY {{"sentences": [ {{...}}, ... ]}} with exactly {len(sents)} obje
             if bad:
                 shown = re.sub(r"\u27e6\d+\u27e7", "", sn)[:120]
                 note = str(r.get("note", ""))[:100]
-                faults.append(f"{'; '.join(bad)}: \"{shown}\" ({note})")
+                faults.append(f"[{pc}] {'; '.join(bad)}: \"{shown}\" ({note})")
             results.append({"container": i + 1, "n": n, "flags": bad, "note": r.get("note")})
-    json.dump({"digest": _sha_file(W + "body.applied.html") if os.path.exists(W + "body.applied.html") else None,
+    import hashlib as _hl
+    json.dump({"digest": _hl.sha256(h.encode("utf-8")).hexdigest()[:16],
                "faults": faults, "sentences": results},
               open(W + ".ledger/apply.grounding.json", "w"), indent=1, ensure_ascii=False)
     return faults
@@ -2390,7 +2452,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         g = grounding_audit(W, h, man)
         for f_ in g:
             print("  GROUNDING:", f_)
-        faults += [f"grounding: {len(g)} sentence(s) failed the sentence-level audit"] if g else []
+        faults += g
     body_text = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", h)))
     for pmid, abstract in repairs.items():
         # Probe on prose, not on a structured label: apply() renders
@@ -2439,6 +2501,11 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     record(W, "apply", stats)
     ai_review(W, "apply")
     standards_audit(W, post_id)
+    import hashlib as _hl
+    json.dump({"body_sha256": _hl.sha256(h.encode("utf-8")).hexdigest(), "standards_passed": True,
+               "grounding_passed": True, "pipeline_digest": _sha_file(os.path.abspath(__file__)),
+               "checked_at": datetime.datetime.utcnow().isoformat() + "Z"},
+              open(W + ".ledger/receipt.json", "w"), indent=1)
     print(f"  ledger: apply OK — publish may now run for {post_id}")
 
 
@@ -2668,7 +2735,8 @@ def cmd_publish(post_id: str) -> None:
     require(W, "guard");   require_review(W, "guard")
     require(W, "apply");   require_review(W, "apply")
     body = open(W + "body.applied.html", encoding="utf-8").read()
-    json.dump({"body_html": body}, open(W + "_put.json", "w"), ensure_ascii=False)
+    receipt = json.load(open(W + ".ledger/receipt.json"))
+    json.dump({"body_html": body, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
     print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json")))
     json.dump({}, open(W + "_approve.json", "w"))
     print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json")))
@@ -2690,8 +2758,9 @@ def cmd_publish_trend(post_id: str) -> None:
     titles = {t: json.load(open(W + f"topics/{t}.json"))["title"] for t in man["topics"]}
     summary = re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", "", parts["lede"]))).strip()[:300]
     sid = trend["post_id"]
+    receipt = json.load(open(W + ".ledger/receipt.json"))
     doc = {"id": sid, "kind": man.get("kind", "blog"), "title": trend["title"], "summary": summary,
-           "body_html": body, "verdict": None, "week_label": trend.get("date") or datetime.date.today().isoformat(),
+           "body_html": body, "verdict": None, "pipeline_receipt": receipt, "week_label": trend.get("date") or datetime.date.today().isoformat(),
            "topics_covered": [titles[t] for t in man["topics"]], "pmids_cited": man["pmids"], "gaps_surfaced": []}
     json.dump(doc, open(W + "_post.json", "w"), ensure_ascii=False)
     r = curl_json(f"{BASE}/api/posts", "POST", auth=True, data_file=W + "_post.json")
@@ -2719,8 +2788,95 @@ def cmd_publish_trend(post_id: str) -> None:
 
 
 
+# ---------------------------------------------------------------------------
+# run — the whole chain, with repair
+# ---------------------------------------------------------------------------
+# A refusal that names a piece is repaired, not reported: the piece is
+# invalidated, re-authored under the same rules, and the chain resumes from
+# the earliest stale stage. Three rounds, then it stops and says exactly what
+# still fails. This is what the weekly routine calls; nothing else is needed.
+
+REPAIR_ROUNDS = 3
+
+
+def repair(W: str, msg: str) -> list:
+    """Invalidate the pieces a refusal names. Returns what it invalidated."""
+    done = []
+    pieces = set(re.findall(r"\[([a-z_:\-0-9]+)\]", msg))
+    syn_path, narr_path = W + "syntheses.json", W + "narrative.json"
+    for pc in pieces:
+        if pc.startswith("topic-") and os.path.exists(syn_path):
+            syn = json.load(open(syn_path))
+            before = len(syn["items"])
+            syn["items"] = [i for i in syn["items"] if i["tid"] != pc]
+            if len(syn["items"]) != before:
+                json.dump(syn, open(syn_path, "w"), ensure_ascii=False); done.append(f"synthesis {pc}")
+        elif pc in ("narrative", "editorial") and os.path.exists(narr_path):
+            os.remove(narr_path); done.append(pc)
+        elif pc.startswith("card:"):
+            dp = W + f"drafts_dd/{pc[5:]}.json"
+            if os.path.exists(dp):
+                d = json.load(open(dp)); d.pop("card", None)
+                json.dump(d, open(dp, "w"), ensure_ascii=False); done.append(pc)
+        elif pc.startswith("dialog:"):
+            dp = W + f"drafts_dd/{pc[7:]}.json"
+            if os.path.exists(dp):
+                os.remove(dp); done.append(pc)
+    # a wrong-paper finding from guard names PMIDs: those drafts are rewritten
+    if "wrong-paper" in msg or "not about its own paper" in msg:
+        for pm in set(re.findall(r"\b(\d{7,9})\b", msg)):
+            dp = W + f"drafts_dd/{pm}.json"
+            if os.path.exists(dp):
+                os.remove(dp); done.append(f"dialog:{pm}")
+    # a refusal from a reviewer with no piece named: the cross-paper prose is
+    # the usual culprit and the cheapest thing to redo
+    if not done and re.search(r"review refused|standards audit refused|post-condition", msg):
+        if os.path.exists(narr_path):
+            os.remove(narr_path); done.append("narrative/editorial")
+        if os.path.exists(syn_path):
+            os.remove(syn_path); done.append("all syntheses")
+    for st in ("author", "guard", "apply"):
+        for f in (f"{st}.json", f"{st}.review.json"):
+            if os.path.exists(W + ".ledger/" + f):
+                os.remove(W + ".ledger/" + f)
+    return done
+
+
+def cmd_run(post_id: str) -> None:
+    W = work_dir(post_id)
+    print(f"RUN {post_id}")
+    try:
+        require(W, "prepare"); require_review(W, "prepare")
+        print("  prepare: receipt current")
+    except Refused:
+        cmd_prepare(post_id)
+    last = None
+    for rnd in range(1, REPAIR_ROUNDS + 1):
+        try:
+            for st in ("curate", "author", "guard", "apply"):
+                try:
+                    require(W, st); require_review(W, st)
+                    if st == "apply":
+                        require_standards(W)
+                    print(f"  {st}: receipt current")
+                except Refused:
+                    globals()["cmd_" + st](post_id)
+            cmd_publish(post_id)
+            print(f"RUN {post_id}: published (round {rnd})")
+            return
+        except Refused as e:
+            last = e.msg
+            fixed = repair(W, e.msg)
+            print(f"  round {rnd} refused: {e.msg[:300]}")
+            if not fixed:
+                die(f"{post_id}: refused and nothing to repair automatically — {e.msg[:400]}")
+            print(f"  repairing: {fixed} — rerunning")
+    die(f"{post_id}: still refused after {REPAIR_ROUNDS} repair rounds — {last[:400] if last else ''}")
+
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review, "standards-check": cmd_standards_check}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "record-review": cmd_record_review, "standards-check": cmd_standards_check, "run": cmd_run}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
