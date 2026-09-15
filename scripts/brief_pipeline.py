@@ -434,8 +434,14 @@ def cmd_prepare(post_id: str) -> None:
         truncated = bool(real_labels) and any(lab + ":" not in mine_upper for lab in real_labels)
         if wrong or truncated:
             p["abstract"] = r["abstract"][:6000]
-            p["_abstract_source"] = ("PubMed efetch — the stored brief carried "
-                                     + ("a different paper's abstract" if wrong else "a truncated abstract"))
+            if wrong:
+                why = ("the stored brief carried placeholder text in place of an abstract"
+                       if re.search(r"pending\s+review|verbatim pubmed abstract\s*$", mine_n, re.I) or len(mine_n) < 200
+                       else "the stored brief carried a different paper's abstract")
+            else:
+                missing = sorted(lab for lab in real_labels if lab + ":" not in mine_upper)
+                why = f"the stored brief's abstract was missing its {', '.join(missing[:3])} section"
+            p["_abstract_source"] = f"PubMed efetch — {why}"
             repaired.append(pmid)
             repair_reason[pmid] = "wrong paper" if wrong else "truncated"
         if r["title"] and share(terms(r["title"], 8), p["title"]) < 0.4:
