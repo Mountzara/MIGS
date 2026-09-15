@@ -1211,11 +1211,28 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}}"
             merged.setdefault(x["pmid"], x)
         if tid in decisions:
             decisions[tid]["drop"] = list(merged.values())
-    json.dump({"decisions": decisions, "dropped_pmids": orphans},
+    json.dump({"decisions": decisions, "dropped_pmids": orphans,
+               "removed_topics": [t for t in man["topics"] if not decisions.get(t, {}).get("keep")]},
               open(W + "curation.json", "w"), ensure_ascii=False, indent=1)
     man["pmids"] = [q for q in man["pmids"] if q in kept_pmids]
-    man["topics"] = [t for t in man["topics"] if decisions[t]["keep"]]
+    # A heading with nothing under it is not a heading. The manifest was pruned
+    # but the topic FILE was left on disk, so the next reviewer read a topic
+    # with an empty papers list and refused the stage — correctly, and on every
+    # retry, because nothing removed the file.
+    emptied = [t for t in man["topics"] if not decisions.get(t, {}).get("keep")]
+    for t in emptied:
+        tf = W + f"topics/{t}.json"
+        if os.path.exists(tf):
+            os.remove(tf)
+        print(f"  TOPIC REMOVED {t}: every paper under it was dropped")
+    man["topics"] = [t for t in man["topics"] if decisions.get(t, {}).get("keep")]
     json.dump(man, open(W + "manifest.json", "w"), indent=1)
+    # any topic file left from an earlier composition goes too
+    for f in os.listdir(W + "topics"):
+        tid_f = f[:-5]
+        if tid_f not in man["topics"]:
+            os.remove(W + "topics/" + f)
+            print(f"  TOPIC FILE REMOVED {tid_f}: not part of this composition")
     for q in orphans:
         for f in (W + f"papers/{q}.json", W + f"drafts_dd/{q}.json"):
             if os.path.exists(f):
