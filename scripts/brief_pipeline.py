@@ -2335,7 +2335,7 @@ PROSE_CONTAINERS = re.compile(
 
 def prose_fragments(h: str) -> list:
     """Every prose container, with cite cards removed (cards are audited on their own)."""
-    return [CARD_RE.sub(" ", f) for f in PROSE_CONTAINERS.findall(h)]
+    return [strip_template(CARD_RE.sub(" ", f)) for f in PROSE_CONTAINERS.findall(h)]
 
 
 def piece_of(h: str, frag: str) -> str:
@@ -2436,6 +2436,26 @@ def _sentences(html_frag: str) -> list:
     return out
 
 
+TEMPLATE_INTRO = re.compile(r'<p class="[^"]*mz-jc-(?:section-intro|prompts-intro)[^"]*">[\s\S]*?</p>')
+
+
+def strip_template(frag: str) -> str:
+    """Remove the brief format's own instructional boilerplate.
+
+    Every dialog carries the same lead-ins and a misinformation-guard block
+    explaining how to read a confidence interval — "Confidence intervals that
+    include 1.0 mean the result is not statistically significant", "Always
+    check what the paper says is the primary outcome". That is the format
+    teaching the reader, not a claim about this paper, and checking it as
+    clinician prose produced the same eleven faults on every brief.
+    """
+    out = TEMPLATE_INTRO.sub(" ", frag)
+    for m in list(re.finditer(r"<section\b[\s\S]*?</section>", out)):
+        if re.search(r"Misinformation guard", m.group(0), re.I):
+            out = out.replace(m.group(0), " ")
+    return out
+
+
 def prose_faults(W: str, h: str, man: dict) -> list:
     faults = []
     prose = " ".join(prose_fragments(h))
@@ -2503,8 +2523,13 @@ def prose_faults(W: str, h: str, man: dict) -> list:
                         bad_numbers.append(f"[{pc}] {t} (cites {', '.join(cites)})")
                 for c in cites:
                     a = (json.load(open(W + f"papers/{c}.json")) if os.path.exists(W + f"papers/{c}.json") else {}).get("abstract", "")
-                    if ANIMAL_RE.search(a) and not HUMAN_RE.search(a) and re.search(r"\b(?:patients?|women|people|humans?)\b", bare, re.I):
-                        preclinical.append(f"[{pc}] {c}: {bare[:90]}")
+                    # NOTE: no regex check here. Whether a sentence presents a
+                    # preclinical result as a human finding is judged per
+                    # sentence by grounding_audit, which reads the claim. The
+                    # regex fired whenever an abstract mentioned "in vitro"
+                    # and the sentence mentioned women — which is most
+                    # mechanistic commentary, correctly written.
+                    pass
     # a card's prose is attributed by its container, so the container must
     # actually carry that attribution: a link to the study and its deep dive
     for mcard in CARD_RE.finditer(h):
@@ -2609,6 +2634,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
     # deep-dive sections are the clinician's prose too: terms, advice, styling
     for pm, inner_d in re.findall(r'<dialog[^>]*id="dd-(\d+)"[^>]*>([\s\S]*?)</dialog>', h):
         body_d = re.sub(r'<section class="mz-jc-section[^"]*" id="dd-\d+-abstract"[\s\S]*?</section>', " ", inner_d)
+        body_d = strip_template(body_d)
         dt = H.unescape(re.sub(r"<[^>]+>", " ", body_d))
         if re.search(r"(?<!CBG/)\bMIGS\b", dt, re.I):
             faults.append(f"[dialog:{pm}] bare MIGS"); 
