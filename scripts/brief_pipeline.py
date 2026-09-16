@@ -1423,14 +1423,29 @@ def piece_objection(W: str, pmid: str) -> str:
     if not os.path.exists(path):
         return ""
     why = json.load(open(path)).get(pmid)
-    return ("\n\nA PREVIOUS ATTEMPT AT THIS PAPER WAS REFUSED FOR: " + str(why)
-            + "\nWrite it differently this time; do not reproduce what was refused.") if why else ""
+    if not why:
+        return ""
+    items = [x.strip() for x in str(why).split(" || ") if x.strip()]
+    return ("\n\nEVERY ONE OF THESE WAS REFUSED IN AN EARLIER ATTEMPT AT THIS PAPER. Fix ALL of them at "
+            "once; do not reproduce any of them, and do not trade one for another:\n"
+            + "\n".join(f"  - {x}" for x in items))
 
 
 def record_piece_objection(W: str, pmid: str, why: str) -> None:
+    """Accumulate, do not overwrite.
+
+    Recording only the latest refusal meant the author fixed that one and
+    reintroduced an earlier one: a derived ten-month duration, then "strong"
+    where the abstract says "excellent", round after round. It has to see
+    everything that has been refused for this paper.
+    """
     path = W + ".ledger/author.pieces.json"
     d = json.load(open(path)) if os.path.exists(path) else {}
-    d[pmid] = why[:400]
+    prior = [x.strip() for x in str(d.get(pmid, "")).split(" || ") if x.strip()]
+    fresh = why.strip()[:300]
+    if fresh and fresh not in prior:
+        prior.append(fresh)
+    d[pmid] = " || ".join(prior[-6:])
     os.makedirs(W + ".ledger", exist_ok=True)
     json.dump(d, open(path, "w"), indent=1, ensure_ascii=False)
 
@@ -3551,7 +3566,10 @@ def cmd_publish_trend(post_id: str) -> None:
 # the earliest stale stage. Three rounds, then it stops and says exactly what
 # still fails. This is what the weekly routine calls; nothing else is needed.
 
-REPAIR_ROUNDS = 3
+# Five, not three: a paper with twelve sections can take several passes when
+# each round surfaces the next thing, and stopping early throws away a brief
+# that was two corrections from done.
+REPAIR_ROUNDS = 5
 
 
 def stage_objections(W: str, stage: str) -> str:
