@@ -1402,8 +1402,11 @@ def draft_rule_faults(sections: dict) -> list:
             bad.append(f"{key}: bare MIGS")
         if ADVICE_RE.search(t):
             bad.append(f"{key}: addresses a patient")
-        if key != "abstract" and DOSE_RE.search(t):
-            bad.append(f"{key}: states a dose")
+        # NO dose check here. A deep dive and a cite card are the paper's own
+        # attributed containers, where S7 permits the study's doses — the ICG
+        # bolus of 0.25 mg/kg belongs in the deep dive of the paper that
+        # reports it. S7 bars dosing from the site's FLOWING prose, which
+        # prose_faults checks on the assembled body.
     return bad
 
 
