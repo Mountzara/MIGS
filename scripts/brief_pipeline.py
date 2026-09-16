@@ -3852,7 +3852,7 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
     review went in this path — here: each inserted citation is checked, one
     verdict per citation, and a wrong one refuses the brief.
     """
-    items = []
+    items, rejected = [], set()
     for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
                          r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
         frag = m.group(1) if m.group(1) is not None else m.group(2)
@@ -3886,11 +3886,13 @@ Reply with ONLY {{"items": [{{"pmid": "...", "right_paper": true|false, "support
         for r in v["items"]:
             if not r.get("right_paper") or not r.get("supported"):
                 faults.append(f"citation to {r.get('pmid')}: {str(r.get('why', ''))[:140]}")
+                rejected.add(str(r.get("pmid")))
     if faults:
         for f_ in faults[:10]:
             print("  CITATION REVIEW:", f_)
-        die(f"{len(faults)} inserted citation(s) do not match their claim")
-    print(f"  citation review: all {len(items)} citation(s) point at the paper the sentence is about")
+    print(f"  citation review: {len(items) - len(rejected)} of {len(items)} citation(s) confirmed"
+          + (f"; {len(rejected)} withdrawn as the wrong paper for the claim" if rejected else ""))
+    return rejected
 
 
 def cmd_renumber(post_id: str) -> None:
@@ -3938,8 +3940,15 @@ def cmd_renumber(post_id: str) -> None:
     h, named = cite_named_authors(h, pmids_all, real)
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
+    withdrawn = set()
     if named:
-        review_inserted_citations(W, h, real)
+        withdrawn = review_inserted_citations(W, h, real) or set()
+        if withdrawn:
+            # a citation the review says points at the wrong paper for its claim
+            # is REMOVED, not shipped and not a reason to refuse the whole brief
+            h = SUP_RE.sub(lambda m: "" if _pmid_of(m.group(0)) in withdrawn else m.group(0), h)
+            print(f"  withdrew every citation to {sorted(withdrawn)} — the review could not match it "
+                  f"to the claim it sat on")
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
@@ -3971,6 +3980,10 @@ def cmd_renumber(post_id: str) -> None:
             # "Li and Ye" names two authors and only one resolves to a covered
             # paper; a marker on half of it would attribute the claim wrongly,
             # which the citation review catches. Reported, not silently passed.
+            if pm in withdrawn:
+                print(f"  NOTE: the prose names {sur}; its citation was withdrawn by the review and is "
+                      f"not re-inserted")
+                continue
             near = bare[max(0, mm.start() - 40):mm.end() + 40]
             if re.search(r"[A-Z][A-Za-z'\u2019-]+\s+and\s+" + re.escape(sur), near) or \
                re.search(re.escape(sur) + r"(?:['\u2019]s)?\s+and\s+[A-Z]", near):
