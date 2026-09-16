@@ -337,8 +337,9 @@ item subsection, lens, where the two sides can meet, gaps, closing), a sample of
 deep-dive dialogs, the reference list, and the end).
 Check and report honestly:
  1. Any reader-visible placeholder, "Pending review", or text admitting machine generation.
- 2. Any dose (mg/mcg/IU) in the SITE'S OWN prose — narrative, synthesis, section intros. Doses are
-    allowed ONLY inside a paper's attributed containers (verbatim abstract, deep-dive, cite card).
+ 2. Any dose (mg/mcg/IU) anywhere the site writes in its own voice — narrative, synthesis, section
+    intros, and the cite card's lens paragraph. A dose is allowed ONLY where the PAPER is speaking:
+    its verbatim abstract and its deep-dive sections.
  3. Every inline citation <sup class="mz-ref"> should carry a title, a finding, and a PubMed link,
     and the finding should be a real takeaway with numbers, not a generic sentence.
  4. Any claim in the narrative or syntheses that overstates its source — preclinical read as clinical,
