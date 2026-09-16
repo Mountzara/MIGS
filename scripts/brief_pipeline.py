@@ -2076,6 +2076,27 @@ def retitle_topics(h: str, decisions: dict) -> str:
     return h
 
 
+
+def dedupe_element_ids(h: str) -> str:
+    """Make every element id unique on the page.
+
+    A paper that belongs under two topics is carded under both — legitimate
+    content, invalid HTML, and an anchor to that id resolves to whichever card
+    came first. The dialog keeps its single id (the triggers call it by name);
+    only the repeated cards are renumbered.
+    """
+    seen: dict = {}
+
+    def one(m):
+        attr, val = m.group(0), m.group(1)
+        if val.startswith("dd-"):
+            return attr
+        seen[val] = seen.get(val, 0) + 1
+        return attr if seen[val] == 1 else f' id="{val}-{seen[val]}"'
+
+    return re.sub(r'\sid="([^"]+)"', one, h)
+
+
 def dedupe_popover_ids(h: str) -> str:
     """One PMID cited twice produces two elements with the same id.
 
@@ -2940,6 +2961,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     h = re.sub(r"\bNever assume\b", "Do not assume", h)
     h = escape_bare_angles(h)
     h = dedupe_popover_ids(h)
+    h = dedupe_element_ids(h)
     h = strip_build_comments(h)
     h = h.replace("(parity with \u00a73.8 trend brief)", "(parity with the trend brief)")
     if "mz-eddisclaimer" not in h:
