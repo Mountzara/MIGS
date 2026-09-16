@@ -2365,6 +2365,16 @@ def card_texts(h: str) -> list:
     return out
 
 
+def _pool_tokens(text: str) -> set:
+    """Every number a source text contains — the permissive side of the check.
+
+    Building the pool with the same stripping as the checked text removed the
+    22.7 of a white-cell count from the abstract while the prose kept it, so a
+    figure that WAS in the paper was reported as invented.
+    """
+    return {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+
+
 def _num_tokens(text: str) -> set:
     """Numbers a reader would read as a finding.
 
@@ -2452,7 +2462,8 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         pf = W + f"papers/{q}.json"
         if os.path.exists(pf):
             pj = json.load(open(pf))
-            abstracts[q] = _num_tokens((pj.get("pubmed_abstract") or pj.get("abstract") or "") + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
+            abstracts[q] = _pool_tokens((pj.get("pubmed_abstract") or pj.get("abstract") or "")
+                                        + " " + (pj.get("meta") or "") + " " + (pj.get("title") or ""))
     uncited_claims, bad_numbers, preclinical = [], [], []
     for frag in prose_fragments(h):
         pc = piece_of(h, frag)
@@ -2495,9 +2506,12 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         pfc = W + f"papers/{pmc}.json"
         if os.path.exists(pfc):
             pjc = json.load(open(pfc))
-            card_txt = H.unescape(re.sub(r"<[^>]+>", " ", c)).lower()
-            ttl = re.sub(r"[^a-z0-9 ]", "", (pjc.get("title") or "").lower()).split()
-            if ttl and not all(w in card_txt for w in ttl[:6]):
+            # BOTH sides normalised identically: stripping the hyphen from
+            # "Salmonella-induced" on one side only made 26 correct cards fail
+            norm = lambda x: re.sub(r"[^a-z0-9 ]", " ", H.unescape(re.sub(r"<[^>]+>", " ", x)).lower())
+            card_txt = " ".join(norm(c).split())
+            ttl = norm(pjc.get("title") or "").split()
+            if ttl and not all(w in card_txt.split() for w in ttl[:6]):
                 faults.append(f"[card:{pmc}] the card does not carry the paper's title")
             jrn = (pjc.get("journal") or "").lower()
             if jrn and jrn.split()[0] not in card_txt:
