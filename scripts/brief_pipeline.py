@@ -393,8 +393,9 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
  S5  Every study's abstract is reproduced in its deep dive verbatim and complete, as PubMed gives it.
  S6  Every claim is grounded in the cited abstract — no overstatement, no understatement, no preclinical
      or animal result presented as a human finding, no invented numbers or populations.
- S7  No dosing (mg, mcg, µg, IU, mg/kg, mg/day) in the site's own prose; doses appear only inside a
-     paper's attributed containers (verbatim abstract, deep dive, cite card).
+ S7  No dosing (mg, mcg, µg, IU, mg/kg, mg/day) anywhere the site writes in its own voice — including
+     the cite card's lens paragraph, which is the clinician's summary, not the paper's text. A dose
+     appears only where the PAPER is speaking: its verbatim abstract and its deep-dive sections.
  S8  A clear educational disclaimer; nothing that reads as medical advice to a patient.
  S9  No internal paths, spec references, build comments, AI-provenance language or placeholders visible.
  S10 Terminology: "CBG/MIGS", never bare "MIGS"; no "never"/"always" in the clinician's own prose.
