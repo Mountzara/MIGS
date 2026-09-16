@@ -337,9 +337,8 @@ item subsection, lens, where the two sides can meet, gaps, closing), a sample of
 deep-dive dialogs, the reference list, and the end).
 Check and report honestly:
  1. Any reader-visible placeholder, "Pending review", or text admitting machine generation.
- 2. Any dose (mg/mcg/IU) anywhere the site writes in its own voice — narrative, synthesis, section
-    intros, and the cite card's lens paragraph. A dose is allowed ONLY where the PAPER is speaking:
-    its verbatim abstract and its deep-dive sections.
+ 2. NOT dosing — these are clinician-facing briefs and a study's doses belong in them. Flag instead
+    any dose stated as a recommendation TO A PATIENT rather than as what a study administered.
  3. Every inline citation <sup class="mz-ref"> should carry a title, a finding, and a PubMed link,
     and the finding should be a real takeaway with numbers, not a generic sentence.
  4. Any claim in the narrative or syntheses that overstates its source — preclinical read as clinical,
@@ -394,9 +393,11 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
  S5  Every study's abstract is reproduced in its deep dive verbatim and complete, as PubMed gives it.
  S6  Every claim is grounded in the cited abstract — no overstatement, no understatement, no preclinical
      or animal result presented as a human finding, no invented numbers or populations.
- S7  No dosing (mg, mcg, µg, IU, mg/kg, mg/day) anywhere the site writes in its own voice — including
-     the cite card's lens paragraph, which is the clinician's summary, not the paper's text. A dose
-     appears only where the PAPER is speaking: its verbatim abstract and its deep-dive sections.
+ S7  Dosing belongs to the reader. These briefs are CLINICIAN-facing journal club material, so a
+     study's doses are legitimate clinical detail anywhere in them — synthesis, narrative, card,
+     deep dive. The prohibition is on the PATIENT-facing surfaces: the home page and the educational
+     materials, which must carry no dosing at all. (Owner, 2026-09-16: "these briefs can have dosing
+     — the patient facing home page and educational materials should not.")
  S8  A clear educational disclaimer; nothing that reads as medical advice to a patient.
  S9  No internal paths, spec references, build comments, AI-provenance language or placeholders visible.
  S10 Terminology: "CBG/MIGS", never bare "MIGS"; no "never"/"always" in the clinician's own prose.
@@ -1517,7 +1518,7 @@ study…". Cite ONLY PMIDs present in the topic file; every one of them must app
 LENGTH: 1,000 characters minimum; at most 1,800 plus 150 per paper in the topic.
 GROUNDING: every claim and number from that paper's abstract. Overstatement and understatement are both
 failures.
-NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No AI/placeholder language, paths or section marks. Escape & < >.
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
@@ -1554,7 +1555,7 @@ Cite ONLY PMIDs in the topic file; every one of them must appear at least once.
 LENGTH: 700 characters minimum; at most 1,600 plus 150 per paper in the item.
 GROUNDING: every claim and number from the abstracts. Overstatement and understatement are both
 failures.
-NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No AI/placeholder language, paths or section marks. Escape & < >.
 {tone}
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
@@ -1653,8 +1654,7 @@ paper's PMID (the pipeline renumbers markers 1, 2, 3 … in order of first appea
 <sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-PMID">PMID</a><span class="mz-ref-pop" id="ref-pop-PMID" role="tooltip"><span class="mz-ref-pop-title">TITLE</span><span class="mz-ref-pop-meta">JOURNAL &middot; YEAR</span><span class="mz-ref-pop-finding">FINDING</span><a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/PMID/" target="_blank" rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>
 FINDING: 250-600 characters, the study's conclusion first with its numbers, then one sentence starting
 "Monday:" with the implication. Never open with "This study".
-PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, no dose in your own
-prose. Escape & < >. Return inner HTML only.
+PROHIBITIONS: no AI/disclaimer/placeholder language, no paths or section marks, Escape & < >. Return inner HTML only.
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
@@ -1763,7 +1763,7 @@ THE CLAIM: {claim}
 READ {W}syntheses.json (each item's verified subsection and framing label) and the topic files: {files}.
 Check: every study, number and finding traceable; the bottom line names items consistently with their
 framing labels (an item labelled "Supported by clinical trials" is not described as unsupported, and
-vice versa); no dose; every study named carries an inline citation in the standard markup with a PMID
+vice versa); every study named carries an inline citation in the standard markup with a PMID
 from a topic file; no AI/placeholder language; each part matches its spec: Also refuse: a sentence stating a finding, number or comparison with no citation on it; bare "MIGS"
 without "CBG/"; "never"/"always" in the clinician's prose; anything addressed to a patient as advice.
 {spec}
@@ -1793,7 +1793,7 @@ Return ONLY {{"card": "<paragraph>"}}.""")
     verdict = _claude(f"""You are the adversarial reviewer for a physician-authored paper summary. Default to REFUTE.
 READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
 Check: every fact traceable to the abstract; specific to this paper (design, population, key result
-named); no template phrasing that could sit under any paper; no dose; no AI/placeholder language; no
+named); no template phrasing that could sit under any paper; no AI/placeholder language; no
 "never"/"always"; no bare "MIGS"; 2-4 sentences; no markup.
 If fixable by tightening, return fixed_card with ok=true and problems listing the changes. Otherwise ok=false.
 GENERATED: {json.dumps(draft['card'])}
@@ -2678,8 +2678,7 @@ def prose_faults(W: str, h: str, man: dict) -> list:
         ct = H.unescape(re.sub(r"<[^>]+>", " ", card))
         if re.search(r"(?<!CBG/)\bMIGS\b", ct, re.I) or re.search(r"\b(?:never|always)\b", ct, re.I) or ADVICE_RE.search(ct):
             faults.append(f"[card:{pm}] bare MIGS, never/always, or advice in the lens paragraph")
-        if DOSE_RE.search(ct):
-            faults.append(f"[card:{pm}] dosing in the clinician's card paragraph")
+
         for t in _num_tokens(ct):
             if (len(t) >= 2 or "." in t) and not re.fullmatch(r"(?:19|20)\d\d", t) and t not in abstracts.get(pm, set()):
                 faults.append(f"[card:{pm}] number {t} is not in the paper's abstract")
@@ -3056,9 +3055,9 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
     # ---- POST-CONDITIONS. Each of these is a fault that actually shipped. ----
     prose = site_prose(h)
     faults = []
-    doses = DOSE_RE.findall(prose)
-    if doses:
-        faults.append(f"dosing in the site's own prose: {doses[:5]}")
+    # No dose check on a brief. These are clinician-facing; the rule governs the
+    # patient-facing home page and educational materials, which
+    # scripts/check_patient_pages_dosing.py gates at deploy.
     _vis = re.sub(r"<style[\s\S]*?</style>|<script[\s\S]*?</script>", " ", h)
     if re.search(r"Pending[^<]{0,40}review", _vis):
         faults.append("a reader-visible 'Pending review' placeholder remains")

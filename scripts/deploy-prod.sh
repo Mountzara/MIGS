@@ -432,6 +432,25 @@ if command -v node >/dev/null 2>&1 && [ -f scripts/check_citation_integrity.mjs 
 fi
 
 # ---------------------------------------------------------------------------
+# Patient-page dosing gate. The clinician-facing briefs carry a study's doses
+# as legitimate clinical detail; the home page and the educational articles
+# must not hand a patient an amount to take. A collapsed verbatim abstract is
+# exempt — there the trial is speaking.
+# ---------------------------------------------------------------------------
+if [ -f scripts/check_patient_pages_dosing.py ]; then
+    echo ""
+    echo "💊 patient-page dosing gate..."
+    if python3 scripts/check_patient_pages_dosing.py > /tmp/_dosing.log 2>&1; then
+        tail -2 /tmp/_dosing.log
+        echo "   ✅ patient-page dosing gate passed"
+    else
+        echo ""
+        cat /tmp/_dosing.log
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Rendered-citation gate. check_citation_integrity.mjs reads the repo's own
 # pages; this one opens every PUBLISHED brief in a browser and checks what a
 # reader actually gets from a citation: a numbered marker (not a PMID), a
