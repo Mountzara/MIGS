@@ -3593,9 +3593,23 @@ def repair(W: str, msg: str) -> list:
         # identical refusal. A named paper's draft is removed so it is rewritten.
         named_pm = {x for b in blocking for x in re.findall(r"\b(\d{7,9})\b", str(b))}
         for pm in named_pm:
+            # the reviewer's reason goes to the author that must rewrite it —
+            # deleting the draft without saying why produced a fresh draft with
+            # a fresh version of the same overstatement
+            why = "; ".join(b for b in blocking if pm in str(b))
+            record_piece_objection(W, pm, why)
             f = W + f"drafts_dd/{pm}.json"
             if os.path.exists(f):
                 os.remove(f)
+        # a synthesis the objection names carries the same claim: invalidate it
+        named_topics = {t for b in blocking for t in re.findall(r"\b(topic-[a-z0-9_]+)", str(b))}
+        if named_topics and os.path.exists(W + "syntheses.json"):
+            syn = json.load(open(W + "syntheses.json"))
+            keep = [i for i in syn["items"] if i["tid"] not in named_topics]
+            if len(keep) != len(syn["items"]):
+                syn["items"] = keep
+                json.dump(syn, open(W + "syntheses.json", "w"), ensure_ascii=False)
+                done.append(f"synthesis/syntheses {sorted(named_topics)} invalidated")
         done.append(f"{st} (re-running with {len(blocking)} objection(s) fed back"
                     + (f", {len(named_pm)} draft(s) invalidated" if named_pm else "") + ")")
         # later stages are void too, since this one's output changes
