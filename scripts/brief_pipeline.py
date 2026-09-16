@@ -3716,6 +3716,50 @@ def repair(W: str, msg: str) -> list:
 # the result in a browser, and republishes.
 
 
+def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
+    """A plain-language finding written FROM the abstract, cached on disk.
+
+    Two rules meet here. The owner: "the hover summary better be derived from
+    the actual abstract, not echoing your output" — so the source is the
+    abstract and nothing else, never this pipeline's own earlier prose. The
+    site's publish audit: a summary that is a verbatim paste of the abstract is
+    refused, because a reader hovering a citation wants the finding in plain
+    words. So it is written from the abstract, then checked back against it:
+    every number must appear in the source.
+    """
+    cache = W + "findings.json"
+    store = json.load(open(cache)) if os.path.exists(cache) else {}
+    if store.get(pmid):
+        return store[pmid]
+    if len((abstract or "").strip()) < 120:
+        return ""
+    v = _claude(f"""Write the hover summary a clinician sees for one citation.
+PAPER: {json.dumps(title)}
+ABSTRACT (the only source; use nothing else):
+{abstract[:6000]}
+RULES: 250-480 characters. The study's own conclusion FIRST, in plain clinical language — not a
+sentence copied from the abstract, and not a paraphrase of its opening. Name the design and the
+population, give the abstract's own key number(s) exactly as it states them, and end with one short
+sentence beginning "Relevance:" saying what it bears on. No dose recommendation, no advice, no
+hedging filler. Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
+    t = (v or {}).get("finding", "").strip()
+    if not t:
+        return ""
+    # every number it states must be in the abstract
+    src = _pool_tokens(abstract)
+    for tok in _num_tokens(t):
+        if (len(tok) >= 2 or "." in tok) and not re.fullmatch(r"(?:19|20)\d\d", tok) and tok not in src:
+            return ""
+    # and it must not be a paste
+    a_norm = re.sub(r"[^a-z0-9]", "", abstract.lower())
+    t_norm = re.sub(r"[^a-z0-9]", "", t.lower())
+    if len(t_norm) > 60 and t_norm[:60] in a_norm:
+        return ""
+    store[pmid] = t
+    json.dump(store, open(cache, "w"), ensure_ascii=False, indent=1)
+    return t
+
+
 def _paper_finding(abstract: str) -> str:
     """The paper's own reported finding, taken from its PubMed abstract.
 
@@ -3748,7 +3792,7 @@ def _paper_finding(abstract: str) -> str:
     return t
 
 
-def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
+def cite_named_authors(h: str, pmids: list, real: dict, W_dir: str = "") -> tuple:
     """Put a citation on every study the site's own prose names by author.
 
     W33's narrative named Pan, Takemura, Li, Sanz-Cabanillas, Murphy,
@@ -3775,7 +3819,8 @@ def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
     def sup_for(pm: str) -> str:
         r = real.get(pm) or {}
         meta = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-        finding = _paper_finding((real.get(pm) or {}).get("abstract", ""))
+        r0 = real.get(pm) or {}
+        finding = _plain_finding(W_dir, pm, r0.get("title", ""), r0.get("abstract", ""))
         if not finding:
             return ""
         return (f'<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
@@ -3940,7 +3985,7 @@ def cmd_renumber(post_id: str) -> None:
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
-    h, named = cite_named_authors(h, pmids_all, real)
+    h, named = cite_named_authors(h, pmids_all, real, W)
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn = set()
