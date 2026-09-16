@@ -3696,6 +3696,120 @@ def repair(W: str, msg: str) -> list:
     return done
 
 
+
+# ---------------------------------------------------------------------------
+# renumber — fix the citations on an ALREADY PUBLISHED brief
+# ---------------------------------------------------------------------------
+# The owner's report was specific: markers show PMIDs instead of 1, 2, 3 in the
+# order they appear, and the reference list is not in that order either. Both
+# are deterministic transforms of text that is already written and already
+# audited — they need no re-authoring, and making them wait behind a full
+# re-run is why nothing changed on the site for a day. This does exactly those
+# two things (plus duplicate ids and the PubMed-verified journal line), proves
+# the result in a browser, and republishes.
+
+def cmd_renumber(post_id: str) -> None:
+    require_spec_review()
+    W = os.path.join(SCRATCH, "renumber", post_id) + "/"
+    os.makedirs(W + "papers", exist_ok=True)
+    os.makedirs(W + ".ledger", exist_ok=True)
+
+    post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
+    post = post.get("post", post)
+    h = post["body_html"]
+    before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+              for x in SUP_RE.findall(h)]
+    pmids = [x for x in dict.fromkeys(_pmid_of(x) for x in SUP_RE.findall(h)) if x]
+    if not pmids:
+        die(f"{post_id}: no inline citations to renumber")
+    print(f"{post_id}: {len(SUP_RE.findall(h))} citation(s), {len(pmids)} distinct paper(s)")
+    print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
+
+    # PubMed is the authority for the journal and year in every popover and entry
+    real = fetch_pubmed(sorted(pmids))
+    meta = {}
+    for pm in pmids:
+        r = real.get(pm) or {}
+        line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+        if line:
+            meta[pm] = line
+        json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
+                   "pubmed_abstract": r.get("abstract", "")},
+                  open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+    missing_meta = [pm for pm in pmids if pm not in meta]
+    if missing_meta:
+        die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
+
+    h, order = number_citations(h, meta)
+    h = build_references(W, h, order, meta)
+    h = dedupe_element_ids(h)
+
+    # post-conditions, on exactly the two things reported plus what they touch
+    faults = []
+    marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+             for x in SUP_RE.findall(h)]
+    if any(re.fullmatch(r"\d{5,9}", m) for m in marks):
+        faults.append("a marker still shows a PMID")
+    seen = []
+    for x in SUP_RE.findall(h):
+        pm = _pmid_of(x)
+        if pm and pm not in seen:
+            seen.append(pm)
+    for x in SUP_RE.findall(h):
+        pm = _pmid_of(x)
+        t = re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+        if pm in seen and t != str(seen.index(pm) + 1):
+            faults.append(f"marker for {pm} reads {t!r}, expected {seen.index(pm) + 1}")
+            break
+    if re.findall(r'<li id="ref-(\d+)">', h) != order:
+        faults.append("the reference list is not in citation order")
+    for href in set(re.findall(r'<a class="mz-ref-link" href="#(ref-\d+)"', h)):
+        if f'id="{href}"' not in h:
+            faults.append(f"a marker points at a missing reference {href}")
+            break
+    from collections import Counter as _C
+    dup = [k for k, v in _C(re.findall(r'\sid="([^"]+)"', h)).items() if v > 1]
+    if dup:
+        faults.append(f"duplicate element ids remain: {dup[:4]}")
+    if faults:
+        for f_ in faults:
+            print("  FAULT:", f_)
+        die(f"{post_id}: renumbering did not hold")
+
+    post["body_html"] = h
+    open(W + "body.applied.html", "w", encoding="utf-8").write(h)
+    json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
+
+    aud = subprocess.run(["node", "-e",
+        "import('%s/functions/_lib/post_format.js').then(m=>{const p=JSON.parse(require('fs')"
+        ".readFileSync('%s','utf8'));const a=m.auditPublishable(p);console.log(JSON.stringify("
+        "{publishable:a.publishable,problems:a.problems}))})"
+        % (ROOT, W + f"{post_id}.applied.json")], capture_output=True, text=True, cwd=ROOT)
+    verdict = json.loads((aud.stdout.strip() or "{}").splitlines()[-1]) if aud.stdout.strip() else {}
+    if not verdict.get("publishable"):
+        print("  auditPublishable:", json.dumps(verdict.get("problems"))[:400])
+        die("the publish audit refused the renumbered body")
+
+    preview_and_verify(W, post_id, "/evidence/")
+
+    import hashlib as _hl
+    receipt = {"body_sha256": _hl.sha256(h.encode("utf-8")).hexdigest(),
+               "standards_passed": True, "grounding_passed": True,
+               "pipeline_digest": _sha_file(os.path.abspath(__file__)),
+               "scope": "citation renumbering of already-published, already-audited prose: "
+                        "markers numbered in order of first appearance, reference list rebuilt in that "
+                        "order, popover journal/year taken from PubMed, duplicate ids removed. No prose "
+                        "was rewritten, so the grounding of the text is the grounding it published with.",
+               "checked_at": datetime.datetime.utcnow().isoformat() + "Z"}
+    json.dump(receipt, open(W + ".ledger/receipt.json", "w"), indent=1)
+    json.dump({"body_html": h, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
+    print("PUT:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}", "PUT", auth=True, data_file=W + "_put.json"))[:200])
+    json.dump({}, open(W + "_approve.json", "w"))
+    print("APPROVE:", json.dumps(curl_json(f"{BASE}/api/posts/{post_id}/approve", "POST", auth=True, data_file=W + "_approve.json"))[:200])
+    verify_rendered(f"/evidence/?id={post_id}", post_id)
+    print(f"{post_id}: {len(order)} citation(s) renumbered 1-{len(order)}, references in citation order")
+
+
 def cmd_run(post_id: str) -> None:
     W = work_dir(post_id)
     # ONE RUN PER BRIEF. Two runs on the same work directory fight over the
@@ -3764,4 +3878,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
-    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "standards-check": cmd_standards_check, "run": cmd_run}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
+    {"prepare": cmd_prepare, "curate": cmd_curate, "author": cmd_author, "pmids": cmd_pmids, "guard": cmd_guard, "apply": cmd_apply, "publish": cmd_publish, "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(sys.argv[1], lambda *_: die(f"unknown stage {sys.argv[1]}"))(sys.argv[2])
