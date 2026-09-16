@@ -45,14 +45,24 @@ def disclaimer_visible(page, route):
     present — a check that cannot fail. What matters is that it renders, with
     real text, on the page.
     """
-    el = page.locator(".mz-eddisclaimer").first
-    if el.count() == 0:
+    els = page.locator(".mz-eddisclaimer")
+    n = els.count()
+    if n == 0:
         return [f"{route}: no educational disclaimer on the rendered page"]
-    if not el.is_visible():
-        return [f"{route}: the educational disclaimer is present but not visible"]
-    txt = (el.inner_text() or "").strip()
-    if len(txt) < 80:
-        return [f"{route}: the educational disclaimer renders only {len(txt)} characters"]
+    # A brief carries more than one: the reader's copy in the body, and another
+    # inside a deep-dive dialog, which is closed and therefore zero-height until
+    # opened. Checking only the first found the closed one and called a page
+    # with a perfectly visible disclaimer a failure. ANY visible one with real
+    # text satisfies the standard.
+    best = 0
+    for i in range(n):
+        el = els.nth(i)
+        if el.is_visible():
+            best = max(best, len((el.inner_text() or "").strip()))
+    if best == 0:
+        return [f"{route}: {n} educational disclaimer(s) on the page, none of them visible"]
+    if best < 80:
+        return [f"{route}: the educational disclaimer renders only {best} characters"]
     return []
 
 
