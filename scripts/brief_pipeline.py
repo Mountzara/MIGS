@@ -1332,7 +1332,8 @@ monday: one <p> — change, hold, or counsel: what a CBG/MIGS clinician does wit
 AUTHOR_RULES = """
 VOICE: Dr. Mabini's own journal-club analysis — first-person clinician, DO + complex benign gynecology /
 minimally invasive gynecologic surgery lens, direct, no filler.
-GROUNDING: every factual claim from the paper's verbatim abstract or its already-filled sections. No
+GROUNDING: every factual claim from the paper's verbatim abstract or its already-filled sections.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No
 external facts, no invented numbers, populations or demographics. Overstatement AND understatement are
 both failures: report a significant result with its numbers; never inflate a narrative review or an
 animal study, and never write a preclinical result as a clinical one.
@@ -1396,7 +1397,7 @@ Return ONLY {{"sections": {{<key>: "<inner html>", …}}}} for exactly the keys 
         return pmid, None, "author produced nothing"
     verdict = _claude(f"""You are the adversarial reviewer for a physician-authored journal-club analysis. Default to REFUTE.
 READ {W}papers/{pmid}.json — its "abstract" is the ground truth.
-Check for: anything addressed to a patient as advice, in any wording (the Monday, applicability and
+Check for: any number that is not stated in the abstract, including one the author computed from figures that are (a total, a percentage, a difference); anything addressed to a patient as advice, in any wording (the Monday, applicability and
 equity sections drift into it most); any number, population, comparator or outcome absent from that abstract; overstatement OR
 understatement; a design mislabelled (a narrative review called a trial, an animal or in-vitro result
 written as a human finding); AI/placeholder language; a dose given as advice; "never"/"always" in the
@@ -1436,7 +1437,8 @@ numbers, then one sentence starting "Monday:" with the concrete implication. Nev
 study…". Cite ONLY PMIDs present in the topic file; every one of them must appear at least once.
 LENGTH: 1,000 characters minimum; at most 1,800 plus 150 per paper in the topic.
 GROUNDING: every claim and number from that paper's abstract. Overstatement and understatement are both
-failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+failures.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
 each time the sentence's claim rests on a paper.
@@ -1472,7 +1474,8 @@ sentence starting "Relevance:" saying how it bears on this claim. Never open wit
 Cite ONLY PMIDs in the topic file; every one of them must appear at least once.
 LENGTH: 700 characters minimum; at most 1,600 plus 150 per paper in the item.
 GROUNDING: every claim and number from the abstracts. Overstatement and understatement are both
-failures. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
+failures.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No dose in your own prose. No AI/placeholder language, paths or section marks. Escape & < >.
 {tone}
 CITE EVERY CLAIM: every sentence that states a study's finding, a number, a population or a comparison
 carries the citation of the paper it comes from — not only the first mention of that paper. Cite again
@@ -1563,6 +1566,7 @@ surgery surgeon reading the week as a whole. Open on the one paper you keep retu
 others as variations on a structural theme, name studies by first author, close on what changes on a
 Monday. Direct, specific, no throat-clearing.
 GROUNDING: every study, author, number and finding from the topic files. No external facts.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study.
 Overstatement and understatement are both failures — never write a preclinical or animal result as a
 human finding.
 CITATIONS: cite every study you name, inline, right after the claim, with EXACTLY this markup and the
@@ -1619,7 +1623,8 @@ matters, and what it changes or does not change on a Monday.
 MUST BE SPECIFIC: name the design, population and key result from the abstract. No reusable template
 sentences, no "this week's signal", no "what I'd want to read next", no "the gap I'm building tools to
 close". A reader should be unable to move this paragraph to another paper.
-GROUNDING: every fact from the abstract. No dose in your prose. No AI/placeholder language. No
+GROUNDING: every fact from the abstract. No dose in your prose.
+NUMBERS AS STATED: use only figures the abstract itself gives. Do not compute, combine or convert them — no totals you added up, no percentages you worked out, no differences you subtracted. If the abstract says 487 per arm, write 487 per arm, not 974. A number you derived cannot be checked against the paper, and a reader cannot tell which of your figures came from the study. No AI/placeholder language. No
 "never"/"always". When you name the practice write "CBG/MIGS", never bare "MIGS", and only where
 the paper actually bears on it — omit it rather than shoehorn it in.
 NO ADVICE: appraise the paper; never address a patient ("you should…", "take…", "ask your doctor…").
@@ -2372,8 +2377,11 @@ def _pool_tokens(text: str) -> set:
     22.7 of a white-cell count from the abstract while the prose kept it, so a
     figure that WAS in the paper was reported as invented.
     """
-    return {t.replace(",", "") for t in
-            re.findall(r"(?<![A-Za-z0-9-])\d[\d,]*(?:\.\d+)?(?![\w-])", text or "")}
+    # Every digit sequence, with no exclusions at all. The pool is the
+    # permissive side: a number missing from it reports a real figure as
+    # invented, which is how a confidence interval written "80.6-97.5" in the
+    # abstract failed against a synthesis that quoted it correctly.
+    return {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
 
 
 def _num_tokens(text: str) -> set:
@@ -2393,10 +2401,12 @@ def _num_tokens(text: str) -> set:
     t = re.sub(r"\d[\d,]*(?:\.\d+)?\s*[x\u00d7]\s*10\s*[\u2070-\u209f\^]?\s*\d*\s*/?\s*[a-zA-Z/]*",
                " ", t)  # 22.7 x 10^9/L
     t = re.sub(r"\b\d{7,9}\b", " ", t)                            # a bare PMID
-    # a digit bound into a name — CA-125, IL-6, COVID-19, HbA1c — is part of
-    # that name, not a figure the paper reports
+    # A digit bound into a NAME — CA-125, IL-6, COVID-19, HbA1c — is part of
+    # that name. A hyphen BETWEEN two numbers is a range (80.6-97.5) and those
+    # are figures: excluding them on the hyphen alone failed correct prose.
     return {x.replace(",", "") for x in
-            re.findall(r"(?<![A-Za-z0-9-])\d[\d,]*(?:\.\d+)?(?![\w-])", t)}
+            re.findall(r"(?<![A-Za-z0-9])(?<![A-Za-z]-)\d[\d,]*(?:\.\d+)?"
+                       r"(?![A-Za-z0-9])(?!-[A-Za-z])", t)}
 ADVICE_RE = re.compile(r"\byou (?:should|need to|must|ought to)\b|\b(?:start|stop) taking\b|\btake (?:\d|one|two|a) (?:capsule|tablet|dose)|\bask your (?:doctor|surgeon|physician)\b|\bI recommend (?:that )?you\b", re.I)
 PROVENANCE_RE = re.compile(r"\b(?:AI|machine|auto)[- ]generated\b|generated by (?:an? )?(?:AI|model|assistant|LLM)|large language model|\bLLMs?\b|\bClaude\b|\bChatGPT\b|\bGPT-?\d", re.I)
 INTERNAL_RE = re.compile(r"/Users/|/home/|/tmp/|\.brief-work|CLAUDE\.md|SYSTEM_MAP|§\s?\d+\.\d+|brief_pipeline|\b[a-z_]+\.(?:json|py|mjs)\b|\u00a7\s?\d|\b(?:SECTION_SPECS|REVIEW_PROMPTS|AUTHOR_RULES|SYNTH_RULES|NARRATIVE_RULES|CARD_RULES)\b|\bper (?:our|the) (?:internal|house) (?:style guide|spec|standard)|\b(?:internal|house) (?:spec|style guide|checklist)\b", re.I)
