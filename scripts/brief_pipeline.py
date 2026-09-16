@@ -3792,6 +3792,16 @@ def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
             m = pat.search(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out))
             if not m:
                 continue
+            # "Li and Ye" names two authors and my map resolves only one of
+            # them, so the marker lands on half a reference and points at a
+            # paper the sentence may not be about — the review caught exactly
+            # that. A compound reference is left alone rather than guessed.
+            lead = out[max(0, m.start() - 14):m.start()]
+            if re.search(r"(?:\band\b|&amp;|,)\s*$", lead):
+                continue
+            trail = out[m.end():m.end() + 16]
+            if re.match(r"(?:['\u2019]s)?\s+and\b", trail):
+                continue
             sup = sup_for(pm)
             if not sup:
                 continue
