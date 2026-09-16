@@ -268,8 +268,13 @@ if (healRes.ok) {
         "dosing: study doses inside cite cards and deep-dive analyses are research reporting and PASS");
     A(!auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-counseling"><p>Take ibuprofen 400–800 mg q6–8 h for cramping.</p></div>` }).ok,
         "dosing: a dose in counseling prose FAILS");
-    A(!auditDosingLanguage({ kind: "evidence", body_html: `<div class="mz-post-narrative">Naproxen 500 mg BID outperformed placebo in our framing.</div>` }).ok,
-        "dosing: BID frequency in narrative prose FAILS");
+    // 2026-09-16 — the owner draws the line by READER: these are clinician-facing
+    // briefs, so a trial's reported dose is ordinary clinical detail in them,
+    // including in the narrative. The patient-facing pages are gated separately.
+    A(auditDosingLanguage({ kind: "evidence", body_html: `<div class="mz-post-narrative">Naproxen 500 mg BID outperformed placebo in the trial.</div>` }).ok,
+        "dosing: a study's reported dose in narrative prose PASSES (clinician-facing brief)");
+    A(!auditDosingLanguage({ kind: "evidence", body_html: `<div class="mz-post-narrative">Start 500 mg twice daily if cramping persists.</div>` }).ok,
+        "dosing: prose instructing a reader to START a dose FAILS");
     A(auditDosingLanguage({ kind: "blog", body_html: `<div class="mz-jc-abstract-body"><p>Patients received 2.5 mg letrozole daily.</p></div>` }).ok,
         "dosing: verbatim abstract text is exempt");
     A(auditDosingLanguage({ kind: "claim_proposal", body_html: `<p>50 mg</p>` }).ok,

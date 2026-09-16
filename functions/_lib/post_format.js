@@ -636,22 +636,30 @@ export function groundedSummarySources(html) {
 // per day, is still dosing).
 const DOSING_RE = /\b\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:mg|mcg|µg|IU)\b(?!\s*\/\s*(?:d?L|mL)\b)|\bq\s*\d+(?:\s*[–-]\s*\d+)?\s*h\b|\b(?:BID|TID|QID)\b/gi;
 export function auditDosingLanguage(post) {
+    // 2026-09-16 — the owner draws the line by READER, not by container:
+    // "these briefs can have dosing — the patient facing home page and
+    // educational materials in my website should not." These are
+    // clinician-facing journal-club briefs, so a trial's doses are ordinary
+    // clinical detail in them, including in the synthesis and the narrative.
+    // This audit previously refused any dose outside an abstract or a card,
+    // which would have blocked correct clinical writing.
+    //
+    // What remains blocked is a dose written as an INSTRUCTION TO A PATIENT
+    // — "take 300 mg twice daily", "start 0.5 mg" — as opposed to what a
+    // study administered. The patient-facing pages are gated separately by
+    // scripts/check_patient_pages_dosing.py, which refuses any dose at all in
+    // those pages' own prose.
     const problems = [];
     if (post.kind !== "blog" && post.kind !== "evidence") return { ok: true, problems };
     let h = typeof post.body_html === "string" ? post.body_html : "";
     h = h.replace(/<!--[\s\S]*?-->/g, " ")
-        .replace(/<div class="mz-jc-abstract-body">[\s\S]*?<\/div>/gi, " ")
-        .replace(/<details class="mz-abstract">[\s\S]*?<\/details>/gi, " ")
-        .replace(/<div class="abstract-body">[\s\S]*?<\/div>/gi, " ")
-        .replace(/<dialog\b[\s\S]*?<\/dialog>/gi, " ")
-        .replace(/<article class="mz-cite-card[\s\S]*?<\/article>/gi, " ")
-        .replace(/<sup class="mz-ref"[\s\S]*?<\/sup>/gi, " ")
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
         .replace(/<[^>]+>/g, " ");
-    const found = [...new Set((h.match(DOSING_RE) || []).map((s) => s.trim()))];
+    const INSTRUCTION = /\b(?:take|start|stop|begin|switch to|increase to|reduce to|titrate to)\b[^.]{0,40}?\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|IU)\b/gi;
+    const found = [...new Set((h.match(INSTRUCTION) || []).map((x) => x.trim()))];
     if (found.length) {
-        problems.push(`counseling/narrative prose carries dosing (${found.slice(0, 6).join(", ")}) — dosing belongs to private patient-doctor management decisions, never to the site's own prose. Study doses stay inside the paper's attributed containers (abstract, deep-dive analysis, cite card).`);
+        problems.push(`prose instructs a reader to take a dose (${found.slice(0, 4).join(", ")}) — a brief reports what a study administered; it does not tell anyone what to take.`);
     }
     return { ok: problems.length === 0, problems };
 }
