@@ -1410,6 +1410,31 @@ def draft_rule_faults(sections: dict) -> list:
     return bad
 
 
+def piece_objection(W: str, pmid: str) -> str:
+    """Why the last attempt at THIS paper was refused.
+
+    Stage-level objections reached the stage prompt, but a paper that failed
+    verification was simply retried with the identical prompt and produced the
+    identical text: an invented "primary endpoint" and a derived "five-year
+    window" were refused three rounds running. What the verifier said has to
+    reach the author that has to fix it.
+    """
+    path = W + ".ledger/author.pieces.json"
+    if not os.path.exists(path):
+        return ""
+    why = json.load(open(path)).get(pmid)
+    return ("\n\nA PREVIOUS ATTEMPT AT THIS PAPER WAS REFUSED FOR: " + str(why)
+            + "\nWrite it differently this time; do not reproduce what was refused.") if why else ""
+
+
+def record_piece_objection(W: str, pmid: str, why: str) -> None:
+    path = W + ".ledger/author.pieces.json"
+    d = json.load(open(path)) if os.path.exists(path) else {}
+    d[pmid] = why[:400]
+    os.makedirs(W + ".ledger", exist_ok=True)
+    json.dump(d, open(path, "w"), indent=1, ensure_ascii=False)
+
+
 def _author_one_paper(args_t: tuple) -> tuple:
     W, pmid = args_t
     p = json.load(open(W + f"papers/{pmid}.json"))
@@ -1417,6 +1442,7 @@ def _author_one_paper(args_t: tuple) -> tuple:
         return pmid, None, "no pending sections"
     draft = _claude(f"""Author the pending journal-club sections for one paper in a CBG/MIGS brief.
 READ (Read tool): {W}papers/{pmid}.json — "abstract" is the ground truth, "pending" lists the keys to write.
+{piece_objection(W, pmid)}
 {AUTHOR_RULES}
 SECTION SPECS:{SECTION_SPECS}
 Return ONLY {{"sections": {{<key>: "<inner html>", …}}}} for exactly the keys in "pending".""")
@@ -1444,6 +1470,12 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
         return pmid, None, f"section(s) not passed by the verifier: {failing[:4]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
     rule_bad = draft_rule_faults(final)
+    if not rule_bad:
+        pth = W + ".ledger/author.pieces.json"
+        if os.path.exists(pth):
+            d0 = json.load(open(pth))
+            if d0.pop(pmid, None) is not None:
+                json.dump(d0, open(pth, "w"), indent=1, ensure_ascii=False)
     if rule_bad:
         return pmid, None, "breaks a site rule: " + "; ".join(rule_bad[:3])
     final["_verified"] = "adversarial review passed"
@@ -1834,6 +1866,7 @@ def cmd_author(post_id: str) -> None:
             for pmid, fixes, err in ex.map(_author_one_paper, [(W, q) for q in todo]):
                 if err:
                     failed.append((pmid, err)); print(f"  FAILED {pmid}: {err}")
+                    record_piece_objection(W, pmid, err)
                 else:
                     print(f"  wrote {pmid}" + (f" ({fixes} reviewer correction(s))" if fixes else ""))
     if failed:
