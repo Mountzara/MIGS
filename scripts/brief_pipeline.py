@@ -3733,27 +3733,42 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
         return store[pmid]
     if len((abstract or "").strip()) < 120:
         return ""
-    v = _claude(f"""Write the hover summary a clinician sees for one citation.
+    src = _pool_tokens(abstract)
+    a_norm = re.sub(r"[^a-z0-9]", "", abstract.lower())
+    note = ""
+    t = ""
+    for attempt in range(3):
+        v = _claude(f"""Write the hover summary a clinician sees for one citation.
 PAPER: {json.dumps(title)}
 ABSTRACT (the only source; use nothing else):
 {abstract[:6000]}
 RULES: 250-480 characters. The study's own conclusion FIRST, in plain clinical language — not a
 sentence copied from the abstract, and not a paraphrase of its opening. Name the design and the
 population, give the abstract's own key number(s) exactly as it states them, and end with one short
-sentence beginning "Relevance:" saying what it bears on. No dose recommendation, no advice, no
-hedging filler. Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
-    t = (v or {}).get("finding", "").strip()
+sentence beginning "Relevance:" saying what it bears on. Every number you write must appear in the
+abstract above; if the abstract gives no numbers, give none. No dose recommendation, no advice, no
+hedging filler.{note}
+Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
+        t = (v or {}).get("finding", "").strip()
+        if not t:
+            note = "\nA PREVIOUS ATTEMPT RETURNED NOTHING. Return the JSON object exactly as specified."
+            continue
+        stray = [x for x in _num_tokens(t)
+                 if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in src]
+        if stray:
+            note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: it used the number(s) " + ", ".join(stray[:4])
+                    + ", which do not appear in the abstract. Use only figures the abstract states, "
+                      "or none at all.")
+            t = ""
+            continue
+        t_norm = re.sub(r"[^a-z0-9]", "", t.lower())
+        if len(t_norm) > 60 and t_norm[:60] in a_norm:
+            note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: it opened with a sentence copied from the "
+                    "abstract. Write the finding in your own plain clinical words.")
+            t = ""
+            continue
+        break
     if not t:
-        return ""
-    # every number it states must be in the abstract
-    src = _pool_tokens(abstract)
-    for tok in _num_tokens(t):
-        if (len(tok) >= 2 or "." in tok) and not re.fullmatch(r"(?:19|20)\d\d", tok) and tok not in src:
-            return ""
-    # and it must not be a paste
-    a_norm = re.sub(r"[^a-z0-9]", "", abstract.lower())
-    t_norm = re.sub(r"[^a-z0-9]", "", t.lower())
-    if len(t_norm) > 60 and t_norm[:60] in a_norm:
         return ""
     store[pmid] = t
     json.dump(store, open(cache, "w"), ensure_ascii=False, indent=1)
