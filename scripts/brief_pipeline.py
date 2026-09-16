@@ -577,7 +577,9 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     """Run the stage's reviewer. Raises if it refuses or cannot be read."""
     prompt = REVIEW_PROMPTS[stage].format(W=W) + stage_addendum(stage)
     print(f"  reviewing {stage} …", flush=True)
-    r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+    # stdin=DEVNULL: under nohup the CLI waits 3s for stdin, warns, and can
+    # return nothing — which showed up as "the review returned no verdict"
+    r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"], stdin=subprocess.DEVNULL,
                        capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
     if r.returncode != 0:
         die(f"{stage} review could not run: {r.stderr.strip()[:200]}")
@@ -1062,7 +1064,7 @@ def cmd_curate(post_id: str) -> None:
             decisions[tid] = {"keep": [], "drop": [], "retitle": None}
             continue
         prompt = CURATE_PROMPT.format(topic_file=tf, tid=tid) + stage_objections(W, "curate")
-        r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+        r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"], stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, timeout=900, cwd=ROOT)
         if r.returncode != 0:
             die(f"curation of {tid} could not run: {r.stderr.strip()[:200]}")
@@ -1365,7 +1367,11 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
     last = None
     for attempt in range(attempts):
         try:
+            # stdin=DEVNULL: under nohup the CLI waits 3s for stdin it will
+            # never get, warns, and can return nothing — which surfaced as
+            # "the review returned no verdict" on a brief that was ready
             r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+                               stdin=subprocess.DEVNULL,
                                capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
         except subprocess.TimeoutExpired:
             last = "timeout"; continue
@@ -3789,19 +3795,28 @@ def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
                 continue
             # the name as prose uses it: "Pan's", "Pan found", "Pan examined"
             pat = re.compile(r"(?<![\w>])(" + re.escape(surname) + r")(?:&#x27;s|'s|’s)?(?![\w<])")
-            m = pat.search(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out))
-            if not m:
+            masked = re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out)
+            candidates = list(pat.finditer(masked))
+            if not candidates:
+                continue
+            m = None
+            for cand in candidates:
+                known = set(by_surname)
+                lead_c = out[max(0, cand.start() - 40):cand.start()]
+                lm_c = re.search(r"([A-Z][A-Za-z'\u2019-]+)\s+and\s+$", lead_c)
+                trail_c = out[cand.end():cand.end() + 40]
+                tm_c = re.match(r"(?:['\u2019]s)?\s+and\s+([A-Z][A-Za-z'\u2019-]+)", trail_c)
+                if (lm_c and lm_c.group(1) in known) or (tm_c and tm_c.group(1) in known):
+                    continue      # a two-author reference: cannot attribute half of it
+                m = cand
+                break
+            if m is None:
                 continue
             # "Li and Ye" names two authors and my map resolves only one of
             # them, so the marker lands on half a reference and points at a
             # paper the sentence may not be about — the review caught exactly
             # that. A compound reference is left alone rather than guessed.
-            lead = out[max(0, m.start() - 14):m.start()]
-            if re.search(r"(?:\band\b|&amp;|,)\s*$", lead):
-                continue
-            trail = out[m.end():m.end() + 16]
-            if re.match(r"(?:['\u2019]s)?\s+and\b", trail):
-                continue
+
             sup = sup_for(pm)
             if not sup:
                 continue
@@ -3950,8 +3965,19 @@ def cmd_renumber(post_id: str) -> None:
         for sur, pm in unique_sur.items():
             if pm in cited_here:
                 continue
-            if re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare):
-                faults.append(f"the prose names {sur} but does not cite {pm}")
+            mm = re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare)
+            if not mm:
+                continue
+            # "Li and Ye" names two authors and only one resolves to a covered
+            # paper; a marker on half of it would attribute the claim wrongly,
+            # which the citation review catches. Reported, not silently passed.
+            near = bare[max(0, mm.start() - 40):mm.end() + 40]
+            if re.search(r"[A-Z][A-Za-z'\u2019-]+\s+and\s+" + re.escape(sur), near) or \
+               re.search(re.escape(sur) + r"(?:['\u2019]s)?\s+and\s+[A-Z]", near):
+                print(f"  NOTE: the prose names {sur} in a two-author reference; left uncited rather than "
+                      f"attributed to one half")
+                continue
+            faults.append(f"the prose names {sur} but does not cite {pm}")
 
     marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
              for x in SUP_RE.findall(h)]
