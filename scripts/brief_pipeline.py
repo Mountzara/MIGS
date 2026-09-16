@@ -1383,6 +1383,30 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
     return None
 
 
+def draft_rule_faults(sections: dict) -> list:
+    """The deterministic site rules, applied to a draft as it is written.
+
+    A draft with "always" in its strengths section reached assembly, was
+    refused there, and the repair loop could not tell which paper to rewrite.
+    Checking here means the author fixes its own output while it still knows
+    what it wrote.
+    """
+    bad = []
+    for key, html_v in sections.items():
+        if not isinstance(html_v, str) or key.startswith("_"):
+            continue
+        t = H.unescape(re.sub(r"<[^>]+>", " ", html_v))
+        if re.search(r"\b(?:never|always)\b", t, re.I):
+            bad.append(f"{key}: uses never/always")
+        if re.search(r"(?<!CBG/)\bMIGS\b", t, re.I):
+            bad.append(f"{key}: bare MIGS")
+        if ADVICE_RE.search(t):
+            bad.append(f"{key}: addresses a patient")
+        if key != "abstract" and DOSE_RE.search(t):
+            bad.append(f"{key}: states a dose")
+    return bad
+
+
 def _author_one_paper(args_t: tuple) -> tuple:
     W, pmid = args_t
     p = json.load(open(W + f"papers/{pmid}.json"))
@@ -1416,6 +1440,9 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_sections": {{}},
     if failing:
         return pmid, None, f"section(s) not passed by the verifier: {failing[:4]}"
     final = dict(draft["sections"]); final.update(verdict.get("fixed_sections") or {})
+    rule_bad = draft_rule_faults(final)
+    if rule_bad:
+        return pmid, None, "breaks a site rule: " + "; ".join(rule_bad[:3])
     final["_verified"] = "adversarial review passed"
     json.dump(final, open(W + f"drafts_dd/{pmid}.json", "w"), ensure_ascii=False)
     return pmid, len(verdict.get("problems") or []), None
@@ -1723,9 +1750,13 @@ Return ONLY {{"ok": true|false, "problems": ["..."], "fixed_card": "..."}}""")
         return pmid, None, "verification produced nothing"
     if not verdict.get("ok"):
         return pmid, None, f"refused: {'; '.join((verdict.get('problems') or [])[:2])[:160]}"
+    card_final = verdict.get("fixed_card") or draft["card"]
+    rule_bad = draft_rule_faults({"card": card_final})
+    if rule_bad:
+        return pmid, None, "card breaks a site rule: " + "; ".join(rule_bad[:2])
     path = W + f"drafts_dd/{pmid}.json"
     d = json.load(open(path))
-    d["card"] = verdict.get("fixed_card") or draft["card"]
+    d["card"] = card_final
     json.dump(d, open(path, "w"), ensure_ascii=False)
     return pmid, len(verdict.get("problems") or []), None
 
@@ -3521,7 +3552,16 @@ def repair(W: str, msg: str) -> list:
         for f in (f"{st}.json", f"{st}.review.json"):
             if os.path.exists(W + ".ledger/" + f):
                 os.remove(W + ".ledger/" + f)
-        done.append(f"{st} (re-running with {len(blocking)} reviewer objection(s) fed back)")
+        # The objection reached the prompt but nothing invalidated the draft it
+        # named, so the retry found it "already written" and produced the
+        # identical refusal. A named paper's draft is removed so it is rewritten.
+        named_pm = {x for b in blocking for x in re.findall(r"\b(\d{7,9})\b", str(b))}
+        for pm in named_pm:
+            f = W + f"drafts_dd/{pm}.json"
+            if os.path.exists(f):
+                os.remove(f)
+        done.append(f"{st} (re-running with {len(blocking)} objection(s) fed back"
+                    + (f", {len(named_pm)} draft(s) invalidated" if named_pm else "") + ")")
         # later stages are void too, since this one's output changes
         order = STAGES[STAGES.index(st) + 1:] if st in STAGES else []
         for later in order:
