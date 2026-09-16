@@ -3794,7 +3794,10 @@ def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
             if pm in done_here:
                 continue
             # the name as prose uses it: "Pan's", "Pan found", "Pan examined"
-            pat = re.compile(r"(?<![\w>])(" + re.escape(surname) + r")(?:&#x27;s|'s|’s)?(?![\w<])")
+            # NOT (?<![\w>]): a paragraph opening "<p>Takemura's cohort…" puts the
+            # name right after ">", and excluding that left a study named at the
+            # start of a paragraph uncited every time.
+            pat = re.compile(r"(?<![\w-])(" + re.escape(surname) + r")(?:&#x27;s|'s|’s)?(?![\w-])")
             masked = re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out)
             candidates = list(pat.finditer(masked))
             if not candidates:
