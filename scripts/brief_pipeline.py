@@ -3709,6 +3709,165 @@ def repair(W: str, msg: str) -> list:
 # two things (plus duplicate ids and the PubMed-verified journal line), proves
 # the result in a browser, and republishes.
 
+
+def _paper_finding(abstract: str) -> str:
+    """The paper's own reported finding, taken from its PubMed abstract.
+
+    Owner, 2026-09-16: "the hover summary better be derived from the actual
+    abstract, not echoing your output." An earlier version pulled the deep
+    dive's bottom line — text this pipeline had written — so the citation
+    summarised the site instead of the study. The source is the abstract:
+    its CONCLUSIONS if it labels them, otherwise its RESULTS, otherwise its
+    closing sentences.
+    """
+    a = re.sub(r"\s+", " ", abstract or "").strip()
+    if len(a) < 80:
+        return ""
+    for label in ("CONCLUSION", "CONCLUSIONS", "RESULTS AND CONCLUSIONS", "INTERPRETATION"):
+        m = re.search(label + r"S?:\s*(.+?)(?=\s[A-Z][A-Z /&-]{2,40}:|$)", a)
+        if m and len(m.group(1).strip()) >= 100:
+            t = m.group(1).strip()
+            break
+    else:
+        m = re.search(r"RESULTS?:\s*(.+?)(?=\s[A-Z][A-Z /&-]{2,40}:|$)", a)
+        t = m.group(1).strip() if m and len(m.group(1).strip()) >= 100 else ""
+        if not t:
+            plain = re.sub(r"(^|\s)[A-Z][A-Z /&-]{2,40}:\s*", " ", a).strip()
+            t = plain[-560:]
+            t = t[t.find(". ") + 2:] if ". " in t[:160] else t
+    t = t.strip()
+    if len(t) > 560:
+        cut = t[:560]
+        t = cut.rsplit(". ", 1)[0] + "." if ". " in cut else cut
+    return t
+
+
+def cite_named_authors(h: str, pmids: list, real: dict) -> tuple:
+    """Put a citation on every study the site's own prose names by author.
+
+    W33's narrative named Pan, Takemura, Li, Sanz-Cabanillas, Murphy,
+    Mayibenye, Duvnjak, Mosedale and Feng and cited none of them: it was
+    written before the rule requiring it, so there was no marker to renumber —
+    the citation has to be inserted. The surname maps to the paper whose first
+    author it is; the marker goes immediately after the name, which is where
+    the claim starts; the hover summary is that paper's own bottom line,
+    already written and already reviewed in its deep dive.
+    """
+    by_surname: dict = {}
+    for pm in pmids:
+        au = (real.get(pm) or {}).get("authors") or ""
+        first = au.split(",")[0].strip().split(" ")[0] if au else ""
+        if len(first) >= 2:
+            by_surname.setdefault(first, []).append(pm)
+    # a surname shared by two covered papers is ambiguous: leave it alone
+    unique = {k: v[0] for k, v in by_surname.items() if len(v) == 1}
+    if not unique:
+        return h, 0
+
+    added = 0
+
+    def sup_for(pm: str) -> str:
+        r = real.get(pm) or {}
+        meta = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+        finding = _paper_finding((real.get(pm) or {}).get("abstract", ""))
+        if not finding:
+            return ""
+        return (f'<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
+                f'target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-{pm}">{pm}</a>'
+                f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">'
+                f'<span class="mz-ref-pop-title">{H.escape(r.get("title", ""), quote=False)}</span>'
+                f'<span class="mz-ref-pop-meta">{H.escape(meta, quote=False)}</span>'
+                f'<span class="mz-ref-pop-finding">{H.escape(finding, quote=False)}</span>'
+                f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
+                f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>')
+
+    def in_fragment(frag: str) -> str:
+        nonlocal added
+        out, done_here = frag, set()
+        for surname, pm in sorted(unique.items(), key=lambda kv: -len(kv[0])):
+            if pm in done_here:
+                continue
+            # the name as prose uses it: "Pan's", "Pan found", "Pan examined"
+            pat = re.compile(r"(?<![\w>])(" + re.escape(surname) + r")(?:&#x27;s|'s|’s)?(?![\w<])")
+            m = pat.search(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out))
+            if not m:
+                continue
+            sup = sup_for(pm)
+            if not sup:
+                continue
+            end = m.end()
+            # place it after the noun the possessive governs, else after the name
+            tail = out[end:end + 60]
+            nm = re.match(r"(?:&#x27;s|'s|’s)?\s+[a-z-]+(?:\s+[a-z-]+){0,2}", tail)
+            insert_at = end + (nm.end() if nm and out[end:end + 3] in ("&#x", "'s", "’s") else 0)
+            out = out[:insert_at] + sup + out[insert_at:]
+            done_here.add(pm)
+            added += 1
+        return out
+
+    # the narrative AND every synthesis: the post-condition checks both, and an
+    # inserter that only walked the narrative left five named studies uncited
+    out, last = [], 0
+    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
+                         r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
+        frag = m.group(1) if m.group(1) is not None else m.group(2)
+        gi = 1 if m.group(1) is not None else 2
+        out.append(h[last:m.start(gi)])
+        out.append(in_fragment(frag))
+        last = m.end(gi)
+    out.append(h[last:])
+    return "".join(out), added
+
+
+def review_inserted_citations(W: str, h: str, real: dict) -> None:
+    """Every citation this pass inserted, judged against the paper's abstract.
+
+    Inserting a marker is deterministic; whether the paper it points at is the
+    one the sentence is talking about is not. The owner asked where the AI
+    review went in this path — here: each inserted citation is checked, one
+    verdict per citation, and a wrong one refuses the brief.
+    """
+    items = []
+    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
+                         r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
+        frag = m.group(1) if m.group(1) is not None else m.group(2)
+        for sm in SUP_RE.finditer(frag):
+            pm = _pmid_of(sm.group(0))
+            if not pm:
+                continue
+            before = H.unescape(re.sub(r"<[^>]+>", " ", frag[:sm.start()]))[-320:]
+            after = H.unescape(re.sub(r"<[^>]+>", " ", frag[sm.end():]))[:120]
+            r = real.get(pm) or {}
+            items.append({"pmid": pm, "sentence": re.sub(r"\s+", " ", before + " ⟦here⟧ " + after).strip(),
+                          "paper_title": r.get("title", ""), "abstract": (r.get("abstract") or "")[:2500]})
+    if not items:
+        return
+    faults = []
+    for i in range(0, len(items), 6):
+        chunk = items[i:i + 6]
+        v = _claude(f"""Each item below is a sentence from a clinical brief with a citation placed at ⟦here⟧, and the paper
+that citation points at. For EACH, judge whether that paper is the one the sentence is talking about,
+and whether what the sentence claims is supported by that paper's abstract.
+ITEMS: {json.dumps(chunk, ensure_ascii=False)[:90000]}
+Reply with ONLY {{"items": [{{"pmid": "...", "right_paper": true|false, "supported": true|false,
+"why": "<one clause when either is false>"}}, ...]}} with one object for EVERY item given.""",
+                    timeout_s=900)
+        if not v or not isinstance(v.get("items"), list):
+            die("the inserted-citation review returned no verdict")
+        judged = {str(x.get("pmid")) for x in v["items"]}
+        missing = [x["pmid"] for x in chunk if x["pmid"] not in judged]
+        if missing:
+            die(f"the inserted-citation review skipped {missing[:4]}")
+        for r in v["items"]:
+            if not r.get("right_paper") or not r.get("supported"):
+                faults.append(f"citation to {r.get('pmid')}: {str(r.get('why', ''))[:140]}")
+    if faults:
+        for f_ in faults[:10]:
+            print("  CITATION REVIEW:", f_)
+        die(f"{len(faults)} inserted citation(s) do not match their claim")
+    print(f"  citation review: all {len(items)} citation(s) point at the paper the sentence is about")
+
+
 def cmd_renumber(post_id: str) -> None:
     # No spec receipt required. That receipt certifies the AUTHORING pipeline,
     # and this command authors nothing: it renumbers markers and rebuilds the
@@ -3735,7 +3894,9 @@ def cmd_renumber(post_id: str) -> None:
     print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
 
     # PubMed is the authority for the journal and year in every popover and entry
-    real = fetch_pubmed(sorted(pmids))
+    covered = list(dict.fromkeys(re.findall(r'id="mz-cite-(\d+)"', h) + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
+    pmids_all = list(dict.fromkeys(pmids + covered))
+    real = fetch_pubmed(sorted(pmids_all))
     meta = {}
     for pm in pmids:
         r = real.get(pm) or {}
@@ -3749,12 +3910,39 @@ def cmd_renumber(post_id: str) -> None:
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
+    h, named = cite_named_authors(h, pmids_all, real)
+    if named:
+        print(f"  inserted {named} citation(s) on studies the prose names by author")
+    if named:
+        review_inserted_citations(W, h, real)
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
 
     # post-conditions, on exactly the two things reported plus what they touch
     faults = []
+    # EVERY study the site's own prose names by author carries a citation.
+    # Deterministic: the surname comes from PubMed's author list for a paper
+    # this brief covers, so "Pan's review" without a marker is a fault, not a
+    # judgement call.
+    surnames = {}
+    for pm in pmids_all:
+        au = (real.get(pm) or {}).get("authors") or ""
+        f = au.split(",")[0].strip().split(" ")[0] if au else ""
+        if len(f) >= 2:
+            surnames.setdefault(f, []).append(pm)
+    unique_sur = {k: v[0] for k, v in surnames.items() if len(v) == 1}
+    for frag in re.findall(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h) + \
+                re.findall(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
+        cited_here = {_pmid_of(x) for x in SUP_RE.findall(frag)}
+        bare = H.unescape(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", " ", frag))
+        bare = re.sub(r"<[^>]+>", " ", bare)
+        for sur, pm in unique_sur.items():
+            if pm in cited_here:
+                continue
+            if re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare):
+                faults.append(f"the prose names {sur} but does not cite {pm}")
+
     marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
              for x in SUP_RE.findall(h)]
     if any(re.fullmatch(r"\d{5,9}", m) for m in marks):
