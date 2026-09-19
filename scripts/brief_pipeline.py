@@ -3958,6 +3958,99 @@ Reply with ONLY {{"items": [{{"pmid": "...", "right_paper": true|false, "support
     return rejected
 
 
+
+# ---------------------------------------------------------------------------
+# curate_live — no published brief is touched without passing curation
+# ---------------------------------------------------------------------------
+# The curate stage with its AI judgement and independent corroboration has
+# existed since W31, where it removed twenty-nine keyword collisions. Then I
+# built `renumber` to fix the citations quickly and had it touch markers and
+# references only — so every published brief kept its off-topic papers: ICG
+# fluorescence in gynecologic surgery carrying breast and prostate imaging,
+# a c-section scar topic carrying fetal goiter and eyelid ectropion, chronic
+# pelvic pain carrying prostatitis. The code was not missing. I routed around
+# it. Curation is now part of the one path that updates a published brief.
+
+def curate_live(h: str, topics: dict, papers: dict) -> tuple:
+    """Judge every paper against the heading it sits under, twice.
+
+    First pass: does this paper belong under this heading, for gynecologic
+    surgeons? Second, independent pass: given only the abstracts and the list
+    of this brief's headings, where does it belong? A paper both passes keep
+    stays. A paper either pass rejects goes. Two judgements agreeing is the
+    rule; disagreement resolves toward removal, because a keyword collision on
+    the page costs more than a paper the reader can still reach in PubMed.
+    """
+    drops, reasons = {}, {}
+    titles = {tid: t["title"] for tid, t in topics.items()}
+
+    def ctx(pmids):
+        return [{"pmid": q, "title": (papers.get(q) or {}).get("title", ""),
+                 "abstract": ((papers.get(q) or {}).get("abstract") or "")[:2200]} for q in pmids]
+
+    for tid, t in topics.items():
+        pmids = [q for q in t["pmids"] if q in papers]
+        if not pmids:
+            continue
+        for i in range(0, len(pmids), 10):
+            batch = pmids[i:i + 10]
+            v = _claude(f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
+minimally invasive gynecologic surgery practice. Its readers are practising gynecologic surgeons.
+SECTION HEADING: {json.dumps(t["title"])}
+For EACH paper: does it belong under THAT heading for THAT audience?
+KEEP a paper about the heading's subject in women's health, including basic-science, preclinical and
+adjacent gynecologic work. Breadth within the subject is fine.
+DROP a paper that landed here by keyword collision or is about a different organ, specialty, sex or
+population — a dermatology paper sharing the word "cicatricial", a prostate study under pelvic pain,
+breast or prostate imaging under a gynecologic-surgery heading, hospital administration under a
+surgical heading. Being merely tangential is not enough to drop; being about something else is.
+PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
+Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false, "why": "<one clause>"}}, ...]}}
+with one object for EVERY paper given.""", timeout_s=900)
+            if not v or not isinstance(v.get("verdicts"), list):
+                die(f"curation of {tid} returned no verdict")
+            got = {str(x.get("pmid")) for x in v["verdicts"]}
+            missing = [q for q in batch if q not in got]
+            if missing:
+                die(f"curation of {tid} skipped {missing[:5]}")
+            for x in v["verdicts"]:
+                if not x.get("belongs"):
+                    drops[str(x["pmid"])] = tid
+                    reasons[str(x["pmid"])] = str(x.get("why", ""))[:200]
+
+    # independent corroboration, given only the abstracts and the headings
+    keeps = [q for tid, t in topics.items() for q in t["pmids"] if q in papers and q not in drops]
+    for i in range(0, len(keeps), 10):
+        batch = keeps[i:i + 10]
+        v = _claude(f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
+audience of gynecologic surgeons. Answer "NONE" when no heading fits — a different organ, specialty,
+sex or population.
+HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
+PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
+Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} for EVERY paper given.""",
+                    timeout_s=900)
+        if not v or not isinstance(v.get("assignments"), dict):
+            die("corroboration returned no verdict")
+        missing = [q for q in batch if q not in v["assignments"]]
+        if missing:
+            die(f"corroboration skipped {missing[:5]}")
+        for q in batch:
+            got = str(v["assignments"].get(q, "")).strip()
+            if got == "NONE":
+                drops[q] = next((tid for tid, t in topics.items() if q in t["pmids"]), "?")
+                reasons[q] = "an independent classification found no heading in this brief it belongs under"
+
+    for pm in drops:
+        h = excise_paper(h, pm)
+    emptied = []
+    for tid, t in topics.items():
+        if all(q in drops for q in t["pmids"]) and t["pmids"]:
+            emptied.append(tid)
+            h = re.sub(r'<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
+                       % re.escape(tid), "", h)
+    return h, drops, reasons, emptied
+
+
 def cmd_renumber(post_id: str) -> None:
     # No spec receipt required. That receipt certifies the AUTHORING pipeline,
     # and this command authors nothing: it renumbers markers and rebuilds the
@@ -3984,9 +4077,43 @@ def cmd_renumber(post_id: str) -> None:
     print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
 
     # PubMed is the authority for the journal and year in every popover and entry
-    covered = list(dict.fromkeys(re.findall(r'id="mz-cite-(\d+)"', h) + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
+    covered = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h)
+                                 + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
     pmids_all = list(dict.fromkeys(pmids + covered))
     real = fetch_pubmed(sorted(pmids_all))
+
+    # CURATION FIRST, always. A brief is not worth renumbering while it still
+    # carries papers that are not about their own heading.
+    GRP = (r'(?:<section class="[^"]*topic-section[^"]*"[^>]*id="(topic-[^"]+)"[^>]*>)'
+           r'|(?:<(?:section|div)[^>]*class="[^"]*mz-topic-group[^"]*"[^>]*(?:id="([^"]+)")?[^>]*>)')
+    starts = list(re.finditer(GRP, h))
+    topics = {}
+    for i, mg in enumerate(starts):
+        seg_end = starts[i + 1].start() if i + 1 < len(starts) else len(h)
+        seg = h[mg.end():seg_end]
+        tid = mg.group(1) or mg.group(2) or f"group-{i + 1}"
+        tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
+        pm_here = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', seg)
+                                     + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
+        if pm_here:
+            topics[tid] = {"title": H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()[:90] if tt else tid,
+                           "pmids": pm_here}
+    papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
+                       "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
+    if topics:
+        h, dropped_map, drop_why, emptied = curate_live(h, topics, papers_ctx)
+        if dropped_map:
+            print(f"  curation removed {len(dropped_map)} paper(s) that are not about their heading:")
+            for pm, tid in list(dropped_map.items())[:12]:
+                print(f"    {pm} from {topics.get(tid, {}).get('title', tid)!r}: {drop_why.get(pm, '')[:100]}")
+            if len(dropped_map) > 12:
+                print(f"    … and {len(dropped_map) - 12} more")
+        if emptied:
+            print(f"  removed {len(emptied)} heading(s) left with nothing under them: {emptied}")
+        pmids_all = [x for x in pmids_all if x not in dropped_map]
+        pmids = [x for x in pmids if x not in dropped_map]
+    else:
+        dropped_map = {}
     meta = {}
     for pm in pmids:
         r = real.get(pm) or {}
