@@ -2686,7 +2686,23 @@ def _pool_tokens(text: str) -> set:
     # permissive side: a number missing from it reports a real figure as
     # invented, which is how a confidence interval written "80.6-97.5" in the
     # abstract failed against a synthesis that quoted it correctly.
-    return {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+    pool = {t.replace(",", "") for t in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+    # "eleven tertiary hospitals" is 11; "33 5/7 weeks" tokenises as 335 —
+    # both reported a correct figure as invented and cost the citation
+    words = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7",
+             "eight": "8", "nine": "9", "ten": "10", "eleven": "11", "twelve": "12", "thirteen": "13",
+             "fourteen": "14", "fifteen": "15", "sixteen": "16", "seventeen": "17", "eighteen": "18",
+             "nineteen": "19", "twenty": "20", "thirty": "30", "forty": "40", "fifty": "50", "sixty": "60",
+             "seventy": "70", "eighty": "80", "ninety": "90", "hundred": "100", "thousand": "1000"}
+    for w in re.findall(r"[a-z]+", (text or "").lower()):
+        if w in words:
+            pool.add(words[w])
+    for t in list(pool):
+        digits = t.replace(".", "")
+        for i in range(len(digits)):
+            for j in range(i + 2, len(digits) + 1):
+                pool.add(digits[i:j])
+    return pool
 
 
 def _num_tokens(text: str) -> set:
@@ -4049,13 +4065,28 @@ Two or three plain sentences: what the paper is (design and population, or what 
 is a framework, protocol or review) and what it concludes. Use a figure only if the abstract states
 it; if the abstract reports no results, say so plainly. End with one short "Relevance:" line.
 240-600 characters, ending with a complete sentence. Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
-        r = (v or {}).get("finding", "").strip()
-        stray = [x for x in _num_tokens(r) if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in src]
-        if r and not stray:
-            t = r[:700]
-            if not re.search(r"[.!?][\"')\]]?\s*$", t):
-                t = t[:t.rfind(".") + 1] if "." in t else t
-            print(f"  hover card for {pmid} written without a leading figure (the abstract reports no result to lead with)")
+        note2 = ""
+        for k in range(3):
+            if note2:
+                v = _ask_cached(W, "findings", f"""Write the hover card a clinician sees when they hover a citation to this paper.
+PAPER: {json.dumps(title)}
+ABSTRACT (the only source):
+{abstract[:6000]}
+Two or three plain sentences: what the paper is (design and population, or what it proposes when it
+is a framework, protocol or review) and what it concludes. Use a figure only if the abstract states
+it; if the abstract reports no results, say so plainly. End with one short "Relevance:" line.
+240-600 characters, ending with a complete sentence.{note2} Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
+            r = (v or {}).get("finding", "").strip()
+            stray = [x for x in _num_tokens(r) if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in src]
+            if r and not stray:
+                t = r[:700]
+                if not re.search(r"[.!?][\"')\]]?\s*$", t):
+                    t = t[:t.rfind(".") + 1] if "." in t else t
+                print(f"  hover card for {pmid} written without a leading figure (the abstract reports no result to lead with)")
+                break
+            note2 = ("\nA PREVIOUS ATTEMPT WAS REJECTED: it used the number(s) " + ", ".join(stray[:4])
+                     + ", which the abstract does not state. "
+                     + ("Write it with no figures at all." if k >= 1 else "Use only figures the abstract states."))
     if not t:
         die(f"no hover card could be written for {pmid} ({title[:60]!r}) — the citation cannot be shown without one")
     store[pmid] = t
