@@ -4436,6 +4436,68 @@ Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evide
           + (f" ({len(v.get('defects') or [])} cosmetic note(s))" if v.get("defects") else ""))
 
 
+
+def rewrite_affected_syntheses(W: str, h: str, topics: dict, drops: dict, real: dict) -> tuple:
+    """Rewrite the synthesis of any heading whose papers changed.
+
+    Curation removes papers; the paragraph above the cards still describes the
+    set that existed before. W33's adenomyosis synthesis opened "Three
+    adenomyosis papers this week" above two cards, and the jump-list chip —
+    correctly recounted — said 2. A brief that miscounts its own contents in
+    its own prose is worse than one with an extra paper, so the prose is
+    rewritten against what survives rather than patched.
+    """
+    rewritten = 0
+    for tid, t in topics.items():
+        lost = [q for q in t["pmids"] if q in drops]
+        kept = [q for q in t["pmids"] if q not in drops]
+        if not lost or not kept:
+            continue
+        sec = re.search(r'(<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[^>]*>)([\s\S]*?)'
+                        r'(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
+                        % re.escape(tid), h)
+        if not sec:
+            continue
+        seg = sec.group(2)
+        pm = re.search(r'(<p class="mz-toc-group-synthesis">)([\s\S]*?)(</p>)', seg)
+        if not pm:
+            continue
+        old_text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", pm.group(2))))
+        old_flat = re.sub(r"\s+", " ", old_text).strip()[:3000]
+        n_before, n_lost, n_kept = len(t["pmids"]), len(lost), len(kept)
+        papers_json = json.dumps(papers, ensure_ascii=False)[:40000]
+        papers = [{"pmid": q, "title": (real.get(q) or {}).get("title", ""),
+                   "abstract": ((real.get(q) or {}).get("abstract") or "")[:1400]} for q in kept]
+        v = _ask_cached(W, "resynth", f"""Rewrite one section-opening paragraph of a clinician-facing weekly evidence brief.
+HEADING: {json.dumps(t["title"])}
+The paragraph below was written when this section held {n_before} papers. {n_lost} of them have
+since been removed for not being about this heading, so the paragraph now describes papers that are
+no longer here — including its own count.
+
+THE PAPERS THAT REMAIN (all of them, and only these):
+{papers_json}
+
+THE PARAGRAPH AS IT STANDS:
+{json.dumps(old_flat)}
+
+Rewrite it so it is true of the papers that remain: the right count, no reference to a removed paper,
+and the same voice — Dr. Mabini's first person, a DO and complex benign gynecology / minimally
+invasive gynecologic surgery surgeon reading the week. Keep what still holds; change only what the
+removals made wrong. Report each remaining paper's actual finding with its own numbers. 900-2000
+characters. Plain HTML: <em> and <strong> only, no headings, no citation markup (citations are added
+afterwards). Escape & < >.
+Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
+        new_text = (v or {}).get("paragraph", "").strip()
+        if not new_text or len(new_text) < 400:
+            print(f"  could not rewrite the synthesis for {tid}; leaving it and reporting")
+            continue
+        at = sec.start(2) + pm.start(2)
+        h = h[:at] + new_text + h[sec.start(2) + pm.end(2):]
+        rewritten += 1
+        print(f"  rewrote the synthesis for {t['title']!r} — {len(lost)} paper(s) removed, {len(kept)} remain")
+    return h, rewritten
+
+
 def cmd_renumber(post_id: str, dry: bool = False) -> None:
     """dry=True runs the whole transformation and every check, and writes
     nothing to the site. Model verdicts are cached, so iterating on a regex
@@ -4501,6 +4563,9 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
             print(f"  removed {len(emptied)} heading(s) left with nothing under them: {emptied}")
         pmids_all = [x for x in pmids_all if x not in dropped_map]
         pmids = [x for x in pmids if x not in dropped_map]
+        h, resynth = rewrite_affected_syntheses(W, h, topics, dropped_map, real)
+        if resynth:
+            print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
     else:
         dropped_map, emptied = {}, []
     meta = {}
