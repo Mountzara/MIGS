@@ -4349,10 +4349,24 @@ def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
             nxt = sents[k + 1][0] if k + 1 < len(sents) else ""
             s_from = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0) if sents else 0
             s_to = sents[k][1] if sents else sm.start()
+            # the other papers cited on this same sentence: a sentence that
+            # pairs an NHANES cohort with a Mendelian-randomization study
+            # rests on both, and each marker is judged for ITS part only
+            co = []
+            run_end = s_to
+            while True:
+                mm = SUP_RE.match(frag, run_end)
+                if not mm:
+                    break
+                q = _pmid_of(mm.group(0))
+                if q and q != pm:
+                    co.append((real.get(q) or {}).get("title", "")[:140])
+                run_end = mm.end()
             r = real.get(pm) or {}
             idx += 1
             items.append({"id": idx, "pmid": pm, "_at": base + sm.start(), "_span": (base + s_from, base + s_to),
                           "sentence": cur, "previous_sentence": prev[-240:], "next_sentence": nxt[:240],
+                          "other_papers_cited_on_this_sentence": co,
                           "paper_title": r.get("title", ""), "abstract": (r.get("abstract") or "")[:2500]})
     if not items:
         return set(), []
@@ -4361,9 +4375,16 @@ def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
         chunk = items[i:i + 6]
         v = _ask_cached(W, "cites", f"""Each item below is ONE sentence from a clinical brief that carries a citation at its end, and the
 paper that citation points at. The previous and next sentences are given for context only — judge
-the citation against "sentence" alone. For EACH, judge whether that paper is the one the sentence
-is talking about, and whether what the sentence claims is supported by that paper's abstract.
-ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "previous_sentence", "sentence", "next_sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
+the citation against "sentence" alone.
+A sentence may rest on MORE THAN ONE paper: when "other_papers_cited_on_this_sentence" is not
+empty, the parts of the sentence about those papers are theirs to support, not this paper's. Judge
+whether THIS paper is one the sentence is talking about ("right_paper"), and whether the part of the
+sentence that concerns THIS paper is what its abstract says ("supported"). supported=false only when
+the sentence says something ABOUT THIS PAPER that its abstract does not — a figure it does not
+report, the opposite direction of effect, a claim it did not make. Never fault a paper for the
+other papers' parts of the sentence.
+ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "previous_sentence", "sentence", "next_sentence",
+                                        "other_papers_cited_on_this_sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
 Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "supported": true|false,
 "why": "<one clause when either is false>"}}, ...]}} with one object for EVERY item given.""",
                     timeout_s=900)
@@ -4431,28 +4452,34 @@ def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict)
     replaces exactly that span, and the sentence is judged again next pass.
     Returns (h, corrected)."""
     done = 0
-    for u in sorted(unsupported, key=lambda x: -x["_span"][0]):
-        a, b = u["_span"]
+    # ONE REWRITE PER SENTENCE. Two faulted citations on one sentence meant
+    # two replacements of the same span, the second against offsets the first
+    # had already changed. All of a sentence's faults go into one rewrite.
+    by_span = {}
+    for u in unsupported:
+        by_span.setdefault(u["_span"], []).append(u)
+    for (a, b), us in sorted(by_span.items(), key=lambda x: -x[0][0]):
         if not (0 <= a < b <= len(h)):
             continue
-        r = real.get(u["pmid"]) or {}
-        v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates the paper it cites. Rewrite ONLY that
-sentence so that every figure, comparison and direction of effect in it comes from the abstract
-below, in the same first-person surgeon's voice, the same length or shorter, ending with a full
-stop. If the abstract does not support the point at all, state what the paper actually found
-instead. Plain text; no citation markup; no HTML.
-THE SENTENCE: {json.dumps(u["sentence"])}
-WHAT IS WRONG WITH IT: {json.dumps(u["why"])}
-THE PAPER: {json.dumps(r.get("title", ""))}
-ITS ABSTRACT: {json.dumps((r.get("abstract") or "")[:3000])}
+        papers = [{"pmid": u["pmid"], "title": (real.get(u["pmid"]) or {}).get("title", ""),
+                   "what_is_wrong": u["why"],
+                   "abstract": ((real.get(u["pmid"]) or {}).get("abstract") or "")[:3000]} for u in us]
+        v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates a paper it cites. Rewrite ONLY that
+sentence so that every figure, comparison and direction of effect it attributes to each paper below
+comes from that paper's abstract, in the same first-person surgeon's voice, the same length or
+shorter, ending with a full stop. Keep everything in the sentence that is not about these papers
+exactly as it is. If an abstract does not support the point at all, state what that paper actually
+found instead. Plain text; no citation markup; no HTML.
+THE SENTENCE: {json.dumps(us[0]["sentence"])}
+THE PAPERS IT MISSTATES: {json.dumps(papers, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
-        if len(new) < 20 or len(new) > max(400, int(len(u["sentence"]) * 1.4)):
-            print(f"  could not correct the sentence citing {u['pmid']}; leaving it and reporting")
+        if len(new) < 20 or len(new) > max(400, int(len(us[0]["sentence"]) * 1.4)):
+            print(f"  could not correct the sentence citing {[u['pmid'] for u in us]}; leaving it and reporting")
             continue
         h = h[:a] + H.escape(new, quote=False) + h[b:]
         done += 1
-        print(f"  corrected the sentence citing {u['pmid']}: {new[:110]!r}")
+        print(f"  corrected the sentence citing {', '.join(u['pmid'] for u in us)}: {new[:110]!r}")
     return h, done
 
 
