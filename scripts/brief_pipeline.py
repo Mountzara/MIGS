@@ -1402,7 +1402,7 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
             text = r.stdout
         m = re.search(r"\{[\s\S]*\}", text)
         if not m:
-            last = "no JSON object in reply"; continue
+            last = f"no JSON object in reply (got: {text[:160]!r})"; continue
         try:
             return json.loads(m.group(0))
         except json.JSONDecodeError:
@@ -3967,10 +3967,10 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         r = real.get(q) or {}
         ab = re.sub(r"\s+", " ", r.get("abstract") or "")
         # the conclusion carries what a sentence would rest on; 320 chars of it
-        tail = ab[-320:] if len(ab) > 320 else ab
-        return {"pmid": q, "title": r.get("title", "")[:180],
-                "authors": (r.get("authors", "") or "").split(",")[0],
-                "gist": tail}
+        # small on purpose: a 52-paper list at 320 characters each overflowed
+        # the call and came back as malformed JSON, which cost two dry runs
+        tail = ab[-200:] if len(ab) > 200 else ab
+        return {"pmid": q, "title": r.get("title", "")[:130], "gist": tail}
 
     cand_all = [brief_card(q) for q in pmids]
     added, out, last = 0, [], 0
@@ -4010,7 +4010,7 @@ SENTENCES (numbered):
 {listing}
 
 PAPERS THIS BRIEF COVERS (the only ones you may cite):
-{json.dumps(cand, ensure_ascii=False)[:80000]}
+{json.dumps(cand, ensure_ascii=False)[:40000]}
 
 ALREADY CITED SOMEWHERE IN THIS PASSAGE: {sorted(x for x in have if x)} — that does NOT excuse a
 later sentence resting on the same paper; cite it again there. Only never cite the same paper twice
