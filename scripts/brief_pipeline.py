@@ -1373,6 +1373,53 @@ not what a patient should do.
 FORMAT: inner HTML per section only (no <h3>), escape & < >, no markdown, no style attributes or colours."""
 
 
+
+def _extract_json(text: str):
+    """The first complete JSON object in a reply, however it is wrapped.
+
+    A greedy {.*} match spans from the first brace to the last one, so any
+    sentence the model adds after the object breaks the parse — which is what
+    "malformed JSON" meant on three placement calls, and it cost two dry runs
+    to find because the message did not say what came back. This walks the
+    braces, respecting strings and escapes, and also closes an object that was
+    cut off mid-array rather than discarding it.
+    """
+    t = re.sub(r"^\s*```(?:json)?|```\s*$", "", (text or "").strip(), flags=re.M)
+    start = t.find("{")
+    if start < 0:
+        return None
+    depth, in_str, esc = 0, False, False
+    for i in range(start, len(t)):
+        c = t[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            continue
+        if c == '"':
+            in_str = True
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(t[start:i + 1])
+                except json.JSONDecodeError:
+                    break
+    # cut off before closing: shut what is still open
+    frag = t[start:].rstrip().rstrip(",")
+    for closing in ("}", "]}", "}]}", '"}]}', '"}}'):
+        try:
+            return json.loads(frag + closing)
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
 def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None:
     """One model call returning parsed JSON, retried on a transient failure.
 
@@ -1400,13 +1447,10 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
             text = json.loads(r.stdout).get("result", "")
         except json.JSONDecodeError:
             text = r.stdout
-        m = re.search(r"\{[\s\S]*\}", text)
-        if not m:
-            last = f"no JSON object in reply (got: {text[:160]!r})"; continue
-        try:
-            return json.loads(m.group(0))
-        except json.JSONDecodeError:
-            last = "malformed JSON"; continue
+        obj = _extract_json(text)
+        if obj is None:
+            last = f"no parseable JSON in reply (got: {text[:200]!r})"; continue
+        return obj
     print(f"    (model call failed {attempts}x: {last})")
     return None
 
