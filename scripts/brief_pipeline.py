@@ -4110,14 +4110,14 @@ ALREADY CITED SOMEWHERE IN THIS PASSAGE: {sorted(x for x in have if x)} — that
 later sentence resting on the same paper; cite it again there. Only never cite the same paper twice
 on the SAME sentence.
 
-CITE GENEROUSLY BUT ACCURATELY. Most sentences in a passage like this report something a study
-found, and each of those needs its citation. For EACH sentence that rests on a specific study — it
-names an author, or reports a design, a population, a number, a comparison or an outcome from one —
-say which paper it rests on. Match on what the
-sentence CLAIMS against the paper's own title and abstract, not on a name alone: a sentence naming
-one author while reporting another study's result cites the study it reports. A sentence that states
-the clinician's own reasoning, a transition, or a general point cites nothing. If a sentence rests on
-two papers, give both. If you are not confident, give none — a wrong citation is worse than none.
+EVERY STUDY A SENTENCE REPORTS GETS ITS CITATION. Most sentences in a passage like this report
+something a study found. For EACH sentence, enumerate the distinct studies it reports — one named
+by an author, one described by its design, population, number, comparison or outcome ("a 55-woman
+doxercalciferol pilot", "a 36-study acupuncture meta-analysis") — and for each, find the paper it is
+among the papers listed, matching on what the sentence CLAIMS against the paper's title and
+abstract, not on a name alone. A sentence that reports four studies gets four pmids. A sentence
+that states the clinician's own reasoning, a transition, or a general point cites nothing. Omit a
+study only when no listed paper is that study.
 
 Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why": "<at most six words>"}}, ...]}}""",
                             timeout_s=900)
@@ -4692,6 +4692,74 @@ def refresh_card_abstracts(h: str, real: dict) -> tuple:
     return re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', card, h), n
 
 
+def cite_every_card(W: str, h: str, real: dict) -> tuple:
+    """Every paper carded under a heading is cited somewhere in the prose.
+
+    The read-back audit refused W33 for six cards with no marker anywhere.
+    For each such paper the model names the sentence of its section's
+    synthesis that reports it; if none does, it writes one sentence from the
+    abstract, which is appended to the synthesis with its marker. Everything
+    inserted here is reviewed by the same per-sentence review afterwards.
+    Returns (h, cited_by_sentence, sentences_added)."""
+    cited_now = {_pmid_of(x) for x in SUP_RE.findall(h)}
+    by_sentence, added = 0, 0
+    for t in _topic_sections(h):
+        cards = list(dict.fromkeys(re.findall(CARD_ID_RE, t.group(0)) + re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))
+        missing = [q for q in cards if q not in cited_now and (real.get(q) or {}).get("abstract")]
+        if not missing:
+            continue
+        sec = _section_span(h, t.tid)
+        pm = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
+        if not pm:
+            continue
+        for q in missing:
+            sec = _section_span(h, t.tid)
+            pm = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', sec.group(0))
+            frag = pm.group(1)
+            base = sec.start() + pm.start(1)
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            sents = _sentences_of(masked)
+            r = real.get(q) or {}
+            listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
+            v = _ask_cached(W, "place", f"""One paper in a section of a clinician-facing evidence brief has a card but no citation in the
+section's opening paragraph. Which numbered sentence, if any, reports THIS paper — its finding,
+design, population or numbers? Match on the claim, not on a name alone.
+THE PAPER: {json.dumps({"pmid": q, "title": r.get("title", ""), "abstract": re.sub(r"\s+", " ", r.get("abstract") or "")[:1800]}, ensure_ascii=False)}
+SENTENCES: 
+{listing}
+Reply with ONLY {{"sentence": <number or null>}}""", timeout_s=600)
+            idx = None
+            try:
+                idx = int((v or {}).get("sentence"))
+            except Exception:
+                idx = None
+            if idx and 1 <= idx <= len(sents):
+                sup = _sup_markup(q, real, W)
+                if sup:
+                    at = base + sents[idx - 1][1]
+                    h = h[:at] + sup + h[at:]
+                    cited_now.add(q)
+                    by_sentence += 1
+                continue
+            w = _ask_cached(W, "resynth", f"""Write ONE sentence for the opening paragraph of a section of a clinician-facing weekly evidence
+brief, in Dr. Mabini's first person (a DO and complex benign gynecology / minimally invasive
+gynecologic surgery surgeon), reporting this paper's main finding with its key number, as the
+abstract states it. At most 45 words, plain text, no citation markup, ending with a full stop.
+THE PAPER: {json.dumps({"title": r.get("title", ""), "abstract": re.sub(r"\s+", " ", r.get("abstract") or "")[:2500]}, ensure_ascii=False)}
+Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
+            text = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
+            if len(text) < 30 or len(text) > 420:
+                die(f"could not write a sentence for uncited card {q} under {t.tid}")
+            sup = _sup_markup(q, real, W)
+            if not sup:
+                die(f"no hover card could be written for {q}")
+            at = base + len(frag)
+            h = h[:at] + " " + H.escape(text, quote=False) + sup + h[at:]
+            cited_now.add(q)
+            added += 1
+    return h, by_sentence, added
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
@@ -4721,6 +4789,11 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     if named2:
         print(f"  inserted {named2} more citation(s) on sentences that name a covered paper's author")
     named += named2
+    h, by_sent, appended = cite_every_card(W, h, real)
+    if by_sent or appended:
+        print(f"  every card cited: {by_sent} placed on the sentence that reports the paper, "
+              f"{appended} sentence(s) written from the abstract into the synthesis")
+    named += by_sent + appended
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn, unsupported = set(), []
