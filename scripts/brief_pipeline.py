@@ -4143,7 +4143,18 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
                 # the SAME sentence is a duplicate.
                 s_text, s_end = sents[idx - 1]
                 s_start = sents[idx - 2][1] if idx >= 2 else 0
+                # markers inside the sentence AND the run standing right after
+                # its full stop — where relocated and earlier-placed markers
+                # live. Checking only the inside span let the same paper be
+                # cited twice in a row (W33: "…in adenomyosis.¹¹").
                 already = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:s_end])}
+                run_end = s_end
+                while True:
+                    mm = SUP_RE.match(frag, run_end)
+                    if not mm:
+                        break
+                    already.add(_pmid_of(mm.group(0)))
+                    run_end = mm.end()
                 if pm in already:
                     continue
                 placements.setdefault(idx, []).append(pm)
@@ -4296,7 +4307,7 @@ with one object for EVERY item given.""", timeout_s=900)
     return h, fixed
 
 
-def review_inserted_citations(W: str, h: str, real: dict) -> None:
+def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
     """Every citation this pass inserted, judged against the paper's abstract.
 
     Inserting a marker is deterministic; whether the paper it points at is the
@@ -4336,14 +4347,16 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
             cur = sents[k][0] if sents else masked[:sm.start()][-320:]
             prev = sents[k - 1][0] if k >= 1 else ""
             nxt = sents[k + 1][0] if k + 1 < len(sents) else ""
+            s_from = _sentence_start(masked, sents[k - 1][1] if k >= 1 else 0) if sents else 0
+            s_to = sents[k][1] if sents else sm.start()
             r = real.get(pm) or {}
             idx += 1
-            items.append({"id": idx, "pmid": pm, "_at": base + sm.start(),
+            items.append({"id": idx, "pmid": pm, "_at": base + sm.start(), "_span": (base + s_from, base + s_to),
                           "sentence": cur, "previous_sentence": prev[-240:], "next_sentence": nxt[:240],
                           "paper_title": r.get("title", ""), "abstract": (r.get("abstract") or "")[:2500]})
     if not items:
-        return
-    faults = []
+        return set(), []
+    faults, unsupported = [], []
     for i in range(0, len(items), 6):
         chunk = items[i:i + 6]
         v = _ask_cached(W, "cites", f"""Each item below is ONE sentence from a clinical brief that carries a citation at its end, and the
@@ -4365,15 +4378,82 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
             if not str(r.get("id", "")).strip().isdigit():
                 continue
             it = by_id.get(int(r["id"]))
-            if it and (not r.get("right_paper") or not r.get("supported")):
+            if not it:
+                continue
+            if not r.get("right_paper"):
                 faults.append(f"citation to {it['pmid']}: {str(r.get('why', ''))[:140]}")
                 rejected.add(it["_at"])
+            elif not r.get("supported"):
+                # THE RIGHT PAPER, MISSTATED. Withdrawing the marker here would
+                # leave a wrong claim standing uncited — worse than either
+                # fault alone. The sentence is corrected against the abstract
+                # instead (correct_unsupported_sentences) and keeps its citation.
+                unsupported.append({**it, "why": str(r.get("why", ""))[:300]})
     if faults:
         for f_ in faults[:10]:
             print("  CITATION REVIEW:", f_)
-    print(f"  citation review: {len(items) - len(rejected)} of {len(items)} citation(s) confirmed"
-          + (f"; {len(rejected)} withdrawn as the wrong paper for that claim" if rejected else ""))
-    return rejected
+    for u in unsupported[:10]:
+        print(f"  CITATION REVIEW: {u['pmid']} is the right paper but the sentence misstates it — {u['why'][:120]}")
+    print(f"  citation review: {len(items) - len(rejected) - len(unsupported)} of {len(items)} citation(s) confirmed"
+          + (f"; {len(rejected)} withdrawn as the wrong paper for that claim" if rejected else "")
+          + (f"; {len(unsupported)} sentence(s) to correct against the abstract" if unsupported else ""))
+    return rejected, unsupported
+
+
+def _sentence_start(masked: str, from_pos: int) -> int:
+    """First index at or after from_pos that begins prose: whitespace and
+    tags are skipped (the previous sentence's markers are spaces in a masked
+    fragment, so they are skipped too)."""
+    i, n = from_pos, len(masked)
+    while i < n:
+        c = masked[i]
+        if c.isspace():
+            i += 1
+            continue
+        if c == "<":
+            close = masked.find(">", i)
+            if close < 0:
+                return i
+            i = close + 1
+            continue
+        return i
+    return n
+
+
+def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict) -> tuple:
+    """Rewrite each sentence the reviewer judged to misstate its own paper so
+    that it says what the abstract says, keeping the citation.
+
+    W33: "a 24.4 pg/mL rise versus controls" where the abstract's between-group
+    figure was +40.9 pg/mL; "childhood BMI trajectories predicted infertility"
+    where the abstract found no association. The claim is the fault, not the
+    marker. The model rewrites the one sentence from the abstract; the code
+    replaces exactly that span, and the sentence is judged again next pass.
+    Returns (h, corrected)."""
+    done = 0
+    for u in sorted(unsupported, key=lambda x: -x["_span"][0]):
+        a, b = u["_span"]
+        if not (0 <= a < b <= len(h)):
+            continue
+        r = real.get(u["pmid"]) or {}
+        v = _ask_cached(W, "fix", f"""One sentence of a clinician-facing evidence brief misstates the paper it cites. Rewrite ONLY that
+sentence so that every figure, comparison and direction of effect in it comes from the abstract
+below, in the same first-person surgeon's voice, the same length or shorter, ending with a full
+stop. If the abstract does not support the point at all, state what the paper actually found
+instead. Plain text; no citation markup; no HTML.
+THE SENTENCE: {json.dumps(u["sentence"])}
+WHAT IS WRONG WITH IT: {json.dumps(u["why"])}
+THE PAPER: {json.dumps(r.get("title", ""))}
+ITS ABSTRACT: {json.dumps((r.get("abstract") or "")[:3000])}
+Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
+        new = re.sub(r"\s+", " ", str((v or {}).get("sentence") or "")).strip()
+        if len(new) < 20 or len(new) > max(400, int(len(u["sentence"]) * 1.4)):
+            print(f"  could not correct the sentence citing {u['pmid']}; leaving it and reporting")
+            continue
+        h = h[:a] + H.escape(new, quote=False) + h[b:]
+        done += 1
+        print(f"  corrected the sentence citing {u['pmid']}: {new[:110]!r}")
+    return h, done
 
 
 
@@ -4960,9 +5040,13 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
     h, named = cite_prose(W, h, pmids_all, real)
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
-    withdrawn = set()
+    withdrawn, unsupported = set(), []
     if named:
-        withdrawn = review_inserted_citations(W, h, real) or set()
+        withdrawn, unsupported = review_inserted_citations(W, h, real)
+        # Both the withdrawal positions and the sentence spans are offsets into
+        # THIS h. Withdrawals go first, from the end; each deletion before a
+        # span shifts that span left by the marker's length.
+        deleted = []
         if withdrawn:
             # ONLY the instances judged wrong. Other citations to the same paper
             # stand: a misplaced marker in one sentence says nothing about a
@@ -4971,9 +5055,29 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
             for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
                 if m.start() in withdrawn:
                     gone.append(_pmid_of(m.group(0)))
+                    deleted.append((m.start(), m.end() - m.start()))
                     h = h[:m.start()] + h[m.end():]
             print(f"  withdrew {len(gone)} misplaced citation(s) ({', '.join(sorted(set(x for x in gone if x))[:6])})"
                   f" — other citations to those papers stand")
+        if unsupported:
+            for u in unsupported:
+                a, b = u["_span"]
+                shift = sum(n for at, n in deleted if at < a)
+                u["_span"] = (a - shift, b - shift)
+            h, n_fixed = correct_unsupported_sentences(W, h, unsupported, real)
+            if n_fixed:
+                print(f"  {n_fixed} sentence(s) corrected against their papers' abstracts — reviewing again")
+                # the corrected sentences are judged like any other; a claim
+                # that still misstates its paper refuses the brief, named
+                again_wrong, again_unsupported = review_inserted_citations(W, h, real)
+                if again_unsupported:
+                    die("after correction, sentence(s) still misstate their papers: "
+                        + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in again_unsupported[:4]))
+                if again_wrong:
+                    for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                        if m.start() in again_wrong:
+                            h = h[:m.start()] + h[m.end():]
+                    print(f"  withdrew {len(again_wrong)} citation(s) judged the wrong paper on re-review")
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
