@@ -4336,8 +4336,18 @@ with one object for EVERY paper given.""", timeout_s=900)
     for i in range(0, len(keeps), 10):
         batch = keeps[i:i + 10]
         v = _ask_cached(W, "curate", f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
-audience of gynecologic surgeons. Answer "NONE" when no heading fits — a different organ, specialty,
-sex or population.
+audience of gynecologic surgeons reading a weekly literature brief.
+
+EACH HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Therapy" is the week's
+menopause section — a yoga trial in climacteric women, osteoporosis risk after menopause, acupuncture
+for vasomotor symptoms, a menopause questionnaire, all go there. "C-Section Scar" is caesarean scar
+and its sequelae. Put each paper under the heading whose area it belongs to, even when the fit is
+broad; a paper adjacent to a heading goes under that heading.
+
+Answer "NONE" ONLY when the paper is about a different organ, specialty, sex or population — prostate
+cancer, breast oncology, a brain tumour, an eyelid, a male cohort — or has no clinical or scientific
+content for this audience (a market analysis, hospital administration). NONE means "this does not
+belong in a gynecology brief at all", never "no heading is a perfect match".
 HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} for EVERY paper given.""",
