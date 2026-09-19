@@ -4070,8 +4070,7 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
 
     cand_all = [brief_card(q) for q in pmids]
     added, out, last = 0, [], 0
-    for m in _re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
-                          r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
+    for m in _re.finditer(PROSE_RE, h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
         # A citation's popover carries the paper's title, journal line and a
@@ -4177,6 +4176,126 @@ def _sup_markup(pm: str, real: dict, W: str) -> str:
             f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
             f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>')
 
+# the passages that carry inline citations: the opening narrative and each
+# section's synthesis paragraph
+PROSE_RE = (r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
+            r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)')
+_ABBR_END = re.compile(r"\b(?:vs|e\.g|i\.e|et al|cf|Dr|no|Fig|approx)\.$", re.I)
+
+
+def relocate_mid_sentence_markers(h: str) -> tuple:
+    """Move every citation marker that stands mid-sentence to the end of its
+    sentence, merging with any marker already there.
+
+    A published brief still carries markers the old surname placer put
+    straight after the name — "Pan's¹ review of fixation techniques…" — and
+    the renumber path kept them where they stood, so the transform audit
+    refused W33 for a marker inside a noun phrase. The standard (S1) puts the
+    marker after the claim's full stop; this enforces it on markers that
+    pre-date the rule, before the placement pass adds any of its own."""
+    moved = 0
+    out, last = [], 0
+    for m in re.finditer(PROSE_RE, h):
+        gi = 1 if m.group(1) is not None else 2
+        frag = m.group(gi)
+        for _ in range(400):
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            hit = None
+            for sm in SUP_RE.finditer(frag):
+                before = re.sub(r"<[^>]+>", "", masked[:sm.start()]).rstrip()
+                if not before:
+                    continue
+                at_end = re.search(r"[.!?][)\]\"”’']*$", before) and not _ABBR_END.search(before)
+                if not at_end:
+                    hit = sm
+                    break
+            if not hit:
+                break
+            marker = hit.group(0)
+            pm = _pmid_of(marker)
+            end = _end_of_sentence(masked, hit.end())
+            frag = frag[:hit.start()] + frag[hit.end():]
+            end -= len(marker)
+            # the run of markers already standing at that sentence end
+            run_end, seen = end, set()
+            while True:
+                mm = SUP_RE.match(frag, run_end)
+                if not mm:
+                    break
+                seen.add(_pmid_of(mm.group(0)))
+                run_end = mm.end()
+            if pm not in seen:
+                frag = frag[:run_end] + marker + frag[run_end:]
+            moved += 1
+        out.append(h[last:m.start(gi)]); out.append(frag); last = m.end(gi)
+    out.append(h[last:])
+    return "".join(out), moved
+
+
+DESIGN_VOCAB = ["Randomized Controlled Trial", "Meta-Analysis", "Systematic Review", "Narrative Review",
+                "Scoping Review", "Prospective Cohort", "Retrospective Cohort", "Population-Based Cohort",
+                "Cross-Sectional", "Case-Control", "Case Report", "Case Series", "Trial Protocol",
+                "Qualitative Study", "Survey", "Guideline / Consensus", "Diagnostic Accuracy Study",
+                "Mendelian Randomization", "Cost-Effectiveness Analysis", "In Vitro / Translational",
+                "Animal Study"]
+
+
+def verify_design_tags(W: str, h: str, real: dict) -> tuple:
+    """Every card's study-design badge is checked against the paper's own
+    abstract, and a wrong one is replaced.
+
+    The badge is carried from the generator's own labelling and was never
+    verified: W33 showed "Retrospective Cohort" on a narrative review. A
+    reader who knows the paper stops trusting the page there. The model
+    reads title + abstract and names the design from a fixed vocabulary; the
+    code rewrites only badges it judged wrong. Returns (h, fixed)."""
+    cards = []
+    for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
+        a = m.group(0)
+        pm = re.search(r'id="mz-cite-(\d{5,9})', a) or re.search(r"openDeepDive\('dd-(\d+)'", a)
+        d = re.search(r'<span class="mz-cite-design">([^<]*)</span>', a)
+        if not pm or not d or not (real.get(pm.group(1)) or {}).get("abstract"):
+            continue
+        cards.append({"pmid": pm.group(1), "at": m.start() + d.start(1), "end": m.start() + d.end(1),
+                      "badge": H.unescape(d.group(1))})
+    verdict = {}
+    distinct = list(dict.fromkeys(c["pmid"] for c in cards))
+    badge_of = {c["pmid"]: c["badge"] for c in cards}
+    for i in range(0, len(distinct), 12):
+        batch = distinct[i:i + 12]
+        v = _ask_cached(W, "design", f"""Each item is a paper, the study-design badge shown on its card in a clinical brief, and the paper's own
+title and abstract. Judge whether the badge names the design the abstract describes. A narrative
+review badged as a cohort, a protocol badged as a trial, a cross-sectional survey badged as a cohort,
+or a sample size that is not the paper's are wrong. A badge that names the right design (with or
+without a sample size) is right; do not change wording that is merely different.
+DESIGN VOCABULARY (use exactly one): {json.dumps(DESIGN_VOCAB)}
+ITEMS: {json.dumps([{"pmid": q, "badge": badge_of[q], "title": (real.get(q) or {}).get("title", ""),
+                     "abstract": ((real.get(q) or {}).get("abstract") or "")[:2200]} for q in batch], ensure_ascii=False)[:90000]}
+Reply with ONLY {{"items": [{{"pmid": "...", "ok": true|false, "design": "<one vocabulary entry>",
+"n": <total participants/specimens as an integer, or null when the abstract gives none>, "why": "<one clause when not ok>"}}, ...]}}
+with one object for EVERY item given.""", timeout_s=900)
+        if not v or not isinstance(v.get("items"), list):
+            die("the design-badge review returned no verdict")
+        got = {str(x.get("pmid")): x for x in v["items"]}
+        missing = [q for q in batch if q not in got]
+        if missing:
+            die(f"the design-badge review skipped {missing[:4]}")
+        verdict.update(got)
+    fixed = 0
+    for c in sorted(cards, key=lambda c: c["at"], reverse=True):
+        x = verdict.get(c["pmid"]) or {}
+        if x.get("ok") or str(x.get("design", "")) not in DESIGN_VOCAB:
+            continue
+        n = x.get("n")
+        label = x["design"] + (f" · n = {int(n):,}" if isinstance(n, int) and n > 0 else "")
+        if label == c["badge"]:
+            continue
+        h = h[:c["at"]] + H.escape(label, quote=False) + h[c["end"]:]
+        fixed += 1
+        print(f"  design badge {c['pmid']}: {c['badge']!r} -> {label!r} ({str(x.get('why', ''))[:90]})")
+    return h, fixed
+
+
 def review_inserted_citations(W: str, h: str, real: dict) -> None:
     """Every citation this pass inserted, judged against the paper's abstract.
 
@@ -4190,30 +4309,48 @@ def review_inserted_citations(W: str, h: str, real: dict) -> None:
     # W33 including correct ones already standing in the syntheses, because one
     # instance of that paper was misplaced. Only the instance judged wrong goes.
     idx = 0
-    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
-                         r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
+    for m in re.finditer(PROSE_RE, h):
         frag = m.group(1) if m.group(1) is not None else m.group(2)
         base = m.start(1) if m.group(1) is not None else m.start(2)
+        # THE REVIEWER IS HANDED THE SENTENCE THE MARKER ENDS, AND NOTHING ELSE
+        # AS "THE SENTENCE". The first version passed the 320 characters before
+        # the marker from the unmasked fragment — which, after the previous
+        # marker's popover (title, journal line, a summary full of the
+        # previous paper's figures), was mostly the PREVIOUS paper's hover
+        # card. The reviewer read "90 Syrian women, 1.8 ng/mL" from that card,
+        # judged this citation against it, and withdrew 27 correct citations
+        # in a chain each "one paper behind". Popovers are masked with spaces,
+        # so every index stays valid, and the sentence is located by its end.
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
         for sm in SUP_RE.finditer(frag):
             pm = _pmid_of(sm.group(0))
             if not pm:
                 continue
-            before = H.unescape(re.sub(r"<[^>]+>", " ", frag[:sm.start()]))[-320:]
-            after = H.unescape(re.sub(r"<[^>]+>", " ", frag[sm.end():]))[:120]
+            # the sentence whose end is at (or nearest before) this marker;
+            # markers sit right after the full stop, possibly behind other
+            # markers on the same sentence
+            k = max((j for j, (_, e) in enumerate(sents) if e <= sm.start()), default=None)
+            if k is None:
+                k = 0
+            cur = sents[k][0] if sents else masked[:sm.start()][-320:]
+            prev = sents[k - 1][0] if k >= 1 else ""
+            nxt = sents[k + 1][0] if k + 1 < len(sents) else ""
             r = real.get(pm) or {}
             idx += 1
             items.append({"id": idx, "pmid": pm, "_at": base + sm.start(),
-                          "sentence": re.sub(r"\s+", " ", before + " ⟦here⟧ " + after).strip(),
+                          "sentence": cur, "previous_sentence": prev[-240:], "next_sentence": nxt[:240],
                           "paper_title": r.get("title", ""), "abstract": (r.get("abstract") or "")[:2500]})
     if not items:
         return
     faults = []
     for i in range(0, len(items), 6):
         chunk = items[i:i + 6]
-        v = _ask_cached(W, "cites", f"""Each item below is a sentence from a clinical brief with a citation placed at ⟦here⟧, and the paper
-that citation points at. For EACH, judge whether that paper is the one the sentence is talking about,
-and whether what the sentence claims is supported by that paper's abstract.
-ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
+        v = _ask_cached(W, "cites", f"""Each item below is ONE sentence from a clinical brief that carries a citation at its end, and the
+paper that citation points at. The previous and next sentences are given for context only — judge
+the citation against "sentence" alone. For EACH, judge whether that paper is the one the sentence
+is talking about, and whether what the sentence claims is supported by that paper's abstract.
+ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "previous_sentence", "sentence", "next_sentence", "paper_title", "abstract")} for x in chunk], ensure_ascii=False)[:90000]}
 Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "supported": true|false,
 "why": "<one clause when either is false>"}}, ...]}} with one object for EVERY item given.""",
                     timeout_s=900)
@@ -4563,6 +4700,12 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
         left = len(set(re.findall(CARD_ID_RE, sec.group(0))))
         h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(tid),
                    lambda m: m.group(1) + str(left) + m.group(2), h)
+        # the section's own header carries a count too ("· 7 papers"); the
+        # transform audit found it contradicting both the chip and the prose
+        sec = _section_span(h, tid)
+        seg = re.sub(r'(<div class="subspecialty">[^<]*?)\d+ papers?(</div>)',
+                     lambda m: f"{m.group(1)}{left} paper{'s' if left != 1 else ''}{m.group(2)}", sec.group(0), count=1)
+        h = h[:sec.start()] + seg + h[sec.end():]
     return h, removed, moved, emptied
 
 
@@ -4808,6 +4951,12 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
+    h, relocated = relocate_mid_sentence_markers(h)
+    if relocated:
+        print(f"  moved {relocated} marker(s) standing mid-sentence to the end of their sentence")
+    h, retagged = verify_design_tags(W, h, real)
+    if retagged:
+        print(f"  corrected {retagged} study-design badge(s) against the papers' own abstracts")
     h, named = cite_prose(W, h, pmids_all, real)
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
