@@ -2140,7 +2140,36 @@ cited, reviewed and corrected by the same code:
 | `number_citations` → `build_references` → `dedupe_element_ids` → `audit_transform` (S16) | `finish_and_audit` | `_renumber` |
 
 Adding a step to one path and not the other is the defect this table
-exists to prevent. `real_from_work(W, pmids)` reads the work directory's
+exists to prevent.
+
+**ONE READING OF THE PAGE'S SHAPE (2026-09-19, after a six-lens adversarial
+code review of the chain).** The nine published briefs span two generators
+— W25 onward (`topic-section`, `<div class="subspecialty"> · N papers</div>`,
+canonical markers) and W20–W24 (`mz-topic-group` / `mz-topic-section`,
+`<span class="mz-topic-count">(N)</span>` or `N papers`, W20's markers with
+`tabindex`/`data-ref`/`href="#mz-ref-PMID"`, `<p class="mz-cite-design">`,
+an `mz-narrative` section, and prose in `mz-post-bottom-line` /
+`mz-post-established` / `mz-post-five-papers`). Regexes written for one shape
+were silent no-ops on the other: curation excised nothing on W21/W23/W24,
+24 of W20's 47 markers were invisible, and the last section's span ran into
+the disclaimer. Now: `normalize_legacy_markup` rewrites W20 shapes once at
+the top of `renumber`; `_topic_sections` / `_section_span` / `_prose_passages`
+read the structure by class and id and bound every element at its own
+closing tag (`_element_end`); `recount_headings` fixes every chip and header
+count in every shape; `refresh_card_abstracts` replaces the raw MEDLINE dump
+32 of W33's cards showed under "Read the full abstract" with PubMed's
+abstract and the card's metadata line. Sentence ends are decided from the
+text around the stop (`_terminal_at`: e.g./i.e./vs./Fig./no./et al.,
+decimals, closing quotes and inline tags stepped over by `_advance_end`),
+and a span replacement keeps inline markup balanced (`_replace_span`).
+Curation asks for a structured verdict (`belongs` / `does_not_belong` /
+`cannot_tell`), resolves a quoted heading tolerantly (`_match_heading`), and
+breaks a first-pass-belongs vs corroboration-NONE disagreement with a third
+targeted question instead of dropping. `remove_orphan_studies` enforces
+"prose may report only papers the brief holds". And `renumber --dry` stops
+before the receipt — a refactor had dropped that check; every dry run had
+refused earlier, so nothing was published, but the next clean one would
+have been. `real_from_work(W, pmids)` reads the work directory's
 paper files into the shape the chain reads (`title`, `abstract` =
 PubMed's, `authors`, `journal`, `year`).
 

@@ -2256,22 +2256,22 @@ def excise_paper(h: str, pmid: str) -> str:
     while True:
         hit = None
         for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
-            if (f'mz-cite-{pmid}' in m.group(0) or f"openDeepDive('dd-{pmid}')" in m.group(0)
-                    or f"/{pmid}/" in m.group(0)):
+            if (re.search(r'id="mz-cite-%s(?:-\d+)?"' % re.escape(pmid), m.group(0))
+                    or f"openDeepDive('dd-{pmid}')" in m.group(0)
+                    or f"pubmed.ncbi.nlm.nih.gov/{pmid}/" in m.group(0)):
                 hit = m
                 break
         if not hit:
             break
         h = h[:hit.start()] + h[hit.end():]
     # and any trigger button left pointing at the removed dialog
-    h = re.sub(r'<button[^>]*openDeepDive\(.dd-%s.[^>]*>[\s\S]*?</button>' % re.escape(pmid), "", h)
+    h = re.sub(r'<button[^>]*openDeepDive\([\'"]dd-%s[\'"]\)[^>]*>[\s\S]*?</button>' % re.escape(pmid), "", h)
     # deep-dive dialog
     h = re.sub(r'<dialog[^>]*id="dd-%s"[\s\S]*?</dialog>' % re.escape(pmid), "", h)
     # reference-list entry
-    h = re.sub(r'<li>(?:(?!</li>)[\s\S])*?%s(?:(?!</li>)[\s\S])*?</li>' % re.escape(pmid), "", h)
+    h = re.sub(r'<li[^>]*\bid="(?:mz-)?ref-%s"[^>]*>[\s\S]*?</li>' % re.escape(pmid), "", h)
     # any inline citation to it (rare — syntheses are written after curation)
-    h = re.sub(r'<sup class="mz-ref">(?:(?!</sup>)[\s\S])*?ref-pop-%s(?:(?!</sup>)[\s\S])*?</sup>'
-               % re.escape(pmid), "", h)
+    h = SUP_RE.sub(lambda m: "" if _pmid_of(m.group(0)) == pmid else m.group(0), h)
     return h
 
 
@@ -2344,7 +2344,7 @@ def dedupe_popover_ids(h: str) -> str:
         return sup.replace(f'id="{base}"', f'id="{uniq}"').replace(
             f'aria-describedby="{base}"', f'aria-describedby="{uniq}"')
 
-    return re.sub(r'<sup class="mz-ref">.*?</sup>', fix, h, flags=re.S)
+    return SUP_RE.sub(fix, h)
 
 
 def strip_build_comments(h: str) -> str:
@@ -2475,7 +2475,8 @@ SUP_RE = re.compile(r'<sup class="mz-ref"[^>]*>[\s\S]*?</sup>')
 
 
 def _pmid_of(sup: str) -> str | None:
-    m = re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", sup) or re.search(r"ref-pop-(\d{5,9})", sup)
+    m = (re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d{5,9})", sup) or re.search(r"ref-pop-(\d{5,9})", sup)
+         or re.search(r'href="#(?:mz-)?ref-(\d{5,9})"', sup))
     return m.group(1) if m else None
 
 
@@ -2510,7 +2511,8 @@ def number_citations(h: str, meta: dict | None = None) -> tuple:
         k = counts.get(pm, 0) + 1
         counts[pm] = k
         pid = f"ref-pop-{pm}" + (f"-{k}" if k > 1 else "")
-        inner = canon[pm]
+        inner = "".join(re.findall(r'<span class="mz-ref-pop-(?:title|meta|finding)">[\s\S]*?</span>'
+                                   r'|<a class="mz-ref-pop-src"[\s\S]*?</a>', canon[pm])) or canon[pm]
         if META.get(pm):
             meta_html = f'<span class="mz-ref-pop-meta">{H.escape(META[pm], quote=False)}</span>'
             if "mz-ref-pop-meta" in inner:
@@ -2541,7 +2543,7 @@ def build_references(W: str, h: str, order: list, meta: dict | None = None) -> s
         elif pm in old_entries:
             text = re.sub(r'\s*<a class="mz-ref-pmid"[\s\S]*?</a>', "", old_entries[pm]).strip()
         else:
-            text = f"PMID {pm}"
+            die(f"no paper file for cited PMID {pm}; refusing to publish a bare reference entry")
         items.append(f'<li id="ref-{pm}">{text} <a class="mz-ref-pmid" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
                      f'target="_blank" rel="noopener noreferrer">PMID {pm}</a></li>')
     refs = ('<section class="mz-post-section mz-references" id="references">'
@@ -3161,6 +3163,7 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             if mv:
                 verified_meta[q] = mv
     real = real_from_work(W, man["pmids"])
+    h = recount_headings(h)
     h, refreshed = refresh_popovers_from_abstracts(W, h, real)
     if refreshed:
         print(f"  {refreshed} hover card(s) written from the papers' abstracts")
@@ -3385,19 +3388,26 @@ def cmd_apply(post_id: str) -> None:
     dropped = curation.get("dropped_pmids") or []
     for pmid in dropped:
         h = excise_paper(h, pmid)
-    h = retitle_topics(h, curation.get("decisions") or {})
-    # a topic whose papers all went takes its whole section with it
+    # a paper dropped from one heading but kept under another leaves THAT
+    # section only — W31's endometriosis drops kept elsewhere stayed carded
+    # under endometriosis because only orphans were excised
     for tid, d in (curation.get("decisions") or {}).items():
-        if not d["keep"]:
-            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<div class="mz-references|<ol class="mz-references-list|$)'
-                       % re.escape(tid), "", h)
-    # any topic section the manifest no longer lists goes — curate removes a
-    # topic from the manifest when nothing in it survives, and an orphan
-    # section with no papers would otherwise render as an empty header
-    for tid in re.findall(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="([^"]+)"', h):
-        if tid not in man["topics"]:
-            h = re.sub(r'<section class="[^"]*\btopic-section\b[^"]*"[^>]*id="%s"[\s\S]*?(?=<section class="[^"]*\btopic-section\b|<section class="[^"]*mz-references|<div class="mz-references|<ol class="mz-references-list|<dialog|<script|$)'
-                       % re.escape(tid), "", h)
+        for x in d.get("drop") or []:
+            if x.get("pmid") and x["pmid"] not in dropped:
+                h = excise_paper_from_section(h, tid, x["pmid"])
+    h = retitle_topics(h, curation.get("decisions") or {})
+    # a topic whose papers all went, or one the manifest no longer lists,
+    # takes exactly its own element with it (bounded at its closing tag — a
+    # lookahead to the next boundary once ran into the reference list) and
+    # its jump-list chip
+    for tid in [t for t, d in (curation.get("decisions") or {}).items() if not d["keep"]] \
+            + [t.tid for t in _topic_sections(h) if t.tid not in man["topics"]]:
+        sec = _section_span(h, tid)
+        if sec:
+            h = h[:sec.start()] + h[sec.end():]
+        h = re.sub(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#%s"[\s\S]*?</a>' % re.escape(tid), "", h)
+        h = re.sub(r'<a[^>]*href="#%s"[^>]*class="[^"]*mz-toc-chip[^"]*"[\s\S]*?</a>' % re.escape(tid), "", h)
+    h = recount_headings(h)
     # card lens paragraphs
     cards_written = 0
     for pmid in man["pmids"]:
@@ -4005,65 +4015,6 @@ def _paper_finding(abstract: str) -> str:
 
 
 
-def _end_of_sentence(html_frag: str, from_pos: int) -> int:
-    """Index just after the full stop that ends the sentence at from_pos.
-
-    Skips tags and abbreviations that are not sentence ends, and stops at a
-    closing block tag when the sentence runs to the end of its paragraph.
-    """
-    i, n = from_pos, len(html_frag)
-    ABBR = ("vs.", "e.g.", "i.e.", "et al.", "cf.", "Dr.", "no.", "Fig.", "approx.")
-    while i < n:
-        c = html_frag[i]
-        if c == "<":
-            close = html_frag.find(">", i)
-            if close < 0:
-                return n
-            if re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", html_frag[i:close + 1], re.I):
-                return i
-            i = close + 1
-            continue
-        if c in ".!?":
-            if any(html_frag[max(0, i - 9):i + 1].endswith(a) for a in ABBR):
-                i += 1
-                continue
-            if c == "." and re.match(r"\d", html_frag[i + 1:i + 2] or " "):
-                i += 1
-                continue
-            return i + 1
-        i += 1
-    return n
-
-
-def _sentences_of(frag: str) -> list:
-    """(text, end_index) for each sentence of a prose fragment, tags stripped
-    for the text but indices valid against the fragment itself."""
-    out, buf, start = [], [], None
-    i, n = 0, len(frag)
-    while i < n:
-        c = frag[i]
-        if c == "<":
-            close = frag.find(">", i)
-            if close < 0:
-                break
-            if _re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", frag[i:close + 1], _re.I) and buf:
-                out.append(("".join(buf).strip(), i)); buf, start = [], None
-            i = close + 1
-            continue
-        if start is None and not c.isspace():
-            start = i
-        buf.append(c)
-        if c in ".!?":
-            txt = "".join(buf)
-            if not any(txt.rstrip().endswith(a) for a in ("vs.", "e.g.", "i.e.", "et al.", "cf.", "Dr.", "no.")) \
-               and not _re.match(r"\d", frag[i + 1:i + 2] or " "):
-                out.append((txt.strip(), i + 1)); buf, start = [], None
-        i += 1
-    if "".join(buf).strip():
-        out.append(("".join(buf).strip(), n))
-    return [(H.unescape(_re.sub(r"\s+", " ", t)), e) for t, e in out if t.strip()]
-
-
 def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
     """The model decides which sentence cites which paper; the code inserts it.
 
@@ -4088,8 +4039,9 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         return {"pmid": q, "title": r.get("title", "")[:130], "gist": tail}
 
     cand_all = [brief_card(q) for q in pmids]
+    topic_spans = _topic_sections(h)
     added, out, last = 0, [], 0
-    for m in _re.finditer(PROSE_RE, h):
+    for m in _prose_passages(h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
         # A citation's popover carries the paper's title, journal line and a
@@ -4109,15 +4061,10 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         # enclosing topic section, not by guessing a byte window, which took
         # the wrong papers and left the passage almost uncited.
         own = set()
-        if gi == 2:
-            sec_start = max((mm.start() for mm in re.finditer(
-                r'<section class="[^"]*topic-section[^"]*"[^>]*>|<(?:section|div)[^>]*class="[^"]*mz-topic-group[^"]*"[^>]*>', h)
-                if mm.start() < m.start()), default=None)
-            if sec_start is not None:
-                nxt = re.search(r'<section class="[^"]*topic-section[^"]*"|<section class="[^"]*mz-references|<dialog',
-                                h[m.end():])
-                sec_end = m.end() + (nxt.start() if nxt else len(h) - m.end())
-                own = set(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', h[sec_start:sec_end]))
+        if m.kind == "synthesis":
+            enc = next((t for t in topic_spans if t.a <= m.a < t.b), None)
+            if enc:
+                own = set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
         cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
         v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
 SENTENCES (numbered):
@@ -4161,7 +4108,11 @@ Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why":
                 # nine-paragraph brief with five citations. Only a repeat on
                 # the SAME sentence is a duplicate.
                 s_text, s_end = sents[idx - 1]
-                s_start = sents[idx - 2][1] if idx >= 2 else 0
+                # from the first prose of THIS sentence: the index right after
+                # the previous full stop is where the previous sentence's
+                # marker run begins, and a window starting there made a paper
+                # cited on sentence N uncitable on sentence N+1
+                s_start = _sentence_start(masked, sents[idx - 2][1]) if idx >= 2 else 0
                 # markers inside the sentence AND the run standing right after
                 # its full stop — where relocated and earlier-placed markers
                 # live. Checking only the inside span let the same paper be
@@ -4225,17 +4176,19 @@ def relocate_mid_sentence_markers(h: str) -> tuple:
     pre-date the rule, before the placement pass adds any of its own."""
     moved = 0
     out, last = [], 0
-    for m in re.finditer(PROSE_RE, h):
+    for m in _prose_passages(h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
         for _ in range(400):
             masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
             hit = None
             for sm in SUP_RE.finditer(frag):
-                before = re.sub(r"<[^>]+>", "", masked[:sm.start()]).rstrip()
+                before = H.unescape(re.sub(r"<[^>]+>", "", masked[:sm.start()])).rstrip(" \t\r\n\xa0")
                 if not before:
                     continue
-                at_end = re.search(r"[.!?][)\]\"”’']*$", before) and not _ABBR_END.search(before)
+                after = H.unescape(re.sub(r"<[^>]+>", "", masked[sm.end():])).strip(" \t\r\n\xa0")
+                at_end = (re.search(r"[.!?][)\]\"\u201d\u2019']*$", before) and not _ABBR_END.search(before)) \
+                    or not after
                 if not at_end:
                     hit = sm
                     break
@@ -4254,6 +4207,10 @@ def relocate_mid_sentence_markers(h: str) -> tuple:
                     break
                 seen.add(_pmid_of(mm.group(0)))
                 run_end = mm.end()
+            if run_end == hit.start() and pm not in seen:
+                # nowhere to go (no stop follows): put it back and stop
+                frag = frag[:run_end] + marker + frag[run_end:]
+                break
             if pm not in seen:
                 frag = frag[:run_end] + marker + frag[run_end:]
             moved += 1
@@ -4283,7 +4240,7 @@ def verify_design_tags(W: str, h: str, real: dict) -> tuple:
     for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', h):
         a = m.group(0)
         pm = re.search(r'id="mz-cite-(\d{5,9})', a) or re.search(r"openDeepDive\('dd-(\d+)'", a)
-        d = re.search(r'<span class="mz-cite-design">([^<]*)</span>', a)
+        d = re.search(r'<(?:span|p) class="mz-cite-design">([^<]*)</(?:span|p)>', a)
         if not pm or not d or not (real.get(pm.group(1)) or {}).get("abstract"):
             continue
         cards.append({"pmid": pm.group(1), "at": m.start() + d.start(1), "end": m.start() + d.end(1),
@@ -4338,7 +4295,7 @@ def _first_surnames(pmids: list, real: dict) -> dict:
     return out
 
 
-def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict) -> tuple:
+def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict, surviving: list | None = None) -> tuple:
     """Rewrite the opening narrative's paragraphs that discuss a paper
     curation removed from the brief.
 
@@ -4352,7 +4309,7 @@ def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict) -> tup
     (h, paragraphs_rewritten)."""
     if not gone:
         return h, 0
-    m = re.search(r'(<section class="[^"]*mz-post-narrative[^"]*"[^>]*>)([\s\S]*?)(</section>)', h)
+    m = re.search(r'(<section class="[^"]*mz-(?:post-)?narrative[^"]*"[^>]*>)([\s\S]*?)(</section>)', h)
     if not m:
         return h, 0
     frag = m.group(2)
@@ -4402,8 +4359,13 @@ containing ONLY the paragraphs you changed.""", timeout_s=900)
             out.append(frag[last:pm.start(1)]); out.append(new.strip()); last = pm.end(1); n += 1
         out.append(frag[last:])
         new_frag = "".join(out)
-        still = [k for k in sur if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])",
-                                             text_of(new_frag))]
+        shared = set(_first_surnames(surviving or [], real))
+        still = [k for k in sur if k not in shared
+                 and re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", text_of(new_frag))]
+        for k in sur:
+            if k in shared and re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])", text_of(new_frag)):
+                print(f"  NOTE: {k!r} is still named in the narrative and is also a surviving paper's first author; "
+                      f"the orphan-study check judges that sentence")
         if not still:
             h = h[:m.start(2)] + new_frag + h[m.end(2):]
             return h, n
@@ -4423,14 +4385,14 @@ def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
     sur = _first_surnames(pmids, real)
     added, declined = 0, set()
     out, last = [], 0
-    for m in re.finditer(PROSE_RE, h):
+    for m in _prose_passages(h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
         masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
         sents = _sentences_of(masked)
         asks = []
         for i, (t, e) in enumerate(sents):
-            s_start = sents[i - 1][1] if i >= 1 else 0
+            s_start = _sentence_start(masked, sents[i - 1][1]) if i >= 1 else 0
             on_it = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:e])}
             run_end = e
             while True:
@@ -4444,7 +4406,8 @@ def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
                 if cands and re.search(r"(?<![\w-])" + re.escape(name) + r"(?:['\u2019]s)?(?![\w-])", t):
                     asks.append({"sentence": i + 1, "text": t, "name": name,
                                  "papers": [{"pmid": q, "title": (real.get(q) or {}).get("title", "")[:140],
-                                             "abstract_tail": re.sub(r"\s+", " ", (real.get(q) or {}).get("abstract") or "")[-300:]}
+                                             "abstract": (lambda ab: ab[:500] + (" … " + ab[-300:] if len(ab) > 800 else ""))(
+                                                 re.sub(r"\s+", " ", (real.get(q) or {}).get("abstract") or ""))}
                                             for q in cands]})
         placements = {}
         if asks:
@@ -4529,17 +4492,154 @@ def real_from_work(W: str, pmids: list) -> dict:
     return real
 
 
+def remove_orphan_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
+    """Prose may report the findings of a study only if the brief holds it.
+
+    W33's narrative and its Endometriosis synthesis reported "Li's" IL-17C
+    fibrosis findings twice — a paper with no card and no PMID anywhere in
+    the brief, so nothing could cite it. The removed-paper rewrites could not
+    see it (it was never in the paper list) and the synthesis rewrite kept
+    the sentence because it was told to keep what still held. The model
+    reads each passage against the list of covered papers and names every
+    sentence that reports a study outside it; each such sentence is
+    rewritten with that study's part removed, or deleted (with the marker
+    run that followed it) when it was only about that study. Up to two
+    rounds; a study still reported after that refuses the brief.
+    Returns (h, sentences_changed)."""
+    covered = [{"pmid": q, "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip(),
+                "title": (real.get(q) or {}).get("title", "")[:150]} for q in pmids if real.get(q)]
+    if not covered:
+        return h, 0
+    total = 0
+    last_orphans = []
+    for _round in range(3):
+        edits = []
+        for ps in _prose_passages(h):
+            frag = ps.group(1)
+            base = ps.start(1)
+            masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+            sents = _sentences_of(masked)
+            if not sents:
+                continue
+            listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
+            v = _ask_cached(W, "orphans", f"""You are checking one passage of a clinician-facing weekly evidence brief. The brief holds ONLY these
+papers, each shown with its first author and title:
+COVERED PAPERS: {json.dumps(covered, ensure_ascii=False)[:60000]}
+SENTENCES (numbered):
+{listing}
+Find every sentence that reports a SPECIFIC study — names its author, or states its design, population,
+numbers or findings — where that study is NOT one of the covered papers (a paper the brief no longer
+holds, or never held). A covered paper named by a co-author, a sentence of the clinician's own
+reasoning, and a general statement are all fine. For each such sentence give a rewrite with that
+study's part removed — keep any part about covered papers and the surgeon's own reasoning, same
+first-person voice, plain text, no citation markup, ending with a full stop — or an empty string
+when the sentence was only about that study.
+Reply with ONLY {{"orphans": [{{"sentence": <number>, "study": "<how the sentence names it>",
+"rewrite": "<text, or empty>"}}, ...]}} and {{"orphans": []}} when there are none.""", timeout_s=900)
+            if not v or not isinstance(v.get("orphans"), list):
+                die("the orphan-study check returned no verdict")
+            for o in v["orphans"]:
+                try:
+                    idx = int(o.get("sentence"))
+                except Exception:
+                    continue
+                if not (1 <= idx <= len(sents)):
+                    continue
+                a = base + _sentence_start(masked, sents[idx - 2][1] if idx >= 2 else 0)
+                b = base + sents[idx - 1][1]
+                new = re.sub(r"\s+", " ", str(o.get("rewrite") or "")).strip()
+                if new and len(new) > len(sents[idx - 1][0]) + 60:
+                    new = ""
+                edits.append((a, b, new, str(o.get("study", ""))[:80]))
+        if not edits:
+            return h, total
+        for a, b, new, study in sorted(edits, key=lambda e: -e[0]):
+            if not (0 <= a < b <= len(h)):
+                continue
+            if new:
+                h = _replace_span(h, a, b, new)
+                print(f"  rewrote a sentence that reported {study!r}, a study the brief does not hold")
+            else:
+                # the whole sentence goes, and so does the marker run after
+                # its full stop — those markers belonged to this sentence
+                end = b
+                while True:
+                    mm = SUP_RE.match(h, end)
+                    if not mm:
+                        break
+                    end = mm.end()
+                h = h[:a] + h[end:]
+                print(f"  removed a sentence that reported {study!r}, a study the brief does not hold")
+            total += 1
+        last_orphans = [e[3] for e in edits]
+    die(f"prose still reports studies the brief does not hold after two rewrites: {last_orphans[:4]}")
+
+
+def refresh_card_abstracts(h: str, real: dict) -> tuple:
+    """Every cite card's "Read the full abstract" body and its metadata line
+    come from PubMed. 32 of W33's 87 cards showed the raw MEDLINE dump —
+    journal line, DOI, "Author information: (1)…" — under that summary, and
+    no layer on either path read card abstracts. Returns (h, cards_refreshed)."""
+    n = 0
+
+    def paragraphs(ab):
+        ab = ab.replace("\r", "").strip()
+        parts = re.split(r"\n\s*\n|(?<=[.!?])\s+(?=[A-Z][A-Z /&-]{2,}:)", ab)
+        out = []
+        for p in parts:
+            p = re.sub(r"\s+", " ", p).strip()
+            if p:
+                out.append("<p>" + H.escape(p, quote=False) + "</p>")
+        return "".join(out)
+
+    def card(m):
+        nonlocal n
+        a = m.group(0)
+        pm = re.search(r'id="mz-cite-(\d{5,9})', a) or re.search(r"openDeepDive\('dd-(\d+)'", a)
+        r = real.get(pm.group(1)) if pm else None
+        if not r or not (r.get("abstract") or "").strip():
+            return a
+        changed = False
+        d = re.search(r'<details class="mz-abstract">[\s\S]*?</details>', a)
+        if d:
+            body = ('<details class="mz-abstract"><summary>Read the full abstract</summary><h4>ABSTRACT</h4>'
+                    + paragraphs(r["abstract"]) + "</details>")
+            if body != d.group(0):
+                a = a[:d.start()] + body + a[d.end():]
+                changed = True
+        meta = " \u00b7 ".join(x for x in (r.get("authors", ""), f"<strong>{H.escape(r.get('journal', ''), quote=False)}</strong>" if r.get("journal") else "", str(r.get("year", "") or "")) if x)
+        mm = re.search(r'<p class="mz-cite-meta">[\s\S]*?</p>', a)
+        if mm and meta:
+            new_meta = f'<p class="mz-cite-meta">{H.escape(r.get("authors", ""), quote=False)}' + (
+                f' \u00b7 <strong>{H.escape(r.get("journal", ""), quote=False)}</strong>' if r.get("journal") else "") + (
+                f' \u00b7 {H.escape(str(r.get("year", "")), quote=False)}' if r.get("year") else "") + "</p>"
+            if new_meta != mm.group(0):
+                a = a[:mm.start()] + new_meta + a[mm.end():]
+                changed = True
+        if changed:
+            n += 1
+        return a
+    return re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', card, h), n
+
+
 def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
     `renumber`, so a published brief and next week's brief are cited, reviewed
     and corrected by the same code — owner, 2026-09-19: "this is tied to a
     scheduled automated routine… they should be done right the first time."
 
-    relocate markers to sentence ends → verify design badges → model places
-    citations sentence by sentence → targeted pass on named authors → every
-    marker reviewed against its abstract (wrong paper: withdrawn by position;
-    misstated: the sentence is rewritten from the abstract and reviewed again;
-    still wrong: refuse). Returns (h, citations_added, names_declined)."""
+    prose may report only papers the brief holds → relocate markers to
+    sentence ends → verify design badges → model places citations sentence by
+    sentence → targeted pass on named authors → every marker reviewed against
+    its abstract (wrong paper: withdrawn by position; misstated: the sentence
+    is rewritten from the abstract and reviewed again; still wrong: refuse).
+    Returns (h, citations_added, names_declined)."""
+    h, n_cards = refresh_card_abstracts(h, real)
+    if n_cards:
+        print(f"  {n_cards} card(s) given their PubMed abstract and metadata")
+    h, orphaned = remove_orphan_studies(W, h, pmids, real)
+    if orphaned:
+        print(f"  {orphaned} sentence(s) rewritten or removed for reporting a study the brief does not hold")
     h, relocated = relocate_mid_sentence_markers(h)
     if relocated:
         print(f"  moved {relocated} marker(s) standing mid-sentence to the end of their sentence")
@@ -4554,7 +4654,7 @@ def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn, unsupported = set(), []
-    if named:
+    if SUP_RE.search(h):
         withdrawn, unsupported = review_inserted_citations(W, h, real)
         # Both the withdrawal positions and the sentence spans are offsets into
         # THIS h. Withdrawals go first, from the end; each deletion before a
@@ -4607,7 +4707,7 @@ def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
     # W33 including correct ones already standing in the syntheses, because one
     # instance of that paper was misplaced. Only the instance judged wrong goes.
     idx = 0
-    for m in re.finditer(PROSE_RE, h):
+    for m in _prose_passages(h):
         frag = m.group(1) if m.group(1) is not None else m.group(2)
         base = m.start(1) if m.group(1) is not None else m.start(2)
         # THE REVIEWER IS HANDED THE SENTENCE THE MARKER ENDS, AND NOTHING ELSE
@@ -4708,26 +4808,6 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
     return rejected, unsupported
 
 
-def _sentence_start(masked: str, from_pos: int) -> int:
-    """First index at or after from_pos that begins prose: whitespace and
-    tags are skipped (the previous sentence's markers are spaces in a masked
-    fragment, so they are skipped too)."""
-    i, n = from_pos, len(masked)
-    while i < n:
-        c = masked[i]
-        if c.isspace():
-            i += 1
-            continue
-        if c == "<":
-            close = masked.find(">", i)
-            if close < 0:
-                return i
-            i = close + 1
-            continue
-        return i
-    return n
-
-
 def correct_unsupported_sentences(W: str, h: str, unsupported: list, real: dict) -> tuple:
     """Rewrite each sentence the reviewer judged to misstate its own paper so
     that it says what the abstract says, keeping the citation.
@@ -4764,7 +4844,7 @@ Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
         if len(new) < 20 or len(new) > max(400, int(len(us[0]["sentence"]) * 1.4)):
             print(f"  could not correct the sentence citing {[u['pmid'] for u in us]}; leaving it and reporting")
             continue
-        h = h[:a] + H.escape(new, quote=False) + h[b:]
+        h = _replace_span(h, a, b, new)
         done += 1
         print(f"  corrected the sentence citing {', '.join(u['pmid'] for u in us)}: {new[:110]!r}")
     return h, done
@@ -4799,20 +4879,301 @@ Reply with ONLY {{"sentence": "<the corrected sentence>"}}""", timeout_s=600)
 # digits saw three cards in a section that held seven, and recounted its chip
 # to 3.
 CARD_ID_RE = r'id="mz-(?:cite|ref)-(\d{5,9})(?:-\d+)?"'
-SECTION_END = r'(?=<section class="[^"]*topic-section|<section class="[^"]*mz-references|<dialog|<script|$)'
+
+
+# ---------------------------------------------------------------------------
+# STRUCTURE — one reading of the page's shape, for every generation of brief
+# ---------------------------------------------------------------------------
+# Nine published briefs span two generators. W25 onward: <section class="topic-
+# section …" id="topic-x"> with <div class="subspecialty"> · N papers</div>,
+# canonical markers. W20–W24: <section class="mz-topic-group" id="topic-x">
+# with <span class="mz-topic-count">N papers</span>; W20 also carries markers
+# shaped <sup class="mz-ref" tabindex="0" data-ref="1"><a href="#mz-ref-PMID">
+# [1]</a>…, badges as <p class="mz-cite-design">, and its narrative as
+# mz-narrative; W23/W24 keep prose in mz-post-bottom-line / mz-post-established
+# / mz-post-five-papers sections. A regex written for one shape was a silent
+# no-op on the other (curation excised nothing on W21/W23/W24; 24 of W20's
+# markers were invisible), so the shape is read here, once, and legacy markup
+# is normalised before anything else looks at it.
+
+_INLINE_CLOSE = re.compile(r"</(?:em|strong|i|b|a|span)>")
+_CLOSE_PUNCT = re.compile(r"[)\]\"”’']|&(?:rdquo|rsquo|quot|#8221|#8217);")
+
+
+class _Span:
+    """A located element: group(0) is the whole element, group(n>=1) its inner
+    HTML; start()/end() as re.Match would give them."""
+    __slots__ = ("a", "b", "ia", "ib", "h", "tid", "kind")
+
+    def __init__(self, h, a, ia, ib, b, tid=None, kind=None):
+        self.h, self.a, self.ia, self.ib, self.b, self.tid, self.kind = h, a, ia, ib, b, tid, kind
+
+    def group(self, n=0):
+        return self.h[self.a:self.b] if n == 0 else self.h[self.ia:self.ib]
+
+    def start(self, n=0):
+        return self.a if n == 0 else self.ia
+
+    def end(self, n=0):
+        return self.b if n == 0 else self.ib
+
+
+def _element_end(h: str, tag: str, open_end: int) -> int:
+    """Index just past the closing tag that matches the opener ending at
+    open_end, counting nested elements of the same tag."""
+    depth = 1
+    for t in re.finditer(r"<%s\b[^>]*>|</%s>" % (tag, tag), h[open_end:]):
+        if t.group(0).startswith("</"):
+            depth -= 1
+            if depth == 0:
+                return open_end + t.end()
+        else:
+            depth += 1
+    return len(h)
+
+
+def _attr(tag: str, name: str) -> str:
+    m = re.search(r'\b%s="([^"]*)"' % name, tag)
+    return m.group(1) if m else ""
 
 
 def _section_span(h: str, tid: str):
-    """The match for one topic section: group(1) its opening tag, group(2) the rest."""
-    return re.search(r'(<section class="[^"]*topic-section[^"]*"[^>]*id="%s"[^>]*>)([\s\S]*?)' % re.escape(tid)
-                     + SECTION_END, h)
+    """The topic section (or group) with this id, bounded at its OWN closing
+    tag. The previous version stopped at the next boundary instead, so the
+    last section's span swallowed the disclaimer, and it knew one class name."""
+    m = re.search(r'<(section|div)\b[^>]*\bid="%s"[^>]*>' % re.escape(tid), h)
+    if not m:
+        return None
+    return _Span(h, m.start(), m.end(), _element_end(h, m.group(1), m.end()) - len(f"</{m.group(1)}>"),
+                 _element_end(h, m.group(1), m.end()), tid, "topic")
+
+
+def _topic_sections(h: str) -> list:
+    """Every topic section in document order, whatever its generation."""
+    out = []
+    for m in re.finditer(r"<(section|div)\b[^>]*>", h):
+        tag = m.group(0)
+        cls = _attr(tag, "class").split()
+        if not ({"topic-section", "mz-topic-group", "mz-topic-section"} & set(cls)):
+            continue
+        tid = _attr(tag, "id")
+        if not tid:
+            continue
+        b = _element_end(h, m.group(1), m.end())
+        out.append(_Span(h, m.start(), m.end(), b - len(f"</{m.group(1)}>"), b, tid, "topic"))
+    # W20 wraps its topic sections in <section class="mz-topic-group" id="group-…">
+    # groups; the topics are the innermost candidates, so a candidate that
+    # contains another is a wrapper and is dropped
+    return [t for t in out if not any(o is not t and t.a < o.a < t.b for o in out)]
+
+
+def _prose_passages(h: str) -> list:
+    """Every passage that carries inline citations, in document order: the
+    opening narrative (mz-post-narrative or W20's mz-narrative), every other
+    prose section of the post (bottom line, established, five papers, the
+    read-across — any mz-post-section that is not the hero, a topic, or the
+    references, and holds no cite cards), and each section's synthesis <p>."""
+    out = []
+    for m in re.finditer(r"<section\b[^>]*>", h):
+        cls = set(_attr(m.group(0), "class").split())
+        sid = _attr(m.group(0), "id")
+        if cls & {"topic-section", "mz-topic-group", "mz-topic-section", "mz-references", "mz-post-hero",
+                  "mz-jc-section", "counters", "design-chart"}:
+            continue
+        if sid == "references":
+            continue
+        if not (cls & {"mz-post-narrative", "mz-narrative"} or "mz-post-section" in cls):
+            continue
+        b = _element_end(h, "section", m.end())
+        inner = h[m.end():b - len("</section>")]
+        if "mz-cite-card" in inner or "<section" in inner:
+            continue
+        out.append(_Span(h, m.start(), m.end(), b - len("</section>"), b, sid, "prose"))
+    for m in re.finditer(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
+        out.append(_Span(h, m.start(), m.start(1), m.end(1), m.end(), None, "synthesis"))
+    out.sort(key=lambda s: s.a)
+    return out
+
+
+def normalize_legacy_markup(h: str) -> str:
+    """Rewrite W20-generation markup into the shape every later step reads:
+    markers (tabindex/data-ref, href="#mz-ref-PMID", "[1]" text) into the
+    canonical sup with a ref-pop-PMID popover holding only title, meta,
+    finding and source link; <p class="mz-cite-design"> into the span; a card
+    with no badge gets a placeholder badge so the design check judges it."""
+    def canon(m):
+        sup = m.group(0)
+        pm = _pmid_of(sup)
+        if not pm:
+            return sup
+        if re.match(r'<sup class="mz-ref"><a class="mz-ref-link"', sup) and f'id="ref-pop-{pm}' in sup \
+                and "mz-ref-design" not in sup and sup.count("mz-ref-link") == 1:
+            return sup
+        num = re.sub(r"<[^>]+>", "", (re.search(r"<a\b[^>]*>([\s\S]*?)</a>", sup) or [None, pm])[1]).strip("[] ")
+        parts = []
+        for cls in ("title", "meta", "finding"):
+            x = re.search(r'<span class="mz-ref-pop-%s">([\s\S]*?)</span>' % cls, sup)
+            if x:
+                parts.append(f'<span class="mz-ref-pop-{cls}">{x.group(1)}</span>')
+        parts.append(f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
+                     f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a>')
+        return (f'<sup class="mz-ref"><a class="mz-ref-link" href="#ref-{pm}" aria-describedby="ref-pop-{pm}">{num or pm}</a>'
+                f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">{"".join(parts)}</span></sup>')
+    h = SUP_RE.sub(canon, h)
+    h = re.sub(r'<p class="mz-cite-design">([^<]*)</p>', r'<span class="mz-cite-design">\1</span>', h)
+
+    def badge(m):
+        a = m.group(0)
+        if "mz-cite-design" in a:
+            return a
+        head = re.match(r"<article\b[^>]*>", a)
+        return a[:head.end()] + '<div class="mz-cite-head"><span class="mz-cite-design">Peer-reviewed study</span></div>' + a[head.end():]
+    return re.sub(r'<article class="mz-cite-card[\s\S]*?</article>', badge, h)
+
+
+# ---------------------------------------------------------------------------
+# SENTENCES — where one ends is decided from the text around the stop
+# ---------------------------------------------------------------------------
+_ABBR_BEFORE = re.compile(r"(?:^|[\s(\[—–-])(?:e\.g|i\.e|vs|cf|dr|fig|approx|ca|resp)$", re.I)
+
+
+def _terminal_at(frag: str, i: int) -> bool:
+    """Is the . ! ? at frag[i] the end of a sentence? Decided from the text
+    around it: a stop followed directly by a letter or digit is inside a
+    token (e.g, 4.5, U.S), a stop that closes e.g./i.e./vs./cf./Dr./Fig. is
+    not terminal, "no." is terminal unless a number follows, and "et al." is
+    terminal only when a new sentence visibly starts after it."""
+    c = frag[i]
+    if c in "!?":
+        return True
+    nxt = frag[i + 1:i + 2]
+    if nxt and (nxt.isalnum()):
+        return False
+    before = re.sub(r"<[^>]+>", "", frag[max(0, i - 12):i])
+    after = frag[i + 1:i + 40]
+    after_txt = re.sub(r"<[^>]+>", "", after).lstrip(" \t\r\n\xa0")
+    if _ABBR_BEFORE.search(before):
+        return False
+    if re.search(r"(?:^|\s)et al$", before):
+        return bool(re.match(r"[A-Z“\"(\[]", after_txt)) or not after_txt.strip()
+    if re.search(r"(?:^|\s)no$", before, re.I):
+        return not re.match(r"\d", after_txt)
+    return True
+
+
+def _advance_end(frag: str, i: int) -> int:
+    """From just after a terminal stop, step over closing inline tags and
+    closing punctuation that belong to the sentence, so the marker lands
+    after them and the sentence's span includes them."""
+    n = len(frag)
+    while i < n:
+        m = _INLINE_CLOSE.match(frag, i) or _CLOSE_PUNCT.match(frag, i)
+        if not m:
+            break
+        i = m.end()
+    return i
+
+
+def _sentences_of(frag: str) -> list:
+    """(text, end_index) for each sentence of a prose fragment, tags stripped
+    for the text but indices valid against the fragment itself."""
+    out, buf, start = [], [], None
+    i, n = 0, len(frag)
+    while i < n:
+        c = frag[i]
+        if c == "<":
+            close = frag.find(">", i)
+            if close < 0:
+                break
+            if _re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", frag[i:close + 1], _re.I) and "".join(buf).strip():
+                out.append(("".join(buf).strip(), i)); buf, start = [], None
+            i = close + 1
+            continue
+        if start is None and not c.isspace():
+            start = i
+        buf.append(c)
+        if c in ".!?" and _terminal_at(frag, i):
+            end = _advance_end(frag, i + 1)
+            # the closing punctuation stepped over belongs to this sentence's text
+            buf.append(re.sub(r"<[^>]+>", "", frag[i + 1:end]))
+            out.append(("".join(buf).strip(), end)); buf, start = [], None
+            i = end
+            continue
+        i += 1
+    if "".join(buf).strip():
+        out.append(("".join(buf).strip(), n))
+    return [(H.unescape(_re.sub(r"\s+", " ", t)), e) for t, e in out if t.strip()]
+
+
+def _end_of_sentence(html_frag: str, from_pos: int) -> int:
+    """Index just after the stop (and its closing punctuation/inline tags)
+    that ends the sentence at from_pos; a closing block tag ends it too."""
+    i, n = from_pos, len(html_frag)
+    while i < n:
+        c = html_frag[i]
+        if c == "<":
+            close = html_frag.find(">", i)
+            if close < 0:
+                return n
+            if re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", html_frag[i:close + 1], re.I):
+                return i
+            i = close + 1
+            continue
+        if c in ".!?" and _terminal_at(html_frag, i):
+            return _advance_end(html_frag, i + 1)
+        i += 1
+    return n
+
+
+def _sentence_start(masked: str, from_pos: int) -> int:
+    """First index at or after from_pos that begins prose: whitespace
+    (including &nbsp;), tags, and closing punctuation left from the previous
+    sentence are skipped (a masked fragment's markers are spaces, so the
+    previous sentence's marker run is skipped too)."""
+    i, n = from_pos, len(masked)
+    while i < n:
+        c = masked[i]
+        if c.isspace() or c == "\xa0":
+            i += 1
+            continue
+        if c == "<":
+            close = masked.find(">", i)
+            if close < 0:
+                return i
+            i = close + 1
+            continue
+        m = _CLOSE_PUNCT.match(masked, i) or re.match(r"&nbsp;", masked[i:i + 6])
+        if m:
+            i += len(m.group(0))
+            continue
+        return i
+    return n
+
+
+def _replace_span(h: str, a: int, b: int, new_text: str) -> str:
+    """Replace the prose in h[a:b] with escaped text, keeping the inline
+    markup balanced: a closing tag inside the span whose opener lies before
+    it is re-emitted first, an opener left unclosed is closed after."""
+    old = h[a:b]
+    stack, prefix = [], ""
+    for t in re.finditer(r"<(/?)(em|strong|i|b|a|span)\b[^>]*>", old):
+        if t.group(1):
+            if stack and stack[-1] == t.group(2):
+                stack.pop()
+            else:
+                prefix += t.group(0)
+        else:
+            stack.append(t.group(2))
+    suffix = "".join(f"</{n}>" for n in reversed(stack))
+    return h[:a] + prefix + H.escape(new_text, quote=False) + suffix + h[b:]
 
 
 def _card_in(seg: str, pmid: str):
     """The first cite card for this paper inside a fragment, or None."""
     for m in re.finditer(r'<article class="mz-cite-card[\s\S]*?</article>', seg):
         a = m.group(0)
-        if f"mz-cite-{pmid}" in a or f"openDeepDive('dd-{pmid}')" in a or f"/{pmid}/" in a:
+        if re.search(r'id="mz-cite-%s(?:-\d+)?"' % re.escape(pmid), a) or f"openDeepDive('dd-{pmid}')" in a \
+                or f"pubmed.ncbi.nlm.nih.gov/{pmid}/" in a:
             return m
     return None
 
@@ -4837,7 +5198,7 @@ def excise_paper_from_section(h: str, tid: str, pmid: str) -> str:
             break
         h = h[:sec.start() + m.start()] + h[sec.start() + m.end():]
     sec = _section_span(h, tid)
-    seg = re.sub(r'<button[^>]*openDeepDive\(.dd-%s.[^>]*>[\s\S]*?</button>' % re.escape(pmid), "", sec.group(0))
+    seg = re.sub(r'<button[^>]*openDeepDive\([\'"]dd-%s[\'"]\)[^>]*>[\s\S]*?</button>' % re.escape(pmid), "", sec.group(0))
     return h[:sec.start()] + seg + h[sec.end():]
 
 
@@ -4956,6 +5317,7 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
     moved = [(from_tid, to_tid, pmid, why)], emptied = [tid].
     """
     removed, moved = [], []
+    belongs_why = {}
     titles = {tid: t["title"] for tid, t in topics.items()}
     by_title = {t["title"].strip().lower(): tid for tid, t in topics.items()}
     # A PAPER IS NEVER DROPPED FOR MISSING DATA. When a fetch failed, the model
@@ -5002,10 +5364,11 @@ OTHER HEADINGS IN THIS BRIEF: {json.dumps([x for k, x in titles.items() if k != 
 {TOPIC_FIT_RULE}
 For EACH paper: does it belong under THAT heading, by the rule above?
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
-Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false,
-  "why": "<one clause; when false it names (a), (b) or (c) and what the paper is actually about>",
+Reply with ONLY {{"verdicts": [{{"pmid": "...", "verdict": "belongs"|"does_not_belong"|"cannot_tell",
+  "why": "<one clause; for does_not_belong it names (a), (b) or (c) and what the paper is actually about>",
   "elsewhere": "<for (b) only: one heading copied exactly from OTHER HEADINGS IN THIS BRIEF; otherwise null>"}}, ...]}}
-with one object for EVERY paper given.""", timeout_s=900)
+with one object for EVERY paper given. "cannot_tell" is for a paper whose title and abstract do not let
+you judge; it is kept.""", timeout_s=900)
             if not v or not isinstance(v.get("verdicts"), list):
                 die(f"curation of {tid} returned no verdict")
             got = {str(x.get("pmid")) for x in v["verdicts"]}
@@ -5015,13 +5378,15 @@ with one object for EVERY paper given.""", timeout_s=900)
             for x in v["verdicts"]:
                 pm = str(x.get("pmid"))
                 why = str(x.get("why", ""))[:200]
-                if x.get("belongs"):
+                verdict = str(x.get("verdict") or ("belongs" if x.get("belongs") else "does_not_belong")).strip().lower()
+                if verdict == "belongs":
+                    belongs_why[(tid, pm)] = why
                     continue
-                if re.search(r"no (?:title|abstract)|not provided|cannot (?:verify|assess)|insufficient", why, re.I):
+                if verdict == "cannot_tell":
                     print(f"  KEEPING {pm}: the judgement was 'cannot tell', not 'does not belong'")
                     continue
                 other = str(x.get("elsewhere") or "").strip()
-                to_tid = by_title.get(other.lower()) if other else None
+                to_tid = _match_heading(other, by_title) if other else None
                 if to_tid and to_tid != tid and pm not in topics[to_tid]["pmids"]:
                     moved.append((tid, to_tid, pm, why))
                 else:
@@ -5058,14 +5423,46 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
             if str(v["assignments"].get(q, "")).strip() != "NONE":
                 continue
             why = "an independent classification found no heading in this brief it belongs under"
+            # A reasoned first-pass "belongs" against a bare NONE is a
+            # disagreement, not a verdict: dry24 lost an anastomosis technique
+            # written for deep-endometriosis bowel resection and a GLP-1 vs
+            # metformin PCOS comparison this way. A third, targeted question
+            # sees both answers and decides.
+            held = [(tid, belongs_why[(tid, q)]) for tid in topics if (tid, q) in belongs_why and (tid, q) not in gone]
+            if held:
+                tie = _ask_cached(W, "curate", f"""Two independent judgements disagree about one paper in a weekly literature brief for gynecologic surgeons.
+{TOPIC_FIT_RULE}
+PAPER: {json.dumps(ctx([q])[0], ensure_ascii=False)}
+IT SITS UNDER: {json.dumps([{"heading": titles[t], "what_the_area_covers": _flat(area.get(t)), "first_judgement": w} for t, w in held], ensure_ascii=False)}
+The first judgement, made against the heading, said it BELONGS for the reason given. A second judgement,
+made against the list of all headings, found no heading in this brief it belongs under. Decide, by the
+rule above: does the paper belong under the heading(s) it sits under?
+Reply with ONLY {{"verdict": "keep"|"drop", "why": "<one clause>"}}""", timeout_s=600)
+                if str((tie or {}).get("verdict", "")).strip().lower() == "keep":
+                    print(f"  KEEPING {q} after a third judgement: {str((tie or {}).get('why', ''))[:100]}")
+                    continue
+                why = f"a third judgement agreed it does not belong: {str((tie or {}).get('why', ''))[:120]}"
+            # a move for this paper is cancelled, and the placement it came
+            # from is removed like any other (it was rejected there too)
+            for f, _, pm, _ in moved:
+                if pm == q and (f, pm) in gone:
+                    gone.discard((f, pm))
             moved = [m for m in moved if m[2] != q]
             for tid, t in topics.items():
                 if q in t["pmids"] and (tid, q) not in gone:
                     removed.append((tid, q, why))
                     gone.add((tid, q))
 
-    for from_tid, to_tid, pm, _ in moved:
+    landed = set()
+    for from_tid, to_tid, pm, why in list(moved):
+        if (to_tid, pm) in landed:
+            # the same paper rejected under two headings, both naming one
+            # target: the second copy would be a duplicate there
+            moved.remove((from_tid, to_tid, pm, why))
+            removed.append((from_tid, pm, why))
+            continue
         h = move_card(h, pm, from_tid, to_tid)
+        landed.add((to_tid, pm))
     for tid, pm, _ in removed:
         h = excise_paper_from_section(h, tid, pm)
     # a paper with no card left anywhere takes its dialog, reference entry and
@@ -5084,23 +5481,45 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
             # the reader's jump list must not offer a heading that is gone
             h = re.sub(r'<a[^>]*class="[^"]*mz-toc-chip[^"]*"[^>]*href="#%s"[\s\S]*?</a>' % re.escape(tid), "", h)
             h = re.sub(r'<a[^>]*href="#%s"[^>]*class="[^"]*mz-toc-chip[^"]*"[\s\S]*?</a>' % re.escape(tid), "", h)
-    # and every surviving chip's count is what the section now holds
-    for tid, t in topics.items():
-        if tid in emptied:
-            continue
-        sec = _section_span(h, tid)
+    h = recount_headings(h)
+    return h, removed, moved, emptied
+
+
+def _match_heading(name: str, by_title: dict):
+    """The topic id a model-quoted heading refers to: exact, then case /
+    whitespace / entity-insensitive, then with a trailing parenthetical
+    dropped, then a unique heading that starts with or contains it. The
+    same model quoted "C-Section Scar" for "C-Section Scar (Pregnancy &
+    Pathology)"; an exact-only match turned that (b) into a drop."""
+    def norm(x):
+        x = H.unescape(x or "").lower()
+        x = re.sub(r"\s*\([^)]*\)\s*$", "", x)
+        return re.sub(r"\s+", " ", x).strip()
+    want = norm(name)
+    if not want:
+        return None
+    normed = {norm(k): v for k, v in by_title.items()}
+    if want in normed:
+        return normed[want]
+    hits = [v for k, v in normed.items() if k.startswith(want) or want in k or k in want]
+    return hits[0] if len(hits) == 1 else None
+
+
+def recount_headings(h: str) -> str:
+    """Every topic section's TOC chip and header count say what the section
+    now holds, in every header shape the site has used."""
+    for t in _topic_sections(h):
+        left = len(set(re.findall(CARD_ID_RE, t.group(0)) + re.findall(r"openDeepDive\('dd-(\d+)'", t.group(0))))
+        h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(t.tid),
+                   lambda m: m.group(1) + str(left) + m.group(2), h)
+        sec = _section_span(h, t.tid)
         if not sec:
             continue
-        left = len(set(re.findall(CARD_ID_RE, sec.group(0))))
-        h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(tid),
-                   lambda m: m.group(1) + str(left) + m.group(2), h)
-        # the section's own header carries a count too ("· 7 papers"); the
-        # transform audit found it contradicting both the chip and the prose
-        sec = _section_span(h, tid)
-        seg = re.sub(r'(<div class="subspecialty">[^<]*?)\d+ papers?(</div>)',
-                     lambda m: f"{m.group(1)}{left} paper{'s' if left != 1 else ''}{m.group(2)}", sec.group(0), count=1)
+        seg = re.sub(r'(<(?:div class="subspecialty"|span class="mz-topic-count")>[^<]*?)(\d+ papers?|\(\d+\))(</(?:div|span)>)',
+                     lambda m: m.group(1) + (f"({left})" if m.group(2).startswith("(") else f"{left} paper{'s' if left != 1 else ''}") + m.group(3),
+                     sec.group(0), count=1)
         h = h[:sec.start()] + seg + h[sec.end():]
-    return h, removed, moved, emptied
+    return h
 
 
 def _survivors(topics: dict, tid: str, removed: list, moved: list) -> list:
@@ -5140,24 +5559,35 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         return out
 
     seq = []
-    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
-                         r'|(?:<section class="[^"]*topic-section[^"]*"[^>]*id="([^"]+)"[^>]*>([\s\S]*?)</section>)', after):
-        where = "narrative" if m.group(1) is not None else m.group(2)
-        frag = m.group(1) if m.group(1) is not None else m.group(3)
+    passages = [(ps.tid or ps.kind, ps.group(1)) for ps in _prose_passages(after) if ps.kind != "synthesis"]
+    passages += [(t.tid, t.group(1)) for t in _topic_sections(after)]
+    passages.sort(key=lambda x: after.find(x[1][:80]) if x[1] else 0)
+    for where, frag in passages:
         nums = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
                 for x in SUP_RE.findall(frag)]
         if nums:
             seq.append({"passage": where, "markers_in_order": nums})
 
+    # every section, whole: a sample of four syntheses cut at 3,500 characters
+    # left sections five to nine invisible to the auditor
+    sections = []
+    for t in _topic_sections(after):
+        seg = t.group(0)
+        synth = re.search(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', seg)
+        sections.append({"id": t.tid,
+                         "header": strip_pops(seg[:seg.find("</h2>") + 5 if "</h2>" in seg else 400])[:700],
+                         "synthesis": strip_pops(synth.group(1))[:9000] if synth else "",
+                         "cards": len(re.findall(r'<article class="mz-cite-card', seg)),
+                         "card_ids": sorted(set(re.findall(CARD_ID_RE, seg)))})
     sample = {
+        "marker_sequence_in_document_order": seq,
         "toc_nav": slice_of(after, r'<nav class="mz-toc"[\s\S]*?</nav>', 1, 4000),
-        "narrative": slice_of(after, r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>', 1, 14000),
-        "syntheses": slice_of(after, r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>', 4, 3500),
+        "prose_passages": [{"id": ps.tid or ps.kind, "html": strip_pops(ps.group(1))[:20000]}
+                           for ps in _prose_passages(after) if ps.kind != "synthesis"],
+        "sections": sections,
         "popovers": slice_of(after, r'<sup class="mz-ref">[\s\S]*?</sup>', 2, 1600, pops=True),
-        "topic_headers": slice_of(after, r'<section class="[^"]*topic-section[^"]*"[^>]*>[\s\S]{0,700}', 3, 900),
         "references_head": slice_of(after, r'<ol class="mz-references-list">[\s\S]{0,2500}', 1, 2500),
         "cite_card": slice_of(after, r'<article class="mz-cite-card[\s\S]*?</article>', 1, 2500),
-        "marker_sequence_in_document_order": seq,
         "counts": {
             "citations": len(SUP_RE.findall(after)),
             "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
@@ -5165,7 +5595,7 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
             "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
             "dialogs": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "toc_chips": sum(1 for m in re.finditer(r'<a[^>]*class="([^"]*)"', after) if "mz-toc-chip" in m.group(1).split()),
-            "topic_sections": len(re.findall(r'class="[^"]*topic-section', after)),
+            "topic_sections": len(_topic_sections(after)),
             "placements_removed": len(dropped),
             "papers_moved_between_headings": len(moved or []),
             "headings_removed": emptied,
@@ -5193,7 +5623,7 @@ removed paper (a dangling "and", a doubled full stop, an empty parenthesis, a to
 cards under it); a popover missing its title, journal line, finding or link; markup that will not
 render (unclosed tag, stray attribute); and anything a reader would notice as damage.
 
-OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:90000]}
+OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:180000]}
 
 Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evidence": "<quote it>",
 "severity": "blocking"|"cosmetic"}}, ...], "notes": "one or two sentences"}}""", timeout_s=1200)
@@ -5243,6 +5673,9 @@ def rewrite_affected_syntheses(W: str, h: str, topics: dict, removed: list, move
                   if lost else "")
         if gained:
             change += (", and " if change else "") + f"{len(gained)} paper(s) moved here from another heading"
+        lost_desc = [{"pmid": q, "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip(),
+                      "title": (real.get(q) or {}).get("title", "")[:140]} for q in lost]
+        change += f". THE REMOVED PAPERS, which the paragraph may no longer mention or argue from: {json.dumps(lost_desc, ensure_ascii=False)}"
         v = _ask_cached(W, "resynth", f"""Rewrite one section-opening paragraph of a clinician-facing weekly evidence brief.
 HEADING: {json.dumps(t["title"])}
 The paragraph below was written when this section held {len(t["pmids"])} papers. {change}, so the
@@ -5265,6 +5698,11 @@ Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
         if not new_text or len(new_text) < 400:
             print(f"  could not rewrite the synthesis for {tid}; leaving it and reporting")
             continue
+        lost_sur = {k for k, qs in _first_surnames(lost, real).items()} - set(_first_surnames(now, real))
+        named_still = [k for k in lost_sur if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])",
+                                                       H.unescape(re.sub(r"<[^>]+>", " ", new_text)))]
+        if named_still:
+            die(f"the rewritten synthesis for {t['title']!r} still argues from removed paper(s) by {named_still}")
         at = sec.start(2) + pm.start(2)
         h = h[:at] + new_text + h[sec.start(2) + pm.end(2):]
         rewritten += 1
@@ -5297,7 +5735,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
 def _renumber(post_id: str, W: str, dry: bool) -> None:
     post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
     post = post.get("post", post)
-    h = post["body_html"]
+    h = normalize_legacy_markup(post["body_html"])
     before_html = h
     before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
               for x in SUP_RE.findall(h)]
@@ -5315,25 +5753,16 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
 
     # CURATION FIRST, always. A brief is not worth renumbering while it still
     # carries papers that are not about their own heading.
-    GRP = (r'(?:<section class="[^"]*topic-section[^"]*"[^>]*id="(topic-[^"]+)"[^>]*>)'
-           r'|(?:<(?:section|div)[^>]*class="[^"]*mz-topic-group[^"]*"[^>]*(?:id="([^"]+)")?[^>]*>)')
-    starts = list(re.finditer(GRP, h))
     topics = {}
-    for i, mg in enumerate(starts):
-        seg_end = starts[i + 1].start() if i + 1 < len(starts) else len(h)
-        seg = h[mg.end():seg_end]
-        # the last section's segment would otherwise run through the reference
-        # list and every dialog, and claim every paper in the brief as its own
-        cut = re.search(r'<section class="[^"]*mz-references|<dialog', seg)
-        if cut:
-            seg = seg[:cut.start()]
-        tid = mg.group(1) or mg.group(2) or f"group-{i + 1}"
+    for t in _topic_sections(h):
+        seg = t.group(1)
         tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
         pm_here = list(dict.fromkeys(re.findall(CARD_ID_RE, seg)
                                      + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
         if pm_here:
-            topics[tid] = {"title": H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()[:90] if tt else tid,
-                           "pmids": pm_here}
+            title = H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else t.tid
+            title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", title)[:90]
+            topics[t.tid] = {"title": title, "pmids": pm_here}
     papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
                        "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
     if topics:
@@ -5355,13 +5784,15 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
         h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
         if resynth:
             print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
-        h, n_narr = rewrite_narrative_for_removed(W, h, gone, real)
+        h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
         if n_narr:
             print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
     else:
         removed, moved, emptied = [], [], []
+    # every paper the brief holds may be cited by the chain below, so every
+    # one gets its file and its journal line — not only the ones already cited
     meta = {}
-    for pm in pmids:
+    for pm in pmids_all:
         r = real.get(pm) or {}
         line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
         if line:
@@ -5369,10 +5800,13 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
         json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
                    "pubmed_abstract": r.get("abstract", "")},
                   open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
-    missing_meta = [pm for pm in pmids if pm not in meta]
+    missing_meta = [pm for pm in pmids_all if pm not in meta]
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
+    h, refreshed = refresh_popovers_from_abstracts(W, h, real)
+    if refreshed:
+        print(f"  {refreshed} hover card(s) written from the papers' abstracts")
     h, named, declined = cite_and_review(W, h, pmids_all, real)
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
@@ -5438,15 +5872,24 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
         die("the publish audit refused the renumbered body")
 
     preview_and_verify(W, post_id, "/evidence/")
+    if dry:
+        # the whole transformation and every gate ran; nothing is written.
+        # (This check was lost in a refactor once: a passing dry run would
+        # have published.)
+        print(f"DRY RUN OK — {post_id} passes every check; nothing was written to the site")
+        return
 
     import hashlib as _hl
     receipt = {"body_sha256": _hl.sha256(h.encode("utf-8")).hexdigest(),
                "standards_passed": True, "grounding_passed": True,
                "pipeline_digest": _sha_file(os.path.abspath(__file__)),
-               "scope": "citation renumbering of already-published, already-audited prose: "
-                        "markers numbered in order of first appearance, reference list rebuilt in that "
-                        "order, popover journal/year taken from PubMed, duplicate ids removed. No prose "
-                        "was rewritten, so the grounding of the text is the grounding it published with.",
+               "scope": (f"published brief re-processed by the one citation chain: curation per (heading, paper) "
+                         f"grounded in the KB ({len(removed)} placement(s) removed, {len(moved)} moved, headings "
+                         f"removed: {emptied}); syntheses and narrative rewritten where curation changed them; card "
+                         f"abstracts, metadata and hover cards from PubMed; citations placed and reviewed by the "
+                         f"model per sentence, misstated sentences corrected from their abstracts and re-reviewed; "
+                         f"markers numbered in order of first appearance, references rebuilt; read back by a model "
+                         f"(S16); every marker checked in a browser before publishing."),
                "checked_at": datetime.datetime.utcnow().isoformat() + "Z"}
     json.dump(receipt, open(W + ".ledger/receipt.json", "w"), indent=1)
     json.dump({"body_html": h, "pipeline_receipt": receipt}, open(W + "_put.json", "w"), ensure_ascii=False)
