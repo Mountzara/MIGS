@@ -1034,6 +1034,41 @@ def prepare_trend(post_id: str) -> None:
 # belong in the topic, so this stage decides, per paper, and the decision is
 # executed: the card, the deep dive, the reference entry and the TOC count all
 # go. A topic left with nothing goes too.
+# ---------------------------------------------------------------------------
+# TOPIC_FIT_RULE — the one definition of "belongs under this heading"
+# ---------------------------------------------------------------------------
+# This rule was written into two curation prompts separately. When the first
+# was corrected to read a heading as a clinical area rather than a literal
+# phrase, the second was not, and it went on removing a yoga trial in
+# climacteric women, osteoporosis risk after menopause and acupuncture for
+# vasomotor symptoms from the menopause section — thirteen papers, caught in
+# a dry run. A rule that lives in two places is two rules. It lives here, and
+# every judgement of topical fit — both curation passes on a published brief
+# and the curation stage of a new one — is handed this text.
+
+TOPIC_FIT_RULE = """
+A HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Therapy" is the week's
+menopause section: a yoga trial in climacteric women, osteoporosis risk after menopause, acupuncture
+for vasomotor symptoms, coffee and vasomotor severity, a menopause questionnaire, a menopause
+education programme — all belong there. "C-Section Scar" is caesarean scar and its sequelae.
+"Chronic Pelvic Pain" is pelvic pain in women. Judge each paper against that AREA as a gynecologist
+reading a weekly brief would.
+
+A PAPER BELONGS when it is about the heading's clinical area in women's health — including
+non-pharmacological management, epidemiology, diagnostics, education, health services, basic science
+and preclinical work. Breadth within the area is the point of a weekly brief. Adjacency to the
+heading's exact words is never a reason to remove it, and when in doubt it stays: a slightly broad
+section costs the reader nothing, and removing a paper they should have seen does.
+
+A PAPER DOES NOT BELONG only when one of these is true, and the reason must say which:
+  (a) it is about a different organ, specialty, sex or population — prostate cancer, breast surgery
+      or breast oncology, a brain tumour, an eyelid, a male cohort, a paediatric cohort;
+  (b) it plainly belongs under a DIFFERENT heading in this same brief — name that heading;
+  (c) it has no clinical or scientific content for this audience at all — a market analysis,
+      hospital administration, a commerce piece.
+"""
+
+
 CURATE_PROMPT = """You are curating one topic of a clinical brief for a complex benign gynecology /
 minimally invasive gynecologic surgery (CBG/MIGS) practice.
 
@@ -1042,11 +1077,9 @@ Read {topic_file}. It has a `title` and a list of `papers`, each with a pmid, ti
 For EACH paper decide whether it belongs under that topic heading for THIS audience — practising
 gynecologic surgeons reading a weekly literature brief.
 
-KEEP a paper when it is about the topic in women's health, even if the study is basic science,
-preclinical, or an adjacent gynecologic condition. Breadth within the topic is fine.
-
-DROP a paper when it landed here by keyword collision or is about a different organ, specialty or
-population entirely — a neurology paper sharing a device name, a lung tumour sharing a histology
+""" + TOPIC_FIT_RULE + """
+DROP means the paper does not belong by (a), (b) or (c) above — a neurology paper sharing a device
+name, a lung tumour sharing a histology
 word, a paediatric endocrine paper sharing a hormone word, a head-and-neck or hepatobiliary paper
 sharing an imaging dye. Being merely tangential is NOT enough to drop; being about something else is.
 
@@ -4209,6 +4242,7 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
 # scratch every time. A verdict is keyed by the exact question asked, so
 # re-running after fixing a regex costs nothing for work already judged.
 
+
 def _cache_get(W: str, kind: str, key: str):
     path = W + f"cache.{kind}.json"
     if not os.path.exists(path):
@@ -4291,26 +4325,8 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
             v = _ask_cached(W, "curate", f"""You are auditing one section of a weekly literature brief for a complex benign gynecology /
 minimally invasive gynecologic surgery practice. Its readers are practising gynecologic surgeons.
 SECTION HEADING: {json.dumps(t["title"])}
-
-THE HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Therapy" is the week's
-menopause section; "C-Section Scar" is caesarean scar and its sequelae; "Chronic Pelvic Pain" is
-pelvic pain in women. Judge each paper against that AREA as a gynecologist reads it.
-
-KEEP a paper that belongs to the heading's clinical area in women's health. That includes
-non-pharmacological management, epidemiology, diagnostics, education, health services, basic science
-and preclinical work — a yoga trial in climacteric women, an osteoporosis-risk study in
-postmenopausal women, acupuncture for vasomotor symptoms and migraine burden after menopause all
-belong in a menopause section. Breadth within the area is the point of a weekly brief.
-
-DROP a paper only when one of these is true, and say which:
-  (a) it is about a different organ, specialty, sex or population — prostate cancer, breast surgery,
-      a brain tumour, an eyelid, a male cohort;
-  (b) it plainly belongs under a DIFFERENT heading in this same brief — name that heading;
-  (c) it has no clinical or scientific content for this audience at all — market analysis, hospital
-      administration, a commerce piece.
-A paper that is merely adjacent to the heading's exact words is NOT a drop. When in doubt, keep it:
-a slightly broad section costs the reader nothing, and removing a paper they should have seen does.
-
+{TOPIC_FIT_RULE}
+For EACH paper: does it belong under THAT heading, by the rule above?
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"verdicts": [{{"pmid": "...", "belongs": true|false, "why": "<one clause>"}}, ...]}}
 with one object for EVERY paper given.""", timeout_s=900)
@@ -4337,17 +4353,10 @@ with one object for EVERY paper given.""", timeout_s=900)
         batch = keeps[i:i + 10]
         v = _ask_cached(W, "curate", f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
 audience of gynecologic surgeons reading a weekly literature brief.
-
-EACH HEADING NAMES A CLINICAL AREA, NOT A LITERAL PHRASE. "Menopausal Hormone Therapy" is the week's
-menopause section — a yoga trial in climacteric women, osteoporosis risk after menopause, acupuncture
-for vasomotor symptoms, a menopause questionnaire, all go there. "C-Section Scar" is caesarean scar
-and its sequelae. Put each paper under the heading whose area it belongs to, even when the fit is
-broad; a paper adjacent to a heading goes under that heading.
-
-Answer "NONE" ONLY when the paper is about a different organ, specialty, sex or population — prostate
-cancer, breast oncology, a brain tumour, an eyelid, a male cohort — or has no clinical or scientific
-content for this audience (a market analysis, hospital administration). NONE means "this does not
-belong in a gynecology brief at all", never "no heading is a perfect match".
+{TOPIC_FIT_RULE}
+Put each paper under the heading whose area it belongs to, even when the fit is broad. Answer "NONE"
+ONLY for a paper that does not belong in a gynecology brief at all under (a) or (c) above — never
+because no heading is a perfect match.
 HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
 PAPERS: {json.dumps(ctx(batch), ensure_ascii=False)[:90000]}
 Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} for EVERY paper given.""",
