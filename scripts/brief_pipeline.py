@@ -4168,6 +4168,77 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
     return h, drops, reasons, emptied
 
 
+
+def audit_transform(W: str, before: str, after: str, dropped: dict, emptied: list) -> None:
+    """Read the transformed page and find what my own checks could not.
+
+    Owner, 2026-09-19: "you should be using AI yourself — YOU ARE RESPONSIBLE
+    TO MAKE SURE YOUR DUMBASS REGEX AND HEURISTIC CODE DIDN'T MAKE MISTAKES."
+    Correct, and it is the lesson of every failure here: a post-condition I
+    write tests what I thought to test, so a chip left pointing at a removed
+    heading, an id suffix colliding with the numbering's own, a marker landing
+    mid-phrase and a withdrawal that took out fifteen correct citations all
+    passed my own checks and were caught a publish cycle later. This reads the
+    actual output and looks for what a careful editor would see.
+    """
+    def slice_of(h, pat, n=1, cap=3000):
+        out = []
+        for m in list(re.finditer(pat, h))[:n]:
+            out.append(m.group(0)[:cap])
+        return out
+
+    sample = {
+        "toc_nav": slice_of(after, r'<nav class="mz-toc"[\s\S]*?</nav>', 1, 4000),
+        "narrative": slice_of(after, r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>', 1, 7000),
+        "syntheses": slice_of(after, r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>', 2, 4000),
+        "topic_headers": slice_of(after, r'<section class="[^"]*topic-section[^"]*"[^>]*>[\s\S]{0,700}', 3, 900),
+        "references_head": slice_of(after, r'<ol class="mz-references-list">[\s\S]{0,2500}', 1, 2500),
+        "cite_card": slice_of(after, r'<article class="mz-cite-card[\s\S]*?</article>', 1, 2500),
+        "counts": {
+            "citations": len(SUP_RE.findall(after)),
+            "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
+            "reference_entries": len(re.findall(r'<li id="ref-\d+">', after)),
+            "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
+            "dialogs": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
+            "toc_chips": len(re.findall(r'class="[^"]*mz-toc-chip', after)),
+            "topic_sections": len(re.findall(r'class="[^"]*topic-section', after)),
+            "papers_removed": len(dropped),
+            "headings_removed": emptied,
+            "chars_before": len(before), "chars_after": len(after),
+        },
+    }
+    v = _ask_cached(W, "transform", f"""You are the last editor to see a clinical brief before it publishes. A program has just
+transformed it: removed papers that were not about their heading, removed headings left empty,
+inserted citations on studies the prose names, renumbered every citation marker in order of first
+appearance, rebuilt the reference list in that order, and de-duplicated element ids.
+
+Read the ACTUAL OUTPUT below and find what is wrong with it. Do not take the program's word for
+anything — check what you can see.
+
+Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
+markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
+heading that is gone, or a chip count that disagrees with the section; a reference entry for a paper
+never cited, or a marker with no entry; a duplicated element id; a sentence or list left broken by a
+removed paper (a dangling "and", a doubled full stop, an empty parenthesis, a topic header with no
+cards under it); a popover missing its title, journal line, finding or link; markup that will not
+render (unclosed tag, stray attribute); and anything a reader would notice as damage.
+
+OUTPUT SAMPLE: {json.dumps(sample, ensure_ascii=False)[:90000]}
+
+Reply with ONLY {{"ok": true|false, "defects": [{{"what": "<the defect>", "evidence": "<quote it>",
+"severity": "blocking"|"cosmetic"}}, ...], "notes": "one or two sentences"}}""", timeout_s=1200)
+    if not v or "ok" not in v:
+        die("the transform audit returned no verdict")
+    blocking = [d for d in (v.get("defects") or []) if str(d.get("severity", "")).lower() == "blocking"]
+    for d in (v.get("defects") or [])[:12]:
+        tag = "BLOCKING" if d in blocking else "cosmetic"
+        print(f"  TRANSFORM AUDIT [{tag}]: {str(d.get('what'))[:130]} :: {str(d.get('evidence'))[:110]}")
+    if blocking:
+        die(f"the transform audit found {len(blocking)} blocking defect(s) in the output")
+    print(f"  transform audit: the output reads correctly"
+          + (f" ({len(v.get('defects') or [])} cosmetic note(s))" if v.get("defects") else ""))
+
+
 def cmd_renumber(post_id: str, dry: bool = False) -> None:
     """dry=True runs the whole transformation and every check, and writes
     nothing to the site. Model verdicts are cached, so iterating on a regex
@@ -4188,6 +4259,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
     post = post.get("post", post)
     h = post["body_html"]
+    before_html = h
     before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
               for x in SUP_RE.findall(h)]
     pmids = [x for x in dict.fromkeys(_pmid_of(x) for x in SUP_RE.findall(h)) if x]
@@ -4233,7 +4305,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
         pmids_all = [x for x in pmids_all if x not in dropped_map]
         pmids = [x for x in pmids if x not in dropped_map]
     else:
-        dropped_map = {}
+        dropped_map, emptied = {}, []
     meta = {}
     for pm in pmids:
         r = real.get(pm) or {}
@@ -4336,6 +4408,8 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
         for f_ in faults:
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
+
+    audit_transform(W, before_html, h, dropped_map, emptied if topics else [])
 
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
