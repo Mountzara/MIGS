@@ -408,6 +408,12 @@ THE STANDARDS (owner's requirements; each is BLOCKING when unmet):
  S13 Trend briefs carry NO verdict gauge and no "verdict", "debunk", "myth" language; clear headlines and
      subheadlines; one framing label per item from the fixed list; a "Where the two sides can meet"
      section; a tone the person who made the claim could read and learn from.
+ S16 Every transformation of a body is READ BACK by a model against these requirements before it
+     publishes, on the actual output, and a blocking defect refuses it. A deterministic check tests
+     what its author thought to test; the checks in this file passed a chip pointing at a removed
+     heading, an id colliding with its own suffix, a marker inside a noun phrase and a withdrawal
+     that removed fifteen correct citations. Owner, 2026-09-19: "YOU ARE RESPONSIBLE TO MAKE SURE
+     YOUR REGEX AND HEURISTIC CODE DIDN'T MAKE MISTAKES."
  S15 Every study has a full journal-club deep dive with every section authored — no "Pending review",
      no placeholder, no empty section.
  S14 The brief renders on the site's paper background with readable contrast — measured on the rendered
@@ -431,14 +437,14 @@ STAGE_STANDARDS = {
     # it, and asking one to certify it is the same spec/capability mismatch the
     # S3 check had. verify_rendered measures both after publish and unpublishes
     # on failure, so they are enforced — just not from this text.
-    "apply":   [f"S{i}" for i in range(1, 16) if i not in (3, 14)],
+    "apply":   [f"S{i}" for i in range(1, 17) if i not in (3, 14)],
 }
 RENDERED_ONLY = {"S3": "hover and tap behaviour", "S14": "contrast on the rendered page"}
 
 
 def stage_addendum(stage: str) -> str:
     own = STAGE_STANDARDS.get(stage, [])
-    later = [f"S{i}" for i in range(1, 16) if f"S{i}" not in own]
+    later = [f"S{i}" for i in range(1, 17) if f"S{i}" not in own]
     rendered = ("\nMEASURED ON THE RENDERED PAGE after publish, not from this text — do not block on "
                 "them here: " + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + "."
                 if stage == "apply" else "")
@@ -476,7 +482,7 @@ careful reader would. Read {W}body.applied.html — every section under every he
 page is out of scope: opening, narrative or editorial, EVERY topic synthesis or item subsection, the
 shape-of-evidence section, the cite cards, the reference list) and at least two deep-dive dialogs.
 {STANDARDS}
-For EACH standard S1-S15 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
+For EACH standard S1-S16 (S12 applies to weekly briefs only, S13 to trend briefs only) report whether
 the page meets it, with the evidence you saw (quote a marker, a sentence, an id). Be adversarial: look
 for the case that fails, not the case that passes.
 EXCEPT: """ + "; ".join(f"{k} ({v})" for k, v in RENDERED_ONLY.items()) + """ — these are properties of
@@ -484,7 +490,7 @@ the RENDERED page, which you are not looking at. Report them as "met": null with
 the audit on them. A browser measures both before this body is allowed to publish.
 Reply with ONLY a JSON object:
 {{"passed": <true only if every applicable standard is met>,
-  "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S15": {{...}}}},
+  "standards": {{"S1": {{"met": true|false, "evidence": "..."}}, ... "S16": {{...}}}},
   "blocking": ["S<n>: what fails, with evidence", ...], "notes": "one or two sentences"}}"""
     v = _claude(prompt, timeout_s=1200)
     if not v or "passed" not in v:
@@ -493,8 +499,8 @@ Reply with ONLY a JSON object:
     unmet = [k for k, r in (v.get("standards") or {}).items()
              if isinstance(r, dict) and r.get("met") is False and k not in RENDERED_ONLY]
     blocking = [b for b in blocking
-                if not (set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(b))) and
-                        set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(b))) <= set(RENDERED_ONLY))]
+                if not (set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(b))) and
+                        set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(b))) <= set(RENDERED_ONLY))]
     out = {"digest": _sha_file(W + "body.applied.html"), "passed": bool(v.get("passed")) and not blocking and not unmet,
            "blocking": blocking, "unmet": unmet, "standards": v.get("standards"), "notes": v.get("notes")}
     json.dump(out, open(W + ".ledger/apply.standards.json", "w"), indent=1, ensure_ascii=False)
@@ -611,7 +617,7 @@ def ai_review(W: str, stage: str, timeout_s: int = 900) -> dict:
     own = set(STAGE_STANDARDS.get(stage, []))
     kept, deferred = [], []
     for item in blocking:
-        named = set(re.findall(r"\bS(?:1[0-5]|[1-9])\b", str(item)))
+        named = set(re.findall(r"\bS(?:1[0-6]|[1-9])\b", str(item)))
         if named and not (named & own):
             deferred.append(f"[deferred to a later stage: {', '.join(sorted(named))}] {item}")
         else:
@@ -3209,6 +3215,10 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
         for f in faults:
             print("  FAULT:", f)
         die(f"{post_id}: {len(faults)} post-condition(s) failed")
+
+    # S16: the output is read back before it is written anywhere
+    audit_transform(W, json.load(open(W + f"{post_id}.source.json"))["body_html"], h,
+                    {q: "" for q in dropped}, [])
 
     post["body_html"] = h
     json.dump(post, open(W + f"{post_id}.applied.json", "w"), ensure_ascii=False)
