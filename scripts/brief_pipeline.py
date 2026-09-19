@@ -54,6 +54,7 @@ import datetime
 import json
 import os
 import re
+import re as _re
 import subprocess
 import sys
 import time
@@ -3864,106 +3865,122 @@ def _end_of_sentence(html_frag: str, from_pos: int) -> int:
     return n
 
 
-def cite_named_authors(h: str, pmids: list, real: dict, W_dir: str = "") -> tuple:
-    """Put a citation on every study the site's own prose names by author.
-
-    W33's narrative named Pan, Takemura, Li, Sanz-Cabanillas, Murphy,
-    Mayibenye, Duvnjak, Mosedale and Feng and cited none of them: it was
-    written before the rule requiring it, so there was no marker to renumber —
-    the citation has to be inserted. The surname maps to the paper whose first
-    author it is; the marker goes immediately after the name, which is where
-    the claim starts; the hover summary is that paper's own bottom line,
-    already written and already reviewed in its deep dive.
-    """
-    by_surname: dict = {}
-    for pm in pmids:
-        au = (real.get(pm) or {}).get("authors") or ""
-        first = au.split(",")[0].strip().split(" ")[0] if au else ""
-        if len(first) >= 2:
-            by_surname.setdefault(first, []).append(pm)
-    # a surname shared by two covered papers is ambiguous: leave it alone
-    unique = {k: v[0] for k, v in by_surname.items() if len(v) == 1}
-    if not unique:
-        return h, 0
-
-    added = 0
-
-    def sup_for(pm: str) -> str:
-        r = real.get(pm) or {}
-        meta = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-        r0 = real.get(pm) or {}
-        finding = _plain_finding(W_dir, pm, r0.get("title", ""), r0.get("abstract", ""))
-        if not finding:
-            return ""
-        return (f'<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
-                f'target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-{pm}">{pm}</a>'
-                f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">'
-                f'<span class="mz-ref-pop-title">{H.escape(r.get("title", ""), quote=False)}</span>'
-                f'<span class="mz-ref-pop-meta">{H.escape(meta, quote=False)}</span>'
-                f'<span class="mz-ref-pop-finding">{H.escape(finding, quote=False)}</span>'
-                f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
-                f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>')
-
-    def in_fragment(frag: str) -> str:
-        nonlocal added
-        out, done_here = frag, set()
-        for surname, pm in sorted(unique.items(), key=lambda kv: -len(kv[0])):
-            if pm in done_here:
-                continue
-            # the name as prose uses it: "Pan's", "Pan found", "Pan examined"
-            # NOT (?<![\w>]): a paragraph opening "<p>Takemura's cohort…" puts the
-            # name right after ">", and excluding that left a study named at the
-            # start of a paragraph uncited every time.
-            pat = re.compile(r"(?<![\w-])(" + re.escape(surname) + r")(?:&#x27;s|'s|’s)?(?![\w-])")
-            masked = re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", lambda x: " " * len(x.group(0)), out)
-            candidates = list(pat.finditer(masked))
-            if not candidates:
-                continue
-            m = None
-            for cand in candidates:
-                known = set(by_surname)
-                lead_c = out[max(0, cand.start() - 40):cand.start()]
-                lm_c = re.search(r"([A-Z][A-Za-z'\u2019-]+)\s+and\s+$", lead_c)
-                trail_c = out[cand.end():cand.end() + 40]
-                tm_c = re.match(r"(?:['\u2019]s)?\s+and\s+([A-Z][A-Za-z'\u2019-]+)", trail_c)
-                if (lm_c and lm_c.group(1) in known) or (tm_c and tm_c.group(1) in known):
-                    continue      # a two-author reference: cannot attribute half of it
-                m = cand
+def _sentences_of(frag: str) -> list:
+    """(text, end_index) for each sentence of a prose fragment, tags stripped
+    for the text but indices valid against the fragment itself."""
+    out, buf, start = [], [], None
+    i, n = 0, len(frag)
+    while i < n:
+        c = frag[i]
+        if c == "<":
+            close = frag.find(">", i)
+            if close < 0:
                 break
-            if m is None:
-                continue
-            # "Li and Ye" names two authors and my map resolves only one of
-            # them, so the marker lands on half a reference and points at a
-            # paper the sentence may not be about — the review caught exactly
-            # that. A compound reference is left alone rather than guessed.
+            if _re.match(r"</(?:p|li|h[1-6]|div|section|blockquote)\b", frag[i:close + 1], _re.I) and buf:
+                out.append(("".join(buf).strip(), i)); buf, start = [], None
+            i = close + 1
+            continue
+        if start is None and not c.isspace():
+            start = i
+        buf.append(c)
+        if c in ".!?":
+            txt = "".join(buf)
+            if not any(txt.rstrip().endswith(a) for a in ("vs.", "e.g.", "i.e.", "et al.", "cf.", "Dr.", "no.")) \
+               and not _re.match(r"\d", frag[i + 1:i + 2] or " "):
+                out.append((txt.strip(), i + 1)); buf, start = [], None
+        i += 1
+    if "".join(buf).strip():
+        out.append(("".join(buf).strip(), n))
+    return [(H.unescape(_re.sub(r"\s+", " ", t)), e) for t, e in out if t.strip()]
 
-            sup = sup_for(pm)
+
+def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
+    """The model decides which sentence cites which paper; the code inserts it.
+
+    Owner, 2026-09-19: "if the AI pass is better and would cut down on wasting
+    time on processes that have been proven shitty, do that first."
+
+    The previous version matched author surnames with a regex and carried
+    special cases for possessives, compound references, names at the start of
+    a paragraph and names that belong to two covered papers. Every one of
+    those was a source of wrong or missing citations. Judgement now belongs to
+    the model — it reads the sentences and the candidate papers and says which
+    sentence rests on which paper — and this function only performs what it
+    decided, at the end of the named sentence.
+    """
+    cand = [{"pmid": q, "title": (real.get(q) or {}).get("title", ""),
+             "authors": (real.get(q) or {}).get("authors", ""),
+             "abstract": ((real.get(q) or {}).get("abstract") or "")[:700]} for q in pmids]
+    added, out, last = 0, [], 0
+    for m in _re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
+                          r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
+        gi = 1 if m.group(1) is not None else 2
+        frag = m.group(gi)
+        sents = _sentences_of(frag)
+        if not sents:
+            continue
+        have = {_pmid_of(x) for x in SUP_RE.findall(frag)}
+        listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
+        v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
+SENTENCES (numbered):
+{listing}
+
+PAPERS THIS BRIEF COVERS (the only ones you may cite):
+{json.dumps(cand, ensure_ascii=False)[:80000]}
+
+ALREADY CITED IN THIS PASSAGE (do not duplicate): {sorted(x for x in have if x)}
+
+For EACH sentence that rests on a specific study — it names an author, reports a design, a
+population, a number, or an outcome from one — say which paper it rests on. Match on what the
+sentence CLAIMS against the paper's own title and abstract, not on a name alone: a sentence naming
+one author while reporting another study's result cites the study it reports. A sentence that states
+the clinician's own reasoning, a transition, or a general point cites nothing. If a sentence rests on
+two papers, give both. If you are not confident, give none — a wrong citation is worse than none.
+
+Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why": "<one clause>"}}, ...]}}""",
+                        timeout_s=900)
+        if not v or not isinstance(v.get("citations"), list):
+            die("citation placement returned no verdict")
+        placements = {}
+        for r in v["citations"]:
+            try:
+                idx = int(r.get("sentence"))
+            except Exception:
+                continue
+            if not (1 <= idx <= len(sents)):
+                continue
+            for pm in (r.get("pmids") or []):
+                pm = str(pm).strip()
+                if pm in pmids and pm not in have:
+                    placements.setdefault(idx, []).append(pm)
+        frag_out, shift = frag, 0
+        for idx in sorted(placements):
+            sup = "".join(_sup_markup(pm, real, W) for pm in dict.fromkeys(placements[idx]))
             if not sup:
                 continue
-            # PLACE IT AT THE END OF THE CLAIM, not mid-phrase. "Pan's¹ review
-            # of fixation techniques" breaks the noun phrase and is not how a
-            # citation is written; the marker belongs after the sentence the
-            # named study supports, following its full stop.
-            insert_at = _end_of_sentence(out, m.end())
-            out = out[:insert_at] + sup + out[insert_at:]
-            out = out[:insert_at] + sup + out[insert_at:]
-            done_here.add(pm)
-            added += 1
-        return out
-
-    # the narrative AND every synthesis: the post-condition checks both, and an
-    # inserter that only walked the narrative left five named studies uncited
-    out, last = [], 0
-    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
-                         r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
-        frag = m.group(1) if m.group(1) is not None else m.group(2)
-        gi = 1 if m.group(1) is not None else 2
-        out.append(h[last:m.start(gi)])
-        out.append(in_fragment(frag))
-        last = m.end(gi)
+            at = sents[idx - 1][1] + shift
+            frag_out = frag_out[:at] + sup + frag_out[at:]
+            shift += len(sup)
+            added += len(placements[idx])
+        out.append(h[last:m.start(gi)]); out.append(frag_out); last = m.end(gi)
     out.append(h[last:])
     return "".join(out), added
 
+
+def _sup_markup(pm: str, real: dict, W: str) -> str:
+    r = real.get(pm) or {}
+    meta = " \u00b7 ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+    finding = _plain_finding(W, pm, r.get("title", ""), r.get("abstract", ""))
+    if not finding:
+        return ""
+    return (f'<sup class="mz-ref"><a class="mz-ref-link" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" '
+            f'target="_blank" rel="noopener noreferrer" aria-describedby="ref-pop-{pm}">{pm}</a>'
+            f'<span class="mz-ref-pop" id="ref-pop-{pm}" role="tooltip">'
+            f'<span class="mz-ref-pop-title">{H.escape(r.get("title", ""), quote=False)}</span>'
+            f'<span class="mz-ref-pop-meta">{H.escape(meta, quote=False)}</span>'
+            f'<span class="mz-ref-pop-finding">{H.escape(finding, quote=False)}</span>'
+            f'<a class="mz-ref-pop-src" href="https://pubmed.ncbi.nlm.nih.gov/{pm}/" target="_blank" '
+            f'rel="noopener">Read the study on PubMed&nbsp;&rarr;</a></span></sup>')
 
 def review_inserted_citations(W: str, h: str, real: dict) -> None:
     """Every citation this pass inserted, judged against the paper's abstract.
@@ -4329,7 +4346,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
-    h, named = cite_named_authors(h, pmids_all, real, W)
+    h, named = cite_prose(W, h, pmids_all, real)
     if named:
         print(f"  inserted {named} citation(s) on studies the prose names by author")
     withdrawn = set()
