@@ -1467,11 +1467,35 @@ def _extract_json(text: str):
                     return json.loads(t[start:i + 1])
                 except json.JSONDecodeError:
                     break
-    # cut off before closing: shut what is still open
-    frag = t[start:].rstrip().rstrip(",")
-    for closing in ("}", "]}", "}]}", '"}]}', '"}}'):
+    # cut off before closing: keep every complete element and shut what is
+    # still open. A fixed list of closings knew "}]}" but not "}]]}", so a
+    # placement list nested one level deeper was lost three times running.
+    frag = t[start:]
+    for cut in range(len(frag), 0, -1):
+        if frag[cut - 1] not in "}]":
+            continue
+        head = frag[:cut]
+        stack, in_str, esc = [], False, False
+        for c in head:
+            if in_str:
+                if esc:
+                    esc = False
+                elif c == "\\":
+                    esc = True
+                elif c == '"':
+                    in_str = False
+                continue
+            if c == '"':
+                in_str = True
+            elif c in "{[":
+                stack.append("}" if c == "{" else "]")
+            elif c in "}]":
+                if stack:
+                    stack.pop()
+        if in_str:
+            continue
         try:
-            return json.loads(frag + closing)
+            return json.loads(head + "".join(reversed(stack)))
         except json.JSONDecodeError:
             continue
     return None
@@ -1489,11 +1513,16 @@ def _claude(prompt: str, timeout_s: int = 900, attempts: int = 3) -> dict | None
     """
     last = None
     for attempt in range(attempts):
+        ask = prompt
+        if attempt and last and str(last).startswith("no parseable JSON"):
+            # the same prompt truncates the same way; ask for less
+            ask = prompt + ("\n\nYour previous reply was cut off or was not valid JSON. Reply with ONLY the JSON "
+                            "object, as compactly as possible: no explanations, any free-text field at most six words.")
         try:
             # stdin=DEVNULL: under nohup the CLI waits 3s for stdin it will
             # never get, warns, and can return nothing — which surfaced as
             # "the review returned no verdict" on a brief that was ready
-            r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"],
+            r = subprocess.run(["claude", "-p", ask, "--output-format", "json"],
                                stdin=subprocess.DEVNULL,
                                capture_output=True, text=True, timeout=timeout_s, cwd=ROOT)
         except subprocess.TimeoutExpired:
@@ -4055,7 +4084,6 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
         if not sents:
             continue
         have = {_pmid_of(x) for x in SUP_RE.findall(frag)}
-        listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
         # A synthesis is about its own section's papers, so the candidates are
         # the cards of the section that CONTAINS it — found by walking to the
         # enclosing topic section, not by guessing a byte window, which took
@@ -4066,8 +4094,13 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
             if enc:
                 own = set(re.findall(CARD_ID_RE, enc.group(0))) | set(re.findall(r"openDeepDive\('dd-(\d+)'", enc.group(0)))
         cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
-        v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
-SENTENCES (numbered):
+        # CHUNKED: a 50-sentence narrative with a clause per placement came
+        # back truncated three times running. Numbering stays global.
+        decided = []
+        for c0 in range(0, len(sents), 30):
+            listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents) if c0 <= i < c0 + 30)
+            v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
+SENTENCES (numbered; this is sentences {c0 + 1}-{min(c0 + 30, len(sents))} of {len(sents)}):
 {listing}
 
 PAPERS THIS BRIEF COVERS (the only ones you may cite):
@@ -4086,12 +4119,18 @@ one author while reporting another study's result cites the study it reports. A 
 the clinician's own reasoning, a transition, or a general point cites nothing. If a sentence rests on
 two papers, give both. If you are not confident, give none — a wrong citation is worse than none.
 
-Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why": "<one clause>"}}, ...]}}""",
-                        timeout_s=900)
-        if not v or not isinstance(v.get("citations"), list):
-            die("citation placement returned no verdict")
+Reply with ONLY {{"citations": [{{"sentence": <number>, "pmids": ["..."], "why": "<at most six words>"}}, ...]}}""",
+                            timeout_s=900)
+            if not v or not isinstance(v.get("citations"), list):
+                die("citation placement returned no verdict")
+            for r in v["citations"]:
+                # a reply nested one level too deep still carries the decisions
+                if isinstance(r, list):
+                    decided.extend(x for x in r if isinstance(x, dict))
+                elif isinstance(r, dict):
+                    decided.append(r)
         placements = {}
-        for r in v["citations"]:
+        for r in decided:
             try:
                 idx = int(r.get("sentence"))
             except Exception:
