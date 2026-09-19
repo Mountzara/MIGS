@@ -3940,9 +3940,20 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
             continue
         have = {_pmid_of(x) for x in SUP_RE.findall(frag)}
         listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
-        # only the papers this passage could be about: its own topic's papers
-        # for a synthesis, everything for the narrative
-        own = set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h[max(0, m.start() - 200):m.end() + 40000])) if gi == 2 else set()
+        # A synthesis is about its own section's papers, so the candidates are
+        # the cards of the section that CONTAINS it — found by walking to the
+        # enclosing topic section, not by guessing a byte window, which took
+        # the wrong papers and left the passage almost uncited.
+        own = set()
+        if gi == 2:
+            sec_start = max((mm.start() for mm in re.finditer(
+                r'<section class="[^"]*topic-section[^"]*"[^>]*>|<(?:section|div)[^>]*class="[^"]*mz-topic-group[^"]*"[^>]*>', h)
+                if mm.start() < m.start()), default=None)
+            if sec_start is not None:
+                nxt = re.search(r'<section class="[^"]*topic-section[^"]*"|<section class="[^"]*mz-references|<dialog',
+                                h[m.end():])
+                sec_end = m.end() + (nxt.start() if nxt else len(h) - m.end())
+                own = set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h[sec_start:sec_end]))
         cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
         v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
 SENTENCES (numbered):
@@ -3953,8 +3964,10 @@ PAPERS THIS BRIEF COVERS (the only ones you may cite):
 
 ALREADY CITED IN THIS PASSAGE (do not duplicate): {sorted(x for x in have if x)}
 
-For EACH sentence that rests on a specific study — it names an author, reports a design, a
-population, a number, or an outcome from one — say which paper it rests on. Match on what the
+CITE GENEROUSLY BUT ACCURATELY. Most sentences in a passage like this report something a study
+found, and each of those needs its citation. For EACH sentence that rests on a specific study — it
+names an author, or reports a design, a population, a number, a comparison or an outcome from one —
+say which paper it rests on. Match on what the
 sentence CLAIMS against the paper's own title and abstract, not on a name alone: a sentence naming
 one author while reporting another study's result cites the study it reports. A sentence that states
 the clinician's own reasoning, a transition, or a general point cites nothing. If a sentence rests on
