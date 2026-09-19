@@ -4465,9 +4465,9 @@ def rewrite_affected_syntheses(W: str, h: str, topics: dict, drops: dict, real: 
         old_text = H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", pm.group(2))))
         old_flat = re.sub(r"\s+", " ", old_text).strip()[:3000]
         n_before, n_lost, n_kept = len(t["pmids"]), len(lost), len(kept)
-        papers_json = json.dumps(papers, ensure_ascii=False)[:40000]
         papers = [{"pmid": q, "title": (real.get(q) or {}).get("title", ""),
                    "abstract": ((real.get(q) or {}).get("abstract") or "")[:1400]} for q in kept]
+        papers_json = json.dumps(papers, ensure_ascii=False)[:40000]
         v = _ask_cached(W, "resynth", f"""Rewrite one section-opening paragraph of a clinician-facing weekly evidence brief.
 HEADING: {json.dumps(t["title"])}
 The paragraph below was written when this section held {n_before} papers. {n_lost} of them have
