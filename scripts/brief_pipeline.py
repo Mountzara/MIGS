@@ -5850,9 +5850,10 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
         "counts": {
             "citations": len(SUP_RE.findall(after)),
             "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
+            "popovers_(one_per_citation_marker)": len(re.findall(r'class="mz-ref-pop"', after)),
+            "deep_dive_dialogs_(one_per_carded_paper_not_per_marker)": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "reference_entries": len(re.findall(r'<li id="ref-\d+">', after)),
             "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
-            "dialogs": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
             "toc_chips": sum(1 for m in re.finditer(r'<a[^>]*class="([^"]*)"', after) if "mz-toc-chip" in m.group(1).split()),
             "topic_sections": len(_topic_sections(after)),
             "placements_removed": len(dropped),
