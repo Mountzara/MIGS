@@ -2124,6 +2124,26 @@ Rules that came out of building it:
 `renumber` does NOT require the `standards-check` receipt (it authors nothing;
 its gates are the post-conditions, the site audit and the browser). `run` does.
 
+**THE WEEKLY PATH RUNS THE SAME CHAIN (2026-09-19).** Owner: *"this is tied
+to a scheduled automated routine that is supposed to create these briefs
+each week — they should be done right the first time."* Every step above
+that was built on the published-brief path is ONE function called from
+both paths, so a brief authored next week and a brief repaired today are
+cited, reviewed and corrected by the same code:
+
+| Shared function | `run` (weekly) calls it from | `renumber` calls it from |
+|---|---|---|
+| `TOPIC_FIT_RULE` + `kb_area_context` | `cmd_curate` — first pass and corroboration | `curate_live` — both passes |
+| `refresh_popovers_from_abstracts` (every hover card from the PubMed abstract via `_plain_finding`, whatever the author stage typed) | `finish_and_audit`, before numbering | (`_sup_markup` writes them that way) |
+| **`cite_and_review`** = `relocate_mid_sentence_markers` → `verify_design_tags` → `cite_prose` → `cite_named_studies` → `review_inserted_citations` → `correct_unsupported_sentences` → re-review | `finish_and_audit`, before numbering | `_renumber` |
+| `rewrite_affected_syntheses` · `rewrite_narrative_for_removed` | (apply assembles from curated topic files; the narrative is authored after curation) | after `curate_live` |
+| `number_citations` → `build_references` → `dedupe_element_ids` → `audit_transform` (S16) | `finish_and_audit` | `_renumber` |
+
+Adding a step to one path and not the other is the defect this table
+exists to prevent. `real_from_work(W, pmids)` reads the work directory's
+paper files into the shape the chain reads (`title`, `abstract` =
+PubMed's, `authors`, `journal`, `year`).
+
 ---
 
 ### 8.0.0.0e INJECTED POST BODIES PAINT THE DOCUMENT — and the gates never opened one (2026-09-15)
