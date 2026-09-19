@@ -5092,10 +5092,27 @@ Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "
             die("the inserted-citation review returned no verdict")
         judged = {int(x["id"]) for x in v["items"] if str(x.get("id", "")).strip().isdigit()}
         missing = [x["id"] for x in chunk if x["id"] not in judged]
+        replies = list(v["items"])
         if missing:
-            die(f"the inserted-citation review skipped item(s) {missing[:4]}")
+            # a reply cut short keeps its complete items; the rest are asked
+            # for again on their own rather than refusing the brief
+            rest = [x for x in chunk if x["id"] in missing]
+            v2 = _ask_cached(W, "cites", f"""Each item below is ONE sentence from a clinical brief that carries a citation at its end, and the
+paper that citation points at. Judge whether THIS paper is one the sentence is talking about
+("right_paper") and whether the part of the sentence that concerns THIS paper is what its abstract
+says ("supported"); other papers cited on the same sentence cover their own parts.
+ITEMS: {json.dumps([{k: x[k] for k in ("id", "pmid", "previous_sentence", "sentence", "next_sentence",
+                                        "other_papers_cited_on_this_sentence", "paper_title", "abstract")} for x in rest], ensure_ascii=False)[:90000]}
+Reply with ONLY {{"items": [{{"id": <the id given>, "right_paper": true|false, "supported": true|false,
+"why": "<one clause when either is false>"}}, ...]}} with one object for EVERY item given.""", timeout_s=900)
+            if v2 and isinstance(v2.get("items"), list):
+                replies += v2["items"]
+                judged |= {int(x["id"]) for x in v2["items"] if str(x.get("id", "")).strip().isdigit()}
+            missing = [x["id"] for x in chunk if x["id"] not in judged]
+            if missing:
+                die(f"the inserted-citation review skipped item(s) {missing[:4]} twice")
         by_id = {x["id"]: x for x in chunk}
-        for r in v["items"]:
+        for r in replies:
             if not str(r.get("id", "")).strip().isdigit():
                 continue
             it = by_id.get(int(r["id"]))
