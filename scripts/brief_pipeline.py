@@ -660,15 +660,27 @@ def work_dir(post_id: str) -> str:
 # PubMed — the only authority on what a PMID's abstract says
 # ---------------------------------------------------------------------------
 def fetch_pubmed(pmids: list[str]) -> dict[str, dict]:
+    """PubMed facts for every PMID. A chunk that comes back short (a 429,
+    a cut-off response) is retried with backoff, and any PMID still missing
+    or missing its journal is fetched again on its own — six W33 papers
+    once lost their journal lines to one partial response, and the run
+    refused to publish for it."""
     out: dict[str, dict] = {}
-    for i in range(0, len(pmids), 20):
-        chunk = pmids[i:i + 20]
+
+    def complete(pm):
+        r = out.get(pm) or {}
+        return bool(r.get("title") and r.get("journal"))
+
+    def one_chunk(chunk):
         r = subprocess.run(
-            ["curl", "-sS", "-A", UA,
+            ["curl", "-sS", "--max-time", "60", "-A", UA,
              "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
              f"?db=pubmed&id={','.join(chunk)}&rettype=abstract&retmode=xml"],
             capture_output=True, text=True)
-        for art in re.findall(r"<PubmedArticle>.*?</PubmedArticle>", r.stdout, re.S):
+        return r.stdout if r.returncode == 0 else ""
+
+    def parse(xml):
+        for art in re.findall(r"<PubmedArticle>.*?</PubmedArticle>", xml, re.S):
             pm = (re.search(r"<PMID[^>]*>(\d+)</PMID>", art) or [None, ""])[1]
             title = H.unescape(re.sub(r"<[^>]+>", "", (re.search(
                 r"<ArticleTitle[^>]*>(.*?)</ArticleTitle>", art, re.S) or [None, ""])[1])).strip()
@@ -693,9 +705,24 @@ def fetch_pubmed(pmids: list[str]) -> dict[str, dict]:
             cite = ""
             if au:
                 cite = ", ".join(f"{a} {i}" for a, i in au[:3]) + (" et al." if len(au) > 3 else "")
-            if pm:
+            if pm and (pm not in out or (title and journal)):
                 out[pm] = {"title": title, "abstract": H.unescape("\n".join(parts)).strip(),
                            "journal": journal, "year": year, "authors": cite}
+
+    for i in range(0, len(pmids), 20):
+        chunk = pmids[i:i + 20]
+        for attempt in range(3):
+            parse(one_chunk(chunk))
+            if all(complete(q) for q in chunk):
+                break
+            time.sleep(1.5 * (attempt + 1))
+        time.sleep(0.34)
+    for q in [q for q in pmids if not complete(q)]:
+        for attempt in range(2):
+            parse(one_chunk([q]))
+            if complete(q):
+                break
+            time.sleep(2.0)
         time.sleep(0.34)
     return out
 
@@ -5946,6 +5973,19 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
                    "pubmed_abstract": r.get("abstract", "")},
                   open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
     missing_meta = [pm for pm in pmids_all if pm not in meta]
+    if missing_meta:
+        # one more try before refusing: a partial PubMed response is transient
+        again = fetch_pubmed(missing_meta)
+        for pm in missing_meta:
+            r = again.get(pm) or {}
+            line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+            if line and r.get("title"):
+                real[pm] = r
+                meta[pm] = line
+                json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
+                           "pubmed_abstract": r.get("abstract", "")},
+                          open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+        missing_meta = [pm for pm in pmids_all if pm not in meta]
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
