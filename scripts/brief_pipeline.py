@@ -4047,7 +4047,7 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
                 nxt = re.search(r'<section class="[^"]*topic-section[^"]*"|<section class="[^"]*mz-references|<dialog',
                                 h[m.end():])
                 sec_end = m.end() + (nxt.start() if nxt else len(h) - m.end())
-                own = set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h[sec_start:sec_end]))
+                own = set(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', h[sec_start:sec_end]))
         cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
         v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
 SENTENCES (numbered):
@@ -4372,7 +4372,7 @@ Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} 
                         % re.escape(tid), h)
         if not sec:
             continue
-        left = len(set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', sec.group(0))))
+        left = len(set(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', sec.group(0))))
         h = re.sub(r'(<a[^>]*href="#%s"[^>]*>[\s\S]*?<span class="mz-toc-chip-count">)\d+(</span>)' % re.escape(tid),
                    lambda m: m.group(1) + str(left) + m.group(2), h)
     return h, drops, reasons, emptied
@@ -4541,7 +4541,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
 
     # PubMed is the authority for the journal and year in every popover and entry
-    covered = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h)
+    covered = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', h)
                                  + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
     pmids_all = list(dict.fromkeys(pmids + covered))
     real = fetch_pubmed(sorted(pmids_all))
@@ -4557,7 +4557,7 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
         seg = h[mg.end():seg_end]
         tid = mg.group(1) or mg.group(2) or f"group-{i + 1}"
         tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
-        pm_here = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', seg)
+        pm_here = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', seg)
                                      + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
         if pm_here:
             topics[tid] = {"title": H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip()[:90] if tt else tid,
