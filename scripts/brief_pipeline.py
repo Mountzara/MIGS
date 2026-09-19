@@ -2175,6 +2175,11 @@ def dedupe_element_ids(h: str) -> str:
     came first. The dialog keeps its single id (the triggers call it by name);
     only the repeated cards are renumbered.
     """
+    # Every id already in the document, because number_citations has ALREADY
+    # suffixed repeated popovers as "-2"/"-3". Appending another "-2" here
+    # collided with those and left duplicates behind — the very thing this
+    # function exists to remove.
+    existing = set(re.findall(r'\sid="([^"]+)"', h))
     seen: dict = {}
 
     def one(m):
@@ -2182,7 +2187,15 @@ def dedupe_element_ids(h: str) -> str:
         if val.startswith("dd-"):
             return attr
         seen[val] = seen.get(val, 0) + 1
-        return attr if seen[val] == 1 else f' id="{val}-{seen[val]}"'
+        if seen[val] == 1:
+            return attr
+        k = seen[val]
+        cand = f"{val}-{k}"
+        while cand in existing:
+            k += 1
+            cand = f"{val}-{k}"
+        existing.add(cand)
+        return f' id="{cand}"'
 
     return re.sub(r'\sid="([^"]+)"', one, h)
 
