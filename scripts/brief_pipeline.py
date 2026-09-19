@@ -3776,21 +3776,58 @@ def _plain_finding(W: str, pmid: str, title: str, abstract: str) -> str:
     a_norm = re.sub(r"[^a-z0-9]", "", abstract.lower())
     note = ""
     t = ""
+    best = ""
     for attempt in range(3):
-        v = _ask_cached(W, "findings", f"""Write the hover summary a clinician sees for one citation.
+        v = _ask_cached(W, "findings", f"""Write the hover card a clinician sees when they hover a citation.
 PAPER: {json.dumps(title)}
 ABSTRACT (the only source; use nothing else):
 {abstract[:6000]}
-RULES: 250-480 characters. The study's own conclusion FIRST, in plain clinical language — not a
-sentence copied from the abstract, and not a paraphrase of its opening. Name the design and the
-population, give the abstract's own key number(s) exactly as it states them, and end with one short
-sentence beginning "Relevance:" saying what it bears on. Every number you write must appear in the
-abstract above; if the abstract gives no numbers, give none. No dose recommendation, no advice, no
-hedging filler.{note}
+
+WHAT THIS CARD IS FOR: the reader has just met a claim and wants to know, in three seconds, WHAT THIS
+STUDY ACTUALLY FOUND and whether to believe it. Give them the result, not a description of the paper.
+
+WRITE IT LIKE THIS:
+1. FIRST SENTENCE = THE RESULT, WITH ITS NUMBERS. The actual finding — percentages, rates, odds or
+   hazard ratios with their confidence intervals, absolute differences, p-values — exactly as the
+   abstract reports them. "Expulsion fell from 30% to under 7%." "Sensitivity 21.4%, specificity
+   96.4%." "OR 1.89 (95% CI 1.27-2.80)." If the abstract reports numbers, YOUR FIRST SENTENCE MUST
+   CONTAIN THEM. A summary that says a treatment "improved outcomes" without saying by how much is
+   useless and will be rejected.
+2. SECOND SENTENCE = WHO AND HOW, briefly: the design and the population, so the reader can weigh it.
+   "Prospective blinded study, 419 women at repeat caesarean." Not a methods paragraph.
+3. LAST SENTENCE = one short "Relevance:" line saying what it bears on in practice.
+
+PLAIN CLINICAL ENGLISH. Write for a busy surgeon, not for an abstract. No throat-clearing ("This
+study aimed to..."), no hedging filler, no jargon the number does not need.
+LENGTH: 280-600 characters, and it MUST end with a complete sentence — never cut off mid-word.
+EVERY NUMBER must appear in the abstract above. If the abstract genuinely reports no figures, say the
+finding in words and say plainly that no effect size is reported.{note}
 Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
         t = (v or {}).get("finding", "").strip()
         if not t:
             note = "\nA PREVIOUS ATTEMPT RETURNED NOTHING. Return the JSON object exactly as specified."
+            continue
+        # 700, not 520: a trial reporting several arms needs room for its
+        # numbers, and rejecting it for length dropped the citation entirely —
+        # the failure this function already learned once.
+        if not (240 <= len(t) <= 700):
+            note = (f"\nA PREVIOUS ATTEMPT WAS REJECTED: it was {len(t)} characters. Write 280-600, "
+                    "finishing the last sentence — keep the result and its numbers, trim method detail.")
+            best = t if len(t) > len(best or "") else best
+            t = ""
+            continue
+        if not re.search(r"[.!?][\"')\]]?\s*$", t):
+            note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: it was cut off mid-sentence. Finish the last "
+                    "sentence inside the character limit.")
+            t = ""
+            continue
+        abstract_has_numbers = len([x for x in _pool_tokens(abstract)
+                                    if not re.fullmatch(r"(?:19|20)\d\d", x) and (len(x) >= 2 or "." in x)]) >= 2
+        first = re.split(r"(?<=[.!?])\s", t)[0]
+        if abstract_has_numbers and not _num_tokens(first):
+            note = ("\nA PREVIOUS ATTEMPT WAS REJECTED: its first sentence gave no figures although the "
+                    "abstract reports them. Lead with the result AND its numbers.")
+            t = ""
             continue
         stray = [x for x in _num_tokens(t)
                  if (len(x) >= 2 or "." in x) and not re.fullmatch(r"(?:19|20)\d\d", x) and x not in src]
@@ -3808,7 +3845,13 @@ Return ONLY {{"finding": "<text>"}}.""", timeout_s=600)
             continue
         break
     if not t:
-        return ""
+        # a card that says the result and ends cleanly is better than no
+        # citation at all, even if it ran long
+        if best and _num_tokens(best) and re.search(r"[.!?][\"')\]]?\s*$", best):
+            print(f"  keeping a {len(best)}-character summary for {pmid} rather than losing the citation")
+            t = best
+        else:
+            return ""
     store[pmid] = t
     json.dump(store, open(cache, "w"), ensure_ascii=False, indent=1)
     return t
