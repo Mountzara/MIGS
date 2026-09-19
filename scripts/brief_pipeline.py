@@ -1116,7 +1116,11 @@ def cmd_curate(post_id: str) -> None:
         if not t["papers"]:
             decisions[tid] = {"keep": [], "drop": [], "retitle": None}
             continue
-        prompt = CURATE_PROMPT.format(topic_file=tf, tid=tid) + stage_objections(W, "curate")
+        area = kb_area_context(W, t["title"])
+        prompt = (CURATE_PROMPT.format(topic_file=tf, tid=tid)
+                  + "\n\nWHAT THIS AREA COVERS, from the practice's own reference library (ACOG / AAGL / FMIGS / "
+                  + "UpToDate) — judge the heading as this defines it:\n" + (area or "(no library entry retrieved)")
+                  + "\n" + stage_objections(W, "curate"))
         r = subprocess.run(["claude", "-p", prompt, "--output-format", "json"], stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, timeout=900, cwd=ROOT)
         if r.returncode != 0:
@@ -1178,6 +1182,11 @@ def cmd_curate(post_id: str) -> None:
         tf = W + f"topics/{tid}.json"
         if os.path.exists(tf):
             titles[tid] = json.load(open(tf))["title"]
+    _areas = {tid: kb_area_context(W, titles[tid]) for tid in titles}
+
+    def _flat400(x):
+        return re.sub(r"\s+", " ", x or "")[:400]
+    _area_brief = "\n".join(f"- {titles[t]}: {_flat400(_areas[t])}" for t in titles)
     for tid, d in decisions.items():
         if not d["keep"] or tid not in titles:
             continue
@@ -1208,7 +1217,9 @@ alone, for an audience of gynecologic surgeons. Answer with the heading the pape
 currently filed under; a paper covering several of the headings goes under the one it covers most.
 Use "NONE" only when nothing in this brief is about it: a different organ, specialty or population (a
 keyword collision). A broad review that spans several of these headings is NOT "NONE".
-TOPIC HEADINGS: {json.dumps(sorted(set(titles.values())), ensure_ascii=False)}
+{TOPIC_FIT_RULE}
+TOPIC HEADINGS, each with what its area covers per the practice's reference library:
+{_area_brief}
 PAPERS: {json.dumps(_batch, ensure_ascii=False)}
 Reply with ONLY {{"assignments": {{"<pmid>": "<exact heading or NONE>", ...}}}} with one entry for
 EVERY paper given.""", timeout_s=900)
@@ -3149,6 +3160,14 @@ def finish_and_audit(W: str, post_id: str, post: dict, h: str, man: dict, droppe
             mv = json.load(open(pf)).get("meta_verified")
             if mv:
                 verified_meta[q] = mv
+    real = real_from_work(W, man["pmids"])
+    h, refreshed = refresh_popovers_from_abstracts(W, h, real)
+    if refreshed:
+        print(f"  {refreshed} hover card(s) written from the papers' abstracts")
+    h, added, declined = cite_and_review(W, h, list(man["pmids"]), real)
+    if declined:
+        print(f"  NOTE: named but judged not to rest on the paper (the targeted pass asked about each): {declined[:8]}")
+    stats["citations_added"] = added
     h, cite_order = number_citations(h, verified_meta)
     h = build_references(W, h, cite_order, verified_meta)
     stats["citations"] = len(cite_order)
@@ -4307,6 +4326,274 @@ with one object for EVERY item given.""", timeout_s=900)
     return h, fixed
 
 
+def _first_surnames(pmids: list, real: dict) -> dict:
+    """surname -> [pmids] for each covered paper's first author. A NOMINATOR
+    only: it says which sentences to ask about, never what to cite."""
+    out = {}
+    for pm in pmids:
+        au = (real.get(pm) or {}).get("authors") or ""
+        f = au.split(",")[0].strip().split(" ")[0] if au else ""
+        if len(f) >= 2:
+            out.setdefault(f, []).append(pm)
+    return out
+
+
+def rewrite_narrative_for_removed(W: str, h: str, gone: list, real: dict) -> tuple:
+    """Rewrite the opening narrative's paragraphs that discuss a paper
+    curation removed from the brief.
+
+    The syntheses were rewritten after curation; the narrative was not, so
+    W33's opening still argued from Takemura's trachelectomy cohort and
+    Sanz-Cabanillas's alopecia study — papers no longer on the page, with
+    nothing left to cite. The model rewrites only the paragraphs that discuss
+    a removed paper; the code replaces exactly those paragraphs, drops their
+    old markers (the placement pass re-cites every sentence), and refuses if
+    a removed paper's first author is still named afterwards. Returns
+    (h, paragraphs_rewritten)."""
+    if not gone:
+        return h, 0
+    m = re.search(r'(<section class="[^"]*mz-post-narrative[^"]*"[^>]*>)([\s\S]*?)(</section>)', h)
+    if not m:
+        return h, 0
+    frag = m.group(2)
+    paras = list(re.finditer(r'<p\b[^>]*>([\s\S]*?)</p>', frag))
+    if not paras:
+        return h, 0
+    removed = [{"pmid": q, "first_author": ((real.get(q) or {}).get("authors") or "").split(",")[0].strip(),
+                "title": (real.get(q) or {}).get("title", "")} for q in gone]
+    sur = _first_surnames(gone, real)
+
+    def text_of(inner):
+        return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", SUP_RE.sub(" ", inner)))).strip()
+
+    listing = {str(i + 1): text_of(pm.group(1)) for i, pm in enumerate(paras)}
+    reason = ""
+    for attempt in range(2):
+        v = _ask_cached(W, "narrative", f"""Below is the opening narrative of a clinician-facing weekly evidence brief, paragraph by paragraph,
+written in Dr. Mabini's first person (a DO and complex benign gynecology / minimally invasive
+gynecologic surgery surgeon). These papers have since been REMOVED from the brief because they were
+not about the heading they sat under, and they are no longer on the page:
+{json.dumps(removed, ensure_ascii=False)}
+Rewrite ONLY the paragraphs that discuss a removed paper — its authors, its findings, its numbers —
+so that the discussion is gone and nothing on the page argues from a paper the reader cannot see.
+Keep every sentence that does not concern a removed paper exactly as written; keep the voice and the
+flow; repair a transition the removal breaks; a paragraph may become shorter, never longer. Do not
+touch paragraphs that mention no removed paper.{reason}
+PARAGRAPHS: {json.dumps(listing, ensure_ascii=False)}
+Reply with ONLY {{"paragraphs": {{"<number>": "<the rewritten paragraph, plain HTML with <em>/<strong> only, no citation markup, & < > escaped>", ...}}}}
+containing ONLY the paragraphs you changed.""", timeout_s=900)
+        changed = (v or {}).get("paragraphs") or {}
+        if not isinstance(changed, dict):
+            die("the narrative rewrite returned no verdict")
+        out, last, n = [], 0, 0
+        for i, pm in enumerate(paras):
+            new = changed.get(str(i + 1))
+            if not isinstance(new, str):
+                continue
+            if len(new) > len(pm.group(1)) + 200:
+                continue
+            if not new.strip():
+                # a paragraph that was entirely about a removed paper: the
+                # model returns it empty, and the whole <p> element goes
+                out.append(frag[last:pm.start()]); last = pm.end(); n += 1
+                continue
+            if len(new.strip()) < 40:
+                continue
+            out.append(frag[last:pm.start(1)]); out.append(new.strip()); last = pm.end(1); n += 1
+        out.append(frag[last:])
+        new_frag = "".join(out)
+        still = [k for k in sur if re.search(r"(?<![\w-])" + re.escape(k) + r"(?:['\u2019]s)?(?![\w-])",
+                                             text_of(new_frag))]
+        if not still:
+            h = h[:m.start(2)] + new_frag + h[m.end(2):]
+            return h, n
+        reason = (f"\nA previous attempt left these removed papers' authors still named: {still}; every mention "
+                  f"of a removed paper must go.")
+    die(f"the narrative still discusses removed paper(s) after rewriting: {still}")
+
+
+def cite_named_studies(W: str, h: str, pmids: list, real: dict) -> tuple:
+    """A second, targeted placement pass: every sentence that names the first
+    author of a covered paper and carries no citation to it is put to the
+    model one by one — does this sentence rest on that paper? The surname
+    match only NOMINATES; the model decides; the code inserts at the sentence
+    end. The general pass declines where it is unsure, and W33's audit found
+    Li's and Bernardi's findings reported with numbers and no marker. Returns
+    (h, inserted, declined_names)."""
+    sur = _first_surnames(pmids, real)
+    added, declined = 0, set()
+    out, last = [], 0
+    for m in re.finditer(PROSE_RE, h):
+        gi = 1 if m.group(1) is not None else 2
+        frag = m.group(gi)
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
+        asks = []
+        for i, (t, e) in enumerate(sents):
+            s_start = sents[i - 1][1] if i >= 1 else 0
+            on_it = {_pmid_of(x) for x in SUP_RE.findall(frag[s_start:e])}
+            run_end = e
+            while True:
+                mm = SUP_RE.match(frag, run_end)
+                if not mm:
+                    break
+                on_it.add(_pmid_of(mm.group(0)))
+                run_end = mm.end()
+            for name, qs in sur.items():
+                cands = [q for q in qs if q not in on_it]
+                if cands and re.search(r"(?<![\w-])" + re.escape(name) + r"(?:['\u2019]s)?(?![\w-])", t):
+                    asks.append({"sentence": i + 1, "text": t, "name": name,
+                                 "papers": [{"pmid": q, "title": (real.get(q) or {}).get("title", "")[:140],
+                                             "abstract_tail": re.sub(r"\s+", " ", (real.get(q) or {}).get("abstract") or "")[-300:]}
+                                            for q in cands]})
+        placements = {}
+        if asks:
+            v = _ask_cached(W, "named", f"""Each item is one sentence of a clinician-facing evidence brief that NAMES an author whose paper
+this brief covers, yet carries no citation to that paper. For EACH, say whether the sentence rests on
+that paper — reports its finding, design, population, number or conclusion, or discusses it — and
+if so which of the listed papers (a surname can belong to more than one). A sentence that merely
+mentions the name in passing, or reports a DIFFERENT study's result next to the name, cites nothing
+here. If unsure, cite nothing.
+ITEMS: {json.dumps(asks, ensure_ascii=False)[:90000]}
+Reply with ONLY {{"decisions": [{{"sentence": <number>, "name": "<the name>", "pmids": ["..."]}}, ...]}} with one
+object for EVERY item.""", timeout_s=900)
+            if not v or not isinstance(v.get("decisions"), list):
+                die("the named-study placement returned no verdict")
+            for d in v["decisions"]:
+                try:
+                    idx = int(d.get("sentence"))
+                except Exception:
+                    continue
+                qs = [str(q) for q in (d.get("pmids") or []) if str(q) in pmids]
+                if not (1 <= idx <= len(sents)):
+                    continue
+                if not qs:
+                    declined.add(str(d.get("name", "")))
+                    continue
+                for q in qs:
+                    placements.setdefault(idx, []).append(q)
+        frag_out, shift = frag, 0
+        for idx in sorted(placements):
+            sup = "".join(_sup_markup(q, real, W) for q in dict.fromkeys(placements[idx]))
+            if not sup:
+                continue
+            at = sents[idx - 1][1] + shift
+            frag_out = frag_out[:at] + sup + frag_out[at:]
+            shift += len(sup)
+            added += len(placements[idx])
+        out.append(h[last:m.start(gi)]); out.append(frag_out); last = m.end(gi)
+    out.append(h[last:])
+    return "".join(out), added, sorted(x for x in declined if x)
+
+
+def refresh_popovers_from_abstracts(W: str, h: str, real: dict) -> tuple:
+    """Every marker's hover card is rewritten from the paper's PubMed abstract
+    (`_plain_finding`), replacing whatever the author stage typed into the
+    popover template. Owner: "the hover summary better be derived from the
+    actual abstract, not echoing your output." Returns (h, refreshed)."""
+    n = 0
+    fresh = {}
+
+    def swap(m):
+        nonlocal n
+        pm = _pmid_of(m.group(0))
+        if not pm or not (real.get(pm) or {}).get("abstract"):
+            return m.group(0)
+        if pm not in fresh:
+            sup = _sup_markup(pm, real, W)
+            pop = re.search(r'<span class="mz-ref-pop"[^>]*>([\s\S]*)</span></sup>$', sup) if sup else None
+            fresh[pm] = pop.group(1) if pop else None
+        if not fresh[pm]:
+            return m.group(0)
+        out, k = re.subn(r'(<span class="mz-ref-pop"[^>]*>)[\s\S]*?(</span>)(?=\s*</sup>)',
+                         lambda x: x.group(1) + fresh[pm] + x.group(2), m.group(0), count=1)
+        n += k
+        return out
+    return SUP_RE.sub(swap, h), n
+
+
+def real_from_work(W: str, pmids: list) -> dict:
+    """PubMed-verified paper facts from the work directory's paper files, in
+    the shape `cite_and_review` and `_sup_markup` read."""
+    real = {}
+    for q in pmids:
+        pf = W + f"papers/{q}.json"
+        if not os.path.exists(pf):
+            continue
+        pj = json.load(open(pf))
+        mv = pj.get("meta_verified") or pj.get("meta") or ""
+        real[q] = {"title": pj.get("title", ""),
+                   "abstract": pj.get("pubmed_abstract") or pj.get("abstract") or "",
+                   "authors": mv.split(" \u00b7 ")[0].strip() if mv else "",
+                   "journal": pj.get("journal", ""), "year": str(pj.get("year", "") or "")}
+    return real
+
+
+def cite_and_review(W: str, h: str, pmids: list, real: dict) -> tuple:
+    """THE ONE CITATION CHAIN. Shared by the weekly `run` (apply stage) and by
+    `renumber`, so a published brief and next week's brief are cited, reviewed
+    and corrected by the same code — owner, 2026-09-19: "this is tied to a
+    scheduled automated routine… they should be done right the first time."
+
+    relocate markers to sentence ends → verify design badges → model places
+    citations sentence by sentence → targeted pass on named authors → every
+    marker reviewed against its abstract (wrong paper: withdrawn by position;
+    misstated: the sentence is rewritten from the abstract and reviewed again;
+    still wrong: refuse). Returns (h, citations_added, names_declined)."""
+    h, relocated = relocate_mid_sentence_markers(h)
+    if relocated:
+        print(f"  moved {relocated} marker(s) standing mid-sentence to the end of their sentence")
+    h, retagged = verify_design_tags(W, h, real)
+    if retagged:
+        print(f"  corrected {retagged} study-design badge(s) against the papers' own abstracts")
+    h, named = cite_prose(W, h, pmids, real)
+    h, named2, declined = cite_named_studies(W, h, pmids, real)
+    if named2:
+        print(f"  inserted {named2} more citation(s) on sentences that name a covered paper's author")
+    named += named2
+    if named:
+        print(f"  inserted {named} citation(s) on studies the prose names by author")
+    withdrawn, unsupported = set(), []
+    if named:
+        withdrawn, unsupported = review_inserted_citations(W, h, real)
+        # Both the withdrawal positions and the sentence spans are offsets into
+        # THIS h. Withdrawals go first, from the end; each deletion before a
+        # span shifts that span left by the marker's length.
+        deleted = []
+        if withdrawn:
+            # ONLY the instances judged wrong. Other citations to the same paper
+            # stand: a misplaced marker in one sentence says nothing about a
+            # correct one in another.
+            gone_pm = []
+            for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                if m.start() in withdrawn:
+                    gone_pm.append(_pmid_of(m.group(0)))
+                    deleted.append((m.start(), m.end() - m.start()))
+                    h = h[:m.start()] + h[m.end():]
+            print(f"  withdrew {len(gone_pm)} misplaced citation(s) ({', '.join(sorted(set(x for x in gone_pm if x))[:6])})"
+                  f" — other citations to those papers stand")
+        if unsupported:
+            for u in unsupported:
+                a, b = u["_span"]
+                shift = sum(n for at, n in deleted if at < a)
+                u["_span"] = (a - shift, b - shift)
+            h, n_fixed = correct_unsupported_sentences(W, h, unsupported, real)
+            if n_fixed:
+                print(f"  {n_fixed} sentence(s) corrected against their papers' abstracts — reviewing again")
+                # the corrected sentences are judged like any other; a claim
+                # that still misstates its paper refuses the brief, named
+                again_wrong, again_unsupported = review_inserted_citations(W, h, real)
+                if again_unsupported:
+                    die("after correction, sentence(s) still misstate their papers: "
+                        + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in again_unsupported[:4]))
+                if again_wrong:
+                    for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
+                        if m.start() in again_wrong:
+                            h = h[:m.start()] + h[m.end():]
+                    print(f"  withdrew {len(again_wrong)} citation(s) judged the wrong paper on re-review")
+    return h, named, declined
+
+
 def review_inserted_citations(W: str, h: str, real: dict) -> tuple:
     """Every citation this pass inserted, judged against the paper's abstract.
 
@@ -5068,6 +5355,9 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
         h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
         if resynth:
             print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
+        h, n_narr = rewrite_narrative_for_removed(W, h, gone, real)
+        if n_narr:
+            print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
     else:
         removed, moved, emptied = [], [], []
     meta = {}
@@ -5083,53 +5373,7 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
     if missing_meta:
         die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
-    h, relocated = relocate_mid_sentence_markers(h)
-    if relocated:
-        print(f"  moved {relocated} marker(s) standing mid-sentence to the end of their sentence")
-    h, retagged = verify_design_tags(W, h, real)
-    if retagged:
-        print(f"  corrected {retagged} study-design badge(s) against the papers' own abstracts")
-    h, named = cite_prose(W, h, pmids_all, real)
-    if named:
-        print(f"  inserted {named} citation(s) on studies the prose names by author")
-    withdrawn, unsupported = set(), []
-    if named:
-        withdrawn, unsupported = review_inserted_citations(W, h, real)
-        # Both the withdrawal positions and the sentence spans are offsets into
-        # THIS h. Withdrawals go first, from the end; each deletion before a
-        # span shifts that span left by the marker's length.
-        deleted = []
-        if withdrawn:
-            # ONLY the instances judged wrong. Other citations to the same paper
-            # stand: a misplaced marker in one sentence says nothing about a
-            # correct one in another.
-            gone = []
-            for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
-                if m.start() in withdrawn:
-                    gone.append(_pmid_of(m.group(0)))
-                    deleted.append((m.start(), m.end() - m.start()))
-                    h = h[:m.start()] + h[m.end():]
-            print(f"  withdrew {len(gone)} misplaced citation(s) ({', '.join(sorted(set(x for x in gone if x))[:6])})"
-                  f" — other citations to those papers stand")
-        if unsupported:
-            for u in unsupported:
-                a, b = u["_span"]
-                shift = sum(n for at, n in deleted if at < a)
-                u["_span"] = (a - shift, b - shift)
-            h, n_fixed = correct_unsupported_sentences(W, h, unsupported, real)
-            if n_fixed:
-                print(f"  {n_fixed} sentence(s) corrected against their papers' abstracts — reviewing again")
-                # the corrected sentences are judged like any other; a claim
-                # that still misstates its paper refuses the brief, named
-                again_wrong, again_unsupported = review_inserted_citations(W, h, real)
-                if again_unsupported:
-                    die("after correction, sentence(s) still misstate their papers: "
-                        + "; ".join(f"{u['pmid']}: {u['why'][:100]}" for u in again_unsupported[:4]))
-                if again_wrong:
-                    for m in sorted(SUP_RE.finditer(h), key=lambda x: -x.start()):
-                        if m.start() in again_wrong:
-                            h = h[:m.start()] + h[m.end():]
-                    print(f"  withdrew {len(again_wrong)} citation(s) judged the wrong paper on re-review")
+    h, named, declined = cite_and_review(W, h, pmids_all, real)
     h, order = number_citations(h, meta)
     h = build_references(W, h, order, meta)
     h = dedupe_element_ids(h)
@@ -5144,24 +5388,8 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
     # refused finished briefs over exactly those correct refusals. What a
     # reader would call a missing citation is found by the read-back audit,
     # which looks at the page; this only reports, so nothing is hidden.
-    surnames = {}
-    for pm in pmids_all:
-        au = (real.get(pm) or {}).get("authors") or ""
-        f = au.split(",")[0].strip().split(" ")[0] if au else ""
-        if len(f) >= 3:
-            surnames.setdefault(f, []).append(pm)
-    unique_sur = {k: v[0] for k, v in surnames.items() if len(v) == 1}
-    uncited_named = set()
-    for frag in re.findall(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h) + \
-                re.findall(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
-        cited_here = {_pmid_of(x) for x in SUP_RE.findall(frag)}
-        bare = re.sub(r"<[^>]+>", " ", H.unescape(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", " ", frag)))
-        for sur, pm in unique_sur.items():
-            if pm not in cited_here and re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare):
-                uncited_named.add(sur)
-    if uncited_named:
-        print(f"  NOTE: named but not cited in that passage (the placement pass judged each one): "
-              f"{sorted(uncited_named)[:8]}")
+    if declined:
+        print(f"  NOTE: named but judged not to rest on the paper (the targeted pass asked about each): {declined[:8]}")
 
     marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
              for x in SUP_RE.findall(h)]
