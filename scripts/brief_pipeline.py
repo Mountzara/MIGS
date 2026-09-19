@@ -1079,7 +1079,19 @@ def cmd_curate(post_id: str) -> None:
             text = json.loads(r.stdout).get("result", "")
         except json.JSONDecodeError:
             text = r.stdout
+        text = re.sub(r"^\s*```(?:json)?|```\s*$", "", (text or "").strip(), flags=re.M)
         m = re.search(r"\{[\s\S]*\}", text)
+        if not m:
+            # a reply cut off mid-array is still usable: close what is open
+            head = text[text.find("{"):] if "{" in text else ""
+            if head:
+                trimmed = head.rstrip().rstrip(",")
+                for close in ("}]}", "]}", "}}", "}"):
+                    try:
+                        v = json.loads(trimmed + close)
+                        return v
+                    except Exception:
+                        continue
         if not m:
             die(f"curation of {tid} returned no JSON: {text[:250]}")
         v = json.loads(m.group(0))
@@ -3908,9 +3920,16 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
     sentence rests on which paper — and this function only performs what it
     decided, at the end of the named sentence.
     """
-    cand = [{"pmid": q, "title": (real.get(q) or {}).get("title", ""),
-             "authors": (real.get(q) or {}).get("authors", ""),
-             "abstract": ((real.get(q) or {}).get("abstract") or "")[:700]} for q in pmids]
+    def brief_card(q):
+        r = real.get(q) or {}
+        ab = re.sub(r"\s+", " ", r.get("abstract") or "")
+        # the conclusion carries what a sentence would rest on; 320 chars of it
+        tail = ab[-320:] if len(ab) > 320 else ab
+        return {"pmid": q, "title": r.get("title", "")[:180],
+                "authors": (r.get("authors", "") or "").split(",")[0],
+                "gist": tail}
+
+    cand_all = [brief_card(q) for q in pmids]
     added, out, last = 0, [], 0
     for m in _re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
                           r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
@@ -3921,6 +3940,10 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
             continue
         have = {_pmid_of(x) for x in SUP_RE.findall(frag)}
         listing = "\n".join(f"[{i + 1}] {t}" for i, (t, _) in enumerate(sents))
+        # only the papers this passage could be about: its own topic's papers
+        # for a synthesis, everything for the narrative
+        own = set(re.findall(r'id="mz-(?:cite|ref)-(\d+)"', h[max(0, m.start() - 200):m.end() + 40000])) if gi == 2 else set()
+        cand = [c for c in cand_all if c["pmid"] in own] if own else cand_all
         v = _ask_cached(W, "place", f"""You are placing citations in one passage of a clinician-facing evidence brief.
 SENTENCES (numbered):
 {listing}
