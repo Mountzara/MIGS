@@ -3978,7 +3978,14 @@ def cite_prose(W: str, h: str, pmids: list, real: dict) -> tuple:
                           r'|(?:<p class="mz-toc-group-synthesis">([\s\S]*?)</p>)', h):
         gi = 1 if m.group(1) is not None else 2
         frag = m.group(gi)
-        sents = _sentences_of(frag)
+        # A citation's popover carries the paper's title, journal line and a
+        # whole summary — TEXT, not tags — so the splitter read it as prose:
+        # the narrative came back as 74 "sentences" that were mostly popover
+        # fragments, the model could not place against them, and the markers
+        # it did place landed mid-phrase. Masking each <sup> with spaces keeps
+        # every index valid against the fragment while hiding its content.
+        masked = SUP_RE.sub(lambda x: " " * len(x.group(0)), frag)
+        sents = _sentences_of(masked)
         if not sents:
             continue
         have = {_pmid_of(x) for x in SUP_RE.findall(frag)}
