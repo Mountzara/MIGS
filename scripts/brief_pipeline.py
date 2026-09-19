@@ -5970,7 +5970,25 @@ Return ONLY {{"paragraph": "<inner html>"}}""", timeout_s=900)
     return h, rewritten
 
 
-def cmd_renumber(post_id: str, dry: bool = False) -> None:
+RENUMBER_STAGES = ("curated", "cited", "numbered")
+
+
+def _snap_put(W: str, name: str, h: str, **state) -> None:
+    """Checkpoint after a stage: the body and every value later stages read.
+    A fix to a later stage resumes from here (--from=<name>) instead of
+    replaying the whole chain — owner, 2026-09-19: "if everything before is
+    fine in the process, there's no reason to start from the beginning"."""
+    json.dump({"h": h, **state}, open(W + f"snap.{name}.json", "w"), ensure_ascii=False)
+
+
+def _snap_get(W: str, name: str) -> dict:
+    path = W + f"snap.{name}.json"
+    if not os.path.exists(path):
+        die(f"no checkpoint '{name}' in {W} — run without --from, or from an earlier stage: {RENUMBER_STAGES}")
+    return json.load(open(path))
+
+
+def cmd_renumber(post_id: str, dry: bool = False, resume: str | None = None) -> None:
     """dry=True runs the whole transformation and every check, and writes
     nothing to the site. Model verdicts are cached, so iterating on a regex
     after a failed check costs nothing."""
@@ -5987,103 +6005,132 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
     os.makedirs(W + "papers", exist_ok=True)
     lock = hold_work_lock(W, post_id)
     try:
-        _renumber(post_id, W, dry)
+        _renumber(post_id, W, dry, resume)
     finally:
         release_work_lock(lock)
 
 
-def _renumber(post_id: str, W: str, dry: bool) -> None:
+def _renumber(post_id: str, W: str, dry: bool, resume: str | None = None) -> None:
+    if resume and resume not in RENUMBER_STAGES:
+        die(f"unknown checkpoint {resume!r}; one of {RENUMBER_STAGES}")
+    stage = RENUMBER_STAGES.index(resume) + 1 if resume else 0
     post = curl_json(f"{BASE}/api/posts/_admin/{post_id}", auth=True)
     post = post.get("post", post)
-    h = normalize_legacy_markup(post["body_html"])
-    before_html = h
-    before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
-              for x in SUP_RE.findall(h)]
-    pmids = [x for x in dict.fromkeys(_pmid_of(x) for x in SUP_RE.findall(h)) if x]
-    if not pmids:
-        die(f"{post_id}: no inline citations to renumber")
-    print(f"{post_id}: {len(SUP_RE.findall(h))} citation(s), {len(pmids)} distinct paper(s)")
-    print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
+    if stage == 0:
+        h = normalize_legacy_markup(post["body_html"])
+        before_html = h
+        before = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+                  for x in SUP_RE.findall(h)]
+        pmids = [x for x in dict.fromkeys(_pmid_of(x) for x in SUP_RE.findall(h)) if x]
+        if not pmids:
+            die(f"{post_id}: no inline citations to renumber")
+        print(f"{post_id}: {len(SUP_RE.findall(h))} citation(s), {len(pmids)} distinct paper(s)")
+        print(f"  markers showing a PMID before: {sum(1 for m in before if re.fullmatch(chr(92) + 'd{5,9}', m))}")
 
-    # PubMed is the authority for the journal and year in every popover and entry
-    covered = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', h)
-                                 + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
-    pmids_all = list(dict.fromkeys(pmids + covered))
-    real = fetch_pubmed(sorted(pmids_all))
+        # PubMed is the authority for the journal and year in every popover and entry
+        covered = list(dict.fromkeys(re.findall(r'id="mz-(?:cite|ref)-(\d{5,9})"', h)
+                                     + re.findall(r'<dialog[^>]*id="dd-(\d+)"', h)))
+        pmids_all = list(dict.fromkeys(pmids + covered))
+        real = fetch_pubmed(sorted(pmids_all))
 
-    # CURATION FIRST, always. A brief is not worth renumbering while it still
-    # carries papers that are not about their own heading.
-    topics = {}
-    for t in _topic_sections(h):
-        seg = t.group(1)
-        tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
-        pm_here = list(dict.fromkeys(re.findall(CARD_ID_RE, seg)
-                                     + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
-        if pm_here:
-            title = H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else t.tid
-            title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", title)[:90]
-            topics[t.tid] = {"title": title, "pmids": pm_here}
-    papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
-                       "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
-    if topics:
-        h, removed, moved, emptied = curate_live(h, topics, papers_ctx, W)
-        tt = lambda tid: topics.get(tid, {}).get("title", tid)  # noqa: E731
-        if removed:
-            print(f"  curation removed {len(removed)} placement(s) not about their heading:")
-            for tid, pm, why in removed:
-                print(f"    {pm} from {tt(tid)!r}: {why[:110]}")
-        for f, to, pm, why in moved:
-            print(f"  curation moved {pm} from {tt(f)!r} to {tt(to)!r}: {why[:110]}")
-        if emptied:
-            print(f"  removed {len(emptied)} heading(s) left with nothing under them: {emptied}")
-        gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not _has_card(h, pm)]
-        if gone:
-            print(f"  {len(gone)} paper(s) left the brief entirely; {len(set(pm for _, pm, _ in removed)) - len(gone)} remain under another heading")
-        pmids_all = [x for x in pmids_all if x not in gone]
-        pmids = [x for x in pmids if x not in gone]
-        h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
-        if resynth:
-            print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
-        h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
-        if n_narr:
-            print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
-    else:
-        removed, moved, emptied = [], [], []
-    # every paper the brief holds may be cited by the chain below, so every
-    # one gets its file and its journal line — not only the ones already cited
-    meta = {}
-    for pm in pmids_all:
-        r = real.get(pm) or {}
-        line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-        if line:
-            meta[pm] = line
-        json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
-                   "pubmed_abstract": r.get("abstract", "")},
-                  open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
-    missing_meta = [pm for pm in pmids_all if pm not in meta]
-    if missing_meta:
-        # one more try before refusing: a partial PubMed response is transient
-        again = fetch_pubmed(missing_meta)
-        for pm in missing_meta:
-            r = again.get(pm) or {}
+        # CURATION FIRST, always. A brief is not worth renumbering while it still
+        # carries papers that are not about their own heading.
+        topics = {}
+        for t in _topic_sections(h):
+            seg = t.group(1)
+            tt = re.search(r"<h[23][^>]*>(.*?)</h[23]>", seg, re.S)
+            pm_here = list(dict.fromkeys(re.findall(CARD_ID_RE, seg)
+                                         + re.findall(r"openDeepDive\('dd-(\d+)'", seg)))
+            if pm_here:
+                title = H.unescape(re.sub(r"<[^>]+>", "", tt.group(1))).strip() if tt else t.tid
+                title = re.sub(r"\s*(?:\d+ papers?|\(\d+\))\s*$", "", title)[:90]
+                topics[t.tid] = {"title": title, "pmids": pm_here}
+        papers_ctx = {pm: {"title": (real.get(pm) or {}).get("title", ""),
+                           "abstract": (real.get(pm) or {}).get("abstract", "")} for pm in pmids_all}
+        if topics:
+            h, removed, moved, emptied = curate_live(h, topics, papers_ctx, W)
+            tt = lambda tid: topics.get(tid, {}).get("title", tid)  # noqa: E731
+            if removed:
+                print(f"  curation removed {len(removed)} placement(s) not about their heading:")
+                for tid, pm, why in removed:
+                    print(f"    {pm} from {tt(tid)!r}: {why[:110]}")
+            for f, to, pm, why in moved:
+                print(f"  curation moved {pm} from {tt(f)!r} to {tt(to)!r}: {why[:110]}")
+            if emptied:
+                print(f"  removed {len(emptied)} heading(s) left with nothing under them: {emptied}")
+            gone = [pm for pm in dict.fromkeys(pm for _, pm, _ in removed) if not _has_card(h, pm)]
+            if gone:
+                print(f"  {len(gone)} paper(s) left the brief entirely; {len(set(pm for _, pm, _ in removed)) - len(gone)} remain under another heading")
+            pmids_all = [x for x in pmids_all if x not in gone]
+            pmids = [x for x in pmids if x not in gone]
+            h, resynth = rewrite_affected_syntheses(W, h, topics, removed, moved, real)
+            if resynth:
+                print(f"  {resynth} synthesis paragraph(s) rewritten to match what survives")
+            h, n_narr = rewrite_narrative_for_removed(W, h, gone, real, surviving=pmids_all)
+            if n_narr:
+                print(f"  {n_narr} narrative paragraph(s) rewritten so nothing argues from a removed paper")
+        else:
+            removed, moved, emptied = [], [], []
+        # every paper the brief holds may be cited by the chain below, so every
+        # one gets its file and its journal line — not only the ones already cited
+        meta = {}
+        for pm in pmids_all:
+            r = real.get(pm) or {}
             line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
-            if line and r.get("title"):
-                real[pm] = r
+            if line:
                 meta[pm] = line
-                json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
-                           "pubmed_abstract": r.get("abstract", "")},
-                          open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+            json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
+                       "pubmed_abstract": r.get("abstract", "")},
+                      open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
         missing_meta = [pm for pm in pmids_all if pm not in meta]
-    if missing_meta:
-        die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
+        if missing_meta:
+            # one more try before refusing: a partial PubMed response is transient
+            again = fetch_pubmed(missing_meta)
+            for pm in missing_meta:
+                r = again.get(pm) or {}
+                line = " · ".join(x for x in (r.get("authors", ""), r.get("journal", ""), r.get("year", "")) if x)
+                if line and r.get("title"):
+                    real[pm] = r
+                    meta[pm] = line
+                    json.dump({"pmid": pm, "title": r.get("title", ""), "meta_verified": line,
+                               "pubmed_abstract": r.get("abstract", "")},
+                              open(W + f"papers/{pm}.json", "w"), ensure_ascii=False)
+            missing_meta = [pm for pm in pmids_all if pm not in meta]
+        if missing_meta:
+            die(f"could not verify the journal line for {missing_meta[:6]} — refusing to renumber blind")
 
-    h, refreshed = refresh_popovers_from_abstracts(W, h, real)
-    if refreshed:
-        print(f"  {refreshed} hover card(s) written from the papers' abstracts")
-    h, named, declined = cite_and_review(W, h, pmids_all, real)
-    h, order = number_citations(h, meta)
-    h = build_references(W, h, order, meta)
-    h = dedupe_element_ids(h)
+        _snap_put(W, "curated", h, before_html=before_html, pmids=pmids, pmids_all=pmids_all, real=real,
+                  removed=removed, moved=moved, emptied=emptied, meta=meta)
+        print("  checkpoint: curated")
+    else:
+        sn = _snap_get(W, "curated")
+        h, before_html, pmids, pmids_all, real, meta = sn["h"], sn["before_html"], sn["pmids"], sn["pmids_all"], sn["real"], sn["meta"]
+        removed = [tuple(x) for x in sn["removed"]]
+        moved = [tuple(x) for x in sn["moved"]]
+        emptied = sn["emptied"]
+        print(f"  resumed from checkpoint 'curated' ({len(pmids_all)} papers)")
+
+    if stage <= 1:
+        h, refreshed = refresh_popovers_from_abstracts(W, h, real)
+        if refreshed:
+            print(f"  {refreshed} hover card(s) written from the papers' abstracts")
+        h, named, declined = cite_and_review(W, h, pmids_all, real)
+        _snap_put(W, "cited", h, named=named, declined=declined)
+        print("  checkpoint: cited")
+    else:
+        sn = _snap_get(W, "cited")
+        h, named, declined = sn["h"], sn["named"], sn["declined"]
+        print("  resumed from checkpoint 'cited'")
+    if stage <= 2:
+        h, order = number_citations(h, meta)
+        h = build_references(W, h, order, meta)
+        h = dedupe_element_ids(h)
+        _snap_put(W, "numbered", h, order=order)
+        print("  checkpoint: numbered")
+    else:
+        sn = _snap_get(W, "numbered")
+        h, order = sn["h"], sn["order"]
+        print("  resumed from checkpoint 'numbered'")
 
     # post-conditions, on exactly the two things reported plus what they touch
     faults = []
@@ -6128,7 +6175,7 @@ def _renumber(post_id: str, W: str, dry: bool) -> None:
             print("  FAULT:", f_)
         die(f"{post_id}: renumbering did not hold")
 
-    audit_transform(W, before_html, h, removed, emptied if topics else [], moved)
+    audit_transform(W, before_html, h, removed, emptied, moved)
 
     post["body_html"] = h
     open(W + "body.applied.html", "w", encoding="utf-8").write(h)
@@ -6260,7 +6307,10 @@ if __name__ == "__main__":
            "standards-check": cmd_standards_check, "run": cmd_run, "renumber": cmd_renumber}.get(_cmd)
     if not _fn:
         die(f"unknown stage {_cmd}")
-    if _cmd in ("renumber", "run", "publish"):
+    _from = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--from=")), None)
+    if _cmd == "renumber":
+        _fn(sys.argv[2], dry=_dry, resume=_from)
+    elif _cmd in ("run", "publish"):
         _fn(sys.argv[2], dry=_dry)
     else:
         _fn(sys.argv[2])
