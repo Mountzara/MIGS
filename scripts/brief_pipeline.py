@@ -4837,26 +4837,47 @@ def audit_transform(W: str, before: str, after: str, dropped, emptied: list, mov
     passed my own checks and were caught a publish cycle later. This reads the
     actual output and looks for what a careful editor would see.
     """
-    def slice_of(h, pat, n=1, cap=3000):
+    # A popover carries ~700 characters of text per marker, so an excerpt
+    # capped by bytes showed the auditor a fraction of the narrative and it
+    # judged the numbering wrong from what it could not see (the narrative
+    # cites papers 3-6 before the first synthesis cites 7). Prose is sampled
+    # with popovers stripped, popovers are sampled on their own, and the
+    # document-order marker sequence is given whole.
+    def strip_pops(x):
+        return re.sub(r'<span class="mz-ref-pop"[\s\S]*?</span>(?=\s*</sup>)', "", x)
+
+    def slice_of(h, pat, n=1, cap=3000, pops=False):
         out = []
         for m in list(re.finditer(pat, h))[:n]:
-            out.append(m.group(0)[:cap])
+            out.append((m.group(0) if pops else strip_pops(m.group(0)))[:cap])
         return out
+
+    seq = []
+    for m in re.finditer(r'(?:<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>)'
+                         r'|(?:<section class="[^"]*topic-section[^"]*"[^>]*id="([^"]+)"[^>]*>([\s\S]*?)</section>)', after):
+        where = "narrative" if m.group(1) is not None else m.group(2)
+        frag = m.group(1) if m.group(1) is not None else m.group(3)
+        nums = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
+                for x in SUP_RE.findall(frag)]
+        if nums:
+            seq.append({"passage": where, "markers_in_order": nums})
 
     sample = {
         "toc_nav": slice_of(after, r'<nav class="mz-toc"[\s\S]*?</nav>', 1, 4000),
-        "narrative": slice_of(after, r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>', 1, 7000),
-        "syntheses": slice_of(after, r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>', 2, 4000),
+        "narrative": slice_of(after, r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>[\s\S]*?</section>', 1, 14000),
+        "syntheses": slice_of(after, r'<p class="mz-toc-group-synthesis">[\s\S]*?</p>', 4, 3500),
+        "popovers": slice_of(after, r'<sup class="mz-ref">[\s\S]*?</sup>', 2, 1600, pops=True),
         "topic_headers": slice_of(after, r'<section class="[^"]*topic-section[^"]*"[^>]*>[\s\S]{0,700}', 3, 900),
         "references_head": slice_of(after, r'<ol class="mz-references-list">[\s\S]{0,2500}', 1, 2500),
         "cite_card": slice_of(after, r'<article class="mz-cite-card[\s\S]*?</article>', 1, 2500),
+        "marker_sequence_in_document_order": seq,
         "counts": {
             "citations": len(SUP_RE.findall(after)),
             "distinct_papers_cited": len({_pmid_of(x) for x in SUP_RE.findall(after)}),
             "reference_entries": len(re.findall(r'<li id="ref-\d+">', after)),
             "cite_cards": len(re.findall(r'<article class="mz-cite-card', after)),
             "dialogs": len(re.findall(r'<dialog[^>]*id="dd-\d+"', after)),
-            "toc_chips": len(re.findall(r'class="[^"]*mz-toc-chip', after)),
+            "toc_chips": sum(1 for m in re.finditer(r'<a[^>]*class="([^"]*)"', after) if "mz-toc-chip" in m.group(1).split()),
             "topic_sections": len(re.findall(r'class="[^"]*topic-section', after)),
             "placements_removed": len(dropped),
             "papers_moved_between_headings": len(moved or []),
@@ -4871,7 +4892,11 @@ inserted citations on studies the prose names, renumbered every citation marker 
 appearance, rebuilt the reference list in that order, and de-duplicated element ids.
 
 Read the ACTUAL OUTPUT below and find what is wrong with it. Do not take the program's word for
-anything — check what you can see.
+anything — check what you can see. Markers are numbered by FIRST APPEARANCE IN THE WHOLE DOCUMENT,
+narrative first, then each section in order; "marker_sequence_in_document_order" lists every
+marker in that order and is what you judge numbering and sequence from — the prose excerpts are
+partial. Popover text has been removed from the prose excerpts; judge popover completeness from
+"popovers".
 
 Look hard for: a citation marker sitting inside a noun phrase instead of after the claim's full stop;
 markers out of sequence or repeating a number for a different paper; a jump-list chip pointing at a
