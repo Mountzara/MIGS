@@ -4721,11 +4721,13 @@ def cite_every_card(W: str, h: str, real: dict) -> tuple:
             sents = _sentences_of(masked)
             r = real.get(q) or {}
             listing = "\n".join(f"[{i + 1}] {x}" for i, (x, _) in enumerate(sents))
+            ab = re.sub(r"\s+", " ", r.get("abstract") or "")
+            paper_json = json.dumps({"pmid": q, "title": r.get("title", ""), "abstract": ab[:1800]}, ensure_ascii=False)
             v = _ask_cached(W, "place", f"""One paper in a section of a clinician-facing evidence brief has a card but no citation in the
 section's opening paragraph. Which numbered sentence, if any, reports THIS paper — its finding,
 design, population or numbers? Match on the claim, not on a name alone.
-THE PAPER: {json.dumps({"pmid": q, "title": r.get("title", ""), "abstract": re.sub(r"\s+", " ", r.get("abstract") or "")[:1800]}, ensure_ascii=False)}
-SENTENCES: 
+THE PAPER: {paper_json}
+SENTENCES:
 {listing}
 Reply with ONLY {{"sentence": <number or null>}}""", timeout_s=600)
             idx = None
@@ -4745,7 +4747,7 @@ Reply with ONLY {{"sentence": <number or null>}}""", timeout_s=600)
 brief, in Dr. Mabini's first person (a DO and complex benign gynecology / minimally invasive
 gynecologic surgery surgeon), reporting this paper's main finding with its key number, as the
 abstract states it. At most 45 words, plain text, no citation markup, ending with a full stop.
-THE PAPER: {json.dumps({"title": r.get("title", ""), "abstract": re.sub(r"\s+", " ", r.get("abstract") or "")[:2500]}, ensure_ascii=False)}
+THE PAPER: {json.dumps({"title": r.get("title", ""), "abstract": ab[:2500]}, ensure_ascii=False)}
 Reply with ONLY {{"sentence": "<the sentence>"}}""", timeout_s=600)
             text = re.sub(r"\s+", " ", str((w or {}).get("sentence") or "")).strip()
             if len(text) < 30 or len(text) > 420:
