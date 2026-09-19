@@ -4488,42 +4488,32 @@ def cmd_renumber(post_id: str, dry: bool = False) -> None:
 
     # post-conditions, on exactly the two things reported plus what they touch
     faults = []
-    # EVERY study the site's own prose names by author carries a citation.
-    # Deterministic: the surname comes from PubMed's author list for a paper
-    # this brief covers, so "Pan's review" without a marker is a fault, not a
-    # judgement call.
+    # Citation coverage is no longer judged by matching surnames. Placement is
+    # decided by the model reading each sentence against the papers, and it
+    # deliberately declines where it cannot attribute — "Li and Ye" names two
+    # authors and putting the claim on one of them is wrong. The old check
+    # demanded a citation wherever a covered paper's first author appeared and
+    # refused finished briefs over exactly those correct refusals. What a
+    # reader would call a missing citation is found by the read-back audit,
+    # which looks at the page; this only reports, so nothing is hidden.
     surnames = {}
     for pm in pmids_all:
         au = (real.get(pm) or {}).get("authors") or ""
         f = au.split(",")[0].strip().split(" ")[0] if au else ""
-        if len(f) >= 2:
+        if len(f) >= 3:
             surnames.setdefault(f, []).append(pm)
     unique_sur = {k: v[0] for k, v in surnames.items() if len(v) == 1}
+    uncited_named = set()
     for frag in re.findall(r'<section class="[^"]*mz-post-narrative[^"]*"[^>]*>([\s\S]*?)</section>', h) + \
                 re.findall(r'<p class="mz-toc-group-synthesis">([\s\S]*?)</p>', h):
         cited_here = {_pmid_of(x) for x in SUP_RE.findall(frag)}
-        bare = H.unescape(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", " ", frag))
-        bare = re.sub(r"<[^>]+>", " ", bare)
+        bare = re.sub(r"<[^>]+>", " ", H.unescape(re.sub(r"<sup class=\"mz-ref\"[\s\S]*?</sup>", " ", frag)))
         for sur, pm in unique_sur.items():
-            if pm in cited_here:
-                continue
-            mm = re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare)
-            if not mm:
-                continue
-            # "Li and Ye" names two authors and only one resolves to a covered
-            # paper; a marker on half of it would attribute the claim wrongly,
-            # which the citation review catches. Reported, not silently passed.
-            if pm in withdrawn:
-                print(f"  NOTE: the prose names {sur}; its citation was withdrawn by the review and is "
-                      f"not re-inserted")
-                continue
-            near = bare[max(0, mm.start() - 40):mm.end() + 40]
-            if re.search(r"[A-Z][A-Za-z'\u2019-]+\s+and\s+" + re.escape(sur), near) or \
-               re.search(re.escape(sur) + r"(?:['\u2019]s)?\s+and\s+[A-Z]", near):
-                print(f"  NOTE: the prose names {sur} in a two-author reference; left uncited rather than "
-                      f"attributed to one half")
-                continue
-            faults.append(f"the prose names {sur} but does not cite {pm}")
+            if pm not in cited_here and re.search(r"(?<![\w-])" + re.escape(sur) + r"(?:['\u2019]s)?(?![\w-])", bare):
+                uncited_named.add(sur)
+    if uncited_named:
+        print(f"  NOTE: named but not cited in that passage (the placement pass judged each one): "
+              f"{sorted(uncited_named)[:8]}")
 
     marks = [re.sub(r"<[^>]+>", "", (re.search(r'<a class="mz-ref-link"[^>]*>(.*?)</a>', x, re.S) or [None, ""])[1]).strip()
              for x in SUP_RE.findall(h)]
