@@ -4113,13 +4113,34 @@ def curate_live(h: str, topics: dict, papers: dict, W: str = "") -> tuple:
     """
     drops, reasons = {}, {}
     titles = {tid: t["title"] for tid, t in topics.items()}
+    # A PAPER IS NEVER DROPPED FOR MISSING DATA. When a fetch failed, the model
+    # is asked to judge a blank and correctly answers that it cannot — and the
+    # paper vanished from the brief for a reason that has nothing to do with
+    # its subject. Those are refetched, and any still missing are kept and
+    # reported rather than judged.
+    blank = [q for tid, t in topics.items() for q in t["pmids"]
+             if len(((papers.get(q) or {}).get("abstract") or "").strip()) < 60]
+    if blank:
+        print(f"  refetching {len(blank)} paper(s) whose abstract was missing before judging them")
+        again = fetch_pubmed(sorted(set(blank)))
+        for q in blank:
+            r = again.get(q) or {}
+            if r.get("abstract"):
+                papers[q] = {"title": r.get("title", ""), "abstract": r.get("abstract", "")}
+        still = [q for q in set(blank)
+                 if len(((papers.get(q) or {}).get("abstract") or "").strip()) < 60]
+        if still:
+            print(f"  KEEPING {len(still)} paper(s) with no abstract available — not judged, not dropped: {still[:8]}")
+        unjudgeable = set(still)
+    else:
+        unjudgeable = set()
 
     def ctx(pmids):
         return [{"pmid": q, "title": (papers.get(q) or {}).get("title", ""),
                  "abstract": ((papers.get(q) or {}).get("abstract") or "")[:2200]} for q in pmids]
 
     for tid, t in topics.items():
-        pmids = [q for q in t["pmids"] if q in papers]
+        pmids = [q for q in t["pmids"] if q in papers and q not in unjudgeable]
         if not pmids:
             continue
         for i in range(0, len(pmids), 10):
@@ -4144,12 +4165,18 @@ with one object for EVERY paper given.""", timeout_s=900)
             if missing:
                 die(f"curation of {tid} skipped {missing[:5]}")
             for x in v["verdicts"]:
+                why = str(x.get("why", ""))[:200]
                 if not x.get("belongs"):
+                    if re.search(r"no (?:title|abstract)|not provided|cannot (?:verify|assess)|insufficient",
+                                 why, re.I):
+                        print(f"  KEEPING {x['pmid']}: the judgement was 'cannot tell', not 'does not belong'")
+                        continue
                     drops[str(x["pmid"])] = tid
-                    reasons[str(x["pmid"])] = str(x.get("why", ""))[:200]
+                    reasons[str(x["pmid"])] = why
 
     # independent corroboration, given only the abstracts and the headings
-    keeps = [q for tid, t in topics.items() for q in t["pmids"] if q in papers and q not in drops]
+    keeps = [q for tid, t in topics.items() for q in t["pmids"]
+             if q in papers and q not in drops and q not in unjudgeable]
     for i in range(0, len(keeps), 10):
         batch = keeps[i:i + 10]
         v = _ask_cached(W, "curate", f"""Classify each paper under ONE heading from this brief, from its title and abstract alone, for an
